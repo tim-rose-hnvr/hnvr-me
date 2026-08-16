@@ -1,0 +1,1935 @@
+<title>pkt.me — Markt und Neuzuschnitt</title>
+
+<style>
+  /* ---- Farbwerte: helle Fassung als Grundlage ---------------------- */
+  :root {
+    --grund:        #EBEEEE;
+    --flaeche:      #FFFFFF;
+    --flaeche-tief: #E2E6E7;
+    --tinte:        #141A1C;
+    --tinte-leise:  #59666C;
+    --linie:        #D0D7D9;
+    --linie-stark:  #A9B4B8;
+    --tally:        #A82E23;
+    --tally-grund:  #F7E7E5;
+    --warn:         #7E5300;
+    --warn-grund:   #F6ECDA;
+    --gut:          #0D5A4D;
+    --gut-grund:    #DFEDEA;
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            "Helvetica Neue", Arial, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+             Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+            "Liberation Mono", monospace;
+
+    --spur: 1180px;
+    --lauf: 44rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --grund:        #111618;
+      --flaeche:      #192023;
+      --flaeche-tief: #212A2E;
+      --tinte:        #E4E9EA;
+      --tinte-leise:  #93A1A7;
+      --linie:        #2A3438;
+      --linie-stark:  #47555A;
+      --tally:        #F0705C;
+      --tally-grund:  #33201D;
+      --warn:         #E0A63F;
+      --warn-grund:   #2E2513;
+      --gut:          #45B49C;
+      --gut-grund:    #152C28;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --grund:        #111618;
+    --flaeche:      #192023;
+    --flaeche-tief: #212A2E;
+    --tinte:        #E4E9EA;
+    --tinte-leise:  #93A1A7;
+    --linie:        #2A3438;
+    --linie-stark:  #47555A;
+    --tally:        #F0705C;
+    --tally-grund:  #33201D;
+    --warn:         #E0A63F;
+    --warn-grund:   #2E2513;
+    --gut:          #45B49C;
+    --gut-grund:    #152C28;
+  }
+
+  /* ---- Grundlagen -------------------------------------------------- */
+  body {
+    margin: 0;
+    background: var(--grund);
+    color: var(--tinte);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .spur {
+    max-width: var(--spur);
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 4vw, 3.5rem);
+  }
+
+  .lauf { max-width: var(--lauf); }
+
+  h1, h2, h3, h4 {
+    font-family: var(--sans);
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  h1 {
+    font-size: clamp(2.1rem, 5.2vw, 3.4rem);
+    line-height: 1.04;
+    font-weight: 700;
+    letter-spacing: -0.028em;
+  }
+
+  h2 {
+    font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+    line-height: 1.16;
+    font-weight: 700;
+    letter-spacing: -0.018em;
+  }
+
+  h3 {
+    font-size: 1.06rem;
+    line-height: 1.3;
+    font-weight: 650;
+    letter-spacing: -0.008em;
+  }
+
+  h4 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--tinte-leise);
+  }
+
+  p { margin: 0; }
+
+  a {
+    color: var(--tally);
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1px;
+  }
+
+  a:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--tally);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  code, .zahl {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  code {
+    font-size: 0.86em;
+    background: var(--flaeche-tief);
+    padding: 0.1em 0.34em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+
+  strong { font-weight: 650; }
+
+  /* ---- Kopf -------------------------------------------------------- */
+  .kopf {
+    border-bottom: 1px solid var(--linie);
+    background: var(--flaeche);
+    padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(2rem, 4vw, 3rem);
+  }
+
+  .kopf-innen { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .marke {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--tinte-leise);
+  }
+
+  .lampe {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--tally);
+    flex: none;
+    box-shadow: 0 0 0 3px var(--tally-grund);
+  }
+
+  .anriss {
+    font-size: clamp(1.05rem, 2vw, 1.22rem);
+    color: var(--tinte-leise);
+    max-width: 46rem;
+  }
+
+  .kopf-fakten {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--linie);
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    color: var(--tinte-leise);
+  }
+
+  .kopf-fakten b { color: var(--tinte); font-weight: 600; }
+
+  /* ---- Inhaltsverzeichnis ------------------------------------------ */
+  .wegweiser {
+    border-bottom: 1px solid var(--linie);
+    background: var(--grund);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  .wegweiser ol {
+    list-style: none;
+    margin: 0;
+    padding: 0.6rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 1.35rem;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+  }
+
+  .wegweiser a {
+    color: var(--tinte-leise);
+    text-decoration: none;
+    display: inline-flex;
+    gap: 0.45rem;
+  }
+
+  .wegweiser a:hover { color: var(--tally); }
+  .wegweiser .nr { font-family: var(--mono); color: var(--linie-stark); }
+
+  /* ---- Abschnitte -------------------------------------------------- */
+  .teil {
+    padding: clamp(3rem, 7vw, 5rem) 0;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .teil-kopf {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 2.25rem;
+    max-width: 46rem;
+  }
+
+  .satzblock {
+    display: flex;
+    flex-direction: column;
+    gap: 1.05rem;
+    max-width: var(--lauf);
+  }
+
+  .satzblock + .satzblock { margin-top: 1.05rem; }
+
+  /* ---- Karten ------------------------------------------------------ */
+  .karten {
+    display: grid;
+    gap: 1px;
+    background: var(--linie);
+    border: 1px solid var(--linie);
+    grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+    margin-top: 2rem;
+  }
+
+  .karte {
+    background: var(--flaeche);
+    padding: 1.35rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .karte p { font-size: 0.94rem; color: var(--tinte-leise); }
+
+  .karte .stempel {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    color: var(--tally);
+  }
+
+  .karte ul.strich li { font-size: 0.92rem; color: var(--tinte-leise); }
+
+  /* ---- Tabellen ---------------------------------------------------- */
+  .tabellenrahmen {
+    overflow-x: auto;
+    border: 1px solid var(--linie);
+    background: var(--flaeche);
+    margin-top: 2rem;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 640px;
+    font-family: var(--sans);
+    font-size: 0.9rem;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  thead th {
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tinte-leise);
+    font-weight: 700;
+    background: var(--flaeche-tief);
+    border-bottom: 1px solid var(--linie-stark);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody th { font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
+  td code { background: var(--flaeche-tief); }
+  table.eng { min-width: 820px; font-size: 0.86rem; }
+  table.eng th, table.eng td { padding: 0.6rem 0.85rem; }
+
+  /* ---- Marken für Entscheidungen ----------------------------------- */
+  .stufe {
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.5rem;
+    border-radius: 2px;
+    align-self: flex-start;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  .stufe.kern     { color: var(--tally); background: var(--tally-grund); }
+  .stufe.spaeter  { color: var(--warn);  background: var(--warn-grund); }
+  .stufe.nie      { color: var(--tinte-leise); background: var(--flaeche-tief); }
+  .stufe.fundament{ color: var(--gut);   background: var(--gut-grund); }
+
+  /* ---- Befunde ----------------------------------------------------- */
+  .befunde {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--linie);
+    border: 1px solid var(--linie);
+    margin-top: 2rem;
+  }
+
+  .befund {
+    background: var(--flaeche);
+    padding: 1.5rem 1.6rem;
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    gap: 0 1.25rem;
+  }
+
+  .befund-nr {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--tally);
+    padding-top: 0.12rem;
+  }
+
+  .befund-koerper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+
+  .befund-koerper p { font-size: 0.97rem; color: var(--tinte-leise); }
+
+  .befund-koerper .vorschlag {
+    color: var(--tinte);
+    border-left: 2px solid var(--tally);
+    padding-left: 0.9rem;
+  }
+
+  /* ---- Einspruch --------------------------------------------------- */
+  .einspruch {
+    border: 1px solid var(--tally);
+    background: var(--flaeche);
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .einspruch .satzblock { max-width: 42rem; }
+
+  .rechnung {
+    font-family: var(--mono);
+    font-size: 0.83rem;
+    background: var(--flaeche-tief);
+    padding: 1rem 1.15rem;
+    overflow-x: auto;
+    line-height: 1.85;
+    border-left: 2px solid var(--tally);
+  }
+
+  .rechnung .summe { color: var(--tally); font-weight: 700; }
+
+  /* ---- Regeln ------------------------------------------------------ */
+  .regeln {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1px;
+    background: var(--linie);
+    border: 1px solid var(--linie);
+    margin-top: 2rem;
+    counter-reset: regel;
+  }
+
+  .regel {
+    background: var(--flaeche);
+    padding: 1.25rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    counter-increment: regel;
+  }
+
+  .regel h3::before {
+    content: counter(regel, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--tally);
+    margin-right: 0.6rem;
+  }
+
+  .regel p { font-size: 0.93rem; color: var(--tinte-leise); }
+
+  /* ---- Listen ------------------------------------------------------ */
+  ul.strich {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-width: var(--lauf);
+  }
+
+  ul.strich li {
+    position: relative;
+    padding-left: 1.4rem;
+    font-size: 0.99rem;
+  }
+
+  ul.strich li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.72em;
+    width: 0.75rem;
+    height: 1px;
+    background: var(--linie-stark);
+  }
+
+  /* ---- Bilder ------------------------------------------------------ */
+  figure {
+    margin: 2.25rem 0 0;
+    border: 1px solid var(--linie);
+    background: var(--flaeche);
+  }
+
+  .bildfeld { overflow-x: auto; padding: 1.5rem; }
+
+  figure svg {
+    display: block;
+    width: 100%;
+    min-width: 560px;
+    max-width: 100%;
+    height: auto;
+    color: var(--tinte);
+  }
+
+  figcaption {
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    color: var(--tinte-leise);
+    padding: 0.9rem 1.5rem 1.1rem;
+    border-top: 1px solid var(--linie);
+    background: var(--flaeche-tief);
+  }
+
+  .sv-flaeche { fill: var(--flaeche-tief); }
+  .sv-linie   { stroke: var(--linie-stark); fill: none; }
+  .sv-rahmen  { stroke: var(--linie-stark); fill: var(--flaeche); }
+  .sv-tally   { stroke: var(--tally); fill: none; }
+  .sv-tally-f { fill: var(--tally); }
+  .sv-tally-fl{ fill: var(--tally-grund); stroke: var(--tally); }
+  .sv-text    { fill: var(--tinte); font-family: var(--sans); font-size: 13px; }
+  .sv-klein   { fill: var(--tinte-leise); font-family: var(--sans); font-size: 11px; }
+  .sv-code    { fill: var(--tinte-leise); font-family: var(--mono); font-size: 11px; }
+  .sv-akzent  { fill: var(--tally); font-family: var(--sans); font-size: 11px; }
+
+  /* ---- Quellen ----------------------------------------------------- */
+  .quellen {
+    margin-top: 2rem;
+    font-family: var(--sans);
+    font-size: 0.88rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 0.5rem 2.5rem;
+  }
+
+  .quellen ol { margin: 0; padding-left: 1.3rem; color: var(--tinte-leise); }
+  .quellen li { margin-bottom: 0.5rem; }
+
+  /* ---- Fuß --------------------------------------------------------- */
+  .fuss {
+    padding: clamp(2.5rem, 5vw, 4rem) 0 5rem;
+    font-family: var(--sans);
+    font-size: 0.87rem;
+    color: var(--tinte-leise);
+  }
+
+  .fuss-innen {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-width: 46rem;
+  }
+
+  @media (max-width: 640px) {
+    .befund { grid-template-columns: 1fr; gap: 0.5rem; }
+    .wegweiser { position: static; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<header class="kopf">
+  <div class="spur kopf-innen">
+    <div class="marke"><span class="lampe"></span> pkt.me &middot; Arbeitsstand</div>
+    <h1>Markt und Neuzuschnitt</h1>
+    <p class="anriss">
+      Was die Konkurrenz kann, was sie nicht kann, und was daraus für den Aufbau
+      von pkt.me folgt. Am Ende steht ein geänderter Zuschnitt des Produkts, elf
+      Regeln für die Oberflächen und ein Funktionskatalog, in dem jede Zeile
+      entweder Kern, später oder nie ist.
+    </p>
+    <div class="kopf-fakten">
+      <span><b>Stand</b> 16. August 2026</span>
+      <span><b>Produktname</b> pkt.me</span>
+      <span><b>Grundlage</b> <code>CLAUDE.md</code>, <code>aufbau-und-durchlauf.html</code></span>
+      <span><b>Enthält</b> vier begründete Widersprüche</span>
+    </div>
+  </div>
+</header>
+
+<nav class="wegweiser" aria-label="Inhalt">
+  <div class="spur">
+    <ol>
+      <li><a href="#kurz"><span class="nr">1</span> Kurz gefasst</a></li>
+      <li><a href="#feld"><span class="nr">2</span> Das Feld</a></li>
+      <li><a href="#stark"><span class="nr">3</span> Was zu übernehmen ist</a></li>
+      <li><a href="#luecke"><span class="nr">4</span> Die Lücke</a></li>
+      <li><a href="#zuschnitt"><span class="nr">5</span> Neuzuschnitt</a></li>
+      <li><a href="#fundamente"><span class="nr">6</span> Fünf neue Fundamente</a></li>
+      <li><a href="#rollen"><span class="nr">7</span> Sieben Oberflächen</a></li>
+      <li><a href="#regeln"><span class="nr">8</span> Elf Regeln</a></li>
+      <li><a href="#sprechstelle"><span class="nr">9</span> Die Sprechstelle</a></li>
+      <li><a href="#katalog"><span class="nr">10</span> Funktionskatalog</a></li>
+      <li><a href="#nicht"><span class="nr">11</span> Was pkt.me nicht tut</a></li>
+      <li><a href="#reihenfolge"><span class="nr">12</span> Baureihenfolge</a></li>
+      <li><a href="#offen"><span class="nr">13</span> Offen</a></li>
+      <li><a href="#quellen"><span class="nr">14</span> Quellen</a></li>
+    </ol>
+  </div>
+</nav>
+
+<!-- ================================================================= -->
+<section class="teil" id="kurz">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>1 — Kurz gefasst</h4>
+      <h2>Vier Märkte, keiner deckt die Sitzung ganz ab</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Wer heute eine Gremiensitzung ordentlich durchführen will, kauft vier
+        Dinge von vier Anbietern: eine Konferenzanlage für Ton und Mikrofone
+        (Bosch, Televic, Shure), ein Portal für Unterlagen und Beschlüsse
+        (Sherpany, Diligent, iBabs), im öffentlichen Bereich zusätzlich ein
+        Ratsinformationssystem für das Verfahren (Somacos, ALLRIS, Sternberg),
+        und für die Zuschaltung Teams oder Zoom. Die vier wissen nichts
+        voneinander. Der Sitzplatz kommt in keinem der vier Datenmodelle vor.
+      </p>
+      <p>
+        Daraus folgt die Position von pkt.me: <strong>die Schicht, die das
+        Verfahren führt und die Technik dirigiert</strong> — beim Kunden
+        betrieben, mit einer Ereigniskette, aus der das Protokoll fällt. Nicht
+        die fünfte Konferenzanlage.
+      </p>
+      <p>
+        Der wichtigste Befund dieses Durchgangs ist ein Widerspruch zur eigenen
+        Planung: <em>Ton ist kein Baustein von pkt.me.</em> Automixer,
+        Rückkopplungsfilter und Mix-Minus sind seit zwanzig Jahren gelöst und in
+        jeder Anlage enthalten, die ohnehin im Raum steht. Wer sie nachbaut,
+        verbringt ein Jahr mit einem Problem, das niemand bezahlt, und haftet
+        anschließend dafür. pkt.me steuert die vorhandene Anlage und misst nach,
+        ob sie tut, was sie soll.
+      </p>
+    </div>
+
+    <div class="karten">
+      <div class="karte">
+        <span class="stempel">Position</span>
+        <h3>Über der Anlage, nicht neben ihr</h3>
+        <p>
+          Der Kern kennt Verfahren und Rechte, die Gewerkeschicht übersetzt in
+          DICENTIS, Televic, Shure, VISCA, Dante. Wo keine Anlage steht, tritt
+          die Web-Sprechstelle an ihre Stelle — als Sonderfall, nicht als
+          Normalfall.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Unterschied</span>
+        <h3>Der Platz im Datenmodell</h3>
+        <p>
+          Kein Wettbewerber kennt <code>platz</code> als tragendes Objekt.
+          Anlagen kennen Geräte, Portale kennen Personen. Nur über den Platz
+          hängen Preset, Stimmrecht, Anwesenheit und Redezeit zusammen.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Preis</span>
+        <h3>Nicht pro Kopf lizenzieren</h3>
+        <p>
+          DICENTIS lizenziert Funktionspakete <em>pro Teilnehmer</em>, Abstimmung
+          und Identifikation kosten je Platz extra. Diligent liegt im Mittel bei
+          rund 25 000 USD im Jahr. pkt.me verkauft den Saal, nicht den Sitz.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="feld">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>2 — Das Feld</h4>
+      <h2>Wer was beherrscht, und wo er endet</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Die Karte hat zwei Achsen, weil zwei Fragen den Markt teilen: Wofür ist
+        das Werkzeug zuständig — für den Raum oder für das Verfahren? Und wo
+        läuft es — im Haus des Kunden oder beim Anbieter?
+      </p>
+    </div>
+
+    <figure>
+      <div class="bildfeld">
+        <svg viewBox="0 0 900 520" role="img"
+             aria-label="Marktkarte mit zwei Achsen. Waagerecht: Zuständigkeit von Verfahren und Akte links bis Raum und Technik rechts. Senkrecht: Betrieb, oben beim Anbieter in der Cloud, unten im Haus des Kunden. Board-Portale liegen links oben, KI-Protokolldienste links oben, Ratsinformationssysteme links unten, Zuschaltdienste rechts oben, Konferenzanlagen rechts unten. Das Feld von pkt.me spannt sich unten über die Mitte bis rechts.">
+          <!-- Achsen -->
+          <line x1="70" y1="450" x2="860" y2="450" class="sv-linie"/>
+          <line x1="70" y1="40"  x2="70"  y2="450" class="sv-linie"/>
+          <text x="70"  y="482" class="sv-klein">Verfahren und Akte</text>
+          <text x="860" y="482" class="sv-klein" text-anchor="end">Raum und Technik</text>
+          <text x="52"  y="46"  class="sv-klein" transform="rotate(-90 52 46)" text-anchor="end">Betrieb beim Anbieter</text>
+          <text x="52"  y="450" class="sv-klein" transform="rotate(-90 52 450)">Betrieb im Haus</text>
+          <line x1="70" y1="245" x2="860" y2="245" class="sv-linie" stroke-dasharray="3 5"/>
+
+          <!-- Feld pkt.me -->
+          <rect x="230" y="270" width="600" height="150" rx="3"
+                class="sv-tally" stroke-dasharray="6 4" fill="none"/>
+          <text x="246" y="292" class="sv-akzent">pkt.me — Verfahren führen und Technik dirigieren, im Haus</text>
+
+          <!-- Board-Portale -->
+          <rect x="100" y="70" width="215" height="92" rx="2" class="sv-rahmen"/>
+          <text x="114" y="94"  class="sv-text">Board-Portale</text>
+          <text x="114" y="114" class="sv-klein">Sherpany, Diligent, iBabs,</text>
+          <text x="114" y="130" class="sv-klein">Convene, Admincontrol</text>
+          <text x="114" y="150" class="sv-code">Mappe, Beschluss, Aufgabe</text>
+
+          <!-- KI-Protokoll -->
+          <rect x="340" y="70" width="200" height="92" rx="2" class="sv-rahmen"/>
+          <text x="354" y="94"  class="sv-text">KI-Protokolldienste</text>
+          <text x="354" y="114" class="sv-klein">SpeechMind, Fabasoft,</text>
+          <text x="354" y="130" class="sv-klein">neuraflow</text>
+          <text x="354" y="150" class="sv-code">Transkript, Zusammenfassung</text>
+
+          <!-- Zuschaltung -->
+          <rect x="620" y="70" width="210" height="92" rx="2" class="sv-rahmen"/>
+          <text x="634" y="94"  class="sv-text">Zuschaltung</text>
+          <text x="634" y="114" class="sv-klein">Teams, Zoom, Webex</text>
+          <text x="634" y="150" class="sv-code">Bild und Ton nach außen</text>
+
+          <!-- RIS -->
+          <rect x="100" y="300" width="215" height="92" rx="2" class="sv-rahmen"/>
+          <text x="114" y="324" class="sv-text">Ratsinformationssysteme</text>
+          <text x="114" y="344" class="sv-klein">Somacos Session, ALLRIS,</text>
+          <text x="114" y="360" class="sv-klein">Sternberg, ITEBO, KDO</text>
+          <text x="114" y="380" class="sv-code">Vorlage, Frist, OParl</text>
+
+          <!-- Anlagen -->
+          <rect x="620" y="300" width="210" height="92" rx="2" class="sv-rahmen"/>
+          <text x="634" y="324" class="sv-text">Konferenzanlagen</text>
+          <text x="634" y="344" class="sv-klein">Bosch DICENTIS, Televic,</text>
+          <text x="634" y="360" class="sv-klein">Shure MXCW, Vissonic</text>
+          <text x="634" y="380" class="sv-code">Mikrofon, Kanal, Preset</text>
+
+          <!-- Brücken -->
+          <path d="M315 346 L620 346" class="sv-tally" stroke-dasharray="4 4"
+                marker-end="url(#pf-t2)" marker-start="url(#pf-t2)"/>
+          <text x="468" y="338" class="sv-akzent" text-anchor="middle">niemand verbindet das</text>
+
+          <defs>
+            <marker id="pf-t2" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="sv-tally-f"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+      <figcaption>
+        Die waagerechte Linie in der Mitte ist die eigentliche Grenze: Portale
+        und Protokolldienste laufen praktisch immer beim Anbieter, Anlagen und
+        Ratsinformationssysteme praktisch immer im Haus. pkt.me liegt unten und
+        reicht von der Mitte bis rechts — genau in dem Feld, in dem heute nichts
+        Ganzes existiert.
+      </figcaption>
+    </figure>
+
+    <div class="tabellenrahmen">
+      <table class="eng">
+        <thead>
+          <tr>
+            <th>Segment</th>
+            <th>Vertreter</th>
+            <th>Was es beherrscht</th>
+            <th>Wo es endet</th>
+            <th>Preisform</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Konferenzanlage</th>
+            <td>Bosch DICENTIS, Televic Plixus/Confidea, Shure MXCW, Vissonic, Taiden</td>
+            <td>Ton, Ausfallsicherheit, Dolmetschen, Identifikation am Platz per NFC, Kamerapreset je Platz, offene Steuerprotokolle</td>
+            <td>Kein Verfahrensrecht, keine Vorlagen, kein Protokoll im juristischen Sinn, keine Mandantenfähigkeit, Bedienoberflächen bilden Technik ab statt Verfahren</td>
+            <td>Hardware je Platz, Funktionspakete je Teilnehmer, unbefristet oder als Jahresplan</td>
+          </tr>
+          <tr>
+            <th>Board-Portal</th>
+            <td>Sherpany, Diligent, iBabs, Convene, Admincontrol</td>
+            <td>Sitzungsmappe, Anmerkungen, Umlaufbeschluss, Aufgaben- und Entscheidungsverfolgung, Prüfspur, Einführung ohne IT</td>
+            <td>Kein Bezug zum Raum, kein Ton, keine Kamera, keine Anwesenheit am Platz, Cloud-Pflicht, Kosten steigen mit jedem Kopf</td>
+            <td>Abonnement je Gremium und Kopf; Diligent im Mittel rund 25 000 USD im Jahr</td>
+          </tr>
+          <tr>
+            <th>Ratsinformationssystem</th>
+            <td>Somacos Session/SessionNet/Mandatos, CC e-gov ALLRIS, Sternberg, ITEBO, KDO</td>
+            <td>Vorlagenlauf, Fristen, Beschlusskontrolle, Veröffentlichung für Bürger, OParl-Schnittstelle, tief im Verwaltungsalltag verankert</td>
+            <td>Die Sitzung selbst findet außerhalb statt. Kein Ton, kein Rederecht, keine Live-Abstimmung am Platz, keine Technik im Raum</td>
+            <td>Lizenz je Kommune, meist über kommunale Rechenzentren</td>
+          </tr>
+          <tr>
+            <th>Zuschaltung</th>
+            <td>Teams, Zoom, Webex</td>
+            <td>Erreichbarkeit, Endgeräte-Vielfalt, Gewohnheit der Nutzer</td>
+            <td>Kennt keine Tagesordnung, kein Stimmrecht, keine Nichtöffentlichkeit; Aufzeichnung außerhalb der Kontrolle des Hauses</td>
+            <td>Vorhanden, aus dem Gesamtvertrag bezahlt</td>
+          </tr>
+          <tr>
+            <th>KI-Protokoll</th>
+            <td>SpeechMind, Fabasoft Boards KI, neuraflow</td>
+            <td>Transkript, Zusammenfassung, Übertragung in bestehende Ratsinformationssysteme</td>
+            <td>Auftragsverarbeitung außer Haus, Rechtsgrundlage muss die Kommune erst schaffen; kein Bezug zu Redner, Platz und Tagesordnungspunkt</td>
+            <td>Abonnement je Stunde oder je Sitzung</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="stark">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>3 — Was zu übernehmen ist</h4>
+      <h2>Sechs Dinge, die die Konkurrenz richtig macht</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Kein Wettbewerber ist naiv. Was seit Jahren in diesen Produkten steckt,
+        steckt dort, weil Kunden es verlangt haben. Diese sechs Punkte gehören
+        ohne Diskussion in pkt.me.
+      </p>
+    </div>
+
+    <div class="karten">
+      <div class="karte">
+        <span class="stempel">Von DICENTIS und Televic</span>
+        <h3>Rollen am Gerät, nicht am Menschen</h3>
+        <p>
+          Eine Sprechstelle wird als Vorsitz, Delegierter, Zuhörer oder
+          Raumklang konfiguriert; der Vorsitz hat eine Vorrangtaste, die alle
+          anderen Mikrofone schließt. Das ist die Härtefall-Bedienung, die eine
+          Sitzung rettet, wenn die Ordnung kippt. pkt.me braucht sie, gebunden
+          an die Rolle, nicht an das Gerät.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Von DICENTIS</span>
+        <h3>Vorbereitete und Ad-hoc-Abstimmung getrennt</h3>
+        <p>
+          Zwei verschiedene Dinge: die im Voraus angelegte Abstimmung mit Text
+          und Alternativen, und die spontane Runde, die die Leitung in zehn
+          Sekunden aufsetzt. Wer nur eines baut, verliert entweder die
+          Vorbereitung oder die Sitzungswirklichkeit.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Von Televic Confero</span>
+        <h3>Redezeit als eigenes Werkzeug</h3>
+        <p>
+          Redezeit je Person, je Fraktion, je Tagesordnungspunkt, mit sichtbarem
+          Ablauf am Platz. In Gremien ist das der häufigste Streitpunkt
+          überhaupt — und in keinem Board-Portal vorhanden.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Von Sherpany und Diligent</span>
+        <h3>Der Umlaufbeschluss</h3>
+        <p>
+          Beschlüsse ohne Sitzung, mit Frist, Erinnerung und derselben Prüfspur
+          wie ein Beschluss im Saal. Wird von Aufsichtsräten häufiger genutzt als
+          jede Sitzungsfunktion. Im Datenmodell heißt das: eine
+          <code>abstimmung</code> braucht nicht zwingend eine <code>sitzung</code>.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Von Sherpany</span>
+        <h3>Der geführte Blick</h3>
+        <p>
+          Ein Präsentationsmodus, der alle Teilnehmer auf dieselbe Seite derselben
+          Unterlage zieht, wenn die Leitung es will. Spart in jeder Sitzung
+          Minuten und in jeder Aufsichtsratssitzung Nerven.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Von den Ratsinformationssystemen</span>
+        <h3>Drei Sichten auf dieselben Daten</h3>
+        <p>
+          SessionNet trennt Verwaltungssicht, Gremiensicht und Bürgersicht auf
+          denselben Bestand. Das ist keine Oberflächenfrage, sondern eine
+          Rechtefrage — und der Grund, warum Veröffentlichung dort billig ist
+          und in Portalen teuer.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="luecke">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>4 — Die Lücke</h4>
+      <h2>Fünf Dinge, die niemand liefert</h2>
+    </div>
+
+    <div class="befunde">
+      <div class="befund">
+        <div class="befund-nr">L1</div>
+        <div class="befund-koerper">
+          <h3>Eine Zeitachse, auf der alles liegt</h3>
+          <p>
+            Anlagen protokollieren Mikrofonschaltungen, Portale protokollieren
+            Beschlüsse, Transkriptionsdienste protokollieren Wörter. Drei
+            Protokolle, drei Uhren, keine Verbindung. Die Frage „wer hat um
+            14:12 Uhr was gesagt, unter welchem Tagesordnungspunkt, mit welchem
+            Ergebnis“ kann heute keines der Systeme allein beantworten.
+          </p>
+          <p class="vorschlag">
+            Die eine Zeitachse je Sitzung ist der Kern des Produkts, nicht ein
+            Nebenprodukt. Alles andere ist daraus ableitbar.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">L2</div>
+        <div class="befund-koerper">
+          <h3>Beweiskraft statt Prüfspur</h3>
+          <p>
+            Portale werben mit „audit trail“ — das ist eine Änderungshistorie in
+            einer Datenbank, die der Betreiber ändern könnte. Für einen
+            angefochtenen Beschluss reicht das nicht. Eine anfügbare Hash-Kette
+            mit täglichem signiertem Abschluss ist ein Unterschied, den ein
+            Justiziar versteht und ein Wettbewerber nicht nachrüsten kann, ohne
+            seine Datenhaltung zu ändern.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">L3</div>
+        <div class="befund-koerper">
+          <h3>Der Saal, der ohne Netz weiterläuft</h3>
+          <p>
+            Jedes Cloud-Portal ist bei gestörter Anbindung tot; die Sitzung geht
+            trotzdem weiter. Anlagen laufen zwar autark, verlieren dann aber die
+            Verbindung zur Akte. Ein System, das <em>im abgeschotteten Netz
+            vollständig</em> funktioniert und nach der Sitzung nachsynchronisiert,
+            ist im öffentlichen Sektor ein Ausschreibungskriterium und im
+            Aufsichtsrat ein Vertrauensargument.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">L4</div>
+        <div class="befund-koerper">
+          <h3>Recht als Konfiguration statt als Codezweig</h3>
+          <p>
+            Kommunalrecht ist Landesrecht. Nordrhein-Westfalen erlaubt hybride
+            Ausschusssitzungen und zählt zugeschaltete Mitglieder als anwesend,
+            nimmt aber Wahlen und geheime Abstimmungen aus. Das Saarland hat das
+            Ende 2025 neu geregelt. Für Aktiengesellschaften gilt § 118a AktG mit
+            eigener Mechanik: Bild und Ton der gesamten Versammlung, Rederecht
+            über eine Zweiweg-Direktverbindung, Widerspruch elektronisch.
+          </p>
+          <p class="vorschlag">
+            Kein Wettbewerber hat ein <em>Regelwerk als Daten</em>. Genau das
+            entscheidet, ob pkt.me einen Codestand behält.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">L5</div>
+        <div class="befund-koerper">
+          <h3>Der Platz als Anker</h3>
+          <p>
+            Anlagen kennen Geräte, Portale kennen Personen, Ratsinformations&shy;systeme
+            kennen Mandate. Der Sitzplatz, an dem Kamerapreset, Mikrofon,
+            Stimmrecht, Anwesenheit und Redezeit zusammenlaufen, existiert in
+            keinem der Modelle als eigenes Objekt. Er ist der Grund, warum ein
+            defektes iPad in pkt.me ein Austausch ist und anderswo eine
+            Neueinrichtung.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="zuschnitt">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>5 — Neuzuschnitt</h4>
+      <h2>pkt.me ist eine Steuer- und Protokollschicht</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Der Vergleich zwingt zu einer Korrektur der Baureihenfolge aus
+        <code>CLAUDE.md</code>. Dort steht Ton — Automixer, Mix-Minus,
+        Einmessung — als zweite Stufe. Das ist der teuerste denkbare zweite
+        Schritt und zugleich der, der am wenigsten unterscheidet.
+      </p>
+    </div>
+
+    <div class="einspruch">
+      <h3>Widerspruch: eigener Ton ist ein Jahr für nichts</h3>
+      <div class="satzblock">
+        <p>
+          Ein Automixer nach Zahl offener Mikrofone, Hochpass bei 100 bis 120 Hz,
+          feste und kurzlebige Rückkopplungsfilter, Mix-Minus für die
+          Zuschaltung: All das ist in jeder DICENTIS-, Plixus-, Q-SYS- oder
+          Biamp-Installation enthalten, eingemessen vom Integrator, mit Haftung
+          beim Hersteller. Die Fachregeln in <code>CLAUDE.md</code> sind richtig —
+          sie sind Regeln für die <em>Einmessung</em> und die <em>Prüfung</em>,
+          nicht für eine eigene Signalkette.
+        </p>
+        <div class="rechnung">
+          eigener DSP-Pfad      ~ 9–12 Monate, dauerhafte Haftung, kein Kunde fragt danach<br>
+          Steuerung + Nachweis  ~ 6–8 Wochen je Anlagenfamilie, sofort verkaufbar<br>
+          <span class="summe">Entscheidung: pkt.me steuert und misst nach, pkt.me mischt nicht.</span>
+        </div>
+        <p>
+          Was bleibt, ist die Verantwortung für das <em>Ergebnis</em>: pkt.me
+          kennt die Höchstzahl offener Mikrofone aus der Einmessung, verweigert
+          das neunte, protokolliert die Reserve in dB, prüft im Vorabcheck die
+          Laufzeit Mikrofon → Saallautsprecher und schlägt Alarm, wenn sie über
+          10 ms liegt. Das ist die Rolle des Dirigenten, nicht die des
+          Instruments.
+        </p>
+      </div>
+    </div>
+
+    <figure>
+      <div class="bildfeld">
+        <svg viewBox="0 0 900 600" role="img"
+             aria-label="Schichtenbild. Oben sieben Rollenoberflächen, darunter der Kern mit Sitzungszustand, Rechten, Ereigniskette und Regelwerk, darunter die Gewerkeschicht mit Absichten, darunter Adapter zu DICENTIS, Televic, Shure, VISCA, Q-SYS und NDI, ganz unten die fremden Anlagen im Saal.">
+          <!-- Oberflächen -->
+          <text x="40" y="34" class="sv-klein">Oberflächen — eine je Rolle, nie je Gerätetyp</text>
+          <g>
+            <rect x="40"  y="46" width="112" height="46" rx="2" class="sv-rahmen"/>
+            <text x="96"  y="74" class="sv-text" text-anchor="middle">Sprechstelle</text>
+            <rect x="162" y="46" width="112" height="46" rx="2" class="sv-rahmen"/>
+            <text x="218" y="74" class="sv-text" text-anchor="middle">Leitung</text>
+            <rect x="284" y="46" width="112" height="46" rx="2" class="sv-rahmen"/>
+            <text x="340" y="74" class="sv-text" text-anchor="middle">Schriftführung</text>
+            <rect x="406" y="46" width="112" height="46" rx="2" class="sv-rahmen"/>
+            <text x="462" y="74" class="sv-text" text-anchor="middle">Regie</text>
+            <rect x="528" y="46" width="112" height="46" rx="2" class="sv-rahmen"/>
+            <text x="584" y="74" class="sv-text" text-anchor="middle">Vorbereitung</text>
+            <rect x="650" y="46" width="112" height="46" rx="2" class="sv-rahmen"/>
+            <text x="706" y="74" class="sv-text" text-anchor="middle">Begleitung</text>
+            <rect x="772" y="46" width="88"  height="46" rx="2" class="sv-rahmen"/>
+            <text x="816" y="74" class="sv-text" text-anchor="middle">Publikum</text>
+          </g>
+
+          <path d="M450 92 L450 132" class="sv-tally" marker-end="url(#pf-s)"/>
+          <text x="462" y="118" class="sv-akzent">nur Absichten, nie Befehle an Geräte</text>
+
+          <!-- Kern -->
+          <rect x="40" y="132" width="820" height="146" rx="3" class="sv-tally" fill="none"/>
+          <text x="58" y="156" class="sv-akzent">Kern — Go, WebSocket, PostgreSQL</text>
+          <g>
+            <rect x="58"  y="168" width="188" height="42" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="152" y="194" class="sv-text" text-anchor="middle">Sitzungszustand</text>
+            <rect x="256" y="168" width="188" height="42" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="350" y="194" class="sv-text" text-anchor="middle">Rollen und Rechte</text>
+            <rect x="454" y="168" width="188" height="42" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="548" y="194" class="sv-text" text-anchor="middle">Ereigniskette</text>
+            <rect x="652" y="168" width="190" height="42" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="747" y="194" class="sv-text" text-anchor="middle">Zeitachse</text>
+
+            <rect x="58"  y="220" width="286" height="42" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="201" y="246" class="sv-text" text-anchor="middle">Regelwerk (Recht als Daten)</text>
+            <rect x="354" y="220" width="238" height="42" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="473" y="246" class="sv-text" text-anchor="middle">Rederecht und Abstimmung</text>
+            <rect x="602" y="220" width="240" height="42" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="722" y="246" class="sv-text" text-anchor="middle">Akte und Aufbewahrung</text>
+          </g>
+
+          <path d="M450 278 L450 318" class="sv-tally" marker-end="url(#pf-s)"/>
+
+          <!-- Gewerkeschicht -->
+          <rect x="40" y="318" width="820" height="112" rx="3" class="sv-rahmen"/>
+          <text x="58" y="342" class="sv-klein">Gewerkeschicht — übersetzt Absicht in Anlagensprache, kennt keine Rechte</text>
+          <g>
+            <rect x="58"  y="354" width="126" height="58" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="121" y="378" class="sv-text" text-anchor="middle">Mikrofon</text>
+            <text x="121" y="396" class="sv-code" text-anchor="middle">wort.erteilt</text>
+            <rect x="194" y="354" width="126" height="58" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="257" y="378" class="sv-text" text-anchor="middle">Kamera</text>
+            <text x="257" y="396" class="sv-code" text-anchor="middle">zeige.platz</text>
+            <rect x="330" y="354" width="126" height="58" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="393" y="378" class="sv-text" text-anchor="middle">Mischung</text>
+            <text x="393" y="396" class="sv-code" text-anchor="middle">summe.saal</text>
+            <rect x="466" y="354" width="126" height="58" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="529" y="378" class="sv-text" text-anchor="middle">Aufzeichnung</text>
+            <text x="529" y="396" class="sv-code" text-anchor="middle">pausiere</text>
+            <rect x="602" y="354" width="126" height="58" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="665" y="378" class="sv-text" text-anchor="middle">Zuschaltung</text>
+            <text x="665" y="396" class="sv-code" text-anchor="middle">mix-minus</text>
+            <rect x="738" y="354" width="104" height="58" rx="2" class="sv-flaeche" stroke="none"/>
+            <text x="790" y="378" class="sv-text" text-anchor="middle">Anzeige</text>
+            <text x="790" y="396" class="sv-code" text-anchor="middle">saaltafel</text>
+          </g>
+
+          <path d="M450 430 L450 470" class="sv-linie" marker-end="url(#pf-s2)"/>
+          <text x="462" y="456" class="sv-klein">Adapter — je Anlagenfamilie einer, austauschbar</text>
+
+          <!-- Anlagen -->
+          <rect x="40" y="470" width="820" height="86" rx="3" class="sv-flaeche" stroke="none"/>
+          <g>
+            <rect x="58"  y="486" width="126" height="54" rx="2" class="sv-rahmen"/>
+            <text x="121" y="510" class="sv-text" text-anchor="middle">DICENTIS</text>
+            <text x="121" y="528" class="sv-code" text-anchor="middle">API</text>
+            <rect x="194" y="486" width="126" height="54" rx="2" class="sv-rahmen"/>
+            <text x="257" y="510" class="sv-text" text-anchor="middle">Televic</text>
+            <text x="257" y="528" class="sv-code" text-anchor="middle">CoCon</text>
+            <rect x="330" y="486" width="126" height="54" rx="2" class="sv-rahmen"/>
+            <text x="393" y="510" class="sv-text" text-anchor="middle">Shure MXCW</text>
+            <rect x="466" y="486" width="126" height="54" rx="2" class="sv-rahmen"/>
+            <text x="529" y="510" class="sv-text" text-anchor="middle">PTZ</text>
+            <text x="529" y="528" class="sv-code" text-anchor="middle">VISCA / ONVIF</text>
+            <rect x="602" y="486" width="126" height="54" rx="2" class="sv-rahmen"/>
+            <text x="665" y="510" class="sv-text" text-anchor="middle">DSP</text>
+            <text x="665" y="528" class="sv-code" text-anchor="middle">Q-SYS / Biamp</text>
+            <rect x="738" y="486" width="104" height="54" rx="2" class="sv-rahmen"/>
+            <text x="790" y="510" class="sv-text" text-anchor="middle">Web-</text>
+            <text x="790" y="528" class="sv-text" text-anchor="middle">Sprechstelle</text>
+          </g>
+          <text x="790" y="572" class="sv-akzent" text-anchor="middle">Sonderfall: kein Saalton</text>
+
+          <defs>
+            <marker id="pf-s" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="sv-tally-f"/>
+            </marker>
+            <marker id="pf-s2" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+      <figcaption>
+        Die einzige neue Schicht gegenüber dem bisherigen Aufbau ist die
+        Gewerkeschicht. Sie ist der Preis dafür, dass es nur einen Codestand
+        gibt: Jeder Kundenunterschied wird ein Adapter oder eine Zeile
+        Konfiguration — nie ein Zweig im Kern.
+      </figcaption>
+    </figure>
+
+    <div class="satzblock">
+      <p>
+        Zwei Folgerungen, die sofort greifen. <strong>Erstens:</strong> Der Kern
+        formuliert nie „fahre Kamera 2 auf Preset 7“, sondern „Platz 7 hat das
+        Wort“. Was daraus wird — Preset, Bildausschnitt, Totale bei zwei
+        Sprechern auf derselben Kamera — entscheidet die Gewerkeschicht.
+        <strong>Zweitens:</strong> Die KI-Nachführung, die Sony, Panasonic und
+        Q-SYS derzeit in jede Kamera bringen, wird damit zu einer Verfeinerung
+        <em>innerhalb</em> des Presets: Der Preset sagt, wohin die Kamera
+        schaut, die Analytik sagt, wie eng. Ohne diese Trennung schwenkt die
+        Automatik auf den falschen Kopf, sobald jemand hustet.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="fundamente">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>6 — Fünf neue Fundamente</h4>
+      <h2>Was zu den sechs aus <code>CLAUDE.md</code> dazugehört</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Die sechs bestehenden Fundamente bleiben unverändert richtig. Der
+        Marktvergleich legt fünf weitere frei, die dieselbe Eigenschaft haben:
+        Sie sind nicht nachrüstbar, weil sie das Datenmodell oder die
+        Schnittstellen bestimmen.
+      </p>
+    </div>
+
+    <div class="befunde">
+      <div class="befund">
+        <div class="befund-nr">F7</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">Datenmodell</span>
+          <h3>Stimmgewicht und Vertretung</h3>
+          <p>
+            Ein Kopf ist nicht eine Stimme. In der Hauptversammlung zählt
+            Kapital, im Zweckverband zählen Verbandsstimmen, im Aufsichtsrat kann
+            der Vorsitz bei Gleichstand doppelt zählen, und fast überall gibt es
+            Vollmachten. Wird <code>stimme</code> heute ohne Gewicht und ohne
+            Vertretungskette gebaut, ist jede spätere Versammlungsform ein neuer
+            Codestand.
+          </p>
+          <p class="vorschlag">
+            <code>teilnahme</code> trägt <code>stimmgewicht</code> und
+            <code>vertritt_teilnahme_id</code>; das Quorum wird beim Start in
+            Gewicht <em>und</em> Köpfen eingefroren.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">F8</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">Kern</span>
+          <h3>Regelwerk als Daten, nicht als Code</h3>
+          <p>
+            Welche Mehrheit gilt, ob Enthaltung zählt, ob geheime Wahl
+            elektronisch zulässig ist, wie lange Unterlagen vor der Sitzung
+            vorliegen müssen, ob Zugeschaltete als anwesend gelten: alles
+            Landesrecht, Satzung oder Geschäftsordnung. Diese Größen gehören in
+            ein versioniertes <code>regelwerk</code> je Mandant und Gremium, an
+            dem jede Abstimmung hängt.
+          </p>
+          <p class="vorschlag">
+            Eine Abstimmung speichert die <em>angewandte Regelwerksfassung</em>.
+            Ändert sich das Recht, bleibt die alte Auszählung nachvollziehbar.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">F9</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">Datenhaltung</span>
+          <h3>Aufbewahrung und Löschung je Klasse</h3>
+          <p>
+            Beschlüsse dauerhaft, Protokolle nach Archivrecht, Rohton oft sechs
+            Monate, Transkripte je nach Ortsrecht, Kamerabilder gar nicht. Wenn
+            die Schlüssel nicht von Anfang an je Sitzung <em>und je Klasse</em>
+            getrennt liegen, ist Krypto-Löschung später unmöglich — man müsste
+            alles oder nichts vernichten.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">F10</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">Oberfläche</span>
+          <h3>Barrierefreiheit von der ersten Ansicht an</h3>
+          <p>
+            Öffentliche Stellen sind an die BITV gebunden, seit Juni 2025 greift
+            zusätzlich das Barrierefreiheitsstärkungsgesetz. Praktisch heißt das:
+            Der Mikrofonzustand darf nie allein an Farbe hängen, jede Handlung
+            muss über Tastatur und Screenreader erreichbar sein, Untertitel sind
+            eine Kernfunktion und keine Zutat. Nachträglich eingezogen bedeutet
+            das eine neue Sprechstellen-Oberfläche.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">F11</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">Schnittstelle</span>
+          <h3>Die Akte gehört dem Kunden</h3>
+          <p>
+            Board-Portale binden über Datenhaltung. Wer dagegen antritt, muss den
+            Ausstieg mitliefern: OParl 1.1 in beide Richtungen für den
+            öffentlichen Bereich, ein vollständiger Export der Sitzungsakte als
+            Dateien plus signierter Kette, ohne Werkzeug des Herstellers lesbar.
+            Das ist kein Nachlass, sondern das Verkaufsargument gegen die Cloud.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="rollen">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>7 — Sieben Oberflächen</h4>
+      <h2>Eine je Rolle, keine je Gerät</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Die Fundamentregel „Rollen statt Gerätetypen“ ist bisher eine Aussage
+        über Rechte. Sie ist genauso eine Aussage über Oberflächen: Es gibt nicht
+        die iPad-App und die Desktop-App, sondern sieben Ansichten, die jede auf
+        jedem Gerät laufen, das groß genug ist.
+      </p>
+    </div>
+
+    <div class="tabellenrahmen">
+      <table class="eng">
+        <thead>
+          <tr>
+            <th>Ansicht</th>
+            <th>Wer</th>
+            <th>Die eine Frage, die sie beantwortet</th>
+            <th>Wichtigste Handlung</th>
+            <th>Was sie nie zeigt</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Sprechstelle</th>
+            <td>Mitglied am Platz</td>
+            <td>Habe ich das Wort — und wenn nein, wann?</td>
+            <td>Melden, sprechen, abstimmen</td>
+            <td>Technik, Kanäle, Geräte, Einstellungen</td>
+          </tr>
+          <tr>
+            <th>Leitung</th>
+            <td>Vorsitz, genau eine Person zur Zeit</td>
+            <td>Wer redet, wer wartet, sind wir beschlussfähig?</td>
+            <td>Wort erteilen, Abstimmung führen, Vorrang</td>
+            <td>Pegel, Netzwerk, Kamerapositionen</td>
+          </tr>
+          <tr>
+            <th>Schriftführung</th>
+            <td>Protokoll</td>
+            <td>Steht der Verlauf richtig in der Akte?</td>
+            <td>Ereignis bestätigen, Beschlussformel setzen, korrigieren</td>
+            <td>Rohes Transkript ohne Zeitbezug</td>
+          </tr>
+          <tr>
+            <th>Regie</th>
+            <td>Haustechnik</td>
+            <td>Läuft die Technik, und was ist gerade kaputt?</td>
+            <td>Eingreifen, Eskalationsstufe bestätigen</td>
+            <td>Inhalte nichtöffentlicher Punkte</td>
+          </tr>
+          <tr>
+            <th>Vorbereitung</th>
+            <td>Verwaltung, Assistenz</td>
+            <td>Ist die Sitzung startklar?</td>
+            <td>Tagesordnung, Teilnahme, Plätze, Vorabcheck</td>
+            <td>Laufende Sitzungssteuerung</td>
+          </tr>
+          <tr>
+            <th>Begleitung</th>
+            <td>privates Gerät, Zugeschaltete, Gäste</td>
+            <td>Wo stehen wir, und was lese ich dazu?</td>
+            <td>Unterlage lesen, Wortmeldung, Untertitel</td>
+            <td>Mikrofon, Stimmabgabe, Regie</td>
+          </tr>
+          <tr>
+            <th>Publikum</th>
+            <td>Öffentlichkeit, Saaltafel</td>
+            <td>Was wird gerade verhandelt?</td>
+            <td>zusehen</td>
+            <td>alles Nichtöffentliche, automatisch</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Zwei Punkte daraus sind mehr als Zuordnung. <strong>Die Leitung ist ein
+        Staffelstab mit Epoche</strong> — die Ansicht zeigt sichtbar, ob man sie
+        gerade führt, und der Wechsel ist eine Handlung mit Quittung, kein
+        Rollenhaken in einer Verwaltung. <strong>Die Begleitrolle ist hart
+        beschnitten</strong>: kein Mikrofon, keine Stimme. Das ist keine
+        Bequemlichkeitsgrenze, sondern die Bedingung dafür, dass ein privates
+        Telefon im Saal überhaupt zugelassen werden kann.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="regeln">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>8 — Elf Regeln</h4>
+      <h2>Wonach die Oberflächen entschieden werden</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Die Bedienoberflächen der Konferenzanlagen bilden Technik ab: Kanäle,
+        Einheiten, Gruppen. Die der Portale bilden Dokumente ab: Ordner, Dateien,
+        Kommentare. Beides ist für den Menschen am Tisch falsch. pkt.me bildet
+        <em>das Verfahren</em> ab. Diese elf Sätze entscheiden im Zweifel jede
+        Detailfrage der Gestaltung.
+      </p>
+    </div>
+
+    <div class="regeln">
+      <div class="regel">
+        <h3>Der Zustand ist immer sichtbar</h3>
+        <p>
+          Auf jeder Ansicht steht ohne Suchen: welcher Tagesordnungspunkt, wer
+          hat das Wort, läuft eine Abstimmung, ist der Punkt öffentlich. Wer erst
+          scrollen muss, um zu wissen, wo er ist, bedient falsch.
+        </p>
+      </div>
+      <div class="regel">
+        <h3>Eine Handlung zur Zeit</h3>
+        <p>
+          Am Platz gibt es genau einen großen Knopf, und was er tut, ergibt sich
+          aus dem Zustand: melden, sprechen, abgeben. Eine laufende Abstimmung
+          übernimmt den ganzen Schirm — sie ist ein Modus, kein Menüpunkt.
+        </p>
+      </div>
+      <div class="regel">
+        <h3>Nichts Wichtiges hinter einem Menü</h3>
+        <p>
+          Alles, was während einer Sitzung gebraucht wird, ist auf der ersten
+          Ebene. Was nur davor oder danach gebraucht wird, darf tief liegen.
+        </p>
+      </div>
+      <div class="regel">
+        <h3>Fehler erscheinen dort, wo sie stören</h3>
+        <p>
+          Wenn ein Mikrofon nicht öffnet, muss das der Sprecher sehen — nicht nur
+          die Regie. Ein Fehler, der nur in der Technikansicht auftaucht, ist für
+          den Redner ein defektes Gerät.
+        </p>
+      </div>
+      <div class="regel">
+        <h3>Das Gerät sagt, was es nicht kann</h3>
+        <p>
+          Ohne Serververbindung heißt es „gespeichert, wird gesendet“ und nicht
+          ein drehender Kreis. Der Offline-Zustand ist eine ausgeschriebene
+          Aussage, kein Symbol.
+        </p>
+      </div>
+      <div class="regel">
+        <h3>Zeit wird in Sitzungszeit gerechnet</h3>
+        <p>
+          Redezeit, Ablauf, Verlauf: alles relativ zum Sitzungsbeginn. Die
+          Uhrzeit steht daneben, weil das Protokoll sie braucht, aber sie führt
+          nicht.
+        </p>
+      </div>
+      <div class="regel">
+        <h3>Farbe trägt nie allein die Bedeutung</h3>
+        <p>
+          Mikrofon offen, wartend, gesperrt: unterschiedliche Form, unterschiedlicher
+          Text, zusätzlich Farbe. Rot allein ist im Saal aus drei Metern
+          Entfernung und für jeden zehnten Mann nicht lesbar.
+        </p>
+      </div>
+      <div class="regel">
+        <h3>Bestätigen nur, wo nichts zurückgeht</h3>
+        <p>
+          Abstimmung schließen, Wort entziehen, Sitzung schließen: Rückfrage.
+          Alles andere bekommt einen Rückgängig-Streifen für zehn Sekunden. Wer
+          alles bestätigen lässt, erzieht zum Wegklicken.
+        </p>
+      </div>
+      <div class="regel">
+        <h3>Keine Zustandsänderung ohne Quittung</h3>
+        <p>
+          Jede Handlung, die den Sitzungszustand ändert, erscheint sofort im
+          Verlauf — sichtbar für Leitung und Schriftführung. Was nicht im Verlauf
+          steht, ist nicht passiert.
+        </p>
+      </div>
+      <div class="regel">
+        <h3>Die Automatik erklärt sich</h3>
+        <p>
+          Wenn die Kamera schwenkt, das Mikrofon schließt oder die Aufzeichnung
+          pausiert, steht in der Regieansicht in einem Satz, warum. Unerklärte
+          Automatik wird beim zweiten Mal abgeschaltet.
+        </p>
+      </div>
+      <div class="regel">
+        <h3>Zwei Meter Lesbarkeit</h3>
+        <p>
+          Das iPad liegt auf dem Tisch, der Blick fällt schräg darauf, der Saal
+          ist gedimmt. Grundschrift ab 19 px, Zielflächen ab 60 px, kein
+          Grauton unter 4,5:1. Die Sprechstelle wird nie am Schreibtisch
+          entworfen.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="sprechstelle">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>9 — Die Sprechstelle</h4>
+      <h2>Drei Zonen, ein Knopf, ein Modus</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Die Sprechstelle ist die einzige Ansicht, die jemand benutzt, ohne sie je
+        gelernt zu haben, unter Beobachtung, und oft zum ersten Mal in der
+        Sitzung, in der es zählt. Deshalb ist sie in drei Zonen geteilt, die sich
+        nie verschieben: oben der Zustand, in der Mitte die Handlung, unten der
+        Zusammenhang.
+      </p>
+    </div>
+
+    <figure>
+      <div class="bildfeld">
+        <svg viewBox="0 0 900 430" role="img"
+             aria-label="Zwei Entwürfe der Sprechstelle nebeneinander. Links der Normalzustand mit drei Zonen: oben Kopfzeile mit Tagesordnungspunkt und Platznummer, Mitte ein großer Knopf zur Wortmeldung mit Warteposition, unten Unterlage und Redezeit. Rechts der Abstimmungsmodus, der den ganzen Schirm übernimmt mit drei großen Feldern für Ja, Nein und Enthaltung.">
+          <!-- Normalzustand -->
+          <rect x="30" y="30" width="400" height="300" rx="10" class="sv-rahmen"/>
+          <text x="30" y="22" class="sv-klein">Normalzustand</text>
+
+          <line x1="30" y1="90" x2="430" y2="90" class="sv-linie"/>
+          <text x="48"  y="58" class="sv-klein">TOP 4 — öffentlich</text>
+          <text x="48"  y="78" class="sv-text">Haushaltssatzung 2027, Beratung</text>
+          <text x="412" y="58" class="sv-code" text-anchor="end">Platz 07</text>
+          <text x="412" y="78" class="sv-code" text-anchor="end">00:41:12</text>
+
+          <rect x="70" y="120" width="320" height="96" rx="6" class="sv-tally-fl"/>
+          <text x="230" y="160" class="sv-text" text-anchor="middle" font-size="17">Wortmeldung zurücknehmen</text>
+          <text x="230" y="186" class="sv-akzent" text-anchor="middle">Sie sind Zweiter — etwa 4 Minuten</text>
+
+          <line x1="30" y1="248" x2="430" y2="248" class="sv-linie"/>
+          <text x="48" y="272" class="sv-klein">Unterlage</text>
+          <text x="48" y="292" class="sv-text">Vorlage 214/2026, Seite 3 von 18</text>
+          <text x="48" y="314" class="sv-code">Redezeit Ihrer Fraktion: 6:20 von 12:00</text>
+
+          <!-- Abstimmung -->
+          <rect x="470" y="30" width="400" height="300" rx="10" class="sv-tally" fill="none"/>
+          <text x="470" y="22" class="sv-klein">Abstimmung läuft — übernimmt den Schirm</text>
+
+          <text x="488" y="58" class="sv-klein">Beschluss zu TOP 4 — offene Abstimmung</text>
+          <text x="488" y="80" class="sv-text">Der Haushaltssatzung 2027 wird zugestimmt.</text>
+
+          <rect x="488" y="104" width="120" height="130" rx="6" class="sv-rahmen"/>
+          <text x="548" y="168" class="sv-text" text-anchor="middle" font-size="20">Ja</text>
+          <text x="548" y="192" class="sv-code" text-anchor="middle">↑</text>
+
+          <rect x="618" y="104" width="120" height="130" rx="6" class="sv-rahmen"/>
+          <text x="678" y="168" class="sv-text" text-anchor="middle" font-size="20">Nein</text>
+          <text x="678" y="192" class="sv-code" text-anchor="middle">↓</text>
+
+          <rect x="748" y="104" width="104" height="130" rx="6" class="sv-rahmen"/>
+          <text x="800" y="160" class="sv-text" text-anchor="middle" font-size="15">Enthaltung</text>
+          <text x="800" y="192" class="sv-code" text-anchor="middle">→</text>
+
+          <line x1="470" y1="252" x2="870" y2="252" class="sv-linie"/>
+          <text x="488" y="276" class="sv-akzent">Noch 0:38 — Änderung bis zum Schluss möglich</text>
+          <text x="488" y="300" class="sv-code">28 von 33 abgegeben · beschlussfähig · offen, namentlich</text>
+
+          <!-- Fußnoten -->
+          <text x="30"  y="368" class="sv-klein">Geheime Wahl: dieselbe Ansicht, aber ohne Namen, ohne Zwischenstand,</text>
+          <text x="30"  y="386" class="sv-klein">mit Einmal-Token — und mit dem ausgeschriebenen Satz, dass niemand</text>
+          <text x="30"  y="404" class="sv-klein">zuordnen kann, wie Sie gestimmt haben.</text>
+
+          <text x="470" y="368" class="sv-klein">Ohne Serververbindung: der Knopf bleibt bedienbar, die Stimme wird</text>
+          <text x="470" y="386" class="sv-klein">auf dem Gerät signiert gepuffert, und darunter steht „gespeichert,</text>
+          <text x="470" y="404" class="sv-klein">wird gesendet“ — nicht ein drehender Kreis.</text>
+        </svg>
+      </div>
+      <figcaption>
+        Der Wechsel zwischen den beiden Ansichten ist der einzige Moduswechsel,
+        den das Gerät kennt. Er wird vom Sitzungszustand ausgelöst, nie vom
+        Benutzer — niemand muss eine Abstimmung suchen.
+      </figcaption>
+    </figure>
+
+    <div class="satzblock">
+      <p>
+        Der Unterschied zur Konkurrenz ist hier am deutlichsten. Auf einer
+        DICENTIS-Einheit leuchten Abstimmungstasten nur dann, wenn die Funktion
+        lizenziert und die Runde geöffnet ist — die Bedienung folgt dem Gerät.
+        Bei pkt.me folgt die Ansicht dem Verfahren: Der Knopf trägt den Namen der
+        nächsten <em>zulässigen</em> Handlung, und was unzulässig ist, wird nicht
+        ausgegraut, sondern verschwindet mit einem Satz Begründung.
+      </p>
+      <p>
+        Ein Detail, das in der Konkurrenz durchgehend fehlt und im Saal jedes Mal
+        weh tut: <strong>die Warteposition</strong>. „Sie sind Zweiter, etwa vier
+        Minuten“ verhindert mehr Zwischenrufe als jede Ordnungsmaßnahme.
+      </p>
+      <p>
+        Beide Ansichten stehen als begehbarer Entwurf mit simulierten Daten
+        daneben: <a href="../entwuerfe/sprechstelle.html">entwuerfe/sprechstelle.html</a>
+        zeigt die sechs Zustände am Platz einschließlich Netzausfall,
+        <a href="../entwuerfe/leitung.html">entwuerfe/leitung.html</a> die
+        Wortführung, die vierstufige Abstimmung und den Staffelstab. Beide laufen
+        ohne Netz, ohne Server und ohne Browser-Speicher.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="katalog">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>10 — Funktionskatalog</h4>
+      <h2>Jede Zeile ist Kern, später oder nie</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Der Katalog vergleicht spaltenweise mit den drei ernsthaften Segmenten
+        und trifft in der letzten Spalte eine Entscheidung.
+        <span class="stufe kern">Kern</span> heißt: gehört in die erste
+        verkaufbare Fassung. <span class="stufe spaeter">Später</span> heißt:
+        Anschluss jetzt vorsehen, Bau später.
+        <span class="stufe nie">Nie</span> heißt: wird abgelehnt, auch wenn ein
+        Kunde dafür zahlen will.
+      </p>
+    </div>
+
+    <div class="tabellenrahmen">
+      <table class="eng">
+        <thead>
+          <tr>
+            <th>Funktion</th>
+            <th>Anlage</th>
+            <th>Portal</th>
+            <th>RIS</th>
+            <th>pkt.me</th>
+            <th>Begründung</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Sitzungszustand mit Rechteprüfung</th>
+            <td>teilweise</td><td>nein</td><td>nein</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Ohne das ist alles andere Zierrat</td>
+          </tr>
+          <tr>
+            <th>Platz mit Preset, Stimmrecht, Funktion</th>
+            <td>Gerät statt Platz</td><td>nein</td><td>nein</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Der Anker des gesamten Modells</td>
+          </tr>
+          <tr>
+            <th>Rednerliste mit Warteposition und Redezeit</th>
+            <td>ja</td><td>nein</td><td>nein</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Häufigster Streitpunkt jeder Sitzung</td>
+          </tr>
+          <tr>
+            <th>Kamera auf Platz, mit Hysterese</th>
+            <td>ja</td><td>nein</td><td>nein</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Erstes Ziel; Hysterese im Kern, nicht im Treiber</td>
+          </tr>
+          <tr>
+            <th>Offene Abstimmung, vorbereitet und ad hoc</th>
+            <td>lizenzpflichtig</td><td>ja</td><td>Ergebnis&shy;erfassung</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Beides, sonst unbrauchbar</td>
+          </tr>
+          <tr>
+            <th>Beschlussfähigkeit, Quorum eingefroren</th>
+            <td>Anwesenheit</td><td>teilweise</td><td>ja</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Rechtsfolge, keine Anzeige</td>
+          </tr>
+          <tr>
+            <th>Ereigniskette mit Tagesabschluss</th>
+            <td>nein</td><td>Prüfspur</td><td>nein</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Nicht nachrüstbar, stärkstes Argument</td>
+          </tr>
+          <tr>
+            <th>Protokollentwurf aus dem Verlauf</th>
+            <td>Berichte</td><td>teilweise</td><td>ja</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Der Grund, warum jemand kauft</td>
+          </tr>
+          <tr>
+            <th>Sitzungsmappe, offline, verschlüsselt</th>
+            <td>Medien&shy;freigabe</td><td>ja</td><td>ja</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Ohne Mappe kein Gremium; ohne offline kein Vertrauen</td>
+          </tr>
+          <tr>
+            <th>Geheime Wahl mit Einmal-Token</th>
+            <td>ja, ohne Beweis</td><td>teilweise</td><td>nein</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Nur wo das Landesrecht sie elektronisch zulässt</td>
+          </tr>
+          <tr>
+            <th>Anbindung Anlage (DICENTIS, Televic, Shure)</th>
+            <td>eigene Welt</td><td>nein</td><td>nein</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Ersetzt die zweite Stufe „eigener Ton“</td>
+          </tr>
+          <tr>
+            <th>Vorabcheck aller Plätze</th>
+            <td>Diagnose</td><td>nein</td><td>nein</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Verhindert den Ausfall, den niemand verzeiht</td>
+          </tr>
+          <tr>
+            <th>Nichtöffentlichkeit steuert Stream und Aufzeichnung</th>
+            <td>manuell</td><td>nein</td><td>Kennzeichen</td>
+            <td><span class="stufe kern">Kern</span></td>
+            <td>Automatisch, aus dem Sitzungszustand</td>
+          </tr>
+          <tr>
+            <th>Umlaufbeschluss ohne Sitzung</th>
+            <td>nein</td><td>ja</td><td>teilweise</td>
+            <td><span class="stufe spaeter">Später</span></td>
+            <td>Modell jetzt vorsehen: Abstimmung ohne Sitzung</td>
+          </tr>
+          <tr>
+            <th>OParl lesen und zurückschreiben</th>
+            <td>nein</td><td>nein</td><td>ja</td>
+            <td><span class="stufe spaeter">Später</span></td>
+            <td>Eintrittskarte in den kommunalen Markt</td>
+          </tr>
+          <tr>
+            <th>Transkript und Untertitel im Haus</th>
+            <td>nein</td><td>zugekauft</td><td>zugekauft</td>
+            <td><span class="stufe spaeter">Später</span></td>
+            <td>On-Premise entfällt die Auftragsverarbeitung</td>
+          </tr>
+          <tr>
+            <th>Zuschaltbrücke zu Teams und Zoom</th>
+            <td>Audio&shy;anschluss</td><td>nein</td><td>nein</td>
+            <td><span class="stufe spaeter">Später</span></td>
+            <td>Eigener Dienst, darf ausfallen</td>
+          </tr>
+          <tr>
+            <th>Kompositor und Stream</th>
+            <td>teilweise</td><td>nein</td><td>nein</td>
+            <td><span class="stufe spaeter">Später</span></td>
+            <td>Wer damit anfängt, versandet</td>
+          </tr>
+          <tr>
+            <th>Dolmetschen und Sprachkanäle</th>
+            <td>ja</td><td>nein</td><td>nein</td>
+            <td><span class="stufe spaeter">Später</span></td>
+            <td>Anlage kann es; pkt.me steuert nur die Zuteilung</td>
+          </tr>
+          <tr>
+            <th>Hauptversammlung nach § 118a AktG</th>
+            <td>nein</td><td>teilweise</td><td>nein</td>
+            <td><span class="stufe spaeter">Später</span></td>
+            <td>Stimmgewicht und Vertretung müssen jetzt ins Modell</td>
+          </tr>
+          <tr>
+            <th>Eigene Signalkette: Automixer, Filter, Mix-Minus</th>
+            <td>ja</td><td>nein</td><td>nein</td>
+            <td><span class="stufe nie">Nie</span></td>
+            <td>Gelöst, teuer, haftungsträchtig, kein Unterschied</td>
+          </tr>
+          <tr>
+            <th>Eigene Videokonferenz für Externe</th>
+            <td>nein</td><td>nein</td><td>nein</td>
+            <td><span class="stufe nie">Nie</span></td>
+            <td>Gegen Teams und Zoom gewinnt niemand</td>
+          </tr>
+          <tr>
+            <th>Dokumenten&shy;management als Ersatz</th>
+            <td>nein</td><td>ja</td><td>ja</td>
+            <td><span class="stufe nie">Nie</span></td>
+            <td>Mappe ja, Aktenführung nein — dafür gibt es das RIS</td>
+          </tr>
+          <tr>
+            <th>Mikrofon oder Stimme auf privatem Gerät</th>
+            <td>nein</td><td>—</td><td>—</td>
+            <td><span class="stufe nie">Nie</span></td>
+            <td>Begleitrolle endet vor beidem</td>
+          </tr>
+          <tr>
+            <th>Cloud-Betrieb als Bedingung</th>
+            <td>nein</td><td>ja</td><td>teilweise</td>
+            <td><span class="stufe nie">Nie</span></td>
+            <td>Der Saal hängt von nichts ab</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="nicht">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>11 — Was pkt.me nicht tut</h4>
+      <h2>Die Absagen, die das Produkt zusammenhalten</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Jede dieser Absagen kostet irgendwann einen Auftrag. Zusammen sind sie
+        der Grund, warum es einen Codestand gibt und warum eine Sitzung nicht an
+        einer Internetleitung hängt.
+      </p>
+      <ul class="strich">
+        <li><strong>Kein eigener Ton.</strong> pkt.me steuert die Anlage, misst
+          nach und protokolliert die Reserve. Wer eine Beschallung braucht,
+          bekommt sie vom Integrator.</li>
+        <li><strong>Keine Beschallung über das iPad.</strong> Der Weg vom
+          Mikrofon in den Saal muss unter 10 ms bleiben; über WebRTC und WLAN
+          ist das nicht zu halten. Wo beschallt wird, ist das Mikrofon
+          verkabelt.</li>
+        <li><strong>Kein NFC am iPad.</strong> Es gibt keinen Leser. Anmeldung
+          am Platz läuft über Code, Karte am gebundenen Leser oder das eigene
+          Telefon des Teilnehmers am Tag des Platzes.</li>
+        <li><strong>Keine geheime Wahl gegen das Landesrecht.</strong> Wo Wahlen
+          nur in Präsenz zulässig sind, bietet pkt.me sie nicht an, sondern
+          druckt Stimmzettel und erfasst das Ergebnis.</li>
+        <li><strong>Keine Sonderfassung für einen Kunden.</strong> Jeder Wunsch
+          wird allgemeines Merkmal, Konfiguration, Adapter — oder abgelehnt.</li>
+        <li><strong>Keine Auswertung von Verhalten.</strong> Redezeit ja,
+          Anwesenheit ja; Aufmerksamkeitsmessung, Gesichtserkennung und
+          Stimmungsanalyse nie.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="reihenfolge">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>12 — Baureihenfolge</h4>
+      <h2>Geändert an genau einer Stelle</h2>
+    </div>
+
+    <div class="tabellenrahmen">
+      <table>
+        <thead>
+          <tr>
+            <th>Stufe</th>
+            <th>Inhalt</th>
+            <th>Fertig, wenn</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>0 — jetzt</th>
+            <td>Kern mit Sitzungszustand, Rollen, Rechten, Ereigniskette; Absichtsschicht; Kameradienst; Web-Sprechstelle</td>
+            <td>Ein Gerät meldet „Mikro an“, der Kern prüft, kettet an, die PTZ steht auf dem gelernten Preset</td>
+          </tr>
+          <tr>
+            <th>1 — geändert</th>
+            <td><strong>Anlagenanbindung</strong> statt eigener Signalkette: ein Adapter für eine Anlagenfamilie, Vorabcheck, Nachweis der Einmesswerte</td>
+            <td>Dieselbe Sitzung läuft an einer vorhandenen DICENTIS- oder Plixus-Anlage, ohne dass der Kern es merkt</td>
+          </tr>
+          <tr>
+            <th>2</th>
+            <td>Abstimmung, Beschlussfähigkeit, Protokollentwurf, Beschlusssammlung, Export</td>
+            <td>Eine Sitzung erzeugt ein Protokoll, das die Schriftführung nur noch bestätigt</td>
+          </tr>
+          <tr>
+            <th>3</th>
+            <td>Sitzungsmappe, offline und verschlüsselt, Präsentationsmodus</td>
+            <td>Ein Mitglied liest die Mappe im Zug ohne Netz und die Leitung zieht alle auf dieselbe Seite</td>
+          </tr>
+          <tr>
+            <th>4</th>
+            <td>Transkript und Untertitel im Haus, Korrekturlauf</td>
+            <td>Das Transkript hängt an Redner, Platz und Tagesordnungspunkt, nicht an einer Tonspur</td>
+          </tr>
+          <tr>
+            <th>5</th>
+            <td>Zuschaltbrücke, Kompositor, Stream, OParl</td>
+            <td>Die Zuschaltung fällt aus, ohne dass im Saal etwas passiert</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Die Änderung an Stufe 1 ist die einzige, aber sie verschiebt das
+        Verkaufsargument um ein Jahr nach vorn: Nach Stufe 1 gibt es einen Saal,
+        in dem eine fremde Anlage steht und pkt.me das Verfahren führt. Das ist
+        die Konstellation, die es beim ersten Pilotkunden ohnehin geben wird.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="offen">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>13 — Offen</h4>
+      <h2>Was entschieden werden muss, bevor gebaut wird</h2>
+    </div>
+
+    <div class="satzblock">
+      <ul class="strich">
+        <li><strong>Erste Anlagenfamilie.</strong> DICENTIS, Plixus oder Shure —
+          davon hängt ab, welcher Adapter zuerst entsteht. Vorschlag: die, die
+          beim ersten Pilotkunden steht; ohne Pilotkunden DICENTIS, weil die
+          Verbreitung im deutschen Gremienmarkt am größten ist.</li>
+        <li><strong>Erster Markt.</strong> Kommunal (Verfahren, OParl, BITV,
+          Ausschreibung) oder Aufsichtsrat (Mappe, Vertraulichkeit, kurze
+          Entscheidungswege). Beides gleichzeitig ist eine Fassung zu viel.</li>
+        <li><strong>Preisform.</strong> Vorschlag: je Saal und Jahr, Funktionen
+          ungeteilt — als bewusste Gegenposition zur Lizenzierung je Sitzplatz.
+          Kaufmännisch zu prüfen.</li>
+        <li><strong>Geheime Wahl elektronisch.</strong> Je Land und Rechtsform zu
+          klären; bis dahin bleibt der gedruckte Stimmzettel mit erfasstem
+          Ergebnis der Standardweg.</li>
+        <li><strong>Stimmgewicht jetzt oder später.</strong> Der Bau kostet zwei
+          Tage, das Nachrüsten kostet eine Migration. Empfehlung: jetzt.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="quellen">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>14 — Quellen</h4>
+      <h2>Woher die Angaben stammen</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Herstellerangaben sind Herstellerangaben — Funktionsumfang und Preise
+        sind vor einer Entscheidung am konkreten Angebot zu prüfen. Die
+        Rechtslage zu digitalen und hybriden Sitzungen ist Landesrecht und
+        ändert sich; die genannten Punkte sind Anhaltspunkte, keine
+        Rechtsauskunft.
+      </p>
+    </div>
+
+    <div class="quellen">
+      <ol>
+        <li>Keenfinity/Bosch, <a href="https://www.keenfinity-group.com/de/de/loesungen/konferenzloesungen/ip-basierte-konferenzloesungen/dicentis-softwarelizenzierung/">DICENTIS Softwarelizenzierung</a> — Funktionspakete je Teilnehmer, Premium und Ultimate, unbefristet oder Jahresplan</li>
+        <li>Professional System, <a href="https://www.professional-system.de/features/konferenzsystem-bosch-dicentis-wireless/">DICENTIS wireless</a> — Abstimmungstasten, NFC-Identifikation, Rollen</li>
+        <li>Televic, <a href="https://www.televic.com/en/conference/products/meeting-management-software/confero">Confero</a> und <a href="https://www.televic.com/en/conference/products">Produktübersicht</a> — CoCon-Module, Redezeit, Kameraregie</li>
+        <li>Shure, <a href="https://www.shure.com/en-US/products/conference-discussion/mxcw">Microflex Complete Wireless</a> — bis 125 Teilnehmer, Rollen, browserbasierte Verwaltung</li>
+        <li>Sherpany, <a href="https://www.sherpany.com/de/losung/preisgestaltung/">Preisgestaltung</a> und <a href="https://meeting.sherpany.com/de/beste-board-portal-loesung">Board-Portal</a> — Umlaufbeschluss, Präsentationsmodus, bedingter Zugang</li>
+      </ol>
+      <ol start="6">
+        <li>I'mBoard, <a href="https://www.imboard.ai/blog/board-management-software-comparison-2026">Board Management Software Comparison 2026</a> — Preisspannen Diligent, iBabs, Convene</li>
+        <li>SOMACOS, <a href="https://somacos.de/loesungen/sitzungsmanagement/session/">Session</a> und <a href="http://www.somacos.de/sitzungsdienst/ratsinfo.html">SessionNet</a> — Verwaltungs-, Gremien- und Bürgersicht</li>
+        <li>OParl, <a href="https://oparl.org/spezifikation/online-ansicht/">Spezifikation 1.1</a> — Objekte und Endpunkte</li>
+        <li><a href="https://www.gesetze-im-internet.de/aktg/__118a.html">§ 118a AktG</a> — virtuelle Hauptversammlung, Rederecht über Videokommunikation, Widerspruch</li>
+        <li>MHKBD NRW, <a href="https://www.mhkbd.nrw/system/files/media/document/file/2023_09_23_mhkbd_final_digitalsitzungen_-_handreichung.pdf">Handreichung digitale und hybride Sitzungen</a>; <a href="https://netzwerk-kommunalpolitik.de/2026/01/07/hybridsitzungen-im-saarlaendischen-kommunalrecht/">Saarland, Novelle Dezember 2025</a></li>
+        <li>LfDI Baden-Württemberg, <a href="https://www.baden-wuerttemberg.datenschutz.de/leitfaden-ki-transkription-von-gemeinderatssitzungen/">Leitfaden KI-Transkription von Gemeinderatssitzungen</a></li>
+        <li>Sony, <a href="https://pro.sony/ue_US/products/edge-analytics-appliance/rea-l0200">PTZ Auto Framing</a>; Panasonic, <a href="https://pro-av.panasonic.net/en/support/auto_tracking/">Auto-Tracking</a></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer class="fuss">
+  <div class="spur fuss-innen">
+    <p>
+      pkt.me — Markt und Neuzuschnitt. Abgeleitet aus <code>CLAUDE.md</code> und
+      dem Durchlauf in <code>aufbau-und-durchlauf.html</code>, ergänzt um einen
+      Vergleich mit fünf Marktsegmenten.
+    </p>
+    <p>
+      Enthält vier Widersprüche zur bisherigen Planung: kein eigener Ton,
+      Anlagenanbindung als Stufe 1, Stimmgewicht als Fundament, Regelwerk als
+      Daten. Alle vier sind begründet und alle vier sind widerlegbar.
+    </p>
+  </div>
+</footer>

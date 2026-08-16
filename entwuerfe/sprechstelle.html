@@ -1,0 +1,677 @@
+<title>pkt.me — Sprechstelle (Entwurf)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<style>
+  /* =================================================================
+     Sprechstelle — Entwurf mit simulierten Daten.
+     Keine externen Abhängigkeiten, kein Netz, kein Browser-Speicher.
+     Drei Zonen: Zustand oben, Handlung in der Mitte, Zusammenhang unten.
+     ================================================================= */
+  :root {
+    --grund:        #EBEEEE;
+    --flaeche:      #FFFFFF;
+    --flaeche-tief: #E2E6E7;
+    --tinte:        #141A1C;
+    --tinte-leise:  #59666C;
+    --linie:        #D0D7D9;
+    --linie-stark:  #A9B4B8;
+    --tally:        #A82E23;
+    --tally-grund:  #F7E7E5;
+    --warn:         #7E5300;
+    --warn-grund:   #F6ECDA;
+    --gut:          #0D5A4D;
+    --gut-grund:    #DFEDEA;
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+            "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --grund:        #111618;
+      --flaeche:      #192023;
+      --flaeche-tief: #212A2E;
+      --tinte:        #E4E9EA;
+      --tinte-leise:  #93A1A7;
+      --linie:        #2A3438;
+      --linie-stark:  #47555A;
+      --tally:        #F0705C;
+      --tally-grund:  #33201D;
+      --warn:         #E0A63F;
+      --warn-grund:   #2E2513;
+      --gut:          #45B49C;
+      --gut-grund:    #152C28;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--grund);
+    color: var(--tinte);
+    font-family: var(--sans);
+    font-size: 19px;              /* Regel 11: zwei Meter Lesbarkeit */
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .rahmen {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: clamp(0.75rem, 2vw, 1.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* ---- Gerät ------------------------------------------------------- */
+  .geraet {
+    background: var(--flaeche);
+    border: 1px solid var(--linie);
+    border-radius: 14px;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: min(78vh, 720px);
+  }
+
+  /* ---- Zone 1: Zustand --------------------------------------------- */
+  .zustand {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 1rem clamp(1rem, 3vw, 1.75rem);
+    border-bottom: 1px solid var(--linie);
+    background: var(--flaeche-tief);
+  }
+
+  .zustand-links { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+  .zustand-rechts {
+    display: flex; flex-direction: column; gap: 0.15rem;
+    text-align: right; font-family: var(--mono);
+    font-variant-numeric: tabular-nums; flex: none;
+  }
+
+  .top-marke {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--tinte-leise);
+    display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;
+  }
+
+  .top-titel { font-size: 1.05rem; font-weight: 650; letter-spacing: -0.01em; }
+  .platz-nr  { font-size: 0.95rem; font-weight: 650; }
+  .sitzungszeit { font-size: 0.8rem; color: var(--tinte-leise); }
+
+  .oeffentlich, .nichtoeffentlich {
+    padding: 0.1rem 0.45rem; border-radius: 2px; font-size: 0.68rem;
+  }
+  .oeffentlich     { color: var(--gut);  background: var(--gut-grund); }
+  .nichtoeffentlich{ color: var(--warn); background: var(--warn-grund); }
+
+  /* ---- Zone 2: Handlung -------------------------------------------- */
+  .handlung {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    min-height: 0;
+  }
+
+  .lage {
+    display: flex; align-items: center; gap: 0.7rem;
+    font-size: 1.02rem; color: var(--tinte-leise);
+  }
+
+  /* Regel 7: Form und Text tragen die Bedeutung, Farbe nur zusätzlich */
+  .zeichen { width: 20px; height: 20px; flex: none; }
+  .zeichen.aus    { border: 2px solid var(--linie-stark); border-radius: 50%; }
+  .zeichen.wartet { border: 2px solid var(--warn); border-radius: 3px; background: var(--warn-grund); }
+  .zeichen.offen  { background: var(--tally); border-radius: 50%;
+                    box-shadow: 0 0 0 4px var(--tally-grund); }
+  .zeichen.gesperrt { border: 2px solid var(--linie-stark); border-radius: 50%;
+                      background: repeating-linear-gradient(45deg,
+                        var(--flaeche-tief), var(--flaeche-tief) 3px,
+                        var(--linie) 3px, var(--linie) 6px); }
+
+  .knopf {
+    font: inherit;
+    font-size: clamp(1.15rem, 2.6vw, 1.5rem);
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: var(--tinte);
+    background: var(--flaeche-tief);
+    border: 1px solid var(--linie-stark);
+    border-radius: 10px;
+    padding: clamp(1.4rem, 4vw, 2.4rem) 1.5rem;
+    min-height: 96px;             /* Regel 11: Zielfläche */
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    width: 100%;
+    transition: transform 0.06s ease;
+  }
+
+  .knopf:active { transform: scale(0.995); }
+  .knopf:focus-visible { outline: 3px solid var(--tally); outline-offset: 3px; }
+
+  .knopf.wichtig {
+    background: var(--tally-grund);
+    border-color: var(--tally);
+    color: var(--tinte);
+  }
+
+  .knopf[disabled] { cursor: not-allowed; opacity: 1; }
+
+  .knopf .zusatz {
+    font-size: 0.86rem; font-weight: 400; color: var(--tinte-leise);
+  }
+
+  .begruendung {
+    font-size: 0.92rem; color: var(--tinte-leise);
+    border-left: 2px solid var(--linie-stark); padding-left: 0.9rem;
+  }
+
+  /* ---- Zone 3: Zusammenhang ---------------------------------------- */
+  .zusammenhang {
+    border-top: 1px solid var(--linie);
+    padding: 0.9rem clamp(1rem, 3vw, 1.75rem);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 2rem;
+    align-items: baseline;
+    background: var(--flaeche);
+    font-size: 0.88rem;
+    color: var(--tinte-leise);
+  }
+
+  .zusammenhang b { color: var(--tinte); font-weight: 600; }
+  .zusammenhang .zahl { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* ---- Abstimmungsmodus: übernimmt den Schirm ---------------------- */
+  .wahl { display: flex; flex-direction: column; gap: 1.1rem; height: 100%; justify-content: center; }
+
+  .wahl-text {
+    font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+    font-weight: 650;
+    letter-spacing: -0.012em;
+    max-width: 46rem;
+  }
+
+  .wahl-art { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+              color: var(--tinte-leise); font-weight: 700; }
+
+  .stimmfelder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+
+  .stimmfeld {
+    font: inherit;
+    font-size: clamp(1.2rem, 3vw, 1.75rem);
+    font-weight: 700;
+    color: var(--tinte);
+    background: var(--flaeche);
+    border: 2px solid var(--linie-stark);
+    border-radius: 10px;
+    padding: clamp(1.5rem, 5vw, 2.75rem) 0.75rem;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+  }
+
+  .stimmfeld:focus-visible { outline: 3px solid var(--tally); outline-offset: 3px; }
+  .stimmfeld .taste { font-family: var(--mono); font-size: 0.72rem; font-weight: 400;
+                      color: var(--tinte-leise); letter-spacing: 0.06em; }
+
+  .stimmfeld[aria-pressed="true"] {
+    border-color: var(--tally);
+    background: var(--tally-grund);
+    box-shadow: inset 0 0 0 2px var(--tally);
+  }
+
+  .stimmfeld[aria-pressed="true"] .haken { color: var(--tally); font-size: 0.8rem; font-weight: 700;
+                                           letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .wahl-fuss {
+    display: flex; flex-wrap: wrap; gap: 0.4rem 1.5rem;
+    font-size: 0.88rem; color: var(--tinte-leise);
+    border-top: 1px solid var(--linie); padding-top: 0.9rem;
+  }
+
+  .wahl-fuss .zahl { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .frist { color: var(--tally); font-weight: 650; }
+
+  .geheim-hinweis {
+    border: 1px solid var(--linie-stark);
+    background: var(--flaeche-tief);
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+    color: var(--tinte-leise);
+    max-width: 46rem;
+  }
+
+  /* ---- Streifen: offline, rückgängig ------------------------------- */
+  .streifen {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+    padding: 0.7rem clamp(1rem, 3vw, 1.75rem);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--linie);
+  }
+
+  .streifen.offline { background: var(--warn-grund); color: var(--warn); }
+  .streifen.zurueck { background: var(--flaeche-tief); color: var(--tinte-leise); }
+
+  .streifen button {
+    font: inherit; font-size: 0.88rem; font-weight: 650;
+    background: none; border: 1px solid currentColor; color: inherit;
+    border-radius: 4px; padding: 0.3rem 0.8rem; cursor: pointer;
+  }
+
+  [hidden] { display: none !important; }
+
+  /* ---- Entwurfssteuerung (gehört nicht zum Produkt) ---------------- */
+  .steuerung {
+    border: 1px dashed var(--linie-stark);
+    border-radius: 10px;
+    padding: 1rem clamp(1rem, 3vw, 1.5rem);
+    display: flex; flex-direction: column; gap: 0.75rem;
+    background: var(--flaeche);
+  }
+
+  .steuerung h2 {
+    margin: 0; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--tinte-leise);
+  }
+
+  .steuerung p { margin: 0; font-size: 0.84rem; color: var(--tinte-leise); max-width: 44rem; }
+
+  .schalter { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  .schalter button {
+    font: inherit; font-size: 0.84rem; font-weight: 600;
+    background: var(--flaeche-tief); color: var(--tinte);
+    border: 1px solid var(--linie-stark); border-radius: 4px;
+    padding: 0.45rem 0.8rem; cursor: pointer;
+  }
+
+  .schalter button[aria-pressed="true"] {
+    background: var(--tally-grund); border-color: var(--tally); color: var(--tally);
+  }
+
+  .schalter button:focus-visible { outline: 2px solid var(--tally); outline-offset: 2px; }
+
+  @media (max-width: 620px) {
+    .stimmfelder { grid-template-columns: 1fr; }
+    .zustand-rechts { text-align: left; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="rahmen">
+
+  <div class="geraet" id="geraet">
+
+    <!-- Zone 1 — Zustand: verschiebt sich nie -->
+    <div class="zustand">
+      <div class="zustand-links">
+        <div class="top-marke">
+          <span id="top-nr">TOP 4</span>
+          <span class="oeffentlich" id="oeff-marke">öffentlich</span>
+        </div>
+        <div class="top-titel" id="top-titel">Haushaltssatzung 2027 — Beratung</div>
+      </div>
+      <div class="zustand-rechts">
+        <div class="platz-nr">Platz 07 · Reihe A</div>
+        <div class="sitzungszeit"><span id="uhr">00:41:12</span> seit Sitzungsbeginn</div>
+      </div>
+    </div>
+
+    <!-- Zone 2 — Handlung -->
+    <div class="handlung" id="handlung">
+
+      <!-- Normalzustand -->
+      <div id="ansicht-normal">
+        <div class="lage">
+          <span class="zeichen aus" id="zeichen" aria-hidden="true"></span>
+          <span id="lage-text" role="status" aria-live="polite">Ihr Mikrofon ist geschlossen.</span>
+        </div>
+
+        <button class="knopf" id="hauptknopf" type="button">
+          <span id="knopf-text">Ums Wort bitten</span>
+          <span class="zusatz" id="knopf-zusatz">Die Leitung sieht Ihre Meldung sofort.</span>
+        </button>
+
+        <p class="begruendung" id="begruendung" hidden></p>
+      </div>
+
+      <!-- Abstimmungsmodus -->
+      <div class="wahl" id="ansicht-wahl" hidden>
+        <div>
+          <div class="wahl-art" id="wahl-art">Offene Abstimmung · namentlich</div>
+          <p class="wahl-text" id="wahl-text">
+            Der Haushaltssatzung 2027 in der Fassung der Vorlage 214/2026 wird zugestimmt.
+          </p>
+        </div>
+
+        <div class="geheim-hinweis" id="geheim-hinweis" hidden>
+          Geheime Wahl. Ihr Gerät hat ein Einmal-Token erhalten, das nicht auf Sie
+          zurückführt. Weder im Protokoll noch am Platz noch in der Technik
+          entsteht ein Zusammenhang zwischen Ihnen und Ihrer Stimme.
+        </div>
+
+        <div class="stimmfelder" role="group" aria-labelledby="wahl-text">
+          <button class="stimmfeld" type="button" data-stimme="ja" aria-pressed="false">
+            <span>Ja</span><span class="taste">Taste 1</span>
+            <span class="haken" hidden>abgegeben</span>
+          </button>
+          <button class="stimmfeld" type="button" data-stimme="nein" aria-pressed="false">
+            <span>Nein</span><span class="taste">Taste 2</span>
+            <span class="haken" hidden>abgegeben</span>
+          </button>
+          <button class="stimmfeld" type="button" data-stimme="enthaltung" aria-pressed="false">
+            <span>Enthaltung</span><span class="taste">Taste 3</span>
+            <span class="haken" hidden>abgegeben</span>
+          </button>
+        </div>
+
+        <div class="wahl-fuss">
+          <span>Noch <span class="frist zahl" id="wahl-frist">0:38</span> — Änderung bis zum Schluss möglich</span>
+          <span id="wahl-stand"><span class="zahl">28</span> von <span class="zahl">33</span> abgegeben</span>
+          <span id="wahl-quorum">beschlussfähig, Quorum beim Start eingefroren</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone 3 — Zusammenhang -->
+    <div class="zusammenhang" id="zusammenhang">
+      <span><b>Unterlage</b> Vorlage 214/2026, Seite 3 von 18</span>
+      <span><b>Redezeit Fraktion</b> <span class="zahl">6:20</span> von <span class="zahl">12:00</span></span>
+      <span><b>Vor Ihnen</b> <span id="warteschlange">niemand</span></span>
+    </div>
+
+    <!-- Streifen -->
+    <div class="streifen offline" id="streifen-offline" hidden>
+      <span id="offline-text">Kein Serverkontakt. Ihre Eingaben werden auf dem Gerät gespeichert und gesendet, sobald die Verbindung steht.</span>
+      <span class="zahl" id="offline-puffer">0 gepuffert</span>
+    </div>
+
+    <div class="streifen zurueck" id="streifen-zurueck" hidden>
+      <span id="zurueck-text">Wortmeldung eingetragen.</span>
+      <button type="button" id="zurueck-knopf">Rückgängig (<span id="zurueck-zeit">10</span>)</button>
+    </div>
+  </div>
+
+  <!-- ---- Entwurfssteuerung ---------------------------------------- -->
+  <div class="steuerung">
+    <h2>Entwurfssteuerung — nicht Teil des Produkts</h2>
+    <p>
+      Im Betrieb kommen alle diese Wechsel vom Sitzungszustand des Kerns, nie vom
+      Gerät. Die Knöpfe stehen hier nur, um die Zustände ohne Server zu zeigen.
+      Alle Daten sind erfunden.
+    </p>
+    <div class="schalter">
+      <button type="button" data-lage="frei"     aria-pressed="true">Kein Wort</button>
+      <button type="button" data-lage="gemeldet" aria-pressed="false">Gemeldet, Warteposition 2</button>
+      <button type="button" data-lage="wort"     aria-pressed="false">Hat das Wort</button>
+      <button type="button" data-lage="gesperrt" aria-pressed="false">Gesperrt (Abstimmung läuft)</button>
+      <button type="button" data-lage="wahl"     aria-pressed="false">Offene Abstimmung</button>
+      <button type="button" data-lage="geheim"   aria-pressed="false">Geheime Wahl</button>
+      <button type="button" data-lage="nichtoeff" aria-pressed="false">Nichtöffentlicher TOP</button>
+      <button type="button" id="schalter-offline" aria-pressed="false">Netz weg</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---- simulierter Zustand ---------------------------------------- */
+  var zustand = {
+    lage: "frei",        // frei | gemeldet | wort | gesperrt | wahl | geheim
+    offline: false,
+    gepuffert: 0,
+    stimme: null,
+    sekunden: 41 * 60 + 12,
+    restRede: 4 * 60 + 5,
+    frist: 38,
+    abgegeben: 28,
+    oeffentlich: true
+  };
+
+  var e = {};
+  ["geraet","top-nr","top-titel","oeff-marke","uhr","ansicht-normal","ansicht-wahl",
+   "zeichen","lage-text","hauptknopf","knopf-text","knopf-zusatz","begruendung",
+   "wahl-art","wahl-text","geheim-hinweis","wahl-frist","wahl-stand","wahl-quorum",
+   "warteschlange","zusammenhang","streifen-offline","offline-puffer","streifen-zurueck",
+   "zurueck-text","zurueck-knopf","zurueck-zeit","schalter-offline"
+  ].forEach(function (id) { e[id] = document.getElementById(id); });
+
+  function zeit(s) {
+    var m = Math.floor(s / 60), r = s % 60;
+    return m + ":" + (r < 10 ? "0" : "") + r;
+  }
+
+  function lang(s) {
+    var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+    return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + ":" + (r < 10 ? "0" : "") + r;
+  }
+
+  /* ---- Zeichnen ---------------------------------------------------- */
+  function zeichnen() {
+    var wahlmodus = zustand.lage === "wahl" || zustand.lage === "geheim";
+
+    e["ansicht-normal"].hidden = wahlmodus;
+    e["ansicht-wahl"].hidden = !wahlmodus;
+
+    e["oeff-marke"].textContent = zustand.oeffentlich ? "öffentlich" : "nicht öffentlich";
+    e["oeff-marke"].className = zustand.oeffentlich ? "oeffentlich" : "nichtoeffentlich";
+    e["zusammenhang"].hidden = false;
+
+    if (wahlmodus) {
+      var geheim = zustand.lage === "geheim";
+      e["geheim-hinweis"].hidden = !geheim;
+      e["wahl-art"].textContent = geheim
+        ? "Geheime Wahl · kein Zwischenstand"
+        : "Offene Abstimmung · namentlich";
+      e["wahl-text"].textContent = geheim
+        ? "Wahl der stellvertretenden Vorsitzenden — Wahlgang 1"
+        : "Der Haushaltssatzung 2027 in der Fassung der Vorlage 214/2026 wird zugestimmt.";
+      e["wahl-stand"].innerHTML = geheim
+        ? "Zwischenstand wird nicht angezeigt"
+        : '<span class="zahl">' + zustand.abgegeben + '</span> von <span class="zahl">33</span> abgegeben';
+      e["wahl-frist"].textContent = zeit(zustand.frist);
+      e["warteschlange"].textContent = "Abstimmung läuft, Wortmeldungen ruhen";
+      zeichneStimme();
+      return;
+    }
+
+    var z = e["zeichen"], t = e["lage-text"], k = e["hauptknopf"],
+        kt = e["knopf-text"], kz = e["knopf-zusatz"], b = e["begruendung"];
+
+    k.disabled = false;
+    k.className = "knopf";
+    b.hidden = true;
+
+    if (zustand.lage === "frei") {
+      z.className = "zeichen aus";
+      t.textContent = "Ihr Mikrofon ist geschlossen.";
+      kt.textContent = "Ums Wort bitten";
+      kz.textContent = "Die Leitung sieht Ihre Meldung sofort.";
+      e["warteschlange"].textContent = "niemand";
+    } else if (zustand.lage === "gemeldet") {
+      z.className = "zeichen wartet";
+      t.textContent = "Sie sind gemeldet und stehen an zweiter Stelle.";
+      k.className = "knopf wichtig";
+      kt.textContent = "Wortmeldung zurücknehmen";
+      kz.textContent = "Etwa 4 Minuten bis Sie an der Reihe sind.";
+      e["warteschlange"].textContent = "2 Redner, etwa 4 Minuten";
+    } else if (zustand.lage === "wort") {
+      z.className = "zeichen offen";
+      t.textContent = "Ihr Mikrofon ist offen. Sie sprechen.";
+      k.className = "knopf wichtig";
+      kt.textContent = "Wort abgeben";
+      kz.textContent = "Verbleibende Redezeit " + zeit(zustand.restRede) + ".";
+      e["warteschlange"].textContent = "Sie sprechen";
+    } else if (zustand.lage === "gesperrt") {
+      z.className = "zeichen gesperrt";
+      t.textContent = "Wortmeldungen sind gesperrt.";
+      kt.textContent = "Ums Wort bitten";
+      kz.textContent = "Zur Zeit nicht möglich.";
+      k.disabled = true;
+      b.hidden = false;
+      b.textContent = "Während einer laufenden Abstimmung nimmt die Leitung keine "
+        + "Wortmeldungen entgegen. Nach dem Schluss der Abstimmung geht es weiter.";
+      e["warteschlange"].textContent = "Abstimmung läuft";
+    }
+  }
+
+  function zeichneStimme() {
+    var felder = document.querySelectorAll(".stimmfeld");
+    Array.prototype.forEach.call(felder, function (f) {
+      var an = f.getAttribute("data-stimme") === zustand.stimme;
+      f.setAttribute("aria-pressed", an ? "true" : "false");
+      f.querySelector(".haken").hidden = !an;
+    });
+  }
+
+  /* ---- Handlungen -------------------------------------------------- */
+  var zurueckTimer = null, zurueckRest = 0, vorherigeLage = null;
+
+  function zeigeRueckgaengig(text, lageVorher) {
+    vorherigeLage = lageVorher;
+    e["zurueck-text"].textContent = text;
+    e["streifen-zurueck"].hidden = false;
+    zurueckRest = 10;
+    e["zurueck-zeit"].textContent = zurueckRest;
+    if (zurueckTimer) { clearInterval(zurueckTimer); }
+    zurueckTimer = setInterval(function () {
+      zurueckRest -= 1;
+      e["zurueck-zeit"].textContent = zurueckRest;
+      if (zurueckRest <= 0) { versteckeRueckgaengig(); }
+    }, 1000);
+  }
+
+  function versteckeRueckgaengig() {
+    if (zurueckTimer) { clearInterval(zurueckTimer); zurueckTimer = null; }
+    e["streifen-zurueck"].hidden = true;
+    vorherigeLage = null;
+  }
+
+  function puffern() {
+    if (!zustand.offline) { return; }
+    zustand.gepuffert += 1;
+    e["offline-puffer"].textContent = zustand.gepuffert === 1
+      ? "1 Eingabe gespeichert, wird gesendet"
+      : zustand.gepuffert + " Eingaben gespeichert, werden gesendet";
+  }
+
+  e["hauptknopf"].addEventListener("click", function () {
+    if (zustand.lage === "frei") {
+      zustand.lage = "gemeldet";
+      puffern();
+      zeigeRueckgaengig("Wortmeldung eingetragen.", "frei");
+    } else if (zustand.lage === "gemeldet") {
+      zustand.lage = "frei";
+      puffern();
+      zeigeRueckgaengig("Wortmeldung zurückgenommen.", "gemeldet");
+    } else if (zustand.lage === "wort") {
+      zustand.lage = "frei";
+      puffern();
+      versteckeRueckgaengig();   // Wort abgeben ist sofort wirksam
+    }
+    zeichnen();
+    markiereSchalter();
+  });
+
+  e["zurueck-knopf"].addEventListener("click", function () {
+    if (vorherigeLage) { zustand.lage = vorherigeLage; }
+    versteckeRueckgaengig();
+    zeichnen();
+    markiereSchalter();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".stimmfeld"), function (f) {
+    f.addEventListener("click", function () {
+      var neu = f.getAttribute("data-stimme");
+      var erst = zustand.stimme === null;
+      zustand.stimme = zustand.stimme === neu ? null : neu;
+      if (erst && zustand.stimme) { zustand.abgegeben += 1; puffern(); }
+      zeichneStimme();
+    });
+  });
+
+  document.addEventListener("keydown", function (ev) {
+    if (zustand.lage !== "wahl" && zustand.lage !== "geheim") { return; }
+    var karte = { "1": "ja", "2": "nein", "3": "enthaltung" };
+    if (karte[ev.key]) {
+      var ziel = document.querySelector('.stimmfeld[data-stimme="' + karte[ev.key] + '"]');
+      if (ziel) { ziel.click(); ziel.focus(); }
+    }
+  });
+
+  /* ---- Entwurfssteuerung ------------------------------------------- */
+  function markiereSchalter() {
+    Array.prototype.forEach.call(document.querySelectorAll(".schalter button[data-lage]"), function (b) {
+      var l = b.getAttribute("data-lage");
+      var an = (l === zustand.lage) ||
+               (l === "nichtoeff" && !zustand.oeffentlich);
+      b.setAttribute("aria-pressed", an ? "true" : "false");
+    });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".schalter button[data-lage]"), function (b) {
+    b.addEventListener("click", function () {
+      var l = b.getAttribute("data-lage");
+      if (l === "nichtoeff") {
+        zustand.oeffentlich = !zustand.oeffentlich;
+        e["top-nr"].textContent = zustand.oeffentlich ? "TOP 4" : "TOP 5";
+        e["top-titel"].textContent = zustand.oeffentlich
+          ? "Haushaltssatzung 2027 — Beratung"
+          : "Grundstücksangelegenheit — Beratung und Beschluss";
+      } else {
+        zustand.lage = l;
+        zustand.stimme = null;
+        versteckeRueckgaengig();
+      }
+      zeichnen();
+      markiereSchalter();
+    });
+  });
+
+  e["schalter-offline"].addEventListener("click", function () {
+    zustand.offline = !zustand.offline;
+    e["schalter-offline"].setAttribute("aria-pressed", zustand.offline ? "true" : "false");
+    e["streifen-offline"].hidden = !zustand.offline;
+    if (!zustand.offline) { zustand.gepuffert = 0; }
+    else { e["offline-puffer"].textContent = "bereit"; }
+  });
+
+  /* ---- Uhren -------------------------------------------------------- */
+  setInterval(function () {
+    zustand.sekunden += 1;
+    e["uhr"].textContent = lang(zustand.sekunden);
+    if (zustand.lage === "wort" && zustand.restRede > 0) {
+      zustand.restRede -= 1;
+      e["knopf-zusatz"].textContent = "Verbleibende Redezeit " + zeit(zustand.restRede) + ".";
+    }
+    if ((zustand.lage === "wahl" || zustand.lage === "geheim") && zustand.frist > 0) {
+      zustand.frist -= 1;
+      e["wahl-frist"].textContent = zeit(zustand.frist);
+    }
+  }, 1000);
+
+  zeichnen();
+  markiereSchalter();
+})();
+</script>

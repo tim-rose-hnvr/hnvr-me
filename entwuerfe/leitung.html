@@ -1,0 +1,794 @@
+<title>pkt.me — Sitzungsleitung (Entwurf)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+  /* =================================================================
+     Sitzungsleitung — Entwurf mit simulierten Daten.
+     Keine externen Abhängigkeiten, kein Netz, kein Browser-Speicher.
+     Drei Spalten: Tagesordnung, Wortführung, Verlauf.
+     ================================================================= */
+  :root {
+    --grund:        #EBEEEE;
+    --flaeche:      #FFFFFF;
+    --flaeche-tief: #E2E6E7;
+    --tinte:        #141A1C;
+    --tinte-leise:  #59666C;
+    --linie:        #D0D7D9;
+    --linie-stark:  #A9B4B8;
+    --tally:        #A82E23;
+    --tally-grund:  #F7E7E5;
+    --warn:         #7E5300;
+    --warn-grund:   #F6ECDA;
+    --gut:          #0D5A4D;
+    --gut-grund:    #DFEDEA;
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+            "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --grund:        #111618;
+      --flaeche:      #192023;
+      --flaeche-tief: #212A2E;
+      --tinte:        #E4E9EA;
+      --tinte-leise:  #93A1A7;
+      --linie:        #2A3438;
+      --linie-stark:  #47555A;
+      --tally:        #F0705C;
+      --tally-grund:  #33201D;
+      --warn:         #E0A63F;
+      --warn-grund:   #2E2513;
+      --gut:          #45B49C;
+      --gut-grund:    #152C28;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--grund);
+    color: var(--tinte);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .rahmen { max-width: 1400px; margin: 0 auto; padding: clamp(0.75rem, 2vw, 1.25rem);
+            display: flex; flex-direction: column; gap: 0.9rem; }
+
+  .zahl { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* ---- Kopfleiste: Zustand ---------------------------------------- */
+  .kopfleiste {
+    background: var(--flaeche);
+    border: 1px solid var(--linie);
+    border-radius: 10px;
+    display: flex; flex-wrap: wrap; gap: 0.75rem 2rem;
+    align-items: center; justify-content: space-between;
+    padding: 0.85rem 1.1rem;
+  }
+
+  .kopf-block { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+
+  .etikett { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+             text-transform: uppercase; color: var(--tinte-leise); }
+  .wert    { font-size: 1rem; font-weight: 650; letter-spacing: -0.01em; }
+
+  .stab {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--tally-grund); color: var(--tally);
+    border: 1px solid var(--tally); border-radius: 4px;
+    padding: 0.25rem 0.6rem; font-size: 0.82rem; font-weight: 650;
+  }
+
+  .lampe { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+
+  .quorum-gut  { color: var(--gut); }
+  .quorum_warn { color: var(--warn); }
+
+  /* ---- Raster ------------------------------------------------------ */
+  .raster {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr) 320px;
+    gap: 0.9rem;
+    align-items: start;
+  }
+
+  .saeule { display: flex; flex-direction: column; gap: 0.9rem; min-width: 0; }
+
+  .feld {
+    background: var(--flaeche);
+    border: 1px solid var(--linie);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .feld-kopf {
+    padding: 0.7rem 0.95rem;
+    border-bottom: 1px solid var(--linie);
+    background: var(--flaeche-tief);
+    display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem;
+  }
+
+  .feld-kopf h2 { margin: 0; font-size: 0.72rem; font-weight: 700;
+                  letter-spacing: 0.1em; text-transform: uppercase; color: var(--tinte-leise); }
+  .feld-kopf .neben { font-size: 0.78rem; color: var(--tinte-leise); }
+
+  .feld-koerper { padding: 0.85rem 0.95rem; display: flex; flex-direction: column; gap: 0.7rem; }
+
+  /* ---- Tagesordnung ------------------------------------------------ */
+  .top-liste { list-style: none; margin: 0; padding: 0; }
+
+  .top-liste li {
+    display: grid; grid-template-columns: 2.3rem 1fr; gap: 0.6rem;
+    padding: 0.55rem 0.95rem; border-bottom: 1px solid var(--linie);
+    font-size: 0.9rem;
+  }
+
+  .top-liste li:last-child { border-bottom: 0; }
+  .top-liste .nr { font-family: var(--mono); color: var(--tinte-leise); font-size: 0.82rem; }
+  .top-liste .titel { min-width: 0; }
+  .top-liste .zusatz { display: block; font-size: 0.74rem; color: var(--tinte-leise); }
+
+  .top-liste li.erledigt .titel { color: var(--tinte-leise); text-decoration: line-through; }
+  .top-liste li.laufend { background: var(--tally-grund); }
+  .top-liste li.laufend .nr { color: var(--tally); font-weight: 700; }
+  .top-liste li.nichtoeff .zusatz { color: var(--warn); font-weight: 650; }
+
+  /* ---- Wortführung -------------------------------------------------- */
+  .redner-jetzt {
+    display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem;
+    align-items: center; justify-content: space-between;
+    border: 1px solid var(--tally); background: var(--tally-grund);
+    border-radius: 8px; padding: 0.85rem 1rem;
+  }
+
+  .redner-jetzt.leer { border-color: var(--linie-stark); background: var(--flaeche-tief); }
+
+  .redner-name { font-size: 1.12rem; font-weight: 700; letter-spacing: -0.012em; }
+  .redner-meta { font-size: 0.82rem; color: var(--tinte-leise); }
+  .redner-uhr  { font-family: var(--mono); font-size: 1.35rem; font-weight: 700;
+                 font-variant-numeric: tabular-nums; }
+  .redner-uhr.ueber { color: var(--tally); }
+
+  .warteliste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+
+  .warteliste li {
+    display: grid; grid-template-columns: 1.8rem 1fr auto; gap: 0.75rem;
+    align-items: center; padding: 0.6rem 0.2rem;
+    border-bottom: 1px solid var(--linie); font-size: 0.94rem;
+  }
+
+  .warteliste li:last-child { border-bottom: 0; }
+  .warteliste .pos { font-family: var(--mono); font-size: 0.82rem; color: var(--tinte-leise); }
+  .warteliste .wer b { font-weight: 650; }
+  .warteliste .wer span { display: block; font-size: 0.76rem; color: var(--tinte-leise); }
+  .warteliste li.zwischenfrage { background: var(--warn-grund); }
+  .warteliste li.zwischenfrage .wer span { color: var(--warn); font-weight: 650; }
+
+  .leerzeile { font-size: 0.9rem; color: var(--tinte-leise); padding: 0.6rem 0.2rem; }
+
+  /* ---- Knöpfe ------------------------------------------------------ */
+  .knopfreihe { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  button {
+    font: inherit; font-size: 0.88rem; font-weight: 600;
+    background: var(--flaeche-tief); color: var(--tinte);
+    border: 1px solid var(--linie-stark); border-radius: 6px;
+    padding: 0.5rem 0.85rem; cursor: pointer;
+  }
+
+  button:focus-visible { outline: 2px solid var(--tally); outline-offset: 2px; }
+  button[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+  button.stark { background: var(--tally-grund); border-color: var(--tally); color: var(--tally); }
+  button.klein { font-size: 0.8rem; padding: 0.35rem 0.6rem; }
+  button.gefahr { border-color: var(--tally); color: var(--tally); }
+
+  /* ---- Abstimmung --------------------------------------------------- */
+  .schritte { display: flex; gap: 0.35rem; font-size: 0.72rem; color: var(--tinte-leise);
+              text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+              flex-wrap: wrap; }
+  .schritte span { padding: 0.15rem 0.45rem; border: 1px solid var(--linie); border-radius: 3px; }
+  .schritte span.aktiv { border-color: var(--tally); color: var(--tally); background: var(--tally-grund); }
+  .schritte span.fertig { color: var(--gut); border-color: var(--gut); background: var(--gut-grund); }
+
+  .beschlusstext { font-size: 1rem; font-weight: 650; letter-spacing: -0.01em; }
+
+  .zaehler { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+
+  .zaehler div {
+    border: 1px solid var(--linie); border-radius: 6px; padding: 0.6rem 0.5rem;
+    text-align: center; background: var(--flaeche-tief);
+  }
+
+  .zaehler .k { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em;
+                color: var(--tinte-leise); font-weight: 700; }
+  .zaehler .v { font-family: var(--mono); font-size: 1.4rem; font-weight: 700;
+                font-variant-numeric: tabular-nums; }
+
+  .hinweis { font-size: 0.85rem; color: var(--tinte-leise);
+             border-left: 2px solid var(--linie-stark); padding-left: 0.8rem; }
+  .hinweis.warn { border-color: var(--warn); color: var(--warn); }
+  .hinweis.gut  { border-color: var(--gut); color: var(--gut); }
+
+  /* ---- Verlauf ------------------------------------------------------ */
+  .verlauf { list-style: none; margin: 0; padding: 0; max-height: 460px; overflow-y: auto; }
+
+  .verlauf li {
+    display: grid; grid-template-columns: 4.4rem 1fr; gap: 0.6rem;
+    padding: 0.5rem 0.95rem; border-bottom: 1px solid var(--linie); font-size: 0.86rem;
+  }
+
+  .verlauf .t { font-family: var(--mono); font-size: 0.76rem; color: var(--tinte-leise); }
+  .verlauf .k { min-width: 0; }
+  .verlauf .kette { display: block; font-family: var(--mono); font-size: 0.7rem; color: var(--gut); }
+  .verlauf li.neu { background: var(--gut-grund); }
+
+  /* ---- Automatik / Störung ------------------------------------------ */
+  .automatik { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center;
+               justify-content: space-between; font-size: 0.85rem; }
+  .automatik .zustandtext { color: var(--tinte-leise); }
+  .automatik .gesperrt { color: var(--warn); font-weight: 650; }
+
+  .stoerung { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.85rem; }
+  .stoerung .zeile { display: flex; gap: 0.6rem; align-items: baseline; }
+  .stoerung .stufe { font-family: var(--mono); font-size: 0.74rem; color: var(--warn); flex: none; }
+
+  /* ---- Entwurfssteuerung -------------------------------------------- */
+  .steuerung {
+    border: 1px dashed var(--linie-stark); border-radius: 10px;
+    padding: 0.9rem 1.1rem; display: flex; flex-direction: column; gap: 0.6rem;
+    background: var(--flaeche);
+  }
+
+  .steuerung h2 { margin: 0; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+                  text-transform: uppercase; color: var(--tinte-leise); }
+  .steuerung p { margin: 0; font-size: 0.82rem; color: var(--tinte-leise); max-width: 46rem; }
+
+  [hidden] { display: none !important; }
+
+  @media (max-width: 1080px) {
+    .raster { grid-template-columns: 1fr; }
+    .verlauf { max-height: 300px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="rahmen">
+
+  <!-- ---- Zustand, immer sichtbar ---------------------------------- -->
+  <div class="kopfleiste">
+    <div class="kopf-block">
+      <span class="etikett">Sitzung</span>
+      <span class="wert">Hauptausschuss · 14. Sitzung</span>
+    </div>
+    <div class="kopf-block">
+      <span class="etikett">Sitzungszeit</span>
+      <span class="wert zahl" id="uhr">00:41:12</span>
+    </div>
+    <div class="kopf-block">
+      <span class="etikett">Tagesordnungspunkt</span>
+      <span class="wert" id="kopf-top">TOP 4 — Haushaltssatzung 2027</span>
+    </div>
+    <div class="kopf-block">
+      <span class="etikett">Beschlussfähigkeit</span>
+      <span class="wert" id="quorum">
+        <span class="quorum-gut">beschlussfähig</span>
+        <span class="zahl">24</span>/<span class="zahl">33</span> anwesend, Quorum <span class="zahl">17</span>
+      </span>
+    </div>
+    <div class="kopf-block">
+      <span class="etikett">Leitung</span>
+      <span class="stab" id="stab"><span class="lampe"></span> Sie führen · Epoche 2</span>
+    </div>
+  </div>
+
+  <div class="raster">
+
+    <!-- ---- Spalte 1: Tagesordnung -------------------------------- -->
+    <div class="saeule">
+      <div class="feld">
+        <div class="feld-kopf">
+          <h2>Tagesordnung</h2>
+          <span class="neben"><span class="zahl">4</span> von <span class="zahl">9</span></span>
+        </div>
+        <ul class="top-liste">
+          <li class="erledigt"><span class="nr">1</span><span class="titel">Eröffnung, Beschlussfähigkeit<span class="zusatz">beschlossen 00:03</span></span></li>
+          <li class="erledigt"><span class="nr">2</span><span class="titel">Niederschrift der 13. Sitzung<span class="zusatz">angenommen 22:3:1</span></span></li>
+          <li class="erledigt"><span class="nr">3</span><span class="titel">Bericht der Verwaltung<span class="zusatz">Kenntnis genommen</span></span></li>
+          <li class="laufend"><span class="nr">4</span><span class="titel">Haushaltssatzung 2027<span class="zusatz">läuft seit 00:12 · Beratung</span></span></li>
+          <li class="nichtoeff"><span class="nr">5</span><span class="titel">Grundstücksangelegenheit<span class="zusatz">nicht öffentlich — Stream pausiert automatisch</span></span></li>
+          <li><span class="nr">6</span><span class="titel">Wahl der stellvertretenden Vorsitzenden<span class="zusatz">geheim · Stimmzettel vorbereitet</span></span></li>
+          <li><span class="nr">7</span><span class="titel">Anfragen<span class="zusatz">3 eingegangen</span></span></li>
+          <li><span class="nr">8</span><span class="titel">Verschiedenes</span></li>
+          <li><span class="nr">9</span><span class="titel">Schluss</span></li>
+        </ul>
+      </div>
+
+      <div class="feld">
+        <div class="feld-kopf"><h2>Automatik</h2></div>
+        <div class="feld-koerper">
+          <div class="automatik">
+            <span class="zustandtext" id="automatik-text">Kamera folgt dem Wort · Hysterese 2,5 s</span>
+            <button type="button" id="automatik-knopf" class="klein">Anhalten</button>
+          </div>
+          <p class="hinweis" id="automatik-grund">
+            Letzter Eingriff 00:39:48 — Kamera 2 auf Preset Platz 07, weil Platz 07 das Wort erhielt.
+          </p>
+        </div>
+      </div>
+
+      <div class="feld">
+        <div class="feld-kopf"><h2>Störungen</h2><span class="neben">1 offen</span></div>
+        <div class="feld-koerper">
+          <div class="stoerung">
+            <div class="zeile"><span class="stufe">Stufe 2</span>
+              <span>Platz 12 ohne Netz seit 00:38:10 — Eingaben werden auf dem Gerät gepuffert.</span></div>
+            <div class="zeile"><span class="stufe">Stufe 4+</span>
+              <span>Eingriffe ab Stufe 4 nur nach Ihrer Bestätigung. Zur Zeit keine angefordert.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- Spalte 2: Wortführung und Abstimmung ------------------- -->
+    <div class="saeule">
+      <div class="feld">
+        <div class="feld-kopf">
+          <h2>Wortführung</h2>
+          <span class="neben" id="rede-summe">Redezeit TOP 4 · <span class="zahl">18:40</span> von <span class="zahl">45:00</span></span>
+        </div>
+        <div class="feld-koerper">
+
+          <div class="redner-jetzt" id="redner-jetzt">
+            <div>
+              <div class="redner-name" id="redner-name">Dr. Kessler</div>
+              <div class="redner-meta" id="redner-meta">Platz 03 · Fraktion B · seit 00:39:48</div>
+            </div>
+            <div style="text-align:right">
+              <div class="redner-uhr" id="redner-uhr">3:24</div>
+              <div class="redner-meta" id="redner-uhr-meta">verbleibend von 5:00</div>
+            </div>
+          </div>
+
+          <div class="knopfreihe">
+            <button type="button" id="knopf-naechster" class="stark">Nächstem das Wort erteilen</button>
+            <button type="button" id="knopf-beenden">Wort beenden</button>
+            <button type="button" id="knopf-entziehen" class="gefahr">Wort entziehen</button>
+            <button type="button" id="knopf-vorrang">Vorrang Vorsitz</button>
+          </div>
+
+          <p class="hinweis" id="wort-hinweis" hidden></p>
+
+          <ul class="warteliste" id="warteliste"></ul>
+          <p class="leerzeile" id="warte-leer" hidden>Keine Wortmeldungen.</p>
+        </div>
+      </div>
+
+      <div class="feld">
+        <div class="feld-kopf">
+          <h2>Abstimmung</h2>
+          <span class="neben" id="abst-art">offen · namentlich</span>
+        </div>
+        <div class="feld-koerper">
+          <div class="schritte" id="schritte">
+            <span id="s1">1 vorbereiten</span>
+            <span id="s2">2 freigeben</span>
+            <span id="s3">3 schließen</span>
+            <span id="s4">4 feststellen</span>
+          </div>
+
+          <p class="beschlusstext" id="beschlusstext">
+            Der Haushaltssatzung 2027 in der Fassung der Vorlage 214/2026 wird zugestimmt.
+          </p>
+
+          <div class="zaehler" id="zaehler" hidden>
+            <div><div class="k">Ja</div><div class="v" id="z-ja">0</div></div>
+            <div><div class="k">Nein</div><div class="v" id="z-nein">0</div></div>
+            <div><div class="k">Enthaltung</div><div class="v" id="z-enth">0</div></div>
+            <div><div class="k">offen</div><div class="v" id="z-offen">24</div></div>
+          </div>
+
+          <p class="hinweis" id="abst-hinweis">
+            Quorum wird beim Freigeben eingefroren. Automatische Technikeingriffe sind
+            währenddessen gesperrt. Regelwerk: einfache Mehrheit, Enthaltungen zählen nicht mit.
+          </p>
+
+          <div class="knopfreihe">
+            <button type="button" id="knopf-freigeben" class="stark">Abstimmung freigeben</button>
+            <button type="button" id="knopf-schliessen" disabled>Abstimmung schließen</button>
+            <button type="button" id="knopf-feststellen" disabled>Ergebnis feststellen</button>
+            <button type="button" id="knopf-abbrechen" class="klein" disabled>Abbrechen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- Spalte 3: Verlauf ------------------------------------- -->
+    <div class="saeule">
+      <div class="feld">
+        <div class="feld-kopf">
+          <h2>Verlauf</h2>
+          <span class="neben">Kette geschlossen bis <span class="zahl" id="kette-bis">00:41:02</span></span>
+        </div>
+        <ul class="verlauf" id="verlauf"></ul>
+      </div>
+
+      <div class="feld">
+        <div class="feld-kopf"><h2>Staffelstab</h2></div>
+        <div class="feld-koerper">
+          <p class="hinweis">
+            Berechtigt sind drei Personen, aktiv ist genau eine. Jede Übergabe wird
+            angekettet und erhöht die Epoche. Ohne ausdrückliche Übergabe bleibt die
+            Leitung bei Ihnen, auch wenn Ihr Gerät ausfällt.
+          </p>
+          <div class="knopfreihe">
+            <button type="button" id="knopf-uebergabe">Leitung übergeben an Frau Adam</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="steuerung">
+    <h2>Entwurfssteuerung — nicht Teil des Produkts</h2>
+    <p>
+      Simulierte Sitzung, erfundene Namen. Die Stimmen laufen beim Freigeben
+      automatisch ein, damit der Ablauf ohne Server sichtbar wird. Im Betrieb
+      kommt jede Zeile im Verlauf aus der Ereigniskette des Kerns.
+    </p>
+    <div class="knopfreihe">
+      <button type="button" id="sim-meldung">Neue Wortmeldung</button>
+      <button type="button" id="sim-zwischenfrage">Zwischenfrage von Platz 19</button>
+      <button type="button" id="sim-abwesend">Zwei Mitglieder verlassen den Saal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var sekunden = 41 * 60 + 12;
+
+  var zustand = {
+    redner: { name: "Dr. Kessler", platz: "03", fraktion: "B", rest: 204 },
+    warte: [
+      { name: "Frau Adam",   platz: "07", fraktion: "A", art: "wortmeldung", dauer: 300 },
+      { name: "Herr Bolten", platz: "15", fraktion: "C", art: "wortmeldung", dauer: 300 },
+      { name: "Frau Nour",   platz: "21", fraktion: "A", art: "wortmeldung", dauer: 300 }
+    ],
+    anwesend: 24,
+    quorumEingefroren: null,
+    abstimmung: "vorbereitet",   // vorbereitet | laufend | geschlossen | festgestellt
+    stimmen: { ja: 0, nein: 0, enth: 0 },
+    automatik: true,
+    epoche: 2
+  };
+
+  var e = {};
+  ["uhr","kopf-top","quorum","stab","redner-jetzt","redner-name","redner-meta","redner-uhr",
+   "warteliste","warte-leer","wort-hinweis","knopf-naechster","knopf-beenden","knopf-entziehen",
+   "knopf-vorrang","schritte","s1","s2","s3","s4","beschlusstext","zaehler","z-ja","z-nein",
+   "z-enth","z-offen","abst-hinweis","knopf-freigeben","knopf-schliessen","knopf-feststellen",
+   "knopf-abbrechen","verlauf","kette-bis","automatik-text","automatik-knopf","automatik-grund",
+   "knopf-uebergabe","redner-uhr-meta","sim-meldung","sim-zwischenfrage","sim-abwesend","rede-summe","abst-art"
+  ].forEach(function (id) { e[id] = document.getElementById(id); });
+
+  function kurz(s) {
+    if (s < 0) { s = 0; }
+    var m = Math.floor(s / 60), r = s % 60;
+    return m + ":" + (r < 10 ? "0" : "") + r;
+  }
+
+  function lang(s) {
+    var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+    return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + ":" + (r < 10 ? "0" : "") + r;
+  }
+
+  /* ---- Verlauf: jede Zustandsänderung bekommt eine Quittung -------- */
+  var kettenNr = 4127;
+
+  function quittung(text, mitKette) {
+    kettenNr += 1;
+    var li = document.createElement("li");
+    li.className = "neu";
+    var t = document.createElement("span");
+    t.className = "t";
+    t.textContent = lang(sekunden);
+    var k = document.createElement("span");
+    k.className = "k";
+    k.textContent = text;
+    if (mitKette !== false) {
+      var kk = document.createElement("span");
+      kk.className = "kette";
+      kk.textContent = "#" + kettenNr + " angekettet";
+      k.appendChild(kk);
+    }
+    li.appendChild(t);
+    li.appendChild(k);
+    e["verlauf"].insertBefore(li, e["verlauf"].firstChild);
+    setTimeout(function () { li.className = ""; }, 2500);
+    while (e["verlauf"].children.length > 40) {
+      e["verlauf"].removeChild(e["verlauf"].lastChild);
+    }
+  }
+
+  /* ---- Zeichnen ---------------------------------------------------- */
+  function zeichnen() {
+    // Redner
+    if (zustand.redner) {
+      e["redner-jetzt"].className = "redner-jetzt";
+      e["redner-name"].textContent = zustand.redner.name;
+      e["redner-meta"].textContent = "Platz " + zustand.redner.platz +
+        " · Fraktion " + zustand.redner.fraktion + " · spricht";
+      e["redner-uhr"].textContent = kurz(zustand.redner.rest);
+      e["redner-uhr"].className = zustand.redner.rest <= 0 ? "redner-uhr ueber" : "redner-uhr";
+      e["redner-uhr-meta"].textContent = zustand.redner.rest <= 0
+        ? "Redezeit überschritten" : "verbleibend von 5:00";
+    } else {
+      e["redner-jetzt"].className = "redner-jetzt leer";
+      e["redner-name"].textContent = "Niemand hat das Wort";
+      e["redner-meta"].textContent = zustand.warte.length
+        ? "Nächster wartet seit 00:40"
+        : "Keine Wortmeldung";
+      e["redner-uhr"].textContent = "—";
+      e["redner-uhr"].className = "redner-uhr";
+      e["redner-uhr-meta"].textContent = "keine laufende Redezeit";
+    }
+
+    // Warteliste
+    e["warteliste"].innerHTML = "";
+    zustand.warte.forEach(function (w, i) {
+      var li = document.createElement("li");
+      if (w.art === "zwischenfrage") { li.className = "zwischenfrage"; }
+      li.innerHTML = '<span class="pos">' + (i + 1) + '</span>' +
+        '<span class="wer"><b></b><span></span></span>' +
+        '<span class="tat"></span>';
+      li.querySelector("b").textContent = w.name;
+      li.querySelector(".wer span").textContent = "Platz " + w.platz + " · Fraktion " + w.fraktion +
+        (w.art === "zwischenfrage" ? " · Zwischenfrage" : "");
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "klein";
+      b.textContent = "Wort erteilen";
+      b.addEventListener("click", function () { erteile(i); });
+      li.querySelector(".tat").appendChild(b);
+      e["warteliste"].appendChild(li);
+    });
+    e["warte-leer"].hidden = zustand.warte.length > 0;
+
+    e["knopf-naechster"].disabled = zustand.warte.length === 0 || zustand.abstimmung === "laufend";
+    e["knopf-beenden"].disabled = !zustand.redner;
+    e["knopf-entziehen"].disabled = !zustand.redner;
+
+    // Beschlussfähigkeit
+    var beschlussfaehig = zustand.anwesend >= 17;
+    e["quorum"].innerHTML = '<span class="' + (beschlussfaehig ? "quorum-gut" : "quorum_warn") + '">' +
+      (beschlussfaehig ? "beschlussfähig" : "nicht beschlussfähig") + '</span> ' +
+      '<span class="zahl">' + zustand.anwesend + '</span>/<span class="zahl">33</span> anwesend, ' +
+      'Quorum <span class="zahl">17</span>' +
+      (zustand.quorumEingefroren
+        ? ' · eingefroren bei <span class="zahl">' + zustand.quorumEingefroren + '</span>'
+        : '');
+
+    // Abstimmung
+    var a = zustand.abstimmung;
+    e["s1"].className = a === "vorbereitet" ? "aktiv" : "fertig";
+    e["s2"].className = a === "laufend" ? "aktiv" : (a === "vorbereitet" ? "" : "fertig");
+    e["s3"].className = a === "geschlossen" ? "aktiv" : (a === "festgestellt" ? "fertig" : "");
+    e["s4"].className = a === "festgestellt" ? "fertig" : "";
+
+    e["zaehler"].hidden = a === "vorbereitet";
+    e["z-ja"].textContent = zustand.stimmen.ja;
+    e["z-nein"].textContent = zustand.stimmen.nein;
+    e["z-enth"].textContent = zustand.stimmen.enth;
+    var abgegeben = zustand.stimmen.ja + zustand.stimmen.nein + zustand.stimmen.enth;
+    e["z-offen"].textContent = Math.max(0, (zustand.quorumEingefroren || zustand.anwesend) - abgegeben);
+
+    e["knopf-freigeben"].disabled = a !== "vorbereitet" || !beschlussfaehig;
+    e["knopf-schliessen"].disabled = a !== "laufend";
+    e["knopf-feststellen"].disabled = a !== "geschlossen";
+    e["knopf-abbrechen"].disabled = a !== "laufend" && a !== "geschlossen";
+
+    if (!beschlussfaehig && a === "vorbereitet") {
+      e["abst-hinweis"].className = "hinweis warn";
+      e["abst-hinweis"].textContent = "Nicht beschlussfähig — eine Abstimmung kann nicht "
+        + "freigegeben werden. Es fehlen " + (17 - zustand.anwesend) + " Anwesende.";
+    } else if (a === "laufend") {
+      e["abst-hinweis"].className = "hinweis warn";
+      e["abst-hinweis"].textContent = "Abstimmung läuft. Quorum eingefroren bei "
+        + zustand.quorumEingefroren + ". Wortmeldungen sind gesperrt, automatische "
+        + "Technikeingriffe sind gesperrt.";
+    } else if (a === "geschlossen") {
+      e["abst-hinweis"].className = "hinweis";
+      e["abst-hinweis"].textContent = "Geschlossen und ausgezählt. Die Feststellung durch die "
+        + "Leitung ist der Rechtsakt — erst sie erzeugt den Beschluss.";
+    } else if (a === "festgestellt") {
+      e["abst-hinweis"].className = "hinweis gut";
+      e["abst-hinweis"].textContent = ergebnisSatz();
+    } else {
+      e["abst-hinweis"].className = "hinweis";
+      e["abst-hinweis"].textContent = "Quorum wird beim Freigeben eingefroren. Automatische "
+        + "Technikeingriffe sind währenddessen gesperrt. Regelwerk: einfache Mehrheit, "
+        + "Enthaltungen zählen nicht mit.";
+    }
+
+    // Automatik
+    var gesperrt = zustand.abstimmung === "laufend";
+    e["automatik-text"].innerHTML = gesperrt
+      ? '<span class="gesperrt">Gesperrt — Abstimmung läuft</span>'
+      : (zustand.automatik ? "Kamera folgt dem Wort · Hysterese 2,5 s"
+                           : '<span class="gesperrt">Angehalten — Kamera steht</span>');
+    e["automatik-knopf"].textContent = zustand.automatik ? "Anhalten" : "Fortsetzen";
+    e["automatik-knopf"].disabled = gesperrt;
+  }
+
+  function ergebnisSatz() {
+    var s = zustand.stimmen;
+    var an = s.ja > s.nein;
+    return (an ? "Angenommen" : "Abgelehnt") + " mit " + s.ja + " Ja, " + s.nein +
+      " Nein, " + s.enth + " Enthaltungen. Festgestellt und angekettet.";
+  }
+
+  /* ---- Handlungen --------------------------------------------------- */
+  function erteile(i) {
+    if (zustand.abstimmung === "laufend") { return; }
+    var w = zustand.warte.splice(i, 1)[0];
+    if (zustand.redner) {
+      quittung("Wort beendet: " + zustand.redner.name + " (Platz " + zustand.redner.platz + ")");
+    }
+    zustand.redner = { name: w.name, platz: w.platz, fraktion: w.fraktion, rest: w.dauer };
+    quittung("Wort erteilt: " + w.name + " (Platz " + w.platz + ") · Kamera 2 auf Preset Platz " + w.platz);
+    e["automatik-grund"].textContent = "Letzter Eingriff " + lang(sekunden) +
+      " — Kamera 2 auf Preset Platz " + w.platz + ", weil Platz " + w.platz + " das Wort erhielt.";
+    zeichnen();
+  }
+
+  e["knopf-naechster"].addEventListener("click", function () { erteile(0); });
+
+  e["knopf-beenden"].addEventListener("click", function () {
+    if (!zustand.redner) { return; }
+    quittung("Wort beendet: " + zustand.redner.name + " (Platz " + zustand.redner.platz + ")");
+    zustand.redner = null;
+    zeichnen();
+  });
+
+  e["knopf-entziehen"].addEventListener("click", function () {
+    if (!zustand.redner) { return; }
+    // Regel 8: bestätigen, weil nichts zurückgeht
+    var name = zustand.redner.name;
+    if (!window.confirm("Wort entziehen: " + name + "?\n\nDer Entzug wird mit Ihrem Namen "
+        + "angekettet und erscheint im Protokoll. Er ist nicht rückgängig zu machen.")) { return; }
+    quittung("Wort entzogen: " + name + " — durch die Leitung");
+    zustand.redner = null;
+    zeichnen();
+  });
+
+  e["knopf-vorrang"].addEventListener("click", function () {
+    quittung("Vorrang Vorsitz — alle offenen Mikrofone geschlossen");
+    zustand.redner = { name: "Vorsitz", platz: "01", fraktion: "—", rest: 120 };
+    zeichnen();
+  });
+
+  e["knopf-freigeben"].addEventListener("click", function () {
+    zustand.abstimmung = "laufend";
+    zustand.quorumEingefroren = zustand.anwesend;
+    zustand.stimmen = { ja: 0, nein: 0, enth: 0 };
+    if (zustand.redner) {
+      quittung("Wort beendet: " + zustand.redner.name + " — Abstimmung");
+      zustand.redner = null;
+    }
+    quittung("Abstimmung freigegeben · Quorum eingefroren bei " + zustand.quorumEingefroren
+      + " · Regelwerksfassung 2026-03");
+    zeichnen();
+  });
+
+  e["knopf-schliessen"].addEventListener("click", function () {
+    if (!window.confirm("Abstimmung schließen?\n\nNach dem Schluss kann niemand mehr "
+        + "abgeben oder ändern.")) { return; }
+    zustand.abstimmung = "geschlossen";
+    quittung("Abstimmung geschlossen · " +
+      (zustand.stimmen.ja + zustand.stimmen.nein + zustand.stimmen.enth) + " Stimmen ausgezählt");
+    zeichnen();
+  });
+
+  e["knopf-feststellen"].addEventListener("click", function () {
+    zustand.abstimmung = "festgestellt";
+    quittung("Ergebnis festgestellt: " + ergebnisSatz());
+    zeichnen();
+  });
+
+  e["knopf-abbrechen"].addEventListener("click", function () {
+    if (!window.confirm("Abstimmung abbrechen?\n\nDer Abbruch wird mit Grund angekettet, "
+        + "die abgegebenen Stimmen verfallen.")) { return; }
+    zustand.abstimmung = "vorbereitet";
+    zustand.quorumEingefroren = null;
+    zustand.stimmen = { ja: 0, nein: 0, enth: 0 };
+    quittung("Abstimmung abgebrochen durch die Leitung");
+    zeichnen();
+  });
+
+  e["automatik-knopf"].addEventListener("click", function () {
+    zustand.automatik = !zustand.automatik;
+    quittung(zustand.automatik ? "Technikautomatik fortgesetzt" : "Technikautomatik angehalten");
+    zeichnen();
+  });
+
+  e["knopf-uebergabe"].addEventListener("click", function () {
+    if (!window.confirm("Leitung an Frau Adam übergeben?\n\nSie geben die Sitzungsleitung ab. "
+        + "Die Übergabe wird angekettet und die Epoche erhöht.")) { return; }
+    zustand.epoche += 1;
+    quittung("Sitzungsleitung übergeben an Frau Adam · Epoche " + zustand.epoche);
+    e["stab"].innerHTML = '<span class="lampe"></span> Frau Adam führt · Epoche ' + zustand.epoche;
+    e["stab"].style.background = "var(--flaeche-tief)";
+    e["stab"].style.color = "var(--tinte-leise)";
+    e["stab"].style.borderColor = "var(--linie-stark)";
+    e["knopf-uebergabe"].disabled = true;
+    e["knopf-uebergabe"].textContent = "Sie führen die Sitzung nicht mehr";
+    ["knopf-naechster","knopf-beenden","knopf-entziehen","knopf-vorrang",
+     "knopf-freigeben","knopf-schliessen","knopf-feststellen","knopf-abbrechen"
+    ].forEach(function (id) { e[id].disabled = true; });
+  });
+
+  /* ---- Entwurfssteuerung -------------------------------------------- */
+  var namen = ["Herr Vogt", "Frau Iversen", "Herr Malik", "Frau Brand", "Herr Ostermann"];
+  var n = 0;
+
+  e["sim-meldung"].addEventListener("click", function () {
+    var name = namen[n % namen.length];
+    n += 1;
+    var platz = String(9 + n * 3);
+    zustand.warte.push({ name: name, platz: platz.length < 2 ? "0" + platz : platz,
+                         fraktion: "ABC".charAt(n % 3), art: "wortmeldung", dauer: 300 });
+    quittung("Wortmeldung: " + name + " (Platz " + platz + ")");
+    zeichnen();
+  });
+
+  e["sim-zwischenfrage"].addEventListener("click", function () {
+    zustand.warte.unshift({ name: "Frau Reuter", platz: "19", fraktion: "C",
+                            art: "zwischenfrage", dauer: 60 });
+    quittung("Zwischenfrage angemeldet: Frau Reuter (Platz 19)");
+    zeichnen();
+  });
+
+  e["sim-abwesend"].addEventListener("click", function () {
+    zustand.anwesend = Math.max(0, zustand.anwesend - 2);
+    quittung("Anwesenheit geändert: 2 Mitglieder abwesend · jetzt " + zustand.anwesend + " von 33");
+    zeichnen();
+  });
+
+  /* ---- Uhren und simulierter Stimmeingang ---------------------------- */
+  setInterval(function () {
+    sekunden += 1;
+    e["uhr"].textContent = lang(sekunden);
+    if (sekunden % 20 === 0) { e["kette-bis"].textContent = lang(sekunden - 10); }
+
+    if (zustand.redner) { zustand.redner.rest -= 1; }
+
+    if (zustand.abstimmung === "laufend") {
+      // Die Stimmen laufen im Entwurf gerafft ein, damit der Ablauf sichtbar wird.
+      for (var i = 0; i < 3; i += 1) {
+        var abgegeben = zustand.stimmen.ja + zustand.stimmen.nein + zustand.stimmen.enth;
+        if (abgegeben >= zustand.quorumEingefroren) { break; }
+        var w = abgegeben % 7;
+        if (w < 4) { zustand.stimmen.ja += 1; }
+        else if (w < 6) { zustand.stimmen.nein += 1; }
+        else { zustand.stimmen.enth += 1; }
+      }
+    }
+    zeichnen();
+  }, 1000);
+
+  quittung("Tagesordnungspunkt 4 aufgerufen — Haushaltssatzung 2027");
+  quittung("Wort erteilt: Dr. Kessler (Platz 03) · Kamera 2 auf Preset Platz 03");
+  zeichnen();
+})();
+</script>

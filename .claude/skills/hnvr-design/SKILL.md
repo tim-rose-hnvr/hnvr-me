@@ -1,64 +1,69 @@
 ---
 name: hnvr-design
-description: Das Designsystem von hnvr.me digital — Clash Display, DM Sans, Signalorange #FF7120 auf Schwarz und Creme. Das ist der Agentur-Auftritt: Webdesign, Branding, SEO, Social Media, Software, Web-Apps, Tools. Anwenden bei allem Sichtbaren dieser Marke: Website, Landingpage, Onepager, Kundenangebot, Präsentation, Artefakt, PDF, E-Mail-Template, Social-Grafik, Tool-Oberfläche, Dashboard. Nicht verwechseln mit dem Skill hnvr-erlebnis — der gehört zum Event- und Rental-Auftritt auf hnvr.me (hell, rot, Staatliches).
+description: Das Designsystem von hnvr.me, abgeleitet aus der eigenen WordPress-Seite (Theme Dreamslab + Elementor) — Clash Display, DM Sans, Signalorange #FF7120 auf Schwarz #030303 und Creme. Anwenden bei allem Sichtbaren für hnvr.me: Seite, Landingpage, Onepager, Kundenangebot, Präsentation, Artefakt, PDF, E-Mail-Vorlage, Social-Grafik, Tool-Oberfläche, Dashboard, neue Abschnitte für die WordPress-Seite selbst. Trigger: hnvr, hnvr.me, "unser Design", "im Stil unserer Seite", Seite/Landingpage/Deck für hnvr.
 ---
 
-# hnvr.me digital — Designsystem
+# hnvr.me — Designsystem
 
-Alles, was hnvr.me digital nach außen zeigt, sieht gleich aus. Dieser Skill ist die Quelle dafür.
-Nichts hier wird pro Projekt neu erfunden — Anpassung passiert über Inhalte und Bilder, nie über neue Farben oder Schriften.
+Die Quelle ist die eigene WordPress-Installation: **hnvr5.wpcomstaging.com**, Theme **Dreamslab** mit Elementor.
+Alle Werte hier sind von dort ausgelesen, nicht nachempfunden. Die Variablennamen sind die des Themes — was mit diesem System gebaut wird, lässt sich unverändert in die Seite übernehmen.
 
-**Zwei Auftritte, nicht einer.** Dieser hier ist der dunkle Agentur-Auftritt. Für Technik, Bühne, Licht, Ton, Veranstaltung und Vermietung gilt der Skill `hnvr-erlebnis` — hell, Rot `#E02B16`, Staatliches. Beide teilen nur den Tonfall, sonst nichts. Nie Elemente aus dem einen ins andere übernehmen.
+Nichts wird pro Projekt neu erfunden. Anpassung passiert über Inhalte und Bilder, nie über neue Farben oder Schriften.
 
 ## Vorgehen
 
-1. **Immer** `assets/hnvr.css` + `assets/fonts.css` einbinden, nie Tokens abtippen.
-   Für eine einzelne HTML-Datei (Artefakt, E-Mail, Angebot): Inhalt von `hnvr.css` in ein `<style>` kopieren und die vier Schriften als `data:font/woff2;base64` einbetten — siehe `references/tokens.md`, Abschnitt „Einbetten".
-2. Seitengerüst aus `assets/vorlage.html` nehmen. Die Klassen dort sind das Vokabular.
-3. Bausteine aus `references/komponenten.md` zusammensetzen. Nur wenn nichts passt, nach den Regeln unten neu bauen.
+1. **Immer** `assets/fonts.css` + `assets/hnvr.css` einbinden, nie Tokens abtippen.
+   Einzelne HTML-Datei ohne Server (Artefakt, E-Mail, Angebot): Schriften als `data:font/woff2;base64` einbetten — siehe `references/tokens.md`, Abschnitt „Einbetten".
+2. Seitengerüst aus `assets/vorlage.html`.
+3. Bausteine aus `references/komponenten.md`.
 4. Texte nach `references/sprache.md` — Deutsch, Du, Stakkato.
 
-## Neun Leitplanken
+## Acht Leitplanken
 
-Diese neun Punkte entscheiden, ob etwas nach hnvr aussieht. Alles andere ist Geschmack.
-
-1. **Drei Schriften, keine vierte.** Clash Display (Überschriften, Labels, Buttons), DM Sans (Fließtext), Recoleta (genau ein Riesen-Schriftzug pro Seite). Immer selbst gehostet, nie Google Fonts, nie ein CDN.
-2. **Dunkel ist der Normalzustand.** `#050505` trägt die Seite, `#F1EFEB` (Creme) ist der Gegenschnitt für ein bis zwei Abschnitte. Reines Weiß als Grundfläche gibt es nicht.
-3. **Ein Akzent.** `#FF7120`. Kein zweiter Akzentton, keine Ampelfarben, keine Verlaufsspielereien außer den definierten Radialverläufen für Bildflächen.
-4. **Überschriften sind Clash Display 600, GROSSBUCHSTABEN**, `line-height` ≤ 1, `letter-spacing` negativ (−0.01 bis −0.02em). Große Typo trägt die Seite, nicht Bilder.
-5. **Fließtext ist DM Sans**, gemischt geschrieben, `max-width: 44ch`, Farbe `--muted`, nie reines Weiß.
-6. **Recoleta 900 nur einmal pro Seite.** Der eine überbreite Schriftzug (`.serif-giant`, `scaleY(1.12)`). Zweimal wirkt billig.
-7. **Radien:** Karten 14–22px, Pills und Buttons 50px, Kreise 50%. Nichts dazwischen erfinden.
-8. **Bewegung ist ruhig.** Eine Kurve für alles: `cubic-bezier(.16,1,.3,1)`. Einblenden 34px/0.95s. `prefers-reduced-motion` wird respektiert — die Regel steht schon in `hnvr.css`, sie darf nicht mit Inline-Styles ausgehebelt werden.
-9. **Deutsch, Du, Stakkato.** „Ideen zünden. Erfolg entfachen." Kein Sie, kein Agentur-Sprech, keine englischen Füllwörter außer den etablierten (Branding, Webdesign, SEO).
+1. **Zwei Schriften, keine dritte.** Clash Display für Überschriften, Buttons, Labels, Zahlen. DM Sans für alles Lesbare. Beide selbst gehostet, wie auf der Seite — nie Google Fonts, nie ein CDN.
+2. **Schwarz ist der Normalzustand.** `#030303` trägt die Seite, `#F1EFEB` (Creme) ist der Gegenschnitt für ein bis zwei Abschnitte, `#121C27` die abgesetzte Fläche. Reines Weiß als Grundfläche gibt es nicht.
+3. **Ein Akzent: `#FF7120`.** Kein zweiter Akzentton. `#87F90E` gibt es auf der Seite, aber nur als seltenes Signal — nicht als zweite Hausfarbe verwenden.
+4. **Überschriften sind Clash Display 600 in Weiß**, `line-height: 1.2` bei den Textgraden, `.98` bei den Displaygraden, `letter-spacing` negativ. Große Typo trägt die Seite, nicht Bilder.
+5. **Fließtext ist DM Sans 16px/1.625 in `#C2C2C2`** — das ist die Body-Regel des Themes. Nie reines Weiß für Fließtext, nie breiter als 44ch.
+6. **Kleinschrift in Großbuchstaben bekommt `letter-spacing: 1.4px`.** Das ist der Wert der Seite, er gilt für Labels, Buttons, Pillen, Tabellenköpfe.
+7. **Kanten:** Karten 8px, große Kästen 48px, Buttons und Pillen rund. Das sind die Elementor-Werte der Seite; nichts dazwischen erfinden.
+8. **Deutsch, Du, Stakkato.** „Ideen zünden. Erfolg entfachen." Kein Sie, kein Agentur-Sprech.
 
 ## Kurzreferenz
 
 | | |
 |---|---|
-| Grund | `#050505` · Creme `#F1EFEB` · Tinte `#0C0C0C` |
-| Text | `#F8F8F8` · gedämpft `#8C8C8C` · auf Creme `#6A6864` |
+| Grund | `--secondary-color` `#030303` · Fläche `--primary-color` `#121C27` · Creme `#F1EFEB` |
+| Text | `--third-color` `#C2C2C2` · Überschrift `--four-color` `#FFF` · auf Creme `#0C0C0C` / `#5C5E5C` |
 | Akzent | `#FF7120`, Verlaufsende `#DF3E06` |
-| Linien | `rgba(255,255,255,.13)` · auf Creme `rgba(0,0,0,.12)` |
+| Linie | `rgba(255,255,255,.15)` |
 | Display | Clash Display 600, uppercase |
-| Text | DM Sans 400/500 |
-| Riesen-Schriftzug | Recoleta 900, uppercase, `scaleY(1.12)` |
-| Breite | `max-width: 1760px`, Rand `clamp(20px, 5vw, 90px)` |
-| Abschnitt | `padding: clamp(80px, 10vw, 160px) 0` |
+| Text | DM Sans 16px / 1.625 |
+| Breite | `1770px` (Elementor), Rand `3.61vw` |
+| Entwurfsbreite | `1920px` — daher die vw-Werte der Displaygrade |
 
 Vollständige Tabellen: `references/tokens.md`.
 
+## Zwei Ebenen, nicht verwechseln
+
+Die Seite hat **zwei** Typo-Ebenen, und das ist Absicht:
+
+- **Theme-Ebene** — `h1`–`h6`, feste px-Grade (50 / 35 / 30 / 25 / 20 / 17) mit den Haltepunkten 1200 / 767 / 480. Das ist der Fließ- und Fallback-Zustand, gilt für Blog, Shop, Formulare.
+- **Seiten-Ebene** — `.disp-1` bis `.disp-5`, die großen Grade aus den Elementor-Einstellungen (150 / 120 / 100 / 80 / 70 / 55 px bei 1920). Das ist der gestaltete Zustand für Landingpages und Bühnen.
+
+Für eine gebaute Seite `.disp-*` nehmen. `h1`–`h6` bleiben als Grundgerüst darunter richtig.
+
 ## Wenn etwas fehlt
 
-Neue Komponente bauen? Erst prüfen, ob sich eine bestehende erweitern lässt. Wenn wirklich neu:
-Clash-Display-Überschrift in Großbuchstaben, DM-Sans-Text, eine Linie oder ein 14–22px-Radius als Rahmen, Akzent nur als Punkt, Ziffer, Haken oder Hover-Fläche. Dann in `references/komponenten.md` nachtragen, damit sie beim nächsten Mal da ist.
+Erst prüfen, ob sich ein bestehender Baustein erweitern lässt. Wenn wirklich neu:
+Clash-Display-Überschrift in Großbuchstaben, DM-Sans-Text, eine 1px-Linie oder 8px-Radius als Rahmen, Akzent nur als Punkt, Ziffer, Haken oder Hover-Fläche. Dann in `references/komponenten.md` nachtragen.
 
-Widerspruch ist erlaubt: Wenn eine Regel hier eine Anforderung technisch unmöglich macht (Kontrast, Barrierefreiheit, Druck), das sagen — nicht still umgehen.
+Widerspruch ist erlaubt: Wenn eine Regel eine Anforderung technisch unmöglich macht (Kontrast, Barrierefreiheit, Druck), das sagen — nicht still umgehen.
 
 ## Verwandte Dateien
 
-- `references/tokens.md` — alle Tokens, Typo-Skala, Abstände, Einbetten
+- `references/tokens.md` — alle Werte, beide Typo-Ebenen, Einbetten
 - `references/komponenten.md` — Bausteine mit fertigem Markup
 - `references/sprache.md` — Tonfall, Satzmuster, Wortliste
-- `references/herkunft.md` — woher das Design stammt, Lizenzen, wie man es nachprüft
+- `references/herkunft.md` — Quelle, Lizenzen, Nachprüfen
 - `assets/hnvr.css`, `assets/fonts.css`, `assets/fonts/`, `assets/vorlage.html`

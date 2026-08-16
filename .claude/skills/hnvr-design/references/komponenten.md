@@ -43,7 +43,7 @@ Links Label und Überschrift, rechts ein erklärender Satz. Bricht auf schmalen 
 <div class="sec-head">
   <div>
     <p class="ey"><span class="s">//</span> unsere leistungen</p>
-    <h2 class="clash-big rv" style="margin-top:18px">Was wir<br>für dich machen</h2>
+    <h2 class="disp-4 rv" style="margin-top:18px">Was wir<br>für dich machen</h2>
   </div>
   <p class="copy rv d1">Vom Onepager bis zum Onlineshop – strategisch geplant, sauber umgesetzt.</p>
 </div>
@@ -61,17 +61,18 @@ Displaygröße, ein Wort im Akzent. Steht allein in einem Abschnitt, ohne Bild d
 
 ---
 
-## Riesen-Schriftzug
+## Großer Schriftzug
 
-Genau einmal pro Seite. Ein Wort, nicht mehr — es soll überlaufen dürfen.
+Ein Wort, überbreit gesetzt, mittig. Auf der Seite gibt es dafür **keine** eigene Schrift — es ist derselbe Clash Display, nur im größten Grad.
 
 ```html
 <div style="display:flex; justify-content:center; overflow:hidden">
-  <span class="serif-giant">Arbeiten</span>
+  <span class="disp-2">Arbeiten</span>
 </div>
 ```
 
 Das umgebende `overflow:hidden` ist Pflicht, sonst erzeugt der Schriftzug eine waagerechte Scrollleiste.
+Einmal pro Seite. Der Aufruf im Fuß zählt mit.
 
 ---
 
@@ -144,7 +145,7 @@ Vier Zellen, durch 1px-Raster getrennt. Die Zahl selbst kommt in `<i>` und wird 
 
 ```html
 <div class="stats">
-  <div class="n"><span class="v">seit <i>2017</i></span><span class="k">in Hannover</span></div>
+  <div class="n"><span class="v"><i>2017</i></span><span class="k">seit · in Hannover</span></div>
   <div class="n"><span class="v"><i>120</i>+</span><span class="k">Projekte</span></div>
   <div class="n"><span class="v"><i>1</i></span><span class="k">Ansprechpartner</span></div>
   <div class="n"><span class="v"><i>0</i></span><span class="k">Baukasten</span></div>
@@ -189,7 +190,7 @@ Ein Paket, kein Vergleichsraster. Preis groß, Ziffern im Akzent, Haken orange.
 ```html
 <div class="price2">
   <div class="l">
-    <h2 class="clash-big">Website-Paket</h2>
+    <h2 class="disp-4">Website-Paket</h2>
     <p class="copy">Alles drin: Planung, Design, Umsetzung, Hosting, Support.</p>
   </div>
   <div class="r">
@@ -209,7 +210,7 @@ Ein Paket, kein Vergleichsraster. Preis groß, Ziffern im Akzent, Haken orange.
 
 ## Stimme
 
-Zitat mit Recoleta-Anführungszeichen im Akzent. Drei nebeneinander, auf schmalen Fenstern untereinander.
+Zitat mit großem Anführungszeichen im Akzent (Clash Display). Drei nebeneinander, auf schmalen Fenstern untereinander.
 
 ```html
 <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:22px">
@@ -228,17 +229,27 @@ Zitat mit Recoleta-Anführungszeichen im Akzent. Drei nebeneinander, auf schmale
 
 ## Bühne
 
-Drei Zeilen Großbuchstaben, versetzt eingerückt, darüber ein Label, darunter Vorspann und Button.
+Drei Zeilen Großbuchstaben in `.disp-1`, darüber ein Label, darunter Vorspann und Button.
 Kein Bild? `--grad-hero` trägt die Fläche. Vollständiges Markup in `assets/vorlage.html`.
 
-Die Einrückung der zweiten und dritten Zeile (`padding-left: clamp(20px,4vw,80px)` bzw. `clamp(10px,2vw,40px)`) ist der Grund, warum die Bühne nicht wie ein Standard-Header aussieht. Nicht weglassen.
+```html
+<section class="hero">
+  <div class="hero-bg"><i class="grain"></i></div>
+  <div class="wrap">
+    <p class="ey"><span class="s">//</span> Digitalagentur Hannover</p>
+    <h1 class="disp-1">Digital,<br>das um die<br>Ecke denkt.</h1>
+  </div>
+</section>
+```
+
+Die Verdunkelung sitzt als `::after` auf `.hero-bg` und ist nicht optional — ohne sie steht der Vorspann unlesbar auf der Flamme. Für ein Foto das `<img>` in `.hero-bg` legen, die Verdunkelung liegt automatisch darüber.
 
 ---
 
 ## Kopf und Fuß
 
 Stehen komplett in `assets/vorlage.html`. Beides unverändert übernehmen —
-die Kopfzeile verdichtet sich beim Scrollen (`.scrolled`), der Fuß trägt den zweiten großen Recoleta-Schriftzug im Aufruf.
+die Kopfzeile verdichtet sich beim Scrollen (`.scrolled`), der Fuß trägt den großen Schriftzug im Aufruf.
 
-> Achtung: Wenn die Seite bereits einen `.serif-giant` im Inhalt hat, ist der Fuß-Schriftzug der zweite.
-> Dann entweder den einen im Inhalt streichen oder im Fuß auf `.clash-big` wechseln.
+> Achtung: Wenn die Seite bereits einen `.disp-2` im Inhalt hat, ist der Fuß-Schriftzug der zweite.
+> Dann entweder den einen im Inhalt streichen oder im Fuß auf `.disp-4` wechseln.

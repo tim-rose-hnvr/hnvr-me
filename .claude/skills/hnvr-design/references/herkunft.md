@@ -4,30 +4,76 @@ Stand: 16.08.2026
 
 ---
 
-## Woher das Design stammt
+## Die Quelle
 
-**hnvr.me digital** läuft auf WordPress mit dem Theme **Dreamslab** (Elementor, WooCommerce, Hosting bei WordPress.com).
-Nachweis im ausgelieferten HTML: `"wptheme":"dreamslab"`, dazu die Stylesheets `wp-content/themes/dreamslab/style.css` sowie die eigenen Ergänzungen `/assets/kontakt.css`, `/assets/mobil.css`, `/assets/korrekturen.css`.
+**https://hnvr5.wpcomstaging.com/** — die eigene WordPress-Installation, gehostet bei WordPress.com (Atomic).
 
-Die Tokens in diesem Skill stammen aus zwei Quellen, die sich decken:
+| | |
+|---|---|
+| Theme | **Dreamslab** (`"wptheme":"dreamslab"`) |
+| Seitenbaukasten | Elementor 4.2.0 |
+| Optionsrahmen | Redux 4.5.13 |
+| Shop | WooCommerce |
+| Zeitzone | Europe/Berlin |
 
-1. **Die Live-Seite.** Aus dem gerenderten CSS: Akzent `#FF7120` mit Verlaufsende `#DF3E06`, Creme `#F1EFEB`, Tinte `#0C0C0C`, Nebenton `#C2C2C2`, Schriften `"ClashDisplay"` und `"DM Sans"`, Containerbreite `1770px`, Seitenrand `3.61vw`, `text-transform: uppercase` an rund 50 Stellen, `letter-spacing: 1.4px` auf Labels.
-2. **Der Nachbau in Claude** vom 23.07.2026 — die beiden Artefakte „Dreamslab — Home 2 (Creative Studio)" und „Dreamslab — Creative Portfolio & Agency". Dort liegt das System bereits als sauberer `:root`-Block vor. Der Home-2-Nachbau ist die Grundlage von `assets/hnvr.css`; die Schriftdateien in `assets/fonts/` sind aus diesem Artefakt extrahiert.
+Jeder Wert in diesem Skill ist aus dem ausgelieferten HTML und CSS dieser Installation ausgelesen. Nichts ist nachempfunden.
 
-Abweichungen, die bewusst getroffen wurden:
+### Was wo herkommt
 
-- Der Portfolio-Nachbau nutzte `--accent:#F1531F`. Verworfen — die Live-Seite sagt `#FF7120`, und die gilt.
-- Der Home-2-Nachbau nutzte `--bg:#050505`, die Live-Seite in einigen Blöcken `#030303`. `#050505` behalten: der Unterschied ist unsichtbar, der eine Wert ist einfacher.
-- Der zweite Nachbau kannte kein Recoleta. Recoleta bleibt drin, weil der Riesen-Schriftzug ohne Serife nicht funktioniert.
+**Farbtokens** — aus dem Block `<style id="pxl-style-inline-css">` der Seite, wörtlich:
 
-**Nicht** aus der Live-Seite übernommen: die Elementor-Standardwerte (`#6EC1E4`, `#61CE70`, Roboto). Die stehen zwar im `elementor-kit-8`, sind aber unbenutzter Auslieferungszustand.
+```css
+:root{--primary-color:#121c27;--secondary-color:#030303;--third-color:#c2c2c2;
+--four-color:#fff;--body_bg-color:#030303;--link-color:#fff;--link-color-hover:#fff;}
+```
 
----
+Identisch auf `/`, `/home-2`, `/home-5`, `/home-6`, `/home-7`, `/our-services` und auf der Live-Seite. Das ist also das Fundament, nicht die Einstellung einer einzelnen Seite.
 
-## Was nicht dazugehört
+**Grundtypografie** — aus `wp-content/themes/dreamslab/assets/css`, wörtlich:
 
-`hnvr.me` (die Hauptdomain, „hnvr.me mit Erlebniss") ist eine **Wix**-Seite mit einem anderen System: Staatliches als Display-Schrift, Inter Tight als Textschrift, Rot `#E02B16` als Akzent.
-Das ist der Event- und Rental-Auftritt, nicht hnvr.me digital. Dieser Skill beschreibt **nicht** diese Seite. Wer für den Event-Bereich gestaltet, braucht ein eigenes Tokenset — dann bitte als zweiter Skill, nicht als Sonderzweig hier.
+```css
+body { background-color: var(--secondary-color); font-size: 16px; line-height: 1.625;
+       color: var(--third-color); font-weight: normal; letter-spacing: 0;
+       font-family: "DM Sans", sans-serif; }
+h1,h2,h3,h4,h5,h6 { font-family: 'Clash Display'; color: #fff; font-weight: 600;
+       margin: 0 0 15px; line-height: 1.2; }
+```
+
+samt der Grade 50 / 35 / 30 / 25 / 20 / 17 px und der Haltepunkte 1200 / 767 / 480.
+
+**Schriften** — die Dateien der Seite selbst:
+
+```
+/wp-content/themes/dreamslab/assets/fonts/ClashDisplay/ClashDisplay-{Extralight,Light,Regular,Medium,Semibold,Bold}.woff2
+/wp-content/uploads/fonts/dmsans/rP2Hp2ywxg089UriCZOIHQ.woff2      (latin)
+/wp-content/uploads/fonts/dmsans/rP2Hp2ywxg089UriCZ2IHSeH.woff2    (latin-ext)
+```
+
+**Displaygrade, Akzent, Kanten** — aus den Elementor-Einstellungen der Seiten: Grade 150 / 120 / 100 / 80 / 70 / 55 px, Radien 8px (18×) und 48px (5×), `letter-spacing: 1.4px` (18×), `text-transform: uppercase` (50×), Containerbreite 1770px, Seitenrand 3.61vw, Bühnenverlauf `radial-gradient(at center center, #FF7120 0%, #DF3E06 100%)`.
+
+**Entwurfsbreite 1920px** — belegt durch die vw-Werte im Theme-CSS: `5.208vw` = 100px, `2.8646vw` = 55px, `3.75vw` = 72px. Alle gehen bei 1920 glatt auf.
+
+### Selbst entschieden
+
+Diese Punkte stehen nicht in der Seite und sind Entscheidungen, keine Messungen:
+
+- `--sec` (Abschnittshöhe) und die Staffelung `.d1 .d2 .d3`. Elementor setzt Abstände pro Element; ein einheitlicher Rhythmus ließ sich daraus nicht ableiten.
+- Die Umrechnung der festen Displaygrade in `clamp()`/vw. Die Seite selbst schaltet an Haltepunkten um; stufenloses Wachsen ist die Verbesserung, die Ankerwerte bleiben.
+- `.rv`-Einblendung, Korn-Textur, die Verdunkelung der Bühne. Auf der Seite macht das GSAP bzw. ein PNG; hier ist es CSS ohne Abhängigkeit.
+- `--muted-cream: #5c5e5c` für Fließtext auf Creme (5.7:1). Auf Creme steht `--third-color` bei 1.9:1 und wäre unlesbar.
+
+### Ausdrücklich nicht übernommen
+
+- **Die Elementor-Standardwerte** `#6EC1E4`, `#54595F`, `#7A7A7A`, `#61CE70` mit Roboto und Roboto Slab aus `elementor-kit-8`. Unbenutzter Auslieferungszustand.
+- **Die Gutenberg-Palette** `#87F90E` ausgenommen — die Töne `#F78DA7`, `#CF2E2E`, `#FF6900`, `#FCB900`, `#7BDCB5`, `#5FBD74` sind WordPress-Kernvorgaben, keine Markenfarben. Sie tauchen auf jeder Seite genau einmal auf, weil der Block-Editor sie mitliefert.
+- **Six Caps.** Die Staging-Installation lädt die Schrift über `fonts-api.wp.com`, verwendet sie auf den geprüften Seiten aber nicht.
+
+### Korrektur gegenüber einer früheren Fassung
+
+Eine erste Fassung dieses Skills war aus zwei Claude-Nachbauten der Dreamslab-Demo abgeleitet, nicht aus der Seite. Daraus stammten zwei Fehler, die jetzt behoben sind:
+
+- **Recoleta.** Der Nachbau setzte den großen Schriftzug in einer Serife. Die Seite kennt keine Serifenschrift — der Schriftzug ist Clash Display im größten Grad. Recoleta ist entfernt, die Lizenzfrage damit gegenstandslos.
+- **Die Grundfarbe** war `#050505` statt `#030303`, und `--primary-color` (`#121C27`) fehlte ganz.
 
 ---
 
@@ -37,36 +83,36 @@ Das ist der Event- und Rental-Auftritt, nicht hnvr.me digital. Dieser Skill besc
 |---|---|---|
 | **Clash Display** | Fontshare (Indian Type Foundry), kostenlos für privat und kommerziell, Webnutzung eingeschlossen | unkritisch |
 | **DM Sans** | SIL Open Font License 1.1 | unkritisch |
-| **Recoleta** | Latinotype, kostenpflichtig — Lizenz mit der Website erworben (Auskunft Tim, 16.08.2026) | geklärt für hnvr.me |
 
-Recoleta ist bezahlt und wird verwendet. Die Lizenz gehört zum Website-Kauf, gilt also für hnvr.me.
-
-Für **Kundenprojekte** ist das eine eigene Frage: Webfont-Lizenzen sind bei Latinotype üblicherweise an Domain und Seitenaufrufe gebunden, nicht an die Agentur. Wenn Recoleta in eine fremde Domain eingebettet werden soll, gehört die Lizenz dorthin — oder der Riesen-Schriftzug bekommt eine freie, hoch-kontrastige Serife (z. B. Instrument Serif, OFL). Betroffen ist dann nur `--serif`, plus eine Nachjustierung von `scaleY`.
+Beide dürfen selbst gehostet und in Kundenprojekte eingebettet werden. Nichts zu klären.
 
 ---
 
 ## Nachprüfen
 
-Wenn sich die Live-Seite ändert und der Skill nachziehen soll:
-
 ```bash
-# Seite holen
-curl -sSL https://hnvr.me/ -o seite.html
+S=https://hnvr5.wpcomstaging.com
+curl -sSL $S/ -o seite.html
 
 # Theme bestätigen
 grep -o 'wptheme[^,]*' seite.html
 
-# Farben zählen (die häufigsten sind die tragenden)
-grep -oiE '#[0-9a-f]{6}' seite.html | tr 'A-F' 'a-f' | sort | uniq -c | sort -rn | head -20
+# Die fünf Farbtokens
+grep -oE -- '--(primary|secondary|third|four|body_bg)-color: *#[0-9a-fA-F]+' seite.html | sort -u
 
-# Schriften
-grep -oE 'font-family:[^;}]+' seite.html | sort -u
+# Grundtypografie aus dem Theme-Bündel
+grep -oE 'https://[^"]*base-desktop[^"]*' seite.html   # das große Bündel, ca. 4 MB
+# darin:  body {  …  }   und   h1, h2, h3, h4, h5, h6 { … }
 
-# eigene Ergänzungen der Agentur
-curl -sSL https://hnvr.me/assets/korrekturen.css
+# Displaygrade, Kanten und Sperrung der Elementor-Seiten
+grep -oE 'font-size:[0-9]+px' seite.html | sort | uniq -c | sort -rn | head
+grep -oE 'border-radius:[^;}]+'  seite.html | sort | uniq -c | sort -rn | head
+grep -oE 'letter-spacing:[^;}]+' seite.html | sort | uniq -c | sort -rn | head
 ```
 
-Wenn ein Wert abweicht: **Live-Seite gewinnt**, dieser Skill wird nachgezogen — nicht umgekehrt eine Ausnahme im Projekt gebaut.
+Wenn ein Wert abweicht: **Die Seite gewinnt**, dieser Skill wird nachgezogen — nicht umgekehrt eine Ausnahme im Projekt gebaut.
+
+Ein Vorbehalt zur Methode: Diese Werte sind aus dem ausgelieferten Code gelesen, nicht im Browser gemessen. Was GSAP zur Laufzeit setzt (Einblendungen, Parallaxe, der Mauszeiger) und was erst nach dem Laden entsteht, ist hier nicht erfasst.
 
 ---
 

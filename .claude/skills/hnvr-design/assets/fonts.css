@@ -1,45 +1,51 @@
 /* ============================================================
-   hnvr.me — Schriften, selbst gehostet.
-   Keine Google-Fonts-URL, kein CDN. Die vier Dateien in
-   ./fonts/ sind alles, was gebraucht wird.
+   hnvr.me — Schriften.
 
-   Clash Display  variabel 200–700  (Fontshare)
-   DM Sans        variabel 100–1000 (SIL Open Font License)
-   Recoleta       600 und 900       (Latinotype, kostenpflichtig — siehe herkunft.md)
+   Die Dateien sind die der Seite selbst, aus dem Dreamslab-Theme
+   bzw. dem Upload-Ordner der Installation:
 
-   Liegt die CSS-Datei woanders als neben ./fonts/, nur die
-   vier url() anpassen. Für eine einzelne HTML-Datei stattdessen
-   base64 einbetten (tokens.md, Abschnitt „Einbetten").
+     /wp-content/themes/dreamslab/assets/fonts/ClashDisplay/*.woff2
+     /wp-content/uploads/fonts/dmsans/*.woff2
+
+   Clash Display  200 · 300 · 400 · 500 · 600 · 700  (6 Schnitte, je ~15 KB)
+   DM Sans        variabel 100–1000, latin + latin-ext (61 + 31 KB)
+
+   Zusammen 192 KB. Kein Google-Fonts-Aufruf, kein CDN — die Seite
+   hostet beide Schriften selbst, und das bleibt so.
    ============================================================ */
 
-@font-face {
-  font-family: 'Clash Display';
-  src: url('./fonts/clash-display-var.woff2') format('woff2');
-  font-weight: 200 700;
-  font-style: normal;
-  font-display: swap;
-}
+/* ---------- Clash Display ---------- */
+@font-face { font-family: 'Clash Display'; font-weight: 200; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Extralight.woff2') format('woff2'); }
+@font-face { font-family: 'Clash Display'; font-weight: 300; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Light.woff2') format('woff2'); }
+@font-face { font-family: 'Clash Display'; font-weight: 400; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Clash Display'; font-weight: 500; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'Clash Display'; font-weight: 600; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Semibold.woff2') format('woff2'); }
+@font-face { font-family: 'Clash Display'; font-weight: 700; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Bold.woff2') format('woff2'); }
 
+/* ---------- DM Sans ---------- */
 @font-face {
   font-family: 'DM Sans';
-  src: url('./fonts/dm-sans-var.woff2') format('woff2');
   font-weight: 100 1000;
   font-style: normal;
   font-display: swap;
+  src: url('./fonts/DMSans-Variable-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+                 U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+                 U+2212, U+2215, U+FEFF, U+FFFD;
 }
-
 @font-face {
-  font-family: 'Recoleta';
-  src: url('./fonts/recoleta-600.woff2') format('woff2');
-  font-weight: 600;
+  font-family: 'DM Sans';
+  font-weight: 100 1000;
   font-style: normal;
   font-display: swap;
-}
-
-@font-face {
-  font-family: 'Recoleta';
-  src: url('./fonts/recoleta-900.woff2') format('woff2');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
+  src: url('./fonts/DMSans-Variable-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+                 U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+                 U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }

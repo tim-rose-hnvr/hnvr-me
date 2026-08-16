@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seitentitel · hnvr.me</title>
+<meta name="description" content="Ein Satz, der die Seite beschreibt. Maximal 155 Zeichen.">
+
+<!-- Reihenfolge zählt: erst Schriften, dann System. -->
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="hnvr.css">
+</head>
+<body>
+
+<!-- ========== Kopf ========== -->
+<header class="site">
+  <a class="brand" href="/"><img src="logo.svg" alt="hnvr.me"></a>
+
+  <nav class="main">
+    <a href="#leistungen">Leistungen</a>
+    <a href="#arbeiten">Work</a>
+    <a href="#ueber">Über uns</a>
+    <a href="#kontakt">Kontakt</a>
+  </nav>
+
+  <div class="head-right">
+    <a class="btn" href="#kontakt">
+      Erstgespräch
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+    </a>
+    <div class="burger" aria-label="Menü öffnen" role="button" tabindex="0"><span></span><span></span><span></span></div>
+  </div>
+</header>
+
+<!-- Vollbild-Navigation für schmale Fenster -->
+<div class="mnav" id="mnav">
+  <a href="#leistungen">Leistungen</a>
+  <a href="#arbeiten">Work</a>
+  <a href="#ueber">Über uns</a>
+  <a href="#kontakt">Kontakt</a>
+</div>
+
+<!-- ========== Bühne ==========
+     Drei Zeilen Großbuchstaben. Bild optional — ohne Bild trägt
+     --grad-hero die Fläche. Für ein Foto: <img> in .hero-bg legen,
+     die Verdunkelung liegt als ::after darüber. -->
+<section class="hero">
+  <div class="hero-bg"><i class="grain"></i></div>
+
+  <div class="wrap">
+    <p class="ey rv"><span class="s">//</span> Digitalagentur Hannover</p>
+    <h1 class="rv d1" style="margin-top:24px">
+      Digital,<br>das um die<br>Ecke denkt.
+    </h1>
+    <p class="lede rv d2" style="margin-top:28px">
+      Websites, Branding und Marketing – mit KI, 3D und einem Team,
+      das nicht nach Vorlage arbeitet.
+    </p>
+    <a class="btn rv d3" href="#kontakt" style="margin-top:38px">
+      Erstgespräch
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+    </a>
+  </div>
+</section>
+
+<!-- ========== Laufband ==========
+     Der Track muss zweimal im Markup stehen, sonst reißt die Schleife. -->
+<div class="marquee" style="--dur:30s">
+  <div class="track">
+    <span class="it">Branding</span><span class="it">Webdesign</span><span class="it">SEO</span><span class="it">Social Media</span>
+  </div>
+  <div class="track" aria-hidden="true">
+    <span class="it">Branding</span><span class="it">Webdesign</span><span class="it">SEO</span><span class="it">Social Media</span>
+  </div>
+</div>
+
+<!-- ========== Gegenschnitt: Leistungen ========== -->
+<section class="blk cream" id="leistungen">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <p class="ey"><span class="s">//</span> unsere leistungen</p>
+        <h2 class="clash-big rv" style="margin-top:18px">Was wir<br>für dich machen</h2>
+      </div>
+      <p class="copy rv d1">Vom Onepager bis zum Onlineshop – strategisch geplant, sauber umgesetzt, auf Anfragen optimiert.</p>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:26px">
+      <article class="srv-card rv">
+        <div class="info">
+          <h3>Branding &amp; Text</h3>
+          <p>Im Kern von allem steht die Marke. Wir formen aus deinem Geschäft eine klare Markengeschichte.</p>
+          <div class="tags">
+            <span class="pill">Positionierung</span>
+            <span class="pill">Naming</span>
+            <span class="pill">Tonalität</span>
+          </div>
+        </div>
+        <div class="pic"><i class="grain"></i></div>
+      </article>
+
+      <article class="srv-card rv d1">
+        <div class="info">
+          <h3>Websites &amp; Shops</h3>
+          <p>Gebaut, nicht zusammengeklickt. Schnell, auffindbar, wartbar.</p>
+          <div class="tags">
+            <span class="pill">WordPress</span>
+            <span class="pill">Shop</span>
+            <span class="pill">SEO</span>
+          </div>
+        </div>
+        <div class="pic"><i class="grain"></i></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ========== Aussage + Zahlen ========== -->
+<section class="blk" id="ueber">
+  <div class="wrap">
+    <p class="philo rv">Ideen zünden. <em>Erfolg</em> entfachen.</p>
+
+    <div class="stats rv d1" style="margin-top:60px">
+      <div class="n"><span class="v"><i>2017</i></span><span class="k">seit · in Hannover</span></div>
+      <div class="n"><span class="v"><i>120</i>+</span><span class="k">Projekte</span></div>
+      <div class="n"><span class="v"><i>1</i></span><span class="k">Ansprechpartner</span></div>
+      <div class="n"><span class="v"><i>0</i></span><span class="k">Baukasten</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== Der eine Riesen-Schriftzug ========== -->
+<section class="blk cream" id="arbeiten">
+  <div style="display:flex; justify-content:center; overflow:hidden">
+    <span class="serif-giant">Arbeiten</span>
+  </div>
+</section>
+
+<!-- ========== Fuß ========== -->
+<footer class="site" id="kontakt">
+  <div class="foot-cta">
+    <p class="ey"><span class="s">//</span> Let’s talk</p>
+    <h2>Sag Hallo</h2>
+    <a class="mail" href="mailto:info@hnvr.me">info@hnvr.me</a>
+  </div>
+
+  <div class="wrap">
+    <div class="foot-cols">
+      <div class="foot-brand">
+        <img src="logo.svg" alt="hnvr.me">
+        <p>Digitalagentur aus Hannover. Websites, Branding, Marketing.</p>
+      </div>
+      <div>
+        <h4>Leistungen</h4>
+        <a href="#">Branding</a><a href="#">Webdesign</a><a href="#">SEO</a>
+      </div>
+      <div>
+        <h4>Agentur</h4>
+        <a href="#">Über uns</a><a href="#">Team</a><a href="#">Karriere</a>
+      </div>
+      <div>
+        <h4>Kontakt</h4>
+        <p>[+49] 0511 12282286</p>
+        <a href="mailto:info@hnvr.me">info@hnvr.me</a>
+      </div>
+    </div>
+
+    <div class="foot-bottom">
+      <span>©2026 hnvr.me</span>
+      <span><a href="#">Impressum</a> · <a href="#">AGB</a> · <a href="#">Datenschutz</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Kopfzeile verdichtet sich beim Scrollen
+const head = document.querySelector('header.site');
+addEventListener('scroll', () => head.classList.toggle('scrolled', scrollY > 40), { passive: true });
+
+// Einblenden. Ohne IntersectionObserver bleibt alles sichtbar — kein leerer Bildschirm.
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }, { threshold: .15, rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+} else {
+  document.querySelectorAll('.rv').forEach(el => el.classList.add('in'));
+}
+
+// Vollbild-Navigation
+const burger = document.querySelector('.burger');
+const mnav = document.getElementById('mnav');
+const toggle = () => mnav.classList.toggle('open');
+burger.addEventListener('click', toggle);
+burger.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+mnav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mnav.classList.remove('open')));
+</script>
+</body>
+</html>

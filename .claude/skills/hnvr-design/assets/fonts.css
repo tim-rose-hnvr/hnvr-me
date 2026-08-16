@@ -1,0 +1,45 @@
+/* ============================================================
+   hnvr.me — Schriften, selbst gehostet.
+   Keine Google-Fonts-URL, kein CDN. Die vier Dateien in
+   ./fonts/ sind alles, was gebraucht wird.
+
+   Clash Display  variabel 200–700  (Fontshare)
+   DM Sans        variabel 100–1000 (SIL Open Font License)
+   Recoleta       600 und 900       (Latinotype, kostenpflichtig — siehe herkunft.md)
+
+   Liegt die CSS-Datei woanders als neben ./fonts/, nur die
+   vier url() anpassen. Für eine einzelne HTML-Datei stattdessen
+   base64 einbetten (tokens.md, Abschnitt „Einbetten").
+   ============================================================ */
+
+@font-face {
+  font-family: 'Clash Display';
+  src: url('./fonts/clash-display-var.woff2') format('woff2');
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('./fonts/dm-sans-var.woff2') format('woff2');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Recoleta';
+  src: url('./fonts/recoleta-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Recoleta';
+  src: url('./fonts/recoleta-900.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}

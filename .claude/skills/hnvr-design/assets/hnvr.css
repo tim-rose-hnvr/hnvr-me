@@ -1,0 +1,535 @@
+/* ============================================================
+   hnvr.me — Designsystem
+   Tokens, Grundlagen, Bausteine. Eine Datei, keine Abhängigkeiten.
+
+   Reihenfolge:
+     1  Tokens
+     2  Grundlagen (Reset, Body, Fokus, Bewegung)
+     3  Layout (Rahmen, Abschnitte, Kopfzeilen)
+     4  Typografie (Display, Riesen-Schriftzug, Labels, Fließtext)
+     5  Bausteine (Button, Karte, Laufband, Stapel, Zahlen, Liste, Preis, Stimmen)
+     6  Gerüst (Kopf, Navigation, Fuß)
+     7  Effekte (Korn, Einblenden, Verläufe)
+
+   Voraussetzung: fonts.css ist geladen (oder die vier @font-face
+   sind eingebettet).
+   ============================================================ */
+
+/* ---------- 1  Tokens ---------- */
+:root {
+  /* Flächen */
+  --bg:            #050505;   /* Grundfläche, trägt die Seite */
+  --bg-raise:      #0D0D0D;   /* leicht abgesetzt: Hover, Karteninneres */
+  --cream:         #F1EFEB;   /* Gegenschnitt-Abschnitt */
+  --ink:           #0C0C0C;   /* Text auf Creme */
+
+  /* Schrift */
+  --fg:            #F8F8F8;   /* Text auf Dunkel */
+  --muted:         #8C8C8C;   /* Fließtext, Nebeninfo */
+  --muted-cream:   #6A6864;   /* Fließtext auf Creme */
+  --label:         #C8C8C8;   /* Labels, Kleinschrift */
+
+  /* Linien */
+  --line:          rgba(255, 255, 255, .13);
+  --line-strong:   rgba(255, 255, 255, .22);
+  --line-ink:      rgba(0, 0, 0, .12);
+
+  /* Akzent — genau einer */
+  --accent:        #FF7120;
+  --accent-deep:   #DF3E06;   /* nur als Verlaufsende */
+
+  /* Schriftfamilien */
+  --disp:  'Clash Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  --body:  'DM Sans', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --serif: 'Recoleta', Georgia, serif;
+
+  /* Maße */
+  --maxw:  1760px;
+  --pad:   clamp(20px, 5vw, 90px);   /* Seitenrand */
+  --sec:   clamp(80px, 10vw, 160px); /* Abschnittshöhe */
+
+  /* Radien */
+  --r-card: 16px;
+  --r-box:  22px;
+  --r-pill: 50px;
+
+  /* Bewegung — eine Kurve für alles */
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+
+/* ---------- 2  Grundlagen ---------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+a   { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+ul  { list-style: none; }
+
+::selection    { background: var(--accent); color: #000; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+  /* Eingeblendete Elemente müssen trotzdem sichtbar sein */
+  .rv { opacity: 1 !important; transform: none !important; }
+}
+
+/* ---------- 3  Layout ---------- */
+.wrap {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+
+section.blk { padding: var(--sec) 0; position: relative; }
+
+/* Gegenschnitt: heller Abschnitt. Textfarben kippen mit.
+   Alle vier Textklassen müssen hier stehen — --muted (#8C8C8C) auf
+   Creme sind nur 2.9:1 und damit unlesbar. */
+section.cream          { background: var(--cream); color: var(--ink); }
+section.cream .ey,
+section.cream .muted,
+section.cream .copy,
+section.cream .lede    { color: var(--muted-cream); }
+section.cream .serif-giant { color: var(--ink); }
+
+/* Kopfzeile eines Abschnitts: links Label, rechts Zusatz */
+.sec-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+  flex-wrap: wrap;
+  padding-bottom: clamp(40px, 5vw, 70px);
+}
+
+/* ---------- 4  Typografie ---------- */
+
+/* Label über einer Überschrift: „// unsere leistungen" */
+.ey {
+  font-family: var(--disp);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.ey .s { color: var(--accent); }   /* die beiden Schrägstriche */
+
+.muted { color: var(--muted); }
+
+/* Display-Stufen. Immer Großbuchstaben, immer Clash Display 600. */
+.clash-big,
+.clash-mid,
+.clash-sm {
+  font-family: var(--disp);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.clash-big { font-size: clamp(34px, 5vw, 86px);   line-height: .98; letter-spacing: -.015em; }
+.clash-mid { font-size: clamp(26px, 3.2vw, 52px); line-height: 1;    letter-spacing: -.01em; }
+.clash-sm  { font-size: clamp(20px, 2vw, 30px);   line-height: 1.05; letter-spacing: -.005em; }
+
+/* Der eine Riesen-Schriftzug pro Seite. Nicht zweimal verwenden. */
+.serif-giant {
+  font-family: var(--serif);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: .86;
+  letter-spacing: -.01em;
+  font-size: clamp(58px, 15.5vw, 260px);
+  white-space: nowrap;
+  transform: scaleY(1.12);
+  transform-origin: bottom;
+  /* Bei line-height < 1 ragen die Versalien über den Zeilenkasten hinaus.
+     Ohne dieses Polster schneidet ein overflow:hidden die Oberlängen ab. */
+  padding-top: .12em;
+}
+
+/* Aussagesatz in Displaygröße, ein Wort im Akzent (<em>) */
+.philo {
+  font-family: var(--disp);
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1.08;
+  letter-spacing: -.005em;
+  font-size: clamp(26px, 4vw, 64px);
+  max-width: 20ch;
+}
+.philo em { font-style: normal; color: var(--accent); }
+
+/* Fließtext. Nie breiter als 44ch. */
+.lede,
+.copy {
+  font-family: var(--body);
+  color: var(--muted);
+}
+.lede { font-size: clamp(16px, 1.2vw, 19px); max-width: 52ch; }
+.copy { font-size: clamp(15px, 1.05vw, 17px); max-width: 44ch; }
+
+/* ---------- 5  Bausteine ---------- */
+
+/* Bühne. Volle Höhe, Inhalt mittig, Farbfläche oder Bild darunter.
+   Das Polster oben hält den Inhalt unter der fixierten Kopfzeile —
+   auf schmalen Fenstern reicht die Zentrierung allein nicht. */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: clamp(110px, 14vh, 170px) 0 clamp(60px, 10vh, 110px);
+}
+.hero-bg { position: absolute; inset: 0; z-index: 0; background: var(--grad-hero); }
+
+/* Verdunkelung. Zwei Verläufe: quer für die Textseite, längs gegen
+   ausgefressene Ränder. Ohne das ist Fließtext auf der Flamme unlesbar. */
+.hero-bg::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(5,5,5,.92) 0%, rgba(5,5,5,.66) 40%, rgba(5,5,5,.3) 72%, rgba(5,5,5,.52) 100%),
+    linear-gradient(180deg, rgba(5,5,5,.6) 0%, rgba(5,5,5,0) 26%, rgba(5,5,5,0) 62%, rgba(5,5,5,.6) 100%);
+}
+.hero .wrap { position: relative; z-index: 2; }
+.hero h1 {
+  font-family: var(--disp); font-weight: 600; text-transform: uppercase;
+  font-size: clamp(38px, 7.3vw, 116px); line-height: 1; letter-spacing: -.02em;
+  color: #fff;
+}
+/* Auf der Flamme ist --muted zu dunkel. */
+.hero .ey   { color: #DCDCDC; }
+.hero .lede { color: #EDEDED; }
+
+
+/* Button: Pille mit Kreis-Icon rechts. Pfeil dreht beim Hover. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 32px;
+  font-family: var(--disp);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  font-size: 12.5px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 16px 16px 16px 26px;
+  background: none;
+  color: var(--fg);
+  cursor: pointer;
+  transition: .4s var(--ease);
+}
+.btn .ic {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--fg);
+  color: #000;
+  display: flex; align-items: center; justify-content: center;
+  transition: .4s var(--ease);
+}
+.btn .ic svg { width: 15px; height: 15px; transition: transform .4s var(--ease); }
+.btn:hover           { background: var(--accent); border-color: var(--accent); color: #000; }
+.btn:hover .ic       { background: #000; color: #fff; }
+.btn:hover .ic svg   { transform: rotate(-45deg); }
+
+.btn.light           { background: var(--fg); color: #000; border-color: var(--fg); }
+.btn.light .ic       { background: #000; color: #fff; }
+.btn.light:hover     { background: var(--accent); border-color: var(--accent); }
+
+/* auf Creme-Abschnitten */
+.btn.onink           { border-color: var(--line-ink); color: var(--ink); }
+.btn.onink .ic       { background: var(--ink); color: #fff; }
+.btn.onink:hover     { background: var(--ink); color: #fff; border-color: var(--ink); }
+.btn.onink:hover .ic { background: var(--accent); color: #000; }
+
+/* Schlagwort-Pille */
+.pill {
+  display: inline-block;
+  font-family: var(--disp);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  padding: 6px 13px;
+}
+section.cream .pill { border-color: var(--line-ink); }
+
+/* Leistungskarte: Text links, Farbfläche rechts */
+.srv-card {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  border-radius: var(--r-card);
+  overflow: hidden;
+  min-height: 340px;
+  background: #111;
+}
+.srv-card .info {
+  background: #fff;
+  color: var(--ink);
+  padding: clamp(28px, 3vw, 46px);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.srv-card .info h3 {
+  font-family: var(--disp); font-weight: 600; text-transform: uppercase;
+  font-size: clamp(22px, 2.4vw, 34px); line-height: 1;
+}
+.srv-card .info p    { color: var(--muted-cream); font-size: 15px; max-width: 38ch; }
+.srv-card .info .tags{ margin-top: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.srv-card .pic       { position: relative; overflow: hidden; background: var(--grad-warm); }
+.srv-card:nth-child(2n) .pic { background: var(--grad-cool); }
+.srv-card:nth-child(3n) .pic { background: var(--grad-sun); }
+@media (max-width: 800px) {
+  .srv-card { grid-template-columns: 1fr; }
+  .srv-card .pic { min-height: 220px; }
+}
+
+/* Laufband. --dur steuert das Tempo, .rev dreht die Richtung. */
+.marquee { display: flex; overflow: hidden; white-space: nowrap; padding: clamp(22px, 3vw, 40px) 0; }
+.marquee .track {
+  display: flex; align-items: center; gap: 56px; padding-right: 56px;
+  animation: hnvr-mq var(--dur, 30s) linear infinite;
+  flex-shrink: 0;
+}
+.marquee.rev .track   { animation-direction: reverse; }
+.marquee:hover .track { animation-play-state: paused; }
+.marquee .it {
+  font-family: var(--disp); font-weight: 600; text-transform: uppercase;
+  font-size: clamp(22px, 3.4vw, 50px); letter-spacing: -.01em;
+  display: inline-flex; align-items: center; gap: 56px; color: currentColor;
+}
+.marquee .it::after { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+@keyframes hnvr-mq { to { transform: translateX(-100%); } }
+
+/* Stapelkarten: bleiben beim Scrollen stehen und schieben sich übereinander */
+.vcard {
+  position: sticky; top: 110px;
+  background: var(--cream); color: var(--ink);
+  border-radius: 18px;
+  display: grid; grid-template-columns: 1fr 1.1fr; gap: 30px; align-items: center;
+  padding: clamp(28px, 3vw, 48px);
+  margin-bottom: 26px;
+  box-shadow: 0 -20px 40px rgba(0, 0, 0, .35);
+}
+.vcard h3 { font-family: var(--disp); font-weight: 600; text-transform: uppercase; font-size: clamp(22px, 2.6vw, 38px); margin-bottom: 16px; }
+.vcard p  { color: var(--muted-cream); font-size: 15.5px; max-width: 42ch; margin-bottom: 22px; }
+.vcard li { font-size: 15px; padding-left: 22px; position: relative; margin-bottom: 11px; }
+.vcard li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+@media (max-width: 760px) { .vcard { grid-template-columns: 1fr; top: 90px; } }
+
+/* Zahlenband */
+.stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: var(--line); border: 1px solid var(--line);
+}
+.stats .n { background: var(--bg); padding: clamp(26px, 3.4vw, 52px) 26px; display: flex; flex-direction: column; gap: 10px; }
+.stats .n .v { font-family: var(--disp); font-weight: 600; font-size: clamp(44px, 6vw, 92px); line-height: .85; letter-spacing: -.02em; }
+.stats .n .v i { color: var(--accent); font-style: normal; }
+.stats .n .k { font-family: var(--disp); text-transform: uppercase; letter-spacing: .06em; font-size: 12.5px; color: var(--muted); }
+@media (max-width: 860px) { .stats { grid-template-columns: 1fr 1fr; } }
+
+/* Schritt-Karte (Prozess, Ablauf) */
+.pstep {
+  border: 1px solid var(--line); border-radius: 14px;
+  padding: clamp(24px, 2.6vw, 38px);
+  position: relative; overflow: hidden;
+  transition: .4s var(--ease);
+}
+.pstep:hover { background: var(--bg-raise); }
+.pstep .sn { font-family: var(--disp); text-transform: uppercase; letter-spacing: .1em; font-size: 12.5px; color: var(--accent); margin-bottom: clamp(30px, 4vw, 70px); }
+.pstep h3  { font-family: var(--disp); font-weight: 600; text-transform: uppercase; font-size: clamp(20px, 2vw, 30px); margin-bottom: 14px; }
+.pstep p   { color: var(--muted); font-size: 14.5px; max-width: 44ch; }
+
+/* Zeilenliste (Auszeichnungen, Referenzen, Leistungen) */
+.row-item {
+  display: grid; grid-template-columns: 80px 180px 1fr auto; gap: 24px; align-items: center;
+  padding: 20px 4px; border-bottom: 1px solid var(--line);
+  transition: .35s var(--ease);
+}
+.row-item .no { font-family: var(--disp); color: var(--accent); font-size: 14px; }
+.row-item .dt { font-family: var(--disp); text-transform: uppercase; font-size: 13px; color: var(--muted); letter-spacing: .03em; }
+.row-item .ti { font-size: 16.5px; color: #E6E6E6; }
+.row-item .ar { opacity: 0; color: var(--accent); transition: .35s var(--ease); }
+.row-item:hover    { padding-left: 14px; }
+.row-item:hover .ar{ opacity: 1; }
+@media (max-width: 800px) {
+  .row-item { grid-template-columns: 60px 1fr; }
+  .row-item .ti { grid-column: 1 / -1; }
+  .row-item .ar { display: none; }
+}
+
+/* Preisblock */
+.price2 {
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center;
+  border: 1px solid var(--line); border-radius: var(--r-box);
+  padding: clamp(34px, 4vw, 66px);
+  position: relative; overflow: hidden;
+  background: linear-gradient(150deg, #0F0F0F, #050505);
+}
+.price2::before {
+  content: ""; position: absolute; right: -8%; top: -40%; width: 55%; height: 180%;
+  background: radial-gradient(circle, rgba(255, 113, 32, .16), transparent 60%);
+}
+.price2 .r  { position: relative; z-index: 2; }
+.price2 .amt{ font-family: var(--disp); font-weight: 600; font-size: clamp(64px, 8vw, 124px); line-height: .85; letter-spacing: -.03em; }
+.price2 .amt i { color: var(--accent); font-style: normal; }
+.price2 .per{ font-family: var(--disp); text-transform: uppercase; letter-spacing: .06em; font-size: 12.5px; color: var(--muted); margin: 12px 0 26px; }
+.price2 li  { font-size: 15.5px; color: #DCDCDC; padding-left: 28px; position: relative; margin-bottom: 13px; }
+.price2 li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+@media (max-width: 820px) { .price2 { grid-template-columns: 1fr; gap: 34px; } }
+
+/* Stimme / Zitat */
+.tst {
+  border: 1px solid var(--line); border-radius: var(--r-card);
+  padding: 34px 30px;
+  display: flex; flex-direction: column; gap: 20px;
+  transition: .4s var(--ease);
+}
+.tst:hover { background: #0C0C0C; transform: translateY(-5px); }
+.tst .qm   { font-family: var(--serif); font-size: 64px; line-height: .5; color: var(--accent); }
+.tst p     { font-size: 16px; color: #DCDCDC; line-height: 1.6; }
+.tst .who  { display: flex; align-items: center; gap: 14px; margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line); }
+.tst .who .av { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(140deg, #2A2A2A, #0C0C0C); display: flex; align-items: center; justify-content: center; font-family: var(--disp); font-weight: 600; font-size: 15px; color: var(--accent); flex-shrink: 0; }
+.tst .who .nm { font-family: var(--disp); font-weight: 600; text-transform: uppercase; font-size: 15px; }
+.tst .who .rl { font-size: 12.5px; color: var(--muted); }
+
+/* ---------- 6  Gerüst ---------- */
+header.site {
+  position: fixed; inset: 0 0 auto 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px var(--pad);
+  border-bottom: 1px solid transparent;
+  transition: background .4s var(--ease), padding .4s var(--ease), border-color .4s var(--ease);
+}
+header.site.scrolled {
+  background: rgba(5, 5, 5, .72);
+  backdrop-filter: blur(18px);
+  padding: 14px var(--pad);
+  border-color: var(--line);
+}
+.brand img { height: 34px; width: auto; }
+
+nav.main { display: flex; gap: 30px; }
+nav.main a { font-size: 14px; font-weight: 500; color: #EDEDED; position: relative; padding: 6px 0; }
+nav.main a::after {
+  content: ""; position: absolute; left: 0; bottom: 0; height: 1px; width: 0;
+  background: var(--accent); transition: width .35s var(--ease);
+}
+nav.main a:hover::after,
+nav.main a.active::after { width: 100%; }
+
+.burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; width: 26px; }
+.burger span { height: 1.7px; background: var(--fg); width: 100%; }
+@media (max-width: 1200px) {
+  nav.main, .head-right .btn { display: none; }
+  .burger { display: flex; }
+}
+
+/* Vollbild-Navigation */
+.mnav {
+  position: fixed; inset: 0; z-index: 1200;
+  background: #080808;
+  transform: translateY(-100%);
+  transition: transform .6s cubic-bezier(.76, 0, .24, 1);
+  display: flex; flex-direction: column; justify-content: center;
+  padding: var(--pad); gap: 4px;
+}
+.mnav.open { transform: none; }
+.mnav a {
+  font-family: var(--disp); font-weight: 600; text-transform: uppercase;
+  font-size: clamp(32px, 9vw, 72px); line-height: 1.08;
+  transition: color .3s var(--ease);
+}
+.mnav a:hover { color: var(--accent); }
+
+footer.site { border-top: 1px solid var(--line); padding: clamp(70px, 9vw, 130px) var(--pad) 38px; position: relative; }
+.foot-cta { text-align: center; margin-bottom: clamp(56px, 7vw, 100px); }
+.foot-cta .ey { display: block; margin-bottom: 8px; }
+.foot-cta h2 {
+  font-family: var(--serif); font-weight: 900; text-transform: uppercase;
+  font-size: clamp(70px, 17vw, 300px); line-height: .82; letter-spacing: -.02em;
+  transform: scaleY(1.08);
+  padding-top: .14em;   /* siehe .serif-giant — sonst läuft der Schriftzug ins Label */
+}
+.foot-cta .mail {
+  display: inline-block; margin-top: 34px;
+  font-family: var(--disp); font-size: clamp(16px, 2vw, 26px);
+  text-transform: uppercase; letter-spacing: .02em;
+  border-bottom: 1px solid var(--line); padding-bottom: 6px;
+  transition: .3s var(--ease);
+}
+.foot-cta .mail:hover { color: var(--accent); border-color: var(--accent); }
+.foot-cols {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1.2fr; gap: 40px;
+  padding: 54px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.foot-cols h4 { font-family: var(--disp); text-transform: uppercase; letter-spacing: .1em; font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+.foot-cols a, .foot-cols p { display: block; font-size: 15px; color: #DCDCDC; margin-bottom: 12px; max-width: 32ch; transition: color .3s var(--ease); }
+.foot-cols a:hover { color: var(--accent); }
+.foot-bottom { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; padding-top: 28px; font-size: 13px; color: var(--muted); }
+@media (max-width: 860px) { .foot-cols { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .foot-cols { grid-template-columns: 1fr; } }
+
+/* ---------- 7  Effekte ---------- */
+
+/* Korn. Liegt über allem, nimmt keine Klicks. Ohne das wirkt Schwarz flach. */
+:root {
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E");
+
+  /* Farbflächen statt Fotos, wenn kein Bild da ist */
+  --grad-warm: radial-gradient(120% 100% at 70% 20%, #FF7A1A, #A01E05 55%, #210603);
+  --grad-cool: radial-gradient(120% 100% at 30% 30%, #2B6CFF, #0B1E5E 55%, #050B22);
+  --grad-sun:  radial-gradient(120% 100% at 60% 20%, #FFCA3A, #A5691A 55%, #241505);
+  --grad-hero: radial-gradient(70% 90% at 62% 42%, #FFB347 0%, #FF7A1A 26%, #E8480C 46%, #7A1A06 68%, #180402 88%);
+}
+
+body::after {
+  content: "";
+  position: fixed; inset: 0; z-index: 9998;
+  pointer-events: none;
+  background-image: var(--grain);
+  background-size: 200px;
+  opacity: .045;
+  mix-blend-mode: overlay;
+}
+
+/* Korn auf einer einzelnen Fläche: <i class="grain"></i> hineinlegen */
+.grain {
+  position: absolute; inset: 0;
+  background-image: var(--grain);
+  background-size: 220px;
+  opacity: .09;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* Einblenden beim Scrollen. JS setzt .in, siehe vorlage.html. */
+.rv {
+  opacity: 0;
+  transform: translateY(34px);
+  transition: opacity .95s var(--ease), transform .95s var(--ease);
+}
+.rv.in { opacity: 1; transform: none; }
+.d1 { transition-delay: .08s; }
+.d2 { transition-delay: .16s; }
+.d3 { transition-delay: .24s; }

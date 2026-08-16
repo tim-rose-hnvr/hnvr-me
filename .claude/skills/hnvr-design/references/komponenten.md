@@ -1,0 +1,244 @@
+# Bausteine
+
+Fertiges Markup zu den Klassen in `assets/hnvr.css`. Kopieren, Inhalt tauschen, fertig.
+Was hier nicht steht, gibt es nicht — bis es jemand hier einträgt.
+
+---
+
+## Label über einer Überschrift
+
+Zwei Schrägstriche im Akzent, dann Kleinschrift in Großbuchstaben. Steht über fast jeder Überschrift.
+
+```html
+<p class="ey"><span class="s">//</span> unsere leistungen</p>
+```
+
+---
+
+## Button
+
+Pille mit Kreis rechts. Der Pfeil dreht sich beim Hover auf −45°.
+
+```html
+<a class="btn" href="#kontakt">
+  Erstgespräch
+  <span class="ic">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M5 12h14M13 6l6 6-6 6"/>
+    </svg>
+  </span>
+</a>
+```
+
+Varianten: `.btn.light` (heller Grund, auf Bildern), `.btn.onink` (auf Creme-Abschnitten).
+Auf einem Creme-Abschnitt einen normalen `.btn` zu verwenden ergibt weißen Text auf hellem Grund — der häufigste Fehler.
+
+---
+
+## Abschnitts-Kopfzeile
+
+Links Label und Überschrift, rechts ein erklärender Satz. Bricht auf schmalen Fenstern untereinander.
+
+```html
+<div class="sec-head">
+  <div>
+    <p class="ey"><span class="s">//</span> unsere leistungen</p>
+    <h2 class="clash-big rv" style="margin-top:18px">Was wir<br>für dich machen</h2>
+  </div>
+  <p class="copy rv d1">Vom Onepager bis zum Onlineshop – strategisch geplant, sauber umgesetzt.</p>
+</div>
+```
+
+---
+
+## Aussagesatz
+
+Displaygröße, ein Wort im Akzent. Steht allein in einem Abschnitt, ohne Bild daneben.
+
+```html
+<p class="philo">Ideen zünden. <em>Erfolg</em> entfachen.</p>
+```
+
+---
+
+## Riesen-Schriftzug
+
+Genau einmal pro Seite. Ein Wort, nicht mehr — es soll überlaufen dürfen.
+
+```html
+<div style="display:flex; justify-content:center; overflow:hidden">
+  <span class="serif-giant">Arbeiten</span>
+</div>
+```
+
+Das umgebende `overflow:hidden` ist Pflicht, sonst erzeugt der Schriftzug eine waagerechte Scrollleiste.
+
+---
+
+## Laufband
+
+Der Track steht **zweimal** im Markup, die zweite Kopie mit `aria-hidden`. Ohne die Kopie reißt die Schleife sichtbar ab.
+
+```html
+<div class="marquee" style="--dur:30s">
+  <div class="track">
+    <span class="it">Branding</span><span class="it">Webdesign</span><span class="it">SEO</span>
+  </div>
+  <div class="track" aria-hidden="true">
+    <span class="it">Branding</span><span class="it">Webdesign</span><span class="it">SEO</span>
+  </div>
+</div>
+```
+
+`.marquee.rev` läuft rückwärts. Zwei gegenläufige Bänder übereinander sind ein bewährtes Bild — drei sind zu viel.
+
+---
+
+## Leistungskarte
+
+Text links, Farbfläche rechts. Ab dem zweiten Element wechselt der Verlauf automatisch (`nth-child`).
+
+```html
+<article class="srv-card rv">
+  <div class="info">
+    <h3>Branding &amp; Text</h3>
+    <p>Im Kern von allem steht die Marke.</p>
+    <div class="tags">
+      <span class="pill">Positionierung</span>
+      <span class="pill">Naming</span>
+    </div>
+  </div>
+  <div class="pic"><i class="grain"></i></div>
+</article>
+```
+
+Statt der Farbfläche ein Foto: `<div class="pic"><img src="…" alt="…" style="width:100%;height:100%;object-fit:cover"><i class="grain"></i></div>`
+
+---
+
+## Stapelkarten
+
+Bleiben beim Scrollen stehen und schieben sich übereinander. Für Werte, Vorteile, Argumente — drei bis fünf Stück.
+
+```html
+<div style="position:relative">
+  <article class="vcard">
+    <div class="illo"></div>
+    <div class="body">
+      <h3>Partner auf Augenhöhe</h3>
+      <p>Mit echtem Zuhören und enger Zusammenarbeit heben wir jedes Projekt auf ein neues Level.</p>
+      <ul><li>Ein Ansprechpartner</li><li>Feste Termine</li></ul>
+    </div>
+  </article>
+  <!-- weitere .vcard -->
+</div>
+```
+
+`top: 110px` passt zur fixierten Kopfzeile. Wird die Kopfzeile höher, muss dieser Wert mit.
+
+---
+
+## Zahlenband
+
+Vier Zellen, durch 1px-Raster getrennt. Die Zahl selbst kommt in `<i>` und wird orange.
+
+```html
+<div class="stats">
+  <div class="n"><span class="v">seit <i>2017</i></span><span class="k">in Hannover</span></div>
+  <div class="n"><span class="v"><i>120</i>+</span><span class="k">Projekte</span></div>
+  <div class="n"><span class="v"><i>1</i></span><span class="k">Ansprechpartner</span></div>
+  <div class="n"><span class="v"><i>0</i></span><span class="k">Baukasten</span></div>
+</div>
+```
+
+---
+
+## Schritt-Karte
+
+Für Ablauf, Prozess, Vorgehen. Die Nummer ist orange, der Abstand darunter groß.
+
+```html
+<div class="pstep">
+  <p class="sn">Schritt 01</p>
+  <h3>Zuhören</h3>
+  <p>Wir verstehen erst dein Geschäft, dann reden wir über Gestaltung.</p>
+</div>
+```
+
+---
+
+## Zeilenliste
+
+Für Referenzen, Auszeichnungen, Leistungsübersichten. Rückt beim Hover nach rechts, ein Pfeil erscheint.
+
+```html
+<div class="row-item">
+  <span class="no">01</span>
+  <span class="dt">2026 · Hannover</span>
+  <span class="ti">Relaunch für einen Maschinenbauer</span>
+  <span class="ar">→</span>
+</div>
+```
+
+---
+
+## Preisblock
+
+Ein Paket, kein Vergleichsraster. Preis groß, Ziffern im Akzent, Haken orange.
+
+```html
+<div class="price2">
+  <div class="l">
+    <h2 class="clash-big">Website-Paket</h2>
+    <p class="copy">Alles drin: Planung, Design, Umsetzung, Hosting, Support.</p>
+  </div>
+  <div class="r">
+    <p class="amt">ab <i>2.400</i>&nbsp;€</p>
+    <p class="per">einmalig, netto</p>
+    <ul>
+      <li>Strategie und Struktur</li>
+      <li>Individuelles Design</li>
+      <li>Technik, Hosting, Wartung</li>
+    </ul>
+    <a class="btn" href="#kontakt">Anfragen <span class="ic">→</span></a>
+  </div>
+</div>
+```
+
+---
+
+## Stimme
+
+Zitat mit Recoleta-Anführungszeichen im Akzent. Drei nebeneinander, auf schmalen Fenstern untereinander.
+
+```html
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:22px">
+  <figure class="tst">
+    <span class="qm">“</span>
+    <p>Endlich jemand, der zuhört und dann liefert.</p>
+    <figcaption class="who">
+      <span class="av">MB</span>
+      <span><span class="nm">M. Bothe</span><br><span class="rl">Geschäftsführung</span></span>
+    </figcaption>
+  </figure>
+</div>
+```
+
+---
+
+## Bühne
+
+Drei Zeilen Großbuchstaben, versetzt eingerückt, darüber ein Label, darunter Vorspann und Button.
+Kein Bild? `--grad-hero` trägt die Fläche. Vollständiges Markup in `assets/vorlage.html`.
+
+Die Einrückung der zweiten und dritten Zeile (`padding-left: clamp(20px,4vw,80px)` bzw. `clamp(10px,2vw,40px)`) ist der Grund, warum die Bühne nicht wie ein Standard-Header aussieht. Nicht weglassen.
+
+---
+
+## Kopf und Fuß
+
+Stehen komplett in `assets/vorlage.html`. Beides unverändert übernehmen —
+die Kopfzeile verdichtet sich beim Scrollen (`.scrolled`), der Fuß trägt den zweiten großen Recoleta-Schriftzug im Aufruf.
+
+> Achtung: Wenn die Seite bereits einen `.serif-giant` im Inhalt hat, ist der Fuß-Schriftzug der zweite.
+> Dann entweder den einen im Inhalt streichen oder im Fuß auf `.clash-big` wechseln.

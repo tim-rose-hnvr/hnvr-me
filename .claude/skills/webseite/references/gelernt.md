@@ -63,9 +63,18 @@ _leer_
 
 Regeln, die heute nur in Prosa stehen und in eine Messung gehören. Absteigend nach Nutzen.
 
-- [ ] **Schrift-Rückfall erkennen** — rendert die gewählte Schrift wirklich, oder fällt sie still auf den Systemfallback zurück? Häufiger Fehler, im Code unsichtbar. (`document.fonts.check`, Vergleich mit der ersten Familie der `font-family`)
-- [ ] **Weißraum messen** — tatsächliche Abstände zwischen Abschnitten statt Verdacht aus Schriftgrößen
-- [ ] **Standardmuster erkennen** — zentrierter Hero + drei gleichförmige Karten strukturell im DOM
-- [ ] **Tastaturdurchlauf** — automatisch durchtabben, Sichtbarkeit des Fokusrings pro Schritt bewerten
+- [x] **Schrift-Rückfall erkennen** — per Breitenmessung gegen drei generische Ersatzfamilien. `document.fonts.check` reicht nicht: eine nie installierte Familie ohne `@font-face` gilt ihm als verfügbar.
+- [x] **Weißraum messen** — Trennabstand zwischen Abschnitten (Lücke plus aneinanderstoßende Innenabstände), Verdacht unter 64 px Median
+- [x] **Standardmuster erkennen** — zentrierter Kopfbereich mit zwei Schaltflächen, Dreierkarten mit gleicher Höhe und gleichem Aufbau
+- [x] **Tastaturdurchlauf** — 30 Tabstopps, Fokussichtbarkeit gegen einen unfokussierten Klon desselben Elements gemessen, Fokusfallen erkannt
+- [x] **Formularfelder** — Felder ohne zugänglichen Namen (`placeholder` zählt nicht)
 - [ ] **Visuelle Regression** — Screenshots gegen einen freigegebenen Stand vergleichen
 - [ ] **Formularabgabe** — einmal leer und einmal falsch absenden, Fehlerzustände aufnehmen
+- [ ] **Dunkelfassung** — zweiter Durchlauf mit `colorScheme: 'dark'`, damit die halbe Dunkelfassung auffällt
+- [ ] **Bildgewicht** — Gesamtgröße der Bilder je Seite, damit 4-MB-PNGs nicht durchrutschen
+
+## Bekannte Grenzen der Prüfung
+
+- **Kontrast** wird für Text auf Hintergrundbildern nicht bewertet (im Bericht als „nicht bewertbar" gezählt).
+- **Schriftverfügbarkeit** wird auf dem Prüfrechner gemessen. Klassische Systemschriften (Georgia, Arial …) fehlen auf einem nackten Container, sind beim Besucher aber da — sie stehen deshalb auf einer Ausnahmeliste im Skript.
+- **Gestaltungsverdacht** ist Heuristik. Er findet „hier hat niemand entschieden", nicht „das ist hässlich". Für das Zweite gibt es den Kritiker, und auch der ersetzt kein Auge.

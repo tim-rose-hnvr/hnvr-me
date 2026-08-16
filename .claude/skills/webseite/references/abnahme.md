@@ -70,8 +70,13 @@ Seine Funde werden behandelt wie Warnungen: behoben oder mit einem Satz begründ
 | `bewegung` | Animation läuft trotz reduzierter Bewegung. Die Mediaabfrage fehlt oder greift nicht. |
 | `links` | Interner Link ins Leere, oft ein vergessenes `href="#"`. |
 | `inhalt` | Platzhaltertext in der Abgabe. |
+| `schrift` | Die gewählte Schrift rendert nicht. Bei `@font-face` ein Ladefehler (Fehler), sonst eine Familie, die nur zufällig beim Besucher installiert wäre (Warnung). Der stillste aller Defekte: im Code steht die richtige Schrift, im Bild steht die falsche. |
+| `formular` | Feld ohne zugänglichen Namen. Ein `placeholder` ist kein Label — er verschwindet beim Tippen und wird von Screenreadern unterschiedlich behandelt. |
+| `tastatur` | Kein sichtbarer Fokus oder Fokusfalle. Meist `outline: none` ohne Ersatz. |
 | `verdacht typografie` | Keine erkennbare Skala oder zu wenig Größenkontrast — die Hauptursache für langweilige Seiten. |
 | `verdacht farbe` | Standardpalette übernommen statt Farben gewählt. |
+| `verdacht raum` | Abschnitte stehen zu eng. Die häufigste Ursache für einen billigen Gesamteindruck. |
+| `verdacht muster` | Der Bausatz aus zentriertem Kopfbereich, zwei Schaltflächen und Dreierkarten. Kein Fehler — aber wenn er entstanden ist, ohne in der These zu stehen, ist Phase 1 übersprungen worden. |
 
 ## Berichtsvorlage
 

@@ -34,6 +34,14 @@ const TAILWIND_AKZENTE = new Set([
 
 const SYSTEMSCHRIFTEN = /^(system-ui|-apple-system|blinkmacsystemfont|segoe ui|roboto|helvetica|helvetica neue|arial|sans-serif|serif|ui-sans-serif|ui-serif|times|times new roman|georgia|inter)$/i;
 
+// Klassiker, die auf Besuchergeräten vorhanden sind, auf einem nackten
+// Prüf-Container aber fehlen. Ihr Fehlen hier sagt nichts über die Seite aus.
+const WEBSICHER = new Set([
+  'arial', 'helvetica', 'helvetica neue', 'times', 'times new roman', 'georgia',
+  'verdana', 'tahoma', 'trebuchet ms', 'courier new', 'palatino', 'palatino linotype',
+  'garamond', 'segoe ui', 'roboto', 'cambria', 'calibri', 'consolas', 'menlo', 'monaco',
+]);
+
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.htm': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -252,6 +260,96 @@ function messungImBrowser() {
       .map((el) => el.tagName.toLowerCase() + (typeof el.className === 'string' && el.className ? '.' + el.className.trim().split(/\s+/)[0] : '')),
   };
 
+  // --- Schriften: rendert die gewählte Schrift wirklich, oder fällt sie still zurück?
+  const generisch = /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-serif|ui-sans-serif|ui-monospace|ui-rounded|-apple-system|blinkmacsystemfont|inherit|initial|revert|unset|emoji|math|fangsong)$/i;
+  const ausFontFace = new Set();
+  for (const bogen of Array.from(document.styleSheets)) {
+    let regeln;
+    try { regeln = Array.from(bogen.cssRules ?? []); } catch { continue; } // fremde Herkunft
+    for (const regel of regeln) {
+      if (regel.type === 5 || regel.constructor?.name === 'CSSFontFaceRule') {
+        const familie = regel.style?.getPropertyValue('font-family')?.replace(/["']/g, '').trim();
+        if (familie) ausFontFace.add(familie.toLowerCase());
+      }
+    }
+  }
+  // `document.fonts.check` meldet nur fehlgeschlagene @font-face-Ladungen: eine nie
+  // installierte Familie ohne @font-face gilt ihm als „verfügbar". Deshalb wird
+  // gemessen — eine wirklich vorhandene Familie ändert die Textbreite gegenüber
+  // mindestens einer der generischen Ersatzfamilien.
+  const istVorhanden = (familie) => {
+    const probe = document.createElement('span');
+    probe.textContent = 'mmmmmmmmmmlliWWWWQÄß';
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.cssText = 'position:absolute;left:-99999px;top:0;font-size:96px;white-space:nowrap;';
+    document.body.appendChild(probe);
+    let abweichung = false;
+    for (const ersatz of ['monospace', 'serif', 'sans-serif']) {
+      probe.style.fontFamily = ersatz;
+      const nurErsatz = probe.getBoundingClientRect().width;
+      probe.style.fontFamily = `"${familie}", ${ersatz}`;
+      if (Math.abs(probe.getBoundingClientRect().width - nurErsatz) > 1) { abweichung = true; break; }
+    }
+    probe.remove();
+    return abweichung;
+  };
+  const schriftRueckfall = [];
+  for (const [familie] of schriftfamilien) {
+    if (generisch.test(familie)) continue;
+    if (!istVorhanden(familie)) schriftRueckfall.push({ familie, ausFontFace: ausFontFace.has(familie) });
+  }
+
+  // --- Abschnitte: Rhythmus und tatsächlicher Trennabstand
+  const abschnitte = Array.from(document.querySelectorAll('section, article, header, footer, main > div, body > div, body > main > *'))
+    .filter((el) => sichtbar(el) && el.getBoundingClientRect().height > 120)
+    .filter((el, i, alle) => !alle.some((anderer) => anderer !== el && anderer.contains(el)))
+    .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+  const abschnittsabstaende = [];
+  for (let i = 1; i < abschnitte.length; i++) {
+    const oben = abschnitte[i - 1].getBoundingClientRect();
+    const unten = abschnitte[i].getBoundingClientRect();
+    const sOben = getComputedStyle(abschnitte[i - 1]);
+    const sUnten = getComputedStyle(abschnitte[i]);
+    // Sichtbare Trennung = Lücke zwischen den Kästen plus die Innenabstände, die aneinanderstoßen.
+    const lücke = unten.top - oben.bottom;
+    abschnittsabstaende.push(Math.round(Math.max(0, lücke) + parseFloat(sOben.paddingBottom) + parseFloat(sUnten.paddingTop)));
+  }
+
+  // --- Standardmuster: der Bausatz, der auf jeder zweiten Seite steht
+  const ersterAbschnitt = abschnitte[0];
+  const held = ersterAbschnitt
+    ? {
+        zentriert: getComputedStyle(ersterAbschnitt).textAlign === 'center',
+        knöpfe: ersterAbschnitt.querySelectorAll('a[class], button').length,
+      }
+    : null;
+  let dreierKarten = 0;
+  for (const el of alle) {
+    const s = getComputedStyle(el);
+    if (s.display !== 'grid' && s.display !== 'flex') continue;
+    const kinder = Array.from(el.children).filter((k) => sichtbar(k));
+    if (kinder.length !== 3) continue;
+    const höhen = kinder.map((k) => k.getBoundingClientRect().height);
+    const gleich = Math.max(...höhen) - Math.min(...höhen) < 24 && Math.min(...höhen) > 80;
+    const inhaltGleich = kinder.every((k) => k.querySelector('h2,h3,h4,strong,b') && k.querySelector('p'));
+    if (gleich && inhaltGleich) dreierKarten++;
+  }
+
+  // --- Formularfelder ohne zugänglichen Namen
+  const felderOhneNamen = [];
+  for (const feld of document.querySelectorAll('input:not([type="hidden"]), select, textarea')) {
+    if (!sichtbar(feld)) continue;
+    if (['submit', 'button', 'image', 'reset'].includes(feld.type)) continue;
+    const beschriftet = (feld.id && document.querySelector(`label[for="${CSS.escape(feld.id)}"]`)) || feld.closest('label');
+    const name = feld.getAttribute('aria-label') || feld.getAttribute('aria-labelledby') || feld.getAttribute('title');
+    if (!beschriftet && !name) {
+      felderOhneNamen.push({
+        marke: feld.tagName.toLowerCase() + (feld.type ? `[${feld.type}]` : ''),
+        platzhalter: feld.getAttribute('placeholder') ?? null,
+      });
+    }
+  }
+
   const laufendeAnimationen = (document.getAnimations ? document.getAnimations() : [])
     .filter((a) => a.playState === 'running')
     .map((a) => a.animationName || a.transitionProperty || 'unbenannt');
@@ -263,12 +361,74 @@ function messungImBrowser() {
     radien: Array.from(radien),
     farbwerte: Array.from(farbwerte),
     bilder, kleineZiele, links, struktur, ueberlauf, laufendeAnimationen,
+    schriftRueckfall, abschnittsabstaende, abschnittszahl: abschnitte.length,
+    held, dreierKarten, felderOhneNamen,
     verschiebung: window.__cls ?? null,
     schriftstatus: document.fonts ? document.fonts.status : 'unbekannt',
   };
 }
 
 // ---------------------------------------------------------------- Ablauf
+
+// Tabbt durch die Seite und prüft, ob der Fokus jedes Mal sichtbar ist.
+// Vergleichsmaßstab ist ein unfokussierter Klon desselben Elements — so wird
+// gemessen, was sich durch den Fokus tatsächlich ändert, ohne den Fokus zu stören.
+async function pruefeTastatur(seite) {
+  const schritte = [];
+  await seite.evaluate(() => window.scrollTo(0, 0));
+  await seite.mouse.move(1, 1);
+  for (let i = 0; i < 30; i++) {
+    await seite.keyboard.press('Tab');
+    const schritt = await seite.evaluate(() => {
+      const el = document.activeElement;
+      if (!el || el === document.body || el === document.documentElement) return null;
+      const s = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+
+      let ohneFokus = null;
+      try {
+        const klon = el.cloneNode(true);
+        klon.setAttribute('aria-hidden', 'true');
+        klon.style.position = 'absolute';
+        klon.style.left = '-99999px';
+        klon.style.top = '0';
+        (el.parentElement ?? document.body).appendChild(klon);
+        const k = getComputedStyle(klon);
+        ohneFokus = {
+          umriss: `${k.outlineStyle} ${k.outlineWidth} ${k.outlineColor}`,
+          schatten: k.boxShadow, rand: k.borderColor + k.borderWidth,
+          grund: k.backgroundColor, farbe: k.color,
+        };
+        klon.remove();
+      } catch { /* Klon nicht möglich — dann nur Umriss bewerten */ }
+
+      const mitFokus = {
+        umriss: `${s.outlineStyle} ${s.outlineWidth} ${s.outlineColor}`,
+        schatten: s.boxShadow, rand: s.borderColor + s.borderWidth,
+        grund: s.backgroundColor, farbe: s.color,
+      };
+      const umrissSichtbar = s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) > 0;
+      const unterschied = ohneFokus
+        ? Object.keys(mitFokus).some((k) => mitFokus[k] !== ohneFokus[k])
+        : umrissSichtbar;
+
+      return {
+        marke: el.tagName.toLowerCase() + (el.id ? '#' + el.id : ''),
+        text: (el.textContent || el.getAttribute('aria-label') || el.getAttribute('placeholder') || '').trim().slice(0, 40),
+        fokusSichtbar: umrissSichtbar || unterschied,
+        imBild: r.height > 0 && r.top > -4 && r.top < window.innerHeight + 4,
+      };
+    });
+    if (!schritt) break;
+    schritte.push(schritt);
+    const letzte = schritte.slice(-3);
+    if (letzte.length === 3 && letzte.every((s) => s.marke === letzte[0].marke && s.text === letzte[0].text)) {
+      schritte.push({ marke: letzte[0].marke, text: letzte[0].text, falle: true, fokusSichtbar: true, imBild: true });
+      break;
+    }
+  }
+  return schritte;
+}
 
 async function pruefeSeite(browser, basis, pfad, ausgabe, befunde) {
   const url = new URL(pfad, basis).href;
@@ -325,9 +485,13 @@ async function pruefeSeite(browser, basis, pfad, ausgabe, befunde) {
     const messung = await seite.evaluate(messungImBrowser);
     seitenbefund.viewports[viewport.name] = messung;
 
+
     const datei = path.join(ausgabe, 'screenshots', `${marke}-${viewport.name}.png`);
     await seite.screenshot({ path: datei, fullPage: true });
     seitenbefund.viewports[viewport.name].screenshot = path.relative(ausgabe, datei);
+
+    // Nach dem Screenshot, damit keine Fokusringe im Bild landen.
+    if (viewport.name === 'desktop') seitenbefund.tastatur = await pruefeTastatur(seite);
 
     await kontext.close();
   }
@@ -409,6 +573,31 @@ function bewerteSeite(s, befunde) {
     melde('warnung', 'bilder', `alt-Attribut fehlt: ${b.quelle}`);
   }
 
+  for (const f of desktop.schriftRueckfall) {
+    if (f.ausFontFace) {
+      melde('fehler', 'schrift', `„${f.familie}" ist per @font-face eingebunden, rendert aber nicht — die Seite fällt still auf die Ersatzschrift zurück.`);
+    } else if (!WEBSICHER.has(f.familie)) {
+      melde('warnung', 'schrift', `„${f.familie}" steht in font-family, ist aber nicht verfügbar. Ohne @font-face hängt die Gestaltung davon ab, ob der Besucher die Schrift zufällig installiert hat.`);
+    }
+  }
+
+  for (const feld of desktop.felderOhneNamen.slice(0, 6)) {
+    melde('fehler', 'formular', `Feld ohne zugänglichen Namen: ${feld.marke}${feld.platzhalter ? ` (nur placeholder „${feld.platzhalter}“ — der ersetzt kein Label)` : ''}`);
+  }
+
+  const tastatur = s.tastatur ?? [];
+  if (tastatur.some((t) => t.falle)) {
+    const falle = tastatur.find((t) => t.falle);
+    melde('fehler', 'tastatur', `Fokusfalle: bleibt bei ${falle.marke} „${falle.text}“ hängen.`);
+  }
+  for (const t of dedupe(tastatur.filter((t) => !t.fokusSichtbar), (t) => t.marke + t.text).slice(0, 6)) {
+    melde('fehler', 'tastatur', `Kein sichtbarer Fokus: ${t.marke} „${t.text}“`);
+  }
+  for (const t of dedupe(tastatur.filter((t) => !t.imBild), (t) => t.marke + t.text).slice(0, 4)) {
+    melde('warnung', 'tastatur', `Fokus landet außerhalb des Sichtfelds: ${t.marke} „${t.text}“ — verstecktes, aber tabbares Element?`);
+  }
+  if (tastatur.length === 0) melde('warnung', 'tastatur', 'Kein einziges fokussierbares Element gefunden.');
+
   // Standardverdacht — kein Fehler, aber ein Hinweis auf ungewählte Gestaltung.
   const groessen = desktop.schriftgroessen.map(([g]) => g);
   const body = desktop.schriftgroessen.slice().sort((a, b) => b[1] - a[1])[0]?.[0] ?? 16;
@@ -426,6 +615,22 @@ function bewerteSeite(s, befunde) {
   const defaults = desktop.farbwerte.filter((f) => TAILWIND_AKZENTE.has(f));
   if (defaults.length) {
     melde('verdacht', 'farbe', `Akzentfarben aus der Standardpalette: ${defaults.join(', ')}. Vermutlich nicht gewählt, sondern übernommen.`);
+  }
+
+  if (desktop.abschnittsabstaende.length >= 2) {
+    const sortiert = desktop.abschnittsabstaende.slice().sort((a, b) => a - b);
+    const median = sortiert[Math.floor(sortiert.length / 2)];
+    if (median < 64) {
+      melde('verdacht', 'raum', `Abschnittsabstand im Mittel ${median}px (${desktop.abschnittsabstaende.join(', ')}). Am Desktop trägt erst ab etwa 128px; zu wenig Weißraum ist die häufigste Ursache für einen billigen Gesamteindruck.`);
+    }
+  }
+
+  if (desktop.held?.zentriert && desktop.held.knöpfe >= 2 && desktop.dreierKarten >= 1) {
+    melde('verdacht', 'muster', 'Zentrierter Kopfbereich mit zwei Schaltflächen plus Dreierkarten — das ist der Bausatz, den jede zweite Seite trägt. Wurde Phase 1 wirklich durchlaufen?');
+  } else if (desktop.dreierKarten >= 2) {
+    melde('verdacht', 'muster', `${desktop.dreierKarten} Dreierkarten-Blöcke mit gleicher Form. Karten sind meist ein Ersatz für fehlenden Rhythmus, kein Gestaltungsmittel.`);
+  } else if (desktop.held?.zentriert && desktop.held.knöpfe >= 2) {
+    melde('verdacht', 'muster', 'Zentrierter Kopfbereich mit zwei Schaltflächen — die naheliegendste aller Lösungen. Nur behalten, wenn sie in der Designthese steht.');
   }
 }
 
@@ -499,6 +704,9 @@ function schreibeBericht(ausgabe, basis, seiten, befunde) {
     zeilen.push(`- Eckenradien: ${Array.from(new Set(d.radien)).slice(0, 8).join(', ') || '—'}`);
     zeilen.push(`- Farbwerte: ${d.farbwerte.length} verschiedene`);
     zeilen.push(`- Kontrast geprüft: ${d.geprüfteTexte} Textknoten, ${d.ungeprüfteTexte} nicht bewertbar (Hintergrundbild)`);
+    zeilen.push(`- Abschnitte: ${d.abschnittszahl}, Trennabstände: ${d.abschnittsabstaende.join(', ') || '—'} px`);
+    zeilen.push(`- Dreierkarten-Blöcke: ${d.dreierKarten}, Kopfbereich zentriert: ${d.held?.zentriert ? 'ja' : 'nein'}`);
+    zeilen.push(`- Tabstopps: ${(s.tastatur ?? []).length}, davon ohne sichtbaren Fokus: ${(s.tastatur ?? []).filter((t) => !t.fokusSichtbar).length}`);
     zeilen.push(`- DOM-Knoten: ${d.struktur.knotenzahl}`);
     zeilen.push('');
   }

@@ -99,7 +99,12 @@ node .claude/skills/webseite/scripts/pruefen.mjs ./dist / /preise /kontakt
 node .claude/skills/webseite/scripts/pruefen.mjs http://localhost:3000
 ```
 
-Das Skript startet Chromium, lädt jede Seite in drei Viewports, macht Screenshots und prüft: Konsolenfehler, fehlgeschlagene Requests, waagerechten Überlauf, kaputte Bilder, tote interne Links, Textkontrast nach WCAG, Tippziele, Überschriftenstruktur, Layoutverschiebung, Platzhaltertext und Bewegung bei `prefers-reduced-motion`. Zusätzlich meldet es **Gestaltungsverdacht**: zu kleiner Größenkontrast, fehlende Typo-Skala, nur Systemschriften, Akzentfarben aus der Tailwind-Standardpalette.
+Das Skript startet Chromium, lädt jede Seite in drei Viewports, macht Screenshots und prüft:
+
+- **Kaputt**: Konsolenfehler, fehlgeschlagene Requests, waagerechter Überlauf, kaputte Bilder, tote interne Links, Platzhaltertext, Layoutverschiebung.
+- **Unbenutzbar**: Textkontrast nach WCAG, Tippziele, Überschriftenstruktur, Formularfelder ohne Namen, Tastaturdurchlauf mit sichtbarem Fokus und ohne Fokusfalle, Bewegung trotz `prefers-reduced-motion`.
+- **Still danebengegangen**: Schriften, die nicht rendern und unbemerkt auf den Ersatz zurückfallen.
+- **Gestaltungsverdacht**: zu kleiner Größenkontrast, fehlende Typo-Skala, nur Systemschriften, Akzentfarben aus der Tailwind-Standardpalette, zu enge Abschnittsabstände, und das Muster „zentrierter Kopfbereich mit zwei Schaltflächen plus Dreierkarten".
 
 Exit 0 heißt: keine Fehler. Warnungen und Verdacht müssen beantwortet werden — behoben oder mit einem Satz begründet.
 

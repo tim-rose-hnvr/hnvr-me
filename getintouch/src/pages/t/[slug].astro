@@ -1,0 +1,140 @@
+---
+/**
+ * Die öffentliche Profilseite.
+ *
+ * Sie kommt fertig vom Server. Das ist der Unterschied zum Vorgänger, der die
+ * Seite erst im Browser aus dem `localStorage` zusammensetzte: dort sah jeder
+ * fremde Besucher „noch frei", Vorschaukarten in WhatsApp und LinkedIn blieben
+ * leer, und ohne JavaScript stand gar nichts da. Eine Seite, deren einziger
+ * Zweck das Geteiltwerden ist, muss ohne Skript vollständig sein.
+ */
+import Profilblatt from '../../layouts/Profilblatt.astro';
+import Statuszeile from '../../komponenten/Statuszeile.astro';
+import Aktionsknopf from '../../komponenten/Aktionsknopf.astro';
+import Kanalreihe from '../../komponenten/Kanalreihe.astro';
+import Kontaktkarte from '../../komponenten/Kontaktkarte.astro';
+import Fussbereich from '../../komponenten/Fussbereich.astro';
+
+import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
+import { vorlage } from '../../kern/gestaltung.ts';
+import { hauptaktionFuer, type Block } from '../../kern/profil.ts';
+import { ablage } from '../../kern/speicher/index.ts';
+import { adresseFuer } from '../../kern/ziele.ts';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const profil = slug ? await ablage().hole(slug) : null;
+
+if (!profil) {
+  // 404 statt einer Werbeseite für freie Adressen: wer einen gedruckten Code
+  // scannt und im Nichts landet, soll das merken, statt zu glauben, er sei
+  // richtig. Suchmaschinen bekommen so auch kein Verzeichnis freier Namen.
+  return new Response('Diese Seite gibt es nicht.', {
+    status: 404,
+    headers: { 'content-type': 'text/plain; charset=utf-8' },
+  });
+}
+
+/**
+ * In der Entwicklung lässt sich die Uhr stellen: `?jetzt=2026-01-14T08:00:00Z`
+ * zeigt die Seite so, wie sie zu diesem Zeitpunkt aussieht. Damit ist der
+ * Wechsel der Hauptaktion prüfbar, ohne bis zum Feierabend zu warten.
+ * In der gebauten Fassung ist der Schalter wirkungslos.
+ */
+function jetzt(): Date {
+  if (import.meta.env.DEV) {
+    const gewuenscht = Astro.url.searchParams.get('jetzt');
+    if (gewuenscht) {
+      const d = new Date(gewuenscht);
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+  }
+  return new Date();
+}
+
+/**
+ * Ebenfalls nur in der Entwicklung: `?vorlage=creme` zeigt dieselbe Seite in
+ * einer anderen Gestaltung. Damit lässt sich jede Vorlage an echtem Inhalt
+ * beurteilen statt an einer Farbkachel — und die spätere Vorschau im Editor
+ * baut auf demselben Weg auf.
+ */
+const gestaltung =
+  import.meta.env.DEV && Astro.url.searchParams.has('vorlage')
+    ? vorlage(Astro.url.searchParams.get('vorlage')!)
+    : profil.gestaltung;
+
+const lage = profil.erreichbarkeit ? bewerteErreichbarkeit(profil.erreichbarkeit, jetzt()) : null;
+const haupt = hauptaktionFuer(profil, lage?.offen ?? true);
+
+/** Blöcke mit fertiger Adresse. Was kein gültiges Ziel hat, fällt raus. */
+type Aufbereitet = { block: Block; adresse?: string };
+const bloecke: Aufbereitet[] = profil.bloecke
+  .filter((b) => b.aktiv && b.id !== haupt?.id)
+  .map((block) => (block.art === 'aktion' ? { block, adresse: adresseFuer(block.kanal, block.ziel) ?? undefined } : { block }))
+  .filter((e) => e.block.art !== 'aktion' || e.adresse !== undefined);
+
+const hauptAdresse = haupt ? adresseFuer(haupt.kanal, haupt.ziel) : null;
+
+const adresse = new URL(`/t/${profil.slug}`, Astro.site ?? Astro.url).toString();
+const adresseKurz = adresse.replace(/^https?:\/\/(www\.)?/, '');
+
+const titel = [profil.kopf.name, profil.kopf.rolle].filter(Boolean).join(' · ');
+const beschreibung =
+  profil.kopf.beschreibung?.replace(/\s+/g, ' ').slice(0, 200) ??
+  `Alle Kontaktwege von ${profil.kopf.name} auf einer Seite.`;
+
+// Die Erreichbarkeit ändert sich mit der Uhr, das Profil selten. Eine Minute
+// gemeinsamer Zwischenspeicher hält die Statuszeile ehrlich und die Seite schnell.
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+---
+
+<Profilblatt
+  titel={titel}
+  beschreibung={beschreibung}
+  gestaltung={gestaltung}
+  adresse={adresse}
+  bild={profil.kopf.bild}
+>
+  <div class="blatt" data-schaltflaeche={gestaltung.schaltflaeche}>
+    <header class:list={['kopf', profil.kopf.titelbild && 'kopf--mitTitelbild']}>
+      {profil.kopf.titelbild && <img class="titelbild" src={profil.kopf.titelbild} alt="" />}
+      {
+        profil.kopf.bild && (
+          <img
+            class:list={['bild', `bild--${gestaltung.bildform}`]}
+            src={profil.kopf.bild}
+            width="104"
+            height="104"
+            alt={profil.kopf.name}
+          />
+        )
+      }
+
+      <h1 class="name">{profil.kopf.name}</h1>
+      {profil.kopf.rolle && <p class="rolle">{profil.kopf.rolle}</p>}
+      {lage && <Statuszeile lage={lage} zusage={profil.erreichbarkeit?.zusage} />}
+      {profil.kopf.beschreibung && <p class="beschreibung">{profil.kopf.beschreibung}</p>}
+
+      <Kanalreihe kanaele={profil.kanaele} />
+    </header>
+
+    <main class="haupt">
+      {haupt && hauptAdresse && <Aktionsknopf block={haupt} adresse={hauptAdresse} haupt />}
+
+      {
+        bloecke.map(({ block, adresse: ziel }) => {
+          if (block.art === 'aktion' && ziel) return <Aktionsknopf block={block} adresse={ziel} />;
+          if (block.art === 'ueberschrift') return <h2 class="ueberschrift">{block.beschriftung}</h2>;
+          if (block.art === 'text') return <p class="textblock">{block.beschriftung}</p>;
+          if (block.art === 'trenner') return <hr class="trenner" />;
+          return null;
+        })
+      }
+    </main>
+
+    <Kontaktkarte karte={profil.visitenkarte} slug={profil.slug} adresse={adresse} adresseKurz={adresseKurz} />
+
+    <Fussbereich rechtliches={profil.rechtliches} />
+  </div>
+</Profilblatt>

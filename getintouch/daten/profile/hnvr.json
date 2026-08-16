@@ -1,0 +1,147 @@
+{
+  "slug": "hnvr",
+
+  "kopf": {
+    "name": "hnvr.me",
+    "rolle": "Digitalagentur & Eventtechnik · Hannover",
+    "beschreibung": "Websites, Shops und Marketing.\nDazu Technik, die auf der Veranstaltung wirklich läuft.",
+    "bild": "/bilder/signet-hnvr.png"
+  },
+
+  "erreichbarkeit": {
+    "zeitzone": "Europe/Berlin",
+    "fenster": [
+      { "tag": 1, "von": "09:00", "bis": "18:00" },
+      { "tag": 2, "von": "09:00", "bis": "18:00" },
+      { "tag": 3, "von": "09:00", "bis": "18:00" },
+      { "tag": 4, "von": "09:00", "bis": "18:00" },
+      { "tag": 5, "von": "09:00", "bis": "16:00" }
+    ],
+    "ausnahmen": [
+      { "datum": "2026-12-24", "grund": "Heiligabend" },
+      { "datum": "2026-12-25", "grund": "Weihnachten" },
+      { "datum": "2026-12-26", "grund": "Weihnachten" },
+      { "datum": "2026-12-31", "grund": "Silvester", "zeiten": [{ "von": "09:00", "bis": "12:00" }] },
+      { "datum": "2027-01-01", "grund": "Neujahr" }
+    ],
+    "zusage": "Antwort am nächsten Werktag"
+  },
+
+  "hauptaktion": {
+    "offen": "anruf",
+    "zu": "whatsapp"
+  },
+
+  "bloecke": [
+    {
+      "id": "anruf",
+      "art": "aktion",
+      "kanal": "telefon",
+      "beschriftung": "Jetzt anrufen",
+      "unterzeile": "+49 511 12282286",
+      "ziel": "+4951112282286",
+      "aktiv": true
+    },
+    {
+      "id": "whatsapp",
+      "art": "aktion",
+      "kanal": "whatsapp",
+      "beschriftung": "WhatsApp schreiben",
+      "unterzeile": "Auch außerhalb der Bürozeiten",
+      "ziel": "+4917683025781",
+      "aktiv": true
+    },
+    {
+      "id": "termin",
+      "art": "aktion",
+      "kanal": "termin",
+      "beschriftung": "Kennenlernen buchen",
+      "unterzeile": "20 Minuten, unverbindlich",
+      "ziel": "https://hnvr.me/contact-us",
+      "aktiv": true
+    },
+    {
+      "id": "mail",
+      "art": "aktion",
+      "kanal": "mail",
+      "beschriftung": "E-Mail schreiben",
+      "unterzeile": "hallo@hnvr.me",
+      "ziel": "hallo@hnvr.me",
+      "aktiv": true
+    },
+
+    { "id": "kopf-leistungen", "art": "ueberschrift", "beschriftung": "Was wir machen", "aktiv": true },
+
+    {
+      "id": "web",
+      "art": "aktion",
+      "kanal": "link",
+      "beschriftung": "hnvr.me — Digitalagentur",
+      "unterzeile": "Websites, Shops, Branding, SEO",
+      "ziel": "https://hnvr.me",
+      "aktiv": true
+    },
+    {
+      "id": "rental",
+      "art": "aktion",
+      "kanal": "shop",
+      "beschriftung": "Technik mieten",
+      "unterzeile": "Ton, Licht, LED, Bühne — Hannover und Umgebung",
+      "ziel": "https://hnvr.me/eventservice",
+      "aktiv": true
+    },
+    {
+      "id": "werkzeuge",
+      "art": "aktion",
+      "kanal": "link",
+      "beschriftung": "Kostenlose Werkzeuge",
+      "unterzeile": "QR-Codes, Domain-Prüfung, SEO-Check",
+      "ziel": "https://hnvr.me/tools",
+      "aktiv": true
+    },
+
+    { "id": "kopf-hier", "art": "ueberschrift", "beschriftung": "Vorbeikommen", "aktiv": true },
+
+    {
+      "id": "route",
+      "art": "aktion",
+      "kanal": "route",
+      "beschriftung": "Anfahrt",
+      "unterzeile": "Am Bahnhof 8, 30926 Seelze",
+      "ziel": "Am Bahnhof 8, 30926 Seelze",
+      "aktiv": true
+    }
+  ],
+
+  "kanaele": [
+    { "netzwerk": "instagram", "ziel": "hnvr.me" },
+    { "netzwerk": "linkedin", "ziel": "https://linkedin.com/company/hnvr" },
+    { "netzwerk": "tiktok", "ziel": "hnvr.me" },
+    { "netzwerk": "website", "ziel": "https://hnvr.me" }
+  ],
+
+  "visitenkarte": {
+    "vorname": "Tim",
+    "nachname": "Rose",
+    "firma": "hnvr.me · viel Liebe Media UG",
+    "funktion": "Inhaber",
+    "telefon": "+49 511 12282286",
+    "mobil": "+49 176 83025781",
+    "mail": "tim@hnvr.me",
+    "web": "https://hnvr.me",
+    "strasse": "Am Bahnhof 8",
+    "plz": "30926",
+    "ort": "Seelze",
+    "land": "Deutschland",
+    "notiz": "Digitalagentur und Eventtechnik aus Hannover."
+  },
+
+  "gestaltung": {
+    "vorlage": "hnvr"
+  },
+
+  "rechtliches": {
+    "impressum": "https://hnvr.me/impressum",
+    "datenschutz": "https://hnvr.me/datenschutz"
+  }
+}

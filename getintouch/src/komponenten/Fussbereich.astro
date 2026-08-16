@@ -1,0 +1,44 @@
+---
+/**
+ * Der Seitenfuß.
+ *
+ * Eine Zeile Absender, mehr nicht — keine Werbebanner, keine fremden Angebote,
+ * keine Aufforderung, sich selbst eine Seite anzulegen. Wer den QR-Code eines
+ * Handwerkers scannt, soll den Handwerker sehen und nicht dessen Dienstleister.
+ *
+ * Impressum und Datenschutz stehen nur da, wenn sie gepflegt sind. Ein Link auf
+ * eine leere Impressumsseite ist schlechter als keiner.
+ */
+import { SIGNET } from '../kern/zeichen.ts';
+
+interface Props {
+  rechtliches?: { impressum?: string | undefined; datenschutz?: string | undefined } | undefined;
+}
+
+const { rechtliches } = Astro.props;
+const eintraege = [
+  rechtliches?.impressum ? { name: 'Impressum', ziel: rechtliches.impressum } : null,
+  rechtliches?.datenschutz ? { name: 'Datenschutz', ziel: rechtliches.datenschutz } : null,
+].filter((e): e is { name: string; ziel: string } => e !== null);
+---
+
+<footer class="fuss">
+  {
+    eintraege.length > 0 && (
+      <p>
+        {eintraege.map((e, i) => (
+          <>
+            {i > 0 && ' · '}
+            <a href={e.ziel} target="_blank" rel="noopener noreferrer">
+              {e.name}
+            </a>
+          </>
+        ))}
+      </p>
+    )
+  }
+  <a class="fuss__absender" href="https://hnvr.me/get-in-touch" target="_blank" rel="noopener noreferrer">
+    <Fragment set:html={SIGNET.replace('<svg', '<svg class="fuss__signet"')} />
+    <span>Get in Touch von hnvr.me</span>
+  </a>
+</footer>

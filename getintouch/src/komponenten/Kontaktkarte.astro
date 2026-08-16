@@ -1,0 +1,98 @@
+---
+/**
+ * Die Visitenkarte am Fuß der Seite — der eigentliche Zweck des Ganzen.
+ *
+ * Eine Linkliste bringt Leute auf Kanäle. „Get in Touch" soll den Kontakt in
+ * das Adressbuch bringen, weil dort die Nummer auch in einem halben Jahr noch
+ * liegt, wenn niemand mehr weiß, wo der Flyer geblieben ist.
+ *
+ * Der QR-Code steckt in einem `details`-Element und wird als SVG vom Server
+ * ausgeliefert. Damit ist er ohne JavaScript da, druckbar und beliebig
+ * skalierbar — anders als ein Canvas, das erst ein Skript malen muss.
+ *
+ * Der QR-Code zeigt auf die Seitenadresse, nicht auf die vCard. Das ist die
+ * wichtigere Entscheidung: gedruckte Codes bleiben dadurch gültig, auch wenn
+ * sich Nummer, Anschrift oder Foto später ändern.
+ */
+import type { Visitenkarte } from '../kern/profil.ts';
+import { zeichen } from '../kern/zeichen.ts';
+
+interface Props {
+  karte: Visitenkarte | undefined;
+  slug: string;
+  /** Vollständige, teilbare Adresse dieser Seite. */
+  adresse: string;
+  /** Kurzform für die Anzeige, z. B. „hnvr.me/t/tim". */
+  adresseKurz: string;
+}
+
+const { karte, slug, adresse, adresseKurz } = Astro.props;
+const name = karte ? [karte.vorname, karte.nachname].filter(Boolean).join(' ') : '';
+const zusatz = [name, karte?.firma].filter(Boolean).join(' · ');
+---
+
+<section class="karte" aria-label="Kontakt und Code">
+  {
+    karte && (
+      <a class="karte__zeile karte__zeile--gross" href={`/t/${slug}/karte.vcf`} download>
+        <Fragment set:html={zeichen('visitenkarte')} />
+        <span class="aktion__text">
+          <span class="karte__titel">Kontakt speichern</span>
+          <span class="karte__hinweis">{zusatz ? `${zusatz} — direkt ins Adressbuch` : 'Direkt ins Adressbuch'}</span>
+        </span>
+        <Fragment set:html={zeichen('laden', 'zeichen aktion__pfeil')} />
+      </a>
+    )
+  }
+
+  <details class="karte__falte">
+    <summary class="karte__zeile">
+      <Fragment set:html={zeichen('qr')} />
+      <span class="aktion__text"><span class="karte__titel">QR-Code zeigen</span></span>
+    </summary>
+    <div class="qr">
+      <img class="qr__bild" src={`/t/${slug}/qr.svg`} width="220" height="220" alt={`QR-Code für ${adresseKurz}`} />
+      <p class="qr__adresse">{adresseKurz}</p>
+    </div>
+  </details>
+
+  <button class="karte__zeile" type="button" data-teilen={adresse} hidden>
+    <Fragment set:html={zeichen('teilen')} />
+    <span class="aktion__text"><span class="karte__titel" data-teilen-text>Seite teilen</span></span>
+  </button>
+</section>
+
+<script>
+  /* Eine Bequemlichkeit, die es nur mit Skript gibt. Die Schaltfläche startet
+     versteckt und taucht erst auf, wenn sie auch etwas kann — eine tote
+     Schaltfläche ist schlimmer als keine. */
+  const knopf = document.querySelector<HTMLButtonElement>('[data-teilen]');
+  if (knopf) {
+    const adresse = knopf.dataset.teilen!;
+    const beschriftung = knopf.querySelector<HTMLElement>('[data-teilen-text]')!;
+    const kannTeilen = typeof navigator.share === 'function';
+    const kannKopieren = typeof navigator.clipboard?.writeText === 'function';
+
+    if (kannTeilen || kannKopieren) {
+      knopf.hidden = false;
+      if (!kannTeilen) beschriftung.textContent = 'Adresse kopieren';
+
+      knopf.addEventListener('click', async () => {
+        try {
+          if (kannTeilen) {
+            await navigator.share({ url: adresse, title: document.title });
+            return;
+          }
+          await navigator.clipboard.writeText(adresse);
+          const vorher = beschriftung.textContent;
+          beschriftung.textContent = 'Kopiert';
+          setTimeout(() => {
+            beschriftung.textContent = vorher;
+          }, 1800);
+        } catch {
+          /* Abbruch durch den Benutzer ist kein Fehler. */
+        }
+      });
+    }
+  }
+</script>

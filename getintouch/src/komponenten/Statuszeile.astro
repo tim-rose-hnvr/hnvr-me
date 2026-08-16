@@ -1,0 +1,34 @@
+---
+/**
+ * Die Statuszeile.
+ *
+ * Sie steht nur da, wenn Öffnungszeiten gepflegt sind. Ohne Plan keine Zeile —
+ * eine Seite, die „Jetzt erreichbar" behauptet, ohne es zu wissen, schadet
+ * mehr als eine ohne Angabe.
+ *
+ * `datetime` und `title` tragen die belastbare Angabe für Vorlesesoftware,
+ * die Zeile selbst bleibt kurz.
+ */
+import type { Lage } from '../kern/erreichbarkeit.ts';
+import { statusText } from '../kern/erreichbarkeit.ts';
+import { zeichen } from '../kern/zeichen.ts';
+
+interface Props {
+  lage: Lage;
+  zusage?: string | undefined;
+}
+
+const { lage, zusage } = Astro.props;
+const text = statusText(lage, zusage);
+---
+
+<p class:list={['status', lage.offen && 'status--offen']}>
+  {
+    lage.offen ? (
+      <span class="status__punkt" aria-hidden="true" />
+    ) : (
+      <Fragment set:html={zeichen('uhr')} />
+    )
+  }
+  <span>{text}</span>
+</p>

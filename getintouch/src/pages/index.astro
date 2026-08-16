@@ -1,0 +1,87 @@
+---
+/**
+ * Die Wurzel gehört nicht diesem Projekt.
+ *
+ * „Get in Touch" hängt unter `/t/…` an der bestehenden Seite. Wer hier landet,
+ * gehört auf die Verkaufsseite. In der Entwicklung ist das unpraktisch,
+ * deshalb steht dort stattdessen eine Liste der vorhandenen Profile.
+ */
+import { ablage } from '../kern/speicher/index.ts';
+
+export const prerender = false;
+
+if (!import.meta.env.DEV) {
+  return Astro.redirect('https://hnvr.me/get-in-touch', 302);
+}
+
+const quelle = ablage();
+const slugs = await quelle.liste();
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Get in Touch — Entwicklung</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 48px 24px;
+        background: #0f0f0f;
+        color: #f1efeb;
+        font: 16px/1.6 system-ui, sans-serif;
+      }
+      main {
+        max-width: 34rem;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 4px;
+      }
+      p {
+        color: #9c968d;
+        margin: 0 0 28px;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 8px;
+      }
+      a {
+        display: block;
+        padding: 14px 16px;
+        border: 1px solid rgba(241, 239, 235, 0.14);
+        border-radius: 14px;
+        color: inherit;
+        text-decoration: none;
+      }
+      a:hover {
+        border-color: #ff7120;
+      }
+      code {
+        color: #ff7120;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Get in Touch</h1>
+      <p>Nur in der Entwicklung sichtbar. Quelle: <code>{quelle.name}</code></p>
+      <ul>
+        {
+          slugs.map((slug) => (
+            <li>
+              <a href={`/t/${slug}`}>/t/{slug}</a>
+            </li>
+          ))
+        }
+      </ul>
+      {slugs.length === 0 && <p>Noch kein Profil in <code>daten/profile</code>.</p>}
+    </main>
+  </body>
+</html>

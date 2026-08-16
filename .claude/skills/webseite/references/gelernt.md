@@ -72,6 +72,27 @@ Wörtlich zitieren lohnt sich: die Formulierung des Auftraggebers enthält oft m
 - Prüfbar: nein → braucht ein Auge auf dem Bild; genau dafür gibt es den Kritiker
 - Status: übernommen im Referenzbau
 
+### 2026-08-16 — Präsentationsattribut verliert gegen CSS-Regel (Projekt: Referenzbau Saalwerk)
+- Rückmeldung: Kritiker — „Der Platz mit offenem Mikrofon ist blass … Die Legende zeigt daneben ein volles Rostrot-Quadrat — Legende und Zeichnung sagen also Verschiedenes."
+- Ursache: Über der farbigen Fläche lag ein Rahmen-Rechteck mit `fill="none"` **als Attribut**. In SVG haben Präsentationsattribute die niedrigste Priorität — jede CSS-Regel schlägt sie. `.plan .platz{fill:var(--papier)}` hat den Rahmen also papierfarben gefüllt und die rostrote Fläche darunter übermalt. Im Quelltext steht `fill="none"`, im Bild steht Papier.
+- Regel: In SVG nichts über Präsentationsattribute steuern, was auch in CSS steht. Entweder alles als Attribut oder alles als Klasse — gemischt gewinnt immer das CSS, und zwar unsichtbar.
+- Prüfbar: nein → braucht ein Auge auf dem Bild
+- Status: übernommen im Referenzbau
+
+### 2026-08-16 — Mediävalziffern in einer Zeichnung (Projekt: Referenzbau Saalwerk)
+- Rückmeldung: Kritiker — „Georgia hat Mediävalziffern: die 0 und die 10 sitzen auf x-Höhe, die 8 hat eine Oberlänge. Bei 86 px stehen die drei Werte deshalb sichtbar nicht auf einer gemeinsamen Höhe, die Zeile wippt. Schlimmer: es ist die einzige Stelle der Seite, an der eine Zahl nicht monospace gesetzt ist."
+- Ursache: Zwei Fehler in einem. Erstens setzen klassische Serifenschriften Ziffern mit Ober- und Unterlängen — als Fließtextzahl richtig, als Kennzahl in 80 px eine wippende Zeile. Zweitens war es die einzige Zahl der Seite außerhalb der Monospace-Familie, in der alle anderen Zahlen stehen.
+- Regel: Kennzahlen in Displaygröße brauchen Versalziffern (`font-variant-numeric: lining-nums`) oder eine Schrift, die sie von Haus aus hat. Und: Zahlen einer Seite gehören in **eine** Familie — wo Maße, Positionsnummern und Platznummern monospace stehen, stehen Kennzahlen auch monospace.
+- Prüfbar: teilweise → gleiche Familie ließe sich vergleichen; Ziffernform nicht
+- Status: übernommen im Referenzbau
+
+### 2026-08-16 — Zeichnung auf Mobil nur skaliert (Projekt: Referenzbau Saalwerk)
+- Rückmeldung: Kritiker — „das ist kein offener Punkt, das ist der Verlust des einzigen unaustauschbaren Elements auf der Hälfte der Zugriffe."
+- Ursache: Der Grundriss lag mit `width:100%` im Textfluss. Bei 390 px schrumpfte er auf einen Streifen, Platznummern auf etwa 6 px. Der Signature Moment war auf Mobil praktisch nicht vorhanden — und der Prüflauf war grün, weil unlesbar klein kein Fehler ist, den ein Skript kennt.
+- Regel: Eine Zeichnung, deren Beschriftung unter 11 px fiele, wird nicht skaliert, sondern bekommt einen eigenen Scrollrahmen mit Mindestbreite (`overflow-x:auto`, `max-width:100%` am Rahmen, `min-width:0` am Rasterfeld) und einen sichtbaren Hinweis. Der Signature Moment muss auf Mobil derselbe sein wie auf Desktop.
+- Prüfbar: ja → wirksame Schriftgröße von SVG-Text nach Skalierung messen; steht auf der Liste
+- Status: übernommen im Referenzbau
+
 ### 2026-08-16 — Leere Form ist schädlicher als Weglassen (Projekt: Gegenprobe Saalwerk)
 - Rückmeldung: Kritiker zur Fassung ohne Skill — „benutzt die Form eines Kundenlogo-Streifens und liefert Branchenkategorien. Bei einem Käufer, der Referenzen prüft, liest sich das als Verschleierung — schädlicher als kein Streifen."
 - Ursache: Der Standardbausatz enthält einen Vertrauensstreifen. Wer ihn übernimmt, ohne echte Kunden zu haben, füllt ihn mit Kategorien („STADTWERKE", „SPARKASSE") oder anonymen Zitaten und erzeugt damit das Gegenteil von Vertrauen.
@@ -121,6 +142,7 @@ Regeln, die heute nur in Prosa stehen und in eine Messung gehören. Absteigend n
 - [x] **Standardmuster erkennen** — zentrierter Kopfbereich mit zwei Schaltflächen, Dreierkarten mit gleicher Höhe und gleichem Aufbau
 - [x] **Tastaturdurchlauf** — 30 Tabstopps, Fokussichtbarkeit gegen einen unfokussierten Klon desselben Elements gemessen, Fokusfallen erkannt
 - [x] **Formularfelder** — Felder ohne zugänglichen Namen (`placeholder` zählt nicht)
+- [ ] **Wirksame Größe von SVG-Text** — Beschriftung in Zeichnungen nach der Skalierung messen; unter 11 px effektiv ist der Signature Moment auf Mobil verloren, und der Lauf bleibt trotzdem grün
 - [ ] **Kontrast von SVG-Text** — die Prüfung liest `color`, SVG-Beschriftungen tragen ihre Farbe aber in `fill`. Im Referenzbau stand die Nummer des aktiven Platzes dadurch unbemerkt in Grau auf Rostrot (etwa 1.5:1), obwohl der Lauf grün war.
 - [ ] **Größenkontrast je Abschnitt** statt global — ein starker Kopfbereich verdeckt heute jeden flachen Abschnitt darunter
 - [ ] **Visuelle Regression** — Screenshots gegen einen freigegebenen Stand vergleichen

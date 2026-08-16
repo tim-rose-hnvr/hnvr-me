@@ -51,6 +51,8 @@
   .kopfleiste nav{margin-left:auto;display:flex;gap:28px}
   .kopfleiste nav a{
     color:var(--gedimmt);text-decoration:none;padding:6px 0;
+    font:400 12px/1 ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    letter-spacing:.14em;text-transform:uppercase;
     border-bottom:1px solid transparent;transition:border-color .16s var(--aus),color .16s var(--aus);
   }
   .kopfleiste nav a:hover{color:var(--tinte);border-bottom-color:var(--rost)}
@@ -73,7 +75,7 @@
   .stempel span{color:var(--gedimmt)}
   .stempel b{font-weight:400;color:var(--tinte)}
   .pos{grid-column:1;padding-top:10px}
-  .inhalt{grid-column:2;max-width:64ch}
+  .inhalt{grid-column:2;max-width:64ch;min-width:0}
   .weit{max-width:none}
 
   h1{
@@ -106,7 +108,8 @@
   .zeile p{margin:0;color:var(--tinte);font-size:1.125rem}
 
   /* Der Grundriss */
-  .plan{margin:8px 0 0;width:100%;height:auto;display:block}
+  .planrahmen{margin:8px 0 0;overflow-x:auto;max-width:100%}
+  .plan{width:100%;height:auto;display:block}
   .plan .flaeche{fill:none;stroke:var(--tinte);stroke-width:1.5}
   .plan .hilfe{fill:none;stroke:var(--linie);stroke-width:1}
   .plan .platz{fill:var(--papier);stroke:var(--tinte);stroke-width:1.25}
@@ -115,6 +118,7 @@
   .plan .kegel{fill:var(--rost);fill-opacity:.16}
   .plan .aktiv{fill:var(--rost);stroke:var(--rost)}
   .plan .aktivschrift{fill:var(--papier)}
+  .plan .rahmen{fill:none}
   .plan text.schwenk{opacity:0}
 
   .schwenk{opacity:0;animation:schwenken 12s steps(1,end) infinite}
@@ -123,6 +127,7 @@
   .schwenk--3{animation-delay:8s}
   @keyframes schwenken{0%,33.33%{opacity:1}33.34%,100%{opacity:0}}
 
+  .planhinweis{display:none;margin:10px 0 0}
   .beschriftung{
     display:flex;gap:28px;flex-wrap:wrap;margin-top:20px;padding-top:16px;
     border-top:1px solid var(--linie);
@@ -135,11 +140,12 @@
   .zahlen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:1px solid var(--linie);margin-top:30px}
   .zahl{padding:28px 24px 28px 0;border-right:1px solid var(--linie)}
   .zahl:last-child{border-right:0}
-  .zahl b{display:block;font:400 clamp(3.4rem,6.4vw,5.4rem)/.95 Georgia,serif;letter-spacing:-.035em;color:var(--rost)}
+  .zahl b{display:block;color:var(--rost);letter-spacing:-.02em;
+    font:400 clamp(3rem,5.6vw,4.6rem)/.95 ui-monospace,Menlo,Consolas,monospace}
   .zahl em{display:block;font:400 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;
     text-transform:uppercase;font-style:normal;color:var(--gedimmt);margin-bottom:14px}
   .abschnitt--zahlen h2{font-size:1.55rem;letter-spacing:-.01em;max-width:26ch}
-  .zahl span{display:block;margin-top:8px;color:var(--gedimmt);font-size:.95rem}
+  .zahl span{display:block;margin-top:14px;color:var(--tinte);font-size:1.1875rem;line-height:1.5}
 
   .abschluss{padding:104px 0}
   .fusszeile{
@@ -150,8 +156,12 @@
   .fusszeile a:hover{color:var(--tinte)}
 
   @media (max-width:820px){
-    body{background-size:32px 32px}
-    .abschnitt{grid-template-columns:1fr;gap:0;padding:64px 0}
+    body{font-size:17px;background-size:32px 32px}
+    h1{margin-bottom:40px}
+    .plan{min-width:660px}
+    .plan .schrift,.plan .mass{font-size:15px}
+    .planhinweis{display:block}
+    .abschnitt{grid-template-columns:minmax(0,1fr);gap:0;padding:64px 0}
     .pos{grid-column:1;padding:0 0 12px}
     .inhalt{grid-column:1}
     .zeile{grid-template-columns:1fr;gap:6px}
@@ -184,9 +194,9 @@
     <span class="wortmarke">Saalwerk</span>
     <span class="marke">Sitzungstechnik · Baugruppe 01–06</span>
     <nav>
-      <a href="#aufbau">Aufbau</a>
-      <a href="#verfahren">Verfahren</a>
-      <a href="#anfrage">Vorführung</a>
+      <a href="#aufbau">02 Platz</a>
+      <a href="#verfahren">03 Verfahren</a>
+      <a href="#anfrage">05 Vorführung</a>
     </nav>
   </div>
 
@@ -215,7 +225,8 @@
       <h2>Der Platz trägt die Identität</h2>
       <p style="max-width:60ch">Nummer, Funktion, Stimmrecht und Kamerapreset hängen am Sitzplatz — nicht am Gerät und nicht an der Person. Wer sich setzt, wird zugeordnet. Ein defektes iPad wird getauscht, nicht eingerichtet.</p>
 
-      <svg class="plan" viewBox="52 0 768 500" role="img"
+      <div class="planrahmen">
+      <svg class="plan" viewBox="58 0 762 500" preserveAspectRatio="xMidYMid meet" role="img"
            aria-label="Grundriss eines Sitzungssaals mit vierzehn Plätzen. Platz 07 hat das Mikrofon offen, der Kamerakegel liegt darauf.">
         <!-- Maßlinien -->
         <line class="hilfe" x1="120" y1="452" x2="700" y2="452"/>
@@ -244,7 +255,7 @@
         <g>
           <rect class="platz" x="248" y="126" width="56" height="34"/><text class="schrift" x="276" y="147" text-anchor="middle">01</text>
           <rect class="platz schwenk schwenk--2 aktiv" x="316" y="126" width="56" height="34"/>
-          <rect class="platz" x="316" y="126" width="56" height="34" fill="none"/><text class="schrift" x="344" y="147" text-anchor="middle">02</text>
+          <rect class="platz rahmen" x="316" y="126" width="56" height="34"/><text class="schrift" x="344" y="147" text-anchor="middle">02</text>
           <rect class="platz" x="384" y="126" width="56" height="34"/><text class="schrift" x="412" y="147" text-anchor="middle">03</text>
           <rect class="platz" x="452" y="126" width="56" height="34"/><text class="schrift" x="480" y="147" text-anchor="middle">04</text>
           <rect class="platz" x="520" y="126" width="56" height="34"/><text class="schrift" x="548" y="147" text-anchor="middle">05</text>
@@ -255,13 +266,13 @@
           <rect class="platz" x="316" y="340" width="56" height="34"/><text class="schrift" x="344" y="361" text-anchor="middle">09</text>
           <rect class="platz" x="384" y="340" width="56" height="34"/><text class="schrift" x="412" y="361" text-anchor="middle">10</text>
           <rect class="platz schwenk schwenk--3 aktiv" x="452" y="340" width="56" height="34"/>
-          <rect class="platz" x="452" y="340" width="56" height="34" fill="none"/><text class="schrift" x="480" y="361" text-anchor="middle">11</text>
+          <rect class="platz rahmen" x="452" y="340" width="56" height="34"/><text class="schrift" x="480" y="361" text-anchor="middle">11</text>
           <rect class="platz" x="520" y="340" width="56" height="34"/><text class="schrift" x="548" y="361" text-anchor="middle">12</text>
         </g>
         <!-- Plätze rechts: 06–07 -->
         <rect class="platz" x="612" y="180" width="48" height="52"/><text class="schrift" x="636" y="211" text-anchor="middle">06</text>
         <rect class="platz schwenk schwenk--1 aktiv" x="612" y="252" width="48" height="52"/>
-        <rect class="platz" x="612" y="252" width="48" height="52" fill="none"/><text class="schrift" x="636" y="283" text-anchor="middle">07</text>
+        <rect class="platz rahmen" x="612" y="252" width="48" height="52"/><text class="schrift" x="636" y="283" text-anchor="middle">07</text>
         <!-- Plätze links: 13–14 -->
         <rect class="platz" x="160" y="180" width="48" height="52"/><text class="schrift" x="184" y="211" text-anchor="middle">13</text>
         <rect class="platz" x="160" y="252" width="48" height="52"/><text class="schrift" x="184" y="283" text-anchor="middle">14</text>
@@ -274,6 +285,8 @@
         <text class="schrift" x="700" y="288" >MIKROFON OFFEN</text>
         <line class="hilfe" x1="666" y1="280" x2="694" y2="282"/>
       </svg>
+      </div>
+      <p class="marke planhinweis">Zeichnung waagerecht scrollen</p>
 
       <div class="beschriftung marke">
         <span class="b-aktiv">Platz mit offenem Mikrofon</span>
@@ -320,7 +333,7 @@
       <h2>Drei Zahlen, die den Unterschied ausmachen</h2>
       <div class="zahlen">
         <div class="zahl"><em>Verbindungen nach draußen</em><b>0</b><span>Was eine Sitzung braucht. Der Saal hängt von nichts ab.</span></div>
-        <div class="zahl"><em>Latenz zur Beschallung</em><b>&lt;10<small style="font-size:.5em;letter-spacing:0"> ms</small></b><span>Vom Mikrofon in den Saal. Darüber entstehen Kammfiltereffekte mit der echten Stimme.</span></div>
+        <div class="zahl"><em>Latenz zur Beschallung</em><b>&lt;10<small style="font-size:.55em"> ms</small></b><span>Vom Mikrofon in den Saal. Darüber entstehen Kammfiltereffekte mit der echten Stimme.</span></div>
         <div class="zahl"><em>Offene Mikrofone</em><b>8</b><span>Gleichzeitig, aus der Einmessung. Jede Verdopplung kostet 3 dB Reserve.</span></div>
       </div>
     </div>

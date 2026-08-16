@@ -25,16 +25,26 @@ Angelegt zu Beginn, nicht am Ende. Nachweise werden von `auftrag.mjs` nachgesehe
 
 ## A5 Kein Beleg-Element ohne echten Beleg
 - Zustand: erledigt
-- Nachweis: manuell: keine Logoleiste, kein anonymes Zitat; die Lücke ist in POS. 05 benannt
+- Nachweis: datei:kritik.md
+- Nachweis: manuell: keine Logoleiste, kein anonymes Zitat; die Lücke ist in POS. 05 benannt. Vom Kritiker bestätigt: Ausschlussliste vollständig eingehalten.
 
 ## A6 Barrierefreiheit: Kontrast, Fokus, reduzierte Bewegung
 - Zustand: erledigt
 - Nachweis: pruefung:.pruefung/bericht.json
 
 ## A7 Mobilfassung tragfähig
-- Zustand: teilweise
-- Offen: Der Grundriss skaliert bei 390 px nur; die Platznummern nähern sich der Lesbarkeitsgrenze. Eine eigene Mobilfassung der Zeichnung (weniger Plätze, größere Kästen) steht aus.
-- Nachweis: manuell: Screenshot start-mobil.png angesehen, Rest der Seite fällt sauber in eine Spalte
+- Zustand: erledigt
+- Nachweis: pruefung:.pruefung/bericht.json
+- Nachweis: datei:kritik.md
+- Nachweis: manuell: Grundriss läuft in eigenem Scrollrahmen mit Mindestbreite, Platznummern wieder lesbar; Screenshot start-mobil.png angesehen
+
+## A9 Formsprache in allen Abschnitten durchziehen
+- Zustand: offen
+- Offen: Der Kritiker hält der These entgegen, dass POS. 03, 04 und 05 außer der Positionsnummer keine Bemaßung tragen, und dass POS. 01, 04 und 05 einen Logotausch unverändert überstehen würden. Die Seite ist an zwei Stellen eigen und an drei Stellen konventionell. Das ist Arbeit an der These, nicht am Detail.
+
+## A10 Signature Moment zeigt die Leitidee vollständig
+- Zustand: offen
+- Offen: Die Überschrift sagt „der Platz trägt die Identität, nicht das Gerät und nicht die Person" — in der Zeichnung kommen weder Personen noch Geräte vor. Vorschlag aus der Kritik: an einen Platz schreiben, was dort hängt (07 · PRESET 07 · STIMMRECHT JA).
 
 ## A8 Echte Schrift statt Systemschrift
 - Zustand: offen

@@ -20,6 +20,7 @@ Kopieren wäre der schnellste Weg zurück in den Durchschnitt. Die Bauzeichnungs
 | `auftrag.md` | Auftragsregister mit Zuständen und Nachweisen |
 | `index.html` | die Seite, ohne jede externe Abhängigkeit |
 | `impressum.html`, `datenschutz.html` | Platzhalterangaben, vor einer Veröffentlichung juristisch prüfen lassen |
+| `kritik.md` | Urteil des Kritikers, was daraufhin behoben wurde und was bewusst offen blieb |
 
 ## Selbst nachprüfen
 
@@ -32,7 +33,8 @@ node ../../scripts/auftrag.mjs auftrag.md --rest-erlaubt
 
 ## Was offen ist
 
-- **A7 Mobilfassung des Grundrisses** — er skaliert nur, statt eine eigene Fassung zu haben. Bei 390 px nähern sich die Platznummern der Lesbarkeitsgrenze.
-- **A8 Echte Displayschrift** — in der Bauumgebung war keine lizenzierte Schriftdatei verfügbar. Die Seite läuft auf einem Georgia-Stack, ihr fehlt damit der stärkste Einzelhebel für Eigenständigkeit.
+- **A8 Echte Displayschrift** — in der Bauumgebung war keine lizenzierte Schriftdatei verfügbar. Die Seite läuft auf einem Georgia-Stack. Der Kritiker hält das für leicht wiegend („für Kreistag und Sparkasse liest Georgia institutionell, nicht billig"), die Formsprache trägt die Eigenständigkeit ohnehin über Raster, Positionsnummern und Zeichnung.
+- **A9 Formsprache in allen Abschnitten** — POS. 03, 04 und 05 tragen außer der Positionsnummer keine Bemaßung; POS. 01, 04 und 05 würden einen Logotausch unverändert überstehen. Die Seite ist an zwei Stellen eigen und an drei Stellen konventionell.
+- **A10 Signature Moment vollständig** — die Überschrift sagt „der Platz trägt die Identität, nicht das Gerät und nicht die Person", aber in der Zeichnung kommen weder Personen noch Geräte vor.
 
-Beide stehen im Register als `teilweise` und `offen`. Das ist der Punkt: Sie sind sichtbar, statt in einer Fertigmeldung unterzugehen.
+Alle drei stehen im Register als `offen`. Das ist der Punkt: Sie sind sichtbar, statt in einer Fertigmeldung unterzugehen. `kritik.md` hält fest, worauf sie zurückgehen.

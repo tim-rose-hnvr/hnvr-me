@@ -51,6 +51,20 @@ Wörtlich zitieren lohnt sich: die Formulierung des Auftraggebers enthält oft m
 - Prüfbar: ja → neue Prüfung meldet Text, der nach dem Durchscrollen bei `opacity: 0` steht
 - Status: übernommen in pruefen.mjs, Verbotsliste in SKILL.md
 
+### 2026-08-16 — Größenkontrast global bestanden, abschnittsweise gescheitert (Projekt: Gegenprobe Saalwerk)
+- Rückmeldung: Kritiker zu POS. 04 — „Der Abschnitt kündigt einen Höhepunkt an und liefert die Zahlen in derselben Größe wie die Überschrift darüber. Der Größenkontrast bricht genau dort zusammen, wo er gebraucht wird."
+- Ursache: Die Regel „Display mindestens Faktor 3" stand in `handwerk.md` und wurde für die Seite als Ganzes eingehalten (h1 bei 106 px, Fließtext 19 px). Innerhalb des Kennzahlenabschnitts lagen Überschrift und Zahl beide bei etwa 34 px. Das Prüfskript vergleicht nur die **größte** Schrift der Seite mit dem Fließtext und merkt davon nichts — eine bestandene Gesamtprüfung hat einen lokalen Ausfall verdeckt.
+- Regel: Der Größenkontrast gilt je Abschnitt, nicht je Seite. Wo eine Zahl der Inhalt ist, ist sie das Größte im Abschnitt — nicht gleich groß wie ihre Überschrift.
+- Prüfbar: ja → Prüfung je Abschnitt statt global; steht auf der Liste unten
+- Status: offen
+
+### 2026-08-16 — Leere Form ist schädlicher als Weglassen (Projekt: Gegenprobe Saalwerk)
+- Rückmeldung: Kritiker zur Fassung ohne Skill — „benutzt die Form eines Kundenlogo-Streifens und liefert Branchenkategorien. Bei einem Käufer, der Referenzen prüft, liest sich das als Verschleierung — schädlicher als kein Streifen."
+- Ursache: Der Standardbausatz enthält einen Vertrauensstreifen. Wer ihn übernimmt, ohne echte Kunden zu haben, füllt ihn mit Kategorien („STADTWERKE", „SPARKASSE") oder anonymen Zitaten und erzeugt damit das Gegenteil von Vertrauen.
+- Regel: Kein Beleg-Element ohne echten Beleg. Statt anonymer Referenz lieber ein Satz, der die Lücke benennt: „Referenzen auf Anfrage — wir nennen Ihnen zwei Häuser Ihrer Größe."
+- Prüfbar: nein → braucht ein Urteil über Inhalt, nicht über Form
+- Status: übernommen in struktur.md
+
 ---
 
 ## Beobachtung aus der Gegenprobe
@@ -93,6 +107,7 @@ Regeln, die heute nur in Prosa stehen und in eine Messung gehören. Absteigend n
 - [x] **Standardmuster erkennen** — zentrierter Kopfbereich mit zwei Schaltflächen, Dreierkarten mit gleicher Höhe und gleichem Aufbau
 - [x] **Tastaturdurchlauf** — 30 Tabstopps, Fokussichtbarkeit gegen einen unfokussierten Klon desselben Elements gemessen, Fokusfallen erkannt
 - [x] **Formularfelder** — Felder ohne zugänglichen Namen (`placeholder` zählt nicht)
+- [ ] **Größenkontrast je Abschnitt** statt global — ein starker Kopfbereich verdeckt heute jeden flachen Abschnitt darunter
 - [ ] **Visuelle Regression** — Screenshots gegen einen freigegebenen Stand vergleichen
 - [ ] **Formularabgabe** — einmal leer und einmal falsch absenden, Fehlerzustände aufnehmen
 - [ ] **Dunkelfassung** — zweiter Durchlauf mit `colorScheme: 'dark'`, damit die halbe Dunkelfassung auffällt

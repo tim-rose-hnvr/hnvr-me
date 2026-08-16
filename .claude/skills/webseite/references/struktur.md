@@ -73,6 +73,14 @@ Regeln: Netto oder brutto **dazuschreiben**. Jährlich/monatlich umschaltbar mit
 
 Wie die Startseite, aber enger: ein Gegenstand, ein Publikum, eine Handlung. Kein Rundumschlag. Diese Seiten gewinnen die Suche und sind oft die eigentliche Eingangstür — sie brauchen deshalb einen vollständigen Kopf, nicht nur eine Unterüberschrift.
 
+### Beleg — die Stelle, an der am meisten gelogen wird
+
+Der Standardbausatz enthält einen Vertrauensstreifen: Kundenlogos, Zahlen, ein Zitat. Wer ihn übernimmt, ohne echte Belege zu haben, füllt ihn mit Branchenkategorien („STADTWERKE, SPARKASSE, KREISTAG") oder anonymen Zitaten („IT-Leitung, kommunaler Versorger").
+
+**Das ist schlechter als nichts.** Eine leere Beweisform liest sich bei einem prüfenden Käufer als Verschleierung — sie beschädigt genau das, wofür sie da ist. Wer keine nennbaren Kunden hat, benennt die Lücke: „Referenzen auf Anfrage — wir nennen Ihnen zwei Häuser Ihrer Größe." Das ist nüchtern statt beschönigend, und nüchtern ist bei konservativen Käufern die stärkere Position.
+
+Regel: **Kein Beleg-Element ohne echten Beleg.** Kein Logostreifen ohne Logos, kein Zitat ohne Namen, keine Zahl ohne Herkunft.
+
 ### Über uns
 
 Die meistunterschätzte Seite: bei Dienstleistung und B2B oft die zweitmeistbesuchte. Was gebraucht wird: **Menschen mit Gesichtern und Namen**, der Grund für die Existenz der Firma, der Ort, die Größe, die Geschichte in fünf Sätzen. Was nicht gebraucht wird: Werte-Kacheln mit Symbolen („Innovation, Qualität, Vertrauen") — die schreibt jeder hin, also glaubt sie keiner.

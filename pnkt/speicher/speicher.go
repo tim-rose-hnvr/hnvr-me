@@ -37,6 +37,7 @@ type Code struct {
 	Aktiv      bool              `json:"aktiv"`
 	Gesperrt   string            `json:"gesperrt,omitempty"`
 	GueltigBis *time.Time        `json:"gueltigBis,omitempty"`
+	Herkunft   string            `json:"herkunft,omitempty"`
 	Fassung    int               `json:"fassung"`
 	Erstellt   time.Time         `json:"erstellt"`
 	Geaendert  time.Time         `json:"geaendert"`

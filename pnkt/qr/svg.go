@@ -51,149 +51,89 @@ func (s *Symbol) istAusgespart(x, y int, anteil float64) bool {
 	return fx+1 > von && fx < bis && fy+1 > von && fy < bis
 }
 
-// SVG erzeugt echten Vektor: Pfade in Millimetern, keine eingebettete Rastergrafik.
-// Das ist der Unterschied zu jedem Werkzeug, das ein PNG hochskaliert.
+// SVG erzeugt echten Vektor: Pfade in Millimetern, keine eingebettete
+// Rastergrafik. Das ist der Unterschied zu jedem Werkzeug, das ein PNG
+// hochskaliert.
 func (s *Symbol) SVG(g Gestalt) string {
-	if g.BreiteMm <= 0 {
-		g.BreiteMm = 40
-	}
-	if g.Modulform == "" {
-		g.Modulform = "quadrat"
-	}
-	if g.Vordergrund == "" {
-		g.Vordergrund = "#000000"
-	}
-
-	modul := g.BreiteMm / float64(s.Kante)
-	rand := float64(g.RuhezoneMod) * modul
-	gesamt := g.BreiteMm + 2*rand
-
-	augenFarbe := g.AugenFarbe
-	if augenFarbe == "" {
-		augenFarbe = g.Vordergrund
-	}
+	z := s.Formen(g)
 
 	var b strings.Builder
 	fmt.Fprintf(&b, `<svg xmlns="http://www.w3.org/2000/svg" `+
 		`width="%.4gmm" height="%.4gmm" viewBox="0 0 %.4g %.4g" `+
-		`shape-rendering="crispEdges">`, gesamt, gesamt, gesamt, gesamt)
-
+		`shape-rendering="crispEdges">`, z.BreiteMm, z.HoeheMm, z.BreiteMm, z.HoeheMm)
 	fmt.Fprintf(&b, `<desc>pnkt.me QR Version %d Stufe %s Maske %d, Modul %.4g mm</desc>`,
-		s.Version, s.Stufe, s.Maske, modul)
+		s.Version, s.Stufe, s.Maske, g.BreiteMm/float64(s.Kante))
 
-	if g.Hintergrund != "" {
-		fmt.Fprintf(&b, `<rect width="%.4g" height="%.4g" fill="%s"/>`, gesamt, gesamt, g.Hintergrund)
+	if z.Hintergrund != "" {
+		fmt.Fprintf(&b, `<rect width="%.4g" height="%.4g" fill="%s"/>`,
+			z.BreiteMm, z.HoeheMm, z.Hintergrund)
 	}
 
-	// Datenmodule.
-	var pfad strings.Builder
-	for y := 0; y < s.Kante; y++ {
-		for x := 0; x < s.Kante; x++ {
-			if !s.Dunkel(x, y) || s.istAuge(x, y) {
-				continue
-			}
-			if s.istAusgespart(x, y, g.LogoAnteil) {
-				continue
-			}
-			px := rand + float64(x)*modul
-			py := rand + float64(y)*modul
-			schreibeModul(&pfad, g.Modulform, px, py, modul)
+	// Alle einfarbigen Vollflaechen ohne Loch in einen Pfad — das haelt
+	// die Datei klein, was bei Version 40 den Unterschied macht.
+	sammel := map[string]*strings.Builder{}
+	var reihenfolge []string
+	for _, f := range z.Formen {
+		if f.Loch != nil {
+			continue
 		}
+		if _, da := sammel[f.Farbe]; !da {
+			sammel[f.Farbe] = &strings.Builder{}
+			reihenfolge = append(reihenfolge, f.Farbe)
+		}
+		svgPfad(sammel[f.Farbe], f)
 	}
-	fmt.Fprintf(&b, `<path fill="%s" d="%s"/>`, g.Vordergrund, pfad.String())
+	for _, farbe := range reihenfolge {
+		fmt.Fprintf(&b, `<path fill="%s" d="%s"/>`, farbe, sammel[farbe].String())
+	}
 
-	// Die drei Augen einzeln, damit Rahmen und Kern eigene Formen bekommen.
-	k := s.Kante
-	for _, ecke := range [][2]int{{0, 0}, {k - 7, 0}, {0, k - 7}} {
-		x := rand + float64(ecke[0])*modul
-		y := rand + float64(ecke[1])*modul
-		b.WriteString(zeichneAuge(x, y, modul, g.Augenrahmen, g.Augenkern, augenFarbe))
+	// Formen mit Aussparung brauchen die Even-odd-Regel und einen eigenen Pfad.
+	for _, f := range z.Formen {
+		if f.Loch == nil {
+			continue
+		}
+		var p strings.Builder
+		svgPfad(&p, f)
+		svgPfad(&p, *f.Loch)
+		fmt.Fprintf(&b, `<path fill="%s" fill-rule="evenodd" d="%s"/>`, f.Farbe, p.String())
 	}
 
 	b.WriteString(`</svg>`)
 	return b.String()
 }
 
-func schreibeModul(b *strings.Builder, form string, x, y, m float64) {
-	switch form {
-	case "punkt":
-		r := m * 0.42
-		fmt.Fprintf(b, "M%.4g %.4ga%.4g %.4g 0 1 0 %.4g 0a%.4g %.4g 0 1 0 %.4g 0",
-			x+m/2-r, y+m/2, r, r, 2*r, r, r, -2*r)
-	case "rund":
-		r := m * 0.28
-		g := m - 2*r
+func svgPfad(b *strings.Builder, f Form) {
+	switch f.Art {
+	case ArtKreis:
+		// Zwei Halbboegen, weil ein Kreis als Pfad geschrieben werden muss.
+		fmt.Fprintf(b, "M%.4g %.4ga%.4g %.4g 0 1 0 %.4g 0a%.4g %.4g 0 1 0 %.4g 0z",
+			f.X-f.R, f.Y, f.R, f.R, 2*f.R, f.R, f.R, -2*f.R)
+	case ArtRundRechteck:
+		g := f.B - 2*f.R
+		h := f.H - 2*f.R
 		fmt.Fprintf(b,
 			"M%.4g %.4g"+
 				"h%.4ga%.4g %.4g 0 0 1 %.4g %.4g"+
 				"v%.4ga%.4g %.4g 0 0 1 %.4g %.4g"+
 				"h%.4ga%.4g %.4g 0 0 1 %.4g %.4g"+
 				"v%.4ga%.4g %.4g 0 0 1 %.4g %.4gz",
-			x+r, y,
-			g, r, r, r, r,
-			g, r, r, -r, r,
-			-g, r, r, -r, -r,
-			-g, r, r, r, -r)
-	case "mosaik":
-		e := m * 0.08
-		fmt.Fprintf(b, "M%.4g %.4gh%.4gv%.4gh%.4gz", x+e, y+e, m-2*e, m-2*e, -(m - 2*e))
-	case "raute":
-		fmt.Fprintf(b, "M%.4g %.4gl%.4g %.4gl%.4g %.4gl%.4g %.4gz",
-			x+m/2, y, m/2, m/2, -m/2, m/2, -m/2, -m/2)
-	case "kreuz":
-		d := m * 0.3
-		g := m - 2*d
-		fmt.Fprintf(b, "M%.4g %.4g"+"h%.4gv%.4gh%.4gv%.4g"+"h%.4gv%.4gh%.4gv%.4g"+"h%.4gv%.4gh%.4gz",
-			x+d, y, g, d, d, g, -d, d, -g, -d, -d, -g, d)
-	default: // quadrat
-		fmt.Fprintf(b, "M%.4g %.4gh%.4gv%.4gh%.4gz", x, y, m, m, -m)
-	}
-}
-
-// Ein Auge ist sieben mal sieben Module: Rahmen aussen, ein Ring hell,
-// Kern drei mal drei. Die Masse sind nicht frei waehlbar — hier endet
-// die Gestaltung und beginnt die Norm.
-func zeichneAuge(x, y, m float64, rahmenform, kernform, farbe string) string {
-	var b strings.Builder
-	sieben := 7 * m
-
-	switch rahmenform {
-	case "rund":
-		r := sieben / 2
-		fmt.Fprintf(&b, `<path fill="%s" fill-rule="evenodd" `+
-			`d="M%.4g %.4ga%.4g %.4g 0 1 0 %.4g 0a%.4g %.4g 0 1 0 %.4g 0z`+
-			`M%.4g %.4ga%.4g %.4g 0 1 1 %.4g 0a%.4g %.4g 0 1 1 %.4g 0z"/>`,
-			farbe, x, y+r, r, r, sieben, r, r, -sieben,
-			x+m, y+r, r-m, r-m, sieben-2*m, r-m, r-m, -(sieben - 2*m))
-	case "blatt":
-		e := m * 2
-		fmt.Fprintf(&b, `<path fill="%s" fill-rule="evenodd" `+
-			`d="M%.4g %.4gh%.4ga%.4g %.4g 0 0 1 %.4g %.4gv%.4gh%.4ga%.4g %.4g 0 0 1 %.4g %.4gz`+
-			`M%.4g %.4gh%.4gv%.4gh%.4gz"/>`,
-			farbe, x+e, y, sieben-e, e, e, e, e, sieben-e, -(sieben - e), e, e, -e, -e,
-			x+m, y+m, sieben-2*m, sieben-2*m, -(sieben - 2*m))
-	default: // quadrat
-		fmt.Fprintf(&b, `<path fill="%s" fill-rule="evenodd" `+
-			`d="M%.4g %.4gh%.4gv%.4gh%.4gz M%.4g %.4gh%.4gv%.4gh%.4gz"/>`,
-			farbe, x, y, sieben, sieben, -sieben,
-			x+m, y+m, sieben-2*m, sieben-2*m, -(sieben - 2*m))
-	}
-
-	kx, ky, drei := x+2*m, y+2*m, 3*m
-	switch kernform {
-	case "rund":
-		r := drei / 2
-		fmt.Fprintf(&b, `<path fill="%s" d="M%.4g %.4ga%.4g %.4g 0 1 0 %.4g 0a%.4g %.4g 0 1 0 %.4g 0z"/>`,
-			farbe, kx, ky+r, r, r, drei, r, r, -drei)
-	case "punkt":
-		r := drei * 0.38
-		fmt.Fprintf(&b, `<path fill="%s" d="M%.4g %.4ga%.4g %.4g 0 1 0 %.4g 0a%.4g %.4g 0 1 0 %.4g 0z"/>`,
-			farbe, kx+drei/2-r, ky+drei/2, r, r, 2*r, r, r, -2*r)
+			f.X+f.R, f.Y,
+			g, f.R, f.R, f.R, f.R,
+			h, f.R, f.R, -f.R, f.R,
+			-g, f.R, f.R, -f.R, -f.R,
+			-h, f.R, f.R, f.R, -f.R)
+	case ArtPolygon:
+		for i, p := range f.Punkte {
+			if i == 0 {
+				fmt.Fprintf(b, "M%.4g %.4g", p[0], p[1])
+			} else {
+				fmt.Fprintf(b, "L%.4g %.4g", p[0], p[1])
+			}
+		}
+		b.WriteString("z")
 	default:
-		fmt.Fprintf(&b, `<path fill="%s" d="M%.4g %.4gh%.4gv%.4gh%.4gz"/>`, farbe, kx, ky, drei, drei, -drei)
+		fmt.Fprintf(b, "M%.4g %.4gh%.4gv%.4gh%.4gz", f.X, f.Y, f.B, f.H, -f.B)
 	}
-
-	return b.String()
 }
 
 // Text gibt das Symbol als Zeichenbild aus — fuer die Fehlersuche

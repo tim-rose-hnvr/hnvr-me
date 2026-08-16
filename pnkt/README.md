@@ -38,7 +38,8 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 | `druck` | Druckurteil: Modulgröße gegen sieben Verfahren, GS1-Kassenmaße, Ruhezone, Kontrast, umgekehrte Codes, Logofläche gegen die Reserve. Note A bis F mit Rat je Befund |
 | `gs1` | GTIN-Prüfziffer nach Modulo 10, Digital Link bauen und zurücklesen |
 | `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler |
-| `main.go` | Weiterleitung, Schnittstelle, Studio |
+| `ausgabe` | PDF und EPS von Hand geschrieben — echter Vektor in Punkt, ohne fremdes Paket |
+| `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio |
 
 ### Die Ablage
 
@@ -65,6 +66,9 @@ Ablage; jeder Satz wird vor der Bestätigung durchgeschrieben.
 | `GET /{kuerzel}` | Weiterleitung. Der heißeste Pfad: eine Suche im Verzeichnis, kein Dateizugriff |
 | `GET /01/{gtin}` | GS1 Digital Link — Auflösung über die GTIN |
 | `GET /qr.svg?inhalt=…` | Vektor, sofort, mit allen Gestaltungsangaben |
+| `GET /qr.pdf?inhalt=…` | dieselbe Zeichnung als PDF, Seitenmass in Millimetern |
+| `GET /qr.eps?inhalt=…` | dieselbe Zeichnung als EPS |
+| `POST /api/charge` | Massenanlage: CSV hinein, ZIP mit Dateien und Prüfbericht heraus |
 | `GET /api/druckpruefung?…` | Druckurteil ohne etwas anzulegen |
 | `GET /api/gs1?gtin=…` | Digital-Link-URL bauen |
 | `POST /api/codes` | Code anlegen, Kürzel wird vergeben |
@@ -113,19 +117,48 @@ Gefunden hat diese Prüfung unter anderem einen echten Fehler: das immer
 dunkle Modul wurde von den Platzhaltern der Formatangabe wieder
 überschrieben.
 
+Die Druckdateien sind ebenso gegengelesen: **PDF wird gerastert und der
+Code darin zurückgelesen**, für alle sechs Modulformen. EPS ist strukturell
+geprüft (BoundingBox, Pfade, Even-odd-Füllung), aber hier mangels
+Ghostscript **nicht im Bild nachgewiesen** — das steht offen.
+
+Die Geometrie liegt an einer Stelle: SVG, PDF und EPS lesen dieselben
+Grundformen. Sonst zeigt die Vorschau etwas anderes als die Druckdatei,
+und das merkt niemand, bevor die Auflage liegt.
+
 Die Prüfwerkzeuge liegen bewusst **nicht** im Programm — jsQR und OpenCV
 sind Testzubehör, kein Bestandteil. Das Binär bleibt abhängigkeitsfrei.
 
 ---
 
+## Massenanlage
+
+Das Stück, das eine Agentur täglich braucht:
+
+```
+curl -X POST "localhost:8080/api/charge?breite=40&stufe=Q&verfahren=offset&anlegen=1&eps=1" \
+     --data-binary @plakate.csv -o charge.zip
+```
+
+Kopfzeile `name,ziel,gtin`. Je Zeile entstehen SVG, PDF und auf Wunsch
+EPS; Zeilen mit GTIN bekommen statt eines Kurzwegs einen GS1 Digital
+Link. Dazu kommt `bericht.csv` — und der ist der eigentliche Gegenstand:
+je Zeile Kürzel, Version, Modulgröße, Note und der Grund, falls etwas
+nicht druckreif ist.
+
+Eine Agentur legt selten einen Code an, sondern vierhundert. Ohne diese
+Liste müsste jemand vierhundert Dateien einzeln ansehen — und dann sieht
+sie niemand an. Fehlerhafte Zeilen brechen den Lauf nicht ab, sie stehen
+mit Grund im Bericht: falsche Prüfziffer, fehlendes Ziel, zu kleine
+Module für das gewählte Verfahren.
+
 ## Was noch fehlt
 
 - **Konten und Anmeldung.** Der Dienst ist heute offen; `kontoId` wird
   geführt, aber nicht erzwungen. Vor jedem Betrieb im Netz nötig.
-- **PDF und EPS.** SVG steht; für die Druckvorstufe fehlen die beiden
-  anderen Formate. SVG ist bereits echter Vektor in Millimetern, die
-  Umsetzung ist eine Ausgabefrage, keine Neurechnung.
-- **Massenanlage.** CSV hinein, ZIP heraus.
+- **EPS im Bild nachweisen.** Struktur stimmt, ein Rasterbeleg fehlt.
+- **Sonderfarben und CMYK.** PDF und EPS schreiben heute RGB. Für den
+  Offsetdruck gehört dort ein Volltonkanal hin.
 - **Produktpass.** Die gehostete Seite hinter dem Code ist die
   eigentliche Anforderung der ESPR.
 - **Übernahme aus Wix.** `PK_Codes` lässt sich zeilenweise in

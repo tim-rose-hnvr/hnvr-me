@@ -23,6 +23,7 @@ import (
 	"syscall"
 	"time"
 
+	"pnkt.me/pnkt/ausgabe"
 	"pnkt.me/pnkt/druck"
 	"pnkt.me/pnkt/gs1"
 	"pnkt.me/pnkt/qr"
@@ -57,7 +58,10 @@ func main() {
 	weg.HandleFunc("GET /api/codes/{id}/protokoll", d.protokoll)
 	weg.HandleFunc("GET /api/druckpruefung", d.druckpruefung)
 	weg.HandleFunc("GET /api/gs1", d.gs1Bauen)
+	weg.HandleFunc("POST /api/charge", d.charge)
 	weg.HandleFunc("GET /qr.svg", d.qrSVG)
+	weg.HandleFunc("GET /qr.pdf", d.qrPDF)
+	weg.HandleFunc("GET /qr.eps", d.qrEPS)
 	weg.HandleFunc("GET /01/{gtin}/", d.digitalLink)
 	weg.HandleFunc("GET /01/{gtin}", d.digitalLink)
 	weg.HandleFunc("GET /{$}", d.studio)
@@ -419,22 +423,25 @@ func (d *dienst) gs1Bauen(w http.ResponseWriter, r *http.Request) {
 	d.jsonAus(w, http.StatusOK, map[string]string{"url": url})
 }
 
-func (d *dienst) qrSVG(w http.ResponseWriter, r *http.Request) {
+// ausWunsch baut Symbol und Gestalt aus der Abfrage. Alle drei
+// Ausgabeformate gehen durch dieselbe Stelle — sonst zeigt die Vorschau
+// etwas anderes als die Druckdatei.
+func (d *dienst) ausWunsch(w http.ResponseWriter, r *http.Request) (*qr.Symbol, qr.Gestalt, bool) {
 	f := r.URL.Query()
 	inhalt := f.Get("inhalt")
 	if inhalt == "" {
 		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": "kein Inhalt"})
-		return
+		return nil, qr.Gestalt{}, false
 	}
 	stufe, err := qr.StufeAus(oder(f.Get("stufe"), "M"))
 	if err != nil {
 		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": err.Error()})
-		return
+		return nil, qr.Gestalt{}, false
 	}
 	s, err := qr.Baue(inhalt, stufe, int(zahl(f.Get("version"), 0)))
 	if err != nil {
 		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": err.Error()})
-		return
+		return nil, qr.Gestalt{}, false
 	}
 	g := qr.StandardGestalt(zahl(f.Get("breite"), 40))
 	g.Modulform = oder(f.Get("form"), "quadrat")
@@ -445,10 +452,37 @@ func (d *dienst) qrSVG(w http.ResponseWriter, r *http.Request) {
 	g.AugenFarbe = f.Get("augenfarbe")
 	g.RuhezoneMod = int(zahl(f.Get("ruhezone"), 4))
 	g.LogoAnteil = zahl(f.Get("logo"), 0)
+	return s, g, true
+}
 
+func (d *dienst) qrSVG(w http.ResponseWriter, r *http.Request) {
+	s, g, gut := d.ausWunsch(w, r)
+	if !gut {
+		return
+	}
 	w.Header().Set("Content-Type", "image/svg+xml; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	fmt.Fprint(w, s.SVG(g))
+}
+
+func (d *dienst) qrPDF(w http.ResponseWriter, r *http.Request) {
+	s, g, gut := d.ausWunsch(w, r)
+	if !gut {
+		return
+	}
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", `attachment; filename="pnkt.pdf"`)
+	_, _ = w.Write(ausgabe.PDF(s.Formen(g), "pnkt QR"))
+}
+
+func (d *dienst) qrEPS(w http.ResponseWriter, r *http.Request) {
+	s, g, gut := d.ausWunsch(w, r)
+	if !gut {
+		return
+	}
+	w.Header().Set("Content-Type", "application/postscript")
+	w.Header().Set("Content-Disposition", `attachment; filename="pnkt.eps"`)
+	_, _ = w.Write(ausgabe.EPS(s.Formen(g), "pnkt QR"))
 }
 
 // --- Hilfen ---------------------------------------------------------------

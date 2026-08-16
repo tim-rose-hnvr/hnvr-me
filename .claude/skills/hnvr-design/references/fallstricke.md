@@ -162,9 +162,24 @@ Jeder Baustein, der `--text-strong` / `--text-body` benutzt, folgt damit von all
 
 ---
 
+## 11 · Labels als Überschrift, Bühne als h3
+
+**Befund an der eigenen Live-Seite** (16.08.2026): Die einzige `h1` der Startseite ist „Ideen zünden. Erfolg entfachen." — eine Abschnittsüberschrift aus der Seitenmitte. Die eigentliche Aussage „Digital, das um die Ecke denkt." steht als `h3`, das Bühnen-Label „Digital Agentur" ebenfalls. Sieben Labels („// über hnvr.me", „// unsere leistungen" …) sind als Überschriften ausgezeichnet.
+
+Verteilung: 1× h1, 9× h2, **32× h3**, 23× h4, 17× h5.
+
+**Warum das zählt.** Die Überschriftenliste ist das Inhaltsverzeichnis der Seite — für Suchmaschinen und für alle, die sich mit einem Screenreader von Überschrift zu Überschrift bewegen. Dort steht dann „// unsere leistungen" statt „Was wir für dich machen".
+
+**Regel.** Genau eine `h1`, und sie trägt die Aussage der Seite. Labels sind Absätze mit `.ey`, keine Überschriften. Keine Stufe überspringen. Der Prüflauf prüft alle vier Punkte (Abschnitt 6).
+
+**Nebenbefund am eigenen Gerüst.** Derselbe Lauf fand im Skill zwei Lücken: kein Sprunglink zum Inhalt, und die Fußspalten sprangen von `h2` auf `h4`. Beides behoben — `.sprung` liegt jetzt als erstes Element im Körper.
+
+
+---
+
 ## Prüfliste vor dem Abliefern
 
-Fünf der Punkte laufen automatisch:
+Sieben der Punkte laufen automatisch:
 
 ```bash
 npm i playwright-core
@@ -172,7 +187,7 @@ node assets/pruefen.mjs meine-seite.html
 node assets/pruefen.mjs https://hnvr.me/
 ```
 
-Das Skript prüft Schriftladung (über die Textbreite), `prefers-reduced-motion`, Überlauf bei 1440 und 390 px, Kontrast gegen den tatsächlichen Hintergrund und die Verbindung von Beschriftung und Formularfeld. Rückgabewert 1, wenn etwas durchfällt — taugt also für einen Vorab-Haken vor dem Ausliefern.
+Das Skript prüft Schriftladung (über die Textbreite), `prefers-reduced-motion`, Überlauf bei 1440 und 390 px, Kontrast gegen den tatsächlichen Hintergrund, Formularbeschriftungen, die Überschriftenordnung sowie Sprunglink und doppelte Kennungen. Rückgabewert 1, wenn etwas durchfällt — taugt also für einen Vorab-Haken vor dem Ausliefern.
 
 Von Hand bleiben:
 

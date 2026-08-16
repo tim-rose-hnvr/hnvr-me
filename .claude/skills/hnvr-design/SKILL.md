@@ -60,7 +60,7 @@ Für eine gebaute Landingpage `.disp-*` nehmen. Für **Blog und Shop** die Theme
 
 `node assets/pruefen.mjs <datei-oder-url>` laufen lassen — das prüft Schriftladung, Bewegungsreduktion, Überlauf, Kontrast und Formularbeschriftungen und gibt 1 zurück, wenn etwas durchfällt.
 
-Dazu `references/fallstricke.md` durchgehen. Dort stehen zehn Befunde aus der Design-Durchsicht vom 10.08.2026 — jeder einmal teuer gefunden, jeder mit Messwert. Die drei, die am häufigsten wiederkommen:
+Dazu `references/fallstricke.md` durchgehen. Dort stehen elf Befunde aus der Design-Durchsicht vom 10.08.2026 — jeder einmal teuer gefunden, jeder mit Messwert. Die drei, die am häufigsten wiederkommen:
 
 - **Die Schrift ist nicht geladen, obwohl sie geladen aussieht.** `"ClashDisplay"` ohne Leerzeichen trifft nichts. Nachweis über die Textbreite, nicht über `document.fonts.check` — das meldet auch beim Rückfall `true`.
 - **`prefers-reduced-motion` braucht `!important`.** Startzustände kommen als Inline-Style; kurze Übergangsdauern machen das Verschwinden nur schneller. 29 Textblöcke blieben so unsichtbar.
@@ -80,7 +80,7 @@ Widerspruch ist erlaubt: Wenn eine Regel eine Anforderung technisch unmöglich m
 - `references/bewegung.md` — das Bewegungssystem mit den Werten der Seite
 - `references/komponenten.md` — Bausteine mit fertigem Markup
 - `references/sprache.md` — Tonfall, Satzmuster, Wortliste
-- `references/fallstricke.md` — zehn Befunde aus der Durchsicht, mit Messwerten
+- `references/fallstricke.md` — elf Befunde aus der Durchsicht, mit Messwerten
 - `assets/pruefen.mjs` — die Prüfliste als ausführbares Skript
 - `references/herkunft.md` — Quelle, Lizenzen, Nachprüfen
 - `assets/hnvr.css`, `assets/fonts.css`, `assets/fonts/`, `assets/vorlage.html`

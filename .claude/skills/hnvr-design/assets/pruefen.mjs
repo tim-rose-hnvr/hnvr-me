@@ -9,12 +9,14 @@
      npm i playwright-core
      PW_CHROMIUM=/pfad/zu/chrome node pruefen.mjs seite.html
 
-   Prüft die fünf Punkte, die sich automatisch prüfen lassen:
+   Prüft die sieben Punkte, die sich automatisch prüfen lassen:
      1  Sind die Schriften wirklich geladen?  (Textbreite, nicht fonts.check)
      2  Bleibt bei „Bewegung reduzieren" alles sichtbar?
      3  Steht bei 390px jeder Block im Fenster?
      4  Erreicht jeder Text seinen Mindestkontrast?
-     5  Hat jedes Formularfeld eine verbundene Beschriftung?
+     5  Hat jedes Formularfeld einen zugänglichen Namen?
+     6  Stimmt die Überschriftenordnung? (eine h1, keine Labels als Überschrift)
+     7  Sprunglink vorhanden, Kennungen eindeutig?
 
    Beendet sich mit Code 1, wenn etwas durchfällt.
    ============================================================ */
@@ -162,10 +164,46 @@ try {
   const namenlos = await seite.evaluate(() =>
     [...document.querySelectorAll('input, select, textarea')]
       .filter(e => !['hidden', 'submit', 'button'].includes(e.type))
+      .filter(e => e.getAttribute('aria-hidden') !== 'true')
       .filter(e => !(e.id && document.querySelector(`label[for="${CSS.escape(e.id)}"]`)) && !e.closest('label')
         && !e.getAttribute('aria-label') && !e.getAttribute('aria-labelledby'))
       .map(e => `${e.tagName.toLowerCase()}#${e.id || '(ohne id)'}`));
   sage(namenlos.length === 0, `${namenlos.length} Feld(er) ohne verbundene Beschriftung${namenlos.length ? ': ' + namenlos.join(', ') : ''}`);
+
+  /* --- 6  Überschriftenordnung ---------------------------------------
+     Genau eine h1, und sie trägt die Aussage der Seite. Labels sind
+     Absätze (.ey), keine Überschriften — sonst steht im Inhaltsverzeichnis
+     der Seite „// unsere leistungen" statt der Leistungen. */
+  console.log('\n6 · Überschriften');
+  const ueb = await seite.evaluate(() => {
+    const alle = [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')]
+      .filter(e => e.textContent.trim())
+      .map(e => ({ stufe: +e.tagName[1], text: e.textContent.trim().replace(/\s+/g, ' ').slice(0, 60) }));
+    const h1 = alle.filter(x => x.stufe === 1);
+    const labels = alle.filter(x => /^(\/\/|·|—)/.test(x.text));
+    const spruenge = [];
+    for (let i = 1; i < alle.length; i++)
+      if (alle[i].stufe - alle[i - 1].stufe > 1)
+        spruenge.push(`h${alle[i - 1].stufe} → h${alle[i].stufe} bei „${alle[i].text.slice(0, 34)}"`);
+    return { anzahl: alle.length, h1, labels, spruenge, erste: alle.slice(0, 3) };
+  });
+  sage(ueb.h1.length === 1, `${ueb.h1.length} h1${ueb.h1.length ? ': „' + ueb.h1.map(x => x.text).join('", „') + '"' : ''}`);
+  sage(ueb.erste[0]?.stufe === 1,
+    `erste Überschrift ist h${ueb.erste[0]?.stufe ?? '?'}${ueb.erste[0] ? ': „' + ueb.erste[0].text.slice(0, 40) + '"' : ''}`);
+  sage(ueb.labels.length === 0, `${ueb.labels.length} Label(s) als Überschrift ausgezeichnet${ueb.labels.length ? ': „' + ueb.labels.slice(0, 3).map(x => x.text).join('", „') + '"' : ''}`);
+  sage(ueb.spruenge.length === 0, `${ueb.spruenge.length} Stufensprung/-sprünge${ueb.spruenge.length ? ': ' + ueb.spruenge.slice(0, 2).join(' | ') : ''}`);
+
+  /* --- 7  Sprunglink und doppelte Kennungen -------------------------- */
+  console.log('\n7 · Navigation und Kennungen');
+  const nav = await seite.evaluate(() => {
+    const erste = document.querySelector('body a[href^="#"]');
+    const sprung = !!(erste && /inhalt|content|main|haupt|skip/i.test(erste.getAttribute('href') + ' ' + erste.textContent));
+    const zaehler = {};
+    document.querySelectorAll('[id]').forEach(e => { zaehler[e.id] = (zaehler[e.id] || 0) + 1; });
+    return { sprung, doppelt: Object.entries(zaehler).filter(([, n]) => n > 1).map(([k]) => k) };
+  });
+  sage(nav.sprung, nav.sprung ? 'Sprunglink zum Inhalt vorhanden' : 'kein Sprunglink zum Inhalt');
+  sage(nav.doppelt.length === 0, `${nav.doppelt.length} doppelte id${nav.doppelt.length ? ': ' + nav.doppelt.slice(0, 5).join(', ') : ''}`);
 
   console.log('\n· Konsole');
   sage(konsole.length === 0, `${konsole.length} Fehlermeldung(en)${konsole.length ? ': ' + konsole.slice(0, 3).join(' | ') : ''}`);

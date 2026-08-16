@@ -1,0 +1,43 @@
+/* ============================================================
+   hnvr.me Erlebnis — Schriften, selbst gehostet.
+
+   Staatliches   Regular  (SIL Open Font License 1.1)
+   Inter Tight   400/500/600 (SIL Open Font License 1.1)
+
+   Beide Dateien stammen aus der Auslieferung der Live-Seite.
+   Zusammen 354 KB — die drei Inter-Tight-Schnitte tragen den
+   vollen Zeichensatz. Wer nur Deutsch braucht, kann sie auf
+   latin + latin-ext verkleinern; siehe tokens.md.
+   ============================================================ */
+
+@font-face {
+  font-family: 'Staatliches';
+  src: url('./fonts/staatliches-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('./fonts/inter-tight-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('./fonts/inter-tight-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('./fonts/inter-tight-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}

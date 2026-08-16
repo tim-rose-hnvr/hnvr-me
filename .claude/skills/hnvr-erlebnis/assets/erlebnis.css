@@ -1,0 +1,329 @@
+/* ============================================================
+   hnvr.me — Erlebnis- und Event-Auftritt
+   Tokens, Grundlagen, Bausteine. Eine Datei, keine Abhängigkeiten.
+
+     1  Tokens
+     2  Grundlagen
+     3  Layout (Rahmen, Abschnitte, Umkehrblock)
+     4  Typografie
+     5  Bausteine (Button, Karte, Leistungsraster, Technikliste, Formular)
+     6  Gerüst (Kopf, Fuß)
+     7  Bewegung
+
+   Voraussetzung: fonts.css ist geladen.
+   ============================================================ */
+
+/* ---------- 1  Tokens ---------- */
+:root {
+  /* Flächen */
+  --bg:        #FFFFFF;   /* Grundfläche */
+  --bg-still:  #F0F0F0;   /* ruhiger Abschnitt */
+  --bg-block:  #111111;   /* Umkehrblock, schlägt zu */
+
+  /* Schrift */
+  --ink:       #111111;   /* Text auf Hell */
+  --muted:     #646464;   /* Fließtext, Nebeninfo — 5.9:1 auf Weiß */
+  --on-block:  #EFEFEF;   /* Text im Umkehrblock */
+
+  /* Akzent — genau einer */
+  --accent:    #E02B16;
+
+  /* Linien: hier volltonig, nicht transparent. Das ist der Look. */
+  --line:      #111111;
+  --line-soft: #D8D8D8;
+  --line-block:#3A3A3A;
+
+  /* Schriftfamilien */
+  --disp: 'Staatliches', 'Oswald', Impact, sans-serif;
+  --body: 'Inter Tight', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Maße — 1440px ist die Entwurfsbreite der Seite */
+  --maxw: 1440px;
+  --pad:  clamp(20px, 4vw, 60px);
+  --sec:  clamp(70px, 8vw, 130px);
+
+  /* Kanten: gemessen an der Seite, nicht gewählt */
+  --r-btn:  0;
+  --r-card: 8px;
+
+  --ease: cubic-bezier(.2, .7, .3, 1);
+}
+
+/* ---------- 2  Grundlagen ---------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+a   { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+ul  { list-style: none; }
+
+::selection    { background: var(--accent); color: #fff; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+  .rv { opacity: 1 !important; transform: none !important; }
+}
+
+/* ---------- 3  Layout ---------- */
+.wrap {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+
+section.blk   { padding: var(--sec) 0; position: relative; }
+section.still { background: var(--bg-still); }
+
+/* Umkehrblock: der Abschnitt kippt komplett auf Schwarz.
+   Alle Textfarben müssen mitkippen, sonst steht Tinte auf Tinte. */
+section.block            { background: var(--bg-block); color: var(--on-block); }
+section.block .muted,
+section.block .copy,
+section.block .lede      { color: #B9B9B9; }   /* 7.1:1 auf #111 */
+section.block .st        { color: var(--on-block); }
+section.block .rule      { border-color: var(--line-block); }
+section.block .btn.ghost { border-color: var(--on-block); color: var(--on-block); }
+
+.sec-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+  flex-wrap: wrap;
+  padding-bottom: clamp(34px, 4vw, 60px);
+}
+
+.rule { border: 0; border-top: 1px solid var(--line); }
+
+/* ---------- 4  Typografie ---------- */
+
+/* Display. Staatliches steht von Haus aus eng — deshalb line-height .9
+   und keine zusätzliche Sperrung. Die Größen sind die der Live-Seite,
+   umgerechnet auf die Entwurfsbreite 1440px. */
+.st-1, .st-2, .st-3, .st-4 {
+  font-family: var(--disp);
+  font-weight: 400;
+  text-transform: uppercase;
+  line-height: .9;
+}
+.st-1 { font-size: clamp(44px, 9.375vw, 150px); }
+.st-2 { font-size: clamp(36px, 6.25vw, 100px); }
+.st-3 { font-size: clamp(30px, 5vw, 80px); }
+.st-4 { font-size: clamp(26px, 4.86vw, 78px); }
+
+/* Sperrsatz für ein einzelnes Wort: K O N T A K T
+   Das rechte Randausgleichs-Margin verhindert den Rechtsversatz,
+   den letter-spacing hinter dem letzten Zeichen erzeugt. */
+.gesperrt { letter-spacing: .5em; margin-right: -.5em; }
+
+/* Zwischenüberschriften in Inter Tight */
+.it-lg { font-family: var(--body); font-weight: 600; font-size: clamp(24px, 3.19vw, 50px); line-height: 1.4; }
+.it-md { font-family: var(--body); font-weight: 500; font-size: clamp(22px, 3.19vw, 50px); line-height: 1.3; }
+.it-sm { font-family: var(--body); font-weight: 500; font-size: clamp(18px, 1.6vw, 25px); line-height: 1.3; }
+
+/* Fließtext */
+.lede { font-size: clamp(18px, 1.67vw, 26px); line-height: 1.48; color: var(--muted); max-width: 46ch; }
+.copy { font-size: clamp(16px, 1.39vw, 22px); line-height: 1.5;  color: var(--muted); max-width: 44ch; }
+.muted{ color: var(--muted); }
+
+/* Kleinlabel über einer Überschrift.
+   Bewusst in Tinte, nicht in Rot: #E02B16 erreicht auf Weiß nur 4.4:1
+   und auf #F0F0F0 nur 4.1:1 — für 12px zu wenig. Das Rot trägt
+   stattdessen der vorangestellte Strich. */
+.ey {
+  font-family: var(--body);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 12px;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ey::before { content: ""; width: 22px; height: 2px; background: var(--accent); flex-shrink: 0; }
+section.block .ey { color: var(--on-block); }
+
+/* Rot als Textfarbe erst ab 24px — darunter reißt der Kontrast. */
+.rot { color: var(--accent); }
+
+/* ---------- 5  Bausteine ---------- */
+
+/* Button. Rechteck, kein Rahmen, kein Radius — so setzt es die Seite. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--disp);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  font-size: clamp(16px, 1.4vw, 21px);
+  line-height: 1;
+  padding: 18px 34px;
+  border: 0;
+  border-radius: var(--r-btn);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background .25s var(--ease), color .25s var(--ease);
+}
+.btn:hover { background: var(--ink); color: #fff; }
+
+/* Zweitrang: weiß mit rotem Text und rotem Rahmen */
+.btn.zweit { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+.btn.zweit:hover { background: var(--accent); color: #fff; }
+
+/* Umriss, für den Umkehrblock */
+.btn.ghost { background: none; color: var(--ink); border: 1px solid var(--ink); }
+.btn.ghost:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Karte. Radius 8, Rahmen 1px — beides Werte aus der Seite. */
+.karte {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-card);
+  padding: clamp(24px, 2.6vw, 40px);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: border-color .25s var(--ease), transform .25s var(--ease);
+}
+.karte:hover { border-color: var(--accent); transform: translateY(-3px); }
+.karte h3 { font-family: var(--disp); text-transform: uppercase; font-size: clamp(24px, 2.4vw, 38px); line-height: .95; }
+.karte p  { color: var(--muted); font-size: 16px; max-width: 38ch; }
+.karte .mehr {
+  margin-top: auto; padding-top: 8px;
+  font-family: var(--body); font-weight: 600; font-size: 15px;
+  color: var(--ink); display: inline-flex; align-items: center; gap: 8px;
+}
+.karte .mehr::after { content: "→"; color: var(--accent); }   /* Rot als Zeichen, nicht als Textfarbe */
+.karte:hover .mehr { color: var(--accent); text-decoration: underline; text-underline-offset: 4px; }
+
+/* Leistungsraster: zwei bis drei Karten nebeneinander */
+.raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(16px, 1.8vw, 26px);
+}
+
+/* Technikliste — Ton, Licht, Video, Bühne … mit Trennpunkten in Rot */
+.technik { display: flex; flex-wrap: wrap; gap: 0 14px; align-items: baseline; }
+.technik li {
+  font-family: var(--disp); text-transform: uppercase;
+  font-size: clamp(20px, 2.2vw, 34px); line-height: 1.2;
+}
+.technik li + li::before { content: "•"; color: var(--accent); margin-right: 14px; }
+
+/* Zeile mit Ziffer, für Abläufe und Pakete */
+.zeile {
+  display: grid; grid-template-columns: 72px 1fr auto; gap: 20px; align-items: baseline;
+  padding: 22px 0; border-bottom: 1px solid var(--line-soft);
+}
+.zeile .nr  { font-family: var(--disp); font-size: clamp(28px, 3vw, 46px); color: var(--accent); line-height: .9; }
+.zeile h3   { font-family: var(--disp); text-transform: uppercase; font-size: clamp(20px, 2vw, 30px); line-height: 1; }
+.zeile p    { color: var(--muted); font-size: 16px; max-width: 52ch; margin-top: 8px; }
+@media (max-width: 640px) {
+  .zeile { grid-template-columns: 52px 1fr; }
+  .zeile > :last-child { grid-column: 1 / -1; }
+}
+
+/* Formular. Felder sind Linien, keine Kästen — so steht es auf der Seite. */
+.form { display: grid; gap: 26px; max-width: 620px; }
+.form label { font-family: var(--body); font-weight: 500; font-size: 14px; display: block; margin-bottom: 6px; }
+.form input,
+.form textarea {
+  width: 100%;
+  font-family: var(--body); font-size: 17px; color: inherit;
+  background: none;
+  border: 0; border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 10px 2px;
+  transition: border-color .25s var(--ease);
+}
+.form input:focus,
+.form textarea:focus { outline: 0; border-bottom-color: var(--accent); }
+.form textarea { resize: vertical; min-height: 110px; }
+section.block .form input,
+section.block .form textarea { border-bottom-color: var(--line-block); color: var(--on-block); }
+
+/* ---------- 6  Gerüst ---------- */
+header.site {
+  position: sticky; top: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+  padding: 16px var(--pad);
+  /* fast deckend: bei .92 scheint der rote Button durch, sobald ein
+     Umkehrblock unter der Kopfzeile durchläuft */
+  background: rgba(255, 255, 255, .97);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.brand img { height: 30px; width: auto; }
+
+nav.main { display: flex; gap: 26px; }
+nav.main a {
+  font-family: var(--body); font-weight: 500; font-size: 15px;
+  padding: 6px 0; position: relative;
+}
+nav.main a::after {
+  content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 0;
+  background: var(--accent); transition: width .3s var(--ease);
+}
+nav.main a:hover::after, nav.main a.active::after { width: 100%; }
+
+.burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; width: 26px; }
+.burger span { height: 2px; background: var(--ink); width: 100%; }
+@media (max-width: 1100px) {
+  nav.main, header.site .btn { display: none; }
+  .burger { display: flex; }
+}
+
+.mnav {
+  position: fixed; inset: 0; z-index: 1200;
+  background: var(--bg-block); color: var(--on-block);
+  transform: translateY(-100%);
+  transition: transform .45s var(--ease);
+  display: flex; flex-direction: column; justify-content: center;
+  padding: var(--pad); gap: 2px;
+}
+.mnav.open { transform: none; }
+.mnav a {
+  font-family: var(--disp); text-transform: uppercase;
+  font-size: clamp(32px, 8vw, 68px); line-height: 1.05;
+  transition: color .25s var(--ease);
+}
+.mnav a:hover { color: var(--accent); }
+
+footer.site { background: var(--bg-block); color: var(--on-block); padding: clamp(60px, 7vw, 100px) var(--pad) 30px; }
+.foot-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 34px; padding-bottom: 44px; border-bottom: 1px solid var(--line-block); }
+.foot-cols h4 { font-family: var(--disp); text-transform: uppercase; font-size: 20px; margin-bottom: 14px; }
+.foot-cols a, .foot-cols p { display: block; font-size: 15px; color: #B9B9B9; margin-bottom: 9px; transition: color .25s var(--ease); }
+.foot-cols a:hover { color: var(--accent); }
+.foot-bottom { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; padding-top: 24px; font-size: 13px; color: #B9B9B9; }
+
+/* ---------- 7  Bewegung ---------- */
+.rv { opacity: 0; transform: translateY(24px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+.rv.in { opacity: 1; transform: none; }
+.d1 { transition-delay: .07s; }
+.d2 { transition-delay: .14s; }
+.d3 { transition-delay: .21s; }

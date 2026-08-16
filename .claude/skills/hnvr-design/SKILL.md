@@ -1,12 +1,14 @@
 ---
 name: hnvr-design
-description: Das Designsystem von hnvr.me digital — Clash Display, DM Sans, Signalorange #FF7120 auf Schwarz und Creme. Anwenden bei allem, was für hnvr.me sichtbar ist: Website, Landingpage, Onepager, Kundenangebot, Präsentation, Artefakt, PDF, E-Mail-Template, Social-Grafik, Tool-Oberfläche, Dashboard. Auch bei Kundenprojekten, die im hnvr-Look gebaut werden. Trigger: hnvr, hnvr.me, "unser Design", "im Stil unserer Seite", Webseite/Landingpage/Deck für hnvr.
+description: Das Designsystem von hnvr.me digital — Clash Display, DM Sans, Signalorange #FF7120 auf Schwarz und Creme. Das ist der Agentur-Auftritt: Webdesign, Branding, SEO, Social Media, Software, Web-Apps, Tools. Anwenden bei allem Sichtbaren dieser Marke: Website, Landingpage, Onepager, Kundenangebot, Präsentation, Artefakt, PDF, E-Mail-Template, Social-Grafik, Tool-Oberfläche, Dashboard. Nicht verwechseln mit dem Skill hnvr-erlebnis — der gehört zum Event- und Rental-Auftritt auf hnvr.me (hell, rot, Staatliches).
 ---
 
-# hnvr.me — Designsystem
+# hnvr.me digital — Designsystem
 
-Alles, was hnvr.me nach außen zeigt, sieht gleich aus. Dieser Skill ist die Quelle dafür.
+Alles, was hnvr.me digital nach außen zeigt, sieht gleich aus. Dieser Skill ist die Quelle dafür.
 Nichts hier wird pro Projekt neu erfunden — Anpassung passiert über Inhalte und Bilder, nie über neue Farben oder Schriften.
+
+**Zwei Auftritte, nicht einer.** Dieser hier ist der dunkle Agentur-Auftritt. Für Technik, Bühne, Licht, Ton, Veranstaltung und Vermietung gilt der Skill `hnvr-erlebnis` — hell, Rot `#E02B16`, Staatliches. Beide teilen nur den Tonfall, sonst nichts. Nie Elemente aus dem einen ins andere übernehmen.
 
 ## Vorgehen
 

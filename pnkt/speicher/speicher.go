@@ -68,14 +68,17 @@ type Tageszaehler struct {
 type Speicher struct {
 	verzeichnis string
 
-	mu       sync.RWMutex
-	codes    map[string]*Code         // nach ID
-	nachKurz map[string]*Code         // nach Kuerzel, klein geschrieben
-	zaehler  map[string]*Tageszaehler // nach CodeID + Tag
+	mu         sync.RWMutex
+	codes      map[string]*Code         // nach ID
+	nachKurz   map[string]*Code         // nach Kuerzel, klein geschrieben
+	zaehler    map[string]*Tageszaehler // nach CodeID + Tag
+	konten     map[string]*Konto        // nach ID
+	schluessel map[string]*Schluessel   // nach Abdruck
 
 	codeDatei     *os.File
 	ereignisDatei *os.File
 	zaehlerDatei  *os.File
+	zugangDatei   *os.File
 }
 
 // ErrKuerzelVergeben meldet die Kollision, die bei gedruckten Codes
@@ -92,6 +95,8 @@ func Oeffne(verzeichnis string) (*Speicher, error) {
 		codes:       map[string]*Code{},
 		nachKurz:    map[string]*Code{},
 		zaehler:     map[string]*Tageszaehler{},
+		konten:      map[string]*Konto{},
+		schluessel:  map[string]*Schluessel{},
 	}
 
 	if err := s.lade("codes.jsonl", func(zeile []byte) error {
@@ -116,7 +121,26 @@ func Oeffne(verzeichnis string) (*Speicher, error) {
 		return nil, err
 	}
 
+	if err := s.lade("zugang.jsonl", func(zeile []byte) error {
+		var z satz
+		if err := json.Unmarshal(zeile, &z); err != nil {
+			return err
+		}
+		switch {
+		case z.Konto != nil:
+			s.konten[z.Konto.ID] = z.Konto
+		case z.Schluessel != nil:
+			s.schluessel[z.Schluessel.Abdruck] = z.Schluessel
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
 	var err error
+	if s.zugangDatei, err = s.anhaengen("zugang.jsonl"); err != nil {
+		return nil, err
+	}
 	if s.codeDatei, err = s.anhaengen("codes.jsonl"); err != nil {
 		return nil, err
 	}
@@ -359,7 +383,7 @@ func (s *Speicher) Schliesse() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var erster error
-	for _, f := range []*os.File{s.codeDatei, s.ereignisDatei, s.zaehlerDatei} {
+	for _, f := range []*os.File{s.codeDatei, s.ereignisDatei, s.zaehlerDatei, s.zugangDatei} {
 		if f == nil {
 			continue
 		}

@@ -35,7 +35,7 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 |---|---|
 | `qr` | QR-Encoder nach ISO/IEC 18004 — Versionen 1 bis 40, Stufen L/M/Q/H, Ziffern-, Alphanumerik- und Bytebetrieb, Reed-Solomon in GF(256), Maskenwahl nach den vier Strafregeln |
 | `qr` (svg.go) | Vektorausgabe in Millimetern: sechs Modulformen, eigene Augenformen, Ruhezone, Logoaussparung. Kein eingebettetes Rasterbild |
-| `druck` | Druckurteil: Modulgröße gegen sieben Verfahren, GS1-Kassenmaße, Ruhezone, Kontrast, umgekehrte Codes, Logofläche gegen die Reserve. Note A bis F mit Rat je Befund |
+| `druck` | Druckurteil nach den **veröffentlichten Grenzwerten** von pnkt.me: 0,20 mm Bildschirm, 0,40 mm Laser und Tinte, 0,50 mm Offset, 0,75 mm Großformat, 1,00 mm Gravur; Kontrast ab 4:1, Ruhezone 4 Module, Warnung ab 60 % verbrauchter Reserve |
 | `gs1` | GTIN-Prüfziffer nach Modulo 10, Digital Link bauen und zurücklesen |
 | `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler |
 | `ausgabe` | PDF und EPS von Hand geschrieben — echter Vektor in Punkt, ohne fremdes Paket |
@@ -61,21 +61,40 @@ Ablage; jeder Satz wird vor der Bestätigung durchgeschrieben.
 
 ## Was der Dienst kann
 
-| Weg | Zweck |
-|---|---|
-| `GET /{kuerzel}` | Weiterleitung. Der heißeste Pfad: eine Suche im Verzeichnis, kein Dateizugriff |
-| `GET /01/{gtin}` | GS1 Digital Link — Auflösung über die GTIN |
-| `GET /qr.svg?inhalt=…` | Vektor, sofort, mit allen Gestaltungsangaben |
-| `GET /qr.pdf?inhalt=…` | dieselbe Zeichnung als PDF, Seitenmass in Millimetern |
-| `GET /qr.eps?inhalt=…` | dieselbe Zeichnung als EPS |
-| `POST /api/charge` | Massenanlage: CSV hinein, ZIP mit Dateien und Prüfbericht heraus |
-| `GET /api/druckpruefung?…` | Druckurteil ohne etwas anzulegen |
-| `GET /api/gs1?gtin=…` | Digital-Link-URL bauen |
-| `POST /api/codes` | Code anlegen, Kürzel wird vergeben |
-| `PATCH /api/codes/{id}` | Ziel ändern — erzeugt eine neue Fassung und einen Protokolleintrag |
-| `GET /api/codes/{id}/statistik` | Tageszähler |
-| `GET /api/codes/{id}/protokoll` | Änderungsgeschichte |
-| `GET /` | Studio |
+Die Wege folgen dem, was **pnkt.me unter „Schnittstelle" veröffentlicht
+hat** — nicht umgekehrt. Wer einmal etwas gegen diese Zusage geschrieben
+hat, darf nicht dadurch brechen, dass eine zweite Fassung eigene Pfade
+erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
+
+| Weg | Zweck | Zugang |
+|---|---|---|
+| `GET /r/{kuerzel}` und `GET /{kuerzel}` | Weiterleitung, zählt den Scan | offen |
+| `GET /r/{kuerzel}/vorschau` | Ziel anzeigen, ohne hinzugehen und ohne zu zählen | offen |
+| `GET /01/{gtin}` | GS1 Digital Link — Auflösung über die GTIN | offen |
+| `GET /api/v1/typen` | Inhaltstypen samt Formularaufbau | offen |
+| `POST /api/v1/rendern` | Code erzeugen — SVG, PDF oder EPS | offen |
+| `GET /api/v1/vorlage.csv` | Beispieltabelle für die Massenanlage | offen |
+| `GET /api/v1/druckpruefung` | Druckurteil ohne etwas anzulegen | offen |
+| `POST /api/v1/konten`, `/anmelden`, `/schluessel` | Konto und Schlüssel | offen |
+| `GET/POST /api/v1/codes` | Codes lesen und anlegen | Schlüssel |
+| `PATCH /api/v1/codes/{id}` | Ziel ändern — neue Fassung, Protokolleintrag | Schlüssel |
+| `GET /api/v1/codes/{id}/statistik`, `/protokoll` | Auswertung, Änderungsgeschichte | Schlüssel |
+| `POST /api/v1/massenanlage` | CSV hinein, ZIP heraus | Schlüssel |
+| `GET /qr.svg\|pdf\|eps?inhalt=…` | derselbe Vektor über die Adresszeile | offen |
+| `GET /` | Studio | offen |
+
+`POST /api/v1/rendern` trägt das Urteil im Antwortkopf `x-punkt-pruefung`
+(`gut`, `achtung`, `kritisch`) — auch beim Binärabruf. Wer eine Datei
+bekommt, soll nicht raten müssen, ob sie druckreif ist.
+
+### Zugang
+
+Wie in der Zentrale festgelegt: Passwörter als PBKDF2-Abdruck mit
+**210 000 Runden**, Schlüssel nur als **SHA-256-Abdruck**. Ein Schlüssel
+wird genau einmal im Klartext zurückgegeben und danach nie wieder — er
+lässt sich nicht anzeigen, nur ersetzen. Nach fünf Fehlversuchen ist ein
+Konto fünfzehn Minuten gesperrt. Schlüssel mit „nur lesen" bekommen auf
+schreibende Wege 403.
 
 ### Drei Regeln, die im Code stehen
 
@@ -154,8 +173,18 @@ Module für das gewählte Verfahren.
 
 ## Was noch fehlt
 
-- **Konten und Anmeldung.** Der Dienst ist heute offen; `kontoId` wird
-  geführt, aber nicht erzwungen. Vor jedem Betrieb im Netz nötig.
+Gemessen am veröffentlichten Stand von pnkt.me fehlt dieser Fassung:
+
+- **Sechs der zwölf Modulformen** (Weich, Stern, Blatt, Querstriche,
+  Längsstriche, Fließend) und die sieben Ecken- und Kernformen.
+- **Verläufe** in allen drei Ausgabeformaten.
+- **GiroCode nach EPC069-12** mit IBAN-Prüfung, vCard, WLAN — die
+  Inhaltstypen sind in `/api/v1/typen` beschrieben, aber noch nicht gebaut.
+- **Rahmen mit Beschriftung** („JETZT SCANNEN").
+- **Ordner, Suche, Löschen, Mitarbeitende** in der Zentrale.
+- **Regeln als Liste** mit Zeitzone, wie die Schnittstellenseite sie zeigt
+  (`{art:land, werte:[…], ziel}`); hier liegen sie noch als Zuordnung.
+- **UTM mit Platzhaltern** wie `{land}-{geraet}`.
 - **EPS im Bild nachweisen.** Struktur stimmt, ein Rasterbeleg fehlt.
 - **Sonderfarben und CMYK.** PDF und EPS schreiben heute RGB. Für den
   Offsetdruck gehört dort ein Volltonkanal hin.

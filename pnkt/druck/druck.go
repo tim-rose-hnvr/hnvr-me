@@ -23,23 +23,43 @@ type Verfahren struct {
 	MinModulMm float64
 }
 
+// Die Grenzwerte stammen aus der veroeffentlichten Lesbarkeitsseite von
+// PUNKT. Sie sind die Hausregel und stehen ueber jeder allgemeinen
+// Faustregel: Zwei Fassungen desselben Programms duerfen zu demselben
+// Code nie zwei verschiedene Urteile faellen.
 var Verfahrensliste = []Verfahren{
-	{"offset", "Offset", 0.25},
-	{"digital", "Digitaldruck", 0.25},
-	{"thermo", "Thermotransfer", 0.33},
-	{"tintenstrahl", "Tintenstrahl", 0.40},
-	{"siebdruck", "Siebdruck", 0.50},
-	{"flexo", "Flexodruck", 0.50},
-	{"gravur", "Gravur oder Praegung", 0.60},
+	{"bildschirm", "Nur Bildschirm", 0.20},
+	{"laser", "Laser- oder Tintendruck, Papier", 0.40},
+	{"offset", "Offsetdruck", 0.50},
+	{"grossformat", "Grossformat, Plane, Folie", 0.75},
+	{"gravur", "Gravur, Praegung, Textil", 1.00},
+}
+
+// Aeltere Schluessel bleiben gueltig und zeigen auf die naechstliegende
+// Zeile der Tabelle — sonst brechen bestehende Aufrufe still.
+var verfahrensNamen = map[string]string{
+	"digital": "laser", "tintenstrahl": "laser", "thermo": "laser",
+	"siebdruck": "grossformat", "flexo": "grossformat", "plane": "grossformat",
+	"textil": "gravur", "praegung": "gravur",
 }
 
 func verfahrenFinden(schluessel string) Verfahren {
+	if ziel, da := verfahrensNamen[schluessel]; da {
+		schluessel = ziel
+	}
 	for _, v := range Verfahrensliste {
 		if v.Schluessel == schluessel {
 			return v
 		}
 	}
-	return Verfahrensliste[0]
+	return verfahrenFinden("offset")
+}
+
+// KantenlaengeFuerAbstandMm ist die Faustregel der Praxis: die Kante
+// eines Codes sollte etwa ein Zehntel des Leseabstands betragen. Wer
+// aus fuenf Metern scannen soll, braucht einen halben Meter Code.
+func KantenlaengeFuerAbstandMm(abstandMm float64) float64 {
+	return abstandMm / 10
 }
 
 // Vorgabe ist das, was gedruckt werden soll.
@@ -51,7 +71,8 @@ type Vorgabe struct {
 	RuhezoneModule  int
 	Vordergrund     string
 	Hintergrund     string
-	LogoAnteil      float64 // Flaechenanteil, 0 bis 1
+	Modulform       string  // fuer den Hinweis auf teilgefuellte Formen
+	LogoAnteil      float64 // Kantenanteil des Logos, 0 bis 1
 	FuerKasse       bool    // soll nach GS1 an der Kasse gelesen werden
 }
 
@@ -166,9 +187,10 @@ func Pruefe(v Vorgabe) Urteil {
 		melde("fehler",
 			fmt.Sprintf("Kontrast %.1f zu 1 — unter 3 zu 1 lesen viele Geraete nicht mehr.", verhaeltnis),
 			"Dunkler drucken oder den Hintergrund aufhellen.")
-	case verhaeltnis < 4.5:
+	case verhaeltnis < 4:
 		melde("warnung",
-			fmt.Sprintf("Kontrast %.1f zu 1 traegt bei gutem Licht, bei schlechtem nicht.", verhaeltnis), "")
+			fmt.Sprintf("Kontrast %.1f zu 1 traegt bei gutem Licht, bei schraegem nicht. Ziel sind 4 zu 1.",
+				verhaeltnis), "Die dunkle Farbe abdunkeln oder die helle aufhellen.")
 	}
 	if leuchtdichte(vg) > leuchtdichte(hg) {
 		melde("fehler", "Der Code ist heller als sein Hintergrund.",
@@ -188,13 +210,28 @@ func Pruefe(v Vorgabe) Urteil {
 				fmt.Sprintf("Das Logo verdeckt %.0f %% der Flaeche, die Stufe %s traegt %.0f %%.",
 					flaeche*100, strings.ToUpper(v.Fehlerkorrektur), stufe*100),
 				"Logo verkleinern oder Fehlerkorrektur auf H setzen.")
-		case flaeche > stufe/2:
+		case flaeche > stufe*0.6:
 			melde("warnung",
-				fmt.Sprintf("Das Logo verbraucht %.0f %% von %.0f %% Reserve — fuer den Druck bleibt zu wenig.",
-					flaeche*100, stufe*100),
-				"Unter der Haelfte der Reserve bleiben; die andere Haelfte gehoert dem Papier und dem Knick.")
+				fmt.Sprintf("Das Logo verbraucht %.0f %% von %.0f %% Reserve.", flaeche*100, stufe*100),
+				"Die Reserve ist nicht fuers Logo da, sondern fuer Kratzer, Falten, "+
+					"Spiegelungen und Druckfehler. Unter 60 Prozent bleiben.")
 		}
 	}
+	// Formen, die weniger als ein volles Modul fuellen, geben dem Scanner
+	// weniger Kontrastflaeche. Auf Papier meist unkritisch, im Grossformat
+	// und bei Gegenlicht nicht. Ein Hinweis, kein Verbot.
+	switch v.Modulform {
+	case "raute", "stern", "kreuz":
+		schwere := "warnung"
+		if verfahren.MinModulMm < 0.75 {
+			schwere = "hinweis"
+		}
+		melde(schwere,
+			fmt.Sprintf("Die Form %q fuellt weniger als ein volles Modul.", v.Modulform),
+			"Der Scanner sieht weniger Kontrastflaeche. Bei Grossformat und Gegenlicht "+
+				"eine volle Form waehlen.")
+	}
+
 	if strings.EqualFold(v.Fehlerkorrektur, "L") && !v.FuerKasse {
 		melde("warnung", "Fehlerkorrektur L ist fuer Druck knapp bemessen.",
 			"Fuer Papier ist M die untere Grenze, fuer Verpackung Q.")
@@ -202,9 +239,10 @@ func Pruefe(v Vorgabe) Urteil {
 
 	fehler, warnungen := 0, 0
 	for _, b := range befunde {
-		if b.Schwere == "fehler" {
+		switch b.Schwere {
+		case "fehler":
 			fehler++
-		} else {
+		case "warnung":
 			warnungen++
 		}
 	}

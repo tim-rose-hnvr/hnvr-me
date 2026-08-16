@@ -51,19 +51,42 @@ func main() {
 
 	weg := http.NewServeMux()
 	weg.HandleFunc("GET /gesundheit", d.gesundheit)
-	weg.HandleFunc("GET /api/codes", d.listeCodes)
-	weg.HandleFunc("POST /api/codes", d.legeCodeAn)
-	weg.HandleFunc("PATCH /api/codes/{id}", d.aendereCode)
-	weg.HandleFunc("GET /api/codes/{id}/statistik", d.statistik)
-	weg.HandleFunc("GET /api/codes/{id}/protokoll", d.protokoll)
-	weg.HandleFunc("GET /api/druckpruefung", d.druckpruefung)
-	weg.HandleFunc("GET /api/gs1", d.gs1Bauen)
-	weg.HandleFunc("POST /api/charge", d.charge)
+
+	// Offen — kein Schluessel noetig. Codes erzeugen und Ziele ansehen
+	// geht ohne Konto, so wie es die Schnittstellenseite zusagt.
+	weg.HandleFunc("GET /api/v1/typen", d.typen)
+	weg.HandleFunc("POST /api/v1/rendern", d.rendern)
+	weg.HandleFunc("GET /api/v1/vorlage.csv", d.vorlageCSV)
+	weg.HandleFunc("GET /api/v1/druckpruefung", d.druckpruefung)
+	weg.HandleFunc("GET /api/v1/gs1", d.gs1Bauen)
+	weg.HandleFunc("POST /api/v1/konten", d.kontoAnlegen)
+	weg.HandleFunc("POST /api/v1/anmelden", d.anmelden)
+	weg.HandleFunc("POST /api/v1/schluessel", d.schluesselAnlegen)
+
+	// Mit Schluessel im Kopf x-punkt-schluessel.
+	weg.HandleFunc("GET /api/v1/codes", d.mitSchluessel(false,
+		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.listeCodesFuer(w, s) }))
+	weg.HandleFunc("POST /api/v1/codes", d.mitSchluessel(true,
+		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.legeCodeAnFuer(w, r, s) }))
+	weg.HandleFunc("PATCH /api/v1/codes/{id}", d.mitSchluessel(true,
+		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.aendereCode(w, r) }))
+	weg.HandleFunc("GET /api/v1/codes/{id}/statistik", d.mitSchluessel(false,
+		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.statistik(w, r) }))
+	weg.HandleFunc("GET /api/v1/codes/{id}/protokoll", d.mitSchluessel(false,
+		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.protokoll(w, r) }))
+	weg.HandleFunc("POST /api/v1/massenanlage", d.mitSchluessel(true,
+		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.charge(w, r) }))
+
+	// Weiterleitung. /r/ ist der veroeffentlichte Weg, die Wurzel der
+	// kurze — auf einer eigenen Kurzdomain zaehlt jedes Zeichen.
+	weg.HandleFunc("GET /r/{kuerzel}", d.weiterleiten)
+	weg.HandleFunc("GET /r/{kuerzel}/vorschau", d.vorschau)
+	weg.HandleFunc("GET /01/{gtin}/", d.digitalLink)
+	weg.HandleFunc("GET /01/{gtin}", d.digitalLink)
+
 	weg.HandleFunc("GET /qr.svg", d.qrSVG)
 	weg.HandleFunc("GET /qr.pdf", d.qrPDF)
 	weg.HandleFunc("GET /qr.eps", d.qrEPS)
-	weg.HandleFunc("GET /01/{gtin}/", d.digitalLink)
-	weg.HandleFunc("GET /01/{gtin}", d.digitalLink)
 	weg.HandleFunc("GET /{$}", d.studio)
 	weg.HandleFunc("GET /{kuerzel}", d.weiterleiten)
 
@@ -304,6 +327,9 @@ func (d *dienst) legeCodeAn(w http.ResponseWriter, r *http.Request) {
 	}
 	if c.Kuerzel == "" {
 		c.Kuerzel = d.ablage.FreiesKuerzel()
+	}
+	if konto := r.Header.Get("x-punkt-konto"); konto != "" {
+		c.KontoID = konto
 	}
 	c.Aktiv = true
 

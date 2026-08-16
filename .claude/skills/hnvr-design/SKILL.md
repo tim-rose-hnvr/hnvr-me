@@ -15,8 +15,9 @@ Nichts wird pro Projekt neu erfunden. Anpassung passiert über Inhalte und Bilde
 1. **Immer** `assets/fonts.css` + `assets/hnvr.css` einbinden, nie Tokens abtippen.
    Einzelne HTML-Datei ohne Server (Artefakt, E-Mail, Angebot): Schriften als `data:font/woff2;base64` einbetten — siehe `references/tokens.md`, Abschnitt „Einbetten".
 2. Seitengerüst aus `assets/vorlage.html`.
-3. Bausteine aus `references/komponenten.md`.
-4. Texte nach `references/sprache.md` — Deutsch, Du, Stakkato.
+3. **Zuerst klären, welcher Seitentyp gebaut wird** — `references/seitentypen.md`. Blog und Shop laufen auf der Theme-Typografie, nicht auf den Displaygraden. Wer das verwechselt, baut einen Fremdkörper.
+4. Bausteine aus `references/komponenten.md`, Bewegung aus `references/bewegung.md`.
+5. Texte nach `references/sprache.md` — Deutsch, Du, Stakkato.
 
 ## Acht Leitplanken
 
@@ -44,14 +45,16 @@ Nichts wird pro Projekt neu erfunden. Anpassung passiert über Inhalte und Bilde
 
 Vollständige Tabellen: `references/tokens.md`.
 
-## Zwei Ebenen, nicht verwechseln
+## Drei Bauweisen, zwei Typo-Ebenen
 
-Die Seite hat **zwei** Typo-Ebenen, und das ist Absicht:
+Der Seitenbestand kommt aus drei Quellen — **Elementor** (Startseite, Über uns, Leistungen, Team, FAQ, Karriere, Kontakt, Portfolio), **Theme-Vorlage** (Blog, Beitrag, Kategorie) und **WooCommerce** (Shop, Produkt, Warenkorb, Kasse). Details in `references/seitentypen.md`.
+
+Daraus folgen zwei Typo-Ebenen:
 
 - **Theme-Ebene** — `h1`–`h6`, feste px-Grade (50 / 35 / 30 / 25 / 20 / 17) mit den Haltepunkten 1200 / 767 / 480. Das ist der Fließ- und Fallback-Zustand, gilt für Blog, Shop, Formulare.
 - **Seiten-Ebene** — `.disp-1` bis `.disp-5`, die großen Grade aus den Elementor-Einstellungen (150 / 120 / 100 / 80 / 70 / 55 px bei 1920). Das ist der gestaltete Zustand für Landingpages und Bühnen.
 
-Für eine gebaute Seite `.disp-*` nehmen. `h1`–`h6` bleiben als Grundgerüst darunter richtig.
+Für eine gebaute Landingpage `.disp-*` nehmen. Für **Blog und Shop** die Theme-Grade — dort ist `h2` 35px, nicht 80.
 
 ## Vor dem Abliefern
 
@@ -73,6 +76,8 @@ Widerspruch ist erlaubt: Wenn eine Regel eine Anforderung technisch unmöglich m
 ## Verwandte Dateien
 
 - `references/tokens.md` — alle Werte, beide Typo-Ebenen, Einbetten
+- `references/seitentypen.md` — wie Startseite, Blog, Shop, Portfolio, FAQ aufgebaut sind
+- `references/bewegung.md` — das Bewegungssystem mit den Werten der Seite
 - `references/komponenten.md` — Bausteine mit fertigem Markup
 - `references/sprache.md` — Tonfall, Satzmuster, Wortliste
 - `references/fallstricke.md` — zehn Befunde aus der Durchsicht, mit Messwerten

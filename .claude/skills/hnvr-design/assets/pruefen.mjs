@@ -101,7 +101,9 @@ try {
         let a = e.parentElement;
         while (a && a !== document.body) {
           const o = getComputedStyle(a);
-          if (o.overflowX === 'hidden' || o.overflow === 'hidden' || o.maskImage !== 'none') return true;
+          // hidden, mask ODER ein Scrollbehälter — alle drei sind Absicht
+          if (/hidden|auto|scroll/.test(o.overflowX) || /hidden|auto|scroll/.test(o.overflow)
+              || o.maskImage !== 'none') return true;
           a = a.parentElement;
         }
         return false;

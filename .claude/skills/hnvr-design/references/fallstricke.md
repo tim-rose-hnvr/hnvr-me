@@ -143,7 +143,21 @@ Das gilt auch für dieses Regelwerk hier. Die Leitplanken in `SKILL.md` sind ein
 
 Auf Creme erreicht **kein** Orangeton 4,5:1. Kleinschrift bleibt dort in Tinte; ab 24px genügen 3:1, dann ist `--accent-deep` erlaubt.
 
-**Merke.** Wer eine Textklasse hinzufügt, trägt sie in die Umschaltliste von `section.cream` mit ein. Der Prüflauf findet so etwas in Sekunden — von Hand fällt es erst auf, wenn es gedruckt ist.
+**Beim zweiten Mal grundsätzlich gelöst.** Die Klassenliste wuchs mit jedem neuen Baustein und wurde jedes Mal vergessen — bei Blog, Shop und Team fiel derselbe Fehler wieder an. Jetzt kippen in `section.cream` die **Token**, nicht die Klassen:
+
+```css
+section.cream {
+  --text-strong: var(--ink);
+  --text-body:   var(--muted-cream);
+  --line:        var(--line-ink);
+  --link-color:  var(--ink);
+}
+```
+
+Jeder Baustein, der `--text-strong` / `--text-body` benutzt, folgt damit von allein. Zwei Dinge bleiben ausdrücklich:
+
+- Links in Überschriften brauchen `color: inherit`, sonst steht der weiße Linkton auf Creme.
+- Elemente, die **immer** auf einem Bild liegen (Merken-Knopf), bekommen feste helle Farben — sie folgen keinem Abschnitt.
 
 
 ---

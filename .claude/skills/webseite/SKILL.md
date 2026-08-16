@@ -28,6 +28,12 @@ Was wirklich gebraucht wird:
 
 Fehlt echter Text, wird er geschrieben, nicht durch Lorem ipsum ersetzt. Platzhaltertext in einer Abgabe ist ein Fehler, kein Zwischenstand.
 
+**Zum Abschluss von Phase 0 entsteht das Auftragsregister** — jede Anforderung mit Kennung, Zustand und Nachweis (`references/erledigt.md`). Es wird jetzt geschrieben, nicht am Ende: am Ende geschrieben enthält es genau die Punkte, an die man sich erinnert, und das sind die erledigten.
+
+```bash
+node .claude/skills/webseite/scripts/auftrag.mjs --vorlage > auftrag.md
+```
+
 ---
 
 ## Phase 1 — Designthese  ⟨Tor 1: kein Code vorher⟩
@@ -179,15 +185,26 @@ Diese Liste bricht die Standardreflexe. Abweichung nur mit ausdrücklicher Ansag
 
 ## Was „fertig" bedeutet
 
-Die Meldung enthält alle fünf Punkte, sonst ist sie keine Fertigmeldung:
+Vier Läufe, dann die Meldung. Vollständig in `references/erledigt.md`.
 
-1. Die Anforderungen aus Phase 0 einzeln aufgelistet, jede mit **erledigt / teilweise / offen**.
+```bash
+node .claude/skills/webseite/scripts/pruefen.mjs ./dist / /…   # Seite heil
+node .claude/skills/webseite/scripts/auftrag.mjs auftrag.md     # Umfang vollständig und belegt
+# Screenshots angesehen · Kritiker beauftragt
+```
+
+Die Meldung enthält alle sechs Punkte, sonst ist sie keine Fertigmeldung:
+
+1. Die Ausgabe des Auftragsregisters, ungekürzt — mit der Trennung zwischen **Beleg** und **Aussage**.
 2. Der Abnahmelauf: `0 Fehler`, plus Antwort auf jede Warnung und jeden Verdacht.
 3. Die angesehenen Screenshots benannt, mit einem Satz zu dem, was auffiel.
 4. Das Urteil des Kritikers und was daraus folgte.
-5. Was bewusst weggelassen wurde und warum.
+5. **Die Umwege**: was blockiert war, wie es gelöst wurde, was dabei anders geworden ist als geplant.
+6. Was bewusst weggelassen wurde und warum.
 
-Teilweise fertig heißt teilweise fertig. Eine ehrliche Restliste ist ein besseres Ergebnis als ein grünes Häkchen, das beim ersten Klick zerfällt.
+„Erledigt" ohne Nachweis ist eine Meinung. Teilweise fertig heißt teilweise fertig — eine ehrliche Restliste ist ein besseres Ergebnis als ein grünes Häkchen, das beim ersten Klick zerfällt.
+
+**Wenn etwas blockiert ist**, gilt die Umwegleiter aus `references/erledigt.md`: anderes Werkzeug → andere Ebene → Ziel zerlegen → Teillösung mit Ansage → Blockade melden. Höchstens drei Umwege für dieselbe Sache, ab Stufe 4 nur mit Bestätigung. Und der eine verbotene Umweg: **die Prüfung entschärfen statt den Fehler beheben.** Ein Umweg führt um das Hindernis herum, nicht am Ziel vorbei.
 
 ---
 
@@ -203,6 +220,7 @@ Teilweise fertig heißt teilweise fertig. Eine ehrliche Restliste ist ein besser
 | `references/bilder.md` | immer wenn ein Bild gebraucht wird — Wege ohne Stockmaterial |
 | `references/bewegung.md` | Phase 4 — Zeiten, Kurven, Muster, Signature-Techniken |
 | `references/abnahme.md` | Phase 5 — Ablauf, Fehlerdeutung, Berichtsvorlage |
+| `references/erledigt.md` | Phase 0 und 5 — Auftragsregister, Nachweispflicht, Umwegleiter |
 | `references/gelernt.md` | Phase 6 — Entscheidungsprotokoll, Beispielkorpus, offene Prüfungen |
 
 Dazu der Subagent `.claude/agents/webseite-kritiker.md` — wird in Phase 5 beauftragt und ist bewusst nicht als Referenz gedacht, sondern als getrennter Kontext.

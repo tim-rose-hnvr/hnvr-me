@@ -58,6 +58,20 @@ Wörtlich zitieren lohnt sich: die Formulierung des Auftraggebers enthält oft m
 - Prüfbar: ja → Prüfung je Abschnitt statt global; steht auf der Liste unten
 - Status: offen
 
+### 2026-08-16 — SVG-Beschriftung an der Kontrastprüfung vorbei (Projekt: Referenzbau Saalwerk)
+- Rückmeldung: eigener Fund beim Ansehen des Screenshots — die Nummer des aktiven Platzes stand in Grau auf Rostrot, etwa 1.5:1, bei grünem Prüflauf.
+- Ursache: Die Kontrastprüfung liest `getComputedStyle(el).color`. SVG-Text trägt seine Farbe in `fill`. Damit ist jede Beschriftung in einer Zeichnung ungeprüft — also ausgerechnet dort, wo dieser Skill den Signature Moment hinlegt.
+- Regel: SVG-Text braucht denselben Kontrast wie jeder andere Text. Wo eine Fläche eingefärbt wird, wird die Beschriftung darüber mitgeändert.
+- Prüfbar: ja → `fill` mitlesen; steht auf der Liste
+- Status: offen (im Referenzbau von Hand behoben)
+
+### 2026-08-16 — Deckkraft im SVG über die falsche Eigenschaft (Projekt: Referenzbau Saalwerk)
+- Rückmeldung: Kritiker — „es gibt zwei Kegel, von denen nur einer in der Legende erklärt ist"
+- Ursache: `.plan .kegel{opacity:.16}` hat zwei Klassen und schlägt damit `.schwenk{opacity:0}` mit einer. Die Umschaltung hat nie etwas ausgeschaltet; alle drei Kamerakegel standen dauerhaft im Bild, einer davon durch die Keyframes bei voller Deckkraft.
+- Regel: Deckkraft einer Fläche über `fill-opacity` setzen, nicht über `opacity`. `opacity` bleibt der Umschaltung vorbehalten — sonst kämpfen Gestaltung und Zustand um dieselbe Eigenschaft, und die Spezifität entscheidet.
+- Prüfbar: nein → braucht ein Auge auf dem Bild; genau dafür gibt es den Kritiker
+- Status: übernommen im Referenzbau
+
 ### 2026-08-16 — Leere Form ist schädlicher als Weglassen (Projekt: Gegenprobe Saalwerk)
 - Rückmeldung: Kritiker zur Fassung ohne Skill — „benutzt die Form eines Kundenlogo-Streifens und liefert Branchenkategorien. Bei einem Käufer, der Referenzen prüft, liest sich das als Verschleierung — schädlicher als kein Streifen."
 - Ursache: Der Standardbausatz enthält einen Vertrauensstreifen. Wer ihn übernimmt, ohne echte Kunden zu haben, füllt ihn mit Kategorien („STADTWERKE", „SPARKASSE") oder anonymen Zitaten und erzeugt damit das Gegenteil von Vertrauen.
@@ -90,11 +104,11 @@ Bilder wirken stärker als Regeln. Screenshots gehören nach `references/beispie
 
 **Gute Beispiele** — was genau daran trägt (Typografie? Rhythmus? Der eine Einfall?):
 
-_leer_
+- `beispiel/saalwerk/` — der Signature Moment trägt, weil er den Satz darüber *zeigt* statt ihn zu wiederholen: „Der Platz trägt die Identität" plus ein Grundriss, in dem die Kamera einem Platz folgt, nicht einer Person. Zweitens die Positionslogik POS. 01–05: sie übernimmt die Ordnungssprache der Unterlagen, die der Käufer selbst schreibt, und macht aus einer Werbeseite ein Dokument.
 
 **Schlechte Beispiele** — die sind die wertvolleren. Sie füllen die Ausschlussliste, und die Ausschlussliste ist der Teil, der den Standardreflex bricht:
 
-_leer_
+- Die Fassung ohne Skill aus der Gegenprobe (Badge-Pille, Verlaufswort, zwei Knöpfe, Logostreifen aus Branchenwörtern, drei Icon-Kacheln, anonymes Zitat, blauer CTA-Block). Urteil des Kritikers: „Entfernt man die Wörter Sitzung, Quorum, Saalbeschallung, bleibt eine Seite, die man für eine Buchhaltungssoftware verwenden kann." Jedes einzelne dieser Elemente steht heute auf der Verbotsliste.
 
 ---
 
@@ -107,6 +121,7 @@ Regeln, die heute nur in Prosa stehen und in eine Messung gehören. Absteigend n
 - [x] **Standardmuster erkennen** — zentrierter Kopfbereich mit zwei Schaltflächen, Dreierkarten mit gleicher Höhe und gleichem Aufbau
 - [x] **Tastaturdurchlauf** — 30 Tabstopps, Fokussichtbarkeit gegen einen unfokussierten Klon desselben Elements gemessen, Fokusfallen erkannt
 - [x] **Formularfelder** — Felder ohne zugänglichen Namen (`placeholder` zählt nicht)
+- [ ] **Kontrast von SVG-Text** — die Prüfung liest `color`, SVG-Beschriftungen tragen ihre Farbe aber in `fill`. Im Referenzbau stand die Nummer des aktiven Platzes dadurch unbemerkt in Grau auf Rostrot (etwa 1.5:1), obwohl der Lauf grün war.
 - [ ] **Größenkontrast je Abschnitt** statt global — ein starker Kopfbereich verdeckt heute jeden flachen Abschnitt darunter
 - [ ] **Visuelle Regression** — Screenshots gegen einen freigegebenen Stand vergleichen
 - [ ] **Formularabgabe** — einmal leer und einmal falsch absenden, Fehlerzustände aufnehmen

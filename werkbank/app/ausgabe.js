@@ -20,7 +20,10 @@ export async function starteSchreiber() {
   return pdflib;
 }
 
-const GESCHWAERZT = (seitenId) => zustand.anmerkungen.some((a) => a.art === 'schwaerzen' && a.seiteId === seitenId);
+/* Eine Seite muss gerastert werden, wenn geschwärzt wurde — oder wenn beim
+   Ersetzen ausdrücklich verlangt wurde, dass der alte Text verschwindet. */
+const GESCHWAERZT = (seitenId) => zustand.anmerkungen.some(
+  (a) => a.seiteId === seitenId && (a.art === 'schwaerzen' || (a.art === 'ersatz' && a.rastern)));
 
 export function istUnveraendertesGeruest() {
   if (zustand.quellen.size !== 1) return false;
@@ -77,10 +80,77 @@ export async function baueDokument(optionen = {}) {
     ziel.setTitle(zustand.eigenschaften?.titel || zustand.name.replace(/\.pdf$/i, ''));
   }
 
+  await schreibeErkanntenText(ziel, folge, versatzKarte);
   await maleAnmerkungen(ziel, folge, versatzKarte);
   ziel.setProducer('Werkbank');
   ziel.setModificationDate(new Date());
-  return ziel.save({ useObjectStreams: true });
+  if (optionen.metadatenEntfernen) {
+    ziel.setAuthor('');
+    ziel.setCreator('');
+    ziel.setSubject('');
+    ziel.setKeywords([]);
+    try { ziel.catalog.delete(pdflib.PDFName.of('Metadata')); } catch { /* nicht vorhanden */ }
+  }
+
+  let bytes = await ziel.save({ useObjectStreams: true });
+
+  if (optionen.schutz?.benutzer || optionen.schutz?.besitzer) {
+    const { verschluessle } = await import('./schutz.js');
+    bytes = await verschluessle(bytes, optionen.schutz);
+  }
+  return bytes;
+}
+
+/* ---------- Erkannter Text als unsichtbare Ebene ---------------------------- */
+
+/** Legt OCR-Wörter im Textmodus 3 hinter das Seitenbild: durchsuchbar, unsichtbar. */
+async function schreibeErkanntenText(ziel, folge, versatzKarte) {
+  const betroffen = folge.filter((e) => zustand.ocr.has(e.id));
+  if (!betroffen.length) return;
+  const { StandardFonts, TextRenderingMode, setTextRenderingMode, setCharacterSqueeze, pushGraphicsState, popGraphicsState } = pdflib;
+  const schrift = await ziel.embedFont(StandardFonts.Helvetica);
+
+  for (const eintrag of betroffen) {
+    const ziel_ = versatzKarte.get(eintrag.id);
+    if (!ziel_) continue;
+    const { seite, versatz } = ziel_;
+    const vx = -versatz.x, vy = -versatz.y;
+    const erkennung = zustand.ocr.get(eintrag.id);
+
+    seite.pushOperators(pushGraphicsState(), setTextRenderingMode(TextRenderingMode.Invisible));
+    for (const wort of erkennung.woerter) {
+      const text = nurWinAnsi(wort.text);
+      if (!text) continue;
+      const groesse = Math.max(1, wort.h * 0.92);
+      let breite = 0;
+      try { breite = schrift.widthOfTextAtSize(text, groesse); } catch { continue; }
+      // Waagerecht stauchen, damit die Auswahlrechtecke zum Bild passen.
+      const stauchung = breite > 0 ? Math.max(10, Math.min(400, (wort.b / breite) * 100)) : 100;
+      seite.pushOperators(setCharacterSqueeze(stauchung));
+      try {
+        seite.drawText(text, { x: wort.x + vx, y: wort.y + vy + wort.h * 0.16, size: groesse, font: schrift });
+      } catch { /* einzelnes Wort auslassen, nie den ganzen Lauf */ }
+    }
+    seite.pushOperators(setCharacterSqueeze(100), popGraphicsState());
+  }
+}
+
+/** Helvetica kann nur WinAnsi. Alles andere wird ersetzt oder fällt weg. */
+const ERSATZ = {
+  '„': '"', '“': '"', '”': '"', '‚': "'", '‘': "'", '’': "'",
+  '–': '-', '—': '-', '‐': '-', '‑': '-', '…': '...', ' ': ' ',
+  '−': '-', '˝': '"', '′': "'", '″': '"',
+};
+function nurWinAnsi(text) {
+  let ergebnis = '';
+  for (const zeichen of String(text)) {
+    if (ERSATZ[zeichen] != null) { ergebnis += ERSATZ[zeichen]; continue; }
+    const nummer = zeichen.codePointAt(0);
+    if (nummer >= 32 && nummer <= 126) { ergebnis += zeichen; continue; }
+    if (nummer >= 160 && nummer <= 255) { ergebnis += zeichen; continue; }
+    ergebnis += ' ';
+  }
+  return ergebnis.trim();
 }
 
 /* ---------- Formularwerte -------------------------------------------------- */
@@ -217,6 +287,22 @@ async function maleAnmerkungen(ziel, folge, versatzKarte) {
             size: groesse, font: schrift, color: stiftFarbe,
           });
         });
+      } else if (a.art === 'ersatz') {
+        const grund = farbeZuAnteilen(a.grundfarbe || '#FFFFFF');
+        const rand = Math.max(0.6, a.h * 0.12);
+        seite.drawRectangle({
+          x: a.x + vx - rand, y: a.y + vy - rand * 0.5,
+          width: a.b + rand * 2, height: a.h + rand,
+          color: rgb(grund.r, grund.g, grund.b),
+        });
+        const schriftfarbe = farbeZuAnteilen(a.schriftfarbe || '#111111');
+        const groesse = a.groesse || a.h * 0.82;
+        try {
+          seite.drawText(nurWinAnsi(a.text), {
+            x: a.x + vx, y: a.y + vy + a.h * 0.18,
+            size: groesse, font: schrift, color: rgb(schriftfarbe.r, schriftfarbe.g, schriftfarbe.b),
+          });
+        } catch (fehler) { console.warn('Ersatztext ließ sich nicht setzen:', fehler?.message); }
       } else if (a.art === 'notiz') {
         // Echte PDF-Notiz, damit jeder Betrachter sie als Kommentar zeigt.
         legeNotizAn(ziel, seite, a, vx, vy);
@@ -306,6 +392,52 @@ export async function teileDokument(proDatei) {
     await new Promise((l) => setTimeout(l, 260));   // Browser mögen keine Lawine
   }
   sage(`In ${gruppen.length} Dateien geteilt`);
+}
+
+/**
+ * Verkleinern: alle Seiten werden mit fester Auflösung als JPEG neu aufgebaut.
+ * Das ist der ehrliche Weg im Browser — Text wird dabei zu Bild. Liegt eine
+ * Texterkennung vor, wandert sie als unsichtbare Ebene mit, dann bleibt die
+ * Datei durchsuchbar.
+ */
+export async function verkleinere({ dichte = 110, guete = 0.72 } = {}) {
+  const { PDFDocument } = await starteSchreiber();
+  const ziel = await PDFDocument.create();
+  const versatzKarte = new Map();
+
+  for (const eintrag of zustand.folge) {
+    const quellSeite = await holeSeite(eintrag);
+    const sicht = quellSeite.getViewport({ scale: dichte / 72, rotation: 0 });
+    const leinwand = document.createElement('canvas');
+    leinwand.width = Math.ceil(sicht.width);
+    leinwand.height = Math.ceil(sicht.height);
+    const stift = leinwand.getContext('2d');
+    stift.fillStyle = '#fff';
+    stift.fillRect(0, 0, leinwand.width, leinwand.height);
+    await quellSeite.render({ canvasContext: stift, viewport: sicht }).promise;
+
+    // Schwärzungen gehören auch hier deckend ins Bild.
+    stift.fillStyle = '#000';
+    for (const a of zustand.anmerkungen.filter((x) => x.art === 'schwaerzen' && x.seiteId === eintrag.id)) {
+      const [x1, y1] = sicht.convertToViewportPoint(a.x, a.y);
+      const [x2, y2] = sicht.convertToViewportPoint(a.x2, a.y2);
+      stift.fillRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+    }
+
+    const bild = await ziel.embedJpg(leinwand.toDataURL('image/jpeg', guete));
+    const basis = quellSeite.getViewport({ scale: 1, rotation: 0 });
+    const seite = ziel.addPage([basis.width, basis.height]);
+    seite.drawImage(bild, { x: 0, y: 0, width: basis.width, height: basis.height });
+    const gesamt = (quellSeite.rotate + eintrag.drehung) % 360;
+    if (gesamt) seite.setRotation(pdflib.degrees(gesamt));
+    versatzKarte.set(eintrag.id, { seite, versatz: { x: quellSeite.view[0], y: quellSeite.view[1] } });
+  }
+
+  await schreibeErkanntenText(ziel, zustand.folge, versatzKarte);
+  await maleAnmerkungen(ziel, zustand.folge, versatzKarte);
+  ziel.setProducer('Werkbank');
+  ziel.setModificationDate(new Date());
+  return ziel.save({ useObjectStreams: true });
 }
 
 /** Eine Seite als PNG. */

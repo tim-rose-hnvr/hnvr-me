@@ -19,6 +19,7 @@ export const WERKZEUGE = [
   { id: 'rechteck',     name: 'Rechteck',      kuerzel: 'R', zeichen: 'M4 5h16v14H4z' },
   { id: 'ellipse',      name: 'Ellipse',       kuerzel: 'E', zeichen: 'M12 5c4.4 0 8 3.1 8 7s-3.6 7-8 7-8-3.1-8-7 3.6-7 8-7z' },
   { id: 'pfeil',        name: 'Pfeil',         kuerzel: 'P', zeichen: 'M4 20L20 4M20 4h-7M20 4v7' },
+  { id: 'ersetzen',     name: 'Text ersetzen', kuerzel: 'B', zeichen: 'M4 20h7M14 4l6 6-9 9H5v-6z' },
   { id: 'schwaerzen',   name: 'Schwärzen',     kuerzel: 'S', zeichen: 'M4 8h16v8H4zM4 4h16' },
   { id: 'unterschrift', name: 'Unterschrift',  kuerzel: 'G', zeichen: 'M3 18c3 0 5-12 8-12s2 9 4 9 2-3 6-3' },
 ];
@@ -151,6 +152,26 @@ export function zeichneAnmerkungen(ebene, eintrag, sicht) {
           outline: gewaehlt ? '1px dashed var(--tally)' : '', pointerEvents: 'auto', cursor: 'move',
         },
         daten: { anmerkung: a.id }, text: a.text,
+      });
+      ebene.append(knoten);
+      continue;
+    }
+
+    if (a.art === 'ersatz') {
+      const [ax1, ay1] = zuBild(a.x, a.y + a.h);
+      const [ax2, ay2] = zuBild(a.x + a.b, a.y);
+      const links = Math.min(ax1, ax2), oben = Math.min(ay1, ay2);
+      const breite = Math.abs(ax2 - ax1), hoehe = Math.abs(ay2 - ay1);
+      const knoten = el('div', {
+        klasse: 'anmerkung-griff', daten: { anmerkung: a.id }, text: a.text,
+        stil: {
+          position: 'absolute', left: `${links}px`, top: `${oben}px`,
+          minWidth: `${breite}px`, height: `${hoehe}px`,
+          background: a.grundfarbe || '#fff', color: a.schriftfarbe || '#111',
+          fontSize: `${a.groesse * sicht.scale}px`, lineHeight: `${hoehe}px`,
+          fontFamily: 'var(--sans)', whiteSpace: 'pre', pointerEvents: 'auto', cursor: 'pointer',
+          outline: gewaehlt ? '1px dashed var(--tally)' : '',
+        },
       });
       ebene.append(knoten);
       continue;
@@ -303,6 +324,17 @@ export function starteWerkzeuge(spur, zuPdfPunkt) {
   spur.addEventListener('pointercancel', beende);
   spur.addEventListener('pointerleave', beende);
 
+  // Text ersetzen: Klick auf ein Stück der Textebene
+  spur.addEventListener('click', (ereignis) => {
+    if (zustand.werkzeug !== 'ersetzen') return;
+    const stueck = ereignis.target.closest('.textebene span');
+    const blattKnoten = ereignis.target.closest('.blatt');
+    if (!stueck || !blattKnoten) return;
+    ereignis.preventDefault();
+    ereignis.stopPropagation();
+    melde('anmerkung:textErsetzen', beschreibeTextstueck(stueck, blattKnoten));
+  });
+
   // Textauswahl-Werkzeuge
   document.addEventListener('mouseup', () => {
     if (!TEXTWERKZEUGE.has(zustand.werkzeug)) return;
@@ -385,6 +417,54 @@ function verschiebe(anmerkung, vorher, dx, dy) {
   else {
     anmerkung.x = vorher.x + dx; anmerkung.y = vorher.y + dy;
     if (vorher.x2 != null) { anmerkung.x2 = vorher.x2 + dx; anmerkung.y2 = vorher.y2 + dy; }
+  }
+}
+
+/** Liest Lage, Größe und Farben eines Textstücks aus der gezeichneten Seite. */
+export function beschreibeTextstueck(stueck, blattKnoten) {
+  const seiteId = blattKnoten.dataset.seite;
+  const sicht = sichtHolen(seiteId);
+  const blattKasten = blattKnoten.getBoundingClientRect();
+  const kasten = stueck.getBoundingClientRect();
+  const [x1, y1] = sicht.convertToPdfPoint(kasten.left - blattKasten.left, kasten.top - blattKasten.top);
+  const [x2, y2] = sicht.convertToPdfPoint(kasten.right - blattKasten.left, kasten.bottom - blattKasten.top);
+  const groessePx = parseFloat(stueck.style.fontSize) || kasten.height;
+
+  return {
+    seiteId,
+    text: stueck.textContent,
+    x: Math.min(x1, x2), y: Math.min(y1, y2),
+    b: Math.abs(x2 - x1), h: Math.abs(y2 - y1),
+    groesse: groessePx / sicht.scale,
+    ...lieseFarben(blattKnoten, kasten, blattKasten),
+  };
+}
+
+/** Grund- und Schriftfarbe aus dem gezeichneten Bild abgreifen. */
+function lieseFarben(blattKnoten, kasten, blattKasten) {
+  const grundfarbe = '#FFFFFF', schriftfarbe = '#111111';
+  const leinwand = blattKnoten.querySelector('canvas');
+  if (!leinwand?.width) return { grundfarbe, schriftfarbe };
+  try {
+    const stift = leinwand.getContext('2d', { willReadFrequently: true });
+    const massstab = leinwand.width / blattKasten.width;
+    const links = Math.max(0, Math.floor((kasten.left - blattKasten.left) * massstab));
+    const oben = Math.max(0, Math.floor((kasten.top - blattKasten.top) * massstab));
+    const breite = Math.max(1, Math.min(leinwand.width - links, Math.floor(kasten.width * massstab)));
+    const hoehe = Math.max(1, Math.min(leinwand.height - oben, Math.floor(kasten.height * massstab)));
+    const daten = stift.getImageData(links, oben, breite, hoehe).data;
+
+    let hellstesR = 0, hellstesG = 0, hellstesB = 0, hellste = -1;
+    let dunkelstesR = 0, dunkelstesG = 0, dunkelstesB = 0, dunkelste = 1e9;
+    for (let i = 0; i < daten.length; i += 4) {
+      const helligkeit = daten[i] * 0.299 + daten[i + 1] * 0.587 + daten[i + 2] * 0.114;
+      if (helligkeit > hellste) { hellste = helligkeit; hellstesR = daten[i]; hellstesG = daten[i + 1]; hellstesB = daten[i + 2]; }
+      if (helligkeit < dunkelste) { dunkelste = helligkeit; dunkelstesR = daten[i]; dunkelstesG = daten[i + 1]; dunkelstesB = daten[i + 2]; }
+    }
+    const alsHex = (r, g, b) => `#${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`.toUpperCase();
+    return { grundfarbe: alsHex(hellstesR, hellstesG, hellstesB), schriftfarbe: alsHex(dunkelstesR, dunkelstesG, dunkelstesB) };
+  } catch {
+    return { grundfarbe, schriftfarbe };
   }
 }
 

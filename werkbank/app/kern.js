@@ -10,6 +10,10 @@ export const zustand = {
   anmerkungen: [],
   /** Formularwerte: { feldName: wert } */
   formularwerte: new Map(),
+  /** Erkannter Text je Seite: seiteId → { woerter, zeilen, sprache, konfidenz } */
+  ocr: new Map(),
+  /** Länge des vorhandenen Seitentexts: seiteId → Zeichenzahl */
+  textLaenge: new Map(),
   /** Formularfelder aus der Quelle: [{ name, art, seiteId, rechteck, optionen, wert, nurLesen }] */
   formularfelder: [],
   name: 'Ohne Titel',

@@ -1,7 +1,7 @@
 /* Suche — Volltext über alle Seiten, Treffer in der Textebene hervorheben. */
 
 import { zustand, melde, hoer, el, sage } from './kern.js';
-import { seitenText } from './dokument.js';
+import { textDerSeite } from './dokument.js';
 
 let treffer = [];        // [{ seitenId, seite, index, ausschnitt, laenge }]
 let aktiv = -1;
@@ -22,7 +22,7 @@ export async function suche(text, optionen = {}) {
   const muster = baueMuster(text);
   for (let i = 0; i < zustand.folge.length; i++) {
     const eintrag = zustand.folge[i];
-    const { roh } = await seitenText(eintrag);
+    const roh = await textDerSeite(eintrag);
     const gebuendelt = roh.replace(/\s+/g, ' ');
     muster.lastIndex = 0;
     let fund;
@@ -116,13 +116,14 @@ export function markiereAlle() {
 
 export function starteSuche() {
   hoer('textebene:fertig', () => { if (begriff) markiereAlle(); });
+  hoer('ocr:geaendert', () => { if (begriff) suche(begriff); });
 }
 
 /** Text aller Seiten als einfache Datei. */
 export async function textAusgeben() {
   const teile = [];
   for (let i = 0; i < zustand.folge.length; i++) {
-    const { roh } = await seitenText(zustand.folge[i]);
+    const roh = await textDerSeite(zustand.folge[i]);
     teile.push(`— Seite ${i + 1} —\n${roh}`);
   }
   if (!teile.join('').trim()) sage('Kein Text gefunden — vermutlich ein Scan.', { art: 'warn' });

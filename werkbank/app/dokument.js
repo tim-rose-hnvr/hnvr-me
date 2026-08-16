@@ -20,7 +20,12 @@ export async function starteMotor() {
 
 const WURZEL = new URL('../fremd/', import.meta.url).toString();
 
-export async function ladeQuelle(bytes, name) {
+/* Fragt nach dem Kennwort. Wird von der Oberflaeche gesetzt, damit dieses
+   Modul keinen Dialog kennen muss. */
+let kennwortFrager = null;
+export function setzeKennwortFrager(fn) { kennwortFrager = fn; }
+
+export async function ladeQuelle(bytes, name, { kennwort = null, tiefe = 0 } = {}) {
   await starteMotor();
   const id = kennung('q');
   // pdf.js übernimmt den Puffer; für spätere Ausgabe halten wir eine eigene Kopie.
@@ -36,7 +41,20 @@ export async function ladeQuelle(bytes, name) {
   try {
     pdf = await aufgabe.promise;
   } catch (fehler) {
-    if (fehler?.name === 'PasswordException') throw new Error(`${name} ist kennwortgeschützt. Kennwortschutz kann diese Werkbank nicht öffnen.`);
+    if (fehler?.name === 'PasswordException') {
+      if (tiefe > 2) throw new Error(`${name}: Kennwort stimmt nicht.`);
+      const eingabe = kennwort ?? (kennwortFrager ? await kennwortFrager(name, tiefe > 0) : null);
+      if (eingabe == null) throw new Error(`${name} ist kennwortgeschützt.`);
+      // Wir entschlüsseln die Datei einmal dauerhaft: dann arbeiten Anzeige und
+      // Ausgabe auf denselben Bytes, und pdf-lib kommt ohne Kryptografie aus.
+      const { entschluessle } = await import('./schutz.js');
+      let offen;
+      try { offen = await entschluessle(eigen, eingabe); }
+      catch { return ladeQuelle(eigen, name, { tiefe: tiefe + 1 }); }
+      const quelleOffen = await ladeQuelle(offen, name, { tiefe: tiefe + 1 });
+      quelleOffen.warGeschuetzt = true;
+      return quelleOffen;
+    }
     throw new Error(`${name} ließ sich nicht öffnen: ${fehler?.message || fehler}`);
   }
   const quelle = { id, name, bytes: eigen, pdf, seitenzahl: pdf.numPages, textkarte: new Map() };
@@ -113,6 +131,16 @@ export async function seitenText(eintrag) {
   const ergebnis = { roh, stuecke };
   quelle.textkarte.set(eintrag.index, ergebnis);
   return ergebnis;
+}
+
+/** Text einer Seite fürs Suchen und Ausgeben — mit Erkennung, falls nötig. */
+export async function textDerSeite(eintrag) {
+  const { roh } = await seitenText(eintrag);
+  zustand.textLaenge.set(eintrag.id, roh.trim().length);
+  if (roh.trim().length >= 40) return roh;
+  const erkannt = zustand.ocr.get(eintrag.id);
+  if (erkannt) return erkannt.zeilen.map((z) => z.text).join('\n');
+  return roh;
 }
 
 export async function ganzerText(fortschritt = null) {

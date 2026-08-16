@@ -48,8 +48,9 @@ export async function untersuche() {
     const sauber = roh.replace(/\s+/g, ' ').trim();
     befunde.seitenGeprueft = i + 1;
 
+    zustand.textLaenge.set(eintrag.id, sauber.length);
     if (sauber.length > 30) mitText++;
-    else befunde.leereSeiten.push(eintrag.id);
+    else if (!zustand.ocr.has(eintrag.id)) befunde.leereSeiten.push(eintrag.id);
 
     if (UNTERSCHRIFT_MUSTER.test(sauber)) befunde.unterschriftStellen.push(eintrag.id);
 
@@ -75,15 +76,32 @@ function alleVorschlaege() {
   const liste = [];
   const seitenzahl = zustand.folge.length;
 
-  if (befunde.gescannt) {
+  const ohneText = zustand.folge.filter((e) => (zustand.textLaenge.get(e.id) ?? 0) < 40 && !zustand.ocr.has(e.id));
+  if (befunde.gescannt || ohneText.length) {
+    const alle = ohneText.length >= zustand.folge.length;
     liste.push({
       id: 'scan',
-      titel: 'Das Dokument ist ein Scan',
-      text: 'Auf den geprüften Seiten steht kein auswählbarer Text. Suchen, Kopieren und Hervorheben von Textstellen funktionieren deshalb nicht. Rechteck und Freihand gehen weiterhin.',
-      knopf: 'Verstanden',
-      befehl: null,
-      gewicht: 90,
+      titel: alle ? 'Das Dokument ist ein Scan' : `${ohneText.length} Seite${ohneText.length === 1 ? '' : 'n'} ohne auswählbaren Text`,
+      text: 'Texterkennung liest das Bild und legt den Text unsichtbar dahinter. Danach lässt sich suchen, kopieren und hervorheben wie in einem gesetzten Dokument — und die gesicherte Datei bleibt durchsuchbar.',
+      knopf: 'Text erkennen',
+      befehl: 'texterkennung',
+      gewicht: 92,
     });
+  }
+
+  if (zustand.ocr.size) {
+    const werte = [...zustand.ocr.values()];
+    const schwach = werte.filter((w) => w.konfidenz < 80).length;
+    if (schwach) {
+      liste.push({
+        id: 'ocr-schwach',
+        titel: `${schwach} Seite${schwach === 1 ? '' : 'n'} unsicher erkannt`,
+        text: 'Unter 80 Prozent Sicherheit lohnt ein zweiter Lauf mit 300 dpi — oder ein prüfender Blick auf Zahlen und Namen.',
+        knopf: 'Noch einmal erkennen',
+        befehl: 'texterkennung',
+        gewicht: 55,
+      });
+    }
   }
 
   if (hatFormular()) {
@@ -166,6 +184,40 @@ function alleVorschlaege() {
       knopf: 'Teilen',
       befehl: 'teilen',
       gewicht: 30,
+    });
+  }
+
+  const groesseJetzt = zustand.eigenschaften?.dateigroesse || 0;
+  if (groesseJetzt > 8 * 1024 * 1024) {
+    liste.push({
+      id: 'gross',
+      titel: `Datei ist ${(groesseJetzt / 1024 / 1024).toFixed(1)} MB groß`,
+      text: 'Für den Versand lassen sich die Seiten mit fester Auflösung neu berechnen. Mit vorheriger Texterkennung bleibt die Datei dabei durchsuchbar.',
+      knopf: 'Verkleinern',
+      befehl: 'verkleinern',
+      gewicht: 40,
+    });
+  }
+
+  if ([...zustand.quellen.values()].some((q) => q.warGeschuetzt)) {
+    liste.push({
+      id: 'entsperrt',
+      titel: 'Datei war kennwortgeschützt',
+      text: 'Sie liegt hier entschlüsselt vor. Beim Sichern ist sie ohne neuen Schutz offen — soll wieder ein Kennwort darauf?',
+      knopf: 'Kennwort setzen',
+      befehl: 'schutz:setzen',
+      gewicht: 88,
+    });
+  }
+
+  if (befunde.muster.length >= 3) {
+    liste.push({
+      id: 'schutz-empfehlung',
+      titel: 'Weitergabe mit Kennwort?',
+      text: 'Das Dokument trägt mehrere personenbezogene Angaben. Ein Öffnen-Kennwort (AES-256) kostet einen Handgriff.',
+      knopf: 'Kennwort setzen',
+      befehl: 'schutz:setzen',
+      gewicht: 35,
     });
   }
 
@@ -264,6 +316,7 @@ export function starteMitdenken() {
   hoer('seiten:geaendert', () => melde('mitdenken:geaendert'));
   hoer('anmerkungen:geaendert', () => melde('mitdenken:geaendert'));
   hoer('formular:geaendert', () => melde('mitdenken:geaendert'));
+  hoer('ocr:geaendert', () => melde('mitdenken:geaendert'));
   hoer('dokument:geaendert', () => melde('mitdenken:geaendert'));
 }
 

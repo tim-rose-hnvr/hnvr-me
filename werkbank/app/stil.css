@@ -213,6 +213,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .malebene { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .malebene svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .werkzeug-aktiv .malebene { pointer-events: auto; cursor: crosshair; }
+
+/* Text ersetzen: die Textebene wird bedienbar, die Malebene tritt zurück. */
+.werkzeug-ersetzen .textebene { pointer-events: auto; cursor: pointer; }
+.werkzeug-ersetzen .malebene { pointer-events: none; }
+.werkzeug-ersetzen .textebene span:hover { background: var(--tally-grund); outline: 1px solid var(--tally); border-radius: 2px; }
 .anmerkung-griff { pointer-events: auto; cursor: pointer; }
 .anmerkung-griff.ist-gewaehlt { filter: drop-shadow(0 0 0 var(--tally)); }
 .notiz-marke {

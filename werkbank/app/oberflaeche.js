@@ -11,6 +11,7 @@ import {
 } from './kern.js';
 import {
   oeffneDateien, ladeBeispiel, hatDokument, nummerVon, seitenText, ermittleFormularfelder, ermittleMerkmale,
+  setzeKennwortFrager,
 } from './dokument.js';
 import {
   starteAnsicht, baueNeu, zeigeSeite, bringeInSicht, setzeZoom, zoomeSchritt, dreheAnsicht,
@@ -25,7 +26,8 @@ import { starteSuche, suche, trefferListe, weiter, zurueck, leere as leereSuche,
 import { formularTafel, zumNaechstenFeld, hatFormular, offeneFelder } from './formulare.js';
 import { zeigeUnterschriftDialog } from './unterschrift.js';
 import { starteMitdenken, tafelMitdenken, befunde, musterListe, untersuche } from './mitdenken.js';
-import { sichereDokument, seitenAusgeben, teileDokument, seiteAlsBild, istUnveraendertesGeruest, vorschlagsname } from './ausgabe.js';
+import { sichereDokument, seitenAusgeben, teileDokument, seiteAlsBild, istUnveraendertesGeruest, vorschlagsname, baueDokument, verkleinere } from './ausgabe.js';
+import { zeigeErkennungsDialog, erkennungsUebersicht } from './texterkennung.js';
 import { vergleicheMitDatei } from './vergleich.js';
 
 /* ---------- Befehlsregister ------------------------------------------------ */
@@ -58,6 +60,40 @@ function baueBefehle() {
   });
   befehl('vergleich', 'Mit anderer Datei vergleichen …', 'Datei', () => $('#dateiwahl-vergleich').click());
   befehl('drucken', 'Drucken', 'Datei', () => window.print(), 'Strg+P');
+  befehl('verkleinern', 'Verkleinern …', 'Datei', zeigeVerkleinernDialog);
+  befehl('reparieren', 'Datei reparieren', 'Datei', async () => {
+    await mitLader('Datei wird neu geschrieben …', async () => {
+      const { repariere } = await import('./schutz.js');
+      const bytes = await baueDokument({ formularEinbrennen: false });
+      sichereBytes(await repariere(bytes), vorschlagsname('-repariert'));
+    });
+    sage('Repariert — qpdf hat die Datei neu aufgebaut');
+  });
+  befehl('linearisieren', 'Fürs Web aufbereiten (linearisieren)', 'Datei', async () => {
+    await mitLader('Datei wird linearisiert …', async () => {
+      const { linearisiere } = await import('./schutz.js');
+      const bytes = await baueDokument({});
+      sichereBytes(await linearisiere(bytes), vorschlagsname('-web'));
+    });
+    sage('Linearisiert — öffnet im Browser seitenweise');
+  });
+
+  befehl('texterkennung', 'Texterkennung (OCR) …', 'Text', () => zeigeErkennungsDialog());
+  befehl('schutz:setzen', 'Mit Kennwort schützen …', 'Schutz', zeigeSchutzDialog);
+  befehl('schutz:zeigen', 'Schutz und Rechte anzeigen', 'Schutz', async () => {
+    await mitLader('Rechte werden gelesen …', async () => {
+      const { rechte } = await import('./schutz.js');
+      const bytes = await baueDokument({});
+      const text = await rechte(bytes);
+      zeigeDialog({
+        titel: 'Schutz und Rechte',
+        rumpf: el('div', {},
+          el('p', { klasse: 'hinweis', text: 'Stand der Datei, die beim Sichern entstehen würde:' }),
+          el('pre', { klasse: 'vergleich-spalte', text: text || 'Keine Verschlüsselung.' })),
+        knoepfe: [{ beschriftung: 'Schließen', betont: true }],
+      });
+    });
+  });
 
   for (const werkzeug of WERKZEUGE) {
     befehl(`werkzeug:${werkzeug.id}`, `Werkzeug: ${werkzeug.name}`, 'Werkzeuge', () => setzeWerkzeug(werkzeug.id), werkzeug.kuerzel);
@@ -347,6 +383,9 @@ function zeichneRechteTafel() {
           beiInput: (e) => { zustand.schriftgroesse = Number(e.target.value); },
         })));
     }
+    if (zustand.werkzeug === 'ersetzen') {
+      abschnitt.append(el('p', { klasse: 'hinweis', text: 'Auf ein Textstück klicken. Die Werkbank übernimmt Lage, Größe und Farben und setzt den neuen Text an dieselbe Stelle.' }));
+    }
     if (zustand.werkzeug === 'schwaerzen') {
       abschnitt.append(el('p', { klasse: 'hinweis', text: 'Rechteck über die Stelle ziehen. Beim Sichern wird die Seite gerastert — der Text darunter verschwindet wirklich, nicht nur optisch.' }));
     }
@@ -383,6 +422,18 @@ function zeichneRechteTafel() {
         el('button', { klasse: 'knopf knopf-klein', text: 'Nächstes Feld', beiClick: () => fuehreAus('formular:naechstes') })),
       formularTafel());
     tafel.append(abschnitt);
+  }
+
+  // Texterkennung
+  const ocr = erkennungsUebersicht();
+  if (ocr) {
+    tafel.append(el('div', { klasse: 'abschnitt' },
+      el('h2', { text: 'Texterkennung' }),
+      el('div', { klasse: 'merkmal' }, el('span', { text: 'Seiten' }), el('span', { text: String(ocr.seiten.length) })),
+      el('div', { klasse: 'merkmal' }, el('span', { text: 'Wörter' }), el('span', { text: String(ocr.woerter) })),
+      el('div', { klasse: 'merkmal' }, el('span', { text: 'Sicherheit' }),
+        el('span', { klasse: ocr.konfidenz > 85 ? 'marke marke-gut' : 'marke marke-warn', text: `${Math.round(ocr.konfidenz)} %` })),
+      el('p', { klasse: 'hinweis', text: 'Der erkannte Text liegt unsichtbar hinter dem Bild und wandert beim Sichern mit.' })));
   }
 
   // Dokument
@@ -465,14 +516,126 @@ function zeigeSicherungsDialog() {
 async function sichereMit(optionen) {
   if (!hatDokument()) return sage('Kein Dokument geladen', { art: 'warn' });
   await mitLader('Dokument wird geschrieben …', async () => {
-    if (optionen.metadatenEntfernen) {
-      // Wirkt beim Neuaufbau ohnehin; beim Ergänzen ausdrücklich leeren.
+    await sichereDokument(optionen);
+    if (optionen.metadatenEntfernen && zustand.eigenschaften) {
       zustand.eigenschaften.verfasser = '';
       zustand.eigenschaften.erzeuger = '';
     }
-    await sichereDokument(optionen);
   });
   melde('dokument:geaendert');
+}
+
+function zeigeSchutzDialog() {
+  const benutzer = el('input', { klasse: 'feld', type: 'password', placeholder: 'zum Öffnen nötig', stil: { flex: '1' } });
+  const besitzer = el('input', { klasse: 'feld', type: 'password', placeholder: 'zum Ändern der Rechte', stil: { flex: '1' } });
+  const drucken = el('select', { klasse: 'feld' },
+    el('option', { value: 'full', text: 'erlaubt' }),
+    el('option', { value: 'low', text: 'nur in niedriger Auflösung' }),
+    el('option', { value: 'none', text: 'verboten' }));
+  const aendern = el('select', { klasse: 'feld' },
+    el('option', { value: 'all', text: 'alles erlaubt' }),
+    el('option', { value: 'annotate', text: 'nur kommentieren und Formulare ausfüllen' }),
+    el('option', { value: 'form', text: 'nur Formulare ausfüllen' }),
+    el('option', { value: 'none', text: 'nichts erlaubt' }));
+  const kopieren = el('input', { type: 'checkbox', checked: true });
+
+  zeigeDialog({
+    titel: 'Mit Kennwort schützen',
+    rumpf: el('div', {},
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Öffnen-Kennwort' }), benutzer),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Besitzer-Kennwort' }), besitzer),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Drucken' }), drucken),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Ändern' }), aendern),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Text kopieren' }),
+        el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, kopieren, 'erlaubt')),
+      el('p', { klasse: 'hinweis' },
+        'Verschlüsselt mit AES-256 durch qpdf, das hier als WebAssembly mitläuft. ',
+        'Ohne Öffnen-Kennwort lässt sich die Datei nicht mehr lesen — auch nicht von dieser Werkbank. ',
+        'Rechtebeschränkungen ohne Öffnen-Kennwort sind eine Bitte an den Betrachter, kein technischer Riegel.')),
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Geschützt sichern', betont: true,
+        tun: () => {
+          if (!benutzer.value && !besitzer.value) { sage('Mindestens ein Kennwort angeben', { art: 'warn' }); return false; }
+          sichereMit({
+            dateiname: vorschlagsname('-geschuetzt'),
+            formularEinbrennen: false,
+            schutz: {
+              benutzer: benutzer.value, besitzer: besitzer.value,
+              drucken: drucken.value, aendern: aendern.value, kopieren: kopieren.checked,
+            },
+          });
+        },
+      },
+    ],
+  });
+}
+
+function zeigeVerkleinernDialog() {
+  const dichte = el('select', { klasse: 'feld' },
+    el('option', { value: '72', text: '72 dpi — Bildschirm, kleinste Datei' }),
+    el('option', { value: '110', text: '110 dpi — Weitergabe per E-Mail' }),
+    el('option', { value: '150', text: '150 dpi — Ausdruck im Büro' }),
+    el('option', { value: '200', text: '200 dpi — sorgfältiger Ausdruck' }));
+  dichte.value = '110';
+  const guete = el('input', { type: 'range', klasse: 'schieber', min: '0.4', max: '0.92', step: '0.02', value: '0.72' });
+  const anzeige = el('span', { klasse: 'hinweis', text: 'mittel' });
+  guete.addEventListener('input', () => {
+    const w = Number(guete.value);
+    anzeige.textContent = w < 0.55 ? 'grob' : w < 0.75 ? 'mittel' : 'fein';
+  });
+
+  const jetzt = zustand.eigenschaften?.dateigroesse || 0;
+  zeigeDialog({
+    titel: 'Verkleinern',
+    rumpf: el('div', {},
+      el('p', { klasse: 'hinweis', text: `Zurzeit ${groesse(jetzt)}.` }),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Auflösung' }), dichte),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Bildgüte' }), guete, anzeige),
+      el('p', { klasse: 'hinweis' },
+        zustand.ocr.size
+          ? 'Die Seiten werden zu Bildern. Der erkannte Text wandert als unsichtbare Ebene mit — die Datei bleibt durchsuchbar.'
+          : 'Die Seiten werden zu Bildern: kleiner, aber der Text ist danach nicht mehr auswählbar. Mit vorheriger Texterkennung bleibt die Datei durchsuchbar.')),
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Verkleinern', betont: true,
+        tun: () => mitLader('Seiten werden neu berechnet …', async () => {
+          const bytes = await verkleinere({ dichte: Number(dichte.value), guete: Number(guete.value) });
+          const name = vorschlagsname('-klein');
+          sichereBytes(bytes, name);
+          const anteil = jetzt ? Math.round((1 - bytes.length / jetzt) * 100) : 0;
+          sage(anteil > 0
+            ? `${groesse(jetzt)} → ${groesse(bytes.length)} (${anteil} % kleiner)`
+            : `${groesse(bytes.length)} — nicht kleiner geworden, das Original war schon sparsam`);
+        }),
+      },
+    ],
+  });
+}
+
+function frageKennwort(name, wiederholung) {
+  return new Promise((loese) => {
+    const feld = el('input', { klasse: 'feld', type: 'password', stil: { flex: '1' }, placeholder: 'Kennwort' });
+    const dialog = zeigeDialog({
+      titel: wiederholung ? 'Kennwort stimmt nicht' : 'Datei ist geschützt',
+      rumpf: el('div', {},
+        el('p', { text: `„${name}" ist mit einem Kennwort verschlossen.` }),
+        el('div', { klasse: 'zeile' }, el('label', { text: 'Kennwort' }), feld),
+        el('p', { klasse: 'hinweis', text: 'Das Kennwort bleibt auf diesem Gerät. Die Datei wird nach dem Öffnen entschlüsselt weiterverarbeitet; beim Sichern lässt sich neuer Schutz setzen.' })),
+      knoepfe: [
+        { beschriftung: 'Abbrechen', tun: () => loese(null) },
+        { beschriftung: 'Öffnen', betont: true, tun: () => loese(feld.value) },
+      ],
+      beiSchliessen: () => loese(null),
+    });
+    feld.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); schliesseDialog(); loese(feld.value); }
+    });
+    setTimeout(() => feld.focus(), 40);
+    return dialog;
+  });
 }
 
 function zeigeTeilenDialog() {
@@ -526,10 +689,10 @@ function zeigeHilfe() {
   }
   rumpf.append(el('h3', { text: 'Was diese Werkbank nicht kann', klasse: 'klein leise', stil: { margin: '1rem 0 .25rem' } }));
   for (const satz of [
-    'Texterkennung auf Scans (OCR) — Scans bleiben Bilder.',
-    'Kennwortgeschützte Dateien öffnen oder Kennwortschutz setzen.',
-    'Kryptografisches Signieren nach eIDAS — die Unterschrift ist ein Bild.',
-    'Bestehenden Fließtext im PDF umschreiben; neuer Text wird darübergelegt.',
+    'Kryptografisch signieren nach eIDAS — die Unterschrift ist ein Bild, kein Zertifikat.',
+    'Ersetzter Text wird in Helvetica gesetzt, nicht in der Originalschrift.',
+    'Nach Word oder Excel ausgeben — hier gibt es PDF, Text und PNG.',
+    'Ein unbekanntes Kennwort erraten. Entschlüsseln geht nur mit Kennwort.',
     'Lesezeichen bleiben nur erhalten, solange die Seitenfolge unverändert ist.',
   ]) rumpf.append(el('p', { klasse: 'hinweis', text: `· ${satz}` }));
 
@@ -637,6 +800,45 @@ function bearbeiteNotiz(id) {
   setTimeout(() => { feld.focus(); feld.select(); }, 30);
 }
 
+function ersetzeText(stelle) {
+  const feld = el('input', { klasse: 'feld', stil: { flex: '1' }, value: stelle.text });
+  const rastern = el('input', { type: 'checkbox' });
+  const groesse = el('input', { type: 'number', klasse: 'feld', step: '0.5', min: '3', max: '96', value: stelle.groesse.toFixed(1), stil: { width: '6rem' } });
+
+  zeigeDialog({
+    titel: 'Text ersetzen',
+    rumpf: el('div', {},
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Bisher' }), el('span', { klasse: 'leise', text: stelle.text })),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Neu' }), feld),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Schriftgröße' }), groesse,
+        el('span', { klasse: 'hinweis', text: 'pt' })),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Alten Text' }),
+        el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, rastern, 'wirklich entfernen (Seite wird zum Bild)')),
+      el('p', { klasse: 'hinweis' },
+        'Ohne Haken wird der alte Text überdeckt und neu gesetzt — er steckt dann noch in der Datei und ließe sich auslesen. ',
+        'Mit Haken wird die Seite gerastert: der alte Text ist wirklich fort, dafür ist die restliche Seite danach ein Bild. ',
+        'Ersetzter Text wird in Helvetica gesetzt; bei ausgefallenen Schriften fällt der Unterschied auf.')),
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Ersetzen', betont: true,
+        tun: () => {
+          if (!feld.value.length) return;
+          fuegeAn({
+            art: 'ersatz', seiteId: stelle.seiteId,
+            x: stelle.x, y: stelle.y, b: stelle.b, h: stelle.h,
+            text: feld.value, alt: stelle.text,
+            groesse: Number(groesse.value) || stelle.groesse,
+            grundfarbe: stelle.grundfarbe, schriftfarbe: stelle.schriftfarbe,
+            rastern: rastern.checked,
+          });
+        },
+      },
+    ],
+  });
+  setTimeout(() => { feld.focus(); feld.select(); }, 30);
+}
+
 function neuerText({ seiteId, x, y }) {
   const feld = el('textarea', { klasse: 'feld', rows: '4', stil: { width: '100%' }, placeholder: 'Text …' });
   zeigeDialog({
@@ -728,6 +930,7 @@ export function starteOberflaeche() {
   setzeSichtHoler((seitenId) => blattVon(seitenId)?.sicht || null);
   starteWerkzeuge($('#spur'), zuPdfPunkt);
   starteTastatur();
+  setzeKennwortFrager(frageKennwort);
   zeichneWerkzeugleiste();
 
   // Kopf und Fuß
@@ -809,8 +1012,10 @@ export function starteOberflaeche() {
   hoer('anmerkung:gewaehlt', zeichneRechteTafel);
   hoer('anmerkung:bearbeiten', bearbeiteNotiz);
   hoer('anmerkung:neuerText', neuerText);
+  hoer('anmerkung:textErsetzen', ersetzeText);
   hoer('suche:geaendert', zeichneSuchergebnisse);
   hoer('mitdenken:geaendert', zeichneRechteTafel);
+  hoer('ocr:geaendert', () => { zeichneRechteTafel(); aktualisiereFuss(); });
   hoer('formular:geaendert', () => zeichneRechteTafel());
   hoer('werkzeug:gewechselt', zeichneWerkzeugleiste);
   // Klick in ein Unterschriftsfeld: anlegen und gleich passend einsetzen —

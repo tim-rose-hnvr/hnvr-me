@@ -7,6 +7,7 @@ import { zustand, melde, hoer, $, el, drossel } from './kern.js';
 import { holeSeite, seitenMasse, pdfjs } from './dokument.js';
 import { zeichneAnmerkungen } from './anmerkungen.js';
 import { zeichneFormularfelder } from './formulare.js';
+import { legeErkannteTextebene } from './texterkennung.js';
 
 const blaetter = new Map();     // seitenId → { knoten, eintrag, sicht, gerendert, aufgabe }
 let beobachter = null;
@@ -38,6 +39,7 @@ export function starteAnsicht() {
   // Bewusst nicht auf 'formular:geaendert': ein Neuaufbau während des Tippens
   // würde das Eingabefeld unter dem Schreibpunkt wegziehen.
   hoer('formular:neuAufbau', () => aktualisiereFormular());
+  hoer('ocr:geaendert', () => baueNeu({ haltePosition: true }));
   hoer('werkzeug:gewechselt', () => setzeWerkzeugKlasse());
 }
 
@@ -45,6 +47,7 @@ function setzeWerkzeugKlasse() {
   const zeichnend = !['auswahl', 'text'].includes(zustand.werkzeug);
   spur.classList.toggle('werkzeug-aktiv', zeichnend);
   spur.classList.toggle('werkzeug-text', zustand.werkzeug === 'auswahl' || zustand.werkzeug === 'text');
+  spur.classList.toggle('werkzeug-ersetzen', zustand.werkzeug === 'ersetzen');
 }
 
 /** Maßstab für einen Eintrag unter der aktuellen Zoom-Einstellung. */
@@ -149,6 +152,17 @@ async function legeTextebene(blatt, seite, sicht) {
   behaelter.innerHTML = '';
   behaelter.style.setProperty('--scale-factor', String(sicht.scale));
   const inhalt = await seite.getTextContent();
+  const eigenerText = inhalt.items.map((i) => i.str).join('').trim();
+  zustand.textLaenge.set(blatt.eintrag.id, eigenerText.length);
+
+  // Auf Scans tritt die Erkennung an die Stelle der fehlenden Textebene.
+  if (eigenerText.length < 40 && zustand.ocr.has(blatt.eintrag.id)) {
+    legeErkannteTextebene(behaelter, blatt.eintrag.id, sicht);
+    blatt.textFertig = true;
+    melde('textebene:fertig', blatt);
+    return;
+  }
+
   if (pdfjs?.TextLayer) {
     const ebene = new pdfjs.TextLayer({ textContentSource: inhalt, container: behaelter, viewport: sicht });
     await ebene.render();

@@ -157,8 +157,100 @@ try {
   pruefe(await seite.evaluate(() => window.werkbank.zustand.anmerkungen.filter((a) => a.art === 'hervor').length) >= 2,
     'Suchtreffer lassen sich in einem Zug hervorheben');
 
+  console.log('\nVerkleinern und Texterkennung');
+  const scan = join(ablage, 'scan.pdf');
+  const [scanLadung] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(async () => {
+      const { verkleinere } = await import('./app/ausgabe.js');
+      const { sichereBytes } = await import('./app/kern.js');
+      sichereBytes(await verkleinere({ dichte: 200, guete: 0.9 }), 'scan.pdf');
+    }),
+  ]);
+  await scanLadung.saveAs(scan);
+
+  await seite.setInputFiles('#dateiwahl', scan);
+  await seite.waitForSelector('.blatt canvas');
+  await seite.waitForTimeout(2000);
+  const scanDok = await pdfjs.getDocument({ data: new Uint8Array(await readFile(scan)), standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/') }).promise;
+  const scanText = (await (await scanDok.getPage(1)).getTextContent()).items.map((i) => i.str).join('');
+  pruefe(scanText.trim() === '', 'verkleinerte Datei ist ein Bild ohne Textebene');
+  pruefe((await seite.evaluate(() => [...document.querySelectorAll('.vorschlag b')].map((k) => k.textContent)))
+    .some((v) => /Scan|ohne auswählbaren Text/.test(v)), 'der fehlende Text wird gemeldet');
+
+  const erkennung = await seite.evaluate(async () => {
+    const ocr = await import('./app/texterkennung.js');
+    const z = window.werkbank.zustand;
+    const ids = await ocr.erkenneSeiten({ seiten: z.folge.slice(0, 1), sprache: 'deu', dichte: 200 });
+    const treffer = z.ocr.get(ids[0]);
+    return { woerter: treffer.woerter.length, konfidenz: Math.round(treffer.konfidenz), text: treffer.zeilen.map((l) => l.text).join(' ') };
+  });
+  pruefe(erkennung.woerter > 50, `Texterkennung findet Wörter (${erkennung.woerter})`);
+  pruefe(erkennung.konfidenz > 80, `Erkennung ist sicher (${erkennung.konfidenz} %)`);
+  pruefe(/Sitzungstechnik/.test(erkennung.text), 'erkannter Text stimmt inhaltlich');
+
+  await seite.waitForTimeout(800);
+  await seite.evaluate(() => window.werkbank.fuehreAus('suchen'));
+  await seite.fill('#suchfeld', 'Konferenzanlage');
+  await seite.waitForTimeout(1200);
+  pruefe(/[1-9]/.test(await seite.textContent('#such-anzahl')), 'im Scan lässt sich nach der Erkennung suchen');
+
+  const durchsuchbar = join(ablage, 'scan-durchsuchbar.pdf');
+  const [ladungOcr] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(() => window.werkbank.fuehreAus('sichern')),
+  ]);
+  await ladungOcr.saveAs(durchsuchbar);
+  const ocrDok = await pdfjs.getDocument({ data: new Uint8Array(await readFile(durchsuchbar)), standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/') }).promise;
+  const ocrText = (await (await ocrDok.getPage(1)).getTextContent()).items.map((i) => i.str).join(' ');
+  pruefe(/Sitzungstechnik/.test(ocrText), 'gesicherter Scan trägt unsichtbaren, auslesbaren Text');
+
+  console.log('\nKennwortschutz');
+  const geschuetzt = join(ablage, 'geschuetzt.pdf');
+  const [ladungSchutz] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(async () => {
+      const { baueDokument } = await import('./app/ausgabe.js');
+      const { sichereBytes } = await import('./app/kern.js');
+      const bytes = await baueDokument({ schutz: { benutzer: 'geheim', besitzer: 'chef', drucken: 'none' } });
+      sichereBytes(bytes, 'geschuetzt.pdf');
+    }),
+  ]);
+  await ladungSchutz.saveAs(geschuetzt);
+  let verschlossen = false;
+  try { await pdfjs.getDocument({ data: new Uint8Array(await readFile(geschuetzt)), standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/') }).promise; }
+  catch (fehler) { verschlossen = fehler?.name === 'PasswordException'; }
+  pruefe(verschlossen, 'geschützte Datei lässt sich ohne Kennwort nicht öffnen');
+  const mitKennwort = await pdfjs.getDocument({ data: new Uint8Array(await readFile(geschuetzt)), password: 'geheim', standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/') }).promise;
+  pruefe(mitKennwort.numPages === 5, 'mit Kennwort geht sie auf');
+
+  console.log('\nText ersetzen');
+  // Frisches Beispiel: in der geschwärzten Ausgabe ist Seite 1 ein Bild.
+  await seite.setInputFiles('#dateiwahl', join(WURZEL, 'beispiel', 'beispiel.pdf'));
+  await seite.waitForSelector('.blatt canvas');
+  await seite.waitForTimeout(2000);
+  await seite.evaluate(() => window.werkbank.fuehreAus('werkzeug:ersetzen'));
+  await seite.waitForTimeout(300);
+  const ersatzStelle = await seite.evaluate(() => {
+    const span = [...document.querySelectorAll('.textebene span')].find((x) => x.textContent.includes('84.500'));
+    if (!span) return null;
+    const r = span.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  });
+  if (ersatzStelle) {
+    await seite.mouse.click(ersatzStelle.x, ersatzStelle.y);
+    await seite.waitForSelector('.dialog input.feld');
+    await seite.fill('.dialog input.feld', 'Die Verguetung betraegt 79.900 EUR netto.');
+    await seite.click('.dialog-fuss .knopf:last-child');
+    await seite.waitForTimeout(500);
+    pruefe(await seite.evaluate(() => window.werkbank.zustand.anmerkungen.some((a) => a.art === 'ersatz')),
+      'Textstück lässt sich anklicken und ersetzen');
+  } else {
+    pruefe(false, 'Textstück zum Ersetzen gefunden');
+  }
+
   console.log('\nZusammenführen');
-  await seite.setInputFiles('#dateiwahl-anhang', ausgabe);
+  await seite.setInputFiles('#dateiwahl-anhang', scan);
   await seite.waitForTimeout(2500);
   const nachher = await seite.evaluate(() => ({ seiten: window.werkbank.zustand.folge.length, quellen: window.werkbank.zustand.quellen.size }));
   pruefe(nachher.seiten === 10 && nachher.quellen === 2, 'zweite Datei angehängt', JSON.stringify(nachher));

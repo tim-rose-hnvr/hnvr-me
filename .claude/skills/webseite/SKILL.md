@@ -51,11 +51,15 @@ Nicht: „modern, clean, professionell". Diese drei Wörter beschreiben den Durc
 
 Erst wenn diese vier Punkte stehen, beginnt der Code.
 
+**Wenn Vorbilder untersucht werden sollen**, dann vorher und nach Verfahren: `references/quellen.md`. Untersucht wird, um die naheliegende Lösung zu **streichen**, nicht um sie zu bestätigen — der Durchschnitt fremder Seiten ist genau das, was hier verhindert werden soll.
+
 ---
 
 ## Phase 2 — Rohbau in Graustufen
 
 Struktur und echte Inhalte, **ohne Farbe, ohne Bilder, ohne Bewegung**. Nur Schrift, Abstand, Hierarchie.
+
+Die Abschnittsfolge kommt aus `references/struktur.md` — dort wird bewusst gemittelt. Struktur ist der Teil, der konventionell sein **muss**: der Leser erwartet die Anordnung, die er von anderen Seiten kennt, und eine erfundene Navigation kostet nur Verständlichkeit. Die Eigenständigkeit trägt der Ausdruck, nicht die Anordnung. Seiten scheitern fast immer daran, dass sie das vertauschen.
 
 Grund: Eine Seite, die in Graustufen gut aussieht, wird durch Farbe besser. Eine Seite, die in Graustufen nichts hergibt, wird durch Farbe nur bunt. Wer sofort dekoriert, merkt nie, dass das Skelett langweilig ist.
 
@@ -175,6 +179,8 @@ Teilweise fertig heißt teilweise fertig. Eine ehrliche Restliste ist ein besser
 | Datei | Wann lesen |
 |---|---|
 | `references/designthese.md` | Phase 1 — Richtungskatalog, Signature-Moment-Katalog, Beispielthesen |
+| `references/quellen.md` | Phase 1 — fremde Seiten zerlegen, echte Wissensdatenbanken, Beweisaufnahme |
+| `references/struktur.md` | Phase 2 — Seitenarten, Abschnittsfolgen, Bedienmuster, Pflichtteil DE |
 | `references/handwerk.md` | Phase 2/3 — Typo-Skala, Farbe, Raster, Tiefe, Textur, als Zahlen |
 | `references/bilder.md` | immer wenn ein Bild gebraucht wird — Wege ohne Stockmaterial |
 | `references/bewegung.md` | Phase 4 — Zeiten, Kurven, Muster, Signature-Techniken |

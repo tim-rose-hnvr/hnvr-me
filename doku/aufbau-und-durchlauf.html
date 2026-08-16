@@ -1,0 +1,1828 @@
+<title>Sitzungssystem durchgespielt</title>
+
+<style>
+  /* ---- Farbwerte: helle Fassung als Grundlage ---------------------- */
+  :root {
+    --grund:        #EBEEEE;
+    --flaeche:      #FFFFFF;
+    --flaeche-tief: #E2E6E7;
+    --tinte:        #141A1C;
+    --tinte-leise:  #59666C;
+    --linie:        #D0D7D9;
+    --linie-stark:  #A9B4B8;
+    --tally:        #A82E23;
+    --tally-grund:  #F7E7E5;
+    --warn:         #7E5300;
+    --warn-grund:   #F6ECDA;
+    --gut:          #0D5A4D;
+    --gut-grund:    #DFEDEA;
+
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            "Helvetica Neue", Arial, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+             Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+            "Liberation Mono", monospace;
+
+    --spur: 1180px;
+    --lauf: 44rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --grund:        #111618;
+      --flaeche:      #192023;
+      --flaeche-tief: #212A2E;
+      --tinte:        #E4E9EA;
+      --tinte-leise:  #93A1A7;
+      --linie:        #2A3438;
+      --linie-stark:  #47555A;
+      --tally:        #F0705C;
+      --tally-grund:  #33201D;
+      --warn:         #E0A63F;
+      --warn-grund:   #2E2513;
+      --gut:          #45B49C;
+      --gut-grund:    #152C28;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --grund:        #111618;
+    --flaeche:      #192023;
+    --flaeche-tief: #212A2E;
+    --tinte:        #E4E9EA;
+    --tinte-leise:  #93A1A7;
+    --linie:        #2A3438;
+    --linie-stark:  #47555A;
+    --tally:        #F0705C;
+    --tally-grund:  #33201D;
+    --warn:         #E0A63F;
+    --warn-grund:   #2E2513;
+    --gut:          #45B49C;
+    --gut-grund:    #152C28;
+  }
+
+  /* ---- Grundlagen -------------------------------------------------- */
+  body {
+    margin: 0;
+    background: var(--grund);
+    color: var(--tinte);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .spur {
+    max-width: var(--spur);
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 4vw, 3.5rem);
+  }
+
+  .lauf { max-width: var(--lauf); }
+
+  h1, h2, h3, h4 {
+    font-family: var(--sans);
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  h1 {
+    font-size: clamp(2.1rem, 5.2vw, 3.4rem);
+    line-height: 1.04;
+    font-weight: 700;
+    letter-spacing: -0.028em;
+  }
+
+  h2 {
+    font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+    line-height: 1.16;
+    font-weight: 700;
+    letter-spacing: -0.018em;
+  }
+
+  h3 {
+    font-size: 1.06rem;
+    line-height: 1.3;
+    font-weight: 650;
+    letter-spacing: -0.008em;
+  }
+
+  h4 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--tinte-leise);
+  }
+
+  p { margin: 0; }
+
+  a {
+    color: var(--tally);
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1px;
+  }
+
+  a:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--tally);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  code, .zahl {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  code {
+    font-size: 0.86em;
+    background: var(--flaeche-tief);
+    padding: 0.1em 0.34em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+
+  strong { font-weight: 650; }
+
+  /* ---- Kopf -------------------------------------------------------- */
+  .kopf {
+    border-bottom: 1px solid var(--linie);
+    background: var(--flaeche);
+    padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(2rem, 4vw, 3rem);
+  }
+
+  .kopf-innen {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .marke {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--tinte-leise);
+  }
+
+  .lampe {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--tally);
+    flex: none;
+    box-shadow: 0 0 0 3px var(--tally-grund);
+  }
+
+  .anriss {
+    font-size: clamp(1.05rem, 2vw, 1.22rem);
+    color: var(--tinte-leise);
+    max-width: 46rem;
+  }
+
+  .kopf-fakten {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--linie);
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    color: var(--tinte-leise);
+  }
+
+  .kopf-fakten b {
+    color: var(--tinte);
+    font-weight: 600;
+  }
+
+  /* ---- Inhaltsverzeichnis ------------------------------------------ */
+  .wegweiser {
+    border-bottom: 1px solid var(--linie);
+    background: var(--grund);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  .wegweiser ol {
+    list-style: none;
+    margin: 0;
+    padding: 0.6rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 1.35rem;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+  }
+
+  .wegweiser a {
+    color: var(--tinte-leise);
+    text-decoration: none;
+    display: inline-flex;
+    gap: 0.45rem;
+  }
+
+  .wegweiser a:hover { color: var(--tally); }
+
+  .wegweiser .nr {
+    font-family: var(--mono);
+    color: var(--linie-stark);
+  }
+
+  /* ---- Abschnitte -------------------------------------------------- */
+  .teil {
+    padding: clamp(3rem, 7vw, 5rem) 0;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .teil-kopf {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 2.25rem;
+    max-width: 46rem;
+  }
+
+  .satzblock {
+    display: flex;
+    flex-direction: column;
+    gap: 1.05rem;
+    max-width: var(--lauf);
+  }
+
+  .satzblock + .satzblock { margin-top: 1.05rem; }
+
+  /* ---- Karten ------------------------------------------------------ */
+  .karten {
+    display: grid;
+    gap: 1px;
+    background: var(--linie);
+    border: 1px solid var(--linie);
+    grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+    margin-top: 2rem;
+  }
+
+  .karte {
+    background: var(--flaeche);
+    padding: 1.35rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .karte p {
+    font-size: 0.94rem;
+    color: var(--tinte-leise);
+  }
+
+  .karte .stempel {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    color: var(--tally);
+  }
+
+  /* ---- Tabellen ---------------------------------------------------- */
+  .tabellenrahmen {
+    overflow-x: auto;
+    border: 1px solid var(--linie);
+    background: var(--flaeche);
+    margin-top: 2rem;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 640px;
+    font-family: var(--sans);
+    font-size: 0.9rem;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  thead th {
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tinte-leise);
+    font-weight: 700;
+    background: var(--flaeche-tief);
+    border-bottom: 1px solid var(--linie-stark);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: 0; }
+
+  td code { background: var(--flaeche-tief); }
+
+  /* ---- Zeitachse --------------------------------------------------- */
+  .achse {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .takt {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr;
+    gap: 0 1.75rem;
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--linie);
+    position: relative;
+  }
+
+  .takt:last-child { border-bottom: 1px solid var(--linie); }
+
+  .takt-zeit {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.82rem;
+    color: var(--tinte-leise);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding-top: 0.15rem;
+  }
+
+  .takt-zeit b {
+    color: var(--tinte);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .takt-null .takt-zeit b { color: var(--tally); }
+
+  .takt-koerper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .takt-koerper p {
+    font-size: 0.97rem;
+    color: var(--tinte-leise);
+  }
+
+  .marken {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding-top: 0.15rem;
+  }
+
+  .marke-chip {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    padding: 0.16rem 0.48rem;
+    border: 1px solid var(--linie-stark);
+    border-radius: 2px;
+    color: var(--tinte-leise);
+    white-space: nowrap;
+  }
+
+  .marke-chip.zustand {
+    color: var(--tally);
+    border-color: var(--tally);
+    background: var(--tally-grund);
+  }
+
+  .marke-chip.kette {
+    color: var(--gut);
+    border-color: var(--gut);
+    background: var(--gut-grund);
+  }
+
+  .marke-chip.stopp {
+    color: var(--warn);
+    border-color: var(--warn);
+    background: var(--warn-grund);
+  }
+
+  /* ---- Befunde ----------------------------------------------------- */
+  .befunde {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--linie);
+    border: 1px solid var(--linie);
+    margin-top: 2rem;
+  }
+
+  .befund {
+    background: var(--flaeche);
+    padding: 1.5rem 1.6rem;
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    gap: 0 1.25rem;
+  }
+
+  .befund-nr {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--tally);
+    padding-top: 0.12rem;
+  }
+
+  .befund-koerper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+
+  .befund-koerper p {
+    font-size: 0.97rem;
+    color: var(--tinte-leise);
+  }
+
+  .befund-koerper .vorschlag {
+    color: var(--tinte);
+    border-left: 2px solid var(--tally);
+    padding-left: 0.9rem;
+  }
+
+  .stufe {
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.5rem;
+    border-radius: 2px;
+    align-self: flex-start;
+  }
+
+  .stufe.fundament {
+    color: var(--tally);
+    background: var(--tally-grund);
+  }
+
+  .stufe.jetzt {
+    color: var(--warn);
+    background: var(--warn-grund);
+  }
+
+  .stufe.spaeter {
+    color: var(--tinte-leise);
+    background: var(--flaeche-tief);
+  }
+
+  /* ---- Einspruch --------------------------------------------------- */
+  .einspruch {
+    border: 1px solid var(--tally);
+    background: var(--flaeche);
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .einspruch .satzblock { max-width: 42rem; }
+
+  .rechnung {
+    font-family: var(--mono);
+    font-size: 0.83rem;
+    background: var(--flaeche-tief);
+    padding: 1rem 1.15rem;
+    overflow-x: auto;
+    line-height: 1.85;
+    border-left: 2px solid var(--tally);
+  }
+
+  .rechnung .summe {
+    color: var(--tally);
+    font-weight: 700;
+  }
+
+  /* ---- Listen ------------------------------------------------------ */
+  ul.strich {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-width: var(--lauf);
+  }
+
+  ul.strich li {
+    position: relative;
+    padding-left: 1.4rem;
+    font-size: 0.99rem;
+  }
+
+  ul.strich li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.72em;
+    width: 0.75rem;
+    height: 1px;
+    background: var(--linie-stark);
+  }
+
+  /* ---- Bilder ------------------------------------------------------ */
+  figure {
+    margin: 2.25rem 0 0;
+    border: 1px solid var(--linie);
+    background: var(--flaeche);
+  }
+
+  .bildfeld {
+    overflow-x: auto;
+    padding: 1.5rem;
+  }
+
+  figure svg {
+    display: block;
+    width: 100%;
+    min-width: 560px;
+    max-width: 100%;
+    height: auto;
+    color: var(--tinte);
+  }
+
+  figcaption {
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    color: var(--tinte-leise);
+    padding: 0.9rem 1.5rem 1.1rem;
+    border-top: 1px solid var(--linie);
+    background: var(--flaeche-tief);
+  }
+
+  .sv-flaeche { fill: var(--flaeche-tief); }
+  .sv-linie   { stroke: var(--linie-stark); fill: none; }
+  .sv-rahmen  { stroke: var(--linie-stark); fill: var(--flaeche); }
+  .sv-tally   { stroke: var(--tally); fill: none; }
+  .sv-tally-f { fill: var(--tally); }
+  .sv-text    { fill: var(--tinte); font-family: var(--sans); font-size: 13px; }
+  .sv-klein   { fill: var(--tinte-leise); font-family: var(--sans); font-size: 11px; }
+  .sv-code    { fill: var(--tinte-leise); font-family: var(--mono); font-size: 11px; }
+  .sv-akzent  { fill: var(--tally); font-family: var(--sans); font-size: 11px; }
+
+  /* ---- Fuß --------------------------------------------------------- */
+  .fuss {
+    padding: clamp(2.5rem, 5vw, 4rem) 0 5rem;
+    font-family: var(--sans);
+    font-size: 0.87rem;
+    color: var(--tinte-leise);
+  }
+
+  .fuss-innen {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-width: 46rem;
+  }
+
+  @media (max-width: 640px) {
+    .takt { grid-template-columns: 1fr; gap: 0.6rem; }
+    .befund { grid-template-columns: 1fr; gap: 0.5rem; }
+    .wegweiser { position: static; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<header class="kopf">
+  <div class="spur kopf-innen">
+    <div class="marke"><span class="lampe"></span> Sitzungssystem &middot; Arbeitsstand</div>
+    <h1>Sitzungssystem durchgespielt</h1>
+    <p class="anriss">
+      Aufbau, Zuständigkeiten und eine vollständige Sitzung von der Vorbereitung
+      bis zum Protokoll — Schritt für Schritt. Am Ende steht, was das Durchspielen
+      an offenen Stellen freigelegt hat und was davon vor der ersten Codezeile
+      entschieden sein muss.
+    </p>
+    <div class="kopf-fakten">
+      <span><b>Stand</b> 16. August 2026</span>
+      <span><b>Produktivcode</b> keiner</span>
+      <span><b>Nächste Stufe</b> Kern, Kamerasteuerung, Sprechstelle</span>
+      <span><b>Grundlage</b> <code>CLAUDE.md</code></span>
+    </div>
+  </div>
+</header>
+
+<nav class="wegweiser" aria-label="Inhalt">
+  <div class="spur">
+    <ol>
+      <li><a href="#kurz"><span class="nr">1</span> Kurz gefasst</a></li>
+      <li><a href="#aufbau"><span class="nr">2</span> Aufbau</a></li>
+      <li><a href="#grenze"><span class="nr">3</span> Die Grenze des Saals</a></li>
+      <li><a href="#durchlauf"><span class="nr">4</span> Eine Sitzung im Durchlauf</a></li>
+      <li><a href="#meilenstein"><span class="nr">5</span> Der erste Meilenstein</a></li>
+      <li><a href="#stoerungen"><span class="nr">6</span> Störungen</a></li>
+      <li><a href="#einspruch"><span class="nr">7</span> Ein Widerspruch</a></li>
+      <li><a href="#befunde"><span class="nr">8</span> Befunde</a></li>
+      <li><a href="#andocken"><span class="nr">9</span> Wo später was andockt</a></li>
+      <li><a href="#naechstes"><span class="nr">10</span> Nächster Schritt</a></li>
+    </ol>
+  </div>
+</nav>
+
+<!-- ================================================================= -->
+<section class="teil" id="kurz">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>1 — Kurz gefasst</h4>
+      <h2>Ein Programm für den Raum und das Protokoll</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Der Markt ist zweigeteilt. Saaltechnik — Bosch, Televic, Vissonic — beherrscht
+        Ton und Kamera, kennt aber kein Protokoll. Board-Portale — Sherpany, Diligent —
+        beherrschen Unterlagen und Beschlüsse, haben aber keinen Bezug zum Raum und
+        laufen in der Cloud. Die Lücke ist beides zusammen, betrieben beim Kunden.
+      </p>
+      <p>
+        Daraus folgt der Zuschnitt: Der Sitzplatz trägt die Identität, nicht die Person
+        und nicht das Gerät. Der Saal funktioniert in einem abgeschotteten Netz
+        vollständig. Ein Ausfall darf Komfort kosten, niemals Daten. Und es gibt genau
+        einen Codestand.
+      </p>
+      <p>
+        Was unten durchgespielt wird, ist keine Wunschvorstellung, sondern der Ablauf,
+        den das Datenmodell heute hergibt — mit den Stellen markiert, an denen er noch
+        nicht trägt.
+      </p>
+    </div>
+
+    <div class="karten">
+      <div class="karte">
+        <span class="stempel">Fundament 1—3</span>
+        <h3>Was nicht nachrüstbar ist</h3>
+        <p>
+          Mandantenfähigkeit in jeder Tabelle, das Ereignisprotokoll als Hash-Kette,
+          eine einzige Zeitachse je Sitzung. Fehlt eines davon in der ersten Version,
+          ist die Datenbank später nicht reparierbar, sondern nur neu.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Fundament 4—6</span>
+        <h3>Was Verhalten festlegt</h3>
+        <p>
+          Offline-First im Client, Rollen statt Gerätetypen mit zentraler
+          Rechteprüfung, Mix-Minus im Audiorouting. Alle drei bestimmen
+          Schnittstellen — nachträglich eingezogen brechen sie jede davon.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Erstes Ziel</span>
+        <h3>Was zuerst läuft</h3>
+        <p>
+          Ein Gerät meldet „Mikro an“, der Server prüft das Recht, kettet das Ereignis
+          an und fährt die PTZ auf den gelernten Preset. Kein Audio, kein Video im
+          System. Alles Weitere ist additiv.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="aufbau">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>2 — Aufbau</h4>
+      <h2>Steuerung durch den Kern, Medien auf eigenem Weg</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Die tragende Entscheidung im Bild unten ist die Trennung zweier Pfade. Jeder
+        <em>Befehl</em> — Mikrofon schalten, Wortmeldung, Stimme, Übergabe der Leitung
+        — läuft ausnahmslos über den Kern, weil dort die Rechte geprüft und die
+        Ereignisse angekettet werden. Jeder <em>Medienstrom</em> nimmt den kurzen Weg,
+        weil er das Rechtemodell nicht durchlaufen kann, ohne Latenz zu sammeln.
+      </p>
+    </div>
+
+    <figure>
+      <div class="bildfeld">
+        <svg viewBox="0 0 900 560" role="img"
+             aria-label="Komponenten des Systems: Geräte sprechen über WebSocket mit dem Kern, der Kern steuert Kameradienst und Mediendienst, Medien nehmen einen eigenen Weg zu den Geräten. Alles liegt innerhalb des abgeschotteten Saalnetzes.">
+          <defs>
+            <marker id="pf" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+            <marker id="pf-t" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="sv-tally-f"/>
+            </marker>
+          </defs>
+
+          <!-- Saalnetz-Grenze -->
+          <rect x="12" y="12" width="876" height="452" rx="4"
+                class="sv-linie" stroke-dasharray="7 5"/>
+          <text x="28" y="36" class="sv-klein">Saalnetz — abgeschottet, kein Weg nach außen nötig</text>
+
+          <!-- Tier 1: Geräte -->
+          <rect x="36" y="58" width="196" height="58" rx="3" class="sv-rahmen"/>
+          <text x="52" y="82" class="sv-text">iPad Sprechstelle</text>
+          <text x="52" y="100" class="sv-code">rolle: sprechstelle</text>
+
+          <rect x="252" y="58" width="176" height="58" rx="3" class="sv-rahmen"/>
+          <text x="268" y="82" class="sv-text">Regiepult</text>
+          <text x="268" y="100" class="sv-code">rolle: technik</text>
+
+          <rect x="448" y="58" width="196" height="58" rx="3" class="sv-rahmen"/>
+          <text x="464" y="82" class="sv-text">Privatgerät</text>
+          <text x="464" y="100" class="sv-code">rolle: begleitung</text>
+
+          <rect x="664" y="58" width="200" height="58" rx="3" class="sv-rahmen"
+                stroke-dasharray="4 3"/>
+          <text x="680" y="82" class="sv-text">step-ca</text>
+          <text x="680" y="100" class="sv-code">mTLS für alle Dienste</text>
+
+          <!-- Pfeile Geräte -> Kern -->
+          <line x1="134" y1="116" x2="134" y2="176" class="sv-linie" marker-end="url(#pf)"/>
+          <line x1="340" y1="116" x2="340" y2="176" class="sv-linie" marker-end="url(#pf)"/>
+          <line x1="546" y1="116" x2="546" y2="176" class="sv-linie" marker-end="url(#pf)"/>
+          <text x="352" y="152" class="sv-klein">WebSocket über mTLS — jeder Befehl, ohne Ausnahme</text>
+
+          <!-- Tier 2: Kern -->
+          <rect x="36" y="178" width="608" height="86" rx="3" class="sv-rahmen"
+                stroke-width="2"/>
+          <text x="52" y="204" class="sv-text" font-weight="700">Kern (Go)</text>
+          <text x="52" y="226" class="sv-klein">Sitzungszustand · Rollen und Rechte · Sprecherfokus · Ereigniskette</text>
+          <text x="52" y="246" class="sv-code">die einzige Stelle, die „darf er das?“ beantwortet</text>
+
+          <rect x="664" y="178" width="200" height="86" rx="3" class="sv-rahmen"/>
+          <text x="680" y="204" class="sv-text">PostgreSQL</text>
+          <text x="680" y="226" class="sv-klein">Zustand, Ereigniskette,</text>
+          <text x="680" y="242" class="sv-klein">organisation_id überall</text>
+
+          <line x1="644" y1="221" x2="662" y2="221" class="sv-linie" marker-end="url(#pf)" marker-start="url(#pf)"/>
+
+          <!-- Tier 3: Dienste -->
+          <line x1="160" y1="264" x2="160" y2="322" class="sv-tally" marker-end="url(#pf-t)"/>
+          <text x="172" y="298" class="sv-akzent">sprecherfokus (platz, seit)</text>
+
+          <line x1="470" y1="264" x2="470" y2="322" class="sv-linie" marker-end="url(#pf)"/>
+          <text x="482" y="298" class="sv-klein">sitzungszustand: aufzeichnung an/aus</text>
+
+          <rect x="36" y="324" width="248" height="62" rx="3" class="sv-rahmen"/>
+          <text x="52" y="348" class="sv-text">Kameradienst</text>
+          <text x="52" y="368" class="sv-code">VISCA over IP · UDP 52381</text>
+
+          <rect x="346" y="324" width="298" height="62" rx="3" class="sv-rahmen"/>
+          <text x="362" y="348" class="sv-text">Mediendienst (GStreamer)</text>
+          <text x="362" y="368" class="sv-code">SFU · Kompositor · NDI</text>
+
+          <!-- Medienpfad zurück zu den Geräten -->
+          <path d="M644 355 L 780 355 L 780 132 L 644 132" class="sv-linie"
+                stroke-dasharray="5 4" marker-end="url(#pf)"/>
+          <text x="700" y="330" class="sv-klein">WebRTC</text>
+          <text x="700" y="346" class="sv-klein">eigener Weg</text>
+
+          <!-- Tier 4: Hardware -->
+          <line x1="160" y1="386" x2="160" y2="416" class="sv-linie" marker-end="url(#pf)"/>
+          <line x1="470" y1="386" x2="470" y2="416" class="sv-linie" marker-end="url(#pf)"/>
+
+          <rect x="36" y="418" width="248" height="30" rx="3" class="sv-flaeche" stroke="none"/>
+          <text x="52" y="438" class="sv-text">PTZ-Kameras — verkabelt</text>
+
+          <rect x="346" y="418" width="298" height="30" rx="3" class="sv-flaeche" stroke="none"/>
+          <text x="362" y="438" class="sv-text">Anlagentechnik: DSP, AES67/Dante</text>
+
+          <!-- Außenwelt -->
+          <line x1="450" y1="464" x2="450" y2="496" class="sv-linie"
+                stroke-dasharray="4 4" marker-end="url(#pf)" marker-start="url(#pf)"/>
+          <rect x="248" y="498" width="404" height="48" rx="3" class="sv-rahmen"
+                stroke-dasharray="4 3"/>
+          <text x="266" y="520" class="sv-text">Zuschaltung von außen</text>
+          <text x="266" y="538" class="sv-code">optional — nie Voraussetzung für die Sitzung</text>
+        </svg>
+      </div>
+      <figcaption>
+        Steuerung läuft ausnahmslos über den Kern; Medien nehmen den eigenen Weg
+        zurück zu den Geräten. Nichts innerhalb der gestrichelten Grenze braucht
+        eine Verbindung nach außen — die Zuschaltung hängt darunter und darf
+        ausfallen, ohne die Sitzung zu berühren.
+      </figcaption>
+    </figure>
+
+    <div class="tabellenrahmen">
+      <table>
+        <thead>
+          <tr>
+            <th>Dienst</th>
+            <th>Verantwortet</th>
+            <th>Verantwortet ausdrücklich nicht</th>
+            <th>Technik</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Kern</b></td>
+            <td>Sitzungszustand, Rollen und Rechte, Wortmeldungen, Sprecherfokus samt Hysterese, Ereigniskette, Verteilung des Zustands an alle Clients</td>
+            <td>Kein Medienstrom, keine Gerätekenntnis über die Kopplung hinaus</td>
+            <td>Go, WebSocket, PostgreSQL</td>
+          </tr>
+          <tr>
+            <td><b>Kameradienst</b></td>
+            <td>Umsetzung des Sprecherfokus in Kamerabefehle, Presets lernen und zurückschreiben, Erreichbarkeit melden</td>
+            <td>Keine eigene Entscheidung darüber, <em>wer</em> gezeigt wird</td>
+            <td>VISCA over IP, UDP 52381; ONVIF als Alternative</td>
+          </tr>
+          <tr>
+            <td><b>Mediendienst</b></td>
+            <td>Verteilung der Ströme, Mix-Minus-Summen, Kompositor, NDI-Ein- und -Ausgang</td>
+            <td>Keine Rechteprüfung — er führt aus, was der Kern freigegeben hat</td>
+            <td>GStreamer, WebRTC, AES67</td>
+          </tr>
+          <tr>
+            <td><b>Client Sprechstelle</b></td>
+            <td>Anzeige, Eingabe, Signieren und Puffern von Stimmen und Wortmeldungen</td>
+            <td>Keine Rechtelogik. Ein ausgegrauter Knopf ist Komfort, keine Sicherung</td>
+            <td>Web-App; native App erst für Hintergrund-Audio, Kiosk, App Attest</td>
+          </tr>
+          <tr>
+            <td><b>step-ca</b></td>
+            <td>Eigene CA, Zertifikate für Dienste und Geräte, mTLS überall</td>
+            <td>Keine Benutzeranmeldung — Gerät ≠ Person</td>
+            <td>step-ca im Saalnetz</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="grenze">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>3 — Die Grenze des Saals</h4>
+      <h2>Was die Grenze überschreitet und was niemals</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Leitprinzip 2 ist im Alltag nur haltbar, wenn die Grenze benannt ist. Sonst
+        schleicht sich die Abhängigkeit über eine Schriftart ein, die im Testnetz
+        geladen wurde und beim Kunden fehlt.
+      </p>
+    </div>
+
+    <ul class="strich" style="margin-top:1.6rem">
+      <li><b>Überschreitet nie:</b> Lizenzprüfung, Telemetrie an den Hersteller, Schriftarten, Kartenmaterial, Zeitdienst im Internet, Update-Abruf während einer Sitzung, Fehlerberichte.</li>
+      <li><b>Darf überschreiten, wenn der Kunde es will:</b> Zuschaltung externer Teilnehmer, Stream für die Öffentlichkeit, OParl-Abgleich mit dem Ratsinformationssystem, Sicherung an einen zweiten Standort.</li>
+      <li><b>Muss überschreiten dürfen, aber nie während einer Sitzung:</b> Auslieferung neuer Versionen, Zertifikatsverlängerung der eigenen CA, Bezug von Sprachmodellen für das Transkript.</li>
+      <li><b>Die Zeit ist der Sonderfall:</b> Die Ereigniskette braucht eine verlässliche Uhr. Ohne Internet heißt das ein Zeitdienst im Saalnetz und eine gepufferte Uhr im Server — kein NTP-Server im Netz, sondern einer im Rack.</li>
+    </ul>
+
+    <div class="satzblock" style="margin-top:1.6rem">
+      <p>
+        Der praktische Test dafür steht schon in der Projektanweisung und ist gut:
+        mit abgeschaltetem Internet entwickeln. Wer das durchhält, kann die Abhängigkeit
+        gar nicht erst einbauen.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="durchlauf">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>4 — Eine Sitzung im Durchlauf</h4>
+      <h2>Zwei Stunden, in Millisekunden gerechnet</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Die Zeitangaben links sind die Zeitachse der Sitzung: Millisekunden seit dem
+        Übergang <code>bereit → laufend</code>. Alles, was vorher geschieht — und es
+        geschieht einiges — trägt ein negatives Vorzeichen. Genau das ist der erste
+        Befund weiter unten.
+      </p>
+    </div>
+
+    <div class="achse">
+
+      <div class="takt">
+        <div class="takt-zeit"><b>−900 000</b><span>15 min vorher</span></div>
+        <div class="takt-koerper">
+          <h3>Vorabcheck</h3>
+          <p>
+            Der Server geht jeden Platz durch: Gerät gekoppelt und erreichbar, Akku über
+            der Schwelle, Mikrofonpegel plausibel, Kamerapreset anfahrbar. Ergebnis
+            landet auf der Support-Konsole, nicht beim Teilnehmer.
+          </p>
+          <div class="marken">
+            <span class="marke-chip zustand">sitzung: vorbereitet → bereit</span>
+            <span class="marke-chip kette">ereignis: vorabcheck_ergebnis je platz</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="takt">
+        <div class="takt-zeit"><b>−600 000</b><span>10 min vorher</span></div>
+        <div class="takt-koerper">
+          <h3>Anmeldung am Platz</h3>
+          <p>
+            Teilnehmer erscheinen. Die Teilnahme wandert über die Zustandskette. Das
+            Gerät weiß, an welchem Platz es steckt; die Person meldet sich am Platz an,
+            nicht am Gerät. Wird ein iPad getauscht, ändert das nichts an der Teilnahme.
+          </p>
+          <div class="marken">
+            <span class="marke-chip zustand">teilnahme: angemeldet → anwesend</span>
+            <span class="marke-chip">vertretung möglich</span>
+            <span class="marke-chip kette">ereignis: anwesenheit</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="takt">
+        <div class="takt-zeit"><b>−120 000</b><span>2 min vorher</span></div>
+        <div class="takt-koerper">
+          <h3>Der Staffelstab wird aufgenommen</h3>
+          <p>
+            Berechtigt zur Leitung sind mehrere, aktiv ist genau eine Person. Die
+            Übernahme ist ausdrücklich und erzeugt einen Protokolleintrag. Ab hier
+            gehen leitende Befehle nur noch von dieser einen Teilnahme aus.
+          </p>
+          <div class="marken">
+            <span class="marke-chip zustand">leitung: aktiv bei teilnahme #4</span>
+            <span class="marke-chip kette">ereignis: leitung_uebernommen</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="takt takt-null">
+        <div class="takt-zeit"><b>0</b><span>Eröffnung</span></div>
+        <div class="takt-koerper">
+          <h3>Die Sitzung beginnt — und mit ihr die Zeitachse</h3>
+          <p>
+            Der Nullpunkt aller späteren Angaben. Audio, Video, Transkript,
+            Abstimmungen und Telemetrie beziehen sich ab jetzt auf denselben Ursprung.
+            Beschlussfähigkeit wird geprüft und festgehalten.
+          </p>
+          <div class="marken">
+            <span class="marke-chip zustand">sitzung: bereit → laufend</span>
+            <span class="marke-chip kette">ereignis: sitzung_eroeffnet</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="takt">
+        <div class="takt-zeit"><b>+180 000</b><span>3 min</span></div>
+        <div class="takt-koerper">
+          <h3>Erste Wortmeldung, erste Kamerafahrt</h3>
+          <p>
+            Platz 7 meldet sich, die Leitung erteilt das Wort, das Mikrofon geht auf.
+            Nach der Einwurfschwelle setzt der Sprecherfokus, der Kameradienst ruft den
+            gelernten Preset ab. Das ist der Meilenstein, der als erstes gebaut wird —
+            im nächsten Abschnitt Schritt für Schritt.
+          </p>
+          <div class="marken">
+            <span class="marke-chip zustand">wortmeldung: gemeldet → erteilt → laufend</span>
+            <span class="marke-chip">redebeitrag beginnt</span>
+            <span class="marke-chip kette">ereignis: mikrofon_offen, fokus_gesetzt</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="takt">
+        <div class="takt-zeit"><b>+420 000</b><span>7 min</span></div>
+        <div class="takt-koerper">
+          <h3>Zwei offene Mikrofone auf derselben Kamera</h3>
+          <p>
+            Platz 9 kommt dazu. Beide Plätze liegen im Feld derselben Kamera — es gibt
+            keinen richtigen Preset für zwei Personen. Die Regel muss lauten: gemeinsame
+            Totale statt Pendeln. Der Automixer senkt die Gesamtverstärkung um 3 dB, wie
+            es jede Verdopplung offener Mikrofone verlangt.
+          </p>
+          <div class="marken">
+            <span class="marke-chip stopp">offene mikrofone: 2 von 8</span>
+            <span class="marke-chip">kamera: totale statt preset</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="takt">
+        <div class="takt-zeit"><b>+900 000</b><span>15 min</span></div>
+        <div class="takt-koerper">
+          <h3>Offene Abstimmung</h3>
+          <p>
+            Der Start prüft die Beschlussfähigkeit und friert das Quorum ein — spätere
+            Ankömmlinge ändern die Mehrheitsschwelle nicht mehr. Im selben Moment sperrt
+            der Kern alle automatischen Technikeingriffe: keine Kamerafahrt, keine
+            Bildumschaltung, kein automatischer Mikrofonwechsel.
+          </p>
+          <div class="marken">
+            <span class="marke-chip zustand">abstimmung: vorbereitet → laufend</span>
+            <span class="marke-chip stopp">automatik gesperrt</span>
+            <span class="marke-chip kette">ereignis: quorum_eingefroren</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="takt">
+        <div class="takt-zeit"><b>+1 260 000</b><span>21 min</span></div>
+        <div class="takt-koerper">
+          <h3>Geheime Wahl</h3>
+          <p>
+            Jeder stimmberechtigte Platz erhält ein blind signiertes Einmal-Token. Die
+            Stimme trägt nur das Token, nirgends entsteht die Zuordnung Stimme → Person
+            — auch nicht im Ereignisprotokoll und nicht auf dem Namensschild. Gezählt
+            wird gegen die Zahl der ausgegebenen Token, nicht gegen die Anwesenheitsliste.
+          </p>
+          <div class="marken">
+            <span class="marke-chip zustand">abstimmung: laufend → ausgezaehlt → festgestellt</span>
+            <span class="marke-chip kette">ereignis: nur zählwerte, keine zuordnung</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="takt">
+        <div class="takt-zeit"><b>+1 800 000</b><span>30 min</span></div>
+        <div class="takt-koerper">
+          <h3>Nicht öffentlicher Tagesordnungspunkt</h3>
+          <p>
+            Stream und Aufzeichnung pausieren — nicht auf Zuruf, sondern weil der
+            Tagesordnungspunkt es so führt. Der Mediendienst folgt dem Sitzungszustand.
+            Ein Teilnehmer, der der Aufzeichnung widersprochen hat, wird ohnehin
+            durchgehend von der Kameranachführung übersprungen.
+          </p>
+          <div class="marken">
+            <span class="marke-chip zustand">top: nicht_oeffentlich</span>
+            <span class="marke-chip stopp">aufzeichnung pausiert</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="takt">
+        <div class="takt-zeit"><b>+2 100 000</b><span>35 min</span></div>
+        <div class="takt-koerper">
+          <h3>Störung: Platz 7 verliert das Netz</h3>
+          <p>
+            Das iPad arbeitet weiter. Wortmeldung und Stimme werden lokal signiert und
+            gepuffert, die Oberfläche zeigt „noch nicht bestätigt“ statt einer
+            Fehlermeldung. Nach der Rückkehr laufen die Einträge nach und werden in der
+            Reihenfolge ihres Eingangs angekettet — mit dem Erfassungszeitpunkt des
+            Geräts als Nutzlast.
+          </p>
+          <div class="marken">
+            <span class="marke-chip">gerät: offline, puffer 3 einträge</span>
+            <span class="marke-chip kette">nachlauf, kein datenverlust</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="takt">
+        <div class="takt-zeit"><b>+7 200 000</b><span>2 h</span></div>
+        <div class="takt-koerper">
+          <h3>Schluss, Protokollentwurf, Tagesabschluss</h3>
+          <p>
+            Die Sitzung wird geschlossen. Aus Tagesordnung, Redebeiträgen,
+            Abstimmungsergebnissen und Transkript entsteht der Protokollentwurf — ein
+            Entwurf, nie ein fertiges Protokoll ohne menschliche Freigabe. Am Tagesende
+            wird die Ereigniskette signiert abgeschlossen.
+          </p>
+          <div class="marken">
+            <span class="marke-chip zustand">sitzung: laufend → geschlossen</span>
+            <span class="marke-chip kette">tagesabschluss signiert</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="meilenstein">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>5 — Der erste Meilenstein</h4>
+      <h2>Vom Antippen bis die Kamera steht</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Der Ablauf enthält bereits fünf der sechs Fundamente: Rechteprüfung im Kern,
+        Ereigniskette, Zeitachse, Mandantentrennung und Rollen. Nur Mix-Minus fehlt,
+        weil noch kein Ton im System ist. Deshalb ist er als erster Schritt richtig
+        gewählt — er ist klein, aber er zwingt alles Tragende an seinen Platz.
+      </p>
+    </div>
+
+    <figure>
+      <div class="bildfeld">
+        <svg viewBox="0 0 900 470" role="img"
+             aria-label="Ablauf vom Antippen bis zur stehenden Kamera: Gerät sendet an den Kern, der Kern prüft Rechte, kettet das Ereignis an, verteilt den Zustand sofort, wartet die Einwurfschwelle ab und beauftragt dann erst den Kameradienst.">
+          <defs>
+            <marker id="pf2" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+            <marker id="pf2-t" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="sv-tally-f"/>
+            </marker>
+          </defs>
+
+          <!-- Lanes -->
+          <text x="118" y="26" class="sv-text" text-anchor="middle">iPad Platz 7</text>
+          <text x="330" y="26" class="sv-text" text-anchor="middle">Kern</text>
+          <text x="530" y="26" class="sv-text" text-anchor="middle">PostgreSQL</text>
+          <text x="700" y="26" class="sv-text" text-anchor="middle">Kameradienst</text>
+          <text x="846" y="26" class="sv-text" text-anchor="middle">PTZ</text>
+
+          <line x1="118" y1="38" x2="118" y2="430" class="sv-linie" stroke-dasharray="3 4"/>
+          <line x1="330" y1="38" x2="330" y2="430" class="sv-linie" stroke-dasharray="3 4"/>
+          <line x1="530" y1="38" x2="530" y2="430" class="sv-linie" stroke-dasharray="3 4"/>
+          <line x1="700" y1="38" x2="700" y2="430" class="sv-linie" stroke-dasharray="3 4"/>
+          <line x1="846" y1="38" x2="846" y2="430" class="sv-linie" stroke-dasharray="3 4"/>
+
+          <!-- Zeitspalte -->
+          <text x="10" y="72" class="sv-code">0 ms</text>
+          <text x="10" y="124" class="sv-code">~5 ms</text>
+          <text x="10" y="176" class="sv-code">~15 ms</text>
+          <text x="10" y="228" class="sv-code">~20 ms</text>
+          <text x="10" y="300" class="sv-code">1 500 ms</text>
+          <text x="10" y="352" class="sv-code">1 510 ms</text>
+          <text x="10" y="416" class="sv-code">~2 500 ms</text>
+
+          <!-- 1 -->
+          <line x1="118" y1="68" x2="326" y2="68" class="sv-linie" marker-end="url(#pf2)"/>
+          <text x="128" y="60" class="sv-code">mikro_an(platz 7, epoche 12)</text>
+
+          <!-- 2 -->
+          <rect x="272" y="100" width="116" height="34" rx="3" class="sv-rahmen"/>
+          <text x="330" y="115" class="sv-klein" text-anchor="middle">Rechteprüfung</text>
+          <text x="330" y="128" class="sv-code" text-anchor="middle">4 Fragen</text>
+          <text x="400" y="118" class="sv-klein">Teilnahme aktiv? Rolle berechtigt? Sitzung laufend? Abstimmung offen?</text>
+
+          <!-- 3 -->
+          <line x1="334" y1="172" x2="526" y2="172" class="sv-linie" marker-end="url(#pf2)"/>
+          <text x="344" y="164" class="sv-code">ereignis anketten (hash n−1)</text>
+
+          <!-- 4 -->
+          <line x1="326" y1="224" x2="122" y2="224" class="sv-linie" marker-end="url(#pf2)"/>
+          <text x="140" y="216" class="sv-code">zustand an alle clients — mikro ist auf</text>
+          <text x="140" y="248" class="sv-klein">Der Ton wäre ab hier offen. Die Kamera wartet noch.</text>
+
+          <!-- Hysterese -->
+          <rect x="272" y="270" width="116" height="40" rx="3" class="sv-rahmen"
+                stroke="var(--tally)"/>
+          <text x="330" y="286" class="sv-akzent" text-anchor="middle">Einwurfschwelle</text>
+          <text x="330" y="301" class="sv-code" text-anchor="middle">1 500 ms</text>
+          <text x="400" y="294" class="sv-klein">Kürzere Einwürfe erreichen die Kamera nie</text>
+
+          <!-- 5 -->
+          <line x1="334" y1="348" x2="696" y2="348" class="sv-tally" marker-end="url(#pf2-t)"/>
+          <text x="344" y="340" class="sv-code">sprecherfokus = platz 7</text>
+
+          <!-- 6 -->
+          <line x1="704" y1="386" x2="842" y2="386" class="sv-tally" marker-end="url(#pf2-t)"/>
+          <text x="712" y="378" class="sv-code">VISCA preset recall</text>
+
+          <!-- 7 -->
+          <line x1="846" y1="410" x2="846" y2="430" class="sv-tally"/>
+          <circle cx="846" cy="430" r="5" class="sv-tally-f"/>
+          <text x="838" y="452" class="sv-akzent" text-anchor="end">Kamera steht</text>
+        </svg>
+      </div>
+      <figcaption>
+        Das Mikrofon ist nach rund 20 ms offen, die Kamera bewegt sich frühestens nach
+        1,5 s. Diese Trennung ist gewollt: Ton darf nicht auf die Hysterese warten, die
+        Kamera muss es. Die Angaben sind Zielwerte im Saalnetz, keine gemessenen Werte.
+      </figcaption>
+    </figure>
+
+    <div class="satzblock" style="margin-top:2rem">
+      <h3>Die vier Fragen der Rechteprüfung</h3>
+      <p>
+        Jede davon wird im Kern beantwortet, keine im Client. Der Regiepult-Entwurf
+        schaltet Mikrofone durch Antippen des Saalplans — auch dieses Antippen ist ein
+        Befehl, der alle vier Fragen durchläuft. Ein Client, der sich für privilegiert
+        hält, ist die häufigste Art, ein Rechtemodell zu verlieren.
+      </p>
+    </div>
+
+    <ul class="strich" style="margin-top:1.2rem">
+      <li><b>Gehört die Teilnahme zu dieser Sitzung und ist sie anwesend?</b> Nicht: gehört das Gerät zu dieser Sitzung.</li>
+      <li><b>Trägt die Rolle dieser Teilnahme das Recht?</b> Und bei leitenden Befehlen: ist es die aktive Leitung mit gültiger Epoche?</li>
+      <li><b>Ist die Sitzung in einem Zustand, der das zulässt?</b> In <code>unterbrochen</code> geht kein Mikrofon auf.</li>
+      <li><b>Läuft gerade eine Abstimmung?</b> Dann sind automatische Eingriffe gesperrt — manuelle der Leitung nicht.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="stoerungen">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>6 — Störungen</h4>
+      <h2>Was bricht, was hält</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Leitprinzip 3 lässt sich nur prüfen, indem man die Ausfälle einzeln durchgeht.
+        Die Spalte ganz rechts ist die wichtigste: sie sagt, was der Teilnehmer merkt —
+        und dort darf nie „Stimme weg“ stehen.
+      </p>
+    </div>
+
+    <div class="tabellenrahmen">
+      <table>
+        <thead>
+          <tr>
+            <th>Ausfall</th>
+            <th>Was bricht</th>
+            <th>Was hält</th>
+            <th>Was der Teilnehmer merkt</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Kern nicht erreichbar</b></td>
+            <td>Neue Wortmeldungen werden nicht bestätigt, keine Kamerafahrt, kein Zustandsabgleich</td>
+            <td>Geräte arbeiten weiter, signieren und puffern lokal; die Anlagentechnik hält den Ton, weil sie nicht am Kern hängt</td>
+            <td>Anzeige „noch nicht bestätigt“; Stimmen sind sicher, aber noch nicht gezählt</td>
+          </tr>
+          <tr>
+            <td><b>Netz zu einem Platz weg</b></td>
+            <td>Nur dieser Platz ist stumm im System</td>
+            <td>Alle anderen Plätze und die gesamte Sitzung</td>
+            <td>Der Betroffene arbeitet weiter, alles läuft nach der Rückkehr nach</td>
+          </tr>
+          <tr>
+            <td><b>iPad defekt</b></td>
+            <td>Nichts — das Gerät trägt keine Identität</td>
+            <td>Platz, Teilnahme, Stimmrecht, Preset bleiben unverändert</td>
+            <td>Ersatzgerät koppeln, keine Neueinrichtung</td>
+          </tr>
+          <tr>
+            <td><b>Kamera antwortet nicht</b></td>
+            <td>Nachführung für diese Kamera</td>
+            <td>Sitzung, Ton, Abstimmung, Protokoll — alles unberührt</td>
+            <td>Nichts. Der Ausfall gehört auf die Support-Konsole, nicht in den Saal</td>
+          </tr>
+          <tr>
+            <td><b>Preset in der Kamera verloren</b></td>
+            <td>Anfahrpunkte für alle Plätze dieser Kamera</td>
+            <td>Nur wenn die Absolutwerte auch im Server liegen — siehe Befund 1</td>
+            <td>Ohne Spiegelung: Neueinlernen aller Plätze vor der nächsten Sitzung</td>
+          </tr>
+          <tr>
+            <td><b>Datenbank langsam</b></td>
+            <td>Bestätigungen verzögern sich, die Kette wächst langsamer</td>
+            <td>Die Reihenfolge bleibt korrekt, weil sie am Eingang festgelegt wird</td>
+            <td>Trägheit in der Oberfläche — Komfort kostet, Daten nicht</td>
+          </tr>
+          <tr>
+            <td><b>Aktive Leitung fällt aus</b></td>
+            <td>Leitende Befehle sind blockiert, bis jemand übernimmt</td>
+            <td>Die Sperre gegen zwei gleichzeitig aktive Leitungen — siehe Befund 7</td>
+            <td>Ein Berechtigter übernimmt ausdrücklich, mit Protokolleintrag</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="einspruch">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>7 — Ein Widerspruch</h4>
+      <h2>Unter 10 ms und WebRTC schließen sich aus</h2>
+    </div>
+
+    <div class="einspruch">
+      <div class="satzblock">
+        <p>
+          Drei Festlegungen aus der Projektanweisung stehen zusammen nicht: <em>iPads als
+          Sprechstelle</em>, <em>Opus über WebRTC im Raum</em> und <em>Mikrofon zur
+          Saalbeschallung unter 10 ms</em>. Die 10-ms-Regel ist richtig und der Grund
+          dafür auch — oberhalb davon entstehen Kammfiltereffekte mit der direkten
+          Stimme im Raum. Aber sie ist über WebRTC nicht erreichbar, nicht durch
+          Optimierung und nicht durch bessere Hardware.
+        </p>
+      </div>
+
+      <div class="rechnung">
+        Opus-Rahmen (WebRTC-Vorgabe 20 ms) ....... 20 ms<br>
+        Vorausschau des Kodierers ................ ~6,5 ms<br>
+        Funkstrecke WLAN, schwankend ............. 5–30 ms<br>
+        Jitter-Puffer der Gegenstelle ............ 20–60 ms<br>
+        Puffer der Tonausgabe .................... 5–20 ms<br>
+        <span class="summe">Summe realistisch ........................ 55–135 ms</span>
+      </div>
+
+      <div class="satzblock">
+        <p>
+          Selbst mit 10-ms-Rahmen, verkabeltem Gerät und kleinstmöglichen Puffern
+          bleiben mehr als 20 ms. Der Weg zur Saalbeschallung muss deshalb ein anderer
+          sein: Mikrofonkapsel am Platz, verkabelt in die Anlagentechnik, dort DSP und
+          Endstufe. Dieser Weg liegt bei wenigen Millisekunden und erfüllt die Regel.
+        </p>
+        <p>
+          <b>Was daraus folgt:</b> Das iPad ist Bedienung und Anzeige — Synoptik,
+          Wortmeldung, Sitzungsmappe, Abstimmung, Untertitel. Es ist nicht die Quelle
+          für den Ton im Raum. Sein eigenes Mikrofon bleibt trotzdem brauchbar, nur für
+          andere Zwecke: Zuschaltung nach außen und Transkript. Dort gilt die
+          10-ms-Grenze nicht — für den Dolmetschkanal zum Kopfhörer sind 60 ms erlaubt,
+          und ein Transkript hat gar keine Latenzgrenze.
+        </p>
+        <p>
+          Deine Geräteliste enthält bereits eine Anschlussbox am Platz, was darauf
+          hindeutet, dass genau das schon gedacht ist. Ich möchte es trotzdem
+          ausgesprochen haben, weil daran hängt, was „Sprechstelle“ im Code bedeutet —
+          ein Gerät mit Tonpfad oder ein Bedienteil neben einem verkabelten Mikrofon.
+          Das ist eine Schnittstellenfrage, keine Geschmacksfrage.
+        </p>
+      </div>
+    </div>
+
+    <div class="satzblock" style="margin-top:2rem">
+      <p>
+        Der Rest der Fachregeln hält der Prüfung stand. Die 3 dB je Verdopplung offener
+        Mikrofone sind die Rechnung <code>10 · log₁₀(N)</code> und stimmen. Die
+        Kachelgeometrie stimmt ebenfalls: In einem 16:9-Rahmen hat eine Kachel mit
+        gleichen Prozentwerten für Breite und Höhe das Seitenverhältnis
+        <code>(16/9) · (b/h)</code> — bei <code>b = h</code> also wieder 16:9.
+        <code>UDP 52381</code> ist der richtige Port für VISCA over IP, und die
+        100 bis 250 Mbit/s je unkomprimiertem NDI-Strom treffen die Größenordnung.
+      </p>
+      <p>
+        Ein Punkt bleibt offen, den ich nicht aus dem Gedächtnis beantworte: Die
+        Ladegrenze von 80 % setzt voraus, dass die vorgesehenen iPad-Modelle diese
+        Einstellung überhaupt anbieten — das ist modell- und versionsabhängig. Wenn sie
+        fehlt, muss die Begrenzung aus der Ladehardware in der Anschlussbox kommen. Das
+        gehört geprüft, bevor Hardware bestellt wird. Die Aussage über die Akkus selbst
+        stelle ich nicht in Frage.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="befunde">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>8 — Befunde</h4>
+      <h2>Was beim Durchspielen nicht trug</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Neun Stellen, an denen der Ablauf oben eine Antwort braucht, die das Modell
+        heute nicht gibt. Die Einstufung sagt, wie eilig es ist:
+        <b>Fundament</b> heißt nicht nachrüstbar, <b>jetzt entscheiden</b> heißt billig
+        heute und teuer später, <b>später</b> heißt: notiert, nicht dringend.
+      </p>
+    </div>
+
+    <div class="befunde">
+
+      <div class="befund">
+        <div class="befund-nr">01</div>
+        <div class="befund-koerper">
+          <span class="stufe jetzt">jetzt entscheiden</span>
+          <h3>Presets leben in der Kamera — das Modell braucht sie trotzdem</h3>
+          <p>
+            Das Glossar sagt: „Liegt in der Kamera, nicht nur im Server.“ Das <em>nicht
+            nur</em> ist der entscheidende Teil. Ohne gespiegelte Absolutwerte bedeutet
+            jeder Kameratausch, jeder Werksreset und jeder Firmware-Unfall, dass alle
+            Plätze neu eingelernt werden müssen — meist am Abend vor einer Sitzung.
+          </p>
+          <p class="vorschlag">
+            Tabelle <code>kamera_preset</code> mit <code>organisation_id</code>,
+            <code>kamera_id</code>, <code>platz_id</code>, <code>preset_nummer</code>,
+            <code>pan</code>, <code>tilt</code>, <code>zoom</code>,
+            <code>gelernt_am</code>. Beim Lernen wird in beide Richtungen geschrieben,
+            beim Tausch spielt der Kameradienst die Werte zurück.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">02</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">fundament</span>
+          <h3>Der Kameradienst darf nicht „fahre auf Preset X“ heißen</h3>
+          <p>
+            Bei <span class="zahl">+420 000</span> im Durchlauf gibt es zwei offene
+            Mikrofone auf einer Kamera — dafür existiert kein richtiger Preset. Wenn der
+            Kern Presets befiehlt, muss der Kameradienst diese Entscheidung selbst
+            treffen, und dieselbe Logik entsteht später ein zweites Mal im Kompositor.
+            Zwei Kopien einer Regel driften immer auseinander.
+          </p>
+          <p class="vorschlag">
+            Die Schnittstelle überträgt den <em>Zustand</em>, nicht den Befehl: welche
+            Plätze offen sind, seit wann, und wer von der Nachführung ausgenommen ist.
+            Ein offener Platz ergibt den Preset, mehrere auf derselben Kamera die
+            gelernte Totale. Entschieden wird einmal, im Kern.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">03</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">fundament</span>
+          <h3>Die Hysterese gehört in den Kern</h3>
+          <p>
+            Mindeststandzeit und Einwurfschwelle wirken heute auf die Kamera, morgen auf
+            den Kompositor, die Rednerliste und die Zuordnung der Transkriptsegmente zu
+            Sprechern. Vier Bauteile, die unabhängig entscheiden, wer gerade spricht,
+            widersprechen sich garantiert — und der Widerspruch landet im Protokoll.
+          </p>
+          <p class="vorschlag">
+            <code>sprecherfokus</code> als abgeleiteter Zustand im Kern, mit
+            Mindeststandzeit (2–3 s) und Einwurfschwelle (1,5 s) als Konfiguration je
+            Saal. Alle nachgelagerten Dienste folgen ihm, keiner rechnet selbst.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">04</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">fundament</span>
+          <h3>Die Zeitachse braucht ein Vorzeichen und einen zweiten Stempel</h3>
+          <p>
+            Vorabcheck, Anmeldung und Übernahme der Leitung liegen vor dem Nullpunkt.
+            Eine vorzeichenlose Zahl kann sie nicht abbilden. Und wenn die Sitzung in
+            <code>unterbrochen</code> geht, läuft die Achse weiter — sonst ist sie nicht
+            mehr monoton und taugt nicht als Ordnung.
+          </p>
+          <p class="vorschlag">
+            <code>int64</code> Millisekunden mit Vorzeichen, Nullpunkt beim Übergang
+            <code>bereit → laufend</code>. Zusätzlich je Ereignis ein absoluter
+            Zeitstempel aus der Serveruhr, weil die Archivierung und die
+            Aufbewahrungsfristen eine Kalenderzeit brauchen. Maßgeblich ist immer die
+            Serveruhr, nie die Geräteuhr.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">05</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">fundament</span>
+          <h3>Hash-Kette und Offline-First widersprechen sich nur scheinbar</h3>
+          <p>
+            Eine nur anfügbare Kette hat genau eine Reihenfolge. Ein Gerät, das
+            35 Minuten offline war, liefert Einträge, die früher entstanden sind als
+            das, was schon in der Kette steht. Wer versucht, sie nachträglich
+            einzusortieren, hat keine Kette mehr.
+          </p>
+          <p class="vorschlag">
+            Die Kette ordnet nach <em>Eingang am Server</em>, nicht nach Entstehung. Das
+            Gerät signiert seine Nutzlast mit eigenem Zeitstempel und einem lückenlosen
+            Gerätezähler; der Server kettet die signierte Nutzlast an und vermerkt beide
+            Zeiten. Der Zähler ist der Punkt, an dem es hängt: ohne ihn ist nicht
+            beweisbar, dass kein Eintrag unterschlagen wurde.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <figure>
+      <div class="bildfeld">
+        <svg viewBox="0 0 900 300" role="img"
+             aria-label="Offline gepufferte Einträge tragen einen Gerätezähler und einen Erfassungszeitpunkt; der Server kettet sie in der Reihenfolge ihres Eingangs an, sodass Entstehungszeit und Kettenposition getrennt bleiben.">
+          <defs>
+            <marker id="pf3" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+            <marker id="pf3-t" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="sv-tally-f"/>
+            </marker>
+          </defs>
+
+          <text x="16" y="26" class="sv-text">Gerät Platz 7 — offline, puffert und signiert</text>
+
+          <rect x="16" y="42" width="150" height="52" rx="3" class="sv-rahmen"/>
+          <text x="30" y="62" class="sv-code">zaehler 41</text>
+          <text x="30" y="80" class="sv-klein">wortmeldung · t+2 105 000</text>
+
+          <rect x="182" y="42" width="150" height="52" rx="3" class="sv-rahmen"/>
+          <text x="196" y="62" class="sv-code">zaehler 42</text>
+          <text x="196" y="80" class="sv-klein">stimme · t+2 140 000</text>
+
+          <rect x="348" y="42" width="150" height="52" rx="3" class="sv-rahmen"/>
+          <text x="362" y="62" class="sv-code">zaehler 43</text>
+          <text x="362" y="80" class="sv-klein">mikro_aus · t+2 190 000</text>
+
+          <path d="M498 68 L 600 68 L 600 150" class="sv-tally" marker-end="url(#pf3-t)"/>
+          <text x="612" y="112" class="sv-akzent">Netz kehrt zurück — Nachlauf am Stück</text>
+
+          <text x="16" y="184" class="sv-text">Ereigniskette im Server — geordnet nach Eingang</text>
+
+          <rect x="16" y="200" width="118" height="52" rx="3" class="sv-flaeche"
+                stroke="var(--linie-stark)"/>
+          <text x="30" y="220" class="sv-code">#1204</text>
+          <text x="30" y="238" class="sv-klein">fremder platz</text>
+
+          <line x1="134" y1="226" x2="156" y2="226" class="sv-linie" marker-end="url(#pf3)"/>
+
+          <rect x="158" y="200" width="118" height="52" rx="3" class="sv-flaeche"
+                stroke="var(--linie-stark)"/>
+          <text x="172" y="220" class="sv-code">#1205</text>
+          <text x="172" y="238" class="sv-klein">fremder platz</text>
+
+          <line x1="276" y1="226" x2="298" y2="226" class="sv-linie" marker-end="url(#pf3)"/>
+
+          <rect x="300" y="200" width="118" height="52" rx="3" class="sv-rahmen"
+                stroke="var(--tally)"/>
+          <text x="314" y="220" class="sv-code">#1206</text>
+          <text x="314" y="238" class="sv-akzent">zaehler 41</text>
+
+          <line x1="418" y1="226" x2="440" y2="226" class="sv-linie" marker-end="url(#pf3)"/>
+
+          <rect x="442" y="200" width="118" height="52" rx="3" class="sv-rahmen"
+                stroke="var(--tally)"/>
+          <text x="456" y="220" class="sv-code">#1207</text>
+          <text x="456" y="238" class="sv-akzent">zaehler 42</text>
+
+          <line x1="560" y1="226" x2="582" y2="226" class="sv-linie" marker-end="url(#pf3)"/>
+
+          <rect x="584" y="200" width="118" height="52" rx="3" class="sv-rahmen"
+                stroke="var(--tally)"/>
+          <text x="598" y="220" class="sv-code">#1208</text>
+          <text x="598" y="238" class="sv-akzent">zaehler 43</text>
+
+          <line x1="702" y1="226" x2="724" y2="226" class="sv-linie" marker-end="url(#pf3)"/>
+          <text x="732" y="222" class="sv-klein">jeder Block trägt den</text>
+          <text x="732" y="238" class="sv-klein">Hash des vorherigen</text>
+
+          <text x="16" y="286" class="sv-code">Kettenposition ≠ Entstehungszeit — beides steht im Eintrag, beides ist prüfbar</text>
+        </svg>
+      </div>
+      <figcaption>
+        Der lückenlose Gerätezähler ist der Beweis, dass nichts verlorenging: Position
+        in der Kette und Entstehungszeit auf dem Gerät sind getrennt, ohne dass die
+        Kette ihre Ordnung verliert.
+      </figcaption>
+    </figure>
+
+    <div class="befunde" style="margin-top:2rem">
+
+      <div class="befund">
+        <div class="befund-nr">06</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">fundament</span>
+          <h3>Das Token der geheimen Wahl muss vor dem Offline-Fall da sein</h3>
+          <p>
+            Blind signieren braucht den Server. Ein Gerät, das beim Start der Wahl schon
+            offline ist, kann sich kein Token holen — und wenn die Stimmabgabe offline
+            möglich sein soll, muss das Token vorher auf dem Gerät liegen. Zweitens:
+            Ohne die Zahl der ausgegebenen Token ist „alle Stimmen sind da“ nicht
+            feststellbar, weil die Anwesenheitsliste dafür nicht taugt.
+          </p>
+          <p class="vorschlag">
+            Ausgabe der Token im selben Augenblick, in dem das Quorum eingefroren wird —
+            beim Übergang <code>vorbereitet → laufend</code>. Die Abstimmung merkt sich
+            die <em>Anzahl</em> ausgegebener Token, nie die Zuordnung. Danach darf die
+            Stimme offline abgegeben werden und nachlaufen.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">07</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">fundament</span>
+          <h3>Der Staffelstab braucht eine Epoche</h3>
+          <p>
+            „Berechtigt sind viele, aktiv ist genau eine“ hält, solange das Netz hält.
+            Trennt es, und ein zweiter Berechtigter übernimmt, können anschließend zwei
+            Geräte leitende Befehle senden — das erste, weil es nichts vom Wechsel weiß.
+            Beide Befehle sind formal gültig.
+          </p>
+          <p class="vorschlag">
+            Die Leitung ist ein Lease mit monoton steigender Epochennummer. Jeder
+            leitende Befehl trägt seine Epoche, der Kern verwirft alles Ältere
+            wortlos — mit Protokolleintrag. Übernahme bei Ausfall nur durch einen
+            Berechtigten und nur ausdrücklich, nie automatisch nach Zeitablauf.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">08</div>
+        <div class="befund-koerper">
+          <span class="stufe fundament">fundament</span>
+          <h3>Der Widerspruch gegen die Aufzeichnung hängt an der Teilnahme</h3>
+          <p>
+            Er gehört der Person, aber wirksam ist er über die Teilnahme — denn bei einer
+            Vertretung wechselt mitten in der Sitzung, wer auf Platz 12 sitzt. Eine
+            Nachführung, die den Widerspruch am Platz festmacht, überspringt danach den
+            Falschen und zeigt den, der widersprochen hat.
+          </p>
+          <p class="vorschlag">
+            Die Prüfung fragt: Wer sitzt zum Zeitpunkt <code>t</code> auf diesem Platz,
+            und hat diese Teilnahme widersprochen? Und sie gehört in den Kern, damit sie
+            später ohne Zutun auch für Kompositor, Aufzeichnung und Transkript gilt.
+          </p>
+        </div>
+      </div>
+
+      <div class="befund">
+        <div class="befund-nr">09</div>
+        <div class="befund-koerper">
+          <span class="stufe jetzt">jetzt entscheiden</span>
+          <h3>„Automatik gesperrt“ braucht eine Grenze</h3>
+          <p>
+            Während einer laufenden Abstimmung sind automatische Technikeingriffe
+            gesperrt — richtig. Buchstäblich genommen wäre aber auch die
+            Rückkopplungsbekämpfung gesperrt, und dann pfeift der Saal, bis die
+            Abstimmung durch ist.
+          </p>
+          <p class="vorschlag">
+            Gesperrt: Kameranachführung, Bildumschaltung, automatischer
+            Mikrofonwechsel — alles, was das Bild oder die Rederechte verändert.
+            Nicht gesperrt: manuelle Eingriffe der aktiven Leitung, Schutzabschaltungen
+            gegen Rückkopplung, Pufferung und Nachlauf. Die Grenze verläuft zwischen
+            „verändert die Verhandlung“ und „hält die Technik am Leben“.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="andocken">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>9 — Wo später was andockt</h4>
+      <h2>Additiv heißt: es gibt schon einen Anschluss</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        „Alles additiv, alles später“ trägt nur, wenn jede spätere Stufe heute schon
+        weiß, woran sie sich anschließt. Sonst heißt additiv in der Praxis: den Kern
+        aufschneiden.
+      </p>
+    </div>
+
+    <div class="tabellenrahmen">
+      <table>
+        <thead>
+          <tr>
+            <th>Stufe</th>
+            <th>Schließt an</th>
+            <th>Muss vorher stehen</th>
+            <th>Berührt den Kern</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Ton</b><br><span style="color:var(--tinte-leise)">Automixer, Mix-Minus, Einmessung</span></td>
+            <td>Sprecherfokus und Zahl der offenen Mikrofone aus dem Kern</td>
+            <td>Befund 3 — sonst rechnet der Automixer eine zweite Wahrheit</td>
+            <td>Nein, wenn der Fokus als Zustand veröffentlicht wird</td>
+          </tr>
+          <tr>
+            <td><b>Abstimmung und Protokoll</b></td>
+            <td>Ereigniskette, Zeitachse, Rollen</td>
+            <td>Befunde 4, 5, 6 — alle drei sind Fundament</td>
+            <td>Ja — deshalb müssen sie jetzt entschieden sein</td>
+          </tr>
+          <tr>
+            <td><b>Sitzungsmappe</b></td>
+            <td>Tagesordnungspunkt und Teilnahme; Sichtbarkeit folgt der Rolle</td>
+            <td>Zentrale Rechteprüfung; Verschlüsselung je Dokument für die Krypto-Löschung</td>
+            <td>Nein</td>
+          </tr>
+          <tr>
+            <td><b>Transkript</b></td>
+            <td>Zeitachse und Sprecherfokus — daraus entsteht die Sprecherzuordnung</td>
+            <td>Befunde 3 und 4; Widerspruch gegen Aufzeichnung nach Befund 8</td>
+            <td>Nein</td>
+          </tr>
+          <tr>
+            <td><b>Kompositor</b></td>
+            <td>Sprecherfokus und Ausnahmen; die Kachelgeometrie ist reine Darstellung</td>
+            <td>Befunde 2, 3 und 8 — sonst dritte Kopie der Fokuslogik</td>
+            <td>Nein, wenn der Fokus vorher richtig sitzt</td>
+          </tr>
+          <tr>
+            <td><b>Native iPadOS-App</b></td>
+            <td>Dieselbe WebSocket-Schnittstelle wie die Web-App</td>
+            <td>Signieren und Puffern müssen im Client schon eine eigene Schicht sein</td>
+            <td>Nein</td>
+          </tr>
+          <tr>
+            <td><b>OParl</b></td>
+            <td>Tagesordnung lesen, Beschlüsse zurückschreiben</td>
+            <td>Die einzige Stufe, die die Saalgrenze regelmäßig überschreitet — nie während einer Sitzung</td>
+            <td>Nein</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="teil" id="naechstes">
+  <div class="spur">
+    <div class="teil-kopf">
+      <h4>10 — Nächster Schritt</h4>
+      <h2>Was ich brauche, um anzufangen</h2>
+    </div>
+
+    <div class="satzblock">
+      <p>
+        Der Kern lässt sich bauen, sobald die Fundamentbefunde entschieden sind — es
+        sind sechs Entscheidungen, keine sechs Wochen. Die anderen Dateien
+        (<code>datenmodell.md</code>, <code>architektur-sicherheit.md</code>,
+        <code>verschluesselungskonzept.md</code> und die Oberflächen-Entwürfe) sind
+        angekündigt, aber noch nicht da; im Repository liegt bisher nur
+        <code>CLAUDE.md</code> und dieses Dokument.
+      </p>
+    </div>
+
+    <div class="karten">
+      <div class="karte">
+        <span class="stempel">Zuerst</span>
+        <h3>Sechs Entscheidungen</h3>
+        <p>
+          Befunde 2, 3, 4, 5, 6, 7. Jede ist in einem Satz zu beantworten, jede legt
+          eine Schnittstelle oder ein Feld fest, das später nicht mehr wandert.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Dann</span>
+        <h3>Das Grundgerüst in Go</h3>
+        <p>
+          Zustandsmaschine für Sitzung, Teilnahme, Wortmeldung und Abstimmung.
+          Rechteprüfung als einzige Instanz. Ereigniskette mit Gerätezähler.
+          Sprecherfokus samt Hysterese — mit Tests für die Fachregeln, nicht nur
+          für die Zustandsübergänge.
+        </p>
+      </div>
+      <div class="karte">
+        <span class="stempel">Danach</span>
+        <h3>Kameradienst und Sprechstelle</h3>
+        <p>
+          VISCA over IP mit gespiegelten Presets, dazu der Web-Client in der Rolle
+          Sprechstelle. Ende der Strecke: Antippen, Prüfung, Kettenteintrag,
+          Kamerafahrt — genau der Ablauf aus Abschnitt 5, dann als laufender Code.
+        </p>
+      </div>
+    </div>
+
+    <div class="satzblock" style="margin-top:2rem">
+      <p>
+        Eine Frage bleibt offen, die ich nicht selbst beantworten will, weil sie
+        Verfahrensrecht berührt: Was geschieht mit einer offline gepufferten Stimme, die
+        eintrifft, <em>nachdem</em> das Ergebnis festgestellt wurde? Sie zählen zu lassen
+        hebt eine Feststellung auf. Sie zu verwerfen kostet eine Stimme — und
+        widerspricht Leitprinzip 3. Mein Vorschlag wäre, die Abstimmung nicht auf Zuruf
+        zu beenden, sondern auf eine Frist, die vorher sichtbar ist; Stimmen danach
+        werden als <code>verspaetet</code> protokolliert und zählen nicht. Aber das ist
+        eine Entscheidung für die Satzung, nicht für den Code.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer class="fuss">
+  <div class="spur fuss-innen">
+    <p>
+      Arbeitsstand vom 16. August 2026 — abgeleitet aus <code>CLAUDE.md</code>. Alle
+      Zeitangaben im Meilenstein-Ablauf sind Zielwerte für ein Saalnetz, keine
+      gemessenen Werte; sie gehören gemessen, sobald der Kern läuft.
+    </p>
+    <p>
+      Offen und hier bewusst nicht entschieden: Produktname, erster Pilotkunde,
+      Verteilweg der nativen App, Notwendigkeit der Dante-Anbindung in der ersten
+      Fassung.
+    </p>
+  </div>
+</footer>

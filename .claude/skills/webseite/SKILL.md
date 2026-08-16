@@ -109,6 +109,14 @@ Ablauf und Berichtsvorlage: `references/abnahme.md`.
 
 ---
 
+## Phase 6 — Nachlernen
+
+Vor der Fertigmeldung, fünf Minuten: jede Korrektur aus diesem Projekt in `references/gelernt.md` eintragen — übersetzt in eine Zahl oder ein Verbot, nicht als Adjektiv. Dort steht auch, wann daraus eine feste Regel wird und was als Nächstes ins Prüfskript gehört.
+
+Ohne diesen Schritt wirkt jede Rückmeldung genau einmal. Mit ihm wird der Skill mit jedem Projekt schärfer, statt bei jedem Projekt wieder beim Durchschnitt anzufangen.
+
+---
+
 ## Verbote
 
 Diese Liste bricht die Standardreflexe. Abweichung nur mit ausdrücklicher Ansage und Begründung.
@@ -160,3 +168,4 @@ Teilweise fertig heißt teilweise fertig. Eine ehrliche Restliste ist ein besser
 | `references/bilder.md` | immer wenn ein Bild gebraucht wird — Wege ohne Stockmaterial |
 | `references/bewegung.md` | Phase 4 — Zeiten, Kurven, Muster, Signature-Techniken |
 | `references/abnahme.md` | Phase 5 — Ablauf, Fehlerdeutung, Berichtsvorlage |
+| `references/gelernt.md` | Phase 6 — Entscheidungsprotokoll, Beispielkorpus, offene Prüfungen |

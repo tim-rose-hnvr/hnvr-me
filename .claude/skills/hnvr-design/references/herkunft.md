@@ -37,10 +37,11 @@ Das ist der Event- und Rental-Auftritt, nicht hnvr.me digital. Dieser Skill besc
 |---|---|---|
 | **Clash Display** | Fontshare (Indian Type Foundry), kostenlos für privat und kommerziell, Webnutzung eingeschlossen | unkritisch |
 | **DM Sans** | SIL Open Font License 1.1 | unkritisch |
-| **Recoleta** | Latinotype, kostenpflichtig — Webfont-Lizenz nach Seitenaufrufen | **prüfen** |
+| **Recoleta** | Latinotype, kostenpflichtig — Lizenz mit der Website erworben (Auskunft Tim, 16.08.2026) | geklärt für hnvr.me |
 
-Recoleta wird bereits vom Nachbau ausgeliefert. Ob dafür eine Webfont-Lizenz besteht, ist ungeklärt und sollte einmal nachgesehen werden — vor allem, bevor die Datei in Kundenprojekten eingebettet wird.
-Falls keine Lizenz besteht: der Riesen-Schriftzug funktioniert ersatzweise mit einer freien, hoch-kontrastigen Serife (z. B. Instrument Serif, OFL). Dann `--serif` austauschen und `scaleY` nachjustieren — nur diese eine Variable ist betroffen.
+Recoleta ist bezahlt und wird verwendet. Die Lizenz gehört zum Website-Kauf, gilt also für hnvr.me.
+
+Für **Kundenprojekte** ist das eine eigene Frage: Webfont-Lizenzen sind bei Latinotype üblicherweise an Domain und Seitenaufrufe gebunden, nicht an die Agentur. Wenn Recoleta in eine fremde Domain eingebettet werden soll, gehört die Lizenz dorthin — oder der Riesen-Schriftzug bekommt eine freie, hoch-kontrastige Serife (z. B. Instrument Serif, OFL). Betroffen ist dann nur `--serif`, plus eine Nachjustierung von `scaleY`.
 
 ---
 

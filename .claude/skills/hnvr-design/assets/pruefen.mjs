@@ -79,6 +79,7 @@ try {
     document.querySelectorAll('body *').forEach(e => {
       const s = getComputedStyle(e);
       if (s.display === 'none' || s.visibility === 'hidden') return;
+      if (e.closest('[aria-hidden="true"]')) return;   // Schmuck zählt nicht
       if (!e.textContent.trim()) return;
       if (parseFloat(s.opacity) < .9) raus.push(`${e.tagName.toLowerCase()}.${(e.className || '').toString().split(' ')[0]}`);
     });

@@ -171,13 +171,14 @@ Für Ablauf, Prozess, Vorgehen. Die Nummer ist orange, der Abstand darunter gro�
 ## Zeilenliste
 
 Für Referenzen, Auszeichnungen, Leistungsübersichten. Rückt beim Hover nach rechts, ein Pfeil erscheint.
+Der Pfeil ist Schmuck und bekommt `aria-hidden="true"` — er steht bis zum Überfahren auf `opacity: 0`.
 
 ```html
 <div class="row-item">
   <span class="no">01</span>
   <span class="dt">2026 · Hannover</span>
   <span class="ti">Relaunch für einen Maschinenbauer</span>
-  <span class="ar">→</span>
+  <span class="ar" aria-hidden="true">→</span>
 </div>
 ```
 

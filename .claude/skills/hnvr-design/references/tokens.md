@@ -40,7 +40,14 @@ Diese stehen nicht im Theme, sondern in den Seiteneinstellungen — sie tragen d
 `#C2C2C2` auf `#030303` ergibt 11.6:1 — der Fließtext der Seite ist bewusst hell. Auf Creme wären es 1.9:1, deshalb kippt `section.cream` alle Textklassen auf `--ink` und `--muted-cream`. Wer eine eigene Textklasse baut, muss sie dort mit eintragen.
 
 `--accent` gehört auf: Punkte, Ziffern, Haken, Unterstreichungen, ein hervorgehobenes Wort, Hover-Flächen. Nicht auf: ganze Textblöcke, mehrere Elemente in einer Reihe, Fließtext.
-Orange auf Schwarz liefert 6.5:1. **Text auf oranger Fläche muss schwarz sein** — weiß auf `#FF7120` sind 2.4:1. `.btn:hover` macht das schon richtig.
+Gerechnet:
+
+| | auf `#030303` | auf Creme `#F1EFEB` |
+|---|---|---|
+| `#FF7120` | 7.50:1 | **2.40:1** |
+| `#DF3E06` | 4.74:1 | 3.79:1 |
+
+Daraus zwei Regeln: **Text auf oranger Fläche muss schwarz sein** — weiß auf `#FF7120` sind 2.4:1; `.btn:hover` macht das schon richtig. Und **auf Creme ist Orange keine Farbe für Kleinschrift**: dort bleibt Kleines in `--ink`, ab 24px genügen 3:1 und `--accent-deep` ist erlaubt. `section.cream` setzt das für `.ey .s` und `.philo em` bereits um.
 
 ### Farbflächen statt Fotos
 

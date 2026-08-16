@@ -28,6 +28,37 @@
 @font-face { font-family: 'Clash Display'; font-weight: 700; font-style: normal; font-display: swap;
   src: url('./fonts/ClashDisplay-Bold.woff2') format('woff2'); }
 
+/* ---------- Clash Display, zweiter Name ----------
+   NICHT löschen. Das Theme schreibt an 574 Stellen
+   font-family:"ClashDisplay" — ohne Leerzeichen. Geladen ist die
+   Familie aber als 'Clash Display' MIT Leerzeichen. Die Schreibweise
+   ohne Leerzeichen trifft damit nichts und fällt still auf die
+   Systemschrift zurück: Überschriften stehen dann in Arial.
+
+   Nachgewiesen über die Textbreite, nicht über document.fonts.check —
+   das meldet auch beim Rückfall „true". „PASSEND IM WIKI" bei 35px:
+     'Clash Display'  → 285px
+     'ClashDisplay'   → 299px
+     sans-serif       → 299px   (gleiche Breite = es ist der Rückfall)
+
+   Die Vorlage hat denselben Fehler an 1145 Stellen. Statt 574 Stellen
+   anzufassen, werden dieselben Dateien unter dem zweiten Namen noch
+   einmal angemeldet. Wer Markup in die WordPress-Seite übernimmt oder
+   in Elementor eine Schrift auswählt, braucht das hier.
+   ------------------------------------------------------------ */
+@font-face { font-family: 'ClashDisplay'; font-weight: 200; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Extralight.woff2') format('woff2'); }
+@font-face { font-family: 'ClashDisplay'; font-weight: 300; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Light.woff2') format('woff2'); }
+@font-face { font-family: 'ClashDisplay'; font-weight: 400; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'ClashDisplay'; font-weight: 500; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'ClashDisplay'; font-weight: 600; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Semibold.woff2') format('woff2'); }
+@font-face { font-family: 'ClashDisplay'; font-weight: 700; font-style: normal; font-display: swap;
+  src: url('./fonts/ClashDisplay-Bold.woff2') format('woff2'); }
+
 /* ---------- DM Sans ---------- */
 @font-face {
   font-family: 'DM Sans';

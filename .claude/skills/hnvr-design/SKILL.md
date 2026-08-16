@@ -53,6 +53,16 @@ Die Seite hat **zwei** Typo-Ebenen, und das ist Absicht:
 
 Für eine gebaute Seite `.disp-*` nehmen. `h1`–`h6` bleiben als Grundgerüst darunter richtig.
 
+## Vor dem Abliefern
+
+`node assets/pruefen.mjs <datei-oder-url>` laufen lassen — das prüft Schriftladung, Bewegungsreduktion, Überlauf, Kontrast und Formularbeschriftungen und gibt 1 zurück, wenn etwas durchfällt.
+
+Dazu `references/fallstricke.md` durchgehen. Dort stehen zehn Befunde aus der Design-Durchsicht vom 10.08.2026 — jeder einmal teuer gefunden, jeder mit Messwert. Die drei, die am häufigsten wiederkommen:
+
+- **Die Schrift ist nicht geladen, obwohl sie geladen aussieht.** `"ClashDisplay"` ohne Leerzeichen trifft nichts. Nachweis über die Textbreite, nicht über `document.fonts.check` — das meldet auch beim Rückfall `true`.
+- **`prefers-reduced-motion` braucht `!important`.** Startzustände kommen als Inline-Style; kurze Übergangsdauern machen das Verschwinden nur schneller. 29 Textblöcke blieben so unsichtbar.
+- **Waagerechter Überlauf ohne Scrollleiste.** `scrollWidth` blieb bei 390, der Text war trotzdem abgeschnitten. Einzelne Blockbreiten mitmessen.
+
 ## Wenn etwas fehlt
 
 Erst prüfen, ob sich ein bestehender Baustein erweitern lässt. Wenn wirklich neu:
@@ -65,5 +75,7 @@ Widerspruch ist erlaubt: Wenn eine Regel eine Anforderung technisch unmöglich m
 - `references/tokens.md` — alle Werte, beide Typo-Ebenen, Einbetten
 - `references/komponenten.md` — Bausteine mit fertigem Markup
 - `references/sprache.md` — Tonfall, Satzmuster, Wortliste
+- `references/fallstricke.md` — zehn Befunde aus der Durchsicht, mit Messwerten
+- `assets/pruefen.mjs` — die Prüfliste als ausführbares Skript
 - `references/herkunft.md` — Quelle, Lizenzen, Nachprüfen
 - `assets/hnvr.css`, `assets/fonts.css`, `assets/fonts/`, `assets/vorlage.html`

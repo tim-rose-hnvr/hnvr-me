@@ -246,6 +246,55 @@ Die Verdunkelung sitzt als `::after` auf `.hero-bg` und ist nicht optional — o
 
 ---
 
+## Formular
+
+Die Werte sind an der Seite gemessen: Rand `1px rgba(248,248,248,.15)`, Radius `11px`, Höhe `55px`, Text `#c2c2c2`.
+
+```html
+<form class="form" action="#" method="post">
+  <div>
+    <label for="f-name">Name *</label>
+    <input id="f-name" name="name" type="text" autocomplete="name" required>
+  </div>
+  <div>
+    <label for="f-thema">Worum geht es?</label>
+    <select id="f-thema" name="thema">
+      <option>Website</option><option>Branding</option>
+    </select>
+  </div>
+
+  <!-- Honigtopf: nicht display:none, sonst erkennen es die Skripte -->
+  <div class="hp" aria-hidden="true">
+    <label for="f-hp">Bitte leer lassen</label>
+    <input id="f-hp" name="website" type="text" tabindex="-1" autocomplete="off">
+  </div>
+
+  <div class="ok">
+    <label for="f-ok">
+      <input id="f-ok" name="ok" type="checkbox" required>
+      <span>Ich habe die <a href="#">Datenschutzerklärung</a> gelesen.</span>
+    </label>
+  </div>
+
+  <div>
+    <button class="btn" type="submit">Absenden <span class="ic">→</span></button>
+    <p class="status" role="status" aria-live="polite"></p>
+  </div>
+</form>
+```
+
+Drei Dinge, die man leicht vergisst:
+
+- **`label` und `id` gehören zusammen.** Ohne `for`/`id` ist das Feld für Screenreader namenlos.
+- **`option` braucht eigene Farben.** Die aufgeklappte Liste zeichnet das Betriebssystem auf hellem Grund — ohne `option { color:#111; background:#fff }` steht heller Text auf hellem Grund. Steht schon in `hnvr.css`.
+- **Der Honigtopf darf nicht `display:none` sein.** Das durchschauen die besseren Skripte. `position:absolute; left:-9999px` ist der Weg.
+
+Rückmeldung: `.status` für die Zeile unter dem Knopf, `.status.fehler` für Rot, `.danke` für den grün gerahmten Kasten nach dem Absenden.
+
+Auf Creme-Abschnitten stellt sich die Farbe des Einwilligungstextes von allein um.
+
+---
+
 ## Kopf und Fuß
 
 Stehen komplett in `assets/vorlage.html`. Beides unverändert übernehmen —

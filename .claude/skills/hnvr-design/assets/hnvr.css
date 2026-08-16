@@ -120,14 +120,38 @@ h6 { font-size: 17px; }
 ::selection    { background: var(--accent); color: #000; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
+/* „Bewegung reduzieren" ernst nehmen.
+   Gemessen auf der Seite: 29 Textblöcke blieben trotz gesetzter
+   Systemeinstellung auf opacity:0 stehen — die Startzustände kommen
+   nicht aus einer Klasse, sondern als Inline-Style von GSAP. Nur
+   !important in einem Stylesheet schlägt einen Inline-Style.
+   Deshalb hier die harte Rückstellung, nicht nur kurze Dauern. */
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
+  html { scroll-behavior: auto !important; }
+
   *, *::before, *::after {
-    animation-duration: .001ms !important;
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: .001ms !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
   }
-  .rv { opacity: 1 !important; transform: none !important; }
+
+  .rv,
+  .split-line, .split-word, .split-char,
+  [class*="fade-in"], [data-animate] {
+    opacity: 1 !important;
+    transform: none !important;
+    translate: none !important;
+    rotate: none !important;
+    scale: none !important;
+    clip-path: none !important;
+    filter: none !important;
+    visibility: visible !important;
+  }
+
+  /* Laufband anhalten, statt es zu verstecken — der Inhalt bleibt lesbar. */
+  .marquee .track { animation: none !important; }
 }
 
 /* ---------- 3  Layout ---------- */
@@ -141,16 +165,35 @@ section.blk { padding: var(--sec) 0; position: relative; }
 section.cream                { background: var(--cream); color: var(--ink); }
 section.cream h1, section.cream h2, section.cream h3,
 section.cream h4, section.cream h5, section.cream h6,
-section.cream .disp          { color: var(--ink); }
+section.cream .disp-1, section.cream .disp-2, section.cream .disp-3,
+section.cream .disp-4, section.cream .disp-5,
+section.cream .philo         { color: var(--ink); }
 section.cream .copy,
 section.cream .lede,
 section.cream .muted         { color: var(--muted-cream); }
 section.cream .ey            { color: var(--muted-cream); }
 
+/* Orange ist auf Creme keine Textfarbe für Kleinschrift:
+   #FF7120 auf #F1EFEB sind 2.4:1, selbst #DF3E06 nur 3.8:1.
+   Kleines bleibt deshalb in Tinte, Großes darf ins dunklere Orange
+   (ab 24px genügen 3:1). */
+section.cream .ey .s         { color: var(--ink); }
+section.cream .philo em      { color: var(--accent-deep); }
+
 .sec-head {
   display: flex; justify-content: space-between; align-items: flex-end;
   gap: 30px; flex-wrap: wrap;
   padding-bottom: clamp(40px, 5vw, 70px);
+}
+
+/* Überlaufschutz auf schmalen Fenstern.
+   Gemessen auf der Seite: ein Inhalt sprengte die Spalte von innen,
+   scrollWidth blieb aber bei 390 — die Seite ließ sich also nicht
+   seitlich schieben, der überstehende Text war schlicht abgeschnitten.
+   Ein waagerechter Überlauf zeigt sich nicht immer als Scrollleiste. */
+@media (max-width: 767.98px) {
+  img, svg, video, iframe { max-width: 100%; height: auto; }
+  table { display: block; max-width: 100%; overflow-x: auto; }
 }
 
 /* ---------- 4  Display-Typografie ----------
@@ -279,8 +322,17 @@ section.cream .pill { border-color: var(--line-ink); }
   .srv-card .pic { min-height: 220px; }
 }
 
-/* Laufband */
-.marquee { display: flex; overflow: hidden; white-space: nowrap; padding: clamp(22px, 3vw, 40px) 0; }
+/* Laufband.
+   Die weiche Kante ist Pflicht, nicht Zierde: ohne sie steht am
+   linken Rand „BC" und am rechten „ASE" — abgeschnittene Namen, die
+   wie ein Darstellungsfehler aussehen statt wie Bewegung. Die Maske
+   blendet die äußersten 8 % aus. */
+.marquee {
+  display: flex; overflow: hidden; white-space: nowrap;
+  padding: clamp(22px, 3vw, 40px) 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+}
 .marquee .track {
   display: flex; align-items: center; gap: 56px; padding-right: 56px;
   animation: hnvr-mq var(--dur, 30s) linear infinite; flex-shrink: 0;
@@ -379,6 +431,73 @@ section.cream .pill { border-color: var(--line-ink); }
 .tst .who .nm { font-family: var(--disp); font-weight: 600; text-transform: uppercase; font-size: 15px; color: var(--four-color); }
 .tst .who .rl { font-size: 12.5px; color: var(--third-color); }
 
+/* Formular.
+   Die Werte sind an der Seite gemessen: Rand 1px rgba(248,248,248,.15),
+   Radius 11px, Höhe 55px, Text #c2c2c2, Innenabstand 6px 23px. */
+.form { display: grid; gap: 22px; max-width: 620px; }
+.form label {
+  display: block; margin-bottom: 8px;
+  font-family: var(--body); font-weight: 500; font-size: 14px;
+  color: var(--four-color);
+}
+.form input,
+.form textarea,
+.form select {
+  width: 100%;
+  min-height: 55px;
+  background: transparent;
+  color: var(--third-color);
+  font: 15px/1.73 var(--body);
+  border: 1px solid rgba(248, 248, 248, .15);
+  border-radius: 11px;
+  padding: 6px 23px;
+  transition: border-color .25s var(--ease), box-shadow .25s var(--ease);
+}
+.form textarea { padding-top: 14px; resize: vertical; min-height: 130px; }
+.form input:focus,
+.form textarea:focus,
+.form select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 113, 32, .16);
+}
+
+/* Auswahlfeld: eigener Pfeil, weil das Systemdreieck auf Dunkel verschwindet. */
+.form select {
+  appearance: none; -webkit-appearance: none; cursor: pointer;
+  padding-right: 46px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23c2c2c2' stroke-width='1.8' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 22px center;
+}
+/* Die aufgeklappte Liste zeichnet das Betriebssystem auf hellem Grund —
+   ohne diese Zeile steht heller Text auf hellem Grund. */
+.form select option { color: #111; background: #fff; }
+
+/* Einwilligung */
+.form .ok label {
+  display: grid; grid-template-columns: 20px 1fr; gap: 11px; align-items: start;
+  font: 400 13.5px/1.6 var(--body); color: #a9a7a2; cursor: pointer;
+}
+.form .ok input { width: 18px; height: 18px; min-height: 0; margin-top: 2px; padding: 0; accent-color: var(--accent); }
+.form .ok a { color: var(--accent); }
+section.cream .form .ok label { color: #4a4842; }
+
+/* Honigtopf: für Menschen unsichtbar, aber nicht display:none —
+   das durchschauen die besseren Skripte. */
+.form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* Rückmeldung */
+.form .status        { margin-top: 12px; font-size: 15px; line-height: 1.6; min-height: 1px; }
+.form .status.fehler { color: #f0a49c; }
+.form .danke {
+  border: 1px solid rgba(143, 206, 158, .4);
+  background: rgba(143, 206, 158, .08);
+  border-radius: 4px; padding: 18px 22px;
+  color: #cfe6d6; font-size: 16px; line-height: 1.6;
+}
+.form .danke a { color: var(--accent); }
+
 /* ---------- 6  Gerüst ---------- */
 header.site {
   position: fixed; inset: 0 0 auto 0; z-index: 1000;
@@ -393,7 +512,11 @@ header.site.scrolled {
   padding: 14px var(--pad);
   border-color: var(--line);
 }
+/* Gemessen auf der Seite: bei 390px Fensterbreite war das Logo 360px
+   breit — es lief unter den Menüknopf und fraß 84 von 844px Höhe.
+   Auf dem Rechner war dasselbe Logo 193px. Deshalb die Deckelung. */
 .brand img { height: 34px; width: auto; }
+@media (max-width: 767px) { .brand img { max-width: 150px; height: auto; } }
 
 nav.main { display: flex; gap: 30px; }
 nav.main a { font-family: var(--body); font-size: 14px; font-weight: 500; color: #ededed; position: relative; padding: 6px 0; }

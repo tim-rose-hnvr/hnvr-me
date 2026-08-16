@@ -136,6 +136,61 @@
   </div>
 </section>
 
+<!-- ========== Kontakt ==========
+     Feldwerte sind die der Seite: Rand rgba(248,248,248,.15),
+     Radius 11px, Höhe 55px. label und id gehören zusammen. -->
+<section class="blk" id="anfrage">
+  <div class="wrap">
+    <p class="ey"><span class="s">//</span> Anfrage</p>
+    <h2 class="disp-4 rv" style="margin-top:18px; margin-bottom:40px">Erzähl uns<br>von deinem Projekt</h2>
+
+    <form class="form rv d1" action="#" method="post">
+      <div>
+        <label for="f-name">Name *</label>
+        <input id="f-name" name="name" type="text" autocomplete="name" required>
+      </div>
+      <div>
+        <label for="f-mail">E-Mail *</label>
+        <input id="f-mail" name="mail" type="email" autocomplete="email" required>
+      </div>
+      <div>
+        <label for="f-thema">Worum geht es?</label>
+        <select id="f-thema" name="thema">
+          <option>Website</option>
+          <option>Branding</option>
+          <option>SEO</option>
+          <option>Etwas anderes</option>
+        </select>
+      </div>
+      <div>
+        <label for="f-text">Nachricht</label>
+        <textarea id="f-text" name="text"></textarea>
+      </div>
+
+      <!-- Honigtopf: nicht display:none, sonst erkennen es die Skripte -->
+      <div class="hp" aria-hidden="true">
+        <label for="f-hp">Bitte leer lassen</label>
+        <input id="f-hp" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="ok">
+        <label for="f-ok">
+          <input id="f-ok" name="ok" type="checkbox" required>
+          <span>Ich habe die <a href="#">Datenschutzerklärung</a> gelesen und bin einverstanden.</span>
+        </label>
+      </div>
+
+      <div>
+        <button class="btn" type="submit">
+          Absenden
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </button>
+        <p class="status" role="status" aria-live="polite"></p>
+      </div>
+    </form>
+  </div>
+</section>
+
 <!-- ========== Fuß ========== -->
 <footer class="site" id="kontakt">
   <div class="foot-cta">

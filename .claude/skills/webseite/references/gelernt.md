@@ -30,7 +30,32 @@ Wörtlich zitieren lohnt sich: die Formulierung des Auftraggebers enthält oft m
 
 ## Einträge
 
-_Noch keine. Der erste Eintrag entsteht beim ersten Projekt._
+### 2026-08-16 — Bewegung lief trotz reduzierter Bewegung (Projekt: Gegenprobe Saalwerk)
+- Rückmeldung: Prüfskript, `[bewegung] Animation läuft trotz prefers-reduced-motion: schwenken`
+- Ursache: Die verbreitete Kurzfassung `animation-duration: .01ms !important` schaltet nichts ab. Eine Animation gilt als **laufend**, solange ihre Verzögerung läuft — bei `animation-delay: 8s` also acht Sekunden lang. Im Browser sieht man davon nichts, im Code steht die richtige Mediaabfrage.
+- Regel: Unter `prefers-reduced-motion: reduce` gilt `animation: none !important` **und** `animation-delay: 0s !important`. Verkürzen genügt nicht.
+- Prüfbar: ja → wird bereits geprüft, genau so gefunden
+- Status: übernommen in bewegung.md
+
+### 2026-08-16 — Prüfskript hat Inhalt verschwinden lassen (Projekt: Gegenprobe Saalwerk)
+- Rückmeldung: Der Kritiker meldete „rund 600 px sichtbar leer" als schwersten Mangel — an einer Stelle, an der die Seite in Wirklichkeit drei Karten und drei Kennzahlen zeigt.
+- Ursache: `pruefen.mjs` sprang in **einem** Schritt ans Seitenende. Ein `IntersectionObserver` sieht übersprungene Elemente nie, also blieben alle Einblendungen bei `opacity: 0` — und der Screenshot zeigte eine Seite, die es so nie gab. Das Werkzeug hat sich selbst gemessen.
+- Regel: Prüfwerkzeuge scrollen schrittweise (0,75 Bildschirmhöhen, 180 ms Pause). Ein Messwerkzeug, das die Messung verändert, ist schlimmer als keines: es erzeugt Befunde, denen man hinterherrepariert.
+- Prüfbar: ja → zusätzlich neue Prüfung „Inhalt bleibt nach dem Durchscrollen unsichtbar"
+- Status: übernommen in pruefen.mjs
+
+### 2026-08-16 — Einblendung beim Scrollen ist zerbrechlich (Projekt: Gegenprobe Saalwerk)
+- Rückmeldung: aus dem Fund oben abgeleitet
+- Ursache: Beim Muster „Fade-in beim Scrollen" liegt der Inhalt bei `opacity: 0` und wird erst durch einen Auslöser sichtbar. Greift der Auslöser nicht — kein JavaScript, Sprung direkt auf einen Anker, Druckansicht, Screenshot-Werkzeug, sehr schnelles Scrollen —, bleibt der Inhalt für immer unsichtbar. Er ist im Quelltext vorhanden, also fällt es beim Lesen des Codes niemandem auf.
+- Regel: Kein Inhalt darf seine Sichtbarkeit von einem Scroll-Auslöser abhängig machen. Einblendungen bewegen sichtbaren Inhalt, sie erzeugen ihn nicht. Wenn doch, dann mit `@media (scripting: none)`-Rückfall auf `opacity: 1`.
+- Prüfbar: ja → neue Prüfung meldet Text, der nach dem Durchscrollen bei `opacity: 0` steht
+- Status: übernommen in pruefen.mjs, Verbotsliste in SKILL.md
+
+---
+
+## Beobachtung aus der Gegenprobe
+
+Die erste Blindbewertung wurde durch einen Werkzeugfehler entwertet: Der Kritiker hat seinen schwersten Vorwurf gegen eine Seite erhoben, die es so nie gab. Das ist keine Anekdote, sondern die Betriebsanleitung für alles Weitere — **jeder Befund gilt nur so weit wie die Messung, die ihn erzeugt hat.** Wenn ein Urteil überrascht, ist die erste Frage nicht „was ist an der Seite falsch", sondern „stimmt, was ich dem Bewerter gezeigt habe".
 
 <!-- Beispiel für die Form — beim ersten echten Eintrag löschen:
 

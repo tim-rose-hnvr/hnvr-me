@@ -56,11 +56,15 @@ dialog[open]{ opacity:1; transform:none; }
 ```css
 @media (prefers-reduced-motion: reduce){
   *, *::before, *::after{
-    animation-duration:.01ms !important; animation-iteration-count:1 !important;
-    transition-duration:.01ms !important; scroll-behavior:auto !important;
+    animation: none !important;          /* nicht nur verkürzen — abschalten */
+    animation-delay: 0s !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 ```
+
+**Warum `animation: none` und nicht die verbreitete Kurzfassung mit `animation-duration: .01ms`:** Eine Animation gilt als *laufend*, solange ihre **Verzögerung** läuft. Wer eine Gruppe mit `animation-delay: 4s` staffelt und die Dauer auf `.01ms` setzt, hat vier Sekunden lang eine laufende Animation — und hat damit die Einstellung des Nutzers nicht befolgt, obwohl im CSS die richtige Mediaabfrage steht. Das Abnahmeskript meldet es; im Browser sieht man es nicht. Deshalb: abschalten und die Verzögerung mit zurücksetzen.
 
 Der Signature Moment braucht zusätzlich eine sinnvolle **statische** Fassung — Endzustand zeigen, nicht leere Fläche. Das Abnahmeskript lädt die Seite mit reduzierter Bewegung und meldet jede weiterlaufende Animation als **Fehler**.
 

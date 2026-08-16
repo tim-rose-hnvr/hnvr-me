@@ -335,6 +335,26 @@ function messungImBrowser() {
     if (gleich && inhaltGleich) dreierKarten++;
   }
 
+  // --- Inhalt, der nach dem Durchscrollen immer noch unsichtbar ist.
+  // Der klassische Fade-in-beim-Scrollen lässt Inhalt bei opacity 0 stehen,
+  // sobald der Auslöser nicht greift: kein JavaScript, Sprung auf einen Anker,
+  // Druckansicht, Screenshot-Werkzeug. Im Code sieht man davon nichts.
+  const unsichtbarerInhalt = [];
+  for (const el of alle) {
+    const s = getComputedStyle(el);
+    if (Number(s.opacity) > 0.05) continue;
+    if (s.display === 'none' || s.visibility === 'hidden') continue; // absichtlich verborgen
+    const r = el.getBoundingClientRect();
+    if (r.width < 40 || r.height < 20) continue;
+    const inhalt = (el.innerText || '').trim();
+    if (inhalt.length < 15) continue;
+    if (el.parentElement && Number(getComputedStyle(el.parentElement).opacity) <= 0.05) continue;
+    unsichtbarerInhalt.push({
+      marke: el.tagName.toLowerCase() + (typeof el.className === 'string' && el.className ? '.' + el.className.trim().split(/\s+/)[0] : ''),
+      text: inhalt.slice(0, 60),
+    });
+  }
+
   // --- Formularfelder ohne zugänglichen Namen
   const felderOhneNamen = [];
   for (const feld of document.querySelectorAll('input:not([type="hidden"]), select, textarea')) {
@@ -362,7 +382,7 @@ function messungImBrowser() {
     farbwerte: Array.from(farbwerte),
     bilder, kleineZiele, links, struktur, ueberlauf, laufendeAnimationen,
     schriftRueckfall, abschnittsabstaende, abschnittszahl: abschnitte.length,
-    held, dreierKarten, felderOhneNamen,
+    held, dreierKarten, felderOhneNamen, unsichtbarerInhalt,
     verschiebung: window.__cls ?? null,
     schriftstatus: document.fonts ? document.fonts.status : 'unbekannt',
   };
@@ -477,10 +497,18 @@ async function pruefeSeite(browser, basis, pfad, ausgabe, befunde) {
     }
 
     await seite.waitForTimeout(1200); // Schriften, verzögerte Animationen, Scroll-Auslöser
-    await seite.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await seite.waitForTimeout(800);
-    await seite.evaluate(() => window.scrollTo(0, 0));
-    await seite.waitForTimeout(400);
+    // Schrittweise scrollen, nicht in einem Sprung: ein IntersectionObserver
+    // sieht übersprungene Elemente nie, und dann fehlt im Screenshot Inhalt,
+    // den es in Wirklichkeit gibt. Ein Sprung misst das Werkzeug, nicht die Seite.
+    await seite.evaluate(async () => {
+      const schritt = window.innerHeight * 0.75;
+      for (let y = 0; y < document.body.scrollHeight; y += schritt) {
+        window.scrollTo(0, y);
+        await new Promise((auf) => setTimeout(auf, 180));
+      }
+      window.scrollTo(0, 0);
+    });
+    await seite.waitForTimeout(600);
 
     const messung = await seite.evaluate(messungImBrowser);
     seitenbefund.viewports[viewport.name] = messung;
@@ -579,6 +607,10 @@ function bewerteSeite(s, befunde) {
     } else if (!WEBSICHER.has(f.familie)) {
       melde('warnung', 'schrift', `„${f.familie}" steht in font-family, ist aber nicht verfügbar. Ohne @font-face hängt die Gestaltung davon ab, ob der Besucher die Schrift zufällig installiert hat.`);
     }
+  }
+
+  for (const e of dedupe(desktop.unsichtbarerInhalt, (x) => x.text).slice(0, 6)) {
+    melde('fehler', 'sichtbarkeit', `Inhalt bleibt nach dem Durchscrollen unsichtbar (opacity 0): ${e.marke} „${e.text}“ — Einblendung beim Scrollen greift nicht zuverlässig.`);
   }
 
   for (const feld of desktop.felderOhneNamen.slice(0, 6)) {

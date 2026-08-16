@@ -164,6 +164,7 @@ Diese Liste bricht die Standardreflexe. Abweichung nur mit ausdrücklicher Ansag
 - Nicht: zentrierter Hero + zwei Buttons + drei Feature-Karten + Testimonial + CTA. Wenn diese Reihenfolge entsteht, ist Phase 1 übersprungen worden.
 - Nicht alles auf `max-width: 1200px` zentrieren. Randlos, asymmetrisch, überbreit sind zulässige Antworten.
 - Keine gleichförmigen Karten mit gleichem Radius und gleichem Schatten als Antwort auf jeden Inhalt.
+- **Kein Inhalt, dessen Sichtbarkeit an einem Scroll-Auslöser hängt.** Einblendungen bewegen sichtbaren Inhalt, sie erzeugen ihn nicht. Greift der Auslöser nicht — kein JavaScript, Sprung auf einen Anker, Druckansicht, schnelles Scrollen —, bleibt der Text für immer unsichtbar, und im Quelltext sieht man davon nichts.
 
 **Abhängigkeiten**
 - Keine Schriften, Skripte oder Bilder von fremden Servern. Alles lokal. Die Seite muss ohne Internet vollständig darstellbar sein.

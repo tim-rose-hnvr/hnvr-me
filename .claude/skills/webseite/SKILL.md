@@ -83,6 +83,22 @@ Das Wichtigste in Kurzform:
 
 ---
 
+## Phase 3.5 — Varianten des Kopfbereichs
+
+Bei jedem Projekt, dem Wirkung abverlangt wird: **drei bis fünf Fassungen des ersten Sichtfelds bauen**, aus verschiedenen Richtungen des Katalogs, mit echtem Inhalt — dann blind bewerten und eine behalten.
+
+Der Grund steht in `references/varianten.md` und ist der wichtigste Satz des ganzen Skills: Ein einzelner Entwurf ist immer der wahrscheinlichste, und der wahrscheinlichste ist der durchschnittliche. Schärfere Anweisungen verschieben ihn ein Stück; sie ändern nichts daran, dass ein Zug gezogen wird. Fünf Züge und der beste davon sind das Maximum statt des Erwartungswerts. **Auswahl schlägt Ermahnung** — deshalb ist „sei kreativer" wirkungslos und dieses Verfahren nicht.
+
+```bash
+node .claude/skills/webseite/scripts/blindvergleich.mjs varianten/*.png --titel "Kopfbereich"
+```
+
+Blind heißt blind: erst bewerten, dann `schluessel.txt` öffnen. Wer weiß, welcher Entwurf der eigene dritte Versuch war, bewertet ihn nicht mehr, sondern verteidigt ihn.
+
+Nicht variiert werden Abschnittsfolge, Navigation und Formulare — dort ist Vielfalt ein Fehler.
+
+---
+
 ## Phase 4 — Bewegung
 
 Details in `references/bewegung.md`. Grundregeln:
@@ -182,6 +198,7 @@ Teilweise fertig heißt teilweise fertig. Eine ehrliche Restliste ist ein besser
 | `references/quellen.md` | Phase 1 — fremde Seiten zerlegen, echte Wissensdatenbanken, Beweisaufnahme |
 | `references/struktur.md` | Phase 2 — Seitenarten, Abschnittsfolgen, Bedienmuster, Pflichtteil DE |
 | `references/handwerk.md` | Phase 2/3 — Typo-Skala, Farbe, Raster, Tiefe, Textur, als Zahlen |
+| `references/varianten.md` | Phase 3.5 — warum Auswahl schlägt Ermahnung, Divergenzregel, blindes Urteil |
 | `references/bilder.md` | immer wenn ein Bild gebraucht wird — Wege ohne Stockmaterial |
 | `references/bewegung.md` | Phase 4 — Zeiten, Kurven, Muster, Signature-Techniken |
 | `references/abnahme.md` | Phase 5 — Ablauf, Fehlerdeutung, Berichtsvorlage |

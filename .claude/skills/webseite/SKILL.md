@@ -105,7 +105,11 @@ Exit 0 heißt: keine Fehler. Warnungen und Verdacht müssen beantwortet werden �
 
 **Danach die Screenshots wirklich ansehen** (Read-Tool auf die PNG-Dateien in `.pruefung/screenshots/`). Das Skript findet Kaputtes, nicht Hässliches. Beim Ansehen prüfen: Stimmt die Hierarchie? Ist irgendetwas gedrängt? Sieht die Mobilfassung aus wie ein zusammengeschobener Desktop? Ist der Signature Moment sichtbar?
 
-Ablauf und Berichtsvorlage: `references/abnahme.md`.
+**Dann den Kritiker beauftragen** — Subagent `webseite-kritiker`, mit frischem Kontext, sieht nur Screenshots und Designthese, nie den Code. Wer eine Seite gebaut hat, sieht beim Ansehen die Absicht statt des Ergebnisses; ein getrennter Kontext hebt genau diese Blindheit auf. Er beantwortet: Hält die Seite ihre eigene These? Wo ist sie austauschbar? Was kritisiert ein Fremder zuerst?
+
+Seine Funde werden beantwortet wie Warnungen — behoben oder mit einem Satz begründet. Sein Urteil („eigenständig" / „solide, aber austauschbar" / „Durchschnitt") gehört in die Fertigmeldung, auch wenn es unbequem ist.
+
+Ablauf, Auftragsvorlage für den Kritiker und Berichtsvorlage: `references/abnahme.md`.
 
 ---
 
@@ -142,18 +146,20 @@ Diese Liste bricht die Standardreflexe. Abweichung nur mit ausdrücklicher Ansag
 
 **Prozess**
 - Kein Lorem ipsum, kein TODO, kein `#` als Link in einer Abgabe.
-- Nicht „fertig" ohne grünen Abnahmelauf.
+- Nicht „fertig" ohne grünen Abnahmelauf und ohne Kritikerurteil.
+- Nicht selbst die Kritik schreiben, die der Kritiker schreiben soll. Der eigene Blick auf die eigene Arbeit ersetzt den fremden nicht.
 
 ---
 
 ## Was „fertig" bedeutet
 
-Die Meldung enthält alle vier Punkte, sonst ist sie keine Fertigmeldung:
+Die Meldung enthält alle fünf Punkte, sonst ist sie keine Fertigmeldung:
 
 1. Die Anforderungen aus Phase 0 einzeln aufgelistet, jede mit **erledigt / teilweise / offen**.
 2. Der Abnahmelauf: `0 Fehler`, plus Antwort auf jede Warnung und jeden Verdacht.
 3. Die angesehenen Screenshots benannt, mit einem Satz zu dem, was auffiel.
-4. Was bewusst weggelassen wurde und warum.
+4. Das Urteil des Kritikers und was daraus folgte.
+5. Was bewusst weggelassen wurde und warum.
 
 Teilweise fertig heißt teilweise fertig. Eine ehrliche Restliste ist ein besseres Ergebnis als ein grünes Häkchen, das beim ersten Klick zerfällt.
 
@@ -169,3 +175,5 @@ Teilweise fertig heißt teilweise fertig. Eine ehrliche Restliste ist ein besser
 | `references/bewegung.md` | Phase 4 — Zeiten, Kurven, Muster, Signature-Techniken |
 | `references/abnahme.md` | Phase 5 — Ablauf, Fehlerdeutung, Berichtsvorlage |
 | `references/gelernt.md` | Phase 6 — Entscheidungsprotokoll, Beispielkorpus, offene Prüfungen |
+
+Dazu der Subagent `.claude/agents/webseite-kritiker.md` — wird in Phase 5 beauftragt und ist bewusst nicht als Referenz gedacht, sondern als getrennter Kontext.

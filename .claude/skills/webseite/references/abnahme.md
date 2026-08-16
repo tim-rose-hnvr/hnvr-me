@@ -28,7 +28,31 @@ Beim Ansehen konkret fragen:
 - Ist der Signature Moment im Bild sichtbar?
 - Gibt es eine Stelle, an der man merkt, dass hier jemand entschieden hat?
 
-**6. Von Hand nachfassen**, was kein Skript kann:
+**6. Kritiker beauftragen.** Subagent `webseite-kritiker`, frischer Kontext, ohne Code. Auftragsvorlage:
+
+```
+Beurteile diese Website. Du siehst absichtlich nur Bilder und Text, keinen Code.
+
+Designthese (Phase 1, wörtlich):
+<These hier vollständig einfügen>
+
+Auftrag (Phase 0, in drei Zeilen):
+<Zielgruppe, die eine Botschaft, der Rahmen>
+
+Screenshots (mit Read ansehen):
+<absolute Pfade zu .pruefung/screenshots/*.png>
+
+Prüfbericht (technische Funde sind bereits behoben, nicht wiederholen):
+<Pfad zu .pruefung/bericht.md>
+
+Halte dich an die Ausgabeform aus deiner Anweisung.
+```
+
+Die These **wörtlich** mitgeben, nicht zusammengefasst — der Kritiker misst gegen sie, und eine Zusammenfassung schleift genau die Behauptungen weg, an denen sich das Ergebnis blamieren könnte.
+
+Seine Funde werden behandelt wie Warnungen: behoben oder mit einem Satz begründet. Ein Fund ist nicht dadurch erledigt, dass er unangenehm ist. Sein Urteil kommt in die Fertigmeldung.
+
+**7. Von Hand nachfassen**, was kein Skript und kein Kritiker kann:
 - Tab-Taste durch die ganze Seite: Fokus immer sichtbar, Reihenfolge logisch, keine Falle.
 - Jedes Formular einmal falsch ausfüllen und einmal absenden.
 - Jeden Zustand ansehen: leer, Ladevorgang, Fehler, ein Element, sehr viele Elemente, sehr langer Text.
@@ -73,6 +97,12 @@ Diese Form wird abgegeben, nicht „ist fertig".
 - start-mobil.png — Kopfbereich sitzt, Displayzeile bricht sauber
 - start-desktop.png — Signature Moment (Saalplan) im ersten Bild sichtbar
 - preise-mobil.png — Tabelle scrollt waagerecht in eigenem Rahmen, Rest der Seite nicht
+
+### Kritik (Subagent, ohne Code)
+Urteil: **solide, aber austauschbar**
+- „Kopfbereich funktioniert für jedes Technikunternehmen" → Saalplan aus dem zweiten Abschnitt nach oben geholt
+- „Vier gleich große Betonungen im oberen Drittel" → zwei auf Fließtextgröße zurückgenommen
+- „Mobilfassung: Displayzeile fällt auf 34 px, verliert die Wirkung" → offen, siehe Restliste
 
 ### Von Hand geprüft
 Tabreihenfolge, Formular mit Leereingabe, 200 % Zoom, Dunkelfassung

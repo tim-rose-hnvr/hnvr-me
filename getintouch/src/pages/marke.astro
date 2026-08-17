@@ -1,0 +1,223 @@
+---
+/**
+ * Der Markenbaukasten.
+ *
+ * Aus dem Design-Handoff, Seite „Marke". Sie erklärt das Zeichen, die Farben,
+ * die Schrift und die eine Bewegung, die diese Marke ausmacht — und sie tut es
+ * an lauffähigen Beispielen, nicht an Bildern davon. Jedes Muster auf dieser
+ * Seite ist dasselbe CSS, das auch das Produkt trägt; wird eine Farbe in
+ * `kern/marke.ts` geändert, ändert sich hier mit.
+ *
+ * Warum diese Seite und nicht die anderen vier aus dem Handoff: Vorlagen,
+ * Karte & NFC und Für Teams verkaufen Dinge, die es noch nicht gibt — NFC,
+ * Whitelabel, Terminbuchung. Sie zu bauen hieße, genau die Werbeaussagen zu
+ * machen, gegen die dieses Produkt antritt. Die Marke dagegen gibt es.
+ */
+import { cssVariablen, schrift, vorlage } from '../kern/gestaltung.ts';
+import { zeichen } from '../kern/zeichen.ts';
+import { MARKE, MARKENFARBEN, MARKENWERTE, SIGNET } from '../kern/marke.ts';
+import '../stile/marketing.css';
+
+export const prerender = false;
+
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+
+const gestaltung = vorlage('signal');
+const stil = Object.entries(cssVariablen(gestaltung))
+  .map(([name, wert]) => `${name}:${wert}`)
+  .join(';');
+
+const titel = `Marke — ${MARKE.name}`;
+const beschreibung =
+  'Zeichen, Farben, Schrift und Bewegung von Get in Touch — an lauffähigen Beispielen erklärt, nicht an Bildern davon.';
+
+const farben = [
+  { name: 'Grund', wert: MARKENFARBEN.grund, zweck: 'Seitenhintergrund und Karten' },
+  { name: 'Fläche', wert: MARKENWERTE.flaeche, zweck: 'ruhige Flächen, zweite Ebene' },
+  { name: 'Ink', wert: MARKENFARBEN.vordergrund, zweck: 'Text, Konturen, dunkle Flächen' },
+  { name: 'Signal', wert: MARKENFARBEN.akzent, zweck: 'die Handlung — und nur sie' },
+  { name: 'Signal tief', wert: MARKENWERTE.signalTief, zweck: 'Standfuß und roter Text auf hell' },
+  { name: 'Rosé', wert: MARKENWERTE.rose, zweck: 'getönte Flächen' },
+  { name: 'Linie', wert: MARKENWERTE.linie, zweck: 'Rahmen und Trenner' },
+];
+
+const anzeige = schrift(gestaltung.anzeige);
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titel}</title>
+    <meta name="description" content={beschreibung} />
+    <meta name="theme-color" content={gestaltung.grund} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={titel} />
+    <meta property="og:description" content={beschreibung} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/schriften/schriften.css" />
+  </head>
+
+  <body style={stil}>
+    <div class="seite">
+      <div class="bahn">
+        <header class="kopfzeile">
+          <a class="wortmarke" href="/">
+            <Fragment set:html={SIGNET} />
+            <span>{MARKE.name}</span>
+          </a>
+          <nav class="kopfnavi">
+            <a href="/designs">Designs</a>
+            <a href="/werkstatt">Werkstatt</a>
+            <a href="/preise">Preise</a>
+          </nav>
+        </header>
+
+        <section class="kopf">
+          <p class="marke">marke</p>
+          <h1>Eine Scheibe,<br />ein Ring, ein Punkt.</h1>
+          <p class="fuehrung">
+            Alles auf dieser Seite läuft — es sind keine Bilder von der Marke, sondern die Marke selbst. Ändert sich
+            eine Farbe im Kern, ändert sie sich hier mit.
+          </p>
+        </section>
+
+        <!-- Zeichen -->
+        <section>
+          <p class="marke">das zeichen</p>
+          <div class="buehne">
+            <Fragment set:html={SIGNET.replace('<svg', '<svg class="buehne__zeichen"')} />
+          </div>
+          <div class="merkmale">
+            <div class="merkmal">
+              <h3>Was es bedeutet</h3>
+              <p>
+                Eine gefüllte Scheibe und ein offener Ring, die sich berühren — du und die anderen. Kein Baum, in dem
+                sich Wege verzweigen: der Punkt ist, dass sich zwei treffen.
+              </p>
+            </div>
+            <div class="merkmal">
+              <h3>Wie es gebaut ist</h3>
+              <p>
+                Kreise mit r&nbsp;=&nbsp;20,5&nbsp;% der Kantenlänge, Mitten bei 38,5&nbsp;% und 64,5&nbsp;%, Ring
+                8,5&nbsp;% stark. Die Lücke ist gerechnet, nicht gezeichnet: sie liegt auf den Schnittpunkten beider
+                Kreise.
+              </p>
+            </div>
+            <div class="merkmal">
+              <h3>Wo es steht</h3>
+              <p>
+                Als Plättchen mit Wortmarke im Kopf jeder Seite, als Abzeichen am Fuß jeder Profilseite, als Symbol im
+                Browsertab und auf dem Startbildschirm. Die Wortmarke immer klein geschrieben.
+              </p>
+            </div>
+          </div>
+
+          <div class="groessen">
+            {
+              [96, 48, 32, 16].map((g) => (
+                <span class="groesse">
+                  <span class="groesse__feld" style={`width:${g}px;height:${g}px`}>
+                    <Fragment set:html={SIGNET} />
+                  </span>
+                  <span class="groesse__zahl">{g}&nbsp;px</span>
+                </span>
+              ))
+            }
+          </div>
+          <p class="quelle">
+            Geprüft bis 16&nbsp;Pixel und einfarbig auf hellem wie dunklem Grund — es kann neben einem QR-Code auf
+            einem Fahrzeug landen, und dort ist weder Farbe noch Größe garantiert.
+          </p>
+        </section>
+
+        <!-- Farben -->
+        <section>
+          <p class="marke">farben</p>
+          <h2>Rot ist Handlung.<br />Nie Dekoration.</h2>
+          <p class="fuehrung">
+            Pro Ansicht möglichst ein rotes Element — und zwar das, was angetippt werden soll. Wo Rot als Fließtext
+            stehen muss, steht die tiefe Stufe: das helle Signal trägt auf hellem Grund den Kontrast nicht.
+          </p>
+          <div class="farbfelder">
+            {
+              farben.map((f) => (
+                <div class="farbfeld">
+                  <span class="farbfeld__probe" style={`background:${f.wert}`} />
+                  <b>{f.name}</b>
+                  <code>{f.wert.toUpperCase()}</code>
+                  <span>{f.zweck}</span>
+                </div>
+              ))
+            }
+          </div>
+        </section>
+
+        <!-- Schrift -->
+        <section>
+          <p class="marke">schrift</p>
+          <h2>{anzeige.name}, zwei Gewichte.</h2>
+          <p class="fuehrung">
+            800 für Überschriften, Knöpfe, Zahlen und Labels. 400 für Lauftext. 600 nur für Navigation. Mehr braucht
+            es nicht, und mehr würde nur unentschlossen aussehen.
+          </p>
+          <div class="schriftprobe">
+            <p class="schriftprobe__gross">Deine Leute sollen dich erreichen.</p>
+            <p class="schriftprobe__klein">
+              Nicht nur anklicken. Ein Link, der antwortet — mit Öffnungszeiten, Visitenkarte und QR-Code.
+            </p>
+          </div>
+          <p class="quelle">
+            Die Schrift liegt im eigenen Verzeichnis, nicht bei Google. Ein Schriftabruf überträgt die IP-Adresse jedes
+            Besuchers an einen Dritten, und das verträgt sich nicht mit dem, was auf diesen Seiten steht.
+          </p>
+        </section>
+
+        <!-- Standfuß -->
+        <section>
+          <p class="marke">bewegung</p>
+          <h2>Der Standfuß.</h2>
+          <p class="fuehrung">
+            Kein weichgezeichneter Schatten, sondern ein harter Versatz nach unten, der beim Drücken einsinkt. Vier
+            Pixel Fuß, beim Druck einer. Das ist die eine Bewegung, die man an einer Schaltfläche wirklich spürt —
+            probier den Knopf aus.
+          </p>
+          <div class="knopfreihe">
+            <a class="knopf knopf--voll" href="/werkstatt">
+              Seite bauen
+              <Fragment set:html={zeichen('pfeil')} />
+            </a>
+            <a class="knopf" href="/designs">Designs ansehen</a>
+          </div>
+          <p class="quelle">
+            Wer in seinem System „Bewegung reduzieren" eingeschaltet hat, bekommt keine — das gilt hier wie im ganzen
+            Produkt.
+          </p>
+        </section>
+
+        <section class="schluss">
+          <p class="marke">und jetzt</p>
+          <h2>Bau deine Seite.</h2>
+          <div class="knopfreihe">
+            <a class="knopf knopf--voll" href="/werkstatt">
+              Zur Werkstatt
+              <Fragment set:html={zeichen('pfeil')} />
+            </a>
+            <a class="knopf" href="/t/hnvr">Echte Seite ansehen</a>
+          </div>
+        </section>
+
+        <footer class="fuss">
+          <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
+          <span>
+            <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
+            ·
+            <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
+          </span>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

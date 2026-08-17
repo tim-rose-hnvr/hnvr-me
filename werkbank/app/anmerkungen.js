@@ -22,12 +22,14 @@ export const WERKZEUGE = [
   { id: 'ersetzen',     name: 'Text ersetzen', kuerzel: 'B', zeichen: 'M4 20h7M14 4l6 6-9 9H5v-6z' },
   { id: 'schwaerzen',   name: 'Schwärzen',     kuerzel: 'S', zeichen: 'M4 8h16v8H4zM4 4h16' },
   { id: 'unterschrift', name: 'Unterschrift',  kuerzel: 'G', zeichen: 'M3 18c3 0 5-12 8-12s2 9 4 9 2-3 6-3' },
+  { id: 'stempel',      name: 'Stempel',       kuerzel: 'Z', zeichen: 'M5 20h14M7 16h10V9l-3-5H10L7 9z' },
+  { id: 'bereich',      name: 'Bereich kopieren', kuerzel: 'M', zeichen: 'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4' },
 ];
 
 export const FARBEN = ['#FFD400', '#67E667', '#7FD3FF', '#FF9BD2', '#FF6B4A', '#A82E23', '#1B6AC9', '#111111'];
 
 const TEXTWERKZEUGE = new Set(['hervor', 'unterstrich', 'durchstrich']);
-const ZIEHWERKZEUGE = new Set(['rechteck', 'ellipse', 'pfeil', 'schwaerzen', 'unterschrift']);
+const ZIEHWERKZEUGE = new Set(['rechteck', 'ellipse', 'pfeil', 'schwaerzen', 'unterschrift', 'bereich']);
 
 let entwurf = null;   // laufende Zeichnung { art, seiteId, punkte/rechteck, knoten }
 let letzteUnterschrift = null;
@@ -152,6 +154,25 @@ export function zeichneAnmerkungen(ebene, eintrag, sicht) {
           outline: gewaehlt ? '1px dashed var(--tally)' : '', pointerEvents: 'auto', cursor: 'move',
         },
         daten: { anmerkung: a.id }, text: a.text,
+      });
+      ebene.append(knoten);
+      continue;
+    }
+
+    if (a.art === 'stempel') {
+      const [sx1, sy1] = zuBild(a.x, a.y + a.h);
+      const [sx2, sy2] = zuBild(a.x + a.b, a.y);
+      const links = Math.min(sx1, sx2), oben = Math.min(sy1, sy2);
+      const breite = Math.abs(sx2 - sx1), hoehe = Math.abs(sy2 - sy1);
+      const knoten = el('div', {
+        klasse: 'anmerkung-griff stempel', daten: { anmerkung: a.id }, text: a.text,
+        stil: {
+          position: 'absolute', left: `${links}px`, top: `${oben}px`,
+          width: `${breite}px`, height: `${hoehe}px`,
+          color: a.farbe, borderColor: a.farbe,
+          fontSize: `${a.groesse * sicht.scale}px`,
+          outline: gewaehlt ? '1px dashed var(--tally)' : '',
+        },
       });
       ebene.append(knoten);
       continue;
@@ -291,6 +312,10 @@ export function starteWerkzeuge(spur, zuPdfPunkt) {
       melde('anmerkung:neuerText', { seiteId, x: punkt.x, y: punkt.y });
       return;
     }
+    if (zustand.werkzeug === 'stempel') {
+      melde('anmerkung:stempel', { seiteId, x: punkt.x, y: punkt.y });
+      return;
+    }
     if (zustand.werkzeug === 'freihand') {
       entwurf = { art: 'freihand', seiteId, punkte: [[punkt.x, punkt.y]], blattKnoten };
       blattKnoten.setPointerCapture?.(ereignis.pointerId);
@@ -327,6 +352,15 @@ export function starteWerkzeuge(spur, zuPdfPunkt) {
     }
     const breite = Math.abs(e.x2 - e.x), hoehe = Math.abs(e.y2 - e.y);
     if (breite < 3 || hoehe < 3) { melde('anmerkungen:geaendert'); return; }
+    if (e.art === 'bereich') {
+      // Kein Eintrag im Dokument: der Bereich wird nur abgelichtet.
+      melde('bereich:aufgenommen', {
+        seiteId: e.seiteId,
+        x: Math.min(e.x, e.x2), y: Math.min(e.y, e.y2), b: breite, h: hoehe,
+      });
+      melde('anmerkungen:geaendert');
+      return;
+    }
     if (e.art === 'unterschrift') {
       if (!letzteUnterschrift) { sage('Erst eine Unterschrift anlegen', { art: 'warn' }); return; }
       const x = Math.min(e.x, e.x2), y = Math.min(e.y, e.y2);
@@ -386,6 +420,11 @@ function zeichneEntwurf(sicht) {
       form = svgEl('ellipse', { cx: links + breite / 2, cy: oben + hoehe / 2, rx: breite / 2, ry: hoehe / 2, fill: 'none', stroke: zustand.farbe, 'stroke-width': zustand.strichstaerke * sicht.scale });
     } else if (entwurf.art === 'pfeil') {
       form = svgEl('line', { x1, y1, x2, y2, stroke: zustand.farbe, 'stroke-width': zustand.strichstaerke * sicht.scale });
+    } else if (entwurf.art === 'bereich') {
+      form = svgEl('rect', {
+        x: links, y: oben, width: breite, height: hoehe,
+        fill: '#1B6AC9', 'fill-opacity': 0.12, stroke: '#1B6AC9', 'stroke-width': 1.5, 'stroke-dasharray': '5 3',
+      });
     } else {
       form = svgEl('rect', {
         x: links, y: oben, width: breite, height: hoehe,

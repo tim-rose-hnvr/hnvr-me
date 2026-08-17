@@ -333,6 +333,72 @@ try {
     z.anmerkungen = z.anmerkungen.filter((a) => a.id !== 'test-schwaerzung');
   });
 
+  console.log('\nWord-Ausgabe');
+  const wordDatei = join(ablage, 'ausgabe.docx');
+  const [wordLadung] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(async () => {
+      const { alsWord } = await import('./app/word.js');
+      const { sichereBytes } = await import('./app/kern.js');
+      const { bytes } = await alsWord({});
+      sichereBytes(bytes, 'ausgabe.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    }),
+  ]);
+  await wordLadung.saveAs(wordDatei);
+
+  // .docx ist ein ZIP. Wir packen es hier von Hand aus — ohne fremde Hilfe.
+  const { inflateRawSync } = await import('node:zlib');
+  const rohDaten = await readFile(wordDatei);
+  const teile = new Map();
+  let leseStelle = 0;
+  const signatur = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
+  while ((leseStelle = rohDaten.indexOf(signatur, leseStelle)) !== -1) {
+    const verfahren = rohDaten.readUInt16LE(leseStelle + 8);
+    const gepackt = rohDaten.readUInt32LE(leseStelle + 18);
+    const nameLaenge = rohDaten.readUInt16LE(leseStelle + 26);
+    const zusatz = rohDaten.readUInt16LE(leseStelle + 28);
+    const name = rohDaten.subarray(leseStelle + 30, leseStelle + 30 + nameLaenge).toString();
+    const beginn = leseStelle + 30 + nameLaenge + zusatz;
+    const inhalt = rohDaten.subarray(beginn, beginn + gepackt);
+    teile.set(name, verfahren === 8 ? inflateRawSync(inhalt) : inhalt);
+    leseStelle = beginn + gepackt;
+  }
+  pruefe(teile.has('word/document.xml') && teile.has('[Content_Types].xml') && teile.has('word/styles.xml'),
+    'die .docx enthält alle Pflichtteile', [...teile.keys()].join(', '));
+
+  const dokumentXml = (teile.get('word/document.xml') || Buffer.alloc(0)).toString('utf8');
+  const absaetze = (dokumentXml.match(/<w:p>/g) || []).length;
+  pruefe(absaetze > 20, `Absätze im Word-Dokument (${absaetze})`);
+  pruefe(/Ueberschrift1/.test(dokumentXml), 'Überschriften werden als Word-Formatvorlage gesetzt');
+  pruefe(/<w:b\/>/.test(dokumentXml), 'fette Stellen bleiben fett');
+  pruefe(/w:type="page"/.test(dokumentXml), 'Seitenumbrüche stehen drin');
+  pruefe(dokumentXml.includes('Konferenzanlage') && dokumentXml.includes('Kamerapreset'),
+    'Text der ersten und der letzten Seite ist enthalten');
+  pruefe(!/[\x00-\x08]/.test(dokumentXml) && dokumentXml.includes('&amp;'),
+    'Sonderzeichen sind sauber geschützt');
+
+  console.log('\nStempel und Bilder');
+  await seite.evaluate(() => {
+    const z = window.werkbank.zustand;
+    window.dispatchEvent(new Event('resize'));
+    return import('./app/anmerkungen.js').then((m) => m.fuegeAn({
+      art: 'stempel', seiteId: z.folge[0].id, x: 60, y: 700, b: 160, h: 34,
+      text: 'Genehmigt', groesse: 13, farbe: '#0D5A4D',
+    }));
+  });
+  await seite.waitForTimeout(600);
+  pruefe(await seite.evaluate(() => !!document.querySelector('.stempel')), 'Stempel erscheint auf der Seite');
+
+  const mitStempel = join(ablage, 'mit-stempel.pdf');
+  const [stempelLadung] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(() => window.werkbank.fuehreAus('sichern')),
+  ]);
+  await stempelLadung.saveAs(mitStempel);
+  const stempelDok = await pdfjs.getDocument({ data: new Uint8Array(await readFile(mitStempel)), standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/') }).promise;
+  const stempelText = (await (await stempelDok.getPage(1)).getTextContent()).items.map((i) => i.str).join(' ');
+  pruefe(/GENEHMIGT/.test(stempelText), 'Stempel steht in der gesicherten Datei');
+
   console.log('\nAnsicht und Zoom');
   await seite.selectOption('#feld-zoom', 'breite');
   await seite.waitForTimeout(800);

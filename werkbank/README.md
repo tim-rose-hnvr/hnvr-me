@@ -113,6 +113,24 @@ Rand wird abgeschnitten. Klick in ein Unterschriftsfeld setzt sie passend ein.
 
 **Vergleichen** — zwei Dateien seitenweise wortweise gegenüberstellen.
 
+**Nach Word** — `.docx` mit Absätzen, Überschriften (aus der Schriftgröße),
+fetten und kursiven Stellen und Seitenumbrüchen. Übernommen wird der Aufbau,
+nicht das Layout: keine Spalten, keine Tabellenraster, keine Bilder. Ein PDF
+beschreibt Buchstaben an Punkten, kein Word beschreibt Absätze — eine
+Nachbildung des Aussehens zerfällt, sobald jemand ein Wort einfügt. Wer das
+Aussehen braucht, gibt das PDF weiter; wer weiterschreiben will, nimmt die
+`.docx`. Erkannter Text aus Scans wandert mit. Das Archiv wird selbst
+geschrieben (`app/zip.js`), keine fremde Bibliothek nötig.
+
+**Text mitnehmen** — markieren und mit `Strg+C` kopieren wie überall.
+Zusätzlich: „Auswahl oder Seitentext kopieren" nimmt ohne Markierung die ganze
+Seite, „Text des ganzen Dokuments kopieren" alles. Auf Scans greift dabei die
+Texterkennung. Mit `Bereich kopieren` (`M`) lässt sich ein Ausschnitt als Bild
+in die Zwischenablage ziehen — Acrobats Momentaufnahme.
+
+**Stempel** — Genehmigt, Nicht genehmigt, Entwurf, Vertraulich, Kopie,
+Erhalten; wahlweise mit heutigem Datum oder eigenem Text.
+
 **Ausgeben** — PDF, Text (`.txt`), Seite als PNG, Anmerkungsbericht. Gedruckt
 wird nicht die Bildschirmseite, sondern die Datei, die auch beim Sichern
 entstünde — sie wird dafür im Betrachter des Browsers geöffnet.
@@ -120,6 +138,47 @@ entstünde — sie wird dafür im Betrachter des Browsers geöffnet.
 **Bedienung** — Befehlspalette mit `Strg+K`; jede Fähigkeit ist ein Befehl und
 über Werkzeugleiste, Palette, Tastenkürzel und Vorschlag gleichermaßen
 erreichbar. Tastenkürzel unter `F1`.
+
+## Abgleich mit der Acrobat-Werkzeugliste
+
+Werkzeug für Werkzeug, in der Reihenfolge, in der Acrobat sie anbietet.
+
+| Acrobat | Werkbank | Anmerkung |
+|---|---|---|
+| PDF exportieren | **ja** | PDF, Word (.docx), Text, PNG |
+| Diese PDF stilisieren | nein | Gestaltung durch ein Sprachmodell — braucht einen Dienst |
+| Ausfüllen und Signieren | **ja** | Formularfelder und sichtbare Unterschrift |
+| PDF bearbeiten | **teilweise** | Text ersetzen ja; Bilder und Objekte im PDF nein |
+| E-Signaturen anfordern | nein | Unterschriftslauf über mehrere Personen braucht einen Server |
+| Diese PDF-Datei übersetzen | nein | Übersetzungsdienst |
+| PDF erstellen | **teilweise** | aus Bildern ja; aus Word oder Excel nein |
+| Dateien zusammenführen | **ja** | |
+| Seiten verwalten | **ja** | sortieren, drehen, löschen, verdoppeln, auszugsweise ausgeben |
+| Zum Kommentieren senden | nein | gemeinsames Kommentieren braucht einen Server |
+| Scan & OCR | **teilweise** | Texterkennung ja; ein Scangerät ansteuern nein |
+| PDF-Datei schützen | **ja** | AES-256, Rechte für Drucken, Ändern, Kopieren |
+| PDF-Datei schwärzen | **ja** | mit Rasterung, der Text ist wirklich fort |
+| PDF komprimieren | **ja** | „Verkleinern", mit Vorher/Nachher |
+| Formular vorbereiten | nein | Felder ausfüllen ja, Felder anlegen noch nicht |
+| Kommentare hinzufügen | **ja** | zehn Werkzeuge, Liste, Bericht |
+| In PDF konvertieren | **teilweise** | Bilder ja; Office-Dateien nein |
+| Stempel hinzufügen | **ja** | Vorlagen und eigener Text, wahlweise mit Datum |
+| Ein Zertifikat verwenden | nein | kryptografische Signatur — der nächste große Ausbau |
+| Druckproduktion verwenden | nein | Druckvorstufe, Farbauszüge |
+| Objekte messen | nein | |
+| Dateien vergleichen | **ja** | wortweiser Textvergleich je Seite |
+| Rich Media hinzufügen | nein | bewusst nicht: Video im PDF ist eine Sicherheitslücke mit Abspieltaste |
+| Geführte Aktionen verwenden | **teilweise** | Befehlspalette statt Aktionsfolgen; kein Stapelbetrieb über Ordner |
+| Barrierefreiheit vorbereiten | nein | Tags und Lesereihenfolge |
+| PDF-Standards anwenden | nein | PDF/A, PDF/X |
+| Suchindex hinzufügen | **teilweise** | Volltextsuche im Dokument ja; Index über einen Ordner nein |
+| JavaScript verwenden | nein | bewusst nicht: JavaScript im PDF ist seit Jahren ein Einfallstor |
+| Benutzerdefiniertes Tool erstellen | **teilweise** | jede Fähigkeit ist ein Befehl und über die Palette erreichbar |
+
+Elf von neunundzwanzig fehlen ganz. Sechs davon brauchen einen Server oder
+einen Dienst und passen deshalb nicht zu einer Anwendung, die nichts
+weitergibt. Zwei sind bewusst abgelehnt. Drei — Zertifikat, Formularfelder
+anlegen, Barrierefreiheit — sind echte Lücken und ließen sich hier bauen.
 
 ## Was sie nicht kann
 
@@ -133,7 +192,9 @@ Ehrlicher als eine lange Merkmalsliste:
   nachgebildet; bei ausgefallenen Schriften sieht man den Unterschied.
 - **Texterkennung ist nie fehlerfrei.** Sie nennt ihre Sicherheit in Prozent.
   Zahlen, Namen und Kennzeichen gehören geprüft.
-- **Kein Export nach Word oder Excel.** Nur PDF, Text, PNG.
+- **Kein Export nach Excel.** Nach Word ja, aber ohne Tabellenerkennung —
+  eine Tabelle wird zu Absätzen, nicht zu einem Word-Raster.
+- **Keine Formularfelder anlegen.** Vorhandene ausfüllen ja, neue setzen nein.
 - **Ein unbekanntes Kennwort bleibt unbekannt.** qpdf entschlüsselt mit
   Kennwort, es knackt keines.
 - **Lesezeichen** bleiben nur erhalten, solange Seitenfolge und Drehung
@@ -154,6 +215,8 @@ app/texterkennung.js Tesseract ansteuern, Wörter in PDF-Punkte umrechnen
 app/schutz.js       qpdf ansteuern: Kennwort, Rechte, Reparatur
 app/unterschrift.js Unterschrift zeichnen, tippen, laden
 app/vergleich.js    Wortvergleich zweier Dateien
+app/word.js         Aufbau lesen und als .docx schreiben
+app/zip.js          ZIP-Schreiber (ein .docx ist ein ZIP)
 app/mitdenken.js    Befunde und Vorschläge
 app/ausgabe.js      Schreiben über pdf-lib
 app/oberflaeche.js  Befehlsregister, Tafeln, Tastatur
@@ -193,8 +256,8 @@ Die Werkbank wählt selbst und sagt im Sicherungsdialog, welcher Weg gilt:
 Zwei Läufe, beide in einem echten Chromium, beide ohne Netz:
 
 ```sh
-node werkzeuge/pruefen.mjs        # 49 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 49 Prüfungen — die Bedienung
+node werkzeuge/pruefen.mjs        # 58 Prüfungen — das Ergebnis in der Datei
+node werkzeuge/vollpruefung.mjs   # 55 Prüfungen — die Bedienung
 ```
 
 **`pruefen.mjs`** fragt: Stimmt, was herauskommt? Geschwärzte Seite ohne
@@ -204,12 +267,16 @@ Unterschriftsfeld, Texterkennung mit Inhalts- und Sicherheitsprüfung,
 durchsuchbarer Scan nach dem Sichern, geschützte Datei ohne Kennwort
 verschlossen und mit Kennwort offen, falsches Kennwort erkannt, jede
 Mitdenken-Regel einmal ausgelöst, Zoomanzeige deckt sich mit dem Zoom.
+Für die Word-Ausgabe wird die `.docx` von Hand ausgepackt und geprüft:
+Pflichtteile vorhanden, Absätze, Überschriftenvorlage, fette Stellen,
+Seitenumbrüche, Text der ersten und letzten Seite, saubere Sonderzeichen.
 
 **`vollpruefung.mjs`** fragt: Lässt sich alles bedienen? Zoomstufen, Drehen,
 Blättern, Tastatur, Tafeln, jedes Werkzeug, Anmerkung wählen, verschieben,
 löschen, zurücknehmen, Miniaturen ziehen, Suche mit Optionen, jeder Dialog,
 Befehlspalette, Teilen, Reparieren, Linearisieren, Verkleinern, Vergleich,
-Unterschrift in allen drei Wegen, Drucken.
+Unterschrift in allen drei Wegen, Drucken, Word-Ausgabe, Text kopieren,
+Bereich ablichten, Stempel, PDF aus Bildern.
 
 Bei einem Fehlschlag legt `vollpruefung.mjs` ein Bildschirmfoto und einen
 Zustandsauszug ab und nennt den Pfad. Beide Läufe schlagen auch dann fehl,

@@ -303,6 +303,20 @@ async function maleAnmerkungen(ziel, folge, versatzKarte) {
             size: groesse, font: schrift, color: rgb(schriftfarbe.r, schriftfarbe.g, schriftfarbe.b),
           });
         } catch (fehler) { console.warn('Ersatztext ließ sich nicht setzen:', fehler?.message); }
+      } else if (a.art === 'stempel') {
+        const rand = farbeZuAnteilen(a.farbe || '#0D5A4D');
+        seite.drawRectangle({
+          x: a.x + vx, y: a.y + vy, width: a.b, height: a.h,
+          borderColor: rgb(rand.r, rand.g, rand.b), borderWidth: 2, opacity: 0,
+        });
+        const groesse = a.groesse || a.h * 0.45;
+        const text = nurWinAnsi(a.text).toUpperCase();
+        const breite = schrift.widthOfTextAtSize(text, groesse);
+        seite.drawText(text, {
+          x: a.x + vx + (a.b - breite) / 2,
+          y: a.y + vy + (a.h - groesse * 0.72) / 2,
+          size: groesse, font: schrift, color: rgb(rand.r, rand.g, rand.b),
+        });
       } else if (a.art === 'notiz') {
         // Echte PDF-Notiz, damit jeder Betrachter sie als Kommentar zeigt.
         legeNotizAn(ziel, seite, a, vx, vy);

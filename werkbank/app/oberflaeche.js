@@ -28,6 +28,8 @@ import { zeigeUnterschriftDialog } from './unterschrift.js';
 import { starteMitdenken, tafelMitdenken, befunde, musterListe, untersuche } from './mitdenken.js';
 import { sichereDokument, seitenAusgeben, teileDokument, seiteAlsBild, istUnveraendertesGeruest, vorschlagsname, baueDokument, verkleinere } from './ausgabe.js';
 import { zeigeErkennungsDialog, erkennungsUebersicht } from './texterkennung.js';
+import { alsWord } from './word.js';
+import { textDerSeite } from './dokument.js';
 import { vergleicheMitDatei } from './vergleich.js';
 
 /* ---------- Befehlsregister ------------------------------------------------ */
@@ -57,6 +59,27 @@ function baueBefehle() {
     const eintrag = zustand.folge[zustand.aktuelleSeite - 1];
     const blob = await mitLader('Bild wird erzeugt …', () => seiteAlsBild(eintrag, 3));
     sichereBytes(await blob.arrayBuffer(), vorschlagsname(`-seite-${zustand.aktuelleSeite}`).replace(/\.pdf$/i, '.png'), 'image/png');
+  });
+  befehl('word:ausgeben', 'Nach Word ausgeben (.docx) …', 'Datei', zeigeWordDialog);
+  befehl('bilder:zuPdf', 'PDF aus Bildern erstellen …', 'Datei', () => $('#dateiwahl-bilder').click());
+  befehl('text:kopieren', 'Auswahl oder Seitentext kopieren', 'Text', async () => {
+    const auswahl = String(window.getSelection() || '').trim();
+    if (auswahl) {
+      await inZwischenablage(auswahl);
+      sage(`${auswahl.split(/\s+/).length} Wörter kopiert`);
+      return;
+    }
+    const eintrag = zustand.folge[zustand.aktuelleSeite - 1];
+    if (!eintrag) return;
+    const text = await textDerSeite(eintrag);
+    if (!text.trim()) return sage('Diese Seite trägt keinen Text — erst erkennen lassen?', { art: 'warn' });
+    await inZwischenablage(text);
+    sage(`Text von Seite ${zustand.aktuelleSeite} kopiert`);
+  });
+  befehl('text:alleKopieren', 'Text des ganzen Dokuments kopieren', 'Text', async () => {
+    const text = await mitLader('Text wird gesammelt …', textAusgeben);
+    await inZwischenablage(text);
+    sage(`${text.split(/\s+/).filter(Boolean).length} Wörter in der Zwischenablage`);
   });
   befehl('vergleich', 'Mit anderer Datei vergleichen …', 'Datei', () => $('#dateiwahl-vergleich').click());
   befehl('drucken', 'Drucken', 'Datei', async () => {
@@ -414,6 +437,12 @@ function zeichneRechteTafel() {
           beiInput: (e) => { zustand.schriftgroesse = Number(e.target.value); },
         })));
     }
+    if (zustand.werkzeug === 'stempel') {
+      abschnitt.append(el('p', { klasse: 'hinweis', text: 'Auf die Stelle klicken. Vorlage wählen oder eigenen Text schreiben; das Datum lässt sich anhängen.' }));
+    }
+    if (zustand.werkzeug === 'bereich') {
+      abschnitt.append(el('p', { klasse: 'hinweis', text: 'Rechteck über den Ausschnitt ziehen. Er landet in der Zwischenablage — mit einem Knopf zum Sichern als PNG.' }));
+    }
     if (zustand.werkzeug === 'ersetzen') {
       abschnitt.append(el('p', { klasse: 'hinweis', text: 'Auf ein Textstück klicken. Die Werkbank übernimmt Lage, Größe und Farben und setzt den neuen Text an dieselbe Stelle.' }));
     }
@@ -554,6 +583,144 @@ async function sichereMit(optionen) {
     }
   });
   melde('dokument:geaendert');
+}
+
+/** Zwischenablage mit Rückfall, falls der Browser sie verweigert. */
+async function inZwischenablage(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Ohne Erlaubnis bleibt der alte Weg über ein verstecktes Feld.
+    const feld = el('textarea', { stil: { position: 'fixed', top: '-1000px' } });
+    feld.value = text;
+    document.body.append(feld);
+    feld.select();
+    let geklappt = false;
+    try { geklappt = document.execCommand('copy'); } catch { geklappt = false; }
+    feld.remove();
+    if (!geklappt) sage('Der Browser lässt das Kopieren nicht zu', { art: 'warn' });
+    return geklappt;
+  }
+}
+
+const STEMPEL = [
+  { text: 'Genehmigt', farbe: '#0D5A4D' },
+  { text: 'Nicht genehmigt', farbe: '#A82E23' },
+  { text: 'Entwurf', farbe: '#7E5300' },
+  { text: 'Vertraulich', farbe: '#A82E23' },
+  { text: 'Kopie', farbe: '#59666C' },
+  { text: 'Erhalten', farbe: '#1B6AC9' },
+];
+
+function setzeStempel({ seiteId, x, y }) {
+  const vorlage = el('select', { klasse: 'feld' }, ...STEMPEL.map((v, i) => el('option', { value: String(i), text: v.text })));
+  const eigenerText = el('input', { klasse: 'feld', placeholder: 'oder eigener Text', stil: { flex: '1' } });
+  const mitDatum = el('input', { type: 'checkbox' });
+
+  zeigeDialog({
+    titel: 'Stempel setzen',
+    rumpf: el('div', {},
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Vorlage' }), vorlage),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Eigener Text' }), eigenerText),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Datum' }),
+        el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, mitDatum, 'heutiges Datum anhängen')),
+      el('p', { klasse: 'hinweis', text: 'Der Stempel wird beim Sichern in die Seite gezeichnet — er ist eine Aufschrift, keine Bestätigung durch Dritte.' })),
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Setzen', betont: true,
+        tun: () => {
+          const gewaehlt = STEMPEL[Number(vorlage.value)];
+          let text = eigenerText.value.trim() || gewaehlt.text;
+          if (mitDatum.checked) text += ` ${new Date().toLocaleDateString('de-DE')}`;
+          const groesse = 13;
+          const breite = Math.max(120, text.length * groesse * 0.72 + 24);
+          fuegeAn({
+            art: 'stempel', seiteId,
+            x, y: y - 34, b: breite, h: 34,
+            text, groesse,
+            farbe: eigenerText.value.trim() ? zustand.farbe : gewaehlt.farbe,
+          });
+        },
+      },
+    ],
+  });
+}
+
+async function bilderZuPdf(dateien) {
+  await mitLader('Bilder werden eingebettet …', async () => {
+    const { starteSchreiber } = await import('./ausgabe.js');
+    const pdflib = await starteSchreiber();
+    const dokument = await pdflib.PDFDocument.create();
+    let gezaehlt = 0;
+
+    for (const datei of dateien) {
+      const bytes = new Uint8Array(await datei.arrayBuffer());
+      let bild;
+      try {
+        bild = /\.png$/i.test(datei.name) || datei.type === 'image/png'
+          ? await dokument.embedPng(bytes)
+          : await dokument.embedJpg(bytes);
+      } catch (fehler) {
+        sage(`${datei.name} ließ sich nicht einbetten (${fehler.message})`, { art: 'warn', dauer: 6000 });
+        continue;
+      }
+      // Seite in Bildgröße, aber höchstens A4-Breite — sonst werden Fotos riesig.
+      const hoechstBreite = 595.28;
+      const massstab = Math.min(1, hoechstBreite / bild.width);
+      const seite = dokument.addPage([bild.width * massstab, bild.height * massstab]);
+      seite.drawImage(bild, { x: 0, y: 0, width: bild.width * massstab, height: bild.height * massstab });
+      gezaehlt++;
+    }
+    if (!gezaehlt) throw new Error('Kein Bild ließ sich lesen.');
+    dokument.setProducer('Werkbank');
+    sichereBytes(await dokument.save(), 'bilder.pdf');
+    sage(`${gezaehlt} Bild${gezaehlt === 1 ? '' : 'er'} zu einem PDF gemacht`);
+  });
+}
+
+function zeigeWordDialog() {
+  const umfang = el('select', { klasse: 'feld' },
+    el('option', { value: 'alle', text: `Alle Seiten (${zustand.folge.length})` }),
+    el('option', { value: 'auswahl', text: `Gewählte Seiten (${zustand.gewaehlteSeiten.size})` }));
+  const ueberschriften = el('input', { type: 'checkbox', checked: true });
+  const umbrueche = el('input', { type: 'checkbox', checked: true });
+
+  zeigeDialog({
+    titel: 'Nach Word ausgeben',
+    rumpf: el('div', {},
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Umfang' }), umfang),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Überschriften' }),
+        el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, ueberschriften, 'aus der Schriftgröße erkennen')),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Seiten' }),
+        el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, umbrueche, 'Seitenumbrüche übernehmen')),
+      el('p', { klasse: 'hinweis' },
+        'Übernommen werden Absätze, Überschriften, fette und kursive Stellen. ',
+        'Nicht übernommen werden Spalten, Tabellenraster und Bilder — ein PDF beschreibt Buchstaben an Punkten, keine Absätze. ',
+        'Wer das Aussehen braucht, gibt das PDF weiter; wer weiterschreiben will, nimmt diese Datei.'),
+      zustand.ocr.size
+        ? el('p', { klasse: 'hinweis', text: 'Erkannter Text aus Scans wandert mit.' })
+        : el('p', { klasse: 'hinweis', text: 'Seiten ohne Textebene bleiben leer — dafür erst die Texterkennung laufen lassen.' })),
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Ausgeben', betont: true,
+        tun: () => mitLader('Word-Datei wird geschrieben …', async () => {
+          const { bytes, woerter, absaetze, seitenOhneText } = await alsWord({
+            seiten: umfang.value === 'auswahl' && zustand.gewaehlteSeiten.size ? [...zustand.gewaehlteSeiten] : null,
+            ueberschriftenErkennen: ueberschriften.checked,
+            seitenumbrueche: umbrueche.checked,
+          });
+          sichereBytes(bytes, vorschlagsname('').replace(/\.pdf$/i, '.docx'),
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+          sage(seitenOhneText
+            ? `${woerter} Wörter in ${absaetze} Absätzen — ${seitenOhneText} Seite${seitenOhneText === 1 ? '' : 'n'} ohne Text blieb leer`
+            : `${woerter} Wörter in ${absaetze} Absätzen ausgegeben`, { dauer: 6000 });
+        }),
+      },
+    ],
+  });
 }
 
 function zeigeSchutzDialog() {
@@ -722,6 +889,7 @@ function zeigeHilfe() {
   for (const [was, taste] of [
     ['Werkzeug abwählen, Dialog schließen', 'Esc'],
     ['Text markieren und Werkzeugtaste drücken — wendet es sofort an', 'H / U / D'],
+    ['Markierten Text kopieren (wie überall im Browser)', 'Strg+C'],
     ['Seiten mehrfach wählen', 'Umschalt- oder Strg-Klick in den Miniaturen'],
     ['Seiten umsortieren', 'Miniatur ziehen'],
   ]) rumpf.append(el('div', { klasse: 'merkmal' }, el('span', { text: was }), el('span', { klasse: 'marke', text: taste })));
@@ -878,6 +1046,50 @@ function ersetzeText(stelle) {
   setTimeout(() => { feld.focus(); feld.select(); }, 30);
 }
 
+/** Momentaufnahme: der gezogene Bereich wird als Bild abgelichtet. */
+async function nimmBereichAuf({ seiteId, x, y, b, h }) {
+  const eintrag = zustand.folge.find((e) => e.id === seiteId);
+  if (!eintrag) return;
+  await mitLader('Bereich wird abgelichtet …', async () => {
+    const { holeSeite } = await import('./dokument.js');
+    const seite = await holeSeite(eintrag);
+    const dichte = 3;
+    const sicht = seite.getViewport({ scale: dichte, rotation: (seite.rotate + eintrag.drehung) % 360 });
+    const ganz = document.createElement('canvas');
+    ganz.width = Math.ceil(sicht.width);
+    ganz.height = Math.ceil(sicht.height);
+    const stift = ganz.getContext('2d');
+    stift.fillStyle = '#fff';
+    stift.fillRect(0, 0, ganz.width, ganz.height);
+    await seite.render({ canvasContext: stift, viewport: sicht }).promise;
+
+    const [x1, y1] = sicht.convertToViewportPoint(x, y);
+    const [x2, y2] = sicht.convertToViewportPoint(x + b, y + h);
+    const links = Math.max(0, Math.min(x1, x2));
+    const oben = Math.max(0, Math.min(y1, y2));
+    const breite = Math.min(ganz.width - links, Math.abs(x2 - x1));
+    const hoehe = Math.min(ganz.height - oben, Math.abs(y2 - y1));
+
+    const ausschnitt = document.createElement('canvas');
+    ausschnitt.width = Math.max(1, Math.round(breite));
+    ausschnitt.height = Math.max(1, Math.round(hoehe));
+    ausschnitt.getContext('2d').drawImage(ganz, links, oben, breite, hoehe, 0, 0, ausschnitt.width, ausschnitt.height);
+
+    const blob = await new Promise((loese) => ausschnitt.toBlob(loese, 'image/png'));
+    let inAblage = false;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      inAblage = true;
+    } catch { inAblage = false; }
+
+    const name = vorschlagsname(`-ausschnitt-s${nummerVon(seiteId)}`).replace(/\.pdf$/i, '.png');
+    sage(inAblage ? `Bereich in der Zwischenablage (${ausschnitt.width}×${ausschnitt.height})` : 'Bereich abgelichtet', {
+      dauer: 7000,
+      aktion: { beschriftung: 'als PNG sichern', tun: async () => sichereBytes(await blob.arrayBuffer(), name, 'image/png') },
+    });
+  });
+}
+
 function neuerText({ seiteId, x, y }) {
   const feld = el('textarea', { klasse: 'feld', rows: '4', stil: { width: '100%' }, placeholder: 'Text …' });
   zeigeDialog({
@@ -1007,6 +1219,11 @@ export function starteOberflaeche() {
     e.target.value = '';
     if (datei) await mitLader('Vergleich läuft …', () => vergleicheMitDatei(datei));
   });
+  $('#dateiwahl-bilder').addEventListener('change', async (e) => {
+    const dateien = [...(e.target.files || [])];
+    e.target.value = '';
+    if (dateien.length) await bilderZuPdf(dateien);
+  });
   $('#knopf-oeffnen').addEventListener('click', () => $('#dateiwahl').click());
   $('#knopf-beispiel').addEventListener('click', () => mitLader('Beispiel wird geladen …', ladeBeispiel));
 
@@ -1054,6 +1271,8 @@ export function starteOberflaeche() {
   hoer('anmerkung:bearbeiten', bearbeiteNotiz);
   hoer('anmerkung:neuerText', neuerText);
   hoer('anmerkung:textErsetzen', ersetzeText);
+  hoer('anmerkung:stempel', setzeStempel);
+  hoer('bereich:aufgenommen', nimmBereichAuf);
   hoer('suche:geaendert', zeichneSuchergebnisse);
   hoer('mitdenken:geaendert', zeichneRechteTafel);
   hoer('ocr:geaendert', () => { zeichneRechteTafel(); aktualisiereFuss(); });

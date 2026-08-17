@@ -704,6 +704,102 @@ await pruefe('Drucken reicht die erzeugte Datei an den Betrachter', async () => 
   return 'PDF-Blob an den Betrachter übergeben';
 });
 
+/* --- Neue Wege: Word, Textauswahl, Stempel, Bilder ------------------------ */
+console.log('\n== Word, Text, Stempel ==');
+await seite.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
+
+await pruefe('Word-Dialog gibt eine .docx aus', async () => {
+  await seite.evaluate(() => window.werkbank.fuehreAus('word:ausgeben'));
+  await seite.waitForSelector('.dialog select');
+  const pfad = await ladungVon(() => seite.click('.dialog-fuss .knopf:last-child'));
+  const daten = await readFile(pfad);
+  if (daten[0] !== 0x50 || daten[1] !== 0x4B) throw new Error('kein ZIP');
+  if (!daten.includes(Buffer.from('word/document.xml'))) throw new Error('kein Word-Dokument');
+  return `${Math.round(daten.length / 1024)} kB`;
+});
+
+await pruefe('Textauswahl kopieren', async () => {
+  await seite.evaluate(() => window.werkbank.fuehreAus('werkzeug:auswahl'));
+  const stelle = await seite.evaluate(() => {
+    const s = [...document.querySelectorAll('.textebene span')].find((x) => x.textContent.includes('Konferenzanlage'));
+    if (!s) return null;
+    const r = s.getBoundingClientRect();
+    return { x: r.left, y: r.top + r.height / 2, b: r.width };
+  });
+  if (!stelle) throw new Error('Textstück nicht gefunden');
+  await seite.mouse.move(stelle.x + 2, stelle.y);
+  await seite.mouse.down();
+  await seite.mouse.move(stelle.x + stelle.b - 4, stelle.y, { steps: 8 });
+  await seite.mouse.up();
+  await seite.evaluate(() => window.werkbank.fuehreAus('text:kopieren'));
+  await seite.waitForTimeout(500);
+  const inhalt = await seite.evaluate(() => navigator.clipboard.readText().catch(() => ''));
+  if (!/Konferenzanlage|Vertrag/.test(inhalt)) throw new Error('Zwischenablage: ' + inhalt.slice(0, 40));
+  return `${inhalt.trim().split(/\s+/).length} Wörter`;
+});
+
+await pruefe('Seitentext kopieren, wenn nichts markiert ist', async () => {
+  await seite.evaluate(() => window.getSelection().removeAllRanges());
+  await seite.evaluate(() => window.werkbank.fuehreAus('text:kopieren'));
+  await seite.waitForTimeout(600);
+  const inhalt = await seite.evaluate(() => navigator.clipboard.readText().catch(() => ''));
+  if (inhalt.trim().split(/\s+/).length < 20) throw new Error('zu wenig Text: ' + inhalt.length);
+  return `${inhalt.trim().split(/\s+/).length} Wörter`;
+});
+
+await pruefe('Bereich ablichten (Momentaufnahme)', async () => {
+  await seite.evaluate(() => window.werkbank.fuehreAus('werkzeug:bereich'));
+  const b = await blatt();
+  const a1 = b.bei(0.15, 0.2), a2 = b.bei(0.6, 0.3);
+  await seite.mouse.move(a1.x, a1.y);
+  await seite.mouse.down();
+  await seite.mouse.move(a2.x, a2.y, { steps: 8 });
+  await seite.mouse.up();
+  await seite.waitForTimeout(2500);
+  const meldung = await seite.evaluate(() => document.querySelector('#meldungen')?.textContent || '');
+  if (!/Bereich/.test(meldung)) throw new Error('keine Rückmeldung: ' + meldung.slice(0, 60));
+  const anmerkungen = await seite.evaluate(() => window.werkbank.zustand.anmerkungen.some((x) => x.art === 'bereich'));
+  if (anmerkungen) throw new Error('der Bereich wurde fälschlich ins Dokument geschrieben');
+  return meldung.slice(-42);
+});
+
+await pruefe('Stempel setzen', async () => {
+  await seite.evaluate(() => window.werkbank.fuehreAus('werkzeug:stempel'));
+  const b = await blatt();
+  const punkt = b.bei(0.6, 0.42);
+  await seite.mouse.click(punkt.x, punkt.y);
+  await seite.waitForSelector('.dialog select');
+  await seite.selectOption('.dialog select', '2');            // Entwurf
+  await seite.check('.dialog input[type=checkbox]');          // mit Datum
+  await seite.click('.dialog-fuss .knopf:last-child');
+  await seite.waitForTimeout(600);
+  const stempel = await seite.evaluate(() => window.werkbank.zustand.anmerkungen.find((a) => a.art === 'stempel'));
+  if (!stempel) throw new Error('kein Stempel angelegt');
+  if (!/Entwurf/.test(stempel.text)) throw new Error('Text: ' + stempel.text);
+  return stempel.text;
+});
+
+await pruefe('PDF aus Bildern erstellen', async () => {
+  const bildPfad = join(HIER, 'seite.png');
+  const png = await seite.evaluate(() => {
+    const c = document.createElement('canvas');
+    c.width = 600; c.height = 400;
+    const k = c.getContext('2d');
+    k.fillStyle = '#EBEEEE'; k.fillRect(0, 0, 600, 400);
+    k.fillStyle = '#141A1C'; k.font = '40px sans-serif'; k.fillText('Bildseite', 40, 200);
+    return c.toDataURL('image/png').split(',')[1];
+  });
+  await (await import('node:fs/promises')).writeFile(bildPfad, Buffer.from(png, 'base64'));
+  const pfad = await ladungVon(async () => {
+    await seite.evaluate(() => window.werkbank.fuehreAus('bilder:zuPdf'));
+    await seite.setInputFiles('#dateiwahl-bilder', [bildPfad, bildPfad]);
+  });
+  const pdfjs = await import('../fremd/pdf.mjs');
+  const dok = await pdfjs.getDocument({ data: new Uint8Array(await readFile(pfad)) }).promise;
+  if (dok.numPages !== 2) throw new Error(`${dok.numPages} Seiten`);
+  return 'zwei Bilder, zwei Seiten';
+});
+
 console.log('\n== Zusammenfassung ==');
 const fehlgeschlagen = ergebnisse.filter((e) => !e.ok);
 console.log(`${ergebnisse.length - fehlgeschlagen.length} von ${ergebnisse.length} in Ordnung`);

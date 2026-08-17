@@ -226,6 +226,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   box-shadow: 0 1px 3px rgba(0,0,0,.35); pointer-events: auto; cursor: pointer;
   transform: translate(-2px, -100%);
 }
+/* Stempel: Rahmen und Wort, wie ein Gummistempel — bewusst schlicht. */
+.stempel {
+  display: grid; place-items: center; pointer-events: auto; cursor: move;
+  border: 2.5px solid currentColor; border-radius: .35rem;
+  font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden;
+}
+
 .feldebene { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .formularfeld {
   position: absolute; pointer-events: auto; border: 1px solid rgba(0,110,255,.55);

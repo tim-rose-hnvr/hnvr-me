@@ -1,0 +1,52 @@
+# Vorgelagerter Server: TLS, Landkopf, Kurzdomains.
+#
+# Caddy holt und erneuert die Zertifikate selbst. Das ist der Grund, ihn
+# hier zu nehmen: eine Agentur, die ihren Kunden eigene Kurzdomains
+# anbietet, legt sonst je Kunde eine Zertifikatsverwaltung an.
+#
+#   caddy run --config Caddyfile
+
+# --- Die eigene Kurzdomain ------------------------------------------------
+pnkt.me, www.pnkt.me {
+	encode zstd gzip
+
+	# Ein Scan darf nicht daran scheitern, dass jemand lange auf das
+	# Ziel wartet. Kurze Fristen, dann lieber ein Fehler als ein Warten.
+	reverse_proxy 127.0.0.1:8080 {
+		header_up X-Land {http.request.header.CF-IPCountry}
+		transport http {
+			dial_timeout 2s
+			response_header_timeout 5s
+		}
+	}
+
+	# Die Weiterleitung selbst darf nirgends zwischengespeichert werden:
+	# das Ziel eines gedruckten Codes kann sich morgen aendern.
+	@kurz path_regexp ^/[0-9a-z]{4,12}$
+	header @kurz Cache-Control "no-store"
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+}
+
+# --- Kurzdomains der Kunden ------------------------------------------------
+#
+# Ein Eintrag je Kunde, oder mit on_demand_tls fuer beliebig viele. Die
+# Marke loest pnkt selbst ueber den Hostnamen auf; hier muss nichts
+# weiter stehen als der Name.
+#
+# qr.baecker.de {
+# 	reverse_proxy 127.0.0.1:8080
+# }
+
+# --- Wenn das Land aus einer eigenen Quelle kommt --------------------------
+#
+# Ohne Cloudflare davor gibt es keinen CF-IPCountry. Dann entweder mit
+# Caddys geoip-Modul einen eigenen Kopf setzen und pnkt mit
+# `-landkopf X-Land` starten — oder die Landregel bewusst abschalten:
+# `-landkopf ""`. Ein Kopf, der nie kommt, laesst die Regel still ins
+# Leere laufen, und das faellt erst auf, wenn die Kampagne schon lief.

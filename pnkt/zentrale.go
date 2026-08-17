@@ -70,6 +70,9 @@ tr:last-child td{border-bottom:none}
 .tun button{font:inherit;font-size:.78rem;background:var(--tief);border:1px solid var(--linie);
   color:var(--tinte);border-radius:6px;padding:.28rem .55rem;cursor:pointer}
 .tun button.weg{color:var(--schlecht);border-color:var(--schlecht)}
+.tun .knopf{font-size:.78rem;background:var(--tief);border:1px solid var(--linie);
+  color:var(--tinte);border-radius:6px;padding:.28rem .55rem;text-decoration:none}
+.zahl{color:var(--leise);font-size:.85rem}
 .leer{padding:2.2rem 1rem;text-align:center;color:var(--leise);font-size:.9rem}
 .meldung{padding:.7rem .95rem;font-size:.85rem;background:var(--schlechtgrund);color:var(--schlecht)}
 .hinweis{font-size:.78rem;color:var(--leise);margin:0}
@@ -99,6 +102,11 @@ tr:last-child td{border-bottom:none}
     <div id="ordner" class="ordner"></div>
     <div id="meldung"></div>
     <div id="liste"></div>
+  </div>
+
+  <div class="feld" id="passfeld" hidden>
+    <div class="kopf"><span>Produktpässe</span><span id="passstand"></span></div>
+    <div id="passliste"></div>
   </div>
 </div>
 
@@ -157,6 +165,7 @@ async function laden(){
     zeigeOrdner(ordner || []);
     zeigeListe(codes || []);
     e("stand").textContent = (codes || []).length + " Codes";
+    ladePaesse();
     sessionStorage.setItem("pnkt-schluessel", schluessel());
   } catch (fehler) {
     melde(fehler.message);
@@ -207,6 +216,50 @@ function zeigeListe(codes){
   }
   e("liste").innerHTML = html + '</tbody></table>';
 }
+
+// Produktpässe. Sie hängen an der GTIN, nicht am Code — deshalb eine
+// eigene Liste und kein Feld in der Codetabelle.
+async function ladePaesse(){
+  try {
+    const paesse = await ruf("/api/v1/pass") || [];
+    e("passfeld").hidden = paesse.length === 0;
+    e("passstand").textContent = paesse.length + (paesse.length === 1 ? " Pass" : " Pässe");
+    e("passliste").innerHTML = paesse.length ? passTabelle(paesse) : "";
+  } catch (_) {
+    // Ein Fehler hier darf die Codeliste nicht mitreißen.
+    e("passfeld").hidden = true;
+  }
+}
+
+function passTabelle(paesse){
+  let html = '<table><thead><tr><th>GTIN</th><th>Artikel</th><th>Charge</th>' +
+             '<th>Fassung</th><th></th></tr></thead><tbody>';
+  for (const p of paesse){
+    html += '<tr>' +
+      '<td class="kuerzel">' + sicher(p.gtin) + '</td>' +
+      '<td>' + sicher(p.bezeichnung) + (p.modell ? ' <span class="zahl">' + sicher(p.modell) + '</span>' : '') + '</td>' +
+      '<td>' + sicher(p.charge || "—") + '</td>' +
+      '<td>' + p.fassung + '</td>' +
+      '<td><div class="tun">' +
+        '<a class="knopf" href="/p/' + encodeURIComponent(p.gtin) + '" target="_blank" rel="noopener">Ansehen</a>' +
+        '<button type="button" class="weg" data-tun="passweg" data-gtin="' + sicher(p.gtin) + '" ' +
+          'data-name="' + sicher(p.bezeichnung) + '">Zurückziehen</button>' +
+      '</div></td></tr>';
+  }
+  return html + '</tbody></table>';
+}
+
+e("passliste").addEventListener("click", async (ev) => {
+  const b = ev.target.closest("button");
+  if (!b || b.dataset.tun !== "passweg") return;
+  if (!confirm("Den Produktpass für „" + b.dataset.name + "\" zurückziehen?\n\n" +
+               "Die öffentliche Seite antwortet danach mit „kein Produktpass\". " +
+               "Der Eintrag bleibt in der Ablage stehen.")) return;
+  try {
+    await ruf("/api/v1/pass/" + encodeURIComponent(b.dataset.gtin), "DELETE");
+    ladePaesse();
+  } catch (fehler) { melde(fehler.message); }
+});
 
 e("ordner").addEventListener("click", (ev) => {
   const b = ev.target.closest("button");

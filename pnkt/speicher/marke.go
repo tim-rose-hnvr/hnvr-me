@@ -197,6 +197,20 @@ func (s *Speicher) Mitarbeitende(orgID string) []map[string]string {
 	return aus
 }
 
+// KontoNachMail sucht ein Konto ueber seine E-Mail, unabhaengig von der
+// Schreibweise.
+func (s *Speicher) KontoNachMail(mail string) (*Konto, bool) {
+	mail = strings.ToLower(strings.TrimSpace(mail))
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, k := range s.konten {
+		if strings.EqualFold(k.Mail, mail) {
+			return k, true
+		}
+	}
+	return nil, false
+}
+
 // KontoNachID liefert ein Konto ohne Abdruck und Salz.
 func (s *Speicher) KontoNachID(id string) (*Konto, bool) {
 	s.mu.RLock()

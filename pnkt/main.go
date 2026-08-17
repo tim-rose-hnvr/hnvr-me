@@ -35,12 +35,21 @@ import (
 type dienst struct {
 	ablage *speicher.Speicher
 	host   string
+	// landkopf ist der Kopf, aus dem das Land eines Scans kommt. Er wird
+	// von einem vorgelagerten Server gesetzt; eine eigene
+	// Standortbestimmung findet nicht statt. Welcher Kopf das ist, haengt
+	// vom Betrieb ab — Cloudflare setzt CF-IPCountry, ein eigener nginx
+	// vielleicht X-Land. Fest verdrahtet waere er bei jedem, der nicht
+	// hinter Cloudflare sitzt, still wirkungslos.
+	landkopf string
 }
 
 func main() {
 	adresse := flag.String("adresse", ":8080", "Adresse, auf der gelauscht wird")
 	daten := flag.String("daten", "./daten", "Verzeichnis der Ablage")
 	host := flag.String("host", "https://pnkt.me", "eigener Kurzhost fuer Digital Link")
+	landkopf := flag.String("landkopf", "CF-IPCountry",
+		"Kopf, aus dem das Land eines Scans kommt; leer schaltet die Landregel ab")
 	flag.Parse()
 
 	// Das Paket qr kennt nur Zeichenketten als Farben; die Deutung von
@@ -53,7 +62,7 @@ func main() {
 	}
 	defer ablage.Schliesse()
 
-	d := &dienst{ablage: ablage, host: *host}
+	d := &dienst{ablage: ablage, host: *host, landkopf: *landkopf}
 
 	server := &http.Server{
 		Addr:              *adresse,
@@ -116,12 +125,21 @@ func wege(d *dienst) *http.ServeMux {
 		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.charge(w, r) }))
 	weg.HandleFunc("GET /zentrale", d.zentrale)
 
+	// Produktpass. Die oeffentliche Seite ist die Anforderung der ESPR;
+	// der Code davor ist nur der Datentraeger.
+	weg.HandleFunc("GET /p/{gtin}", d.passseite)
+	weg.HandleFunc("GET /p/{gtin}/{charge}", d.passseite)
+	weg.HandleFunc("POST /api/v1/pass/pruefen", d.passPruefen)
+	weg.HandleFunc("GET /api/v1/pass", d.mitSchluessel(false, d.passListe))
+	weg.HandleFunc("PUT /api/v1/pass", d.mitSchluessel(true, d.passSetzen))
+	weg.HandleFunc("DELETE /api/v1/pass/{gtin}", d.mitSchluessel(true, d.passZurueckziehen))
+
 	// Weiterleitung. /r/ ist der veroeffentlichte Weg, die Wurzel der
 	// kurze — auf einer eigenen Kurzdomain zaehlt jedes Zeichen.
 	weg.HandleFunc("GET /r/{kuerzel}", d.weiterleiten)
 	weg.HandleFunc("GET /r/{kuerzel}/vorschau", d.vorschau)
-	weg.HandleFunc("GET /01/{gtin}/", d.digitalLink)
-	weg.HandleFunc("GET /01/{gtin}", d.digitalLink)
+	weg.HandleFunc("GET /01/{gtin}/", d.digitalLinkOderPass)
+	weg.HandleFunc("GET /01/{gtin}", d.digitalLinkOderPass)
 
 	weg.HandleFunc("GET /qr.svg", d.qrSVG)
 	weg.HandleFunc("GET /qr.pdf", d.qrPDF)
@@ -169,7 +187,7 @@ func (d *dienst) weiterleiten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ziel := waehleZiel(code, r)
+	ziel := waehleZiel(code, r, d.landkopf)
 	if ziel == "" {
 		d.hinweisMitMarke(w, r, http.StatusNotFound, "Ohne Ziel", "Fuer diesen Code ist kein Ziel hinterlegt.")
 		return
@@ -184,8 +202,8 @@ func (d *dienst) weiterleiten(w http.ResponseWriter, r *http.Request) {
 
 // waehleZiel wendet das Regelwerk an. Die Entscheidung selbst liegt im
 // Paket regel; hier wird nur der Scan in Umstaende uebersetzt.
-func waehleZiel(c *speicher.Code, r *http.Request) string {
-	u := umstand(r)
+func waehleZiel(c *speicher.Code, r *http.Request, landkopf string) string {
+	u := umstand(r, landkopf)
 	e := regel.Waehle(regelwerkAus(c), u)
 	if e.Ziel == "" {
 		e.Ziel = c.Ziel
@@ -196,14 +214,18 @@ func waehleZiel(c *speicher.Code, r *http.Request) string {
 // umstand liest aus der Anfrage, was das Regelwerk braucht. Das Land
 // kommt aus einem Kopf, den ein vorgelagerter Server setzt — eine eigene
 // Standortbestimmung findet nicht statt.
-func umstand(r *http.Request) regel.Umstand {
+func umstand(r *http.Request, landkopf string) regel.Umstand {
 	sprache := ""
 	if s := r.Header.Get("Accept-Language"); len(s) >= 2 {
 		sprache = strings.ToLower(s[:2])
 	}
+	land := ""
+	if landkopf != "" {
+		land = r.Header.Get(landkopf)
+	}
 	return regel.Umstand{
 		Jetzt:   time.Now(),
-		Land:    r.Header.Get("CF-IPCountry"),
+		Land:    land,
 		Sprache: sprache,
 		Geraet:  geraet(r),
 	}
@@ -314,7 +336,7 @@ func (d *dienst) digitalLink(w http.ResponseWriter, r *http.Request) {
 		if c.GTIN != "" {
 			if geprueft, err := gs1.PruefeGTIN(c.GTIN); err == nil && geprueft == gtin14 {
 				d.ablage.Zaehle(c.ID, klassen(r), time.Now())
-				http.Redirect(w, r, waehleZiel(c, r), http.StatusFound)
+				http.Redirect(w, r, waehleZiel(c, r, d.landkopf), http.StatusFound)
 				return
 			}
 		}

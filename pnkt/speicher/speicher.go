@@ -31,6 +31,9 @@ type Code struct {
 	KontoID    string            `json:"kontoId"`
 	Name       string            `json:"name"`
 	Ordner     string            `json:"ordner,omitempty"`
+	Typ        string            `json:"typ,omitempty"`    // url, text, vcard, wlan, girocode, gs1
+	Stil       map[string]any    `json:"stil,omitempty"`   // Gestaltung, wie das Studio sie sichert
+	Inhalt     map[string]any    `json:"inhalt,omitempty"` // die Felder, aus denen die Nutzlast entstand
 	Ziel       string            `json:"ziel"`
 	Regeln     map[string]any    `json:"regeln,omitempty"`
 	UTM        map[string]string `json:"utm,omitempty"`
@@ -78,11 +81,13 @@ type Speicher struct {
 	schluessel map[string]*Schluessel   // nach Abdruck
 	marken     map[string]*Marke        // nach Organisation
 	markenHost map[string]*Marke        // nach Hostname
+	paesse     map[string]*Produktpass  // nach GTIN, Charge und Serie
 
 	codeDatei     *os.File
 	ereignisDatei *os.File
 	zaehlerDatei  *os.File
 	zugangDatei   *os.File
+	passDatei     *os.File
 }
 
 // ErrKuerzelVergeben meldet die Kollision, die bei gedruckten Codes
@@ -103,6 +108,7 @@ func Oeffne(verzeichnis string) (*Speicher, error) {
 		schluessel:  map[string]*Schluessel{},
 		marken:      map[string]*Marke{},
 		markenHost:  map[string]*Marke{},
+		paesse:      map[string]*Produktpass{},
 	}
 
 	if err := s.lade("codes.jsonl", func(zeile []byte) error {
@@ -111,6 +117,17 @@ func Oeffne(verzeichnis string) (*Speicher, error) {
 			return err
 		}
 		s.merke(&c)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	if err := s.lade("paesse.jsonl", func(zeile []byte) error {
+		var p Produktpass
+		if err := json.Unmarshal(zeile, &p); err != nil {
+			return err
+		}
+		s.paesse[passSchluessel(p.GTIN, p.Charge, p.Serie)] = &p
 		return nil
 	}); err != nil {
 		return nil, err
@@ -156,6 +173,9 @@ func Oeffne(verzeichnis string) (*Speicher, error) {
 		return nil, err
 	}
 	if s.zaehlerDatei, err = s.anhaengen("zaehler.jsonl"); err != nil {
+		return nil, err
+	}
+	if s.passDatei, err = s.anhaengen("paesse.jsonl"); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -243,6 +263,78 @@ func (s *Speicher) LegeAn(c *Code) error {
 		return err
 	}
 	s.merke(c)
+	return nil
+}
+
+// Uebernimm traegt einen Code aus einem anderen System ein — mit seiner
+// Kennung, seinen Zeiten und seiner Fassungszahl. LegeAn taugt dafuer
+// nicht: es setzt beides neu und verloere damit genau die Geschichte,
+// derentwegen man ueberhaupt uebernimmt.
+//
+// Das Kuerzel wird auch hier unter derselben Sperre geprueft. Ein
+// doppeltes Kuerzel ist beim Uebernehmen genauso wenig reparierbar wie
+// beim Anlegen — und bei einer Uebernahme kommt es haeufiger vor, weil
+// zwei Systeme unabhaengig voneinander vergeben haben.
+func (s *Speicher) Uebernimm(c *Code) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if strings.TrimSpace(c.Kuerzel) == "" {
+		return errors.New("ohne Kuerzel")
+	}
+	if c.ID == "" {
+		return errors.New("ohne Kennung")
+	}
+	if vorhanden, da := s.nachKurz[strings.ToLower(c.Kuerzel)]; da && vorhanden.ID != c.ID {
+		return ErrKuerzelVergeben
+	}
+	if _, da := s.codes[c.ID]; da {
+		return errors.New("diese Kennung ist bereits uebernommen")
+	}
+	jetzt := time.Now().UTC()
+	if c.Erstellt.IsZero() {
+		c.Erstellt = jetzt
+	}
+	if c.Geaendert.IsZero() {
+		c.Geaendert = c.Erstellt
+	}
+	if c.Fassung == 0 {
+		c.Fassung = 1
+	}
+	if err := s.schreibe(s.codeDatei, c); err != nil {
+		return err
+	}
+	s.merke(c)
+	return nil
+}
+
+// UebernimmKonto traegt ein Konto samt fertigem Passwortabdruck ein.
+// LegeKontoAn rechnet den Abdruck selbst und braucht dafuer das Passwort
+// im Klartext — das hat bei einer Uebernahme niemand, und es soll auch
+// niemand haben.
+func (s *Speicher) UebernimmKonto(k *Konto) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	k.Mail = strings.ToLower(strings.TrimSpace(k.Mail))
+	if k.ID == "" || k.Mail == "" {
+		return errors.New("Konto ohne Kennung oder E-Mail")
+	}
+	for _, vorhanden := range s.konten {
+		if vorhanden.ID != k.ID && strings.EqualFold(vorhanden.Mail, k.Mail) {
+			return errors.New("diese E-Mail ist bereits vergeben")
+		}
+	}
+	if k.Rolle == "" {
+		k.Rolle = RolleInhaber
+	}
+	if k.Erstellt.IsZero() {
+		k.Erstellt = time.Now().UTC()
+	}
+	if err := s.schreibe(s.zugangDatei, satz{Art: "konto", Konto: k}); err != nil {
+		return err
+	}
+	s.konten[k.ID] = k
 	return nil
 }
 
@@ -444,6 +536,25 @@ func (s *Speicher) Zaehle(codeID string, klassen []string, jetzt time.Time) int 
 	return z.Gesamt
 }
 
+// UebernimmZaehler traegt einen fertigen Tageszaehler ein. Ein anderes
+// System liefert oft nur eine Gesamtzahl ohne Tage und ohne Klassen; die
+// laesst sich nicht nachtraeglich aufteilen. Sie kommt deshalb als eine
+// Zeile mit der Klasse „herkunft:uebernahme" herein und bleibt als solche
+// erkennbar — erfundene Tagesverteilungen waeren schlimmer als eine
+// ehrliche Klumpenzahl.
+func (s *Speicher) UebernimmZaehler(z *Tageszaehler) error {
+	if z.CodeID == "" || z.Tag == "" {
+		return errors.New("Zaehler ohne Code oder Tag")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if z.Zaehler == nil {
+		z.Zaehler = map[string]int{}
+	}
+	s.zaehler[z.CodeID+"_"+z.Tag] = z
+	return s.schreibe(s.zaehlerDatei, z)
+}
+
 // Zaehlerstand liefert die Tageszeilen eines Codes.
 func (s *Speicher) Zaehlerstand(codeID string) []*Tageszaehler {
 	s.mu.RLock()
@@ -489,7 +600,7 @@ func (s *Speicher) Schliesse() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var erster error
-	for _, f := range []*os.File{s.codeDatei, s.ereignisDatei, s.zaehlerDatei, s.zugangDatei} {
+	for _, f := range []*os.File{s.codeDatei, s.ereignisDatei, s.zaehlerDatei, s.zugangDatei, s.passDatei} {
 		if f == nil {
 			continue
 		}

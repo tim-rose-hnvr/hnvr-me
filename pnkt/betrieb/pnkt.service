@@ -1,0 +1,65 @@
+[Unit]
+Description=pnkt — Kurzadressen, Produktpaesse, Studio
+Documentation=file:///opt/pnkt/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=pnkt
+Group=pnkt
+WorkingDirectory=/var/lib/pnkt
+
+# -host ist der Hostname, der in den GS1 Digital Link geschrieben wird.
+# Er steht auf gedruckten Etiketten und laesst sich danach nicht mehr
+# aendern — hier gehoert der endgueltige Name hin, nicht die Testadresse.
+#
+# -landkopf ist der Kopf, aus dem das Land eines Scans kommt. Setzt der
+# vorgelagerte Server keinen, gehoert hier eine leere Zeichenkette hin:
+# dann greift die Landregel nicht, statt still auf einen Kopf zu warten,
+# der nie kommt.
+ExecStart=/opt/pnkt/pnkt \
+    -adresse 127.0.0.1:8080 \
+    -daten /var/lib/pnkt/daten \
+    -host https://pnkt.me \
+    -landkopf CF-IPCountry
+
+Restart=always
+RestartSec=2s
+
+# Ein gedruckter Code darf nicht daran scheitern, dass jemand das
+# Programm neu startet. systemd wartet auf das Ende der laufenden
+# Anfragen; pnkt selbst faengt SIGTERM ab und beendet sie geordnet.
+KillSignal=SIGTERM
+TimeoutStopSec=20s
+
+# Das Programm braucht: sein Datenverzeichnis und einen Netzanschluss.
+# Alles andere wird ihm weggenommen.
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+ReadWritePaths=/var/lib/pnkt
+
+# Die Ablage ist eine anhaengende Datei; viele offene Dateien braucht sie
+# nicht, viele gleichzeitige Verbindungen schon.
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

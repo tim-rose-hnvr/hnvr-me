@@ -1,0 +1,30 @@
+# Zwei Stufen: bauen mit Go, ausliefern ohne alles.
+#
+# Das Ergebnis enthaelt genau eine Datei ausser den Wurzelzertifikaten:
+# das Binaer. Keine Shell, kein Paketverwalter, kein libc — es gibt nichts
+# zu aktualisieren und nichts, worin sich jemand einnisten koennte.
+#
+#   podman build -t pnkt -f betrieb/Containerfile .
+#   podman run -d --name pnkt \
+#     -p 127.0.0.1:8080:8080 \
+#     -v pnkt-daten:/daten:Z \
+#     pnkt -daten /daten -host https://pnkt.me
+
+FROM docker.io/library/golang:1.24-alpine AS bau
+WORKDIR /quelle
+COPY go.mod ./
+COPY . .
+# CGO aus: sonst haengt das Binaer an der libc des Bausystems und laeuft
+# in einem leeren Abbild nicht. -s -w wirft die Symboltabelle weg, das
+# spart ein Drittel.
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /pnkt .
+
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=bau /pnkt /pnkt
+# Die Ablage liegt ausserhalb des Abbilds. Ein Container ist fluechtig,
+# ein gedruckter Code nicht.
+VOLUME /daten
+EXPOSE 8080
+USER nonroot:nonroot
+ENTRYPOINT ["/pnkt"]
+CMD ["-adresse", ":8080", "-daten", "/daten"]

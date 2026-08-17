@@ -48,7 +48,36 @@ Ebenfalls durch Abwesenheit im Bündel belegt:
 |---|---|---|
 | **Sonderfarben** | kein `Separation`, kein `setcmykcolor`, kein `DocumentCustomColors` | ja, mit Ghostscript-Auszug nachgewiesen |
 | **GS1 Digital Link** | kein `GTIN`, kein `digitalLink`, kein `/01/` | ja, samt Prüfziffer und Kassenmaßen |
-| **Mitarbeitende** | kein `mitarbeit` in `zentrale.astro` | ja, drei Rollen |
+| **Produktpass** | keine Sammlung, kein Feld, keine Seite | ja, öffentliche Seite mit beschränkten Angaben |
+
+### Berichtigung: Mitarbeitende fehlen nicht
+
+Hier stand, `zentrale.astro` kenne keine Mitarbeitenden — belegt durch
+die Abwesenheit von „mitarbeit" im Bündel. **Das war falsch.** Ein Blick
+in die Sammlungen zeigt `PK_Mitglieder`, gefüllt mit `admin@hnvr.me` als
+`redakteur`. Das Projekt sagt „Mitglied", ich habe nach „Mitarbeit"
+gesucht.
+
+Der Fehler ist lehrreich genug, um ihn stehen zu lassen: Abwesenheit
+eines Wortes im gebauten Bündel belegt Abwesenheit eines Merkmals nur
+dann, wenn man das Wort kennt, das die Autoren benutzt haben. Für die
+beiden anderen Zeilen oben gilt der Einwand nicht — `Separation`,
+`setcmykcolor` und `/01/` sind Formatvorgaben und keine frei gewählten
+Bezeichner.
+
+### Und ein Befund, der schwerer wiegt als jede Lücke
+
+`PK_Ereignisse` enthält am 10. August ein `code.geloescht` für das Kürzel
+**`maepux`**. In `PK_Codes` gibt es dazu keine Zeile mehr. Der eindeutige
+Index `kuerzel-eindeutig` wirkt nur auf vorhandene Zeilen — das Kürzel
+ist also **wieder frei und kann ein zweites Mal vergeben werden.**
+
+Das Kürzel steht möglicherweise auf Papier. Wird es neu vergeben, zeigt
+ein gedrucktes Plakat eines Tages auf das Ziel eines Fremden. In `pnkt/`
+ist das behoben: gelöscht heißt dort stillgelegt, das Kürzel bleibt
+dauerhaft belegt, ein Scan bekommt 410 mit lesbarer Seite. Für den
+Wix-Stand liegt die Behebung als `beitrag/punkt-zentrale.js` bereit,
+zusammen mit der Funktion, die die bereits verwaisten Kürzel findet.
 
 Dazu drei Dinge, die keine Codefrage sind:
 
@@ -70,24 +99,34 @@ Dazu drei Dinge, die keine Codefrage sind:
   Gegenprobe auf derselben Nutzlast.
 
 Damit ist die Gestaltungsseite gleichauf. Was `pnkt/` darüber hinaus hat
-— Sonderfarben, GS1, Mitarbeitende, Ordner, Suche, Löschen mit dauerhaft
-gesperrtem Kürzel, und den Serverteil — steht unten.
+— Sonderfarben, GS1, Produktpass, Ordner, Suche, Löschen mit dauerhaft
+gesperrtem Kürzel, und den Serverteil — steht oben.
 
 ---
 
 ## Was daraus folgt
 
 Der Nachbau war zu großen Teilen ein Nachbau. Sinnvoll ist deshalb nicht,
-das Studio zu ersetzen, sondern **drei Stücke hinüberzutragen**:
+das Studio zu ersetzen, sondern **hinüberzutragen, was dort fehlt**. Der
+Code dafür liegt einbaufertig in `beitrag/`:
 
-1. Sonderfarben in die PDF- und EPS-Ausgabe (`/Separation` mit
+1. **Das Löschen zuerst.** Es ist der einzige Punkt mit einem Schaden,
+   der schon eingetreten sein kann — `maepux` ist seit dem 10. August
+   wieder frei. `loeschePlan`, `verwaisteKuerzel`, `sperrzeile`.
+2. Sonderfarben in die PDF- und EPS-Ausgabe (`/Separation` mit
    Ersatzrezept, `%%DocumentCustomColors` im EPS-Kopf).
-2. GS1 Digital Link als Inhaltstyp samt Prüfziffer und der Prüfung gegen
+3. GS1 Digital Link als Inhaltstyp samt Prüfziffer und der Prüfung gegen
    die Kassenmaße 0,396 bis 0,990 mm.
-3. Mitarbeitende mit drei Rollen in die Zentrale.
+4. Ordner und Suche in der Zentrale — `sucheCodes`, `ordnerStand`.
 
 Dazu die gemessenen Zahlen zu den Augenformen in die Prüfhinweise — die
 kosten nichts und ersparen eine Auflage.
+
+Der Produktpass bleibt außen vor: Er ist keine Funktion, sondern eine
+gehostete Seite mit Fassungen und getrennten Sichtbarkeiten. Der steht
+in `pnkt/` und lässt sich von dort betreiben, auch wenn das Studio auf
+Wix bleibt — der Code auf dem Etikett zeigt ohnehin auf einen Hostnamen,
+und welcher das ist, entscheidet ihr.
 
 Der Serverteil aus `pnkt/` bleibt eigenständig sinnvoll, weil er etwas
 kann, was eine Astro-Seite auf Wix nicht kann: Weiterleitung, Ablage und

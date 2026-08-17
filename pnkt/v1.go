@@ -247,7 +247,7 @@ func (d *dienst) vorschau(w http.ResponseWriter, r *http.Request) {
 	d.jsonAus(w, http.StatusOK, map[string]any{
 		"kuerzel":  code.Kuerzel,
 		"name":     code.Name,
-		"ziel":     waehleZiel(code, r),
+		"ziel":     waehleZiel(code, r, d.landkopf),
 		"aktiv":    code.Aktiv && code.Gesperrt == "",
 		"gesperrt": code.Gesperrt,
 		"fassung":  code.Fassung,

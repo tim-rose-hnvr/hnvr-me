@@ -40,18 +40,22 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 | `regel` | Wohin ein Scan führt: Liste statt Zuordnung, mit Zeitzone; UTM mit Platzhaltern |
 | `gs1` | GTIN-Prüfziffer nach Modulo 10, Digital Link bauen und zurücklesen |
 | `inhalt` | GiroCode nach EPC069-12 mit IBAN-Prüfung (ISO 13616, Modulo 97, Längentabelle je Land), vCard 3.0, WLAN |
-| `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler |
+| `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler, Produktpässe |
+| `pass` | Prüfung eines Produktpasses auf Vollständigkeit — Identität, Verantwortlicher, Stoffe, Nutzung und Ende |
+| `uebernahme` | Bestand aus dem Wix-Datenspeicher holen. Trockenlauf zuerst, immer |
 | `ausgabe` | PDF und EPS von Hand geschrieben — echter Vektor in Punkt, ohne fremdes Paket. Verläufe als Schattierung (PDF Typ 2 und 3, PostScript `shfill`), Beschriftung in Helvetica |
-| `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio, Zentrale |
+| `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio, Zentrale, Produktpass |
 
 ### Die Ablage
 
-Drei Dateien, jede nur angehängt:
+Fünf Dateien, jede nur angehängt:
 
 ```
 daten/codes.jsonl        jede Fassung eines Codes, die letzte gilt
 daten/ereignisse.jsonl   wer hat wann welches Ziel geändert
 daten/zaehler.jsonl      Scans je Code und Tag, in Klassen
+daten/paesse.jsonl       jede Fassung eines Produktpasses
+daten/zugang.jsonl       Konten, Schlüssel, Marken
 ```
 
 Eine Änderung ist ein neuer Satz mit derselben Kennung. Damit ist die
@@ -92,6 +96,10 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `POST /api/v1/inhalt` | Felder zu Nutzlast: vCard, WLAN, GiroCode, GS1 | offen |
 | `GET /` | Studio | offen |
 | `GET /zentrale` | Zentrale: suchen, ordnen, löschen | offen |
+| `GET /p/{gtin}`, `/p/{gtin}/{charge}` | Produktpass als Seite oder JSON | offen |
+| `POST /api/v1/pass/pruefen` | Pass messen, ohne ihn zu veröffentlichen | offen |
+| `GET/PUT /api/v1/pass` | Pässe lesen und setzen | Schlüssel |
+| `DELETE /api/v1/pass/{gtin}` | Pass zurückziehen | Inhaber |
 
 `POST /api/v1/rendern` trägt das Urteil im Antwortkopf `x-punkt-pruefung`
 (`gut`, `achtung`, `kritisch`) — auch beim Binärabruf. Wer eine Datei
@@ -132,7 +140,7 @@ Eine eigene Standortbestimmung findet nicht statt.
 go test ./...
 ```
 
-Vier Pakete, alle grün. Wichtiger ist aber die Prüfung, die ein Encoder
+Alle Pakete grün. Wichtiger ist aber die Prüfung, die ein Encoder
 sich nicht selbst ausstellen kann: **184 Symbole über alle 40 Versionen
 und alle vier Fehlerkorrekturstufen wurden von zwei fremden Decodern
 gegengelesen** — jsQR im Browser und OpenCV. Jedes Symbol wird von
@@ -380,23 +388,137 @@ Protokoll — prüft, ob er zur Organisation des Schlüssels gehört. „Gibt es
 nicht" und „gehört einem anderen" bekommen dieselbe Antwort: sonst ließe
 sich durch Probieren herausfinden, welche Kennungen es gibt.
 
+## Produktpass
+
+Die ESPR verlangt einen Datenträger am Produkt und dahinter Angaben, die
+ein Mensch und eine Maschine lesen können. Der QR-Code ist der billige
+Teil davon; die Seite ist die Anforderung.
+
+```
+PUT /api/v1/pass        { "gtin":"4006381333931", "bezeichnung":"…", … }
+GET /p/4006381333931    die Seite, oder JSON mit Accept: application/json
+```
+
+Drei Entscheidungen stecken im Aufbau:
+
+**Der Pass hängt an der GTIN, nicht am Code.** Ein Artikel bekommt seinen
+Pass einmal; ob er auf zehn Etiketten gedruckt wird oder auf eines, ändert
+daran nichts. Gesucht wird von genau nach allgemein — erst GTIN mit Charge
+und Serie, dann nur mit Charge, dann der Artikel. So bekommt eine
+Rückrufcharge ihre eigenen Angaben, ohne dass jede Charge einen Pass
+braucht.
+
+**Jede Fassung bleibt stehen.** Ein Pass beschreibt ein Produkt, das
+jemand in der Hand hält. Wer sein Gerät von 2026 nachschlägt, darf nicht
+die Angaben zum Nachfolger sehen.
+
+**Beschränkte Angaben verlassen den Server nicht.** Die ESPR sieht
+Felder vor, die nur Marktaufsicht, Reparaturbetriebe und Verwerter sehen.
+Die Trennung geschieht in den Daten, nicht in der Oberfläche — eine Seite,
+die etwas ausblendet, hat es trotzdem ausgeliefert. Dass etwas
+zurückgehalten wird, steht dagegen sehr wohl auf der Seite: das ist selbst
+keine Geheimsache, und wer es braucht, weiß dann, dass es sich zu fragen
+lohnt.
+
+Die Prüfung misst vier Abschnitte — Identität, Verantwortlicher, Stoffe,
+Nutzung und Ende. Fehler verhindern die Veröffentlichung, Warnungen nicht:
+**welche Angabe Pflicht ist, entscheidet der delegierte Rechtsakt der
+Produktgruppe, und den kennt dieses Programm nicht.** Was es prüfen kann,
+prüft es hart — eine falsche GTIN-Prüfziffer ist ein Fehler, denn der
+Datenträger löst darüber auf, und Anteile über hundert Prozent gibt es
+nicht.
+
+`GET /01/{gtin}` bleibt, wie es war: Ist zu der GTIN ein Ziel hinterlegt,
+gilt das Ziel. Der Pass springt nur ein, wo nichts anderes steht — sonst
+hätten bestehende Etiketten über Nacht ein anderes Verhalten.
+
+## Übernahme aus Wix
+
+```
+go run ./cmd/uebernahme -quelle ./ausfuhr                          # Bericht
+go run ./cmd/uebernahme -quelle ./ausfuhr -daten ./daten -schreiben
+```
+
+Je Sammlung eine Datei mit der Antwort der Wix-Datenschnittstelle:
+`PK_Codes.json`, `PK_Ordner.json`, `PK_Konten.json`, `PK_Mitglieder.json`,
+`PK_Ereignisse.json`.
+
+**Der Lauf ist trocken, solange nicht `-schreiben` gesetzt ist.** Der
+Bericht entsteht in beiden Fällen gleich — wer erst beim Schreiben merkt,
+dass ein Kürzel doppelt ist, hat den halben Bestand schon drin.
+
+Gegen den echten Bestand des laufenden Projekts durchgeführt:
+
+```
+codes          4 gelesen,   4 übernommen
+ereignisse     4 gelesen,   4 übernommen
+konten         2 gelesen,   2 übernommen
+mitglieder     1 gelesen,   0 übernommen
+ordner         0 gelesen,   0 übernommen
+verwaist       1 gelesen,   1 übernommen
+0 Fehler.
+```
+
+Danach löst `/2cnjdq` auf `https://pnkt.me` auf, die beiden stillgelegten
+Altzeilen antworten mit 410, und Unbekanntes mit 404.
+
+Drei Dinge, die der Bericht dabei gesagt hat:
+
+**`maepux` ist verwaist.** Das Kürzel steht im Protokoll als gelöscht und
+fehlt in `PK_Codes` — in der Quelle ist es damit wieder frei und kann ein
+zweites Mal vergeben werden, obwohl es auf Papier stehen kann. Die
+Übernahme sperrt es dauerhaft.
+
+**Die Mitarbeiterzeile ließ sich nicht binden.** `admin@hnvr.me` steht in
+`PK_Mitglieder`, hat aber kein Konto in `PK_Konten`. Das ist ein Befund,
+keine stille Auslassung: die Person legt sich selbst ein Konto an, danach
+holt der Inhaber sie herein.
+
+**Passwörter wandern unverändert.** Gleiches Verfahren, gleiche
+Rundenzahl, gleiches Salz. Eine einzige Anmeldung bestätigt das; scheitert
+sie, liegt es am Salz und die Passwörter müssen neu gesetzt werden.
+
+Was die Quelle nicht hergibt, wird nicht erfunden. Eine Gesamtzahl von
+Scans ohne Tage lässt sich nicht aufteilen — sie kommt als eine Zeile
+unter `herkunft:uebernahme` am Anlagetag herein und bleibt als solche
+erkennbar. Eine erfundene Tagesverteilung wäre schlimmer als eine
+ehrliche Klumpenzahl.
+
+## Betrieb
+
+Systemd-Unit, Containerfile, Caddyfile und ein Sicherungsskript liegen in
+`betrieb/`, samt dem, was vor dem ersten Start entschieden sein muss —
+siehe `betrieb/README.md`.
+
+Zwei Angaben lassen sich später nicht mehr folgenlos ändern: `-host`
+steht im GS1 Digital Link und damit auf gedruckten Etiketten, und die
+Länge der Kurzdomain bestimmt die Größe jedes gedruckten Codes.
+
 ## Was noch fehlt
 
-Gemessen am veröffentlichten Stand von pnkt.me fehlt dieser Fassung:
-
-- **Produktpass.** Die gehostete Seite hinter dem Code ist die
-  eigentliche Anforderung der ESPR.
-- **Übernahme aus Wix.** `PK_Codes` lässt sich zeilenweise in
-  `codes.jsonl` überführen; die Feldnamen stimmen bis auf `regelnJson`,
-  das hier bereits als Struktur statt als Text liegt. Die Abbildung steht,
-  ein Trockenlauf fehlt.
+- **Der Zielrechner.** Nichts davon läuft irgendwo. Welche Maschine es
+  wird und ob `pnkt.me` selbst darauf zeigen soll, ist eine Entscheidung
+  über Geld und Verantwortung und keine technische.
 
 ---
 
 ## Verhältnis zum Wix-Stand
 
-Der Wix-Stand bleibt unangetastet. Was dort als Befund offen ist — der
-gescheiterte eindeutige Index auf dem Kürzel — ist hier von vornherein
-gelöst: die Eindeutigkeit wird unter derselben Sperre geprüft, unter der
-eingetragen wird, und ist in `speicher_test.go` festgehalten. Eine
-Vorabfrage wäre ein Wettlauf, den zwei gleichzeitige Anfragen verlieren.
+Der Wix-Stand bleibt unangetastet — gelesen wurde er, geschrieben nicht.
+
+Was dort als Befund offen war, ist hier von vornherein gelöst: die
+Eindeutigkeit des Kürzels wird unter derselben Sperre geprüft, unter der
+eingetragen wird, festgehalten in `speicher_test.go`. Eine Vorabfrage wäre
+ein Wettlauf, den zwei gleichzeitige Anfragen verlieren.
+
+Beim Trockenlauf der Übernahme kam ein zweiter Befund dazu, schwerer als
+der erste: **Löschen gibt dort das Kürzel wieder frei.** `maepux` steht
+seit dem 10. August im Protokoll als gelöscht und fehlt in `PK_Codes`; der
+eindeutige Index wirkt nur auf vorhandene Zeilen. Wird es neu vergeben,
+zeigt ein gedrucktes Plakat eines Tages auf das Ziel eines Fremden.
+
+Hier heißt gelöscht stillgelegt: die Zeile bleibt, das Ziel geht weg, das
+Kürzel bleibt dauerhaft belegt, ein Scan bekommt 410 mit lesbarer Seite.
+Für den Wix-Stand liegt dieselbe Behebung als reine Funktion in
+`beitrag/punkt-zentrale.js`, zusammen mit der Suche nach den bereits
+verwaisten Kürzeln.

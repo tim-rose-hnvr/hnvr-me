@@ -77,7 +77,22 @@ if [ -n "$BINAER" ]; then
 else
 	URL="https://github.com/$REPO/releases/latest/download/pnkt-linux-$ARCH"
 	sage "lade $URL"
-	tu "curl -fsSL '$URL' -o '$TMP/pnkt'"
+	if [ "$PROBE" -eq 0 ] && ! curl -fsSL "$URL" -o "$TMP/pnkt"; then
+		cat >&2 <<'ENDE'
+
+Es gibt noch keine Freigabe zum Herunterladen. Zwei Wege:
+
+  1. Selbst bauen und uebergeben:
+       cd pnkt && go build -o pnkt . && sudo betrieb/aufsetzen.sh --binaer ./pnkt --domain …
+
+  2. Eine Freigabe anlegen — danach passt die Adresse von selbst:
+       git tag pnkt-v1.0.0 && git push origin pnkt-v1.0.0
+
+Das gebaute Binaer liegt auch bei jedem Werkstattlauf als Anhang:
+https://github.com/tim-rose-hnvr/hnvr-me/actions/workflows/pnkt.yml
+ENDE
+		exit 1
+	fi
 	# Die Pruefsumme liegt neben dem Binaer. Fehlt sie, wird nicht
 	# geraten — dann bricht der Lauf lieber ab.
 	tu "curl -fsSL '$URL.sha256' -o '$TMP/pnkt.sha256'"

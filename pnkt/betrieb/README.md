@@ -51,7 +51,7 @@ und arm64, **startet das gebaute Binär und ruft es ab** — Gesundheit,
 Studio, Zentrale, ein QR in der neuen Modulform. Ein Binär, das nicht
 startet, ist kein Binär.
 
-Eine Freigabe mit fester Adresse entsteht aus einem Etikett:
+**Eine Freigabe gibt es noch nicht.** Sie entsteht aus einem Etikett:
 
 ```sh
 git tag pnkt-v1.0.0 && git push origin pnkt-v1.0.0
@@ -59,7 +59,13 @@ git tag pnkt-v1.0.0 && git push origin pnkt-v1.0.0
 
 Danach liegen die Dateien unter
 `github.com/tim-rose-hnvr/hnvr-me/releases/latest/download/pnkt-linux-amd64`
-— genau dort, wo `aufsetzen.sh` sie sucht.
+— genau dort, wo `aufsetzen.sh` sie sucht. Bis dahin bricht das Skript mit
+einem Hinweis ab und nennt die beiden Auswege: `--binaer` mit einem selbst
+gebauten Binär, oder der Anhang aus dem Werkstattlauf.
+
+Das Etikett muss von einem Rechner mit gewöhnlichem Git-Zugang kommen; aus
+dieser Sitzung heraus lässt der vorgelagerte Git-Server keine Etiketten
+durch.
 
 ## Was vor dem ersten Start entschieden sein muss
 

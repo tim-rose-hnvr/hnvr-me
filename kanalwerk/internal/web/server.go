@@ -17,6 +17,7 @@ import (
 
 	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/planer"
 	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/speicher"
+	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/vorlage"
 	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/wix"
 )
 
@@ -120,7 +121,7 @@ type sichtBeitrag struct {
 type sicht struct {
 	Kunde         speicher.Kunde
 	Kanaele       []sichtKanal
-	Vorlagen      []speicher.Vorlage
+	Vorlagen      []vorlage.Vorlage
 	Beitraege     []sichtBeitrag
 	Kontingent    wix.Kontingent
 	Planbar       bool
@@ -384,37 +385,70 @@ func (s *Server) neuerBeitrag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	text := strings.TrimSpace(r.FormValue("text"))
-	if text == "" {
-		http.Error(w, "Ohne Text kein Beitrag.", http.StatusBadRequest)
-		return
-	}
-
 	kanaele := r.Form["kanal"]
 	if len(kanaele) == 0 {
 		http.Error(w, "Mindestens ein Kanal muss ausgewählt sein.", http.StatusBadRequest)
 		return
 	}
 
+	bild := strings.TrimSpace(r.FormValue("bild"))
+	vorlageID := r.FormValue("vorlage")
+
 	b := speicher.Beitrag{
 		ID:         kennung(),
 		KundeID:    kundeID,
-		VorlageID:  r.FormValue("vorlage"),
-		Text:       text,
-		BildURL:    strings.TrimSpace(r.FormValue("bild")),
+		VorlageID:  vorlageID,
+		BildURL:    bild,
 		Zustand:    speicher.Entwurf,
 		Werte:      map[string]string{},
 		AngelegtAm: time.Now().UTC(),
 	}
-	for _, feld := range []string{"kick", "zusatz"} {
-		if v := strings.TrimSpace(r.FormValue(feld)); v != "" {
-			b.Werte[feld] = v
+
+	if vorlageID != "" {
+		v, ok := vorlage.Finde(s.P.S.VorlagenVon(kundeID), vorlageID)
+		if !ok {
+			http.Error(w, "Diese Vorlage gibt es nicht.", http.StatusBadRequest)
+			return
 		}
+		// Nur die Felder der Vorlage werden übernommen. Was sonst im
+		// Formular steht, hat hier nichts verloren.
+		for _, f := range v.Felder {
+			if wert := strings.TrimSpace(r.FormValue("feld_" + f.Name)); wert != "" {
+				b.Werte[f.Name] = wert
+			}
+		}
+		if err := v.Pruefe(b.Werte, bild); err != nil {
+			s.zeigeBeanstandung(w, err)
+			return
+		}
+		// Vorschau in Text ablegen; die Zustellung setzt je Kanal neu.
+		b.Text = v.Setze("standard", b.Werte)
+	} else {
+		text := strings.TrimSpace(r.FormValue("text"))
+		if text == "" {
+			http.Error(w, "Ohne Text kein Beitrag.", http.StatusBadRequest)
+			return
+		}
+		b.Text = text
 	}
+
 	for _, k := range kanaele {
 		b.Zustellungen = append(b.Zustellungen, speicher.Zustellung{
 			KanalID: k, Zustand: speicher.ZWartend,
 		})
+	}
+
+	// Bevor der Beitrag angelegt wird: passt der gesetzte Text auf jeden
+	// gewählten Kanal? Später zu scheitern hilft niemandem.
+	for _, kID := range kanaele {
+		k, ok := s.P.S.Kanal(kID)
+		if !ok {
+			continue
+		}
+		if err := vorlage.PasstAufKanal(k.Plattform, s.P.TextFuer(b, k.Plattform)); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	if err := s.P.S.SetzeBeitrag(b); err != nil {
@@ -458,4 +492,20 @@ func kennung() string {
 		return fmt.Sprintf("b%d", time.Now().UnixNano())
 	}
 	return "b" + hex.EncodeToString(roh)
+}
+
+// zeigeBeanstandung schreibt die Beanstandungen als lesbare Liste, nicht als
+// eine Zeile Schnittstellenfehler.
+func (s *Server) zeigeBeanstandung(w http.ResponseWriter, err error) {
+	var liste vorlage.Fehlerliste
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusBadRequest)
+	if errors.As(err, &liste) {
+		fmt.Fprintln(w, "Der Beitrag wurde nicht angelegt:")
+		for _, f := range liste {
+			fmt.Fprintf(w, "  • %s\n", f.Meldung)
+		}
+		return
+	}
+	fmt.Fprintln(w, err.Error())
 }

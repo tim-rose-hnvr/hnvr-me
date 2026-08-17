@@ -16,6 +16,8 @@ import (
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/vorlage"
 )
 
 // Zustände eines Beitrags.
@@ -53,17 +55,6 @@ type Kanal struct {
 	Zustand     string    `json:"zustand"`
 	Standard    bool      `json:"standard"`
 	GeprueftAm  time.Time `json:"geprueft_am"`
-}
-
-// Vorlage ist eine von der Agentur gestaltete Gestaltungsvorlage.
-// Die Kundin füllt die Felder, alles andere liegt fest.
-type Vorlage struct {
-	ID       string   `json:"id"`
-	KundeID  string   `json:"kunde_id"`
-	Name     string   `json:"name"`
-	Format   string   `json:"format"`
-	Felder   []string `json:"felder"`
-	Gesperrt []string `json:"gesperrt"`
 }
 
 // Zustellung ist ein Beitrag auf genau einem Kanal.
@@ -111,12 +102,12 @@ type Ereignis struct {
 }
 
 type bestand struct {
-	Kunden     []Kunde    `json:"kunden"`
-	Kanaele    []Kanal    `json:"kanaele"`
-	Vorlagen   []Vorlage  `json:"vorlagen"`
-	Beitraege  []Beitrag  `json:"beitraege"`
-	Freigaben  []Freigabe `json:"freigaben"`
-	Ereignisse []Ereignis `json:"ereignisse"`
+	Kunden     []Kunde           `json:"kunden"`
+	Kanaele    []Kanal           `json:"kanaele"`
+	Vorlagen   []vorlage.Vorlage `json:"vorlagen"`
+	Beitraege  []Beitrag         `json:"beitraege"`
+	Freigaben  []Freigabe        `json:"freigaben"`
+	Ereignisse []Ereignis        `json:"ereignisse"`
 }
 
 // Speicher ist der Zugang zum Bestand. Alle Methoden sind nebenläufig sicher.
@@ -244,7 +235,7 @@ func (s *Speicher) Kanal(id string) (Kanal, bool) {
 
 // ---- Vorlagen ----
 
-func (s *Speicher) SetzeVorlage(v Vorlage) error {
+func (s *Speicher) SetzeVorlage(v vorlage.Vorlage) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for i := range s.b.Vorlagen {
@@ -257,10 +248,10 @@ func (s *Speicher) SetzeVorlage(v Vorlage) error {
 	return s.sichere()
 }
 
-func (s *Speicher) VorlagenVon(kundeID string) []Vorlage {
+func (s *Speicher) VorlagenVon(kundeID string) []vorlage.Vorlage {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	var raus []Vorlage
+	var raus []vorlage.Vorlage
 	for _, v := range s.b.Vorlagen {
 		if v.KundeID == kundeID {
 			raus = append(raus, v)

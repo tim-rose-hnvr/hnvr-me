@@ -3,10 +3,12 @@ package planer
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/speicher"
+	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/vorlage"
 	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/wix"
 )
 
@@ -465,5 +467,97 @@ func TestAbgleichUnterscheidetErloschenVonNieVerbunden(t *testing.T) {
 	}
 	if !linkedInGefunden {
 		t.Fatal("verbundener LinkedIn-Kanal wurde nicht übernommen")
+	}
+}
+
+// ---- Vorlage bestimmt den Text je Kanal ----
+
+func TestVorlageSetztTextJeKanal(t *testing.T) {
+	w := &fakeWix{kontingent: vollesKontingent()}
+	p, _ := aufbau(t, w)
+
+	if err := p.S.SetzeVorlage(vorlage.Vorlage{
+		ID: "kurs", KundeID: "bothe", Name: "Kursankündigung", Format: "4:5",
+		Felder: []vorlage.Feld{
+			{Name: "titel", Beschriftung: "Überschrift", Pflicht: true, Hoechstlaenge: 60},
+		},
+		Aufbau: map[string]string{
+			"standard":  "{titel}",
+			"INSTAGRAM": "{titel}\n\n#tanzschulebothe",
+		},
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	b := beitrag("v1", "FACEBOOK", "INSTAGRAM")
+	b.VorlageID = "kurs"
+	b.Werte = map[string]string{"titel": "Herbstkurs"}
+	_ = p.S.SetzeBeitrag(b)
+	_ = p.GibFrei("v1", "M. Bothe", "")
+	_ = p.Plane("v1", p.Jetzt().Add(-time.Minute))
+
+	if _, err := p.Tick(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if len(w.rufe) != 2 {
+		t.Fatalf("Aufrufe = %d, erwartet 2", len(w.rufe))
+	}
+
+	texte := map[string]string{}
+	for _, r := range w.rufe {
+		texte[r.Kanal] = r.Text
+	}
+	if texte["FACEBOOK"] != "Herbstkurs" {
+		t.Fatalf("Facebook bekam %q", texte["FACEBOOK"])
+	}
+	if !strings.Contains(texte["INSTAGRAM"], "#tanzschulebothe") {
+		t.Fatalf("Instagram bekam nicht sein eigenes Muster: %q", texte["INSTAGRAM"])
+	}
+	if texte["FACEBOOK"] == texte["INSTAGRAM"] {
+		t.Fatal("beide Kanäle bekamen denselben Text")
+	}
+}
+
+// Ist der gesetzte Text für einen Kanal zu lang, geht nichts raus.
+func TestZuLangerTextGehtNichtRaus(t *testing.T) {
+	w := &fakeWix{kontingent: vollesKontingent()}
+	p, _ := aufbau(t, w)
+
+	_ = p.S.SetzeVorlage(vorlage.Vorlage{
+		ID: "lang", KundeID: "bothe", Name: "Lang", Format: "1:1",
+		Felder: []vorlage.Feld{{Name: "titel", Beschriftung: "Text"}},
+		Aufbau: map[string]string{"standard": "{titel}"},
+	})
+
+	b := beitrag("v2", "INSTAGRAM")
+	b.VorlageID = "lang"
+	b.Werte = map[string]string{"titel": strings.Repeat("a", 2500)}
+	_ = p.S.SetzeBeitrag(b)
+	_ = p.GibFrei("v2", "M. Bothe", "")
+	_ = p.Plane("v2", p.Jetzt().Add(-time.Minute))
+	_, _ = p.Tick(context.Background())
+
+	if len(w.rufe) != 0 {
+		t.Fatal("ein für Instagram zu langer Text wurde übergeben")
+	}
+	nach, _ := p.S.Beitrag("v2")
+	if g := nach.Zustellungen[0].Fehlergrund; !strings.Contains(g, "zu lang") {
+		t.Fatalf("Fehlergrund nennt die Länge nicht: %q", g)
+	}
+}
+
+// Ohne Vorlage gilt weiterhin der frei getippte Text.
+func TestOhneVorlageFreierText(t *testing.T) {
+	w := &fakeWix{kontingent: vollesKontingent()}
+	p, _ := aufbau(t, w)
+
+	b := beitrag("v3", "FACEBOOK")
+	_ = p.S.SetzeBeitrag(b)
+	_ = p.GibFrei("v3", "M. Bothe", "")
+	_ = p.Plane("v3", p.Jetzt().Add(-time.Minute))
+	_, _ = p.Tick(context.Background())
+
+	if len(w.rufe) != 1 || w.rufe[0].Text != "Herbstkurs — Anmeldung offen" {
+		t.Fatalf("freier Text ging verloren: %+v", w.rufe)
 	}
 }

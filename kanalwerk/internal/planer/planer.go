@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/speicher"
+	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/vorlage"
 	"github.com/tim-rose-hnvr/hnvr-me/kanalwerk/internal/wix"
 )
 
@@ -288,13 +289,20 @@ func (p *Planer) zustelle(ctx context.Context, kunde speicher.Kunde, b *speicher
 		return ErrKeinKontingent
 	}
 
+	// Der Text kommt aus der Vorlage und wird je Kanal gesetzt. Nur ohne
+	// Vorlage gilt der frei getippte Text.
+	text := p.TextFuer(*b, kanal.Plattform)
+	if err := vorlage.PasstAufKanal(kanal.Plattform, text); err != nil {
+		return err
+	}
+
 	z.Zustand = speicher.ZUebergeben
 	z.Versuche++
 
 	ergebnis, err := p.W.Veroeffentliche(ctx, kunde.WixSiteID, wix.Beitragsentwurf{
 		Kanal:   kanal.Plattform,
 		KontoID: kanal.WixKontoID,
-		Text:    b.Text,
+		Text:    text,
 		BildURL: b.BildURL,
 		AutorID: kanal.WixKontoID,
 	})
@@ -406,4 +414,24 @@ func (p *Planer) SynchronisiereKanaele(ctx context.Context, kundeID string) erro
 		}
 	}
 	return ersterFehler
+}
+
+// TextFuer setzt den Beitragstext für einen Kanal.
+//
+// Liegt eine Vorlage vor, bestimmt sie den Aufbau — Instagram bekommt dann
+// etwas anderes als LinkedIn, ohne dass die Kundin zweimal tippt.
+func (p *Planer) TextFuer(b speicher.Beitrag, kanal string) string {
+	if b.VorlageID == "" {
+		return b.Text
+	}
+	v, ok := vorlage.Finde(p.S.VorlagenVon(b.KundeID), b.VorlageID)
+	if !ok {
+		// Vorlage wurde entfernt: der zuletzt gesetzte Text ist immer noch
+		// besser als gar keiner.
+		return b.Text
+	}
+	if gesetzt := v.Setze(kanal, b.Werte); gesetzt != "" {
+		return gesetzt
+	}
+	return b.Text
 }

@@ -1,0 +1,127 @@
+[
+  {
+    "id": "kursankuendigung",
+    "kunde_id": "bothe",
+    "name": "Kursankündigung",
+    "zweck": "Neuer Kurs, Anmeldung offen",
+    "format": "4:5",
+    "bild_pflicht": true,
+    "felder": [
+      { "name": "kick", "beschriftung": "Zeile oben", "pflicht": true, "hoechstlaenge": 20, "hinweis": "Ein Wort, Versalien im Bild" },
+      { "name": "titel", "beschriftung": "Überschrift", "pflicht": true, "hoechstlaenge": 55 },
+      { "name": "zusatz", "beschriftung": "Termin und Uhrzeit", "hoechstlaenge": 90, "mehrzeilig": true },
+      { "name": "aufruf", "beschriftung": "Aufforderung", "hoechstlaenge": 70, "hinweis": "Was soll der Leser tun?" }
+    ],
+    "marke": {
+      "grund": "#000000",
+      "schriftfarbe": "#FFFFFF",
+      "akzent": "#9BBE00",
+      "zweitakzent": "#D8063A",
+      "displayfont": "Anton",
+      "textfont": "Hanken Grotesk"
+    },
+    "aufbau": {
+      "standard": "{titel}\n\n{zusatz}\n\n{aufruf}",
+      "INSTAGRAM": "{titel}\n\n{zusatz}\n\n{aufruf}\n\n#tanzschulebothe #tanzenlernen",
+      "LINKEDIN": "{titel}\n\n{zusatz}\n\n{aufruf}"
+    }
+  },
+  {
+    "id": "veranstaltung",
+    "kunde_id": "bothe",
+    "name": "Veranstaltung",
+    "zweck": "Ball, Turnier, besonderer Abend",
+    "format": "4:5",
+    "bild_pflicht": true,
+    "felder": [
+      { "name": "kick", "beschriftung": "Zeile oben", "pflicht": true, "hoechstlaenge": 20 },
+      { "name": "titel", "beschriftung": "Name der Veranstaltung", "pflicht": true, "hoechstlaenge": 45 },
+      { "name": "zusatz", "beschriftung": "Datum und Ort", "pflicht": true, "hoechstlaenge": 80, "mehrzeilig": true },
+      { "name": "aufruf", "beschriftung": "Karten oder Anmeldung", "hoechstlaenge": 70 }
+    ],
+    "marke": {
+      "grund": "#000000",
+      "schriftfarbe": "#FFFFFF",
+      "akzent": "#D8063A",
+      "zweitakzent": "#9BBE00",
+      "displayfont": "Anton",
+      "textfont": "Hanken Grotesk"
+    },
+    "aufbau": {
+      "standard": "{titel}\n{zusatz}\n\n{aufruf}",
+      "INSTAGRAM": "{titel}\n{zusatz}\n\n{aufruf}\n\n#tanzschulebothe #ballnacht"
+    }
+  },
+  {
+    "id": "vorstellung",
+    "kunde_id": "bothe",
+    "name": "Vorstellung",
+    "zweck": "Neue Person im Team",
+    "format": "4:5",
+    "bild_pflicht": true,
+    "felder": [
+      { "name": "kick", "beschriftung": "Zeile oben", "pflicht": true, "hoechstlaenge": 20 },
+      { "name": "titel", "beschriftung": "Name", "pflicht": true, "hoechstlaenge": 40 },
+      { "name": "zusatz", "beschriftung": "Was macht die Person?", "pflicht": true, "hoechstlaenge": 140, "mehrzeilig": true }
+    ],
+    "marke": {
+      "grund": "#000000",
+      "schriftfarbe": "#FFFFFF",
+      "akzent": "#9BBE00",
+      "zweitakzent": "#D8063A",
+      "displayfont": "Anton",
+      "textfont": "Hanken Grotesk"
+    },
+    "aufbau": {
+      "standard": "{titel}\n\n{zusatz}",
+      "INSTAGRAM": "{titel}\n\n{zusatz}\n\n#tanzschulebothe #team"
+    }
+  },
+  {
+    "id": "rueckblick",
+    "kunde_id": "bothe",
+    "name": "Rückblick",
+    "zweck": "Bildstrecke nach einem Ereignis",
+    "format": "1:1",
+    "bild_pflicht": true,
+    "felder": [
+      { "name": "kick", "beschriftung": "Zeile oben", "pflicht": true, "hoechstlaenge": 20 },
+      { "name": "titel", "beschriftung": "Überschrift", "pflicht": true, "hoechstlaenge": 45 },
+      { "name": "zusatz", "beschriftung": "Ein bis zwei Sätze", "hoechstlaenge": 200, "mehrzeilig": true }
+    ],
+    "marke": {
+      "grund": "#000000",
+      "schriftfarbe": "#FFFFFF",
+      "akzent": "#9BBE00",
+      "zweitakzent": "#D8063A",
+      "displayfont": "Anton",
+      "textfont": "Hanken Grotesk"
+    },
+    "aufbau": {
+      "standard": "{titel}\n\n{zusatz}",
+      "INSTAGRAM": "{titel}\n\n{zusatz}\n\n#tanzschulebothe"
+    }
+  },
+  {
+    "id": "kurzmeldung",
+    "kunde_id": "bothe",
+    "name": "Kurzmeldung",
+    "zweck": "Ausfall, Verlegung, kurze Ansage",
+    "format": "1:1",
+    "felder": [
+      { "name": "kick", "beschriftung": "Zeile oben", "pflicht": true, "hoechstlaenge": 20, "hinweis": "z. B. Hinweis oder Achtung" },
+      { "name": "titel", "beschriftung": "Die Ansage", "pflicht": true, "hoechstlaenge": 60, "mehrzeilig": true }
+    ],
+    "marke": {
+      "grund": "#D8063A",
+      "schriftfarbe": "#FFFFFF",
+      "akzent": "#FFFFFF",
+      "zweitakzent": "#000000",
+      "displayfont": "Anton",
+      "textfont": "Hanken Grotesk"
+    },
+    "aufbau": {
+      "standard": "{kick}: {titel}"
+    }
+  }
+]

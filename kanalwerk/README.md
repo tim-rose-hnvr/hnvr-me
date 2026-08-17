@@ -52,7 +52,19 @@ Die Kennung ist frei, die Site-ID steht im Wix-Dashboard hinter `/dashboard/`.
 ./kanalwerk -einrichten "bothe=Tanzschule Bothe=5b043fb4-6440-4de2-aa8a-41af6b5475a7"
 ```
 
-### 4. Starten
+### 4. Vorlagen einspielen
+
+Vorlagen sind Agentursache. Sie werden als JSON eingespielt, **nicht** in der
+Oberfläche der Kundin gebaut — genau das ist der Punkt.
+
+```sh
+./kanalwerk -vorlagen beispiel/bothe-vorlagen.json
+```
+
+Beiliegend sind fünf Vorlagen für die Tanzschule Bothe in ihren Marken­farben
+(Limette `#9BBE00`, Karminrot `#D8063A`, Anton als Displayschrift).
+
+### 5. Starten
 
 ```sh
 ./kanalwerk -adresse :8080
@@ -81,14 +93,15 @@ der Oberfläche.
 | `-takt` | `30s` | Abstand zwischen zwei Läufen der Uhr |
 | `-abgleich` | `30m` | Abstand zwischen zwei Kanalabgleichen |
 | `-einrichten` | — | Kunde anlegen, dann beenden |
+| `-vorlagen` | — | Vorlagen aus JSON laden, dann beenden |
 | `-trockenlauf` | aus | ohne Wix laufen |
 
 ---
 
 ## Die Regeln im Code
 
-Diese sieben Punkte sind der Grund, warum es den Dienst gibt, und jeder ist
-durch einen Test abgedeckt (`internal/planer/planer_test.go`).
+Diese zwölf Punkte sind der Grund, warum es den Dienst gibt. Jeder ist durch
+einen Test abgedeckt — 31 Tests, alle grün.
 
 1. **Ein Beitrag darf nie doppelt erscheinen.** Liegt eine Wix-Item-ID vor, ist
    der Beitrag draußen — ein Wiederholungsversuch wird übersprungen, auch wenn
@@ -109,6 +122,19 @@ durch einen Test abgedeckt (`internal/planer/planer_test.go`).
 7. **Wiederholung mit wachsendem Abstand, gedeckelt** bei fünf Versuchen und
    einer Stunde. Plattformen sperren die App, nicht den einzelnen Aufruf.
 
+Dazu die Vorlagenregeln (`internal/vorlage/`):
+
+8. **Die Vorlage bestimmt, was gefüllt werden darf.** Ein Feld, das die Vorlage
+   nicht kennt, wird abgewiesen statt ignoriert — wer an der Vorlage
+   vorbeischreiben will, soll auffallen.
+9. **Alle Beanstandungen auf einmal.** Wer ein Formular ausfüllt, will nicht
+   fünfmal hintereinander einen einzelnen Fehler vorgesetzt bekommen.
+10. **Längen zählen Zeichen, nicht Bytes.** 24 Umlaute sind 24 Zeichen.
+11. **Der Text wird je Kanal gesetzt.** Instagram bekommt sein eigenes Muster
+    samt Schlagwörtern, LinkedIn ein anderes — die Kundin tippt einmal.
+12. **Zu lang für den Kanal heißt: geht nicht raus.** Abgeschnitten zu werden
+    ist schlimmer als hier zu scheitern.
+
 ```sh
 go test ./...
 ```
@@ -122,7 +148,9 @@ cmd/kanalwerk/      Start, Uhr, Kanalabgleich
 internal/wix/       Wix-Schnittstelle (Client, Publisher)
 internal/speicher/  Bestand als JSON-Datei
 internal/planer/    Fachregeln und Warteschlange  ← hier steht das Wesentliche
+internal/vorlage/   Gestaltungsvorlagen, Prüfung, Textaufbau je Kanal
 internal/web/       Oberfläche in der Marke der Kundin
+beispiel/           Vorlagen der Tanzschule Bothe
 ```
 
 Der Bestand liegt in einer JSON-Datei, geschrieben über eine Zwischendatei und
@@ -153,9 +181,11 @@ unverändert, es kommt nur ein anderer Anmeldeweg davor.
 
 ## Was noch fehlt
 
-- **Vorlagen** sind im Datenmodell angelegt, aber noch nicht gestaltbar. Heute
-  füllt die Kundin Text und Bild frei; die Sperre auf Schrift, Farbe und Raster
-  ist beschrieben, aber noch nicht durchgesetzt.
+- **Das Bild wird nicht gesetzt.** Die Vorschau zeichnet die Gestaltung, aber
+  das veröffentlichte Bild ist unverändert das der Kundin — Text wird nicht
+  hineingerendert. Dafür bräuchte es einen Rasterer samt Schriftsatz und einen
+  Ort, an dem das fertige Bild öffentlich liegt. Bewusst nicht gebaut, bevor
+  jemand danach fragt.
 - **Instagram** verlangt ein Bild. Ohne Bildadresse scheitert die Zustellung mit
   einem klaren Satz, statt einen Schnittstellenfehler durchzureichen.
 - **Newsletter** über die Email-Transmissions-Schnittstelle ist entworfen

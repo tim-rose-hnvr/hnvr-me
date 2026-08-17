@@ -1,10 +1,11 @@
 # Betrieb
 
-Vier Dateien. Zwei Wege, beide vollständig; welcher genommen wird, hängt
+Fünf Dateien. Zwei Wege, beide vollständig; welcher genommen wird, hängt
 davon ab, ob auf der Maschine noch etwas anderes läuft.
 
 | Datei | Wofür |
 |---|---|
+| `aufsetzen.sh` | von einem leeren Ubuntu zum laufenden Dienst, in einem Befehl |
 | `pnkt.service` | systemd, direkt auf dem Rechner |
 | `Containerfile` | Podman oder Docker, zweistufig, Endabbild ohne Shell |
 | `Caddyfile` | vorgelagerter Server: TLS, Kurzdomains, Landkopf |
@@ -16,17 +17,49 @@ davon ab, ob auf der Maschine noch etwas anderes läuft.
 
 ## Der kurze Weg
 
+Auf einem frischen Ubuntu, mit einem A-Eintrag, der schon hierher zeigt:
+
 ```sh
-go build -trimpath -ldflags="-s -w" -o pnkt .
-sudo useradd --system --home /var/lib/pnkt --shell /usr/sbin/nologin pnkt
-sudo install -d -o pnkt -g pnkt /var/lib/pnkt/daten
-sudo install -o root -g root -m 0755 pnkt /opt/pnkt/pnkt
-sudo install -m 0644 betrieb/pnkt.service /etc/systemd/system/
-sudo systemctl enable --now pnkt
+git clone https://github.com/tim-rose-hnvr/hnvr-me
+sudo hnvr-me/pnkt/betrieb/aufsetzen.sh --domain pnkt.me --mail technik@hnvr.me
 ```
 
-Davor ein Caddy, ein nginx oder was schon da ist. `pnkt` lauscht bewusst
-auf `127.0.0.1` — TLS macht der vorgelagerte Server.
+Das Skript holt das gebaute Binär aus der letzten Freigabe, prüft die
+Prüfsumme, legt Benutzer und Ablage an, setzt Hostname und Landkopf in die
+systemd-Unit ein, richtet Caddy samt Zertifikat ein, hängt die tägliche
+Sicherung an und prüft am Ende, ob der Dienst örtlich **und von außen**
+antwortet.
+
+Wiederholbar: beim zweiten Lauf wird nur das Binär getauscht und neu
+gestartet, die Daten bleiben. `--probe` zeigt jeden Schritt, ohne etwas zu
+ändern — das ist der Lauf, den man zuerst macht.
+
+Ohne Freigabe im Repository geht es auch mit einem selbst gebauten Binär:
+
+```sh
+cd pnkt && go build -o pnkt .
+sudo betrieb/aufsetzen.sh --domain pnkt.me --binaer ./pnkt
+```
+
+`pnkt` lauscht bewusst auf `127.0.0.1` — TLS macht der vorgelagerte Server.
+Wer schon einen nginx hat, nimmt `--ohne-caddy` und trägt den Weg dort ein.
+
+## Woher das Binär kommt
+
+`.github/workflows/pnkt.yml` baut bei jeder Änderung an `pnkt/` für amd64
+und arm64, **startet das gebaute Binär und ruft es ab** — Gesundheit,
+Studio, Zentrale, ein QR in der neuen Modulform. Ein Binär, das nicht
+startet, ist kein Binär.
+
+Eine Freigabe mit fester Adresse entsteht aus einem Etikett:
+
+```sh
+git tag pnkt-v1.0.0 && git push origin pnkt-v1.0.0
+```
+
+Danach liegen die Dateien unter
+`github.com/tim-rose-hnvr/hnvr-me/releases/latest/download/pnkt-linux-amd64`
+— genau dort, wo `aufsetzen.sh` sie sucht.
 
 ## Was vor dem ersten Start entschieden sein muss
 

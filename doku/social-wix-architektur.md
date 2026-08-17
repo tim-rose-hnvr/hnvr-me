@@ -172,6 +172,63 @@ Abbruch und die Zuordnung eingehender Webhooks.
 
 ---
 
+## Ausbaustufe 2 — Werkzeug für die Kundin
+
+Sobald die Kundin selbst arbeitet, ändert sich der Aufbau an einer Stelle grundlegend.
+
+**Der Account-API-Schlüssel fällt als Weg aus.** Er gibt niemandem eine Oberfläche. Der
+richtige Ort ist eine **Dashboard-Seiten-Erweiterung**: die Kundin meldet sich in *ihrem*
+Wix-Dashboard an, das sie ohnehin kennt, und findet dort „Kanalwerk" im Menü. Ihre Kanäle,
+ihre Kontakte, ihr Kontingent. Einmal gebaut, je Kunde installiert. Wix bietet dafür die
+Wix CLI (React/Node, von Wix gehostet) oder eine selbstverwaltete Einbettung per iframe
+auf eigenem HTTPS-Server.
+
+### E-Mail: Kampagnen-API nein, Transmissions-API ja
+
+Die Kampagnen-API **kann keine Kampagne anlegen** — laut Doku ist der einzige Weg über die
+API, eine bestehende wiederzuverwenden. Gestaltet wird im Wix-Composer. Ein eigener
+E-Mail-Aufbau wäre damit tot.
+
+Der Ausweg ist die **Email Transmissions API**: sie nimmt `emailHtmlContent`, also
+vollständiges eigenes HTML, kennt `MARKETING` als Typ, ersetzt einen Platzhalter durch den
+echten Abmeldelink und akzeptiert einen Idempotenzschlüssel gegen Doppelversand. Absender
+muss verifiziert sein, der Versand zählt aufs E-Mail-Kontingent der Site.
+
+### Gestaltung: Vorlagen statt Editor
+
+Ein Canva-Nachbau kommt nicht in Frage. Canva ist ein Grafikeditor mit Ebenen, Schriften,
+Freistellern, Formaten und Exportkette — daran arbeiten seit über zehn Jahren Hunderte
+Leute. Eine abgespeckte Fassung ist genau das, was Kunden ablehnen.
+
+**Die Kundin braucht auch keinen Editor.** Sie will nicht Schriften wählen und Ebenen
+verschieben, sie will, dass es zu ihrem übrigen Auftritt passt. Der richtige Zuschnitt ist
+deshalb ein **Vorlagenwerkzeug**:
+
+- Die Agentur gestaltet die Vorlagen in der Markenwelt der Kundin.
+- Die Kundin tauscht Bild und Text, wählt das Format, fertig.
+- Fest liegen: Schrift, Farbe, Raster, Logo.
+
+Technisch ist das eine Textersetzung und ein Bildzuschnitt auf festem Layout — ein Formular
+mit Vorschau, kein Editor. Und es ist **für die Agentur das bessere Produkt**, weil die
+Kundin die Gestaltung nicht zerstören kann. Genau daran scheitern Agenturen, die ihren
+Kunden freie Werkzeuge geben.
+
+Falls später doch freie Gestaltung verlangt wird: **einkaufen, nicht bauen.** Es gibt
+fertige Editor-SDKs für diesen Zweck (Polotno wird ausdrücklich als Canva-artiges SDK
+vertrieben, darunter liegen Bibliotheken wie Fabric.js oder Konva; Adobe Express hat ein
+Einbett-SDK für Partner). Lizenz- und Preisfragen sind ungeprüft.
+
+### Die drei Teile und ihre Größen
+
+| Teil | Größe | Zustand |
+|---|---|---|
+| Planer und Verteilung | klein | entworfen, API gemessen |
+| Vorlagen | mittel | Zuschnitt steht, nichts gebaut |
+| E-Mail über Transmissions | klein | Weg belegt, Kontingent zu klein |
+| Freie Gestaltung | sehr groß | nur einkaufen, nur bei belegter Nachfrage |
+
+---
+
 ## Baureihenfolge
 
 **Schritt 0 — der Beweis.** API-Schlüssel anlegen, `List Accounts` gegen eine bestehende
@@ -238,6 +295,28 @@ Datenmodell vorsieht:
 
 Die Unterscheidung zwischen „erloschen" und „nie eingerichtet" muss in der Oberfläche
 sichtbar bleiben — sonst sucht man einen Fehler, wo nur nichts eingerichtet ist.
+
+**E-Mail-Marketing**, gemessen auf vier Sites über
+`GET /email-marketing/v1/account-details`. Alle identisch:
+
+| Merkmal | Wert |
+|---|---|
+| Status | `ACTIVE` — das Konto besteht bereits |
+| Paket | `Free200` |
+| Kampagnen je Monat | `-1` — unbegrenzt |
+| E-Mails je Monat | **200**, verbraucht 0 |
+| Terminierung | **`scheduling: false`** |
+| Mehrere Absender | `false` |
+| Wix-Werbung entfernbar | `false` |
+| Größte Empfängerzahl | 1 000 000 |
+
+Bestehende Kampagnen: `hnvr.me` sieben, die übrigen keine.
+
+**Die eigentliche Grenze ist die E-Mail-Zahl, nicht die Kampagnenzahl.** 200 E-Mails im
+Monat heißt: eine Tanzschule mit 312 Kontakten bekommt **keine einzige** vollständige
+Aussendung. Beliebig viele Kampagnen zu je 200 Empfängern nützen ihr nichts.
+
+Und dasselbe Muster wie bei Social: **Terminierung ist auch bei E-Mail abgeschaltet.**
 
 ---
 

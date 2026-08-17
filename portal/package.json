@@ -6,13 +6,32 @@
   "description": "Marketingseite und späteres Kundenportal der Werkbank — Astro 5, zum Anhängen an Wix Headless.",
   "scripts": {
     "app:einbetten": "node skripte/app-einbetten.mjs",
-    "dev": "npm run app:einbetten && astro dev",
+    "dev": "wix dev",
     "prebuild": "npm run app:einbetten",
-    "build": "astro build",
-    "preview": "astro preview",
-    "wix:veroeffentlichen": "node skripte/wix-veroeffentlichen.mjs"
+    "build": "wix build",
+    "preview": "wix preview",
+    "wix:veroeffentlichen": "node skripte/wix-veroeffentlichen.mjs",
+    "astro": "astro",
+    "wix": "wix",
+    "release": "wix release",
+    "generate": "wix generate",
+    "env": "wix env",
+    "skills": "wix skills"
   },
   "dependencies": {
-    "astro": "^5.0.0"
+    "astro": "^5.0.0",
+    "@wix/sdk": "^1.15.23",
+    "@wix/essentials": "^0.1.23",
+    "@wix/dashboard": "^1.3.43"
+  },
+  "devDependencies": {
+    "@astrojs/react": "^4.3.0",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@wix/cli": "^1.1.92",
+    "@wix/astro": "^2.39.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "@wix/astro-wix-hosting-adapter": "^2.0.0"
   }
 }

@@ -1,8 +1,11 @@
 # Portal — Marketingseite und Kundenbereich
 
+**Steht online:** <https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com>
+Die Anwendung darunter: <https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/werkbank/>
+
 Astro-5-Projekt mit der Marketingseite der Werkbank und dem Gerüst für den
-späteren Kundenbereich. Vorbereitet zum Anhängen an **Wix Headless**: Wix
-übernimmt dann Hosting, Anmeldung und Umgebungsvariablen.
+späteren Kundenbereich, angehängt an **Wix Headless**: Wix übernimmt Hosting,
+Anmeldung und Umgebungsvariablen.
 
 ```
 src/pages/index.astro       Marketingseite
@@ -23,11 +26,17 @@ dann ohne CJK-Zeichentabellen und ohne englische Texterkennung.
 `public/werkbank` steht in `.gitignore`: die Anwendung hat genau eine Quelle,
 das Verzeichnis daneben. Wer die Werkbank ändert, baut das Portal neu.
 
-Geprüft im Browser gegen die gebaute Seite: die Anwendung startet über den
-Knopf auf der Startseite, lädt das Beispiel, erkennt Text (77 Wörter, 95 %
-Sicherheit) und verschlüsselt mit qpdf — alles aus `/werkbank/` heraus, ohne
-einen Fehler in der Konsole. WebAssembly und Web-Worker brauchen dafür nichts
-weiter als einen Ort, der Dateien ausliefert.
+Das Wix-Hosting liefert für Verzeichnisse kein Register aus — `/werkbank/`
+allein ergäbe 404. Dafür stehen in `astro.config.mjs` zwei Umleitungen auf
+`/werkbank/index.html`, damit auch eine von Hand eingegebene Adresse ankommt.
+
+**Nachgemessen an der veröffentlichten Seite** mit
+`node ../werkbank/werkzeuge/live-pruefen.mjs`: alle 220 Dateien erreichbar und
+Byte für Byte gleich der gebauten Fassung (11,27 MB verglichen), `.wasm` als
+`application/wasm`, die Sprachdaten als `application/gzip`, alle drei Wege in
+die Anwendung offen. Damit läuft dort dieselbe Anwendung, die `pruefen.mjs`
+und `vollpruefung.mjs` im Browser durchgemessen haben — 58 + 55 Prüfungen,
+darunter Texterkennung und qpdf-Verschlüsselung.
 
 ## Örtlich ansehen
 

@@ -268,11 +268,13 @@ und Sprachdaten. Am Rest ändert sich nichts. Der Server muss `.wasm` als
 
 ## Prüfen
 
-Zwei Läufe, beide in einem echten Chromium, beide ohne Netz:
+Zwei Läufe in einem echten Chromium, beide ohne Netz, und ein dritter gegen
+die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 58 Prüfungen — das Ergebnis in der Datei
 node werkzeuge/vollpruefung.mjs   # 55 Prüfungen — die Bedienung
+node werkzeuge/live-pruefen.mjs   # 12 Prüfungen — was der Hoster ausliefert
 ```
 
 **`pruefen.mjs`** fragt: Stimmt, was herauskommt? Geschwärzte Seite ohne
@@ -293,6 +295,15 @@ Befehlspalette, Teilen, Reparieren, Linearisieren, Verkleinern, Vergleich,
 Unterschrift in allen drei Wegen, Drucken, Word-Ausgabe, Text kopieren,
 Bereich ablichten, Stempel, PDF aus Bildern.
 
+**`live-pruefen.mjs`** fragt: Kommt draußen an, was hier gebaut wurde? Beim
+Hoster entscheiden Dinge, die örtlich nie auffallen — MIME-Typen,
+Verzeichnisregister, Zwischenspeicher. Der Lauf holt jede der 220 Dateien von
+der veröffentlichten Adresse und vergleicht die Prüfsumme mit der gebauten
+Fassung; stimmen alle überein, läuft dort dieselbe Anwendung, die die beiden
+anderen Läufe durchgemessen haben. Zusätzlich geprüft: `.wasm` als
+`application/wasm`, die Sprachdaten als `application/gzip`, und dass alle
+Wege in die Anwendung offen sind.
+
 Bei einem Fehlschlag legt `vollpruefung.mjs` ein Bildschirmfoto und einen
-Zustandsauszug ab und nennt den Pfad. Beide Läufe schlagen auch dann fehl,
-wenn in der Browserkonsole ein Fehler auftaucht.
+Zustandsauszug ab und nennt den Pfad. Beide Browserläufe schlagen auch dann
+fehl, wenn in der Browserkonsole ein Fehler auftaucht.

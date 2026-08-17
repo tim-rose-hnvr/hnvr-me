@@ -1,0 +1,108 @@
+# Get in Touch veröffentlichen
+#
+# Läuft nur auf Knopfdruck (workflow_dispatch), nie von allein — ein Deploy soll
+# eine Entscheidung sein, kein Nebeneffekt eines Commits.
+#
+# Voraussetzung: ein Wix-API-Schlüssel als Repository-Geheimnis `WIX_API_KEY`.
+# Wix-Dashboard → Einstellungen → API-Schlüssel (nur Kontoinhaber), danach
+# GitHub → Settings → Secrets and variables → Actions. Widerrufen geht
+# jederzeit im selben Wix-Dialog.
+#
+# Die Verknüpfung mit Wix ist bereits erledigt und steht in
+# `getintouch/wix.config.json` — Projekt „Get in Touch",
+# Site 880ffa0c-0877-46e5-ba41-e1ba1e072338.
+
+name: Get in Touch veröffentlichen
+
+on:
+  workflow_dispatch:
+    inputs:
+      grund:
+        description: Warum wird veröffentlicht?
+        required: false
+        default: Neuer Stand
+
+permissions:
+  contents: read
+
+jobs:
+  veroeffentlichen:
+    name: Bauen und ausliefern
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: getintouch
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: getintouch/package-lock.json
+
+      - name: Abhängigkeiten
+        run: npm ci
+
+      # Erst prüfen, dann ausliefern. Ein Deploy, der die Regeln bricht, ist
+      # schlimmer als keiner — die Seite hängt an einem gedruckten QR-Code.
+      - name: Tests
+        run: npm test
+
+      - name: Typen prüfen
+        run: npm run pruefen
+
+      # `wix login --api-key` nimmt den Schlüssel entgegen, fällt in einer
+      # Umgebung ohne Terminal aber trotzdem auf die Anmeldung per Gerätecode
+      # zurück und wartet dort bis zum Zeitablauf (CLI 1.1.237). Deshalb wird
+      # die Datei geschrieben, die das CLI nach erfolgreicher Anmeldung selbst
+      # anlegt — gleiche Felder, gleiche Stelle.
+      #
+      # Sobald `--api-key` ohne Terminal durchläuft, ersetzt
+      #   npx wix login --api-key "$WIX_API_KEY"
+      # diesen Schritt ersatzlos.
+      - name: Anmelden
+        env:
+          WIX_API_KEY: ${{ secrets.WIX_API_KEY }}
+        run: |
+          if [ -z "$WIX_API_KEY" ]; then
+            echo "::error::Das Geheimnis WIX_API_KEY fehlt."
+            exit 1
+          fi
+          konto=$(curl -sS --fail "https://www.wixapis.com/accounts/v1/accounts/my_account" \
+                    -H "Authorization: $WIX_API_KEY")
+          mkdir -p ~/.wix/auth
+          WIX_API_KEY="$WIX_API_KEY" KONTO="$konto" node --input-type=module -e '
+            import { writeFileSync } from "node:fs";
+            import { homedir } from "node:os";
+            import { resolve } from "node:path";
+            const { account } = JSON.parse(process.env.KONTO);
+            writeFileSync(
+              resolve(homedir(), ".wix/auth/api-key.json"),
+              JSON.stringify({
+                token: process.env.WIX_API_KEY,
+                accountId: account.accountId,
+                userInfo: { userId: account.accountOwner, email: account.slug },
+              }),
+              { mode: 0o600 },
+            );
+          '
+          npx wix whoami
+
+      - name: Bauen
+        run: npm run build
+
+      - name: Ausliefern
+        run: npm run release
+
+      - name: Erreichbarkeit nachsehen
+        run: |
+          basis="${{ vars.GETINTOUCH_URL || 'https://get-in-tou-35a520f5-hnvrme.wix-site-host.com' }}"
+          fehler=0
+          for pfad in "" "/t/hnvr" "/designs" "/werkstatt"; do
+            code=$(curl -sSL -o /dev/null -w '%{http_code}' "$basis$pfad" || echo 000)
+            echo "$code  $pfad"
+            [ "$code" = "200" ] || fehler=1
+          done
+          exit $fehler

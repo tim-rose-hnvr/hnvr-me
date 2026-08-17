@@ -1,0 +1,98 @@
+---
+/**
+ * Die Vorschau der Werkstatt.
+ *
+ * Zeigt entweder ein gepflegtes Profil in anderer Gestaltung (`?g=`) oder einen
+ * ganzen Entwurf aus der Werkstatt (`?p=`, gepackt — siehe `packung.ts`).
+ *
+ * Bewusst eine eigene Adresse und nicht `/t/<name>?…`: sonst könnte jeder einen
+ * Link verschicken, der die Seite eines fremden Profils umfärbt oder mit
+ * fremdem Inhalt füllt. Eine Vorschau darf das, eine öffentliche Profilseite
+ * nicht.
+ *
+ * Gerendert wird von `Profilansicht` — derselben Komponente wie unter `/t/…`.
+ * Eine Vorschau, die einen eigenen Renderer hätte, wäre keine.
+ */
+import Profilblatt from '../../layouts/Profilblatt.astro';
+import Profilansicht from '../../komponenten/Profilansicht.astro';
+
+import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
+import { GESTALTUNG_VORGABE, lieseGestaltung } from '../../kern/gestaltung.ts';
+import type { Profil } from '../../kern/profil.ts';
+import { musterprofil } from '../../kern/muster.ts';
+import { packe } from '../../kern/packung.ts';
+import { ablage } from '../../kern/speicher/index.ts';
+import { entwurfAus } from './entwurf.ts';
+
+export const prerender = false;
+
+const parameter = Astro.url.searchParams;
+
+/**
+ * Ein Entwurf läuft durch dieselbe Prüfung wie ein gepflegtes Profil. Was nicht
+ * besteht, wird durch das Muster ersetzt — die Beanstandungen zeigt die
+ * Werkstatt daneben an; hier wäre eine Fehlerseite nur im Weg.
+ */
+async function holeProfil(): Promise<Profil | null> {
+  if (parameter.has('p')) return (await entwurfAus(parameter)) ?? musterprofil();
+
+  const quelle = ablage();
+  const slug = parameter.get('profil') ?? (await quelle.liste())[0];
+  return slug ? quelle.hole(slug) : null;
+}
+
+const profil = await holeProfil();
+
+if (!profil) {
+  return new Response('Es gibt noch kein Profil zum Vorführen.', {
+    status: 404,
+    headers: { 'content-type': 'text/plain; charset=utf-8' },
+  });
+}
+
+/** `?g=` übersteuert die Gestaltung — für die Vorführung einzelner Vorlagen. */
+function gestaltungAus(roh: string | null) {
+  if (!roh) return profil!.gestaltung;
+  try {
+    return lieseGestaltung(JSON.parse(roh)).gestaltung ?? GESTALTUNG_VORGABE;
+  } catch {
+    return GESTALTUNG_VORGABE;
+  }
+}
+
+const gestaltung = gestaltungAus(parameter.get('g'));
+const lage = profil.erreichbarkeit ? bewerteErreichbarkeit(profil.erreichbarkeit, new Date()) : null;
+const adresse = new URL(`/t/${profil.slug}`, Astro.site ?? Astro.url).toString();
+
+/**
+ * Für einen Entwurf gibt es `/t/<name>` noch nicht — vCard und QR-Bild holt die
+ * Vorschau deshalb aus der Werkstatt, mit dem Entwurf im Gepäck. Im QR-Code
+ * steht trotzdem schon die künftige Adresse.
+ *
+ * Neu gepackt wird das, was oben tatsächlich gezeigt wird, nicht der Parameter
+ * aus der Adresse. Beim Tippen läuft ein Entwurf durch unfertige Zustände; dann
+ * zeigt die Vorschau das Muster, und die beiden Ziele müssen mitgehen — sonst
+ * führen Visitenkarte und QR-Code ins Leere, während daneben eine Seite steht.
+ */
+const entwurf = parameter.has('p') ? await packe(profil) : null;
+const vcardZiel = entwurf ? `/werkstatt/karte.vcf?p=${entwurf}` : undefined;
+const qrZiel = entwurf ? `/werkstatt/qr.svg?p=${entwurf}` : undefined;
+---
+
+<Profilblatt
+  titel={`Vorschau — ${profil.kopf.name}`}
+  beschreibung="Vorschau der Seite."
+  gestaltung={gestaltung}
+  adresse={adresse}
+  indexierbar={false}
+>
+  <Profilansicht
+    profil={profil}
+    gestaltung={gestaltung}
+    lage={lage}
+    adresse={adresse}
+    nachrichtZiel={null}
+    vcardZiel={vcardZiel}
+    qrZiel={qrZiel}
+  />
+</Profilblatt>

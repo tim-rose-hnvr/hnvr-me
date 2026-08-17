@@ -1,0 +1,350 @@
+---
+/**
+ * Die Verkaufsseite.
+ *
+ * Sie hält sich an dieselbe Regel wie das Produkt: nichts behaupten, was die
+ * Seite nicht selbst einlöst.
+ *
+ *  - Der Vergleich mit der Konkurrenz steht in Zahlen, die an der
+ *    ausgelieferten Seite gemessen wurden, mit Datum und Methode dabei.
+ *  - Es gibt einen Abschnitt „Was heute fehlt". Auf einer Verkaufsseite ist das
+ *    unüblich; hier ist es der einzige Weg, die übrigen Aussagen glaubwürdig zu
+ *    halten. Er wird mitgepflegt: seit die Werkstatt steht, steht dort nicht
+ *    mehr „kein Editor", sondern „kein Konto".
+ *  - Der Hauptknopf führt auf eine echte Seite, nicht auf ein Bild davon.
+ *
+ * Statisch vorgebaut: hier ändert sich nichts je Aufruf.
+ */
+import { cssVariablen, vorlage } from '../kern/gestaltung.ts';
+import { zeichen } from '../kern/zeichen.ts';
+import { MARKE, SIGNET } from '../kern/marke.ts';
+import '../stile/marketing.css';
+
+export const prerender = true;
+
+const gestaltung = vorlage('signal');
+const stil = Object.entries(cssVariablen(gestaltung))
+  .map(([name, wert]) => `${name}:${wert}`)
+  .join(';');
+
+const titel = 'Get in Touch — die Kontaktseite, die weiß, wann du da bist';
+const beschreibung =
+  'Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code auf einer Seite. ' +
+  'Sie stellt nach vorn, was gerade wirklich trägt — im Betrieb den Anruf, danach den schriftlichen Weg.';
+
+const merkmale = [
+  {
+    zeichen: 'uhr',
+    titel: 'Kennt die Öffnungszeiten',
+    text: 'Im Betrieb steht der Anruf oben, danach der schriftliche Weg — mit ehrlicher Ansage, wann geantwortet wird. Gerechnet in deiner Zeitzone, nicht in der des Besuchers.',
+  },
+  {
+    zeichen: 'visitenkarte',
+    titel: 'Digitale Visitenkarte',
+    text: 'Ein Tipp, und du stehst mit Foto im Adressbuch. vCard 3.0 — das Format, das iPhone, Android und Outlook seit Jahren lesen. Eine Datei, kein Formular.',
+  },
+  {
+    zeichen: 'qr',
+    titel: 'QR-Code, der gültig bleibt',
+    text: 'Als SVG vom Server, scharf in jeder Druckgröße. Er zeigt auf die Seite, nicht auf die Daten — Nummer und Anschrift kannst du ändern, ohne neu zu drucken.',
+  },
+  {
+    zeichen: 'haken',
+    titel: 'Drei Anordnungen, elf Designs',
+    text: 'Ruhige Liste, Gitter aus Karten oder Titelbild mit dem Namen darauf — die Seite wird anders aufgebaut, nicht bloß anders angestrichen. Dazu zwölf selbst ausgelieferte Schriftfamilien, freie Farben und ein Kontrastwächter nach WCAG.',
+  },
+  {
+    zeichen: 'laden',
+    titel: 'Läuft ohne JavaScript',
+    text: 'Die Seite kommt fertig vom Server. Auch mit blockierten Skripten sind Kontaktwege, Visitenkarte und QR-Code vollständig da — und die Vorschau in WhatsApp stimmt.',
+  },
+  {
+    zeichen: 'schloss',
+    titel: 'Kein Tracking von uns',
+    text: 'Schriften und Bilder liegen auf demselben Server. Die Seite selbst lädt nichts von Dritten nach und schreibt niemanden an, der sie ansieht. Was das Hosting darüber hinaus mitgibt, steht weiter unten.',
+  },
+];
+
+/**
+ * Gemessen am ausgelieferten HTML von linktr.ee/linktree — und am eigenen.
+ *
+ * Die eigenen Zahlen stehen doppelt: was das Programm erzeugt, und was beim
+ * Besucher ankommt. Der Unterschied sind vier Skripte, die die Auslieferung von
+ * Wix in jede Seite spritzt (Cookie-Richtlinie, Telemetrie, Analytics). Sie
+ * stammen nicht aus diesem Code und lassen sich aus ihm nicht entfernen.
+ * Die Zahl kleinzurechnen, indem man nur die eigene Hälfte zeigt, wäre genau
+ * die Sorte Werbeaussage, gegen die diese Tabelle steht.
+ */
+const vergleich = {
+  stand: 'August 2026',
+  zeilen: [
+    { was: 'HTML einer Profilseite', andere: '190 KB', wir: '25 KB' },
+    { was: 'Skripte', andere: '52', wir: '1 eigenes, 4 vom Hosting' },
+    { was: 'Nachgeladen von fremden Hosts', andere: '3', wir: '1 (Wix)' },
+    { was: 'Links auf fremde Profile', andere: '60', wir: '0' },
+    { was: 'Werbung auf deiner Seite', andere: 'Affiliate-Verweise', wir: 'keine' },
+  ],
+};
+
+const offen = [
+  {
+    marke: 'in Arbeit',
+    titel: 'Konto',
+    text: 'Bauen kannst du deine Seite selbst — in der Werkstatt, mit der echten Seite als Vorschau. Veröffentlichen geht noch über uns: du schickst den Entwurf, wir schalten ihn frei.',
+  },
+  {
+    marke: 'in Arbeit',
+    titel: 'Zahlen',
+    text: 'Aufrufe und Klicks je Block werden noch nicht gezählt. Kommt zusammen mit dem Konto.',
+  },
+  {
+    marke: 'auf Anfrage',
+    titel: 'Eigene Domain',
+    text: 'Heute läuft jede Seite unter der Adresse des Dienstes. Eine eigene Domain davorzusetzen ist machbar, aber Handarbeit — und weil im QR-Code die Adresse steckt, gehört sie vor den ersten Druck geklärt.',
+  },
+];
+
+const fragen = [
+  {
+    frage: 'Was kostet das?',
+    antwort:
+      'Die Seite mit Kontaktwegen, Visitenkarte und QR-Code kostet nichts — dauerhaft, ohne Werbung. Pro liegt bei 9 € im Monat, Studio fürs Team bei 39 €. Alle Zeilen im Einzelnen stehen unter „Preise", samt der ehrlichen Kennzeichnung, was davon noch geplant und nicht gebaut ist.',
+  },
+  {
+    frage: 'Funktioniert „Kontakt speichern" auf jedem Handy?',
+    antwort:
+      'Ja. Die Datei ist eine vCard 3.0 — bewusst nicht die neuere Fassung 4.0, denn die wird auf genau den Geräten unzuverlässig gelesen, auf denen die Karte am häufigsten landet. Am Rechner öffnet sie Outlook oder das Adressbuch.',
+  },
+  {
+    frage: 'Woher weiß die Seite, ob ich erreichbar bin?',
+    antwort:
+      'Aus den Öffnungszeiten, die im Profil stehen — samt Feiertagen und Sonderzeiten. Sind keine gepflegt, steht auch keine Statuszeile da. Eine erfundene Verfügbarkeit wäre schlimmer als gar keine Angabe.',
+  },
+  {
+    frage: 'Kann ich die Adresse später ändern?',
+    antwort:
+      'Ja. Aber gedruckte QR-Codes und geteilte Links zeigen danach ins Leere — drucke also erst, wenn der Name steht.',
+  },
+  {
+    // Bewusst ohne Angabe eines Speicherorts: die Wix-Infrastruktur macht dazu
+    // keine Zusage, die wir hier guten Gewissens wiederholen könnten. Was diese
+    // Seite selbst tut, ist dagegen nachprüfbar — und genau das steht da.
+    frage: 'Wo liegen die Daten?',
+    antwort:
+      'Die Profile liegen auf der Wix-Infrastruktur, die hnvr.me auch für seine übrigen Projekte nutzt; Einzelheiten stehen in der Datenschutzerklärung. Die Seite selbst lädt nichts von Dritten nach und meldet niemandem, wer sie geöffnet hat. Wix legt allerdings vier eigene Skripte in jede ausgelieferte Seite — Cookie-Richtlinie, Telemetrie und Besucherzählung. Die kommen nicht aus diesem Programm und lassen sich aus ihm auch nicht entfernen.',
+  },
+];
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titel}</title>
+    <meta name="description" content={beschreibung} />
+    <meta name="theme-color" content={gestaltung.grund} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={titel} />
+    <meta property="og:description" content={beschreibung} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/schriften/schriften.css" />
+  </head>
+
+  <body style={stil}>
+    <div class="seite">
+      <div class="bahn">
+        <header class="kopfzeile">
+          <a class="wortmarke" href="/">
+            <Fragment set:html={SIGNET} />
+            <span>{MARKE.name}</span>
+          </a>
+          <nav class="kopfnavi">
+            <a href="/designs">Designs</a>
+            <a href="/werkstatt">Werkstatt</a>
+            <a href="/preise">Preise</a>
+          </nav>
+        </header>
+
+        <!-- Kopf -->
+        <section class="kopf">
+          <p class="marke">kontaktseite</p>
+          <h1>Die Seite weiß,<br />wann du da bist.</h1>
+          <p class="fuehrung">
+            Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code unter einer kurzen Adresse. Nach vorn stellt
+            sie, was gerade wirklich trägt: im Betrieb den Anruf, danach den schriftlichen Weg.
+          </p>
+          <div class="knopfreihe">
+            <a class="knopf knopf--voll" href="/t/hnvr">
+              Echte Seite ansehen
+              <Fragment set:html={zeichen('pfeil')} />
+            </a>
+            <a class="knopf" href="/werkstatt">
+              <Fragment set:html={zeichen('stift')} />
+              Seite selbst bauen
+            </a>
+          </div>
+        </section>
+
+        <!-- Die Uhr -->
+        <section>
+          <p class="marke">der unterschied</p>
+          <h2>Ein Knopf, der die Uhrzeit kennt.</h2>
+          <p class="fuehrung" style="margin-top:18px">
+            Wer sonntags um 23 Uhr den Code am Fahrzeug scannt und auf „Jetzt anrufen“ tippt, landet im Nichts und ist
+            weg. Dieselbe Seite, zwei Zeitpunkte:
+          </p>
+
+          <div class="lagen">
+            <div class="lage">
+              <p class="lage__zeit">Mittwoch, 14:00</p>
+              <p class="lage__status lage__status--offen">
+                <span class="lage__punkt" aria-hidden="true"></span>
+                Jetzt erreichbar · bis 18:00
+              </p>
+              <div class="lage__knopf">
+                <Fragment set:html={zeichen('telefon')} />
+                Jetzt anrufen
+              </div>
+              <p class="lage__nach">Darunter: WhatsApp, Termin, E-Mail, Anfahrt.</p>
+            </div>
+
+            <div class="lage">
+              <p class="lage__zeit">Samstag, 23:00</p>
+              <p class="lage__status">
+                <Fragment set:html={zeichen('uhr')} />
+                Gerade geschlossen · Montag ab 9:00
+              </p>
+              <div class="lage__knopf">
+                <Fragment set:html={zeichen('whatsapp')} />
+                WhatsApp schreiben
+              </div>
+              <p class="lage__nach">Der Anruf rutscht nach unten. Niemand wird enttäuscht.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Merkmale -->
+        <section>
+          <p class="marke">was drin ist</p>
+          <h2>Mehr als eine Linkliste.</h2>
+          <div class="merkmale">
+            {
+              merkmale.map((m) => (
+                <div class="merkmal">
+                  <Fragment set:html={zeichen(m.zeichen)} />
+                  <h3>{m.titel}</h3>
+                  <p>{m.text}</p>
+                </div>
+              ))
+            }
+          </div>
+        </section>
+
+        <!-- Vergleich -->
+        <section>
+          <p class="marke">ehrlich verglichen</p>
+          <h2>Was auf der Seite eines<br />Handwerkers nichts zu suchen hat.</h2>
+          <p class="fuehrung" style="margin-top:18px">
+            Der bekannteste Anbieter hängt unter jedes Profil ein Karussell mit fremden Konten, die eigene Preisliste
+            und Affiliate-Verweise auf Werbekunden. Wer deinen QR-Code scannt, bekommt deinen Wettbewerb mitgeliefert.
+          </p>
+
+          <div class="tabellenrahmen">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Gemessen an einer Profilseite</th>
+                  <th scope="col">Üblicher Anbieter</th>
+                  <th scope="col">Get in Touch</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  vergleich.zeilen.map((z) => (
+                    <tr>
+                      <th scope="row">{z.was}</th>
+                      <td data-spalte="Üblicher Anbieter">{z.andere}</td>
+                      <td class="wert--wir" data-spalte="Get in Touch">
+                        {z.wir}
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <p class="quelle">
+            Erhoben {vergleich.stand} an beiden ausgelieferten Seiten — nicht an Werbeaussagen. „Nachgeladen von fremden
+            Hosts“ zählt Skripte, Schriften und Bilder, die der Browser beim Öffnen von dritten Servern holt. Die vier
+            Skripte auf unserer Seite stammen aus der Auslieferung von Wix und nicht aus diesem Programm; auf einem
+            eigenen Server bleibt es beim einen.
+          </p>
+        </section>
+
+        <!-- Was fehlt -->
+        <section>
+          <p class="marke">was heute fehlt</p>
+          <h2>Damit du es nicht selbst<br />herausfinden musst.</h2>
+          <ul class="offen">
+            {
+              offen.map((o) => (
+                <li>
+                  <span class="offen__marke">{o.marke}</span>
+                  <span>
+                    <b>{o.titel}</b> — {o.text}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <!-- Fragen -->
+        <section>
+          <p class="marke">häufige fragen</p>
+          <h2>Kurz beantwortet.</h2>
+          <div class="fragen">
+            {
+              fragen.map((f) => (
+                <details class="frage">
+                  <summary>{f.frage}</summary>
+                  <p>{f.antwort}</p>
+                </details>
+              ))
+            }
+          </div>
+        </section>
+
+        <!-- Schluss -->
+        <section class="schluss">
+          <p class="marke">bereit?</p>
+          <h2>Ein Link, und sie erreichen dich.</h2>
+          <div class="knopfreihe">
+            <a class="knopf knopf--voll" href="/werkstatt">
+              In der Werkstatt anfangen
+              <Fragment set:html={zeichen('pfeil')} />
+            </a>
+            <a class="knopf" href="/designs">Elf Designs ansehen</a>
+            <a class="knopf" href="tel:+4951112282286">
+              <Fragment set:html={zeichen('telefon')} />
+              +49 511 12282286
+            </a>
+          </div>
+        </section>
+
+        <footer class="fuss">
+          <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
+          <span>
+            <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
+            ·
+            <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
+          </span>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

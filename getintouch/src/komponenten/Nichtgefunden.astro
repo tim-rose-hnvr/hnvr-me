@@ -1,0 +1,113 @@
+---
+/**
+ * Was jemand sieht, der ins Leere gescannt hat.
+ *
+ * Der häufigste Weg hierher ist ein gedruckter QR-Code auf einem Fahrzeug, einem
+ * Flyer oder einer Visitenkarte, dessen Ziel es nicht mehr gibt. Wer dort landet,
+ * hat gerade sein Telefon in der Hand und wollte jemanden erreichen — nackter
+ * Fehlertext ist an dieser Stelle die schlechteste aller Antworten.
+ *
+ * Bewusst *nicht*: „Diese Adresse ist noch frei — sichere sie dir!". Das war die
+ * Antwort des Vorgängers, und sie ist gleich doppelt falsch. Sie verwirrt den
+ * Besucher, der einen Handwerker sucht und keine Anmeldung will. Und sie macht
+ * die Seite zu einem Verzeichnis, in dem sich freie Namen abfragen lassen.
+ */
+import { zeichen } from '../kern/zeichen.ts';
+import { MARKE, SIGNET } from '../kern/marke.ts';
+
+interface Props {
+  /** Die Adresse, die nicht aufging — nur zur Anzeige, nie als Angebot. */
+  gesucht?: string | undefined;
+}
+
+const { gesucht } = Astro.props;
+---
+
+<div class="blatt blatt--leer">
+  <div class="leer">
+    <Fragment set:html={SIGNET.replace('<svg', '<svg class="leer__signet"')} />
+
+    <h1 class="name">Hier ist niemand.</h1>
+
+    <p class="beschreibung">
+      {
+        gesucht
+          ? `Unter „${gesucht}" liegt keine Seite. Vielleicht hat sich ein Zeichen verlesen, vielleicht wurde die Seite abgeschaltet.`
+          : 'Diese Adresse gibt es nicht. Vielleicht hat sich ein Zeichen verlesen, vielleicht wurde die Seite abgeschaltet.'
+      }
+    </p>
+
+    <p class="beschreibung">
+      Wenn du den Code von einem Fahrzeug, einem Flyer oder einer Visitenkarte hast: frag dort noch einmal nach der
+      Adresse. Gedruckte Codes überleben manchmal die Seite, auf die sie zeigen.
+    </p>
+
+    <div class="leer__wege">
+      <a class="aktion aktion--haupt" href="/">
+        <Fragment set:html={zeichen('globus')} />
+        <span class="aktion__text">
+          <span class="aktion__beschriftung">Was ist {MARKE.name}?</span>
+          <span class="aktion__unterzeile">Eine Seite, die Menschen erreichbar macht</span>
+        </span>
+        <Fragment set:html={zeichen('pfeil', 'zeichen aktion__pfeil')} />
+      </a>
+
+      <a class="aktion" href="/werkstatt">
+        <Fragment set:html={zeichen('stift')} />
+        <span class="aktion__text">
+          <span class="aktion__beschriftung">Selbst eine bauen</span>
+          <span class="aktion__unterzeile">Kostenlos, ohne Konto</span>
+        </span>
+        <Fragment set:html={zeichen('pfeil', 'zeichen aktion__pfeil')} />
+      </a>
+    </div>
+  </div>
+
+  <footer class="fuss">
+    <a class="fuss__absender" href="/">
+      <Fragment set:html={SIGNET.replace('<svg', '<svg class="fuss__signet"')} />
+      <span>{MARKE.name.toLowerCase()}</span>
+    </a>
+  </footer>
+</div>
+
+<style is:global>
+  .blatt--leer {
+    justify-content: space-between;
+  }
+
+  .leer {
+    padding: 18vh 0 0;
+  }
+
+  .leer__signet {
+    width: 34px;
+    height: 34px;
+    color: var(--akzent);
+    display: block;
+    margin-bottom: 26px;
+  }
+
+  /* Auf der Profilseite hält `pre-line` gepflegte Zeilenumbrüche. Hier steht
+     Fließtext, und der soll umbrechen, wo der Platz endet — nicht dort, wo im
+     Quelltext eine Zeile zu Ende war. */
+  .leer .beschreibung {
+    margin-top: 18px;
+    white-space: normal;
+  }
+
+  .leer__wege {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: 36px;
+  }
+
+  /* Die ruhigen Zeilen sind hier keine Liste, sondern zwei Angebote — sie
+     bekommen ihren Rahmen zurück. */
+  .leer__wege .aktion:not(.aktion--haupt) {
+    padding: 15px 16px;
+    border: 1px solid var(--linie);
+    border-radius: var(--radius);
+  }
+</style>

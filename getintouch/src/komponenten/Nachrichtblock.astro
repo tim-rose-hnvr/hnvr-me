@@ -1,0 +1,157 @@
+---
+/**
+ * Die Nachricht — der Unterschied zwischen einer Linkliste und einer
+ * Kontaktseite.
+ *
+ * Jeder andere Block wirft den Besucher hinaus: in WhatsApp, ins Mailprogramm,
+ * in den Telefonwähler. Hier bleibt er. Das ist laut Design-Handoff das
+ * eigentliche Produkt, und es ist auch der einzige Baustein, bei dem am Ende
+ * etwas beim Betreiber ankommt statt nur ein Klick.
+ *
+ * Gebaut als gewöhnliches `<form method="post">` — ohne Skript, wie der Rest
+ * der Seite.
+ *
+ * Einschränkung dieses Hosts: die Auslieferung von Wix weist formularkodierte
+ * POSTs pauschal ab. Deshalb liegt ein kleines Skript darüber, das dasselbe
+ * Bündel als JSON schickt — mit abgeschaltetem JavaScript nimmt der Host die
+ * Nachricht auf dieser Infrastruktur nicht an. Das ist die eine Stelle, an der
+ * die Zusage „läuft ohne JavaScript" am Host scheitert und nicht am Programm;
+ * das Formular selbst bleibt ein gewöhnliches `<form method="post">` und
+ * funktioniert auf jedem anderen Server ohne das Skript.
+ *
+ * Gegen Maschinen steht kein Rätsel, sondern zweierlei Unauffälliges: ein Feld,
+ * das kein Mensch sieht und nur ein Automat ausfüllt, und der Zeitpunkt, zu dem
+ * die Seite geladen wurde. Wer in unter drei Sekunden ein Anliegen tippt, ist
+ * keiner. Beides kostet den Besucher nichts — ein Captcha schon.
+ */
+import { zeichen } from '../kern/zeichen.ts';
+import { NACHRICHT_GRENZEN, type Nachrichtblock } from '../kern/profil.ts';
+
+interface Props {
+  block: Nachrichtblock;
+  /** Wohin abgeschickt wird. Live `/t/<name>/nachricht`, in der Vorschau nichts. */
+  ziel: string | null;
+  /** Rückmeldung nach dem Absenden: `gut`, oder ein Fehlertext. */
+  stand?: 'gut' | string | undefined;
+}
+
+const { block, ziel, stand } = Astro.props;
+const jetzt = Date.now();
+---
+
+<section class="nachricht" aria-labelledby={`n-${block.id}`}>
+  <h2 class="marke" id={`n-${block.id}`}>{block.beschriftung}</h2>
+
+  {
+    stand === 'gut' ? (
+      <p class="nachricht__quittung">
+        <Fragment set:html={zeichen('haken')} />
+        <span>
+          <b>Angekommen.</b> Wir melden uns auf dem Weg, den du angegeben hast. Eine Kopie liegt nicht in deinem
+          Postausgang — schreib dir auf, was du gefragt hast.
+        </span>
+      </p>
+    ) : (
+      <>
+        {stand && (
+          <p class="nachricht__fehler" role="alert">
+            {stand}
+          </p>
+        )}
+
+        {ziel === null ? (
+          <p class="nachricht__hinweis">
+            In der Vorschau ist das Feld abgeschaltet — abgeschickt wird erst auf der veröffentlichten Seite.
+          </p>
+        ) : null}
+
+        <form class="nachricht__form" method="post" action={ziel ?? undefined} {...(ziel ? {} : { inert: true })}>
+          <input type="hidden" name="geladen" value={jetzt} />
+          {/* Für Menschen unsichtbar, für Automaten verlockend. */}
+          <div class="nachricht__falle" aria-hidden="true">
+            <label>
+              Webseite
+              <input type="text" name="webseite" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+
+          <fieldset class="nachricht__absichten">
+            <legend>{block.frage ?? 'Worum geht es?'}</legend>
+            {block.absichten.map((a, i) => (
+              <label class="nachricht__absicht">
+                <input type="radio" name="absicht" value={a} required checked={i === 0} />
+                <span>{a}</span>
+              </label>
+            ))}
+          </fieldset>
+
+          <label class="nachricht__feld">
+            <span>Dein Anliegen</span>
+            <textarea name="text" rows="4" required maxlength={NACHRICHT_GRENZEN.text} placeholder="Worum geht es genau?" />
+          </label>
+
+          <div class="nachricht__zeile">
+            <label class="nachricht__feld">
+              <span>Dein Name</span>
+              <input type="text" name="name" required maxlength={NACHRICHT_GRENZEN.name} autocomplete="name" />
+            </label>
+            <label class="nachricht__feld">
+              <span>Mail oder Telefon</span>
+              <input
+                type="text"
+                name="antwortweg"
+                required
+                maxlength={NACHRICHT_GRENZEN.antwortweg}
+                autocomplete="email"
+                placeholder="damit wir antworten können"
+              />
+            </label>
+          </div>
+
+          <button type="submit" class="aktion aktion--haupt nachricht__senden">
+            <Fragment set:html={zeichen('mail')} />
+            <span class="aktion__text">
+              <span class="aktion__beschriftung">Absenden</span>
+            </span>
+            <Fragment set:html={zeichen('pfeil', 'zeichen aktion__pfeil')} />
+          </button>
+
+          <p class="nachricht__hinweis">
+            Deine Angaben gehen an den Betreiber dieser Seite und an sonst niemanden. Kein Konto nötig, kein Cookie
+            gesetzt.
+          </p>
+        </form>
+      </>
+    )
+  }
+</section>
+
+<script>
+  /* Der Host nimmt nur JSON an — siehe Kopf dieser Datei. Das Formular bleibt
+     ein Formular; hier wird nur der Versand umgestellt. Schlägt das Skript
+     fehl, geht der gewöhnliche Weg trotzdem los. */
+  for (const form of document.querySelectorAll<HTMLFormElement>('.nachricht__form[action]')) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const knopf = form.querySelector('button[type=submit]');
+      if (knopf instanceof HTMLButtonElement) knopf.disabled = true;
+
+      const buendel: Record<string, string> = {};
+      for (const [k, v] of new FormData(form).entries()) if (typeof v === 'string') buendel[k] = v;
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(buendel),
+        redirect: 'follow',
+      })
+        .then((antwort) => {
+          location.href = antwort.url || form.action;
+        })
+        .catch(() => {
+          if (knopf instanceof HTMLButtonElement) knopf.disabled = false;
+          form.submit();
+        });
+    });
+  }
+</script>

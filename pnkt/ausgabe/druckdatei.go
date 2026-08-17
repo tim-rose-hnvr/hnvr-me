@@ -13,9 +13,9 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-	"strconv"
 	"strings"
 
+	farbwerte "pnkt.me/pnkt/farbe"
 	"pnkt.me/pnkt/qr"
 )
 
@@ -27,23 +27,49 @@ func mmZuPunkt(mm float64) float64 { return mm * 72 / 25.4 }
 // bei einem Modul von 0,4 mm sind das Bruchteile eines Mikrometers.
 const bogen = 0.5522847498307936
 
-// farbe zerlegt eine Hexangabe in die drei Anteile von 0 bis 1.
-func farbe(hex string) (r, g, b float64) {
-	h := strings.TrimPrefix(strings.TrimSpace(hex), "#")
-	if len(h) == 3 {
-		h = string([]byte{h[0], h[0], h[1], h[1], h[2], h[2]})
+// farbe liefert die Bildschirmanteile einer Farbangabe.
+func farbe(angabe string) (r, g, b float64) {
+	w := farbwerte.Lies(angabe)
+	return w.R, w.G, w.B
+}
+
+// pdfFuellfarbe schreibt den Befehl, der die Fuellfarbe setzt — je nach
+// Herkunft in drei, vier oder einem Kanal.
+func pdfFuellfarbe(angabe string) string {
+	w := farbwerte.Lies(angabe)
+	switch w.Art {
+	case farbwerte.ArtCMYK:
+		return fmt.Sprintf("%.4f %.4f %.4f %.4f k\n", w.CMYK[0], w.CMYK[1], w.CMYK[2], w.CMYK[3])
+	case farbwerte.ArtSonder:
+		// Volltonfarbe: der Wert ist die Deckung, nicht die Farbe selbst.
+		return fmt.Sprintf("/%s cs 1 scn\n", w.Kennung())
+	default:
+		return fmt.Sprintf("%.4f %.4f %.4f rg\n", w.R, w.G, w.B)
 	}
-	if len(h) != 6 {
-		return 0, 0, 0
+}
+
+// psFuellfarbe tut dasselbe fuer PostScript.
+func psFuellfarbe(angabe string) string {
+	w := farbwerte.Lies(angabe)
+	switch w.Art {
+	case farbwerte.ArtCMYK:
+		return fmt.Sprintf("%.4f %.4f %.4f %.4f setcmykcolor\n",
+			w.CMYK[0], w.CMYK[1], w.CMYK[2], w.CMYK[3])
+	case farbwerte.ArtSonder:
+		return fmt.Sprintf("[/Separation (%s) /DeviceCMYK { dup %.4f mul exch dup %.4f mul "+
+			"exch dup %.4f mul exch %.4f mul }] setcolorspace 1 setcolor\n",
+			psText(w.Name), w.CMYK[0], w.CMYK[1], w.CMYK[2], w.CMYK[3])
+	default:
+		return fmt.Sprintf("%.4f %.4f %.4f setrgbcolor\n", w.R, w.G, w.B)
 	}
-	wert := func(s string) float64 {
-		z, err := strconv.ParseInt(s, 16, 32)
-		if err != nil {
-			return 0
-		}
-		return float64(z) / 255
-	}
-	return wert(h[0:2]), wert(h[2:4]), wert(h[4:6])
+}
+
+// pdfSonderraum beschreibt eine Volltonfarbe samt Ersatzrezept. Ohne das
+// Rezept weiss ein Betrachter ohne die Farbe nicht, was er anzeigen soll.
+func pdfSonderraum(w farbwerte.Wert) string {
+	return fmt.Sprintf("/%s [/Separation /%s /DeviceCMYK "+
+		"<< /FunctionType 2 /Domain [0 1] /C0 [0 0 0 0] /C1 [%.4f %.4f %.4f %.4f] /N 1 >>]",
+		w.Kennung(), w.Kennung(), w.CMYK[0], w.CMYK[1], w.CMYK[2], w.CMYK[3])
 }
 
 // zeichner schreibt Pfadbefehle. PDF und PostScript teilen sich die
@@ -179,8 +205,8 @@ func PDF(z qr.Zeichnung, titel string) []byte {
 	inhalt := &zeichner{hoehe: hoehe, kurve: "c", linie: "l", anfang: "m", zu: "h"}
 
 	if z.Hintergrund != "" {
-		r, g, b := farbe(z.Hintergrund)
-		fmt.Fprintf(&inhalt.b, "%.4f %.4f %.4f rg\n0 0 %.4f %.4f re\nf\n", r, g, b, breite, hoehe)
+		inhalt.b.WriteString(pdfFuellfarbe(z.Hintergrund))
+		fmt.Fprintf(&inhalt.b, "0 0 %.4f %.4f re\nf\n", breite, hoehe)
 	}
 
 	nachFarbe := map[string][]qr.Form{}
@@ -224,8 +250,7 @@ func PDF(z qr.Zeichnung, titel string) []byte {
 			continue
 		}
 
-		r, g, b := farbe(hex)
-		fmt.Fprintf(&inhalt.b, "%.4f %.4f %.4f rg\n", r, g, b)
+		inhalt.b.WriteString(pdfFuellfarbe(hex))
 		if len(voll) > 0 {
 			for _, f := range voll {
 				inhalt.form(f)
@@ -240,15 +265,15 @@ func PDF(z qr.Zeichnung, titel string) []byte {
 	}
 
 	for _, t := range texte {
-		r, g, b := farbe(t.Farbe)
 		groesse := mmZuPunkt(t.Groesse)
 		// Helvetica-Bold ist im Mittel gut halb so breit wie hoch. Genauer
 		// ginge es nur mit den Breitentabellen der Schrift; fuer eine
 		// mittige Aufforderung reicht die Naeherung.
 		breiteText := float64(len(t.Text)) * groesse * 0.58
 		x, y := mmZuPunkt(t.X)-breiteText/2, hoehe-mmZuPunkt(t.Y)
-		fmt.Fprintf(&inhalt.b, "BT\n%.4f %.4f %.4f rg\n/F1 %.4f Tf\n%.4f %.4f Td\n(%s) Tj\nET\n",
-			r, g, b, groesse, x, y, pdfText(t.Text))
+		inhalt.b.WriteString("BT\n" + pdfFuellfarbe(t.Farbe))
+		fmt.Fprintf(&inhalt.b, "/F1 %.4f Tf\n%.4f %.4f Td\n(%s) Tj\nET\n",
+			groesse, x, y, pdfText(t.Text))
 	}
 
 	strom := inhalt.b.Bytes()
@@ -267,6 +292,20 @@ func PDF(z qr.Zeichnung, titel string) []byte {
 		mittel = fmt.Sprintf("/Shading << /Sh0 << %s /ColorSpace /DeviceRGB /Function %s "+
 			"/Extend [true true] >> >>", koord, pdfUebergang(z.Verlauf.Haelt))
 	}
+	var angaben []string
+	for _, f := range z.Formen {
+		angaben = append(angaben, f.Farbe)
+	}
+	angaben = append(angaben, z.Hintergrund)
+	raeume := ""
+	if sonder := farbwerte.Sonderfarben(angaben); len(sonder) > 0 {
+		var teile []string
+		for _, w := range sonder {
+			teile = append(teile, pdfSonderraum(w))
+		}
+		raeume = "/ColorSpace << " + strings.Join(teile, " ") + " >>"
+	}
+
 	schrift := ""
 	if len(texte) > 0 {
 		schrift = "/Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold " +
@@ -285,7 +324,7 @@ func PDF(z qr.Zeichnung, titel string) []byte {
 	objekt(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>")
 	objekt(3, fmt.Sprintf(
 		"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 %.4f %.4f] /Contents 4 0 R "+
-			"/Resources << %s %s >> >>", breite, hoehe, mittel, schrift))
+			"/Resources << %s %s %s >> >>", breite, hoehe, mittel, schrift, raeume))
 
 	stellen = append(stellen, pdf.Len())
 	fmt.Fprintf(&pdf, "4 0 obj\n<< /Length %d >>\nstream\n", len(strom))
@@ -356,11 +395,25 @@ func EPS(z qr.Zeichnung, titel string) []byte {
 	fmt.Fprintf(&b, "%%%%BoundingBox: 0 0 %d %d\n", int(breite+0.999), int(hoehe+0.999))
 	fmt.Fprintf(&b, "%%%%HiResBoundingBox: 0 0 %.4f %.4f\n", breite, hoehe)
 	fmt.Fprintf(&b, "%%%%Title: %s\n", einzeilig(titel))
-	fmt.Fprintf(&b, "%%%%Creator: pnkt\n%%%%LanguageLevel: %s\n%%%%EndComments\n", stufe)
+	fmt.Fprintf(&b, "%%%%Creator: pnkt\n%%%%LanguageLevel: %s\n", stufe)
+	var angaben []string
+	for _, f := range z.Formen {
+		angaben = append(angaben, f.Farbe)
+	}
+	angaben = append(angaben, z.Hintergrund)
+	if sonder := farbwerte.Sonderfarben(angaben); len(sonder) > 0 {
+		var namen []string
+		for _, w := range sonder {
+			namen = append(namen, "("+w.Name+")")
+		}
+		// Die Vorstufe liest diese Zeile, um die Auszuege zu benennen.
+		fmt.Fprintf(&b, "%%%%DocumentCustomColors: %s\n", strings.Join(namen, " "))
+	}
+	b.WriteString("%%EndComments\n")
 
 	if z.Hintergrund != "" {
-		r, g, gr := farbe(z.Hintergrund)
-		fmt.Fprintf(&b, "%.4f %.4f %.4f setrgbcolor\n0 0 %.4f %.4f rectfill\n", r, g, gr, breite, hoehe)
+		b.WriteString(psFuellfarbe(z.Hintergrund))
+		fmt.Fprintf(&b, "0 0 %.4f %.4f rectfill\n", breite, hoehe)
 	}
 
 	nachFarbe := map[string][]qr.Form{}
@@ -403,8 +456,7 @@ func EPS(z qr.Zeichnung, titel string) []byte {
 			continue
 		}
 
-		r, g, gr := farbe(hex)
-		fmt.Fprintf(&b, "%.4f %.4f %.4f setrgbcolor\n", r, g, gr)
+		b.WriteString(psFuellfarbe(hex))
 		for _, f := range nachFarbe[hex] {
 			zz := neuerZeichner()
 			b.WriteString("newpath\n")
@@ -422,12 +474,11 @@ func EPS(z qr.Zeichnung, titel string) []byte {
 	}
 
 	for _, t := range texte {
-		r, g, gr := farbe(t.Farbe)
 		groesse := mmZuPunkt(t.Groesse)
 		x, y := mmZuPunkt(t.X), hoehe-mmZuPunkt(t.Y)
 		// PostScript kann die Breite selbst messen — hier wird nichts
 		// geschaetzt, anders als im PDF.
-		fmt.Fprintf(&b, "%.4f %.4f %.4f setrgbcolor\n", r, g, gr)
+		b.WriteString(psFuellfarbe(t.Farbe))
 		// Die eingebaute Schrift traegt ab Werk StandardEncoding und kennt
 		// dort keine Umlaute. Erst die Umkodierung macht sie brauchbar.
 		b.WriteString("/Helvetica-Bold findfont dup length dict begin\n" +

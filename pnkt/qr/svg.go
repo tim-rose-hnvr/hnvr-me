@@ -135,8 +135,15 @@ func svgFarbe(farbe string) string {
 	if farbe == VerlaufMarke {
 		return "url(#verlauf)"
 	}
-	return farbe
+	// CMYK und Sonderfarben bekommen eine Bildschirmnaeherung. Welches
+	// Rot am Ende aus der Maschine kommt, entscheidet das Profil der
+	// Druckerei — das SVG ist die Vorschau, nicht der Beleg.
+	return Bildschirmfarbe(farbe)
 }
+
+// Bildschirmfarbe wird vom Programm gesetzt, damit das Paket qr nicht
+// vom Farbpaket abhaengt und die Reihenfolge der Pakete klar bleibt.
+var Bildschirmfarbe = func(angabe string) string { return angabe }
 
 func svgSchutz(s string) string {
 	return strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;").Replace(s)

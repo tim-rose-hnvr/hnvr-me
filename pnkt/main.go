@@ -25,6 +25,7 @@ import (
 
 	"pnkt.me/pnkt/ausgabe"
 	"pnkt.me/pnkt/druck"
+	"pnkt.me/pnkt/farbe"
 	"pnkt.me/pnkt/gs1"
 	"pnkt.me/pnkt/qr"
 	"pnkt.me/pnkt/speicher"
@@ -40,6 +41,10 @@ func main() {
 	daten := flag.String("daten", "./daten", "Verzeichnis der Ablage")
 	host := flag.String("host", "https://pnkt.me", "eigener Kurzhost fuer Digital Link")
 	flag.Parse()
+
+	// Das Paket qr kennt nur Zeichenketten als Farben; die Deutung von
+	// CMYK und Sonderfarben fuer die Bildschirmvorschau kommt von hier.
+	qr.Bildschirmfarbe = func(angabe string) string { return farbe.Lies(angabe).Hex() }
 
 	ablage, err := speicher.Oeffne(*daten)
 	if err != nil {

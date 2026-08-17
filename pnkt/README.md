@@ -36,6 +36,7 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 | `qr` | QR-Encoder nach ISO/IEC 18004 — Versionen 1 bis 40, Stufen L/M/Q/H, Ziffern-, Alphanumerik- und Bytebetrieb, Reed-Solomon in GF(256), Maskenwahl nach den vier Strafregeln |
 | `qr` (svg.go) | Vektorausgabe in Millimetern: sechs Modulformen, eigene Augenformen, Ruhezone, Logoaussparung. Kein eingebettetes Rasterbild |
 | `druck` | Druckurteil nach den **veröffentlichten Grenzwerten** von pnkt.me: 0,20 mm Bildschirm, 0,40 mm Laser und Tinte, 0,50 mm Offset, 0,75 mm Großformat, 1,00 mm Gravur; Kontrast ab 4:1, Ruhezone 4 Module, Warnung ab 60 % verbrauchter Reserve |
+| `farbe` | Drei Farbwelten: Bildschirm, CMYK und Sonderfarbe mit Ersatzrezept |
 | `gs1` | GTIN-Prüfziffer nach Modulo 10, Digital Link bauen und zurücklesen |
 | `inhalt` | GiroCode nach EPC069-12 mit IBAN-Prüfung (ISO 13616, Modulo 97, Längentabelle je Land), vCard 3.0, WLAN |
 | `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler |
@@ -197,6 +198,35 @@ Elf der zwölf Modulformen, vier Rahmen- und vier Kernformen, dazu:
 Beim Verlauf rechnet die Prüfung den Kontrast gegen die **hellste** Marke.
 Wer nur die dunkelste prüft, gibt Verläufe frei, die oben auslaufen.
 
+### Farbe für den Druck
+
+Auf dem Bildschirm ist eine Farbe drei Zahlen. In der Druckerei sind es
+vier — oder ein Topf mit einer Nummer darauf. Farben tragen deshalb ihre
+Herkunft mit:
+
+```
+#0d0d12                        Bildschirmfarbe
+cmyk(0, 0.92, 0.86, 0.12)      vier Kanäle, wie die Maschine sie druckt
+sonder(HKS 13 K, 0, 1, 1, 0)   ein Topf, mit Ersatzrezept für alles andere
+```
+
+PDF und EPS schreiben daraus den passenden Farbraum: `k` beziehungsweise
+`setcmykcolor` für CMYK, einen `/Separation`-Farbraum für Sonderfarben,
+in EPS zusätzlich mit `%%DocumentCustomColors` im Kopf. Das SVG zeigt
+eine Näherung — welches Rot am Ende aus der Maschine kommt, entscheidet
+das Profil der Druckerei.
+
+**Nachgewiesen mit Ghostscript** (`-sDEVICE=tiffsep`, das die Auszüge
+einzeln schreibt):
+
+| Datei | gefundene Auszüge |
+|---|---|
+| `rgb.pdf`, `rgb.eps` | Cyan, Magenta, Yellow, Black |
+| `cmyk.pdf`, `cmyk.eps` | Cyan, Magenta, Yellow, Black |
+| `sonder.pdf`, `sonder.eps` | Cyan, Magenta, Yellow, Black **und `HKS 13 K`** |
+
+Alle sechs Dateien bleiben lesbar.
+
 ## Massenanlage
 
 Das Stück, das eine Agentur täglich braucht:
@@ -222,8 +252,6 @@ Module für das gewählte Verfahren.
 
 Gemessen am veröffentlichten Stand von pnkt.me fehlt dieser Fassung:
 
-- **Sonderfarben und CMYK.** PDF und EPS schreiben RGB. Für den
-  Offsetdruck gehört dort ein Volltonkanal hin.
 - **Ordner, Suche, Löschen, Mitarbeitende** in der Zentrale.
 - **Regeln als Liste** mit Zeitzone, wie die Schnittstellenseite sie zeigt
   (`{art:land, werte:[…], ziel}`); hier liegen sie noch als Zuordnung.

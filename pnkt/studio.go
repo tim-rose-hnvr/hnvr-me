@@ -110,6 +110,29 @@ a.knopf.stark:hover{background:var(--color-accent-600);border-color:var(--color-
 .formen button:hover{color:var(--color-text)}
 .formen button[aria-pressed=true]{background:var(--color-accent);color:var(--color-bg);
  font-weight:600}
+/* Der Streifen: die Entwuerfe nebeneinander, jeder mit seinem Bild.
+   Eine Liste mit Namen taugt nicht — man erkennt eine Gestaltung, man
+   liest sie nicht. */
+.streifen{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:.5rem}
+.entwurf{background:var(--color-bg);border-radius:var(--radius-md);padding:.5rem;
+ display:flex;flex-direction:column;gap:.35rem;border:2px solid transparent}
+.entwurf.gilt{border-color:var(--color-accent)}
+.entwurf img{width:100%%;height:auto;display:block;background:#fff;border-radius:6px}
+.entwurf .name{font-size:.76rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap}
+.entwurf .tun{display:flex;gap:.3rem;flex-wrap:wrap}
+.entwurf .tun button{font:inherit;font-size:.72rem;padding:.15rem .45rem;cursor:pointer;
+ background:none;border:none;color:var(--color-accent-700);text-decoration:underline}
+.entwurf .tun button.weg{color:#a82e23}
+/* Der Vergleich legt den zweiten Entwurf halbdurchsichtig darueber.
+   Nebeneinander sieht man Unterschiede in der Modulform nicht; genau
+   dafuer ist der Vergleich da. */
+.vergleich{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.vergleich img{width:min(100%%,400px);height:auto;opacity:.55}
+.vorschau{position:relative}
+.vergleichschip{position:absolute;top:.7rem;right:.7rem;font-size:.72rem;font-weight:600;
+ background:var(--color-accent);color:var(--color-bg);border-radius:999px;
+ padding:.25rem .7rem;z-index:2}
 </style>
 
 <a href="#inhalt" class="ueberspringen">Zum Inhalt</a>
@@ -135,7 +158,11 @@ a.knopf.stark:hover{background:var(--color-accent-600);border-color:var(--color-
     <div>
       <div class="tafel">
         <div class="tafel-kopf"><span>Vorschau</span><span id="masse"></span></div>
-        <div class="vorschau"><img id="bild" alt="Vorschau des Codes"></div>
+        <div class="vorschau">
+          <img id="bild" alt="Vorschau des Codes">
+          <div class="vergleich" id="vergleich" hidden><img id="vergleichbild" alt=""></div>
+          <span class="vergleichschip" id="vergleichschip" hidden></span>
+        </div>
         <div class="tafel-koerper">
           <div id="urteil"></div>
           <div id="befunde" style="display:flex;flex-direction:column;gap:.5rem"></div>
@@ -164,6 +191,7 @@ a.knopf.stark:hover{background:var(--color-accent-600);border-color:var(--color-
         <button role="tab" data-blatt="farbe" aria-selected="false">Farbe</button>
         <button role="tab" data-blatt="rahmen" aria-selected="false">Rahmen</button>
         <button role="tab" data-blatt="druck" aria-selected="false">Druck</button>
+        <button role="tab" data-blatt="entwuerfe" aria-selected="false">Entwürfe</button>
       </div>
 
       <div class="tafel-koerper" data-blatt="inhalt">
@@ -284,6 +312,26 @@ a.knopf.stark:hover{background:var(--color-accent-600);border-color:var(--color-
           <input type="checkbox" id="kasse" style="width:auto"> An der Kasse lesbar (GS1)</span></label>
         <label>Leseabstand in Zentimetern<input id="abstand" type="number" value="50" min="5"></label>
         <p class="messwert" id="abstand-rat"></p>
+      </div>
+
+      <div class="tafel-koerper" data-blatt="entwuerfe" hidden>
+        <div class="reihe">
+          <label>Schlüssel<input id="e-schluessel" type="password"
+                 placeholder="x-punkt-schluessel" autocomplete="off"></label>
+          <label>Code<select id="e-code"><option value="">— erst Schlüssel —</option></select></label>
+        </div>
+        <div class="reihe">
+          <label>Name des Entwurfs<input id="e-name" placeholder="Terrakotta rund"></label>
+          <label style="justify-content:flex-end">
+            <button class="knopf stark" type="button" id="e-sichern" disabled
+                    style="width:100%%;justify-content:center">Aktuellen sichern</button></label>
+        </div>
+        <div id="e-meldung"></div>
+        <div class="streifen" id="e-streifen"></div>
+        <p class="hinweis" id="e-hinweis">Ein Entwurf hält eine Gestaltung fest — mehr nicht.
+          Eine Scanrate je Entwurf steht bewusst nicht darunter: gemessen wird über das
+          Kürzel, und zwei Gestaltungen desselben Codes tragen dasselbe Kürzel. Beim Scan
+          ist nicht zu unterscheiden, welche der beiden auf dem Papier stand.</p>
       </div>
     </div>
   </div>
@@ -503,6 +551,202 @@ e("a-png").addEventListener("click", async () => {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(b); a.download = "pnkt.png"; a.click();
   });
+});
+
+// --- Entwuerfe -----------------------------------------------------------
+//
+// Ein Entwurf haelt eine Gestaltung fest. Was er nicht haelt, ist eine
+// Scanrate: gemessen wird ueber das Kuerzel, und zwei Gestaltungen
+// desselben Codes tragen dasselbe. Die Zahl waere erfunden.
+let eStil = [];      // die geladenen Entwuerfe
+let eGilt = null;    // die geltende Gestaltung des Codes
+let eVergleich = "";
+
+function eMelden(text, art) {
+  e("e-meldung").innerHTML = text
+    ? '<div class="messwert" style="' +
+      (art === "schlecht" ? "color:#a82e23;background:#f7e7e5" :
+       "color:var(--color-accent-2-700);background:var(--color-accent-2-100)") +
+      '">' + text.replace(/[<>&]/g, "") + "</div>" : "";
+}
+
+async function eRuf(weg, art, rumpf) {
+  const kopf = {"x-punkt-schluessel": e("e-schluessel").value.trim()};
+  if (rumpf) kopf["Content-Type"] = "application/json";
+  const a = await fetch(weg, {method: art || "GET", headers: kopf,
+    body: rumpf ? JSON.stringify(rumpf) : undefined});
+  const text = await a.text();
+  let d = null;
+  try { d = text ? JSON.parse(text) : null; } catch (_) {}
+  if (!a.ok) throw new Error((d && d.fehler) || ("Fehler " + a.status));
+  return d;
+}
+
+e("e-schluessel").addEventListener("input", () => spaeter(eCodesHolen));
+
+async function eCodesHolen() {
+  if (!e("e-schluessel").value.trim()) return;
+  try {
+    const d = await eRuf("/api/v1/codes");
+    const vorher = e("e-code").value;
+    e("e-code").innerHTML = '<option value="">— auswählen —</option>' + d.map(c =>
+      '<option value="' + c.id + '">' + (c.name || c.kuerzel) + " · /" + c.kuerzel +
+      "</option>").join("");
+    if (vorher && [...e("e-code").options].some(o => o.value === vorher)) {
+      e("e-code").value = vorher;
+    }
+    eMelden("", "");
+  } catch (fehler) { eMelden(fehler.message, "schlecht"); }
+}
+
+e("e-code").addEventListener("change", () => {
+  e("e-sichern").disabled = !e("e-code").value;
+  eEntwuerfeHolen();
+});
+
+async function eEntwuerfeHolen() {
+  const id = e("e-code").value;
+  if (!id) { eStil = []; eGilt = null; eStreifen(); return; }
+  try {
+    const d = await eRuf("/api/v1/codes/" + encodeURIComponent(id) + "/entwuerfe");
+    eStil = d.entwuerfe || [];
+    eGilt = d.stil || null;
+    eStreifen();
+  } catch (fehler) { eMelden(fehler.message, "schlecht"); }
+}
+
+// Jeder Entwurf bekommt sein eigenes Bild. Ein Streifen aus Namen
+// taugt nicht: man erkennt eine Gestaltung, man liest sie nicht.
+function eBildweg(stil) {
+  const p = new URLSearchParams({inhalt: inhaltText, breite: "40",
+    stufe: e("stufe").value});
+  for (const [k, v] of Object.entries(stil || {})) {
+    if (typeof v === "string" || typeof v === "number") p.set(k, String(v));
+  }
+  if (stil && stil.modulform) p.set("form", stil.modulform);
+  return "/qr.svg?" + p.toString();
+}
+
+function eStreifen() {
+  if (!eStil.length) {
+    e("e-streifen").innerHTML = e("e-code").value
+      ? '<div class="messwert">Für diesen Code ist noch kein Entwurf gesichert.</div>' : "";
+    eVergleichAus();
+    return;
+  }
+  e("e-streifen").innerHTML = eStil.map(x =>
+    '<div class="entwurf' + (eVergleich === x.name ? " gilt" : "") + '">' +
+      '<img src="' + eBildweg(x.stil) + '" alt="Entwurf ' + x.name + '">' +
+      '<span class="name" title="' + x.name + '">' + x.name + "</span>" +
+      '<span class="tun">' +
+        '<button type="button" data-tun="laden" data-name="' + x.name + '">laden</button>' +
+        '<button type="button" data-tun="vergleich" data-name="' + x.name + '">' +
+          (eVergleich === x.name ? "aus" : "vergleichen") + "</button>" +
+        '<button type="button" class="weg" data-tun="weg" data-name="' + x.name + '">weg</button>' +
+      "</span></div>").join("");
+}
+
+e("e-streifen").addEventListener("click", async (ev) => {
+  const b = ev.target.closest("button"); if (!b) return;
+  const name = b.dataset.name;
+  const eintrag = eStil.find(x => x.name === name);
+  const id = e("e-code").value;
+  try {
+    if (b.dataset.tun === "laden" && eintrag) {
+      stilEinsetzen(eintrag.stil);
+      eMelden("„" + name + "\" ist eingestellt. Gesichert wird dadurch nichts.", "gut");
+      zeichnen();
+    }
+    if (b.dataset.tun === "vergleich") {
+      eVergleich = (eVergleich === name) ? "" : name;
+      eStreifen();
+      eVergleichZeigen();
+    }
+    if (b.dataset.tun === "weg") {
+      if (!confirm("Den Entwurf „" + name + "\" entfernen? Der gedruckte Code " +
+                   "bleibt unberührt.")) return;
+      await eRuf("/api/v1/codes/" + encodeURIComponent(id) +
+                 "/entwuerfe/" + encodeURIComponent(name), "DELETE");
+      if (eVergleich === name) eVergleich = "";
+      eEntwuerfeHolen();
+      eVergleichZeigen();
+    }
+  } catch (fehler) { eMelden(fehler.message, "schlecht"); }
+});
+
+function eVergleichZeigen() {
+  const eintrag = eStil.find(x => x.name === eVergleich);
+  if (!eintrag) { eVergleichAus(); return; }
+  e("vergleichbild").src = eBildweg(eintrag.stil);
+  e("vergleich").hidden = false;
+  e("vergleichschip").hidden = false;
+  e("vergleichschip").textContent = "Vergleich: " + eVergleich;
+}
+
+function eVergleichAus() {
+  e("vergleich").hidden = true;
+  e("vergleichschip").hidden = true;
+}
+
+// stilEinsetzen ist die Umkehrung von stil(): dieselben Felder,
+// dieselben Namen. Laufen die beiden auseinander, laedt ein Entwurf
+// etwas anderes, als er gesichert hat.
+function stilEinsetzen(s) {
+  if (!s) return;
+  if (s.modulform) {
+    modulform = s.modulform;
+    [...e("modulformen").children].forEach(x =>
+      x.setAttribute("aria-pressed", x.dataset.form === modulform));
+  }
+  if (s.augenrahmen) e("augenrahmen").value = s.augenrahmen;
+  if (s.augenkern) e("augenkern").value = s.augenkern;
+  if (s.hintergrund) e("hintergrund").value = s.hintergrund;
+  if (s.ruhezone !== undefined) e("ruhezone").value = s.ruhezone;
+  if (s.logo !== undefined) e("logo").value = s.logo;
+  if (typeof s.vordergrund === "string") {
+    if (s.vordergrund.startsWith("cmyk(")) {
+      e("farbwelt").value = "cmyk";
+      const z = s.vordergrund.slice(5, -1).split(",");
+      [["c",0],["m",1],["y",2],["k",3]].forEach(([id, i]) => { e(id).value = z[i]; });
+    } else if (s.vordergrund.startsWith("sonder(")) {
+      e("farbwelt").value = "sonder";
+      const z = s.vordergrund.slice(7, -1).split(",");
+      e("sondername").value = z[0];
+      [["c",1],["m",2],["y",3],["k",4]].forEach(([id, i]) => { e(id).value = z[i]; });
+    } else {
+      e("farbwelt").value = "rgb";
+      e("vordergrund").value = s.vordergrund;
+    }
+  } else if (s.vordergrund && s.vordergrund.stops) {
+    e("farbwelt").value = "verlauf";
+    e("verlaufart").value = s.vordergrund.art || "linear";
+    e("winkel").value = s.vordergrund.winkel ?? 45;
+    e("v1").value = s.vordergrund.stops[0].farbe;
+    e("v2").value = s.vordergrund.stops[1].farbe;
+  }
+  e("farbwelt").dispatchEvent(new Event("change"));
+  if (s.rahmen) {
+    e("rahmenart").value = s.rahmen.art;
+    e("rahmentext").value = s.rahmen.text || "";
+    e("rahmenfarbe").value = s.rahmen.farbe || "#141018";
+    e("rahmentextfarbe").value = s.rahmen.textfarbe || "#ffffff";
+  } else {
+    e("rahmenart").value = "keiner";
+  }
+}
+
+e("e-sichern").addEventListener("click", async () => {
+  const id = e("e-code").value;
+  const name = e("e-name").value.trim();
+  if (!id) return;
+  if (!name) { eMelden("Ein Entwurf ohne Namen ist im Streifen nicht zu finden.", "schlecht"); return; }
+  try {
+    await eRuf("/api/v1/codes/" + encodeURIComponent(id) + "/entwuerfe", "POST",
+               {name, stil: stil()});
+    e("e-name").value = "";
+    eMelden("„" + name + "\" ist gesichert.", "gut");
+    eEntwuerfeHolen();
+  } catch (fehler) { eMelden(fehler.message, "schlecht"); }
 });
 
 let warten;

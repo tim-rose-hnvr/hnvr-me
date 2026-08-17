@@ -135,6 +135,11 @@ func wege(d *dienst) *http.ServeMux {
 		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.charge(w, r) }))
 	weg.HandleFunc("POST /api/v1/serie/vorschau", d.mitSchluessel(false, d.serienVorschau))
 	weg.HandleFunc("POST /api/v1/serie", d.mitSchluessel(true, d.serienPaket))
+	weg.HandleFunc("GET /api/v1/codes/{id}/entwuerfe", d.mitSchluessel(false, d.entwuerfeLesen))
+	weg.HandleFunc("POST /api/v1/codes/{id}/entwuerfe", d.mitSchluessel(true, d.entwurfSichern))
+	weg.HandleFunc("DELETE /api/v1/codes/{id}/entwuerfe/{name}", d.mitSchluessel(true, d.entwurfWeg))
+	weg.HandleFunc("POST /api/v1/codes/{id}/entwuerfe/{name}/uebernehmen",
+		d.mitSchluessel(true, d.entwurfUebernehmen))
 	weg.HandleFunc("GET /api/v1/vorlagen", d.seitenVorlagen)
 	weg.HandleFunc("POST /api/v1/seite/pruefen", d.seitePruefen)
 	weg.HandleFunc("POST /api/v1/seite/vorschau", d.seiteVorschau)

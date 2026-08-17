@@ -31,9 +31,10 @@ type Code struct {
 	KontoID    string            `json:"kontoId"`
 	Name       string            `json:"name"`
 	Ordner     string            `json:"ordner,omitempty"`
-	Typ        string            `json:"typ,omitempty"`    // url, text, vcard, wlan, girocode, gs1
-	Stil       map[string]any    `json:"stil,omitempty"`   // Gestaltung, wie das Studio sie sichert
-	Inhalt     map[string]any    `json:"inhalt,omitempty"` // die Felder, aus denen die Nutzlast entstand
+	Typ        string            `json:"typ,omitempty"`       // url, text, vcard, wlan, girocode, gs1
+	Stil       map[string]any    `json:"stil,omitempty"`      // Gestaltung, wie das Studio sie sichert
+	Entwuerfe  []Entwurf         `json:"entwuerfe,omitempty"` // aufgehobene Gestaltungen
+	Inhalt     map[string]any    `json:"inhalt,omitempty"`    // die Felder, aus denen die Nutzlast entstand
 	Ziel       string            `json:"ziel"`
 	Seite      *Seite            `json:"seite,omitempty"` // kleine Landeseite statt fremder Adresse
 	Regeln     map[string]any    `json:"regeln,omitempty"`

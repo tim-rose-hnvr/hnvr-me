@@ -95,6 +95,9 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `GET /api/v1/codes/{id}/statistik`, `/protokoll` | Auswertung, Änderungsgeschichte | Schlüssel |
 | `GET /api/v1/codes/{id}/fassungen` | alle Stände des Codes, älteste zuerst | Schlüssel |
 | `GET/PUT/DELETE /api/v1/codes/{id}/seite` | Landeseite lesen, setzen, entfernen | Schlüssel |
+| `GET/POST /api/v1/codes/{id}/entwuerfe` | Entwürfe lesen und sichern | Schlüssel |
+| `DELETE /api/v1/codes/{id}/entwuerfe/{name}` | einen Entwurf entfernen | Schlüssel |
+| `POST /api/v1/codes/{id}/entwuerfe/{name}/uebernehmen` | einen Entwurf zur geltenden Gestaltung machen | Schlüssel |
 | `GET /api/v1/vorlagen` | die Vorlagen samt ausgefülltem Beispiel | offen |
 | `POST /api/v1/seite/pruefen`, `/seite/vorschau` | Seite messen und zeichnen, ohne zu speichern | offen |
 | `POST /api/v1/codes/{id}/fassungen/{nr}` | einen früheren Stand zurückholen | Schlüssel |
@@ -332,6 +335,30 @@ mehr.
 
 Die Marke kommt aus dem Hostnamen: dasselbe Studio trägt bei jedem
 Kunden dessen Gesicht.
+
+## Entwürfe
+
+Im Studio unter **Entwürfe**: mehrere Gestaltungen zu einem Code
+aufheben, nebeneinander sehen, eine davon wieder einstellen. Der
+Vergleich legt einen zweiten Entwurf halbdurchsichtig über den
+aktuellen — nebeneinander sieht man Unterschiede in der Modulform
+nicht, und genau dafür ist er da.
+
+**Eine Scanrate je Entwurf steht bewusst nicht darunter.** Der Entwurf
+des Systems zeigt sie; sie ist nicht zu messen. Gemessen wird über das
+Kürzel, und zwei Gestaltungen desselben Codes tragen dasselbe Kürzel und
+führen auf dieselbe Adresse — beim Scan ist nicht zu unterscheiden,
+welche der beiden auf dem Papier stand. Eine Rate je Variante gäbe es
+nur, wenn jede Variante ein eigener Code mit eigenem Kürzel wäre; dann
+ist es keine Variante mehr, sondern eine Serie. Wer die Zahl trotzdem
+hinschreibt, schreibt eine Zufallszahl mit zwei Nachkommastellen hin.
+
+Acht Entwürfe je Code. Wer den neunten braucht, hat kein
+Gestaltungsproblem mehr, sondern ein Entscheidungsproblem.
+
+Einen Entwurf zu übernehmen ändert am gedruckten Code nichts — die
+Module stehen auf Papier. Es ändert, was beim nächsten Export
+herauskommt, und darauf weist die Antwort ausdrücklich hin.
 
 ## White-Label
 
@@ -750,18 +777,12 @@ Länge der Kurzdomain bestimmt die Größe jedes gedruckten Codes.
 - **Der Zielrechner.** Nichts davon läuft irgendwo. Welche Maschine es
   wird und ob `pnkt.me` selbst darauf zeigen soll, ist eine Entscheidung
   über Geld und Verantwortung und keine technische.
-- **Varianten im Studio.** Der Entwurf zeigt einen Variantenstreifen mit
-  **eigener Scanrate je Variante**. Die Scanrate ist der Haken: gemessen
-  wird über das Kürzel, und Gestaltungsvarianten desselben Codes tragen
-  dasselbe Kürzel. Eine Scanrate je Variante gibt es nur, wenn jede
-  Variante ein eigener Code mit eigenem Kürzel ist — dann ist es keine
-  Variante mehr, sondern eine Serie. Was hier gebaut werden kann, ohne zu
-  lügen: mehrere Entwürfe zu einem Code speichern und vergleichen, ohne
-  Zahl darunter. Der Versionsteil ist gebaut, siehe „Verlauf und
-  Zurückholen".
-- **Strecken.** Mehrstufige Wege mit Messung je Übergang. Das Datenmodell
-  dafür gibt es noch nicht, und es ist die größte offene Ecke des
-  Entwurfs.
+- **Mehrstufige Strecken.** Gebaut ist die zweistufige: Scan → Knopf auf
+  der Landeseite, mit gemessener Rate. Was fehlt, sind weitere Stufen —
+  und die sind nur messbar, solange der Weg im System bleibt. Sobald
+  jemand auf eine fremde Seite geht, hört die Messung auf, und alles
+  Weitere wäre geraten oder erforderte ein Zählpixel dort. Ein Zählpixel
+  auf einer fremden Seite ist genau das, was dieses System nicht tut.
 - **Die zwei Vorlagen, die E-Mail-Adressen einsammeln** („Angebot gegen
   E-Mail", „Newsletter schlicht"). Sie sind nicht vergessen, sondern
   bewusst nicht gebaut: eine Anmeldung ohne Doppelbestätigung ist in

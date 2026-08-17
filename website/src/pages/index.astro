@@ -1,4 +1,5 @@
 ---
+import { weg } from '../lib/weg';
 import Seite from '../layouts/Seite.astro';
 import Icon from '../components/Icon.astro';
 
@@ -100,11 +101,11 @@ const bluete = Array.from({ length: 36 }, (_, i) => {
         ein Ergebnis. Gestaltet in Minuten, änderbar ohne Nachdruck.
       </p>
       <div class="knopfreihe">
-        <a href="/werkstatt" class="btn btn-primary knopf-gross">
+        <a href={weg('/werkstatt')} class="btn btn-primary knopf-gross">
           <Icon name="code" groesse={20} />
           Werkstatt ansehen
         </a>
-        <a href="/strecken" class="btn btn-secondary knopf-gross">
+        <a href={weg('/strecken')} class="btn btn-secondary knopf-gross">
           <Icon name="strecke" groesse={20} />
           Wie eine Strecke läuft
         </a>
@@ -124,13 +125,13 @@ const bluete = Array.from({ length: 36 }, (_, i) => {
       <span class="kreis kreis-pfirsich" aria-hidden="true"></span>
       <img
         class="washed foto"
-        src="/assets/photo-organic.jpg"
+        src={weg('/assets/photo-organic.jpg')}
         alt="Gast am Tisch, der einen Code auf der Karte scannt"
         width="600" height="248" loading="eager"
       />
       <div class="karte-dunkel">
         <div class="qr-teller">
-          <img src="/assets/c-qr-logomitte.png" alt="QR-Code mit pnkt-Zeichen in der Mitte" width="126" height="126" />
+          <img src={weg('/assets/c-qr-logomitte.png')} alt="QR-Code mit pnkt-Zeichen in der Mitte" width="126" height="126" />
           <span class="sweep" aria-hidden="true"></span>
         </div>
         <div>
@@ -183,7 +184,7 @@ const bluete = Array.from({ length: 36 }, (_, i) => {
           Ecken, vier Punkte Ruhezone und Kontrast über 4:1 — die Prüfliste passt live auf.
         </p>
         <div class="knopfreihe">
-          <a href="/werkstatt" class="btn btn-primary knopf-gross">
+          <a href={weg('/werkstatt')} class="btn btn-primary knopf-gross">
             <Icon name="weiter" groesse={20} />
             Alle acht Stile
           </a>
@@ -192,7 +193,7 @@ const bluete = Array.from({ length: 36 }, (_, i) => {
       <div class="stil-raster">
         {stile.map((s) => (
           <figure class="stil">
-            <img src={s.bild} alt={`QR-Stil ${s.name}`} width="160" height="160" loading="lazy" />
+            <img src={weg(s.bild)} alt={`QR-Stil ${s.name}`} width="160" height="160" loading="lazy" />
             <figcaption>{s.name}</figcaption>
           </figure>
         ))}
@@ -225,7 +226,7 @@ const bluete = Array.from({ length: 36 }, (_, i) => {
           Umhängen kannst du später jederzeit.
         </p>
         <div class="knopfreihe">
-          <a href="/vorlagen" class="btn btn-primary knopf-gross">
+          <a href={weg('/vorlagen')} class="btn btn-primary knopf-gross">
             <Icon name="scannen" groesse={20} />
             Beispiel öffnen
           </a>

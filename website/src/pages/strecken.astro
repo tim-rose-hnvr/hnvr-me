@@ -1,4 +1,5 @@
 ---
+import { weg } from '../lib/weg';
 import Seite from '../layouts/Seite.astro';
 import Icon from '../components/Icon.astro';
 
@@ -135,7 +136,7 @@ const regeln = [
           30 Scans steht keine Rate da, weil sie dann geraten wäre.
         </p>
         <div class="ergebnis-knoepfe">
-          <a href="/vorlagen" class="btn btn-primary">Vorlagen ansehen</a>
+          <a href={weg('/vorlagen')} class="btn btn-primary">Vorlagen ansehen</a>
         </div>
       </div>
 
@@ -193,11 +194,11 @@ const regeln = [
         ))}
       </div>
       <div class="knopfreihe">
-        <a href="/vorlagen" class="btn btn-primary knopf-gross">
+        <a href={weg('/vorlagen')} class="btn btn-primary knopf-gross">
           <Icon name="bogen" groesse={20} />
           Vorlagen ansehen
         </a>
-        <a href="/preise" class="btn btn-secondary knopf-gross">
+        <a href={weg('/preise')} class="btn btn-secondary knopf-gross">
           <Icon name="zahlen" groesse={20} />
           Preise
         </a>

@@ -1,0 +1,97 @@
+# Marketingseite als Vorschau veröffentlichen
+#
+# Legt die gebaute Seite auf GitHub Pages. Das ist ausdrücklich eine
+# VORSCHAU und nicht der Zielstand: die Seite bekommt einen Riegel oben
+# und ein noindex, solange Impressum und Datenschutzerklärung Lücken
+# haben. Wer sie ohne diese Angaben als Angebot auftreten liesse,
+# verstiesse gegen § 5 DDG.
+#
+# Der Zielstand ist ein eigener Rechnername (pnkt.me). Dort entfallen
+# VORSCHAU und BASIS, und derselbe Quellstand baut ohne Riegel und ohne
+# Unterverzeichnis.
+#
+# Läuft auf Knopfdruck und bei Änderungen an website/ — eine Vorschau
+# soll dem Stand folgen, ohne dass jemand daran denken muss.
+
+name: Website-Vorschau
+
+on:
+  push:
+    branches: ["claude/new-session-htlw7a"]
+    paths:
+      - "website/**"
+      - ".github/workflows/website-vorschau.yml"
+  workflow_dispatch:
+
+# Pages braucht diese drei. `id-token` ist für die Auslieferung nötig,
+# nicht für den Bau.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Zwei Auslieferungen gleichzeitig würden sich überholen. Laufende nicht
+# abbrechen: eine halb ausgelieferte Seite ist schlechter als eine alte.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    name: Bauen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      # enablement: true schaltet Pages ein, falls es noch aus ist —
+      # sonst müsste jemand erst in den Einstellungen einen Schalter
+      # umlegen, und der Lauf schlüge mit einer Meldung fehl, die das
+      # nicht sagt.
+      - name: Pages einrichten
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Abhängigkeiten
+        working-directory: website
+        run: npm ci
+
+      - name: Bauen
+        working-directory: website
+        env:
+          VORSCHAU: "1"
+          BASIS: ${{ steps.pages.outputs.base_path }}/
+          SEITE: ${{ steps.pages.outputs.origin }}
+        run: npm run build
+
+      # Ein Bau, der durchläuft, ist kein Beweis. Geprüft wird, dass
+      # jeder interne Weg den Basispfad trägt und auf etwas zeigt, das
+      # es gibt — der Fehler, an dem Projektseiten auf Pages lautlos
+      # scheitern.
+      - name: Wege prüfen
+        working-directory: website
+        env:
+          BASIS: ${{ steps.pages.outputs.base_path }}
+        run: node skripte/wege-pruefen.mjs
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/dist
+
+  ausliefern:
+    name: Ausliefern
+    needs: bauen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - id: pages
+        uses: actions/deploy-pages@v4

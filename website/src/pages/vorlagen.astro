@@ -1,4 +1,5 @@
 ---
+import { weg } from '../lib/weg';
 import Seite from '../layouts/Seite.astro';
 import Icon from '../components/Icon.astro';
 
@@ -131,7 +132,7 @@ const teamZahlen = [
           </ul>
           <div class="vorlage-fuss">
             {v.stand === 'gebaut'
-              ? <a href="/preise" class="btn btn-primary">Verwenden</a>
+              ? <a href={weg('/preise')} class="btn btn-primary">Verwenden</a>
               : <span class="btn btn-geist">noch nicht gebaut</span>}
             <span class:list={['vorlage-stand', { 'stand-offen': v.stand !== 'gebaut' }]}>
               {v.stand === 'gebaut' ? 'im System' : 'geplant'}
@@ -168,7 +169,7 @@ const teamZahlen = [
           steht in der Rolle — und im Verlauf steht, wer es getan hat.
         </p>
         <div class="knopfreihe">
-          <a href="/preise" class="btn btn-primary knopf-gross">
+          <a href={weg('/preise')} class="btn btn-primary knopf-gross">
             <Icon name="team" groesse={20} />
             Team-Tarif ansehen
           </a>

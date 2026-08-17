@@ -260,3 +260,15 @@ textarea.input { min-height: 90px; resize: vertical; }
 .btn, .tag, .seg, .input { border-radius: 999px; }
 .input { padding-inline: 14px; }
 
+
+/* Der Vorschau-Riegel. Er steht ganz oben und ist nicht zu übersehen —
+   eine Warnung, die man erst suchen muss, ist keine. */
+.vorschauriegel {
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-align: center;
+  padding: 9px 18px;
+}
+.vorschauriegel b { font-weight: 700; }

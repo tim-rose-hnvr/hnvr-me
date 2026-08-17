@@ -1,4 +1,5 @@
 ---
+import { weg } from '../lib/weg';
 import Seite from '../layouts/Seite.astro';
 import Icon from '../components/Icon.astro';
 
@@ -67,11 +68,11 @@ const bogen = Array.from({ length: 12 }, (_, i) => `T${String(i + 1).padStart(2,
         ist, funktioniert auch auf dem Aufsteller im Schräglicht.
       </p>
       <div class="knopfreihe">
-        <a href="/preise" class="btn btn-primary knopf-gross">
+        <a href={weg('/preise')} class="btn btn-primary knopf-gross">
           <Icon name="scannen" groesse={20} />
           Kostenlos ausprobieren
         </a>
-        <a href="/strecken" class="btn btn-secondary knopf-gross">
+        <a href={weg('/strecken')} class="btn btn-secondary knopf-gross">
           <Icon name="strecke" groesse={20} />
           Strecken ansehen
         </a>
@@ -82,7 +83,7 @@ const bogen = Array.from({ length: 12 }, (_, i) => `T${String(i + 1).padStart(2,
       <span class="kreis-deko" aria-hidden="true"></span>
       <div class="pruef-innen">
         <div class="qr-teller">
-          <img src="/assets/o-qr-terra.png" alt="QR-Code in der Vorschau der Werkstatt" width="212" height="212" />
+          <img src={weg('/assets/o-qr-terra.png')} alt="QR-Code in der Vorschau der Werkstatt" width="212" height="212" />
           <span class="sweep" aria-hidden="true"></span>
         </div>
         <ul class="pruefliste" aria-describedby="pruef-hinweis">
@@ -111,7 +112,7 @@ const bogen = Array.from({ length: 12 }, (_, i) => `T${String(i + 1).padStart(2,
     <div class="stil-raster">
       {stile.map((s) => (
         <article class:list={['stil', 'hebt', `stil-${s.ton}`]}>
-          <img src={s.bild} alt={`QR-Stil ${s.name}`} width="240" height="240" loading="lazy" />
+          <img src={weg(s.bild)} alt={`QR-Stil ${s.name}`} width="240" height="240" loading="lazy" />
           <div class="stil-name">{s.name}</div>
           <p class="stil-text">{s.text}</p>
           <span class="stil-zweck">{s.zweck}</span>

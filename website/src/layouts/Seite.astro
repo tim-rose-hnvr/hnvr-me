@@ -1,4 +1,5 @@
 ---
+import { weg } from '../lib/weg';
 import '../styles/organic.css';
 import SiteNav from '../components/SiteNav.astro';
 import SiteFooter from '../components/SiteFooter.astro';
@@ -10,6 +11,19 @@ interface Props {
 }
 const { titel, beschreibung, aktiv = 'start' } = Astro.props;
 const kanonisch = new URL(Astro.url.pathname, Astro.site ?? 'https://pnkt.me');
+
+// Vorschau: solange Impressum und Datenschutzerklärung Lücken haben,
+// darf die Seite nicht auftreten, als wäre sie ein fertiges Angebot.
+// Sie bekommt dann einen Riegel oben und ein noindex — auffindbar soll
+// sie erst sein, wenn die Pflichtangaben stehen.
+//
+// Gelesen aus process.env und nicht aus import.meta.env: Astro reicht
+// dort nur PUBLIC_-Variablen durch, und der Riegel soll nicht im
+// Browser landen, sondern beim Bauen entscheiden.
+//
+// Gesteuert über die Umgebung, nicht über eine Datei: der Zielstand
+// unter pnkt.me setzt VORSCHAU einfach nicht.
+const vorschau = process.env.VORSCHAU === '1';
 ---
 
 <!doctype html>
@@ -21,24 +35,31 @@ const kanonisch = new URL(Astro.url.pathname, Astro.site ?? 'https://pnkt.me');
     <!-- Ohne Favicon holt jeder Browser /favicon.ico, bekommt 404 und
          schreibt es in die Konsole. Das ist harmlos, verdeckt aber
          echte Fehler — und ein leerer Tab sieht nach Baustelle aus. -->
-    <link rel="icon" href="/marke.svg" type="image/svg+xml" />
+    <link rel="icon" href={weg('/marke.svg')} type="image/svg+xml" />
     <meta name="description" content={beschreibung} />
     <link rel="canonical" href={kanonisch.href} />
 
     <!-- Die beiden Schnitte, die im ersten Bild stehen: Überschrift und
          Fließtext. Der Rest kommt nach, wenn er gebraucht wird. -->
-    <link rel="preload" href="/schrift/caprasimo-400-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/schrift/figtree-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={weg('/schrift/caprasimo-400-latin.woff2')} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={weg('/schrift/figtree-400-latin.woff2')} as="font" type="font/woff2" crossorigin />
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content={`${titel} · pnkt.me`} />
     <meta property="og:description" content={beschreibung} />
     <meta property="og:locale" content="de_DE" />
     <meta name="theme-color" content="#f5ead8" />
+    {vorschau && <meta name="robots" content="noindex,nofollow" />}
   </head>
 
   <body>
     <a href="#inhalt" class="ueberspringen">Zum Inhalt</a>
+    {vorschau && (
+      <div class="vorschauriegel">
+        <b>Vorschau.</b> Impressum und Datenschutzerklärung sind noch nicht
+        vollständig — diese Seite ist noch kein Angebot.
+      </div>
+    )}
     <SiteNav aktiv={aktiv} />
     <main id="inhalt">
       <slot />

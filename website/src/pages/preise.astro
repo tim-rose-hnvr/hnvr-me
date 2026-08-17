@@ -1,4 +1,5 @@
 ---
+import { weg } from '../lib/weg';
 import Seite from '../layouts/Seite.astro';
 import Icon from '../components/Icon.astro';
 
@@ -97,7 +98,7 @@ const fragen = [
               </li>
             ))}
           </ul>
-          <a href="/werkstatt" class:list={['btn', 'tarif-ruf', t.rufArt]}>{t.ruf}</a>
+          <a href={weg('/werkstatt')} class:list={['btn', 'tarif-ruf', t.rufArt]}>{t.ruf}</a>
         </article>
       ))}
     </div>
@@ -141,11 +142,11 @@ const fragen = [
         Konto in drei Minuten, erster Code kostenlos, keine Karte nötig. Wenn es nichts
         für dich ist, bleibt der Code trotzdem gültig.
       </p>
-      <a href="/werkstatt" class="btn btn-primary knopf-gross">
+      <a href={weg('/werkstatt')} class="btn btn-primary knopf-gross">
         <Icon name="scannen" groesse={20} />
         Kostenlos starten
       </a>
-      <a href="/werkstatt" class="schluss-verweis">Erst die Werkstatt ansehen</a>
+      <a href={weg('/werkstatt')} class="schluss-verweis">Erst die Werkstatt ansehen</a>
     </div>
   </section>
 </Seite>

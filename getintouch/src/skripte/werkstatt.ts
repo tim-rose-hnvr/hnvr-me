@@ -31,6 +31,7 @@ import {
   VORLAGEN,
   type Gestaltung,
 } from '../kern/gestaltung.ts';
+import { abgabeAdresse, linkPasst, type Beilage } from '../kern/abgabe.ts';
 import { musterprofil, neueKennung } from '../kern/muster.ts';
 import { packe, entpacke } from '../kern/packung.ts';
 import {
@@ -891,6 +892,51 @@ async function vorschauLinkKopieren(knopf: HTMLElement) {
   }
 }
 
+/**
+ * Abgeben — ein Klick von der Werkstatt in unser Postfach.
+ *
+ * Wortlaut und Längengrenze stehen in `kern/abgabe.ts`; hier bleibt nur, was
+ * den Browser braucht: prüfen, packen, notfalls ausweichen, Mail öffnen.
+ */
+async function abgeben(knopf: HTMLElement) {
+  const ergebnis = lieseProfil(entwurf);
+  if (!ergebnis.ok) {
+    zeigeReiter('fertig');
+    alert(
+      `Der Entwurf ist noch unvollständig — abgeben lohnt sich erst, wenn das hier erledigt ist:\n\n${ergebnis.fehler
+        .map((f) => `${f.stelle || 'Profil'}: ${f.meldung}`)
+        .join('\n')}`,
+    );
+    return;
+  }
+
+  const link = new URL(`/werkstatt/vorschau?p=${await packe(entwurf)}`, location.origin).toString();
+
+  let weg: Beilage = 'link';
+  if (!linkPasst(entwurf, link)) {
+    // Der Link ist zu lang für die Adresszeile. Nicht kürzen — ausweichen.
+    try {
+      await navigator.clipboard.writeText(link);
+      weg = 'ablage';
+    } catch {
+      herunterladen();
+      weg = 'datei';
+    }
+  }
+
+  location.href = abgabeAdresse(entwurf, weg, link);
+
+  const inhalt = knopf.querySelector('span')!;
+  const vorher = inhalt.textContent;
+  inhalt.textContent =
+    weg === 'link'
+      ? 'Mail geöffnet'
+      : weg === 'ablage'
+        ? 'Link kopiert, Mail geöffnet'
+        : 'Datei gesichert, Mail geöffnet';
+  setTimeout(() => (inhalt.textContent = vorher), 2600);
+}
+
 function herunterladen() {
   const inhalt = frage('#ausgabe').textContent ?? '';
   const url = URL.createObjectURL(new Blob([inhalt], { type: 'application/json' }));
@@ -918,6 +964,7 @@ function verdrahteFertig() {
     }
   });
 
+  frage('#abgeben').addEventListener('click', (e) => void abgeben(e.currentTarget as HTMLElement));
   frage('#herunterladen').addEventListener('click', herunterladen);
   frage('#linkkopieren').addEventListener('click', (e) => void vorschauLinkKopieren(e.currentTarget as HTMLElement));
 

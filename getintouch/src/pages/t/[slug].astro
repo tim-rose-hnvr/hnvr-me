@@ -13,9 +13,10 @@
  */
 import Profilblatt from '../../layouts/Profilblatt.astro';
 import Profilansicht from '../../komponenten/Profilansicht.astro';
+import Nichtgefunden from '../../komponenten/Nichtgefunden.astro';
 
 import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
-import { vorlage } from '../../kern/gestaltung.ts';
+import { GESTALTUNG_VORGABE, vorlage } from '../../kern/gestaltung.ts';
 import { ablage } from '../../kern/speicher/index.ts';
 
 export const prerender = false;
@@ -23,15 +24,8 @@ export const prerender = false;
 const { slug } = Astro.params;
 const profil = slug ? await ablage().hole(slug) : null;
 
-if (!profil) {
-  // 404 statt einer Werbeseite für freie Adressen: wer einen gedruckten Code
-  // scannt und im Nichts landet, soll das merken, statt zu glauben, er sei
-  // richtig. Suchmaschinen bekommen so auch kein Verzeichnis freier Namen.
-  return new Response('Diese Seite gibt es nicht.', {
-    status: 404,
-    headers: { 'content-type': 'text/plain; charset=utf-8' },
-  });
-}
+/* Ab hier gilt: ohne Profil wird die Seite „Hier ist niemand" ausgeliefert —
+   mit Status 404, damit Suchmaschinen sie nicht aufnehmen. */
 
 /**
  * In der Entwicklung lässt sich die Uhr stellen: `?jetzt=2026-01-14T08:00:00Z`
@@ -51,23 +45,33 @@ function jetzt(): Date {
   return new Date();
 }
 
-const gestaltung =
-  import.meta.env.DEV && Astro.url.searchParams.has('vorlage')
+const gestaltung = !profil
+  ? GESTALTUNG_VORGABE
+  : import.meta.env.DEV && Astro.url.searchParams.has('vorlage')
     ? vorlage(Astro.url.searchParams.get('vorlage')!)
     : profil.gestaltung;
 
-const lage = profil.erreichbarkeit ? bewerteErreichbarkeit(profil.erreichbarkeit, jetzt()) : null;
+const lage = profil?.erreichbarkeit ? bewerteErreichbarkeit(profil.erreichbarkeit, jetzt()) : null;
 
-const adresse = new URL(`/t/${profil.slug}`, Astro.site ?? Astro.url).toString();
+const adresse = new URL(`/t/${profil?.slug ?? slug ?? ''}`, Astro.site ?? Astro.url).toString();
 
-const titel = [profil.kopf.name, profil.kopf.rolle].filter(Boolean).join(' · ');
-const beschreibung =
-  profil.kopf.beschreibung?.replace(/\s+/g, ' ').slice(0, 200) ??
-  `Alle Kontaktwege von ${profil.kopf.name} auf einer Seite.`;
+const titel = profil
+  ? [profil.kopf.name, profil.kopf.rolle].filter(Boolean).join(' · ')
+  : 'Hier ist niemand — Get in Touch';
+const beschreibung = profil
+  ? (profil.kopf.beschreibung?.replace(/\s+/g, ' ').slice(0, 200) ??
+    `Alle Kontaktwege von ${profil.kopf.name} auf einer Seite.`)
+  : 'Diese Adresse gibt es nicht.';
 
-// Die Erreichbarkeit ändert sich mit der Uhr, das Profil selten. Eine Minute
-// gemeinsamer Zwischenspeicher hält die Statuszeile ehrlich und die Seite schnell.
-Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+if (profil) {
+  // Die Erreichbarkeit ändert sich mit der Uhr, das Profil selten. Eine Minute
+  // gemeinsamer Zwischenspeicher hält die Statuszeile ehrlich und die Seite schnell.
+  Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+} else {
+  Astro.response.status = 404;
+  // Nicht zwischenspeichern: die Adresse kann morgen vergeben sein.
+  Astro.response.headers.set('cache-control', 'no-store');
+}
 ---
 
 <Profilblatt
@@ -75,7 +79,14 @@ Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=60, sta
   beschreibung={beschreibung}
   gestaltung={gestaltung}
   adresse={adresse}
-  bild={profil.kopf.bild}
+  bild={profil?.kopf.bild}
+  indexierbar={profil !== null}
 >
-  <Profilansicht profil={profil} gestaltung={gestaltung} lage={lage} adresse={adresse} />
+  {
+    profil ? (
+      <Profilansicht profil={profil} gestaltung={gestaltung} lage={lage} adresse={adresse} />
+    ) : (
+      <Nichtgefunden gesucht={slug} />
+    )
+  }
 </Profilblatt>

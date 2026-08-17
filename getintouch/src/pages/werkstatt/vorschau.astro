@@ -20,6 +20,7 @@ import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
 import { GESTALTUNG_VORGABE, lieseGestaltung } from '../../kern/gestaltung.ts';
 import type { Profil } from '../../kern/profil.ts';
 import { musterprofil } from '../../kern/muster.ts';
+import { packe } from '../../kern/packung.ts';
 import { ablage } from '../../kern/speicher/index.ts';
 import { entwurfAus } from './entwurf.ts';
 
@@ -67,8 +68,13 @@ const adresse = new URL(`/t/${profil.slug}`, Astro.site ?? Astro.url).toString()
  * Für einen Entwurf gibt es `/t/<name>` noch nicht — vCard und QR-Bild holt die
  * Vorschau deshalb aus der Werkstatt, mit dem Entwurf im Gepäck. Im QR-Code
  * steht trotzdem schon die künftige Adresse.
+ *
+ * Neu gepackt wird das, was oben tatsächlich gezeigt wird, nicht der Parameter
+ * aus der Adresse. Beim Tippen läuft ein Entwurf durch unfertige Zustände; dann
+ * zeigt die Vorschau das Muster, und die beiden Ziele müssen mitgehen — sonst
+ * führen Visitenkarte und QR-Code ins Leere, während daneben eine Seite steht.
  */
-const entwurf = parameter.get('p');
+const entwurf = parameter.has('p') ? await packe(profil) : null;
 const vcardZiel = entwurf ? `/werkstatt/karte.vcf?p=${entwurf}` : undefined;
 const qrZiel = entwurf ? `/werkstatt/qr.svg?p=${entwurf}` : undefined;
 ---

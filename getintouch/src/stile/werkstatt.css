@@ -374,6 +374,15 @@ input[type='range'] {
   color: #141410;
 }
 
+/* Der Hauptweg bekommt eine eigene Zeile. Was darunter steht, sind die
+   Handgriffe für den Fall, dass das Mailprogramm nicht mitspielt — die dürfen
+   sich die nächste Zeile teilen. */
+.wknopfreihe .wknopf--voll {
+  flex: 1 0 100%;
+  justify-content: center;
+  padding-block: 14px;
+}
+
 .wknopf:hover {
   border-color: var(--w-akzent);
 }
@@ -457,15 +466,18 @@ a:focus-visible {
   border-bottom: 1px solid var(--w-linie);
 }
 
+/* Sechs Reiter müssen in eine Zeile passen, sonst rutscht einer allein in die
+   zweite und sieht aus wie vergessen. Sie teilen sich die Breite; wird die
+   Spalte schmaler, greift immer noch der Umbruch. */
 .reiter button {
-  flex: 0 1 auto;
-  padding: 8px 13px;
+  flex: 1 1 auto;
+  padding: 8px 7px;
   border: 1px solid transparent;
   border-radius: 999px;
   background: none;
   color: var(--w-neben);
   font: inherit;
-  font-size: 14px;
+  font-size: 13.5px;
   cursor: pointer;
   white-space: nowrap;
 }

@@ -9,8 +9,8 @@
  *    ausgelieferten Seite gemessen wurden, mit Datum und Methode dabei.
  *  - Es gibt einen Abschnitt „Was heute fehlt". Auf einer Verkaufsseite ist das
  *    unüblich; hier ist es der einzige Weg, die übrigen Aussagen glaubwürdig zu
- *    halten — und es verhindert, dass jemand einen Editor erwartet, den es noch
- *    nicht gibt.
+ *    halten. Er wird mitgepflegt: seit die Werkstatt steht, steht dort nicht
+ *    mehr „kein Editor", sondern „kein Konto".
  *  - Der Hauptknopf führt auf eine echte Seite, nicht auf ein Bild davon.
  *
  * Statisch vorgebaut: hier ändert sich nichts je Aufruf.
@@ -80,13 +80,13 @@ const vergleich = {
 const offen = [
   {
     marke: 'in Arbeit',
-    titel: 'Selbstbedienung',
-    text: 'Einen Editor zum Selberbauen gibt es noch nicht. Wir legen deine Seite an, du sagst, was drauf soll.',
+    titel: 'Konto',
+    text: 'Bauen kannst du deine Seite selbst — in der Werkstatt, mit der echten Seite als Vorschau. Veröffentlichen geht noch über uns: du schickst den Entwurf, wir schalten ihn frei.',
   },
   {
     marke: 'in Arbeit',
     titel: 'Zahlen',
-    text: 'Aufrufe und Klicks je Block werden noch nicht gezählt. Kommt zusammen mit dem Konto-Bereich.',
+    text: 'Aufrufe und Klicks je Block werden noch nicht gezählt. Kommt zusammen mit dem Konto.',
   },
   {
     marke: 'auf Anfrage',
@@ -139,6 +139,8 @@ const fragen = [
     <meta property="og:title" content={titel} />
     <meta property="og:description" content={beschreibung} />
     <meta name="twitter:card" content="summary" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="stylesheet" href="/schriften/schriften.css" />
   </head>
 
@@ -170,9 +172,9 @@ const fragen = [
               Echte Seite ansehen
               <Fragment set:html={zeichen('pfeil')} />
             </a>
-            <a class="knopf" href="mailto:hallo@hnvr.me?subject=Get%20in%20Touch%20%E2%80%94%20Seite%20anlegen">
-              <Fragment set:html={zeichen('mail')} />
-              Seite anfragen
+            <a class="knopf" href="/werkstatt">
+              <Fragment set:html={zeichen('stift')} />
+              Seite selbst bauen
             </a>
           </div>
         </section>
@@ -312,12 +314,11 @@ const fragen = [
           <p class="marke">bereit?</p>
           <h2>Ein Link, und sie erreichen dich.</h2>
           <div class="knopfreihe">
-            <a class="knopf knopf--voll" href="mailto:hallo@hnvr.me?subject=Get%20in%20Touch%20%E2%80%94%20Seite%20anlegen">
-              Seite anfragen
+            <a class="knopf knopf--voll" href="/werkstatt">
+              In der Werkstatt anfangen
               <Fragment set:html={zeichen('pfeil')} />
             </a>
             <a class="knopf" href="/designs">Zwölf Designs ansehen</a>
-            <a class="knopf" href="/werkstatt">Selbst gestalten</a>
             <a class="knopf" href="tel:+4951112282286">
               <Fragment set:html={zeichen('telefon')} />
               +49 511 12282286

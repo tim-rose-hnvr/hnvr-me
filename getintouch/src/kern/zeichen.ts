@@ -35,6 +35,7 @@ const ZEICHEN: Record<string, string> = {
   uhr: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.2V12l3.2 2"/>',
   schloss: '<rect x="4.4" y="10.4" width="15.2" height="10.2" rx="2.4"/><path d="M8 10.4V7.8a4 4 0 0 1 8 0v2.6"/>',
   haken: '<path d="m4.8 12.6 4.8 4.8L19.2 7.8"/>',
+  stift: '<path d="M15.6 4.2 19.8 8.4 8.4 19.8l-5 .8.8-5z"/><path d="m14.2 5.6 4.2 4.2"/>',
   teilen:
     '<circle cx="17.6" cy="5.6" r="2.4"/><circle cx="6.4" cy="12" r="2.4"/><circle cx="17.6" cy="18.4" r="2.4"/><path d="m8.6 10.8 6.8-4M8.6 13.2l6.8 4"/>',
   pfeil: '<path d="M5 12h13M13 7l5 5-5 5"/>',

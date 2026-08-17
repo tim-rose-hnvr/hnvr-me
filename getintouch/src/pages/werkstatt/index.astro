@@ -38,6 +38,8 @@ const reiter = [
     <meta name="robots" content="noindex" />
     <title>Werkstatt — Get in Touch</title>
     <meta name="theme-color" content="#0B0B0B" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="stylesheet" href="/schriften/schriften.css" />
   </head>
 
@@ -86,17 +88,18 @@ const reiter = [
           <div class="feldgruppe">
             <h2 class="wmarke2">Abgeben</h2>
             <p class="whinweis">
-              Noch gibt es keinen Konto-Bereich zum Speichern. Bis dahin: Datei herunterladen oder Vorschau-Link
-              schicken — wir legen die Seite an.
+              „Entwurf abgeben" öffnet dein Mailprogramm mit dem fertigen Entwurf darin — wir legen die Seite an und
+              melden uns mit der Adresse. Einen Konto-Bereich zum Selbstveröffentlichen gibt es noch nicht.
             </p>
             <pre class="ausgabe" id="ausgabe"></pre>
             <div class="wknopfreihe">
-              <button type="button" class="wknopf wknopf--voll" id="kopieren">
-                <Fragment set:html={zeichen('teilen')} />
-                <span>JSON kopieren</span>
+              <button type="button" class="wknopf wknopf--voll" id="abgeben">
+                <Fragment set:html={zeichen('mail')} />
+                <span>Entwurf abgeben</span>
               </button>
-              <button type="button" class="wknopf" id="herunterladen">Als Datei sichern</button>
               <button type="button" class="wknopf" id="linkkopieren">Vorschau-Link kopieren</button>
+              <button type="button" class="wknopf" id="herunterladen">Als Datei sichern</button>
+              <button type="button" class="wknopf" id="kopieren"><span>JSON kopieren</span></button>
             </div>
           </div>
 

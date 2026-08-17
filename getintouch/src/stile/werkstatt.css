@@ -1,0 +1,441 @@
+/* ============================================================
+   Werkstatt
+   ============================================================
+
+   Der Rahmen der Werkstatt hat ein festes Aussehen — er darf sich nicht
+   mitverändern, wenn die Gestaltung umgestellt wird. Sonst verliert man beim
+   Ausprobieren die Regler aus den Augen.
+
+   Deshalb stehen hier feste Farben statt der Gestaltungsvariablen. Die
+   Variablen gelten allein in der Vorschau, und die steckt in einem eigenen
+   Rahmen.
+   ============================================================ */
+
+:root {
+  --w-grund: #0b0b0b;
+  --w-flaeche: #141414;
+  --w-linie: rgba(241, 239, 235, 0.13);
+  --w-vg: #f1efeb;
+  --w-neben: rgba(241, 239, 235, 0.6);
+  --w-leise: rgba(241, 239, 235, 0.4);
+  --w-akzent: #ff7120;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--w-grund);
+  color: var(--w-vg);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Kopf ------------------------------------------------- */
+
+.wkopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--w-linie);
+}
+
+.wmarke {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: inherit;
+  text-decoration: none;
+  font-family: 'Clash Display', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.wmarke svg {
+  width: 16px;
+  height: 16px;
+  color: var(--w-akzent);
+}
+
+.wnavi {
+  display: flex;
+  gap: 18px;
+  font-size: 14px;
+}
+
+.wnavi a {
+  color: var(--w-neben);
+  text-decoration: none;
+}
+
+.wnavi a:hover {
+  color: var(--w-vg);
+}
+
+/* --- Aufteilung ------------------------------------------- */
+
+.werkstatt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 900px) {
+  .werkstatt {
+    grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .buehne2 {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+  }
+}
+
+/* --- Regler ----------------------------------------------- */
+
+.regler {
+  padding: 6px 22px 60px;
+  border-right: 1px solid var(--w-linie);
+}
+
+.feldgruppe {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--w-linie);
+}
+
+.feldgruppe:last-child {
+  border-bottom: 0;
+}
+
+.wmarke2 {
+  margin: 0 0 4px;
+  font-family: 'Clash Display', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: lowercase;
+  color: var(--w-leise);
+}
+
+.wmarke2::before {
+  content: '// ';
+  color: var(--w-akzent);
+}
+
+.whinweis {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--w-leise);
+  max-width: 46ch;
+}
+
+.whinweis--mitte {
+  text-align: center;
+  margin: 12px auto 0;
+}
+
+.feld {
+  display: block;
+  margin-top: 16px;
+}
+
+.feld__name {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  font-size: 13.5px;
+  color: var(--w-neben);
+}
+
+.feld__name b {
+  color: var(--w-vg);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.feld__eingabe {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+input[type='color'] {
+  width: 46px;
+  height: 40px;
+  padding: 3px;
+  border: 1px solid var(--w-linie);
+  border-radius: 10px;
+  background: var(--w-flaeche);
+  cursor: pointer;
+  flex: none;
+}
+
+input[type='text'],
+select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--w-linie);
+  border-radius: 10px;
+  background: var(--w-flaeche);
+  color: var(--w-vg);
+  font: inherit;
+  font-size: 14px;
+}
+
+.feld__hex {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  text-transform: uppercase;
+}
+
+.feld__weg {
+  flex: none;
+  width: 40px;
+  border: 1px solid var(--w-linie);
+  border-radius: 10px;
+  background: var(--w-flaeche);
+  color: var(--w-neben);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.feld__weg:hover {
+  color: var(--w-vg);
+}
+
+input[type='range'] {
+  width: 100%;
+  accent-color: var(--w-akzent);
+}
+
+/* --- Vorlagenwahl ----------------------------------------- */
+
+.vorlagen {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.vorlagenknopf {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid var(--w-linie);
+  border-radius: 11px;
+  background: var(--w-flaeche);
+  color: var(--w-neben);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vorlagenknopf__probe {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 7px;
+  background: var(--v-grund);
+  display: grid;
+  place-items: center;
+}
+
+.vorlagenknopf__punkt {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--v-akzent);
+}
+
+.vorlagenknopf:hover {
+  color: var(--w-vg);
+}
+
+.vorlagenknopf[aria-pressed='true'] {
+  border-color: var(--w-akzent);
+  color: var(--w-vg);
+}
+
+/* --- Umschalter ------------------------------------------- */
+
+.schalter {
+  display: flex;
+  gap: 6px;
+}
+
+.schalter button {
+  flex: 1 1 0;
+  height: 40px;
+  border: 1px solid var(--w-linie);
+  border-radius: 10px;
+  background: var(--w-flaeche);
+  color: var(--w-neben);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.schalter button[aria-pressed='true'] {
+  border-color: var(--w-akzent);
+  color: var(--w-vg);
+}
+
+/* --- Befunde und Ausgabe ---------------------------------- */
+
+.befunde {
+  margin-top: 14px;
+  display: grid;
+  gap: 7px;
+}
+
+.befund {
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  border: 1px solid var(--w-linie);
+  background: var(--w-flaeche);
+}
+
+.befund--fehler {
+  border-color: #e11d48;
+  color: #ffd7de;
+}
+
+.befund--warnung {
+  border-color: #e0b77a;
+  color: #f5e6cd;
+}
+
+.befund--gut {
+  color: var(--w-neben);
+}
+
+.ausgabe {
+  margin: 12px 0 0;
+  padding: 14px;
+  max-height: 220px;
+  overflow: auto;
+  border: 1px solid var(--w-linie);
+  border-radius: 12px;
+  background: var(--w-flaeche);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--w-neben);
+  white-space: pre;
+}
+
+.wknopfreihe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.wknopf {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 18px;
+  border: 1px solid var(--w-linie);
+  border-radius: 11px;
+  background: var(--w-flaeche);
+  color: var(--w-vg);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.wknopf svg {
+  width: 16px;
+  height: 16px;
+}
+
+.wknopf--voll {
+  background: var(--w-akzent);
+  border-color: transparent;
+  color: #141410;
+}
+
+.wknopf:hover {
+  border-color: var(--w-akzent);
+}
+
+/* --- Vorschau --------------------------------------------- */
+
+.buehne2 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 26px 22px 40px;
+}
+
+.geraet {
+  width: min(392px, 100%);
+  margin: 0 auto;
+  /* Höhe eines heutigen Telefons, damit der erste Bildschirm stimmt. */
+  aspect-ratio: 392 / 800;
+  max-height: min(800px, calc(100dvh - 150px));
+  padding: 10px;
+  border: 1px solid var(--w-linie);
+  border-radius: 38px;
+  background: var(--w-flaeche);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.9);
+}
+
+.geraet__schirm {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 28px;
+  background: #0f0f0f;
+  display: block;
+}
+
+@media (max-width: 899px) {
+  .regler {
+    border-right: 0;
+    border-bottom: 1px solid var(--w-linie);
+    order: 2;
+  }
+
+  .buehne2 {
+    order: 1;
+    padding-top: 20px;
+  }
+
+  .geraet {
+    aspect-ratio: 392 / 560;
+  }
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--w-akzent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

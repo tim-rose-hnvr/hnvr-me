@@ -1,0 +1,56 @@
+---
+/**
+ * Die Vorschau der Werkstatt — dieselbe Seite, andere Gestaltung.
+ *
+ * Bewusst eine eigene Adresse und nicht `/t/<name>?g=…`: sonst könnte jeder
+ * einen Link auf ein fremdes Profil verschicken, der dessen Seite umfärbt.
+ * Eine Vorschau darf das, eine öffentliche Profilseite nicht.
+ *
+ * Die Gestaltung steht als JSON im Parameter `g` und läuft durch dieselbe
+ * Prüfung wie ein gepflegtes Profil. Was nicht durchkommt, wird stillschweigend
+ * durch die Vorgabe ersetzt — eine Vorschau soll zeigen, nicht meckern; die
+ * Beanstandungen stehen daneben in der Werkstatt.
+ */
+import Profilblatt from '../../layouts/Profilblatt.astro';
+import Profilansicht from '../../komponenten/Profilansicht.astro';
+
+import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
+import { GESTALTUNG_VORGABE, lieseGestaltung, type Gestaltung } from '../../kern/gestaltung.ts';
+import { ablage } from '../../kern/speicher/index.ts';
+
+export const prerender = false;
+
+const quelle = ablage();
+const slug = Astro.url.searchParams.get('profil') ?? (await quelle.liste())[0];
+const profil = slug ? await quelle.hole(slug) : null;
+
+if (!profil) {
+  return new Response('Es gibt noch kein Profil zum Vorführen.', {
+    status: 404,
+    headers: { 'content-type': 'text/plain; charset=utf-8' },
+  });
+}
+
+function ausParameter(roh: string | null): Gestaltung {
+  if (!roh) return profil!.gestaltung;
+  try {
+    return lieseGestaltung(JSON.parse(roh)).gestaltung ?? GESTALTUNG_VORGABE;
+  } catch {
+    return GESTALTUNG_VORGABE;
+  }
+}
+
+const gestaltung = ausParameter(Astro.url.searchParams.get('g'));
+const lage = profil.erreichbarkeit ? bewerteErreichbarkeit(profil.erreichbarkeit, new Date()) : null;
+const adresse = new URL(`/t/${profil.slug}`, Astro.site ?? Astro.url).toString();
+---
+
+<Profilblatt
+  titel={`Vorschau — ${profil.kopf.name}`}
+  beschreibung="Vorschau der Gestaltung."
+  gestaltung={gestaltung}
+  adresse={adresse}
+  indexierbar={false}
+>
+  <Profilansicht profil={profil} gestaltung={gestaltung} lage={lage} adresse={adresse} />
+</Profilblatt>

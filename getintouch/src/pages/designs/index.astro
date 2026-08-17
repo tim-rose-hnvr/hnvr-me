@@ -58,7 +58,10 @@ const stellschrauben = [
             <Fragment set:html={SIGNET} />
             <span>Get in Touch</span>
           </a>
-          <a class="leise" href="/t/hnvr">echte Seite ↗</a>
+          <nav class="kopfnavi">
+            <a href="/werkstatt">Werkstatt</a>
+            <a href="/t/hnvr">echte Seite ↗</a>
+          </nav>
         </header>
 
         <section class="kopf">
@@ -128,8 +131,9 @@ const stellschrauben = [
             }
           </div>
           <p class="quelle">
-            Der Kontrastwächter rechnet jede freie Farbwahl nach WCAG 2.1 nach und meldet in Worten, was nicht mehr
-            trägt — nicht in Zahlen, die niemandem weiterhelfen.
+            Alles davon lässt sich in der <a href="/werkstatt">Werkstatt</a> einstellen — mit der echten Seite als
+            Vorschau. Der Kontrastwächter rechnet dabei jede freie Farbwahl nach WCAG 2.1 nach und meldet in Worten,
+            was nicht mehr trägt, nicht in Zahlen, die niemandem weiterhelfen.
           </p>
         </section>
 
@@ -137,11 +141,13 @@ const stellschrauben = [
           <p class="marke">bereit?</p>
           <h2>Welche soll es sein?</h2>
           <div class="knopfreihe">
-            <a class="knopf knopf--voll" href="mailto:hallo@hnvr.me?subject=Get%20in%20Touch%20%E2%80%94%20Seite%20anlegen">
-              Seite anfragen
+            <a class="knopf knopf--voll" href="/werkstatt">
+              In der Werkstatt anpassen
               <Fragment set:html={zeichen('pfeil')} />
             </a>
-            <a class="knopf" href="/">Zurück zur Übersicht</a>
+            <a class="knopf" href="mailto:hallo@hnvr.me?subject=Get%20in%20Touch%20%E2%80%94%20Seite%20anlegen">
+              Seite anfragen
+            </a>
           </div>
         </section>
 

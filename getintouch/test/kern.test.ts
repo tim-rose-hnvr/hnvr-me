@@ -10,6 +10,7 @@ import { adresseFuer, adresseFuerNetzwerk, istSichereAdresse, normalisiereNummer
 import { baueVcard, vcardDateiname } from '../src/kern/vcard.ts';
 import { alsDatenadresse } from '../src/kern/bild.ts';
 import {
+  abweichung,
   FLIESSTEXTSCHRIFTEN,
   hintergrund,
   kontrast,
@@ -428,5 +429,29 @@ describe('Vorlagen', () => {
     for (const v of VORLAGEN) {
       ok(vorlagenName(v.vorlage) !== v.vorlage || v.vorlage === 'hnvr', `„${v.vorlage}" ohne Namen`);
     }
+  });
+});
+
+describe('Abweichung von der Vorlage', () => {
+  it('behält nur, was wirklich anders ist', () => {
+    const unveraendert = abweichung(vorlage('nacht'));
+    deepStrictEqual(unveraendert, { vorlage: 'nacht' }, 'ohne Änderung bleibt nur die Kennung');
+
+    const eigen = abweichung({ ...vorlage('nacht'), akzent: '#FF7120', radius: 8 });
+    deepStrictEqual(eigen, { vorlage: 'nacht', akzent: '#FF7120', radius: 8 });
+  });
+
+  it('ist umkehrbar — was herauskommt, ergibt wieder dasselbe Design', () => {
+    const eigen = { ...vorlage('papier'), akzent: '#123456', schrift: 'mono', bild: '/bilder/x.jpg', schleier: 0.8 };
+    const zurueck = lieseGestaltung(abweichung(eigen)).gestaltung;
+    deepStrictEqual(zurueck, eigen);
+  });
+
+  it('lässt spätere Korrekturen an einer Vorlage durchschlagen', () => {
+    // Wer nichts Eigenes eingestellt hat, erbt die Korrektur — genau dafür
+    // wird der Unterschied gespeichert und nicht der volle Satz Werte.
+    const gespeichert = abweichung(vorlage('creme'));
+    strictEqual('akzentText' in gespeichert, false);
+    strictEqual(lieseGestaltung(gespeichert).gestaltung?.akzentText, vorlage('creme').akzentText);
   });
 });

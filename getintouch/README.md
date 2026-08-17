@@ -16,6 +16,7 @@ Stufe 2, der Editor für Besucher, kommt darauf.
 | `/` | Verkaufsseite (statisch vorgebaut) |
 | `/designs` | Galerie aller zwölf Vorlagen |
 | `/designs/<kennung>` | eine Vorlage am vollständigen Profil |
+| `/werkstatt` | Gestaltung einstellen, mit der echten Seite als Vorschau |
 | `/t/<name>` | die öffentliche Profilseite |
 | `/t/<name>/karte.vcf` | die Visitenkarte als Datei |
 | `/t/<name>/qr.svg` | der QR-Code |
@@ -152,7 +153,31 @@ ein Fehler. Nur so bleibt die Aussage über die Lesbarkeit wahr.
 selbst ausgeliefert — kein Google-Aufruf, kein CDN. Deklariert sind alle,
 geladen wird nur, was eine Seite benutzt; das Angebot kostet eine Profilseite
 also kein Byte. Anton, Bebas Neue und Clash Display sind als `zweck: 'anzeige'`
-markiert und taugen nur für Überschriften.
+markiert und stehen beim Fließtext gar nicht erst zur Wahl.
+
+### Die Werkstatt
+
+`/werkstatt` ist die Auswahl: links die Regler, rechts die Seite. Vorlage
+antippen, danach Farben, Schriften, Radius, Stil der Schaltflächen,
+Hintergrundbild und Schleier frei nachziehen. Daneben stehen laufend die
+Befunde des Kontrastwächters und das fertige JSON zum Einsetzen.
+
+Drei Entscheidungen dahinter:
+
+- **Die Vorschau ist die echte Seite.** Sie steckt als `iframe` auf
+  `/werkstatt/vorschau` — derselbe Renderer, dasselbe Blatt. Kein Abbild, das
+  irgendwann auseinanderläuft.
+- **Umgeschaltet wird ohne Neuladen**, weil die gesamte Gestaltung aus
+  CSS-Variablen besteht. `cssVariablen` und `pruefeLesbarkeit` laufen im
+  Browser genauso wie auf dem Server — es gibt keine zweite Wahrheit und keinen
+  zweiten Satz Regeln.
+- **Der Stand steht in der Adresszeile** (`?g=…`, nur die Abweichung von der
+  Vorlage). Ein Entwurf ist damit teilbar und übersteht das Neuladen, ohne
+  Konto, ohne Browser-Speicher und ohne dass etwas an einen Server geht.
+
+Die Vorschau hat bewusst eine eigene Adresse und läuft nicht als
+`/t/<name>?g=…`. Sonst könnte jeder einen Link verschicken, der die Seite eines
+fremden Profils umfärbt.
 
 ### Die neue Idee: die Seite kennt die Uhrzeit
 
@@ -192,9 +217,10 @@ src/kern/                Die Fachlogik, ohne Astro und ohne Browser
 src/komponenten/         Astro-Bausteine der Seite
 src/pages/index.astro    Die Verkaufsseite
 src/pages/designs/       Galerie und Vorlagen-Vorführung
+src/pages/werkstatt/     Gestaltung einstellen samt Vorschau
 src/pages/t/[slug].astro Die öffentliche Seite
 src/pages/t/[slug]/      karte.vcf und qr.svg
-test/                    69 Tests auf die Regeln oben
+test/                    72 Tests auf die Regeln oben
 ```
 
 Der Kern kennt weder Astro noch das DOM. Der Editor aus Stufe 2 benutzt
@@ -208,7 +234,7 @@ aussieht, sondern dieselbe Rechnung anstellt.
 ```bash
 npm install
 npm run dev        # http://localhost:4321 — Verkaufsseite, Profile unter /t/<name>
-npm test           # 69 Tests, ohne zusätzliche Abhängigkeiten
+npm test           # 72 Tests, ohne zusätzliche Abhängigkeiten
 npm run pruefen    # astro check
 npm run build
 ```
@@ -326,10 +352,11 @@ Der Editor. Der Kern liegt schon so, dass er ihn tragen kann:
 - **Anmeldung** über die eingebauten Login-Routen der Astro-Anbindung.
 - **Schreiben** in dieselbe Collection, `slug` gegen `pruefeSlug` und gegen
   bereits vergebene Adressen prüfen.
-- **Vorschau** über `/t/<slug>?vorschau=…` — dieselbe Seite, dieselbe Rechnung,
-  kein zweiter Renderer.
-- **Kontrastwächter** sichtbar machen: `pruefeLesbarkeit` liefert die Sätze
-  schon fertig.
+- **Vorschau** ist schon da: die Werkstatt zeigt, wie es geht — `Profilansicht`
+  im `iframe`, Gestaltung über CSS-Variablen von außen gesetzt. Für den Editor
+  kommt der Inhalt dazu.
+- **Kontrastwächter** ist in der Werkstatt schon sichtbar und kann von dort
+  übernommen werden.
 - **Bilder** beim Hochladen verkleinern und als Datenadresse ablegen, damit die
   vCard sie ohne Nachladen mitführt.
 

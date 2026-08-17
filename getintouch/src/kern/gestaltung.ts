@@ -160,6 +160,29 @@ export function vorlagenName(id: string): string {
   return VORLAGENNAMEN[id] ?? id;
 }
 
+/**
+ * Nur die Werte, die von der Vorlage abweichen.
+ *
+ * So bleibt ein gespeichertes Profil klein und lesbar, und — wichtiger — es
+ * wandert mit: wird eine Vorlage später nachgeschärft, erben alle Profile die
+ * Korrektur, die an dieser Stelle nichts Eigenes eingestellt haben.
+ */
+export function abweichung(gestaltung: Gestaltung): Partial<Gestaltung> & { vorlage: string } {
+  const basis = vorlage(gestaltung.vorlage);
+  const heraus: Partial<Gestaltung> & { vorlage: string } = { vorlage: gestaltung.vorlage };
+
+  for (const schluessel of Object.keys(basis) as (keyof Gestaltung)[]) {
+    if (schluessel === 'vorlage') continue;
+    if (gestaltung[schluessel] !== basis[schluessel]) {
+      // Der Umweg über `unknown` ist nötig, weil TypeScript hier nicht sieht,
+      // dass Schlüssel und Wert aus demselben Objekt stammen.
+      (heraus as Record<string, unknown>)[schluessel] = gestaltung[schluessel];
+    }
+  }
+
+  return heraus;
+}
+
 export const GESTALTUNG_VORGABE: Gestaltung = VORLAGEN[0]!;
 
 export function vorlage(id: string): Gestaltung {

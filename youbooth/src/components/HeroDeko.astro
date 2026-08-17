@@ -1,0 +1,190 @@
+---
+import type { Deko } from '../daten/anlaesse';
+
+/**
+ * Bewegte Hero-Deko der Anlass-Seiten: fallende Blüten, aufsteigende Ballons,
+ * funkelnde Sterne, Schneefall oder Feuerwerk. Rein dekorativ, deshalb
+ * aria-hidden — und bei reduzierter Bewegung still.
+ */
+interface Props {
+  art: Deko;
+  akzent: string;
+  text: string;
+}
+
+const { art, akzent, text } = Astro.props;
+
+const anzahl: Record<Deko, number> = {
+  bluete: 14,
+  schnee: 18,
+  ballon: 6,
+  funkeln: 12,
+  feuerwerk: 5,
+  keine: 0,
+};
+
+const stueck = Array.from({ length: anzahl[art] }, (_, i) => i);
+---
+
+{
+  art !== 'keine' && (
+    <div class:list={['deko', `deko--${art}`]} aria-hidden="true">
+      {stueck.map((i) => (
+        <span
+          style={`--i:${i};--links:${(i * 97) % 94}%;--dauer:${5 + (i % 5) * 0.6}s;--verzug:${(i * 0.42).toFixed(2)}s;--akzent:${akzent};--text:${text}`}
+        />
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .deko {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .deko span {
+    position: absolute;
+    display: block;
+  }
+
+  /* Hochzeit: fallende Blütenblätter */
+  .deko--bluete span {
+    top: -6%;
+    left: var(--links);
+    width: 10px;
+    height: 10px;
+    border-radius: 50% 50% 50% 0;
+    background: var(--akzent);
+    opacity: 0.8;
+    animation: fallen var(--dauer) linear infinite var(--verzug);
+  }
+
+  .deko--bluete span:nth-child(4n + 1) {
+    background: #c98b7a;
+  }
+
+  /* Weihnachtsfeier: Schneefall */
+  .deko--schnee span {
+    top: -5%;
+    left: var(--links);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--text);
+    opacity: 0.85;
+    animation: fallen var(--dauer) linear infinite var(--verzug);
+  }
+
+  .deko--schnee span:nth-child(3n) {
+    width: 4px;
+    height: 4px;
+  }
+
+  /* Geburtstag: aufsteigende Ballons */
+  .deko--ballon span {
+    bottom: -18%;
+    left: var(--links);
+    width: 26px;
+    height: 32px;
+    border-radius: 50% 50% 46% 46%;
+    background: var(--akzent);
+    opacity: 0.75;
+    animation: steigen calc(var(--dauer) + 2s) linear infinite var(--verzug);
+  }
+
+  .deko--ballon span:nth-child(2n) {
+    background: var(--text);
+    opacity: 0.35;
+  }
+
+  /* Abiball: funkelnde Sterne */
+  .deko--funkeln span {
+    top: calc(5% + (var(--i) * 8%));
+    left: var(--links);
+    width: 12px;
+    height: 12px;
+    background: var(--akzent);
+    clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+    animation: funkeln calc(2s + var(--i) * 0.1s) ease-in-out infinite var(--verzug);
+  }
+
+  /* Silvester: Feuerwerk */
+  .deko--feuerwerk span {
+    top: calc(14% + (var(--i) * 11%));
+    left: calc(12% + (var(--i) * 18%));
+    width: 13%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid var(--akzent);
+    animation: platzen calc(3.2s + var(--i) * 0.3s) ease-out infinite var(--verzug);
+  }
+
+  .deko--feuerwerk span:nth-child(2n) {
+    border-color: var(--text);
+  }
+
+  @keyframes fallen {
+    0% {
+      opacity: 0;
+      transform: translateY(-12%);
+    }
+    14% {
+      opacity: 0.9;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(150%) translateX(14px);
+    }
+  }
+
+  @keyframes steigen {
+    0% {
+      opacity: 0;
+      transform: translateY(40%);
+    }
+    16% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-150%);
+    }
+  }
+
+  @keyframes funkeln {
+    0%,
+    100% {
+      opacity: 0.18;
+      transform: scale(0.75);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes platzen {
+    0% {
+      opacity: 0.95;
+      transform: scale(0.12);
+    }
+    55% {
+      opacity: 0;
+      transform: scale(2.5);
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .deko {
+      display: none;
+    }
+  }
+</style>

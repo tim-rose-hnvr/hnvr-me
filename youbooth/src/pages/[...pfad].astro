@@ -1,6 +1,7 @@
 ---
 import Marketing from '../layouts/Marketing.astro';
 import { geplanteRouten } from '../daten/navigation';
+import { anlaesse } from '../daten/anlaesse';
 
 /**
  * Platzhalter fuer die Routen, die die Entwuerfe vorsehen, die aber noch nicht
@@ -20,6 +21,9 @@ export function getStaticPaths() {
       )
       .map((route) => (route.length > 1 ? route.replace(/\/$/, '') : route))
   );
+
+  // Pfade aus dynamischen Routen kennt der Glob nicht — hier nachtragen.
+  anlaesse.forEach((a) => vorhanden.add(`/anlaesse/${a.id}`));
 
   return geplanteRouten
     .filter((r) => !vorhanden.has(r.pfad))

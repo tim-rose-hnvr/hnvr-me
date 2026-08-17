@@ -44,6 +44,10 @@ type Kunde struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
 	WixSiteID string `json:"wix_site_id"`
+	// Absender für Rundbriefe. Die Adresse muss in Wix bestätigt sein,
+	// sonst weist die Schnittstelle den Versand ab.
+	AbsenderName string `json:"absender_name,omitempty"`
+	AbsenderMail string `json:"absender_mail,omitempty"`
 }
 
 type Kanal struct {

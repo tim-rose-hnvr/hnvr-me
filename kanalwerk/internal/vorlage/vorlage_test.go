@@ -197,3 +197,82 @@ func TestFinde(t *testing.T) {
 		t.Fatal("nicht vorhandene Vorlage gefunden")
 	}
 }
+
+// ---- Rundbrief ----
+
+func briefvorlage() Vorlage {
+	return Vorlage{
+		ID: "monatspost", KundeID: "bothe", Name: "Monatspost", Format: "brief",
+		Felder: []Feld{
+			{Name: "kick", Beschriftung: "Zeile oben"},
+			{Name: "titel", Beschriftung: "Überschrift", Pflicht: true},
+			{Name: "zusatz", Beschriftung: "Text", Mehrzeilig: true},
+		},
+		Marke: Marke{Grund: "#000000", Schriftfarbe: "#FFFFFF",
+			Akzent: "#9BBE00", Zweitakzent: "#D8063A"},
+	}
+}
+
+// Der Platzhalter muss den Brief unverändert verlassen. html/template
+// normalisiert alles in einem href — eine Marke mit geschweiften Klammern
+// kam prozentkodiert an und wäre von Wix nie ersetzt worden.
+func TestAbmeldeplatzhalterUeberstehtUnveraendert(t *testing.T) {
+	_, html := briefvorlage().Brief(
+		map[string]string{"titel": "Herbstkurs"}, "", "Tanzschule Bothe")
+	if !strings.Contains(html, Abmeldeplatzhalter) {
+		t.Fatalf("Platzhalter %q steht nicht im Brief", Abmeldeplatzhalter)
+	}
+	if strings.Contains(html, "%7b") || strings.Contains(html, "%7B") {
+		t.Fatal("der Platzhalter wurde prozentkodiert")
+	}
+}
+
+func TestBriefTraegtMarkenfarben(t *testing.T) {
+	_, html := briefvorlage().Brief(
+		map[string]string{"titel": "Herbstkurs"}, "", "Bothe")
+	for _, farbe := range []string{"#000000", "#FFFFFF", "#9BBE00", "#D8063A"} {
+		if !strings.Contains(html, farbe) {
+			t.Fatalf("Farbe %s fehlt im Brief", farbe)
+		}
+	}
+}
+
+// Was die Kundin tippt, bleibt Text — auch wenn es nach Auszeichnung aussieht.
+func TestBriefMaskiertEingaben(t *testing.T) {
+	_, html := briefvorlage().Brief(map[string]string{
+		"titel":  `<script>alert(1)</script>`,
+		"zusatz": `Preis < 10 & "günstig"`,
+	}, "", "Bothe")
+	if strings.Contains(html, "<script>") {
+		t.Fatal("eingetippte Auszeichnung landete unmaskiert im Brief")
+	}
+	if !strings.Contains(html, "&lt;script&gt;") {
+		t.Fatal("die Eingabe fehlt ganz statt maskiert dazustehen")
+	}
+	if !strings.Contains(html, "&amp;") {
+		t.Fatal("kaufmännisches Und wurde nicht maskiert")
+	}
+}
+
+func TestBriefOhneBildBleibtHeil(t *testing.T) {
+	betreff, html := briefvorlage().Brief(
+		map[string]string{"titel": "Kurzmeldung"}, "", "Bothe")
+	if betreff != "Kurzmeldung" {
+		t.Fatalf("Betreff = %q", betreff)
+	}
+	if strings.Contains(html, "<img") {
+		t.Fatal("ohne Bildadresse darf kein Bildelement entstehen")
+	}
+}
+
+func TestBriefMehrzeiligWirdZuAbsaetzen(t *testing.T) {
+	_, html := briefvorlage().Brief(map[string]string{
+		"titel": "Herbstkurs", "zusatz": "Erste Zeile\nZweite Zeile",
+	}, "", "Bothe")
+	if n := strings.Count(html, "Erste Zeile"); n != 1 {
+		t.Fatalf("erste Zeile %dmal gefunden", n)
+	}
+	if !strings.Contains(html, "Zweite Zeile") {
+		t.Fatal("zweite Zeile fehlt")
+	}
+}

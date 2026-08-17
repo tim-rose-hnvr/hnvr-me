@@ -28,6 +28,9 @@ type Versender interface {
 	Kontingent(ctx context.Context, siteID, merkmal string) (wix.Kontingent, error)
 	Veroeffentliche(ctx context.Context, siteID string, e wix.Beitragsentwurf) (wix.Veroeffentlicht, error)
 	Konten(ctx context.Context, siteID, kanal string) ([]wix.Konto, wix.Kanalzustand, error)
+	Mailkonto(ctx context.Context, siteID string) (wix.Mailkonto, error)
+	Kontakte(ctx context.Context, siteID string, grenze int) ([]wix.Kontakt, int, error)
+	SendeRundbrief(ctx context.Context, siteID string, r wix.Rundbrief) (wix.Versandt, error)
 }
 
 // HoechsteVersuche begrenzt das Nachbohren. Plattformen sperren die App,
@@ -272,6 +275,9 @@ func (p *Planer) zustelle(ctx context.Context, kunde speicher.Kunde, b *speicher
 	if !ok {
 		return fmt.Errorf("Kanal %s nicht gefunden", z.KanalID)
 	}
+	if kanal.Plattform == vorlage.KanalRundbrief {
+		return p.sendeRundbrief(ctx, kunde, b, z)
+	}
 	if kanal.Zustand != string(wix.Verbunden) {
 		return fmt.Errorf("Kanal ist nicht verbunden (%s)", kanal.Zustand)
 	}
@@ -380,6 +386,13 @@ func (p *Planer) SynchronisiereKanaele(ctx context.Context, kundeID string) erro
 		return fmt.Errorf("planer: Kunde %s nicht gefunden", kundeID)
 	}
 	var ersterFehler error
+
+	// Der Rundbrief ist kein Kanal, den Wix verbindet — er hängt am
+	// E-Mail-Konto der Site und am hinterlegten Absender.
+	if err := p.gleicheRundbriefAb(ctx, kunde); err != nil {
+		ersterFehler = err
+	}
+
 	for _, plattform := range wix.BekannteKanaele {
 		konten, zustand, err := p.W.Konten(ctx, kunde.WixSiteID, plattform)
 		if err != nil {
@@ -434,4 +447,136 @@ func (p *Planer) TextFuer(b speicher.Beitrag, kanal string) string {
 		return gesetzt
 	}
 	return b.Text
+}
+
+var (
+	ErrKeinAbsender      = errors.New("planer: für diesen Kunden ist kein bestätigter Absender hinterlegt")
+	ErrMailkontoAus      = errors.New("planer: das E-Mail-Konto dieser Site ist nicht aktiv")
+	ErrZuVieleEmpfaenger = errors.New("planer: die Empfängerzahl übersteigt das E-Mail-Kontingent dieses Monats")
+	ErrListeLeer         = errors.New("planer: die Empfängerliste ist leer")
+)
+
+// sendeRundbrief gibt einen Beitrag als E-Mail heraus.
+//
+// Anders als bei Social steht hier nicht die Zahl der Beiträge im Weg,
+// sondern die Zahl der Empfänger: das Kontingent zählt E-Mails, nicht
+// Aussendungen. Eine Liste mit 3690 Kontakten passt nicht in 200 E-Mails,
+// und das muss vorher auffallen — nicht nach den ersten 200.
+func (p *Planer) sendeRundbrief(ctx context.Context, kunde speicher.Kunde, b *speicher.Beitrag, z *speicher.Zustellung) error {
+	if strings.TrimSpace(kunde.AbsenderMail) == "" {
+		return ErrKeinAbsender
+	}
+
+	konto, err := p.W.Mailkonto(ctx, kunde.WixSiteID)
+	if err != nil {
+		return fmt.Errorf("E-Mail-Konto nicht lesbar: %w", err)
+	}
+	if !strings.EqualFold(konto.Zustand, "ACTIVE") {
+		return ErrMailkontoAus
+	}
+
+	kontakte, gesamt, err := p.W.Kontakte(ctx, kunde.WixSiteID, wix.HoechsteEmpfaengerJeAufruf)
+	if err != nil {
+		return fmt.Errorf("Empfänger nicht lesbar: %w", err)
+	}
+	if len(kontakte) == 0 {
+		return ErrListeLeer
+	}
+	if gesamt > konto.Rest {
+		return fmt.Errorf("%w: %d Empfänger, aber nur %d E-Mails frei",
+			ErrZuVieleEmpfaenger, gesamt, konto.Rest)
+	}
+
+	betreff, inhalt := p.BriefFuer(*b)
+
+	ids := make([]string, 0, len(kontakte))
+	for _, k := range kontakte {
+		ids = append(ids, k.ID)
+	}
+
+	z.Zustand = speicher.ZUebergeben
+	z.Versuche++
+
+	// Der Idempotenzschlüssel hängt am Beitrag, nicht am Versuch: eine
+	// Wiederholung nach Zeitüberschreitung darf niemandem zweimal Post
+	// schicken.
+	ergebnis, err := p.W.SendeRundbrief(ctx, kunde.WixSiteID, wix.Rundbrief{
+		Betreff:              betreff,
+		HTML:                 inhalt,
+		AbsenderName:         oder(kunde.AbsenderName, kunde.Name),
+		AbsenderMail:         kunde.AbsenderMail,
+		KontaktIDs:           ids,
+		AbmeldePlatzhalter:   vorlage.Abmeldeplatzhalter,
+		IdempotenzSchluessel: "kanalwerk-" + b.ID + "-" + z.KanalID,
+	})
+	if err != nil {
+		return err
+	}
+
+	z.WixItemID = ergebnis.ID
+	z.ExterneID = ergebnis.ID
+	z.Zustand = speicher.ZZugestellt
+	z.Fehlergrund = ""
+	z.ZugestelltAm = p.Jetzt()
+
+	_ = p.S.Protokolliere(speicher.Ereignis{
+		Zeitpunkt: p.Jetzt(), KundeID: b.KundeID, Art: "rundbrief.versandt",
+		Nutzlast: map[string]any{
+			"beitrag": b.ID, "empfaenger": ergebnis.Anzahl, "sendung": ergebnis.ID,
+		},
+	})
+	return nil
+}
+
+// BriefFuer setzt Betreff und HTML eines Rundbriefs.
+func (p *Planer) BriefFuer(b speicher.Beitrag) (betreff, inhalt string) {
+	absender := b.KundeID
+	if k, ok := p.S.Kunde(b.KundeID); ok {
+		absender = oder(k.AbsenderName, k.Name)
+	}
+	if b.VorlageID != "" {
+		if v, ok := vorlage.Finde(p.S.VorlagenVon(b.KundeID), b.VorlageID); ok {
+			return v.Brief(b.Werte, b.BildURL, absender)
+		}
+	}
+	leer := vorlage.Vorlage{Name: b.Text}
+	return leer.Brief(map[string]string{"titel": b.Text}, b.BildURL, absender)
+}
+
+func oder(a, b string) string {
+	if strings.TrimSpace(a) == "" {
+		return b
+	}
+	return a
+}
+
+// gleicheRundbriefAb hält den Zustand des Newsletter-Kanals nach.
+//
+// Er ist genau dann verbunden, wenn das E-Mail-Konto aktiv ist und ein
+// Absender hinterlegt wurde. Fehlt eines von beidem, soll das in der
+// Oberfläche stehen und nicht erst beim Versand auffallen.
+func (p *Planer) gleicheRundbriefAb(ctx context.Context, kunde speicher.Kunde) error {
+	k := speicher.Kanal{
+		ID:          kunde.ID + ":" + vorlage.KanalRundbrief,
+		KundeID:     kunde.ID,
+		Plattform:   vorlage.KanalRundbrief,
+		Anzeigename: "Newsletter",
+		GeprueftAm:  p.Jetzt(),
+	}
+
+	konto, err := p.W.Mailkonto(ctx, kunde.WixSiteID)
+	switch {
+	case err != nil:
+		k.Zustand = string(wix.ZustandUnklar)
+		_ = p.S.SetzeKanal(k)
+		return err
+	case !strings.EqualFold(konto.Zustand, "ACTIVE"):
+		k.Zustand = string(wix.Ungueltig)
+	case strings.TrimSpace(kunde.AbsenderMail) == "":
+		k.Zustand = string(wix.NieVerbunden)
+	default:
+		k.Zustand = string(wix.Verbunden)
+		k.WixKontoID = kunde.AbsenderMail
+	}
+	return p.S.SetzeKanal(k)
 }

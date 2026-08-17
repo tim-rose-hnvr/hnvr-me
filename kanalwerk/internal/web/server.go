@@ -119,17 +119,20 @@ type sichtBeitrag struct {
 }
 
 type sicht struct {
-	Kunde         speicher.Kunde
-	Kanaele       []sichtKanal
-	Vorlagen      []vorlage.Vorlage
-	Beitraege     []sichtBeitrag
-	Kontingent    wix.Kontingent
-	Planbar       bool
-	Kontakte      int
-	Meldungen     []meldung
-	WixErreichbar bool
-	WixFehler     string
-	Stand         time.Time
+	Kunde           speicher.Kunde
+	Kanaele         []sichtKanal
+	Vorlagen        []vorlage.Vorlage
+	Beitraege       []sichtBeitrag
+	Kontingent      wix.Kontingent
+	Planbar         bool
+	Mail            wix.Mailkonto
+	MailGelesen     bool
+	Kontakte        int
+	KontakteBekannt bool
+	Meldungen       []meldung
+	WixErreichbar   bool
+	WixFehler       string
+	Stand           time.Time
 }
 
 type meldung struct {
@@ -162,6 +165,12 @@ func (s *Server) zeigePlaner(w http.ResponseWriter, r *http.Request) {
 	}
 	if k, err := s.P.W.Kontingent(ctx, kunde.WixSiteID, "SCHEDULE_POST"); err == nil {
 		v.Planbar = k.Erlaubt
+	}
+	if m, err := s.P.W.Mailkonto(ctx, kunde.WixSiteID); err == nil {
+		v.Mail, v.MailGelesen = m, true
+	}
+	if _, gesamt, err := s.P.W.Kontakte(ctx, kunde.WixSiteID, 1); err == nil {
+		v.Kontakte, v.KontakteBekannt = gesamt, true
 	}
 
 	for _, k := range s.P.S.KanaeleVon(id) {
@@ -291,6 +300,20 @@ func meldungen(v sicht) []meldung {
 			Art: "warn", Titel: p + ": Verbindung erloschen",
 			Text:  "Der Kanal war verbunden und ist es nicht mehr. Bitte im Wix-Dashboard neu verbinden.",
 			Knopf: "Erneut prüfen", Ziel: "/kunde/" + v.Kunde.ID + "/abgleichen",
+		})
+	}
+
+	if v.MailGelesen && v.KontakteBekannt && v.Kontakte > v.Mail.Rest {
+		raus = append(raus, meldung{
+			Art: "stop", Titel: "Der Newsletter passt nicht ins Kontingent",
+			Text: fmt.Sprintf("%d Empfänger, aber nur %d E-Mails frei in diesem Monat. "+
+				"Eine vollständige Aussendung ist damit nicht möglich.", v.Kontakte, v.Mail.Rest),
+		})
+	}
+	if v.MailGelesen && v.Mail.WixWerbung {
+		raus = append(raus, meldung{
+			Art: "warn", Titel: "Wix-Werbung im Newsletter",
+			Text: "Der E-Mail-Plan dieser Site trägt Wix-Werbung im Fuß jeder Aussendung.",
 		})
 	}
 

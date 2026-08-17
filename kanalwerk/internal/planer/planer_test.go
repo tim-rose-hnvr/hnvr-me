@@ -22,6 +22,12 @@ type fakeWix struct {
 	fehler     error
 	konten     map[string][]wix.Konto
 	zustaende  map[string]wix.Kanalzustand
+
+	mailkonto   wix.Mailkonto
+	kontakte    []wix.Kontakt
+	kontakteGes int
+	briefe      []wix.Rundbrief
+	briefFehler error
 }
 
 func (f *fakeWix) Kontingent(_ context.Context, _, _ string) (wix.Kontingent, error) {
@@ -46,6 +52,26 @@ func (f *fakeWix) Konten(_ context.Context, _, kanal string) ([]wix.Konto, wix.K
 		z = wix.NieVerbunden
 	}
 	return f.konten[kanal], z, nil
+}
+
+func (f *fakeWix) Mailkonto(context.Context, string) (wix.Mailkonto, error) {
+	return f.mailkonto, nil
+}
+
+func (f *fakeWix) Kontakte(_ context.Context, _ string, _ int) ([]wix.Kontakt, int, error) {
+	ges := f.kontakteGes
+	if ges == 0 {
+		ges = len(f.kontakte)
+	}
+	return f.kontakte, ges, nil
+}
+
+func (f *fakeWix) SendeRundbrief(_ context.Context, _ string, r wix.Rundbrief) (wix.Versandt, error) {
+	f.briefe = append(f.briefe, r)
+	if f.briefFehler != nil {
+		return wix.Versandt{}, f.briefFehler
+	}
+	return wix.Versandt{ID: "sendung-1", Zustand: "ACCEPTED", Anzahl: len(r.KontaktIDs)}, nil
 }
 
 // ---- Gerüst ----
@@ -559,5 +585,196 @@ func TestOhneVorlageFreierText(t *testing.T) {
 
 	if len(w.rufe) != 1 || w.rufe[0].Text != "Herbstkurs — Anmeldung offen" {
 		t.Fatalf("freier Text ging verloren: %+v", w.rufe)
+	}
+}
+
+// ---- Rundbrief ----
+
+func mitRundbrief(t *testing.T, w *fakeWix) (*Planer, string) {
+	t.Helper()
+	p, kunde := aufbau(t, w)
+	k, _ := p.S.Kunde(kunde)
+	k.AbsenderName = "Tanzschule Bothe"
+	k.AbsenderMail = "post@tanzschule-bothe.invalid"
+	if err := p.S.SetzeKunde(k); err != nil {
+		t.Fatal(err)
+	}
+	if err := p.S.SetzeKanal(speicher.Kanal{
+		ID: "bothe:NEWSLETTER", KundeID: "bothe", Plattform: vorlage.KanalRundbrief,
+		Anzeigename: "Newsletter", Zustand: string(wix.Verbunden),
+	}); err != nil {
+		t.Fatal(err)
+	}
+	return p, kunde
+}
+
+func rundbriefBeitrag(id string) speicher.Beitrag {
+	b := beitrag(id)
+	b.Zustellungen = []speicher.Zustellung{{KanalID: "bothe:NEWSLETTER", Zustand: speicher.ZWartend}}
+	return b
+}
+
+// Das Kontingent zählt E-Mails, nicht Aussendungen. 3690 Empfänger passen
+// nicht in 200 freie E-Mails — und das muss vorher auffallen.
+func TestRundbriefUeberKontingentGehtNichtRaus(t *testing.T) {
+	w := &fakeWix{
+		kontingent:  vollesKontingent(),
+		mailkonto:   wix.Mailkonto{Zustand: "ACTIVE", MailsJeMonat: 200, Verbraucht: 0, Rest: 200},
+		kontakte:    []wix.Kontakt{{ID: "k1"}},
+		kontakteGes: 3690,
+	}
+	p, _ := mitRundbrief(t, w)
+
+	_ = p.S.SetzeBeitrag(rundbriefBeitrag("r1"))
+	_ = p.GibFrei("r1", "M. Bothe", "")
+	_ = p.Plane("r1", p.Jetzt().Add(-time.Minute))
+	_, _ = p.Tick(context.Background())
+
+	if len(w.briefe) != 0 {
+		t.Fatal("es wurde verschickt, obwohl die Liste nicht ins Kontingent passt")
+	}
+	nach, _ := p.S.Beitrag("r1")
+	grund := nach.Zustellungen[0].Fehlergrund
+	if !strings.Contains(grund, "3690") || !strings.Contains(grund, "200") {
+		t.Fatalf("Grund nennt nicht beide Zahlen: %q", grund)
+	}
+}
+
+func TestRundbriefOhneAbsender(t *testing.T) {
+	w := &fakeWix{
+		kontingent: vollesKontingent(),
+		mailkonto:  wix.Mailkonto{Zustand: "ACTIVE", MailsJeMonat: 200, Rest: 200},
+		kontakte:   []wix.Kontakt{{ID: "k1"}},
+	}
+	p, kunde := mitRundbrief(t, w)
+	k, _ := p.S.Kunde(kunde)
+	k.AbsenderMail = ""
+	_ = p.S.SetzeKunde(k)
+
+	_ = p.S.SetzeBeitrag(rundbriefBeitrag("r2"))
+	_ = p.GibFrei("r2", "M. Bothe", "")
+	_ = p.Plane("r2", p.Jetzt().Add(-time.Minute))
+	_, _ = p.Tick(context.Background())
+
+	if len(w.briefe) != 0 {
+		t.Fatal("ohne bestätigten Absender wurde verschickt")
+	}
+}
+
+func TestRundbriefBeiGesperrtemKonto(t *testing.T) {
+	w := &fakeWix{
+		kontingent: vollesKontingent(),
+		mailkonto:  wix.Mailkonto{Zustand: "SUSPENDED", MailsJeMonat: 200, Rest: 200},
+		kontakte:   []wix.Kontakt{{ID: "k1"}},
+	}
+	p, _ := mitRundbrief(t, w)
+	_ = p.S.SetzeBeitrag(rundbriefBeitrag("r3"))
+	_ = p.GibFrei("r3", "M. Bothe", "")
+	_ = p.Plane("r3", p.Jetzt().Add(-time.Minute))
+	_, _ = p.Tick(context.Background())
+
+	if len(w.briefe) != 0 {
+		t.Fatal("bei gesperrtem E-Mail-Konto wurde verschickt")
+	}
+}
+
+func TestRundbriefGehtRausUndTraegtAbmeldelink(t *testing.T) {
+	w := &fakeWix{
+		kontingent: vollesKontingent(),
+		mailkonto:  wix.Mailkonto{Zustand: "ACTIVE", MailsJeMonat: 200, Rest: 200},
+		kontakte:   []wix.Kontakt{{ID: "k1"}, {ID: "k2"}, {ID: "k3"}},
+	}
+	p, _ := mitRundbrief(t, w)
+
+	_ = p.S.SetzeVorlage(vorlage.Vorlage{
+		ID: "monatspost", KundeID: "bothe", Name: "Monatspost", Format: "brief",
+		Felder: []vorlage.Feld{
+			{Name: "kick", Beschriftung: "Zeile oben"},
+			{Name: "titel", Beschriftung: "Überschrift", Pflicht: true},
+			{Name: "zusatz", Beschriftung: "Text", Mehrzeilig: true},
+		},
+		Marke: vorlage.Marke{Grund: "#000000", Schriftfarbe: "#FFFFFF",
+			Akzent: "#9BBE00", Zweitakzent: "#D8063A"},
+	})
+
+	b := rundbriefBeitrag("r4")
+	b.VorlageID = "monatspost"
+	b.Werte = map[string]string{"kick": "August", "titel": "Herbstkurs", "zusatz": "Ab 8. September"}
+	_ = p.S.SetzeBeitrag(b)
+	_ = p.GibFrei("r4", "M. Bothe", "")
+	_ = p.Plane("r4", p.Jetzt().Add(-time.Minute))
+	_, _ = p.Tick(context.Background())
+
+	if len(w.briefe) != 1 {
+		t.Fatalf("Aussendungen = %d, erwartet 1", len(w.briefe))
+	}
+	r := w.briefe[0]
+	if r.Betreff != "Herbstkurs" {
+		t.Fatalf("Betreff = %q", r.Betreff)
+	}
+	if len(r.KontaktIDs) != 3 {
+		t.Fatalf("Empfänger = %d, erwartet 3", len(r.KontaktIDs))
+	}
+	if r.AbmeldePlatzhalter == "" || !strings.Contains(r.HTML, r.AbmeldePlatzhalter) {
+		t.Fatal("der Abmeldelink fehlt im Brief — ohne ihn darf keine Werbemail raus")
+	}
+	if !strings.Contains(r.HTML, "#9BBE00") || !strings.Contains(r.HTML, "#D8063A") {
+		t.Fatal("die Markenfarben stehen nicht im Brief")
+	}
+	if r.IdempotenzSchluessel == "" {
+		t.Fatal("ohne Idempotenzschlüssel kann eine Wiederholung doppelt zustellen")
+	}
+	if r.AbsenderMail != "post@tanzschule-bothe.invalid" {
+		t.Fatalf("Absender = %q", r.AbsenderMail)
+	}
+}
+
+// Auch der Rundbrief darf nie zweimal rausgehen.
+func TestRundbriefNichtDoppelt(t *testing.T) {
+	w := &fakeWix{
+		kontingent: vollesKontingent(),
+		mailkonto:  wix.Mailkonto{Zustand: "ACTIVE", MailsJeMonat: 200, Rest: 200},
+		kontakte:   []wix.Kontakt{{ID: "k1"}},
+	}
+	p, _ := mitRundbrief(t, w)
+	_ = p.S.SetzeBeitrag(rundbriefBeitrag("r5"))
+	_ = p.GibFrei("r5", "M. Bothe", "")
+	_ = p.Plane("r5", p.Jetzt().Add(-time.Minute))
+
+	_, _ = p.Tick(context.Background())
+	_, _ = p.ArbeiteAb(context.Background(), "r5")
+
+	if len(w.briefe) != 1 {
+		t.Fatalf("%d Aussendungen — die Kundschaft bekam zweimal Post", len(w.briefe))
+	}
+}
+
+// Social und Newsletter aus einer Freigabe.
+func TestEinBeitragBedientSocialUndNewsletter(t *testing.T) {
+	w := &fakeWix{
+		kontingent: vollesKontingent(),
+		mailkonto:  wix.Mailkonto{Zustand: "ACTIVE", MailsJeMonat: 200, Rest: 200},
+		kontakte:   []wix.Kontakt{{ID: "k1"}},
+	}
+	p, _ := mitRundbrief(t, w)
+
+	b := beitrag("r6", "FACEBOOK")
+	b.Zustellungen = append(b.Zustellungen, speicher.Zustellung{
+		KanalID: "bothe:NEWSLETTER", Zustand: speicher.ZWartend,
+	})
+	_ = p.S.SetzeBeitrag(b)
+	_ = p.GibFrei("r6", "M. Bothe", "")
+	_ = p.Plane("r6", p.Jetzt().Add(-time.Minute))
+	_, _ = p.Tick(context.Background())
+
+	if len(w.rufe) != 1 {
+		t.Fatalf("Social-Aufrufe = %d, erwartet 1", len(w.rufe))
+	}
+	if len(w.briefe) != 1 {
+		t.Fatalf("Aussendungen = %d, erwartet 1", len(w.briefe))
+	}
+	nach, _ := p.S.Beitrag("r6")
+	if nach.Zustand != speicher.Veroeffentlicht {
+		t.Fatalf("Zustand = %q", nach.Zustand)
 	}
 }

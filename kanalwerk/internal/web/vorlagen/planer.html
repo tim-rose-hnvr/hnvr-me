@@ -198,6 +198,14 @@ footer{border-top:2px solid var(--line);padding:18px;background:var(--sand-2);
         <span class="q-n">{{if .Planbar}}An{{else}}Aus{{end}}</span>
         <span class="q-f">{{if .Planbar}}Wix hält die Uhr{{else}}Kanalwerk hält die Uhr selbst{{end}}</span>
       </div>
+      {{if .MailGelesen}}
+      <div class="q {{if and .KontakteBekannt (gt .Kontakte .Mail.Rest)}}warm{{end}}">
+        <span class="q-l">E-Mails</span>
+        <span class="q-n">{{.Mail.Verbraucht}}<small>von {{.Mail.MailsJeMonat}} im Monat</small></span>
+        <span class="bar"><i style="width:{{prozent .Mail.Verbraucht .Mail.MailsJeMonat}}%"></i></span>
+        <span class="q-f">{{if .KontakteBekannt}}{{.Kontakte}} Empfänger in der Liste{{else}}Paket {{.Mail.Paket}}{{end}}</span>
+      </div>
+      {{end}}
       <div class="q">
         <span class="q-l">Verbundene Kanäle</span>
         <span class="q-n">{{len .Kanaele}}</span>

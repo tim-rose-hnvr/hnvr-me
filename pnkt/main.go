@@ -128,7 +128,10 @@ func wege(d *dienst) *http.ServeMux {
 	weg.HandleFunc("GET /api/v1/codes/{id}/protokoll", d.mitSchluessel(false, d.protokoll))
 	weg.HandleFunc("POST /api/v1/massenanlage", d.mitSchluessel(true,
 		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.charge(w, r) }))
+	weg.HandleFunc("POST /api/v1/serie/vorschau", d.mitSchluessel(false, d.serienVorschau))
+	weg.HandleFunc("POST /api/v1/serie", d.mitSchluessel(true, d.serienPaket))
 	weg.HandleFunc("GET /zentrale", d.zentrale)
+	weg.HandleFunc("GET /serie", d.serienseite)
 
 	// Produktpass. Die oeffentliche Seite ist die Anforderung der ESPR;
 	// der Code davor ist nur der Datentraeger.

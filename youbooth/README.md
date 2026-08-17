@@ -5,27 +5,21 @@ Website und Oberflächen der Fotobox-Software **youbooth** — Umsetzung der Ent
 
 ## Stand
 
-**Die Hauptnavigation ist vollständig umgesetzt.**
+**Die Website ist vollständig umgesetzt.** Offen sind nur noch die Oberflächen der Software
+selbst (`/oberflaechen/*`) — die entstehen als eigenständige Anwendung, siehe unten.
 
 | Bereich | Stand |
 |---|---|
 | Fundament (Tokens, Layout, Kopfleiste, Fußzeile, Bildplatz, Icons) | fertig |
-| `/` Startseite | fertig |
-| `/system` | fertig |
-| `/module` (Übersicht) | fertig |
+| `/`, `/system`, `/module` + 14 Modulseiten | fertig |
 | `/anlaesse` + sechs Landingpages | fertig |
-| `/vorlagen` (Galerie, interaktiv) | fertig |
-| `/vergleich` (Tabelle, interaktiv) | fertig |
-| `/rechner` (Verdienstrechner, interaktiv) | fertig |
-| `/preise` (Konfigurator, interaktiv) | fertig |
-| `/hilfe` (Suche + Akkordeon, interaktiv) | fertig |
-| `/team` | fertig |
-| `/download` | fertig, Dateipfade fehlen |
-| `/kontakt` (Formular, interaktiv) | fertig, Versand-Endpunkt fehlt |
-| 13 Modulseiten `/module/*` | offen |
-| `/support`, `/referenzen`, `/fuer-vermieter`, `/partner`, `/ratgeber`, `/anmelden`, `/vorlagen/system`, `/design-system` | offen |
-| App-Oberflächen `/oberflaechen/*` (Booth-Flow, Cockpit, Editor, Galerie, Mosaik-Wand, Onboarding, iPhone-Apps) | offen |
-| Rechtstexte (Impressum, Datenschutz, AGB) | offen, kein Entwurf vorhanden |
+| `/vorlagen` (Galerie) und `/vorlagen/system` (Prinzip) | fertig |
+| `/vergleich`, `/rechner`, `/preise`, `/hilfe`, `/partner`, `/ratgeber` | fertig, interaktiv |
+| `/team`, `/referenzen`, `/fuer-vermieter`, `/support`, `/download` | fertig |
+| `/kontakt`, `/anmelden` | fertig, kein Dienst dahinter |
+| `/design-system` | fertig, liest die echten Tokens |
+| `/impressum`, `/datenschutz`, `/agb` | Gerüst mit Platzhaltern, rechtlich zu prüfen |
+| App-Oberflächen `/oberflaechen/*` | in Arbeit — Booth-Flow zuerst |
 
 Offene Routen sind erreichbar und zeigen eine „In Arbeit"-Seite mit Verweis auf die Entwurfsdatei.
 

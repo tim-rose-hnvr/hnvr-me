@@ -1,0 +1,531 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Icon from '../components/Icon.astro';
+
+/**
+ * Lebende Gestaltungsreferenz: zeigt die Werte, die tatsaechlich in
+ * tokens.css und global.css stehen — keine nachgezeichnete Doppelung.
+ */
+
+const iconnamen = Object.keys(import.meta.glob('../icons/*.svg'))
+  .map((p) => p.split('/').pop()!.replace('.svg', ''))
+  .sort();
+
+const farben = [
+  { token: '--ink', wert: '#0b0b0d', text: 'Dunkle Flächen, Kopfleiste, Fußzeile, Booth-Screens' },
+  { token: '--ink-soft', wert: '#17171c', text: 'Zweite dunkle Fläche, Überschriften auf Hell' },
+  { token: '--amber', wert: '#F2B23E', text: 'Einziger Akzent — CTA, aktive Zustände, Kennzeichnungen' },
+  { token: '--amber-ink', wert: '#141008', text: 'Text auf Amber' },
+  { token: '--paper', wert: '#f6f4f1', text: 'Seitenhintergrund hell' },
+  { token: '--weiss', wert: '#ffffff', text: 'Karten' },
+  { token: '--deep', wert: '#8e2b26', text: 'Akzentfläche, Vergleichs-Kontrast' },
+  { token: '--ok', wert: '#17B187', text: 'Zustand „läuft"' },
+  { token: '--warn', wert: '#E0483C', text: 'Zustand „Eingriff nötig"' },
+  { token: '--link', wert: '#a8412f', text: 'Textlinks, Hover #7d2f21' },
+];
+
+const abstaende = [4, 8, 12, 16, 20, 26, 32, 44, 56, 72, 96];
+
+const radien = [
+  { token: '--r-pille', wert: '9px', text: 'Pillen, Navigationslinks' },
+  { token: '--r-knopf', wert: '10px', text: 'Knöpfe' },
+  { token: '--r-chip', wert: '12px', text: 'Chips, kleine Karten' },
+  { token: '--r-karte', wert: '14px', text: 'Karten' },
+  { token: '--r-karte-gross', wert: '18px', text: 'Große Karten' },
+  { token: '--r-flaeche', wert: '22px', text: 'Hero-Flächen' },
+  { token: '--r-kreis', wert: '999px', text: 'Kreise, Punkte' },
+];
+
+const schatten = [
+  { token: '--schatten-karte', text: 'Karte in Ruhe' },
+  { token: '--schatten-hoch', text: 'Angehoben' },
+  { token: '--schatten-cta', text: 'Handlungsaufruf' },
+];
+
+const umbrueche = [
+  { bei: '1160 px', text: 'Kopfleiste klappt zum Burger-Menü' },
+  { bei: '1020 px', text: 'Vierspaltige Raster werden zweispaltig' },
+  { bei: '900 px', text: 'Seitenrand 20 px, Spalten volle Breite' },
+  { bei: '640 px', text: 'Alles einspaltig, Wortmarke 22 px' },
+];
+---
+
+<Marketing
+  titel="Design-System"
+  beschreibung="Farben, Typografie, Maße und Bausteine von youbooth — direkt aus den Gestaltungswerten der Umsetzung."
+>
+  <section class="hero">
+    <span class="mono mono--amber">Design-System · intern</span>
+    <h1>Ein Akzent, zwei Grundflächen, drei Zustandsfarben</h1>
+    <p class="fliess">
+      Diese Seite zeigt die Werte, die in <code>tokens.css</code> und <code>global.css</code> stehen —
+      sie ist keine Nachzeichnung, sondern nutzt dieselben Klassen wie die Website. Ändert sich ein
+      Token, ändert sich diese Seite mit.
+    </p>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Farben</h2>
+    <div class="raster raster--breit">
+      {
+        farben.map((f) => (
+          <article class="farbe">
+            <span class="farbe__flaeche" style={`background:${f.wert}`} />
+            <span class="farbe__name">
+              <code>{f.token}</code>
+              <span class="mono">{f.wert}</span>
+            </span>
+            <span class="karte__text">{f.text}</span>
+          </article>
+        ))
+      }
+    </div>
+    <p class="fliess">
+      Regel: Zustandsfarben nie dekorativ. Anlass-Landingpages haben je eine eigene Farbwelt, der
+      Handlungsaufruf bleibt trotzdem amber — Ausnahme Hochzeit, die durchgehend auf Bordeaux steht.
+    </p>
+  </section>
+
+  <section class="abschnitt abschnitt--dunkel">
+    <h2>Typografie</h2>
+    <div class="typo">
+      <div class="typo__probe">
+        <h1 class="probe">Überschrift 1</h1>
+        <span class="mono mono--hell">Archivo 800 · clamp(38px, 5vw, 72px) · −0.025em · Versalien</span>
+      </div>
+      <div class="typo__probe">
+        <h2 class="probe">Überschrift 2</h2>
+        <span class="mono mono--hell">Archivo 800 · clamp(30px, 3.6vw, 46px) · Zeilenhöhe 0.96</span>
+      </div>
+      <div class="typo__probe">
+        <span class="display display--gross">Display-Zeile ohne Rang</span>
+        <span class="mono mono--hell">
+          Klasse .display · Archivo 800 · gemischte Schreibweise
+        </span>
+      </div>
+      <div class="typo__probe">
+        <p class="fliess">
+          Fließtext: Archivo 400, 15 bis 17 px, Zeilenhöhe 1.6 bis 1.65, Textspalte höchstens 720 px
+          breit. Das ist die Schrift, in der die Seite spricht.
+        </p>
+      </div>
+      <div class="typo__probe">
+        <span class="mono mono--amber">Mono für Daten, Status und Kennungen</span>
+        <span class="mono mono--hell">IBM Plex Mono 500 · 10 bis 15 px · 0.1em bis 0.24em</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Bausteine</h2>
+
+    <div class="gruppe">
+      <span class="mono">Knöpfe</span>
+      <div class="reihe probenreihe">
+        <span class="knopf knopf--amber">Handlungsaufruf</span>
+        <span class="knopf knopf--dunkel">Dunkel</span>
+        <span class="knopf knopf--rahmen">Rahmen</span>
+        <span class="knopf knopf--amber knopf--gross">Groß</span>
+      </div>
+    </div>
+
+    <div class="gruppe">
+      <span class="mono">Karten</span>
+      <div class="raster raster--3">
+        <article class="karte">
+          <span class="mono">Kennung</span>
+          <span class="display display--klein">Karte hell</span>
+          <span class="karte__text">Weiß, 1 px Rahmen, Radius 14, Schatten in Ruhe.</span>
+        </article>
+        <article class="karte karte--dunkel">
+          <span class="mono mono--hell">Kennung</span>
+          <span class="display display--klein">Karte dunkel</span>
+          <span class="karte__text">Für Abschnitte, die Aufmerksamkeit brauchen.</span>
+        </article>
+        <article class="karte karte--gross">
+          <span class="mono">Kennung</span>
+          <span class="display display--klein">Karte groß</span>
+          <span class="karte__text">Radius 18, Innenabstand 32.</span>
+        </article>
+      </div>
+    </div>
+
+    <div class="gruppe">
+      <span class="mono">Listen</span>
+      <div class="reihe probenreihe">
+        <ul class="punkte">
+          <li>Punktliste mit Aufzählungszeichen</li>
+          <li>Auf dunklem Grund wird der Punkt amber</li>
+        </ul>
+        <ol class="schritte dunkelprobe">
+          <li>Nummerierte Schritte in Mono</li>
+          <li>Zweiter Schritt</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Maße</h2>
+    <div class="zweispalter">
+      <div class="spalte">
+        <span class="mono">Abstandsraster</span>
+        <div class="abstaende">
+          {
+            abstaende.map((a) => (
+              <span class="abstand">
+                <span class="abstand__balken" style={`width:${a}px`} />
+                <span class="mono">{a}</span>
+              </span>
+            ))
+          }
+        </div>
+        <span class="mono">Seitenrand clamp(20px, 4vw, 56px) · Inhalt max. 1240 px</span>
+      </div>
+
+      <div class="spalte">
+        <span class="mono">Radien</span>
+        <dl class="werteliste">
+          {
+            radien.map((r) => (
+              <div class="wertzeile">
+                <dt>
+                  <code>{r.token}</code>
+                </dt>
+                <dd>
+                  {r.wert} — {r.text}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Schatten und Umbrüche</h2>
+    <div class="zweispalter">
+      <div class="spalte">
+        <div class="reihe probenreihe">
+          {
+            schatten.map((s) => (
+              <span class="schattenprobe" style={`box-shadow:var(${s.token})`}>
+                <code>{s.token}</code>
+                <span class="mono">{s.text}</span>
+              </span>
+            ))
+          }
+        </div>
+      </div>
+      <div class="spalte">
+        <dl class="werteliste">
+          {
+            umbrueche.map((u) => (
+              <div class="wertzeile">
+                <dt>{u.bei}</dt>
+                <dd>{u.text}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--dunkel">
+    <div class="abschnitt-kopf">
+      <h2>Icons</h2>
+      <span class="mono mono--hell">{iconnamen.length} Strich-Icons · currentColor · inline</span>
+    </div>
+    <div class="iconraster">
+      {
+        iconnamen.map((name) => (
+          <span class="iconfeld">
+            <Icon name={name} groesse={24} />
+            <span class="mono mono--hell">{name}</span>
+          </span>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Marke</h2>
+    <div class="reihe markenreihe">
+      <span class="markenprobe">
+        <img src="/assets/youbooth-logo-light.svg" alt="youbooth Logo hell" height="40" />
+        <span class="mono">Logo hell</span>
+      </span>
+      <span class="markenprobe markenprobe--dunkel">
+        <img src="/assets/youbooth-logo-dark.svg" alt="youbooth Logo dunkel" height="40" />
+        <span class="mono mono--hell">Logo dunkel</span>
+      </span>
+      <span class="markenprobe">
+        <img src="/assets/youbooth-mark.svg" alt="youbooth Signet" width="44" height="44" />
+        <span class="mono">Signet</span>
+      </span>
+      <span class="markenprobe">
+        <span class="wortmarkenprobe">youbooth<em>.me</em></span>
+        <span class="mono">Wortmarke · Archivo 900 · −0.04em</span>
+      </span>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(30px, 3.6vw, 50px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 660px;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 6px;
+    border-radius: 5px;
+  }
+
+  .hero code {
+    background: rgba(244, 242, 238, 0.1);
+    color: var(--text-hell);
+  }
+
+  /* Farben */
+  .raster--breit {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+
+  .farbe {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 16px;
+    box-shadow: var(--schatten-karte);
+  }
+
+  .farbe__flaeche {
+    height: 64px;
+    display: block;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .farbe__name {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+  }
+
+  .farbe .karte__text {
+    padding: 0 16px;
+    font-size: 13px;
+  }
+
+  /* Typografie */
+  .typo {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .typo__probe {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid var(--linie-dunkel-zart);
+    padding-bottom: 20px;
+  }
+
+  .probe {
+    color: var(--text-hell);
+  }
+
+  /* Bausteine */
+  .gruppe {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .probenreihe {
+    gap: 12px;
+    align-items: center;
+  }
+
+  .dunkelprobe {
+    background: var(--ink);
+    border-radius: var(--r-karte);
+    padding: 20px;
+    min-width: 260px;
+  }
+
+  /* Maße */
+  .zweispalter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+
+  .spalte {
+    flex: 1 1 360px;
+    min-width: min(340px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .abstaende {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .abstand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .abstand__balken {
+    height: 12px;
+    background: var(--amber);
+    border-radius: 2px;
+    display: block;
+  }
+
+  .werteliste {
+    margin: 0;
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte);
+    overflow: hidden;
+  }
+
+  .wertzeile {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .wertzeile:last-child {
+    border-bottom: none;
+  }
+
+  .wertzeile dt {
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--text);
+    flex: none;
+  }
+
+  .wertzeile dd {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-leise);
+    text-align: right;
+  }
+
+  .schattenprobe {
+    background: var(--weiss);
+    border-radius: var(--r-karte);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1 1 200px;
+  }
+
+  /* Icons */
+  .iconraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 14px;
+  }
+
+  .iconfeld {
+    background: var(--ink-soft);
+    border: 1px solid var(--linie-dunkel);
+    border-radius: var(--r-chip);
+    padding: 18px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-hell);
+  }
+
+  .iconfeld :global(.icon) {
+    opacity: 0.9;
+  }
+
+  .iconfeld .mono {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: none;
+  }
+
+  /* Marke */
+  .markenreihe {
+    gap: 16px;
+  }
+
+  .markenprobe {
+    flex: 1 1 220px;
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    justify-content: center;
+  }
+
+  .markenprobe--dunkel {
+    background: var(--ink);
+    border-color: transparent;
+  }
+
+  .wortmarkenprobe {
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: -0.04em;
+    text-transform: lowercase;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+    color: var(--text);
+  }
+
+  .wortmarkenprobe em {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 13px;
+    font-style: normal;
+    letter-spacing: 0.02em;
+    color: var(--amber);
+  }
+</style>

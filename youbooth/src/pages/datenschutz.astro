@@ -1,0 +1,72 @@
+---
+import Rechtstext from '../components/Rechtstext.astro';
+
+/**
+ * Datenschutzerklärung.
+ *
+ * ACHTUNG: Gerüst mit Platzhaltern. Die Verarbeitungen unten sind aus dem
+ * Produkt abgeleitet (Löschfristen, Einwilligung am Booth, Selfie-Suche) und
+ * müssen vor dem Livegang mit dem tatsächlichen Betrieb abgeglichen und
+ * rechtlich geprüft werden.
+ */
+
+const abschnitte = [
+  {
+    titel: 'Verantwortlicher',
+    zeilen: [
+      '[Firmenname], [Anschrift], [E-Mail], [Telefon].',
+      'Ein Datenschutzbeauftragter ist [benannt: Name und Kontakt / nicht benannt].',
+    ],
+  },
+  {
+    titel: 'Aufruf dieser Website',
+    zeilen: [
+      'Beim Aufruf werden technisch notwendige Daten verarbeitet: IP-Adresse, Zeitpunkt, abgerufene Seite, Browser. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, unser berechtigtes Interesse am sicheren Betrieb.',
+      'Die Website lädt keine externen Schriften, keine CDN-Skripte und kein Analysewerkzeug. Es werden keine Cookies zu Marketingzwecken gesetzt.',
+      'Serverprotokolle werden nach [Frist] gelöscht.',
+    ],
+  },
+  {
+    titel: 'Kontakt- und Testanfragen',
+    zeilen: [
+      'Wenn ihr das Formular nutzt, verarbeiten wir Name, E-Mail, Firma, Anzahl der Boxen, Anliegen und Freitext, um die Anfrage zu beantworten. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO beziehungsweise eure Einwilligung nach lit. a.',
+      'Die Angaben werden nach [Frist] gelöscht, sofern kein Vertrag zustande kommt.',
+    ],
+  },
+  {
+    titel: 'Aufnahmen aus dem Booth',
+    zeilen: [
+      'Fotos, Streifen, Videos und Sprachnachrichten entstehen auf der Box des Betreibers. Verantwortlich für diese Verarbeitung ist der jeweilige Betreiber, nicht youbooth.',
+      'Pro Event gilt eine Löschfrist, standardmäßig 30 Tage; sie ist in der Galerie sichtbar und pro Kunde verlängerbar.',
+      'Die Einwilligung der Gäste wird am Screen eingeholt und protokolliert. Wer der Aufzeichnung widerspricht, wird von der Ausgabe ausgenommen.',
+    ],
+  },
+  {
+    titel: 'Selfie-Suche (Foto-Finder)',
+    zeilen: [
+      'Für die Suche nach eigenen Bildern wird ein Suchbild aufgenommen und mit den Aufnahmen des Events verglichen. Das Suchbild wird nach dem Treffer verworfen und nicht gespeichert.',
+      'Die Verarbeitung erfolgt nur nach ausdrücklicher Einwilligung (Art. 9 Abs. 2 lit. a DSGVO), da biometrische Merkmale betroffen sind.',
+    ],
+  },
+  {
+    titel: 'Auftragsverarbeitung',
+    zeilen: [
+      'Für Betreiber, die die Cloud-Funktionen nutzen, schließen wir einen Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO. Serverstandort ist [Frankfurt am Main, Deutschland].',
+      'Der Betrieb der Box selbst funktioniert ohne Cloud; ohne Netz verlassen keine Daten das Gerät.',
+    ],
+  },
+  {
+    titel: 'Eure Rechte',
+    zeilen: [
+      'Ihr habt das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch sowie das Recht, eine Einwilligung jederzeit zu widerrufen.',
+      'Beschwerden richtet ihr an die zuständige Aufsichtsbehörde: [Behörde und Anschrift].',
+    ],
+  },
+];
+---
+
+<Rechtstext
+  titel="Datenschutz"
+  beschreibung="Wie youbooth mit Daten umgeht: Website, Kontaktanfragen, Aufnahmen aus dem Booth, Selfie-Suche."
+  abschnitte={abschnitte}
+/>

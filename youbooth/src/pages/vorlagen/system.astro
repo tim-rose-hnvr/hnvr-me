@@ -1,0 +1,410 @@
+---
+import Marketing from '../../layouts/Marketing.astro';
+import Layoutvorschau from '../../components/Layoutvorschau.astro';
+
+/**
+ * Das Vorlagen-Prinzip: woraus ein Layout besteht und welche Grundformen
+ * mitgeliefert werden. Die Beispiele sind CSS-Zeichnungen, keine Bilder.
+ */
+
+const fotoformate = [
+  { variante: 'klassik', name: 'Klassik Serif', format: '10×15 · Hochzeit', zeilen: ['Lena & Jonas', '15 · 08 · 2026'] },
+  { variante: 'mono', name: 'Dark Mono', format: '10×15 · Firmenevent', zeilen: ['Sommerfest', '2026'], dunkel: true },
+  { variante: 'randlos', name: 'Randlos mit Banderole', format: '13×18', zeilen: ['Lena & Jonas', 'Gut Hügelhof'] },
+  { variante: 'split', name: 'Split mit Textpanel', format: '10×15 · Logo-Slot', zeilen: ['Danke, dass ihr da wart', '15.08.2026'] },
+  { variante: 'passepartout', name: 'Passepartout warm', format: '10×15', zeilen: ['Hochzeit · Herne', ''] },
+  { variante: 'film', name: 'Filmkante', format: '10×15 · Retro', zeilen: ['36', 'Rolle 36'] },
+  { variante: 'collage', name: 'Collage 3 + Titel', format: '10×15', zeilen: ['Abiball', '2026'] },
+  { variante: 'monogramm', name: 'Monogramm', format: '13×18', zeilen: ['L&J', '15.08.2026'] },
+  { variante: 'banderole', name: 'Banderole Akzent', format: '15×20 · Logo', zeilen: ['Firmenfeier 2026', ''] },
+  { variante: 'postkarte', name: 'Postkarte zum Schreiben', format: '10×15', zeilen: ['Gruß an das Paar', ''] },
+  { variante: 'datum', name: 'Datum oben, Satz unten', format: '10×15', zeilen: ['wir haben geheiratet', '15. August 2026'] },
+  { variante: 'seitenleiste', name: 'Seitenleiste vertikal', format: '10×15 · Messe', zeilen: ['Messe 2026', ''] },
+];
+
+const streifen = [
+  { name: 'Streifen 3 hell', bilder: 3, zeilen: ['Lena & Jonas', '15.08.2026'] },
+  { name: 'Streifen 3 dunkel', bilder: 3, zeilen: ['Sommerfest 2026', ''], dunkel: true },
+  { name: 'Streifen 4 randlos', bilder: 4, zeilen: ['', ''] },
+  { name: 'Retro 2 + Banderole', bilder: 2, zeilen: ['Photo Automat', ''] },
+  { name: 'Minimal mit Logo', bilder: 3, zeilen: ['Herne', ''] },
+];
+
+const bausteine = [
+  {
+    titel: 'Bildfelder',
+    text: 'Ein großes oder mehrere kleine, frei positionierbar, mit oder ohne Rand.',
+  },
+  {
+    titel: 'Textfelder',
+    text: 'Namen, Datum, Ort — Serif für Namen, Mono für Daten, das hält alles ruhig.',
+  },
+  {
+    titel: 'Logo-Slot',
+    text: 'Eure Marke oder die des Kunden, als Ecke, Banderole oder Seitenleiste.',
+  },
+  {
+    titel: 'Druckregeln',
+    text: 'Format, Doppelstreifen, Schnittlinie und Beschnitt gehören zur Vorlage, nicht zum Zufall.',
+  },
+];
+
+const sammlungen = [
+  { text: 'Fotoformat · 17' },
+  { text: 'Streifen · 65' },
+  { text: 'Hochzeit' },
+  { text: 'Firmenevent' },
+  { text: 'Geburtstag' },
+  { text: 'Minimal' },
+];
+---
+
+<Marketing
+  titel="Vorlagen-Prinzip"
+  beschreibung="82 Druckvorlagen: fertig gesetzt mit Schriftmischung, Rändern, Datumszeile und Logo-Slot — Bildflächen sind markiert."
+>
+  <section class="hero">
+    <div class="hero__text">
+      <span class="mono mono--amber">82 Druckvorlagen</span>
+      <h1>Fotoformat zuerst. Streifen, wenn's Streifen sein soll.</h1>
+      <p class="fliess">
+        Zehn ausgearbeitete Layouts im Fotoformat, dazu die klassischen Streifen. Alle Vorlagen sind
+        fertig gesetzt: Schriftmischung, Ränder, Datumszeile, Logo-Slot. Bildflächen sind markiert —
+        dort landet die Aufnahme.
+      </p>
+      <div class="reihe knopfreihe">
+        <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Vorlagen testen</a>
+        <a class="knopf knopf--rahmen-hell knopf--mittel" href="/oberflaechen/booth-editor">
+          Zum Designer
+        </a>
+      </div>
+      <div class="sammlungen">
+        {sammlungen.map((s) => <span class="mono mono--hell">{s.text}</span>)}
+      </div>
+      <span class="mono mono--hell">10×15 · 13×18 · 15×20 · 5×15 Streifen</span>
+    </div>
+
+    <div class="hero__blatt">
+      <Layoutvorschau
+        variante="klassik"
+        format="10×15"
+        zeilen={['Lena & Jonas', '15 · 08 · 2026', 'L & J']}
+      />
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <div class="abschnitt-kopf">
+      <h2>Fotoformat — zwölf fertige Layouts</h2>
+      <span class="mono mono--still">Bildfeld markiert · Text und Logo austauschbar</span>
+    </div>
+    <div class="blattraster">
+      {
+        fotoformate.map((f) => (
+          <figure class="vorschau">
+            <Layoutvorschau
+              variante={f.variante}
+              format={f.format}
+              zeilen={f.zeilen}
+              dunkel={f.dunkel}
+            />
+            <figcaption>
+              <span class="vorschau__name">{f.name}</span>
+              <span class="mono">{f.format}</span>
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--dunkel">
+    <div class="abschnitt-kopf">
+      <h2>Streifen — der Klassiker</h2>
+      <span class="mono mono--hell">65 Layouts · Doppelstreifen mit Schnittlinie</span>
+    </div>
+    <div class="streifenraster">
+      {
+        streifen.map((s) => (
+          <figure class="vorschau">
+            <Layoutvorschau
+              variante="streifen"
+              format="5×15"
+              zeilen={s.zeilen}
+              dunkel={s.dunkel}
+              bilder={s.bilder}
+              seitenverhaeltnis="1 / 3"
+            />
+            <figcaption>
+              <span class="vorschau__name vorschau__name--hell">{s.name}</span>
+            </figcaption>
+          </figure>
+        ))
+      }
+      <figure class="vorschau weitere">
+        <span class="weitere__zahl">60</span>
+        <span class="mono mono--hell">weitere Streifen</span>
+        <span class="weitere__text">
+          Zwei-, drei- und vierteilig, hell und dunkel, mit und ohne Rand — alle im Konto.
+        </span>
+      </figure>
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Woraus jede Vorlage besteht</h2>
+    <div class="raster raster--4">
+      {
+        bausteine.map((b) => (
+          <article class="karte">
+            <span class="display display--klein">{b.titel}</span>
+            <span class="karte__text">{b.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt designer">
+    <div class="designer__text">
+      <h2>Jede Vorlage ist nur ein Anfang</h2>
+      <p class="fliess">
+        Im Druck-Designer verschiebt ihr Bildfelder, tauscht Schriften, legt Logo-Slots und
+        Textfelder an. Der Bildschirm-Designer nutzt dasselbe Layout-Modell, damit Screen und Druck
+        zusammenpassen. Gespeicherte Layouts gelten pro Event oder als Haus-Standard.
+      </p>
+      <div class="reihe knopfreihe">
+        <a class="knopf knopf--dunkel knopf--mittel" href="/oberflaechen/booth-editor">
+          Designer ansehen
+        </a>
+        <a class="knopf knopf--rahmen knopf--mittel" href="/oberflaechen/fotobox-system">
+          Oberflächen im Detail
+        </a>
+      </div>
+    </div>
+
+    <div class="designerfeld">
+      <span class="mono">Im Designer</span>
+      <div class="werte">
+        <span class="wert"><span>Format</span><b>10×15 quer</b></span>
+        <span class="wert"><span>Bildfelder</span><b>1</b></span>
+        <span class="wert"><span>Textfelder</span><b>2</b></span>
+        <span class="wert"><span>Logo-Slot</span><b>optional</b></span>
+      </div>
+      <div class="designerfeld__blatt">
+        <Layoutvorschau
+          variante="klassik"
+          format="10×15"
+          zeilen={['Lena & Jonas', '15 · 08 · 2026']}
+          seitenverhaeltnis="4 / 3"
+        />
+      </div>
+      <span class="mono">Als Haus-Standard speichern</span>
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display">Eigenes Layout, das wir für euch aufbauen?</span>
+      <span class="beiwort">
+        Farben, Schrift und Logo schicken — alle vier Formate kommen in zwei Werktagen zurück, ohne
+        Aufpreis.
+      </span>
+    </div>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Layout anfragen</a>
+      <a class="knopf knopf--rahmen-hell knopf--mittel" href="/preise">Preise</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand) 60px;
+    display: flex;
+    gap: 44px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .hero__text {
+    flex: 1 1 460px;
+    min-width: min(440px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(30px, 3.6vw, 50px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 580px;
+  }
+
+  .hero__blatt {
+    flex: 0 1 260px;
+    min-width: 220px;
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+
+  .sammlungen {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .sammlungen .mono,
+  .hero .mono--hell {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(244, 242, 238, 0.45);
+  }
+
+  /* Blattraster */
+  .blattraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 24px;
+  }
+
+  .vorschau {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .vorschau figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .vorschau__name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .vorschau__name--hell {
+    color: var(--text-hell);
+  }
+
+  .streifenraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 24px;
+  }
+
+  .weitere {
+    background: var(--ink-soft);
+    border: 1px solid var(--linie-dunkel);
+    border-radius: var(--r-karte);
+    padding: 22px;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .weitere__zahl {
+    font-weight: 800;
+    font-size: 38px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--amber);
+  }
+
+  .weitere__text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-hell-leise);
+  }
+
+  /* Designer */
+  .designer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 44px;
+    align-items: center;
+  }
+
+  .designer__text {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .designerfeld {
+    flex: 1 1 340px;
+    min-width: min(320px, 100%);
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte-gross);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: var(--schatten-karte);
+  }
+
+  .werte {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .wert {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13.5px;
+    color: var(--text-leise);
+  }
+
+  .wert b {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .designerfeld__blatt {
+    border: 1px dashed var(--linie-stark);
+    padding: 12px;
+    border-radius: var(--r-chip);
+  }
+
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding-block: 52px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 640px;
+  }
+
+  .schluss .display {
+    font-size: clamp(26px, 2.6vw, 32px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15px;
+    color: var(--text-hell-leise);
+  }
+</style>

@@ -1,0 +1,56 @@
+---
+import Rechtstext from '../components/Rechtstext.astro';
+
+/**
+ * Impressum nach § 5 DDG (früher § 5 TMG).
+ *
+ * ACHTUNG: Die Angaben unten sind Platzhalter. Sie müssen vor dem Livegang
+ * durch die echten Daten ersetzt und rechtlich geprüft werden — ein falsches
+ * Impressum ist abmahnfähig.
+ */
+
+const abschnitte = [
+  {
+    titel: 'Angaben gemäß § 5 DDG',
+    zeilen: [
+      '[Firmenname]',
+      '[Straße und Hausnummer]',
+      '[PLZ Ort]',
+      'Deutschland',
+    ],
+  },
+  {
+    titel: 'Vertreten durch',
+    zeilen: ['[Name der vertretungsberechtigten Person]'],
+  },
+  {
+    titel: 'Kontakt',
+    zeilen: ['Telefon: +49 234 555 018', 'E-Mail: hallo@youbooth.me'],
+  },
+  {
+    titel: 'Registereintrag',
+    zeilen: ['Eintragung im Handelsregister: [Registergericht]', 'Registernummer: [HRB …]'],
+  },
+  {
+    titel: 'Umsatzsteuer-Identifikationsnummer',
+    zeilen: ['Gemäß § 27 a Umsatzsteuergesetz: [DE …]'],
+  },
+  {
+    titel: 'Verantwortlich für den Inhalt',
+    zeilen: ['[Name]', '[Anschrift wie oben]'],
+  },
+  {
+    titel: 'Streitschlichtung',
+    zeilen: [
+      'Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung bereit: https://ec.europa.eu/consumers/odr',
+      'Wir sind nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.',
+    ],
+  },
+];
+---
+
+<Rechtstext
+  titel="Impressum"
+  beschreibung="Anbieterkennzeichnung nach § 5 DDG."
+  abschnitte={abschnitte}
+/>

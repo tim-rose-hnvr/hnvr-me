@@ -16,15 +16,16 @@ import { zeichen } from '../kern/zeichen.ts';
 
 interface Props {
   karte: Visitenkarte;
-  slug: string;
+  /** Adresse, unter der die vCard liegt. In der Vorschau eine andere als live. */
+  ziel: string;
 }
 
-const { karte, slug } = Astro.props;
+const { karte, ziel } = Astro.props;
 const name = [karte.vorname, karte.nachname].filter(Boolean).join(' ');
 const zusatz = [name, karte.funktion, karte.firma].filter(Boolean).join(' · ');
 ---
 
-<a class="visitenkarte" href={`/t/${slug}/karte.vcf`} download>
+<a class="visitenkarte" href={ziel} download>
   <Fragment set:html={zeichen('visitenkarte')} />
   <span class="visitenkarte__text">
     <span class="visitenkarte__titel">Kontakt speichern</span>

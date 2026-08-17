@@ -1,28 +1,46 @@
 ---
 /**
- * Die Vorschau der Werkstatt — dieselbe Seite, andere Gestaltung.
+ * Die Vorschau der Werkstatt.
  *
- * Bewusst eine eigene Adresse und nicht `/t/<name>?g=…`: sonst könnte jeder
- * einen Link auf ein fremdes Profil verschicken, der dessen Seite umfärbt.
- * Eine Vorschau darf das, eine öffentliche Profilseite nicht.
+ * Zeigt entweder ein gepflegtes Profil in anderer Gestaltung (`?g=`) oder einen
+ * ganzen Entwurf aus der Werkstatt (`?p=`, gepackt — siehe `packung.ts`).
  *
- * Die Gestaltung steht als JSON im Parameter `g` und läuft durch dieselbe
- * Prüfung wie ein gepflegtes Profil. Was nicht durchkommt, wird stillschweigend
- * durch die Vorgabe ersetzt — eine Vorschau soll zeigen, nicht meckern; die
- * Beanstandungen stehen daneben in der Werkstatt.
+ * Bewusst eine eigene Adresse und nicht `/t/<name>?…`: sonst könnte jeder einen
+ * Link verschicken, der die Seite eines fremden Profils umfärbt oder mit
+ * fremdem Inhalt füllt. Eine Vorschau darf das, eine öffentliche Profilseite
+ * nicht.
+ *
+ * Gerendert wird von `Profilansicht` — derselben Komponente wie unter `/t/…`.
+ * Eine Vorschau, die einen eigenen Renderer hätte, wäre keine.
  */
 import Profilblatt from '../../layouts/Profilblatt.astro';
 import Profilansicht from '../../komponenten/Profilansicht.astro';
 
 import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
-import { GESTALTUNG_VORGABE, lieseGestaltung, type Gestaltung } from '../../kern/gestaltung.ts';
+import { GESTALTUNG_VORGABE, lieseGestaltung } from '../../kern/gestaltung.ts';
+import type { Profil } from '../../kern/profil.ts';
+import { musterprofil } from '../../kern/muster.ts';
 import { ablage } from '../../kern/speicher/index.ts';
+import { entwurfAus } from './entwurf.ts';
 
 export const prerender = false;
 
-const quelle = ablage();
-const slug = Astro.url.searchParams.get('profil') ?? (await quelle.liste())[0];
-const profil = slug ? await quelle.hole(slug) : null;
+const parameter = Astro.url.searchParams;
+
+/**
+ * Ein Entwurf läuft durch dieselbe Prüfung wie ein gepflegtes Profil. Was nicht
+ * besteht, wird durch das Muster ersetzt — die Beanstandungen zeigt die
+ * Werkstatt daneben an; hier wäre eine Fehlerseite nur im Weg.
+ */
+async function holeProfil(): Promise<Profil | null> {
+  if (parameter.has('p')) return (await entwurfAus(parameter)) ?? musterprofil();
+
+  const quelle = ablage();
+  const slug = parameter.get('profil') ?? (await quelle.liste())[0];
+  return slug ? quelle.hole(slug) : null;
+}
+
+const profil = await holeProfil();
 
 if (!profil) {
   return new Response('Es gibt noch kein Profil zum Vorführen.', {
@@ -31,7 +49,8 @@ if (!profil) {
   });
 }
 
-function ausParameter(roh: string | null): Gestaltung {
+/** `?g=` übersteuert die Gestaltung — für die Vorführung einzelner Vorlagen. */
+function gestaltungAus(roh: string | null) {
   if (!roh) return profil!.gestaltung;
   try {
     return lieseGestaltung(JSON.parse(roh)).gestaltung ?? GESTALTUNG_VORGABE;
@@ -40,17 +59,33 @@ function ausParameter(roh: string | null): Gestaltung {
   }
 }
 
-const gestaltung = ausParameter(Astro.url.searchParams.get('g'));
+const gestaltung = gestaltungAus(parameter.get('g'));
 const lage = profil.erreichbarkeit ? bewerteErreichbarkeit(profil.erreichbarkeit, new Date()) : null;
 const adresse = new URL(`/t/${profil.slug}`, Astro.site ?? Astro.url).toString();
+
+/**
+ * Für einen Entwurf gibt es `/t/<name>` noch nicht — vCard und QR-Bild holt die
+ * Vorschau deshalb aus der Werkstatt, mit dem Entwurf im Gepäck. Im QR-Code
+ * steht trotzdem schon die künftige Adresse.
+ */
+const entwurf = parameter.get('p');
+const vcardZiel = entwurf ? `/werkstatt/karte.vcf?p=${entwurf}` : undefined;
+const qrZiel = entwurf ? `/werkstatt/qr.svg?p=${entwurf}` : undefined;
 ---
 
 <Profilblatt
   titel={`Vorschau — ${profil.kopf.name}`}
-  beschreibung="Vorschau der Gestaltung."
+  beschreibung="Vorschau der Seite."
   gestaltung={gestaltung}
   adresse={adresse}
   indexierbar={false}
 >
-  <Profilansicht profil={profil} gestaltung={gestaltung} lage={lage} adresse={adresse} />
+  <Profilansicht
+    profil={profil}
+    gestaltung={gestaltung}
+    lage={lage}
+    adresse={adresse}
+    vcardZiel={vcardZiel}
+    qrZiel={qrZiel}
+  />
 </Profilblatt>

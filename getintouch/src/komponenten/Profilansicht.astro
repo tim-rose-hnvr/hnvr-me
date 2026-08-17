@@ -35,9 +35,18 @@ interface Props {
   lage: Lage | null;
   /** Vollständige Adresse dieser Seite. */
   adresse: string;
+  /**
+   * Wo vCard und QR-Bild liegen. Live unter `/t/<name>/…`, in der Vorschau der
+   * Werkstatt unter `/werkstatt/…` mit dem Entwurf als Parameter — sonst zeigten
+   * beide auf eine Adresse, die es noch gar nicht gibt.
+   */
+  vcardZiel?: string;
+  qrZiel?: string;
 }
 
 const { profil, gestaltung, lage, adresse } = Astro.props;
+const vcardZiel = Astro.props.vcardZiel ?? `/t/${profil.slug}/karte.vcf`;
+const qrZiel = Astro.props.qrZiel ?? `/t/${profil.slug}/qr.svg`;
 
 const haupt = hauptaktionFuer(profil, lage?.offen ?? true);
 const hauptAdresse = haupt ? adresseFuer(haupt.kanal, haupt.ziel) : null;
@@ -71,7 +80,7 @@ const adresseKurz = adresse.replace(/^https?:\/\/(www\.)?/, '');
     {/* Die Entscheidung: jetzt erreichen — oder für später behalten. */}
     <section class="entscheidung" aria-label="Kontakt aufnehmen">
       {haupt && hauptAdresse && <Aktionsknopf block={haupt} adresse={hauptAdresse} haupt />}
-      {profil.visitenkarte && <Visitenkartenknopf karte={profil.visitenkarte} slug={profil.slug} />}
+      {profil.visitenkarte && <Visitenkartenknopf karte={profil.visitenkarte} ziel={vcardZiel} />}
     </section>
 
     {
@@ -98,7 +107,7 @@ const adresseKurz = adresse.replace(/^https?:\/\/(www\.)?/, '');
 
   <Kanalreihe kanaele={profil.kanaele} />
 
-  <Codebereich slug={profil.slug} adresse={adresse} adresseKurz={adresseKurz} />
+  <Codebereich bildziel={qrZiel} adresse={adresse} adresseKurz={adresseKurz} />
 
   <Fussbereich rechtliches={profil.rechtliches} />
 </div>

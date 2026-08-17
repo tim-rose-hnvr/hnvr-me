@@ -439,3 +439,248 @@ a:focus-visible {
     transition: none !important;
   }
 }
+
+/* --- Reiter ----------------------------------------------- */
+
+/* Umbruch statt Seitwärtsrollen: ein weggeschobener Reiter ist ein Reiter, den
+   niemand findet — und „Fertig" ist der, auf den es ankommt. */
+.reiter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 12px 22px;
+  margin: 0 -22px;
+  background: var(--w-grund);
+  border-bottom: 1px solid var(--w-linie);
+}
+
+.reiter button {
+  flex: 0 1 auto;
+  padding: 8px 13px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  color: var(--w-neben);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.reiter button[aria-selected='true'] {
+  background: var(--w-flaeche);
+  border-color: var(--w-akzent);
+  color: var(--w-vg);
+}
+
+.tafel[hidden] {
+  display: none;
+}
+
+/* --- Blöcke ----------------------------------------------- */
+
+.blockliste {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.block {
+  padding: 12px 14px 16px;
+  border: 1px solid var(--w-linie);
+  border-radius: 13px;
+  background: var(--w-flaeche);
+}
+
+.block--aus {
+  opacity: 0.55;
+}
+
+.block__kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.block__art {
+  font-family: 'Clash Display', system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--w-leise);
+}
+
+.block__werkzeug {
+  display: flex;
+  gap: 3px;
+}
+
+.block__werkzeug button,
+.tag__plus {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--w-linie);
+  border-radius: 8px;
+  background: none;
+  color: var(--w-neben);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.block__werkzeug button:hover,
+.tag__plus:hover {
+  color: var(--w-vg);
+  border-color: var(--w-akzent);
+}
+
+.block .feld {
+  margin-top: 12px;
+}
+
+.feld--waagerecht {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.feld--waagerecht .feld__name {
+  margin-bottom: 0;
+}
+
+.kippe {
+  flex: none;
+  min-width: 62px;
+  height: 34px;
+  border: 1px solid var(--w-linie);
+  border-radius: 9px;
+  background: var(--w-grund);
+  color: var(--w-neben);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.kippe[aria-pressed='true'] {
+  border-color: var(--w-akzent);
+  color: var(--w-vg);
+}
+
+textarea {
+  width: 100%;
+  min-height: 76px;
+  padding: 10px 12px;
+  border: 1px solid var(--w-linie);
+  border-radius: 10px;
+  background: var(--w-flaeche);
+  color: var(--w-vg);
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.zufuegen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.zufuegen button {
+  padding: 9px 13px;
+  border: 1px solid var(--w-linie);
+  border-radius: 9px;
+  background: var(--w-flaeche);
+  color: var(--w-neben);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.zufuegen button:hover {
+  color: var(--w-vg);
+  border-color: var(--w-akzent);
+}
+
+/* --- Zeiten ----------------------------------------------- */
+
+.tage {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.tag {
+  padding: 11px 13px;
+  border: 1px solid var(--w-linie);
+  border-radius: 12px;
+  background: var(--w-flaeche);
+}
+
+.tag--zu {
+  opacity: 0.6;
+}
+
+.tag__kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.tag .whinweis {
+  margin-top: 6px;
+}
+
+.zeitzeile {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--w-neben);
+}
+
+.zeitzeile input[type='time'],
+input[type='date'] {
+  height: 36px;
+  padding: 0 9px;
+  border: 1px solid var(--w-linie);
+  border-radius: 9px;
+  background: var(--w-grund);
+  color: var(--w-vg);
+  font: inherit;
+  font-size: 14px;
+}
+
+input[type='date'] {
+  width: 100%;
+}
+
+.zeitzeile button {
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border: 1px solid var(--w-linie);
+  border-radius: 8px;
+  background: none;
+  color: var(--w-neben);
+  font: inherit;
+  cursor: pointer;
+}
+
+.whinweis--warnung {
+  color: #e0b77a;
+}
+
+/* Der Dateiwähler steckt in einer Schaltfläche. */
+.wknopf input[type='file'] {
+  display: none;
+}

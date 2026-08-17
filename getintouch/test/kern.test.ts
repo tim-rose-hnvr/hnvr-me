@@ -9,6 +9,7 @@ import { describe, it } from 'node:test';
 import { adresseFuer, adresseFuerNetzwerk, istSichereAdresse, normalisiereNummer, zuWhatsappNummer } from '../src/kern/ziele.ts';
 import { baueVcard, vcardDateiname } from '../src/kern/vcard.ts';
 import { alsDatenadresse } from '../src/kern/bild.ts';
+import { herkunft } from '../src/kern/ausgabe.ts';
 import {
   abweichung,
   FLIESSTEXTSCHRIFTEN,
@@ -453,5 +454,30 @@ describe('Abweichung von der Vorlage', () => {
     const gespeichert = abweichung(vorlage('creme'));
     strictEqual('akzentText' in gespeichert, false);
     strictEqual(lieseGestaltung(gespeichert).gestaltung?.akzentText, vorlage('creme').akzentText);
+  });
+});
+
+describe('Herkunft des Aufrufs', () => {
+  it('nimmt Name und Port aus dem Host-Kopf', () => {
+    // Der gebaute Node-Server liefert in `Astro.url` „http://localhost/" ohne
+    // Port. Ein relativer Bildpfad landete daraufhin auf Port 80, und das Foto
+    // fehlte stillschweigend in jeder Visitenkarte.
+    const ersatz = new URL('http://localhost/t/hnvr/karte.vcf');
+    const anfrage = new Request('http://localhost/t/hnvr/karte.vcf', { headers: { host: '127.0.0.1:4321' } });
+    strictEqual(herkunft(anfrage, ersatz).origin, 'http://127.0.0.1:4321');
+    strictEqual(herkunft(anfrage, ersatz).pathname, '/t/hnvr/karte.vcf');
+  });
+
+  it('behält das Schema des Aufrufs', () => {
+    const ersatz = new URL('https://localhost/t/hnvr/qr.svg');
+    const anfrage = new Request('https://hnvr.me/t/hnvr/qr.svg', { headers: { host: 'hnvr.me' } });
+    strictEqual(herkunft(anfrage, ersatz).origin, 'https://hnvr.me');
+  });
+
+  it('fällt ohne Host-Kopf auf die übergebene Adresse zurück', () => {
+    const ersatz = new URL('http://beispiel.test/x');
+    const anfrage = new Request('http://beispiel.test/x');
+    // Fetch setzt den Host-Kopf selbst; hier zählt nur, dass nichts kaputtgeht.
+    ok(herkunft(anfrage, ersatz).href.startsWith('http://'));
   });
 });

@@ -6,17 +6,19 @@ Visitenkarte und ein QR-Code unter einer kurzen Adresse — `hnvr.me/t/<name>`.
 Wix-Headless-Projekt auf Basis von Astro 5. Wix hostet, liefert später die
 Daten (CMS) und die Anmeldung (Members).
 
-**Stand:** Stufe 1 ist fertig — Verkaufsseite und öffentliche Profilseite samt
-Kern (Datenmodell, Gestaltung, Erreichbarkeit, vCard, QR). Das Wix-Projekt ist
-angelegt und die Collection gefüllt; hochgeladen ist das Frontend noch nicht.
-Stufe 2, der Editor für Besucher, kommt darauf.
+**Stand:** Verkaufsseite, Design-Galerie, Editor und öffentliche Profilseite
+stehen, dazu der Kern (Datenmodell, Gestaltung, Erreichbarkeit, vCard, QR). Das
+Wix-Projekt ist angelegt und die Collection gefüllt; **hochgeladen ist das
+Frontend noch nicht** — dafür braucht die Wix-CLI eine Anmeldung. Was noch
+fehlt: Anmeldung und Speichern, damit ein Entwurf ohne Umweg veröffentlicht
+wird.
 
 | Adresse | Was |
 |---|---|
 | `/` | Verkaufsseite (statisch vorgebaut) |
 | `/designs` | Galerie aller zwölf Vorlagen |
 | `/designs/<kennung>` | eine Vorlage am vollständigen Profil |
-| `/werkstatt` | Gestaltung einstellen, mit der echten Seite als Vorschau |
+| `/werkstatt` | die Seite bauen — Inhalt, Blöcke, Kontakt, Zeiten, Design |
 | `/t/<name>` | die öffentliche Profilseite |
 | `/t/<name>/karte.vcf` | die Visitenkarte als Datei |
 | `/t/<name>/qr.svg` | der QR-Code |
@@ -155,29 +157,46 @@ geladen wird nur, was eine Seite benutzt; das Angebot kostet eine Profilseite
 also kein Byte. Anton, Bebas Neue und Clash Display sind als `zweck: 'anzeige'`
 markiert und stehen beim Fließtext gar nicht erst zur Wahl.
 
-### Die Werkstatt
+---
 
-`/werkstatt` ist die Auswahl: links die Regler, rechts die Seite. Vorlage
-antippen, danach Farben, Schriften, Radius, Stil der Schaltflächen,
-Hintergrundbild und Schleier frei nachziehen. Daneben stehen laufend die
-Befunde des Kontrastwächters und das fertige JSON zum Einsetzen.
+## Die Werkstatt
 
-Drei Entscheidungen dahinter:
+`/werkstatt` ist das Werkzeug: links die Regler, rechts die Seite. Sechs
+Bereiche — **Inhalt** (Adresse, Kopf, Rechtliches), **Blöcke** (anlegen,
+sortieren, ein- und ausschalten), **Kontakt** (Kanäle und Visitenkarte),
+**Zeiten** (Öffnungszeiten je Wochentag, Ausnahmen, Hauptaktion), **Design**
+und **Fertig** (Prüfung, JSON, Datei, Vorschau-Link).
+
+Vier Entscheidungen dahinter:
 
 - **Die Vorschau ist die echte Seite.** Sie steckt als `iframe` auf
-  `/werkstatt/vorschau` — derselbe Renderer, dasselbe Blatt. Kein Abbild, das
-  irgendwann auseinanderläuft.
-- **Umgeschaltet wird ohne Neuladen**, weil die gesamte Gestaltung aus
-  CSS-Variablen besteht. `cssVariablen` und `pruefeLesbarkeit` laufen im
-  Browser genauso wie auf dem Server — es gibt keine zweite Wahrheit und keinen
-  zweiten Satz Regeln.
-- **Der Stand steht in der Adresszeile** (`?g=…`, nur die Abweichung von der
-  Vorlage). Ein Entwurf ist damit teilbar und übersteht das Neuladen, ohne
-  Konto, ohne Browser-Speicher und ohne dass etwas an einen Server geht.
+  `/werkstatt/vorschau` und rendert mit `Profilansicht` — derselben Komponente
+  wie `/t/<name>`. Kein Abbild, das irgendwann auseinanderläuft. Auch
+  „Kontakt speichern" und der QR-Code funktionieren im Entwurf: dafür gibt es
+  `/werkstatt/karte.vcf` und `/werkstatt/qr.svg`, die denselben Code benutzen
+  wie live (`kern/ausgabe.ts`).
+- **Gestaltung ohne Neuladen, Inhalt gebündelt.** Ändert sich nur das Design,
+  werden die CSS-Variablen im Rahmen gesetzt — sofort und ohne die Scrollhöhe
+  zu verlieren. Ändert sich der Inhalt, lädt der Rahmen nach 350 ms Ruhe neu,
+  und die Scrollhöhe wird gemerkt.
+- **Ein Kern, zwei Orte.** `cssVariablen`, `pruefeLesbarkeit` und `lieseProfil`
+  laufen im Browser genauso wie auf dem Server. Es gibt keine zweite Wahrheit
+  und keinen zweiten Satz Regeln — und die Formulare hängen an denselben
+  Aufzählungen wie der Kern, können also nicht auseinanderlaufen.
+- **Der Entwurf gehört dem Browser, bis er abgegeben wird.** Er liegt im
+  `localStorage`, damit er ein Neuladen übersteht, und lässt sich als Datei
+  sichern oder als Vorschau-Link verschicken (`?p=…`, gepackt — aus 3 kB werden
+  rund 900 Byte, siehe `kern/packung.ts`). Das ist etwas anderes als beim
+  Vorgänger: dort war der Browser die Quelle der *veröffentlichten* Seite,
+  weshalb fremde Besucher nichts sahen. Hier ist er nur der Notizblock.
 
 Die Vorschau hat bewusst eine eigene Adresse und läuft nicht als
-`/t/<name>?g=…`. Sonst könnte jeder einen Link verschicken, der die Seite eines
-fremden Profils umfärbt.
+`/t/<name>?p=…`. Sonst könnte jeder einen Link verschicken, der die Seite eines
+fremden Profils umfärbt oder mit fremdem Inhalt füllt.
+
+Die Werkstatt braucht JavaScript, die Profilseite nicht. Das ist die
+Reihenfolge, die zählt: das Werkzeug darf Voraussetzungen haben, das Ergebnis
+nicht.
 
 ### Die neue Idee: die Seite kennt die Uhrzeit
 
@@ -209,6 +228,9 @@ src/kern/                Die Fachlogik, ohne Astro und ohne Browser
   profil.ts              Datenmodell, Prüfung, Wahl der Hauptaktion
   gestaltung.ts          Zwölf Vorlagen, Schriften, Ableitungen, Kontrastwächter
   aufbau.ts              Blöcke → Gitter oder Zeile
+  ausgabe.ts             vCard- und QR-Antwort, für Live und Entwurf gemeinsam
+  packung.ts             Entwurf gepresst in eine Adresse
+  muster.ts              Womit eine neue Seite anfängt
   zeichen.ts             Strichalphabet als SVG
   ziele.ts               Rohwert → sichere Adresse (tel:, wa.me, mailto: …)
   vcard.ts               vCard 3.0 nach RFC 2426
@@ -217,10 +239,11 @@ src/kern/                Die Fachlogik, ohne Astro und ohne Browser
 src/komponenten/         Astro-Bausteine der Seite
 src/pages/index.astro    Die Verkaufsseite
 src/pages/designs/       Galerie und Vorlagen-Vorführung
-src/pages/werkstatt/     Gestaltung einstellen samt Vorschau
+src/pages/werkstatt/     Der Editor samt Vorschau und Entwurfs-Dateien
+src/skripte/             Die Steuerung der Werkstatt
 src/pages/t/[slug].astro Die öffentliche Seite
 src/pages/t/[slug]/      karte.vcf und qr.svg
-test/                    72 Tests auf die Regeln oben
+test/                    82 Tests auf die Regeln oben
 ```
 
 Der Kern kennt weder Astro noch das DOM. Der Editor aus Stufe 2 benutzt
@@ -234,7 +257,7 @@ aussieht, sondern dieselbe Rechnung anstellt.
 ```bash
 npm install
 npm run dev        # http://localhost:4321 — Verkaufsseite, Profile unter /t/<name>
-npm test           # 72 Tests, ohne zusätzliche Abhängigkeiten
+npm test           # 82 Tests, ohne zusätzliche Abhängigkeiten
 npm run pruefen    # astro check
 npm run build
 ```

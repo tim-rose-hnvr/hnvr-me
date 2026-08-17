@@ -1,64 +1,32 @@
 ---
 /**
- * Die Gestaltungswerkstatt — hier wird ausgewählt.
+ * Die Werkstatt — hier wird die Seite gebaut.
  *
  * Links die Regler, rechts die Seite. Die Vorschau steckt in einem Rahmen und
  * zeigt `/werkstatt/vorschau`, also die echte Seite mit dem echten Renderer.
  * Kein Abbild, keine Nachbildung: was hier steht, steht später genauso im Netz.
  *
- * Das Umschalten passiert ohne Neuladen, weil die gesamte Gestaltung als
- * CSS-Variablen ausgedrückt ist. Der Kern rechnet sie im Browser genauso aus
- * wie auf dem Server — `cssVariablen` und `pruefeLesbarkeit` laufen an beiden
- * Orten, es gibt keine zweite Wahrheit.
+ * Die Oberfläche wird von `skripte/werkstatt.ts` gefüllt. Das ist Absicht: die
+ * Formulare hängen an denselben Aufzählungen wie der Kern — Kanäle, Netzwerke,
+ * Schriften, Vorlagen. Wird dort etwas ergänzt, steht es hier ohne
+ * Zusatzarbeit zur Wahl, und es kann nicht auseinanderlaufen.
  *
- * Der Stand steht im Parameter `g` in der Adresszeile. Damit ist ein Entwurf
- * teilbar und bleibt beim Neuladen erhalten — ohne Konto, ohne Speicher im
- * Browser und ohne dass etwas an einen Server geht.
+ * Die Werkstatt braucht JavaScript. Die Profilseite nicht — und das ist die
+ * Reihenfolge, die zählt: das Werkzeug darf Voraussetzungen haben, das
+ * Ergebnis nicht.
  */
-import {
-  FLIESSTEXTSCHRIFTEN,
-  GESTALTUNG_VORGABE,
-  lieseGestaltung,
-  SCHRIFTEN,
-  vorlagenName,
-  VORLAGEN,
-  type Gestaltung,
-} from '../../kern/gestaltung.ts';
 import { SIGNET, zeichen } from '../../kern/zeichen.ts';
 import '../../stile/werkstatt.css';
 
 export const prerender = false;
 
-function ausParameter(roh: string | null): Gestaltung {
-  if (!roh) return GESTALTUNG_VORGABE;
-  try {
-    return lieseGestaltung(JSON.parse(roh)).gestaltung ?? GESTALTUNG_VORGABE;
-  } catch {
-    return GESTALTUNG_VORGABE;
-  }
-}
-
-const roh = Astro.url.searchParams.get('g');
-const start = ausParameter(roh);
-const vorschauAdresse = `/werkstatt/vorschau${roh ? `?g=${encodeURIComponent(roh)}` : ''}`;
-
-const farbfelder = [
-  { feld: 'grund', name: 'Grundfarbe' },
-  { feld: 'grund2', name: 'Zweite Farbe' },
-  { feld: 'vordergrund', name: 'Textfarbe' },
-  { feld: 'akzent', name: 'Akzent' },
-  { feld: 'akzentText', name: 'Schrift auf Akzent' },
-] as const;
-
-const stile = [
-  { wert: 'gefuellt', name: 'Gefüllt' },
-  { wert: 'kontur', name: 'Kontur' },
-  { wert: 'glas', name: 'Glas' },
-];
-
-const formen = [
-  { wert: 'rund', name: 'Rund' },
-  { wert: 'karte', name: 'Karte' },
+const reiter = [
+  { kennung: 'inhalt', name: 'Inhalt' },
+  { kennung: 'bloecke', name: 'Blöcke' },
+  { kennung: 'kontakt', name: 'Kontakt' },
+  { kennung: 'zeiten', name: 'Zeiten' },
+  { kennung: 'design', name: 'Design' },
+  { kennung: 'fertig', name: 'Fertig' },
 ];
 ---
 
@@ -69,7 +37,7 @@ const formen = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>Werkstatt — Get in Touch</title>
-    <meta name="theme-color" content="#0F0F0F" />
+    <meta name="theme-color" content="#0B0B0B" />
     <link rel="stylesheet" href="/schriften/schriften.css" />
   </head>
 
@@ -86,348 +54,79 @@ const formen = [
     </header>
 
     <main class="werkstatt">
-      <!-- Regler -->
-      <section class="regler" aria-label="Gestaltung einstellen">
-        <div class="feldgruppe">
-          <h2 class="wmarke2">Vorlage</h2>
-          <p class="whinweis">Ein Anfang. Danach ist alles frei.</p>
-          <div class="vorlagen" role="group" aria-label="Vorlage wählen">
-            {
-              VORLAGEN.map((v) => (
-                <button
-                  type="button"
-                  class="vorlagenknopf"
-                  data-vorlage={v.vorlage}
-                  style={`--v-grund:${v.grund2 ? `linear-gradient(140deg,${v.grund},${v.grund2})` : v.grund};--v-akzent:${v.akzent};--v-vg:${v.vordergrund}`}
-                >
-                  <span class="vorlagenknopf__probe">
-                    <span class="vorlagenknopf__punkt" />
-                  </span>
-                  {vorlagenName(v.vorlage)}
-                </button>
-              ))
-            }
-          </div>
-        </div>
-
-        <div class="feldgruppe">
-          <h2 class="wmarke2">Farben</h2>
+      <section class="regler" aria-label="Seite bauen">
+        <div class="reiter" role="tablist" aria-label="Bereiche">
           {
-            farbfelder.map((f) => (
-              <label class="feld">
-                <span class="feld__name">{f.name}</span>
-                <span class="feld__eingabe">
-                  <input type="color" data-farbe={f.feld} value={start[f.feld] || '#000000'} />
-                  <input type="text" class="feld__hex" data-hex={f.feld} value={start[f.feld]} spellcheck="false" />
-                  {f.feld === 'grund2' && (
-                    <button type="button" class="feld__weg" data-leeren="grund2" title="Verlauf abschalten">
-                      ×
-                    </button>
-                  )}
-                </span>
-              </label>
+            reiter.map((r, i) => (
+              <button
+                type="button"
+                role="tab"
+                data-reiter={r.kennung}
+                aria-selected={i === 0}
+                aria-controls={`tafel-${r.kennung}`}
+              >
+                {r.name}
+              </button>
             ))
           }
-          <label class="feld">
-            <span class="feld__name">Winkel des Verlaufs <b data-anzeige="winkel">{start.winkel}°</b></span>
-            <input type="range" min="0" max="359" step="1" data-zahl="winkel" value={start.winkel} />
-          </label>
         </div>
 
-        <div class="feldgruppe">
-          <h2 class="wmarke2">Schrift</h2>
-          <label class="feld">
-            <span class="feld__name">Überschriften</span>
-            <select data-auswahl="anzeige">
-              {SCHRIFTEN.map((s) => <option value={s.id} selected={s.id === start.anzeige}>{s.name}</option>)}
-            </select>
-          </label>
-          <label class="feld">
-            <span class="feld__name">Fließtext</span>
-            <select data-auswahl="schrift">
-              {FLIESSTEXTSCHRIFTEN.map((s) => <option value={s.id} selected={s.id === start.schrift}>{s.name}</option>)}
-            </select>
-          </label>
-          <p class="whinweis">
-            Anton, Bebas Neue und Clash Display stehen beim Fließtext nicht zur Wahl — als Grundschrift sind sie
-            unlesbar.
-          </p>
-        </div>
+        {
+          reiter
+            .filter((r) => r.kennung !== 'fertig')
+            .map((r, i) => <div class="tafel" id={`tafel-${r.kennung}`} role="tabpanel" hidden={i !== 0} />)
+        }
 
-        <div class="feldgruppe">
-          <h2 class="wmarke2">Form</h2>
-          <label class="feld">
-            <span class="feld__name">Eckenradius <b data-anzeige="radius">{start.radius} px</b></span>
-            <input type="range" min="0" max="40" step="1" data-zahl="radius" value={Math.min(start.radius, 40)} />
-          </label>
-          <div class="feld">
-            <span class="feld__name">Schaltflächen</span>
-            <div class="schalter" role="group" aria-label="Stil der Schaltflächen">
-              {
-                stile.map((s) => (
-                  <button type="button" data-wahl="schaltflaeche" data-wert={s.wert} aria-pressed={s.wert === start.schaltflaeche}>
-                    {s.name}
-                  </button>
-                ))
-              }
+        <div class="tafel" id="tafel-fertig" role="tabpanel" hidden>
+          <div class="feldgruppe">
+            <h2 class="wmarke2">Prüfung</h2>
+            <div class="befunde" id="befunde" aria-live="polite"></div>
+          </div>
+
+          <div class="feldgruppe">
+            <h2 class="wmarke2">Abgeben</h2>
+            <p class="whinweis">
+              Noch gibt es keinen Konto-Bereich zum Speichern. Bis dahin: Datei herunterladen oder Vorschau-Link
+              schicken — wir legen die Seite an.
+            </p>
+            <pre class="ausgabe" id="ausgabe"></pre>
+            <div class="wknopfreihe">
+              <button type="button" class="wknopf wknopf--voll" id="kopieren">
+                <Fragment set:html={zeichen('teilen')} />
+                <span>JSON kopieren</span>
+              </button>
+              <button type="button" class="wknopf" id="herunterladen">Als Datei sichern</button>
+              <button type="button" class="wknopf" id="linkkopieren">Vorschau-Link kopieren</button>
             </div>
           </div>
-          <div class="feld">
-            <span class="feld__name">Profilbild</span>
-            <div class="schalter" role="group" aria-label="Form des Profilbilds">
-              {
-                formen.map((f) => (
-                  <button type="button" data-wahl="bildform" data-wert={f.wert} aria-pressed={f.wert === start.bildform}>
-                    {f.name}
-                  </button>
-                ))
-              }
+
+          <div class="feldgruppe">
+            <h2 class="wmarke2">Von vorn</h2>
+            <div class="wknopfreihe">
+              <label class="wknopf">
+                Datei einlesen
+                <input type="file" id="einlesen" accept="application/json,.json" hidden />
+              </label>
+              <button type="button" class="wknopf" id="neuanfangen">Neu anfangen</button>
             </div>
+            <p class="whinweis">
+              Der Entwurf bleibt in diesem Browser, damit er ein Neuladen übersteht. Er geht an keinen Server —
+              veröffentlicht wird erst, was du abgibst.
+            </p>
           </div>
-        </div>
-
-        <div class="feldgruppe">
-          <h2 class="wmarke2">Hintergrundbild</h2>
-          <label class="feld">
-            <span class="feld__name">Adresse des Bildes</span>
-            <input type="text" data-text="bild" value={start.bild} placeholder="/bilder/halle.jpg oder https://…" spellcheck="false" />
-          </label>
-          <label class="feld">
-            <span class="feld__name">Schleier <b data-anzeige="schleier">{Math.round(start.schleier * 100)} %</b></span>
-            <input type="range" min="0" max="100" step="1" data-zahl="schleier" value={Math.round(start.schleier * 100)} />
-          </label>
-          <p class="whinweis">
-            Über einem Foto ist kein Kontrast berechenbar — heller Himmel und dunkler Baum liegen in derselben Fläche.
-            Der Schleier aus der Grundfarbe macht die Rechnung erst gültig.
-          </p>
-        </div>
-
-        <div class="feldgruppe">
-          <h2 class="wmarke2">Ergebnis</h2>
-          <div class="befunde" data-befunde aria-live="polite"></div>
-          <pre class="ausgabe" data-ausgabe></pre>
-          <div class="wknopfreihe">
-            <button type="button" class="wknopf wknopf--voll" data-kopieren>
-              <Fragment set:html={zeichen('teilen')} />
-              <span data-kopieren-text>Einstellung kopieren</span>
-            </button>
-            <button type="button" class="wknopf" data-zuruecksetzen>Zurücksetzen</button>
-          </div>
-          <p class="whinweis">
-            Der Stand steht in der Adresszeile — Link kopieren genügt, um den Entwurf zu behalten oder zu schicken.
-            Es geht nichts an einen Server.
-          </p>
         </div>
       </section>
 
-      <!-- Vorschau -->
       <section class="buehne2" aria-label="Vorschau">
         <div class="geraet">
-          <iframe class="geraet__schirm" src={vorschauAdresse} title="Vorschau der Seite" loading="eager"></iframe>
+          <iframe id="vorschaurahmen" class="geraet__schirm" title="Vorschau der Seite" loading="eager"></iframe>
         </div>
         <p class="whinweis whinweis--mitte">Die echte Seite, nicht ihr Abbild.</p>
       </section>
     </main>
 
     <script>
-      import {
-        abweichung,
-        cssVariablen,
-        GESTALTUNG_VORGABE,
-        istFarbe,
-        lieseGestaltung,
-        pruefeLesbarkeit,
-        vorlage,
-        type Gestaltung,
-      } from '../../kern/gestaltung.ts';
-
-      /* Der Kern rechnet hier im Browser genau dasselbe wie auf dem Server.
-         Deshalb kann die Vorschau nie von der ausgelieferten Seite abweichen. */
-
-      const rahmen = document.querySelector<HTMLIFrameElement>('.geraet__schirm')!;
-      const ausgabe = document.querySelector<HTMLElement>('[data-ausgabe]')!;
-      const befunde = document.querySelector<HTMLElement>('[data-befunde]')!;
-
-      function ausAdresse(): Gestaltung {
-        const roh = new URLSearchParams(location.search).get('g');
-        if (!roh) return { ...GESTALTUNG_VORGABE };
-        try {
-          return lieseGestaltung(JSON.parse(roh)).gestaltung ?? { ...GESTALTUNG_VORGABE };
-        } catch {
-          return { ...GESTALTUNG_VORGABE };
-        }
-      }
-
-      let stand: Gestaltung = ausAdresse();
-
-      function zeichneRegler() {
-        for (const el of document.querySelectorAll<HTMLInputElement>('[data-farbe]')) {
-          const wert = stand[el.dataset.farbe as keyof Gestaltung] as string;
-          el.value = wert || '#000000';
-        }
-        for (const el of document.querySelectorAll<HTMLInputElement>('[data-hex]')) {
-          el.value = stand[el.dataset.hex as keyof Gestaltung] as string;
-        }
-        for (const el of document.querySelectorAll<HTMLSelectElement>('[data-auswahl]')) {
-          el.value = stand[el.dataset.auswahl as keyof Gestaltung] as string;
-        }
-        for (const el of document.querySelectorAll<HTMLInputElement>('[data-text]')) {
-          el.value = stand[el.dataset.text as keyof Gestaltung] as string;
-        }
-        for (const el of document.querySelectorAll<HTMLInputElement>('[data-zahl]')) {
-          const feld = el.dataset.zahl!;
-          el.value = String(feld === 'schleier' ? Math.round(stand.schleier * 100) : (stand as any)[feld]);
-        }
-        for (const el of document.querySelectorAll<HTMLButtonElement>('[data-wahl]')) {
-          const feld = el.dataset.wahl as keyof Gestaltung;
-          el.setAttribute('aria-pressed', String(stand[feld] === el.dataset.wert));
-        }
-        for (const el of document.querySelectorAll<HTMLButtonElement>('[data-vorlage]')) {
-          el.setAttribute('aria-pressed', String(stand.vorlage === el.dataset.vorlage));
-        }
-        beschriftungen();
-      }
-
-      function beschriftungen() {
-        const setze = (feld: string, text: string) => {
-          const el = document.querySelector(`[data-anzeige="${feld}"]`);
-          if (el) el.textContent = text;
-        };
-        setze('winkel', `${stand.winkel}°`);
-        setze('radius', `${stand.radius} px`);
-        setze('schleier', `${Math.round(stand.schleier * 100)} %`);
-      }
-
-      function anwenden() {
-        // Die Vorschau ist gleichen Ursprungs, ihr Dokument also erreichbar.
-        const koerper = rahmen.contentDocument?.body;
-        if (koerper) {
-          for (const [name, wert] of Object.entries(cssVariablen(stand))) {
-            koerper.style.setProperty(name, wert);
-          }
-          const blatt = koerper.querySelector('.blatt');
-          if (blatt) blatt.setAttribute('data-schaltflaeche', stand.schaltflaeche);
-          const bild = koerper.querySelector('.bild');
-          if (bild) bild.className = `bild bild--${stand.bildform}`;
-        }
-
-        const liste = pruefeLesbarkeit(stand);
-        befunde.innerHTML = '';
-        for (const b of liste) {
-          const p = document.createElement('p');
-          p.className = `befund befund--${b.schwere}`;
-          p.textContent = b.meldung;
-          befunde.appendChild(p);
-        }
-        if (!liste.length) {
-          const p = document.createElement('p');
-          p.className = 'befund befund--gut';
-          p.textContent = 'Lesbar nach WCAG 2.1 — Text, Nebentext und Hauptschaltfläche.';
-          befunde.appendChild(p);
-        }
-
-        const kurz = abweichung(stand);
-        ausgabe.textContent = JSON.stringify({ gestaltung: kurz }, null, 2);
-
-        const adresse = new URL(location.href);
-        adresse.searchParams.set('g', JSON.stringify(kurz));
-        history.replaceState(null, '', adresse);
-
-        beschriftungen();
-      }
-
-      function aendern(teil: Partial<Gestaltung>) {
-        stand = { ...stand, ...teil };
-        anwenden();
-      }
-
-      /* --- Regler verdrahten --- */
-
-      for (const knopf of document.querySelectorAll<HTMLButtonElement>('[data-vorlage]')) {
-        knopf.addEventListener('click', () => {
-          stand = { ...vorlage(knopf.dataset.vorlage!) };
-          zeichneRegler();
-          anwenden();
-        });
-      }
-
-      for (const el of document.querySelectorAll<HTMLInputElement>('[data-farbe]')) {
-        el.addEventListener('input', () => {
-          const feld = el.dataset.farbe!;
-          aendern({ [feld]: el.value } as Partial<Gestaltung>);
-          const hex = document.querySelector<HTMLInputElement>(`[data-hex="${feld}"]`);
-          if (hex) hex.value = el.value;
-        });
-      }
-
-      for (const el of document.querySelectorAll<HTMLInputElement>('[data-hex]')) {
-        el.addEventListener('input', () => {
-          const feld = el.dataset.hex!;
-          // Unfertige Eingaben werden übergangen, statt die Vorschau zu zerlegen.
-          if (!istFarbe(el.value)) return;
-          aendern({ [feld]: el.value } as Partial<Gestaltung>);
-          const farbe = document.querySelector<HTMLInputElement>(`[data-farbe="${feld}"]`);
-          if (farbe) farbe.value = el.value;
-        });
-      }
-
-      for (const el of document.querySelectorAll<HTMLButtonElement>('[data-leeren]')) {
-        el.addEventListener('click', () => {
-          aendern({ [el.dataset.leeren!]: '' } as Partial<Gestaltung>);
-          zeichneRegler();
-        });
-      }
-
-      for (const el of document.querySelectorAll<HTMLSelectElement>('[data-auswahl]')) {
-        el.addEventListener('change', () => aendern({ [el.dataset.auswahl!]: el.value } as Partial<Gestaltung>));
-      }
-
-      for (const el of document.querySelectorAll<HTMLInputElement>('[data-text]')) {
-        el.addEventListener('input', () => aendern({ [el.dataset.text!]: el.value.trim() } as Partial<Gestaltung>));
-      }
-
-      for (const el of document.querySelectorAll<HTMLInputElement>('[data-zahl]')) {
-        el.addEventListener('input', () => {
-          const feld = el.dataset.zahl!;
-          const zahl = Number(el.value);
-          aendern({ [feld]: feld === 'schleier' ? zahl / 100 : zahl } as Partial<Gestaltung>);
-        });
-      }
-
-      for (const el of document.querySelectorAll<HTMLButtonElement>('[data-wahl]')) {
-        el.addEventListener('click', () => {
-          aendern({ [el.dataset.wahl!]: el.dataset.wert } as Partial<Gestaltung>);
-          zeichneRegler();
-        });
-      }
-
-      document.querySelector('[data-zuruecksetzen]')?.addEventListener('click', () => {
-        stand = { ...vorlage(stand.vorlage) };
-        zeichneRegler();
-        anwenden();
-      });
-
-      const kopieren = document.querySelector<HTMLButtonElement>('[data-kopieren]');
-      const kopierenText = document.querySelector<HTMLElement>('[data-kopieren-text]');
-      if (kopieren && kopierenText && typeof navigator.clipboard?.writeText === 'function') {
-        kopieren.addEventListener('click', async () => {
-          try {
-            await navigator.clipboard.writeText(ausgabe.textContent ?? '');
-            const vorher = kopierenText.textContent;
-            kopierenText.textContent = 'Kopiert';
-            setTimeout(() => (kopierenText.textContent = vorher), 1800);
-          } catch {
-            /* Abbruch ist kein Fehler. */
-          }
-        });
-      } else if (kopieren) {
-        kopieren.hidden = true;
-      }
-
-      /* Die Vorschau bekommt ihre Farben erst, wenn ihr Dokument steht. */
-      rahmen.addEventListener('load', anwenden);
-      zeichneRegler();
-      anwenden();
+      import '../../skripte/werkstatt.ts';
     </script>
   </body>
 </html>

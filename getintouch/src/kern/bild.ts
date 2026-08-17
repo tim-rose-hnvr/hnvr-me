@@ -70,7 +70,10 @@ export async function alsDatenadresse(quelle: string | undefined, basis: URL): P
     if (daten.byteLength === 0 || daten.byteLength > MAX_BYTES) return undefined;
 
     return `data:${typ};base64,${Buffer.from(daten).toString('base64')}`;
-  } catch {
+  } catch (fehler) {
+    // Nicht still verschlucken: ein fehlendes Foto in der Visitenkarte fällt
+    // sonst erst auf, wenn jemand den Kontakt gespeichert hat.
+    console.error(`[getintouch] Foto ${ziel.href} nicht einbettbar:`, fehler);
     return undefined;
   }
 }

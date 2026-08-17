@@ -13,14 +13,15 @@
 import { zeichen } from '../kern/zeichen.ts';
 
 interface Props {
-  slug: string;
-  /** Vollständige, teilbare Adresse dieser Seite. */
+  /** Adresse, unter der das QR-Bild liegt. In der Vorschau eine andere als live. */
+  bildziel: string;
+  /** Vollständige, teilbare Adresse dieser Seite — das, was im Code steht. */
   adresse: string;
   /** Kurzform für die Anzeige, z. B. „hnvr.me/t/hnvr". */
   adresseKurz: string;
 }
 
-const { slug, adresse, adresseKurz } = Astro.props;
+const { bildziel, adresse, adresseKurz } = Astro.props;
 ---
 
 <section class="code" aria-label="Code und Teilen">
@@ -31,7 +32,7 @@ const { slug, adresse, adresseKurz } = Astro.props;
       <span class="code__adresse">{adresseKurz}</span>
     </summary>
     <div class="qr">
-      <img class="qr__bild" src={`/t/${slug}/qr.svg`} width="200" height="200" alt={`QR-Code für ${adresseKurz}`} />
+      <img class="qr__bild" src={bildziel} width="200" height="200" alt={`QR-Code für ${adresseKurz}`} />
     </div>
   </details>
 

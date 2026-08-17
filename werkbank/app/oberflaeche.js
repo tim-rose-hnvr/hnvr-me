@@ -1304,6 +1304,11 @@ export function starteOberflaeche() {
 
   zeichneSuchtafel();
   wendeThemaAn(localStorage_lesen());
+
+  /* Erst jetzt sind die Knöpfe verdrahtet. Vorher stehen sie abgeblendet da —
+     ein Klick ins Leere, während das Programm noch lädt, ist ärgerlicher als
+     eine Sekunde Warten. */
+  for (const knopf of [$('#knopf-oeffnen'), $('#knopf-beispiel')]) knopf?.removeAttribute('disabled');
 }
 
 async function oeffne(dateien, anhaengen) {

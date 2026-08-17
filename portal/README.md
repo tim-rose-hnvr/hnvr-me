@@ -9,7 +9,24 @@ src/pages/index.astro       Marketingseite
 src/pages/portal.astro      Kundenbereich (Schritt zwei)
 src/layouts/Grundgeruest.astro
 src/styles/werkbank.css     Farben und Schriften aus werkbank/app/stil.css
+skripte/app-einbetten.mjs   legt ../werkbank nach public/werkbank
 ```
+
+## Die Anwendung liegt mit auf der Seite
+
+`npm run build` kopiert vorher `../werkbank` nach `public/werkbank` — damit
+wird die Anwendung mit ausgeliefert und läuft unter `/werkbank/` auf demselben
+Wix-Hosting wie die Marketingseite. Rund 13,6 MB, davon der größte Teil
+WebAssembly und Sprachdaten für die Texterkennung.
+
+`public/werkbank` steht in `.gitignore`: die Anwendung hat genau eine Quelle,
+das Verzeichnis daneben. Wer die Werkbank ändert, baut das Portal neu.
+
+Geprüft im Browser gegen die gebaute Seite: die Anwendung startet über den
+Knopf auf der Startseite, lädt das Beispiel, erkennt Text (77 Wörter, 95 %
+Sicherheit) und verschlüsselt mit qpdf — alles aus `/werkbank/` heraus, ohne
+einen Fehler in der Konsole. WebAssembly und Web-Worker brauchen dafür nichts
+weiter als einen Ort, der Dateien ausliefert.
 
 ## Örtlich ansehen
 
@@ -63,21 +80,22 @@ Menschen. Der Schnipsel steht hier und nicht als Kommentar in der Seite, weil
 Astro schon beim Bauen nach dem Wort `prerender` im Quelltext sucht und die
 Seite sonst als serverseitig ansieht — ohne Adapter bricht der Bau dann ab.
 
-## Wohin mit der Anwendung selbst
+## Was auf der Seite steht
 
-Die Werkbank (`../werkbank`) ist rund 15 MB und braucht nur einen Ort, der
-Dateien ausliefert — sie rechnet alles im Browser. Wix eignet sich für die
-Marketingseite, nicht als Ablage für diese Menge statischer Dateien mit
-WebAssembly und Web-Workern. Drei brauchbare Wege:
+- **Kontakt**: hnvr.me digital.
+- **Preis**: steht ausdrücklich noch nicht fest — die Seite verspricht keinen.
+- **Ausprobieren**: der Knopf führt in die laufende Anwendung unter
+  `/werkbank/`. Das ist die stärkste Stelle der Seite: das Versprechen lässt
+  sich sofort nachprüfen, mit einer eigenen Datei und notfalls mit
+  getrenntem Netz.
 
-1. **Zum Selbstbetrieb ausliefern** — als Archiv, das der Kunde in sein Netz
-   stellt. Passt am besten zum Versprechen, dass nichts das Gerät verlässt.
-2. **Eigener Webspace** — irgendein statischer Ort, von der Wix-Seite verlinkt.
-3. **Später als Anwendung** — dann mit eigenem Bezugsweg über den Kundenbereich.
+Eine E-Mail-Adresse steht bewusst nicht darauf — sie ist nicht abgestimmt.
+Sie gehört in `src/pages/index.astro` in den Abschnitt „Kontakt", sobald klar
+ist, welche es sein soll.
 
-## Noch offen
+## Grenze, die erst beim Veröffentlichen sichtbar wird
 
-Auf der Seite ist absichtlich als Entwurf gekennzeichnet, was nicht entschieden
-ist: **Preis und Lizenz**, **Bezugsweg** und **Kontaktadresse**. Diese drei
-Stellen stehen im Abschnitt „Noch offen" in `src/pages/index.astro` und sollten
-gefüllt sein, bevor die Seite beworben wird.
+Ob Wix' Headless-Hosting die 13,6 MB im `public`-Ordner ohne Murren annimmt,
+zeigt sich erst bei `wix release`. Örtlich baut und läuft alles. Falls dort
+eine Obergrenze greift, bleibt die Anwendung an einem eigenen statischen Ort
+und die Seite verlinkt dorthin — die Marketingseite ändert sich dadurch nicht.

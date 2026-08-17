@@ -21,6 +21,15 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           Kein Konto, kein Upload, keine Verbindung nach draußen — auch nicht
           für die Texterkennung und nicht für die Verschlüsselung.
         </p>
+        <div class="knopf-reihe">
+          <a class="knopf-voll" href="/werkbank/">Werkbank öffnen</a>
+          <a class="knopf-rand" href="#abgleich">Abgleich mit Acrobat</a>
+        </div>
+        <p class="klein leise" style="margin-top:.8rem">
+          Die Anwendung liegt unter <code>/werkbank/</code> auf derselben Seite und
+          startet im Browserfenster. Ihre Datei wird dabei nicht hochgeladen —
+          auch nicht auf diese Seite.
+        </p>
         <div class="stempel">
           Ohne Abo
           <span>läuft auch offline</span>
@@ -153,7 +162,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
     </div>
   </section>
 
-  <section class="spur">
+  <section class="spur" id="abgleich">
     <span class="marke">Abgleich</span>
     <h2 class="lauf">Neunundzwanzig Werkzeuge von Acrobat, ehrlich durchgezählt.</h2>
     <p class="lauf" style="margin-bottom:1.5rem">
@@ -260,16 +269,33 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
   </section>
 
   <section class="spur">
-    <span class="marke">Noch offen</span>
-    <h2 class="lauf">Drei Dinge stehen noch nicht fest.</h2>
-    <div class="offen lauf">
-      <p><strong>Diese Seite ist ein Entwurf.</strong> Was hier fehlt, fehlt
-      absichtlich — es soll nichts behauptet werden, was nicht entschieden ist:</p>
-      <ul>
-        <li>Preis und Lizenz — Kauf, Miete, offener Quellcode oder eine Mischung</li>
-        <li>Bezugsweg — Download zum Selbstbetrieb, im eigenen Netz oder über eine Adresse</li>
-        <li>Kontaktadresse für Rückfragen</li>
-      </ul>
+    <span class="marke">Ausprobieren</span>
+    <h2 class="lauf">Öffnen Sie sie mit einer eigenen Datei.</h2>
+    <div class="lauf">
+      <p>
+        Die Werkbank liegt auf dieser Seite und startet im Browserfenster.
+        Ziehen Sie ein PDF hinein — es bleibt auf Ihrem Gerät, auch während
+        Texterkennung und Verschlüsselung laufen. Wer prüfen will, ob das
+        stimmt: Netzwerk trennen und weiterarbeiten.
+      </p>
+      <div class="knopf-reihe" style="margin-top:1.5rem">
+        <a class="knopf-voll" href="/werkbank/">Werkbank öffnen</a>
+      </div>
+    </div>
+
+    <div class="abbinder">
+      <div>
+        <h3>Kontakt</h3>
+        <p class="leise">hnvr.me digital</p>
+      </div>
+      <div>
+        <h3>Preis</h3>
+        <p class="leise">Steht noch nicht fest. Die Werkbank wird derzeit gebaut und geprüft; verkauft wird sie noch nicht.</p>
+      </div>
+      <div>
+        <h3>Stand</h3>
+        <p class="leise">113 Prüfungen, alle bestanden. Änderungen laufen offen im Repository.</p>
+      </div>
     </div>
   </section>
 

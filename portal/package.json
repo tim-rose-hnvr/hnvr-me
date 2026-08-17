@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Marketingseite und späteres Kundenportal der Werkbank — Astro 5, zum Anhängen an Wix Headless.",
   "scripts": {
-    "dev": "astro dev",
+    "app:einbetten": "node skripte/app-einbetten.mjs",
+    "dev": "npm run app:einbetten && astro dev",
+    "prebuild": "npm run app:einbetten",
     "build": "astro build",
     "preview": "astro preview"
   },

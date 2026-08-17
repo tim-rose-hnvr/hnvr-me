@@ -282,3 +282,18 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
   width: 1.5rem; height: 1.5rem; display: grid; place-items: center;
 }
 .schritt p { font-size: .9375rem; color: var(--tinte-leise); margin: .1rem 0 0; }
+
+/* ---------- Handlungsaufforderungen ----------------------------------------- */
+.knopf-reihe { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.8rem; }
+.knopf-rand {
+  display: inline-block; border: 1px solid var(--linie-stark); border-radius: .5rem;
+  padding: .6rem 1.2rem; color: var(--tinte); text-decoration: none; font-weight: 600;
+}
+.knopf-rand:hover { background: var(--flaeche-tief); }
+.knopf-rand:focus-visible, .knopf-voll:focus-visible { outline: 2px solid var(--tally); outline-offset: 2px; }
+
+/* ---------- Abbinder --------------------------------------------------------- */
+.abbinder { display: grid; gap: 1.5rem 2rem; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--linie); }
+@media (min-width: 44rem) { .abbinder { grid-template-columns: repeat(3, 1fr); } }
+.abbinder h3 { margin-bottom: .3rem; }
+.abbinder p { font-size: .9375rem; }

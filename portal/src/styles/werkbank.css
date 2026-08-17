@@ -387,3 +387,4 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 .knopf-voll:hover { background: #0E6B64; color: #fff; }
 .fusszeile { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: flex-start; padding-top: 2.5rem; padding-bottom: 2.5rem; }
 .invers .fusszeile .markenzug-wort { color: #fff; font-family: var(--serif); font-size: 1.05rem; }
+.raster-zwei { grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); }

@@ -56,6 +56,15 @@ Nicht übernommen wurde alles, was einen Server braucht: Avatare, „3 Bearbeite
 live", gemeinsame Ablage, Signaturanforderungen an Externe. Ein Team-Merkmal,
 das ohne Server nicht geht, wäre in dieser Werkbank eine Attrappe.
 
+**Schmale Fenster statt zweiter App.** Das Handoff entwirft für das Telefon
+eine eigene iOS-Anwendung. Eine zweite Anwendung wäre der Sonderzweig, den die
+Projektanweisung ausschließt — also arbeitet dieselbe Werkbank auf einem
+schmalen Fenster. Unter 980 px treten die Leisten aus dem Raster und legen sich
+als Schubfächer über die Bühne, unter 760 px verlieren die Werkzeuge ihre
+Beschriftung und die Statusleiste ihr Beiwerk. Auf 402 × 874 (iPhone) ist das
+Blatt 354 px breit, und nichts scrollt waagerecht — das prüft der Prüflauf,
+und er nennt bei einem Überhang das schuldige Element beim Namen.
+
 ## Wo alles steht
 
 Ein Befehl, den niemand findet, gibt es nicht. Deshalb hat jeder der 77
@@ -85,6 +94,10 @@ Befehle einen Weg mit der Maus:
 - **Rechte Leiste mit vier Reitern** — Hinweise (das Mitdenken), Kommentare
   (Fäden mit Antworten und Erledigt-Zustand), Felder (mit Pflichtstatus),
   Verlauf (die Rückgängig-Kette als Zeitleiste).
+- **Versionsvergleich als eigene Ansicht** — er tritt an die Stelle der Bühne,
+  mit Legende (hinzugefügt / entfernt / unverändert), Blättern und `Esc`
+  zurück. Vorher lag er in einem Dialog; man vergleicht aber nicht in zwei
+  Sekunden, sondern blättert hin und her und liest nach.
 - **Einstellungen** (`Ansicht → Einstellungen`) — sieben Kategorien. Jeder
   Schalter wirkt sofort; einer, der erst nach „Übernehmen" etwas tut, wird
   zweimal gedrückt. Bewusst ohne Browser-Speicher: die Einstellungen gelten
@@ -386,7 +399,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 96 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 79 Prüfungen — die Bedienung
+node werkzeuge/vollpruefung.mjs   # 83 Prüfungen — die Bedienung
 node werkzeuge/live-pruefen.mjs   # 19 Prüfungen — was der Hoster ausliefert
 ```
 

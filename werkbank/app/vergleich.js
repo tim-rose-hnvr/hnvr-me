@@ -4,7 +4,7 @@
    Textebene sagt der Vergleich das ausdrücklich, statt „keine Unterschiede"
    zu behaupten. */
 
-import { el, zeigeDialog, ladeDatei, sage, mitLader } from './kern.js';
+import { el, $, ladeDatei, melde } from './kern.js';
 import { ladeQuelle } from './dokument.js';
 import { zustand } from './kern.js';
 import { seitenText } from './dokument.js';
@@ -59,50 +59,109 @@ export async function vergleicheMitDatei(datei) {
   zustand.quellen.delete(fremd.id);
 }
 
+/* ---------- Der Vergleich als eigene Ansicht ------------------------------ */
+
+/* Vorher lag er in einem Dialog. Ein Dialog ist das falsche Möbel dafür: man
+   vergleicht nicht in zwei Sekunden, sondern blättert hin und her, sucht die
+   Stelle, liest nach. Das Handoff macht daraus zu Recht eine der drei
+   Hauptansichten — sie tritt an die Stelle der Bühne und hat ihre eigene
+   Kopfzeile mit Legende. */
+
+let offen = false;
+export function vergleichOffen() { return offen; }
+
+export function schliesseVergleich() {
+  const ansicht = $('#vergleich-ansicht');
+  if (!ansicht || ansicht.hidden) return;
+  ansicht.hidden = true;
+  ansicht.innerHTML = '';
+  $('#buehne').hidden = false;
+  offen = false;
+  melde('ansicht:gewechselt', 'dokument');
+}
+
 function zeigeVergleich(links, rechts, nameLinks, nameRechts) {
+  const ansicht = $('#vergleich-ansicht');
+  if (!ansicht) return;
+  ansicht.innerHTML = '';
+  ansicht.hidden = false;
+  $('#buehne').hidden = true;
+  offen = true;
+  melde('ansicht:gewechselt', 'vergleich');
+
   const anzahl = Math.max(links.length, rechts.length);
-  const auswahl = el('select', { klasse: 'feld' },
-    ...Array.from({ length: anzahl }, (_, i) => el('option', { value: String(i), text: `Seite ${i + 1}` })));
+  let seite = 0;
+
+  const zaehlerNeu = el('span', { klasse: 'diff-marke diff-marke-neu' });
+  const zaehlerWeg = el('span', { klasse: 'diff-marke diff-marke-weg' });
+  const zaehlerGleich = el('span', { klasse: 'klein leise' });
+  const seitenmarke = el('span', { klasse: 'mono klein' });
+
   const linkeSpalte = el('div', { klasse: 'vergleich-spalte' });
   const rechteSpalte = el('div', { klasse: 'vergleich-spalte' });
-  const zusammenfassung = el('p', { klasse: 'hinweis' });
+  const zusammenfassung = el('p', { klasse: 'vergleich-hinweis' });
 
-  const zeichne = () => {
-    const i = Number(auswahl.value);
-    const l = (links[i] || '').replace(/\s+/g, ' ').trim();
-    const r = (rechts[i] || '').replace(/\s+/g, ' ').trim();
+  const blaettere = (schritt) => {
+    seite = Math.max(0, Math.min(anzahl - 1, seite + schritt));
+    zeichne();
+  };
+
+  const kopf = el('header', { klasse: 'vergleich-kopf' },
+    el('div', { klasse: 'vergleich-titel' },
+      el('strong', { text: 'Versionsvergleich' }),
+      seitenmarke),
+    el('div', { klasse: 'vergleich-legende' }, zaehlerNeu, zaehlerWeg, zaehlerGleich),
+    el('div', { klasse: 'vergleich-nav' },
+      el('button', { klasse: 'knopf knopf-klein', text: '‹', title: 'Vorherige Seite', beiClick: () => blaettere(-1) }),
+      el('button', { klasse: 'knopf knopf-klein', text: '›', title: 'Nächste Seite', beiClick: () => blaettere(1) }),
+      el('button', { klasse: 'knopf knopf-klein', text: 'Fertig', title: 'Vergleich schließen (Esc)', beiClick: schliesseVergleich })));
+
+  const gitter = el('div', { klasse: 'vergleich' },
+    el('div', { klasse: 'vergleich-seite' },
+      el('div', { klasse: 'vergleich-kennung mono', text: nameLinks }), linkeSpalte),
+    el('div', { klasse: 'vergleich-seite' },
+      el('div', { klasse: 'vergleich-kennung mono' }, nameRechts, el('span', { klasse: 'diff-marke diff-marke-neu', text: 'aktuell' })), rechteSpalte));
+
+  ansicht.append(kopf, zusammenfassung, gitter);
+
+  function zeichne() {
+    const l = (links[seite] || '').replace(/\s+/g, ' ').trim();
+    const r = (rechts[seite] || '').replace(/\s+/g, ' ').trim();
     linkeSpalte.innerHTML = '';
     rechteSpalte.innerHTML = '';
+    seitenmarke.textContent = `Seite ${seite + 1} von ${anzahl} · ${links.length} ↔ ${rechts.length} Seiten`;
 
     if (!l && !r) {
       zusammenfassung.textContent = 'Beide Seiten enthalten keinen auslesbaren Text (vermutlich Scans). Ein Textvergleich ist hier nicht aussagekräftig.';
+      zaehlerNeu.textContent = ''; zaehlerWeg.textContent = ''; zaehlerGleich.textContent = '';
       return;
     }
     const vorspann = (!l || !r)
       ? `In „${l ? nameRechts : nameLinks}" trägt diese Seite keinen auslesbaren Text — Scan, Bild oder geschwärzte und gerasterte Seite. Deshalb steht hier der ganze Text der Gegenseite als Unterschied. `
       : '';
     const stuecke = unterschied(l, r);
-    let weg = 0, neu = 0;
+    let weg = 0, neu = 0, gleich = 0;
     for (const stueck of stuecke) {
-      if (stueck.art === 'weg') weg += stueck.text.trim().split(/\s+/).length;
-      if (stueck.art === 'neu') neu += stueck.text.trim().split(/\s+/).length;
+      const woerter = stueck.text.trim() ? stueck.text.trim().split(/\s+/).length : 0;
+      if (stueck.art === 'weg') weg += woerter;
+      else if (stueck.art === 'neu') neu += woerter;
+      else gleich += woerter;
       if (stueck.art !== 'neu') linkeSpalte.append(el('span', { klasse: stueck.art === 'weg' ? 'diff-weg' : '', text: stueck.text }));
       if (stueck.art !== 'weg') rechteSpalte.append(el('span', { klasse: stueck.art === 'neu' ? 'diff-neu' : '', text: stueck.text }));
     }
+    zaehlerNeu.textContent = `hinzugefügt ${neu}`;
+    zaehlerWeg.textContent = `entfernt ${weg}`;
+    zaehlerGleich.textContent = `unverändert ${gleich}`;
     zusammenfassung.textContent = vorspann + (weg || neu
       ? `${weg} Wörter entfallen, ${neu} Wörter neu.`
       : 'Kein Unterschied im Text dieser Seite.');
-  };
-  auswahl.addEventListener('change', zeichne);
+  }
 
-  const rumpf = el('div', {},
-    el('div', { klasse: 'zeile' }, el('label', { text: 'Seite' }), auswahl,
-      el('span', { klasse: 'hinweis', text: `${links.length} Seiten ↔ ${rechts.length} Seiten` })),
-    zusammenfassung,
-    el('div', { klasse: 'vergleich' },
-      el('div', {}, el('h3', { klasse: 'klein', text: nameLinks }), linkeSpalte),
-      el('div', {}, el('h3', { klasse: 'klein', text: nameRechts }), rechteSpalte)));
-
-  zeigeDialog({ titel: 'Vergleich', rumpf, breit: true, knoepfe: [{ beschriftung: 'Schließen', betont: true }] });
+  document.addEventListener('keydown', beiTaste);
   zeichne();
+}
+
+function beiTaste(ereignis) {
+  if (!offen) return;
+  if (ereignis.key === 'Escape') { ereignis.preventDefault(); schliesseVergleich(); }
 }

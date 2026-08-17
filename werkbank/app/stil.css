@@ -193,7 +193,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: flex; flex-direction: column;
   min-height: 0; overflow: hidden;
 }
-.leiste-rechts { border-right: 0; border-left: 1px solid var(--linie-stark); }
+/* Ausdrücklich gesetzt, weil die Vergleichsansicht dieselbe Zelle wie die
+   Bühne belegt — ohne feste Spalten würde die automatische Verteilung sie in
+   eine neue Zeile schieben. */
+.leiste-links  { grid-column: 1; grid-row: 1; }
+.leiste-rechts { grid-column: 3; grid-row: 1; border-right: 0; border-left: 1px solid var(--linie-stark); }
 .huelle[data-links="zu"] .leiste-links,
 .huelle[data-rechts="zu"] .leiste-rechts { display: none; }
 .leiste-fuss {
@@ -276,12 +280,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
   padding: 0 4px;
   background: var(--menue-grund);
   border-bottom: 1px solid var(--linie-stark);
-  overflow: visible;
+  /* Darf jetzt scrollen: die Listen hängen am Fenster, nicht an der Leiste. */
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
 }
+.menueleiste::-webkit-scrollbar { display: none; }
 .menue-stand {
   margin-left: auto; align-self: center; padding: 0 10px;
   font-family: var(--mono); font-size: 9px; letter-spacing: .8px;
   text-transform: uppercase; color: var(--tinte-leise); white-space: nowrap;
+  /* Die Menüleiste muss overflow:visible tragen, damit die Listen aufklappen
+     können — also darf der Dokumentstand sie nicht sprengen. Er kürzt sich
+     selbst, statt das ganze Fenster breiter zu machen. */
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto;
 }
 .menue { position: relative; display: flex; }
 .menue-knopf {
@@ -292,7 +302,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .menue-knopf:hover { background: var(--flaeche-tief); }
 .menue.ist-offen .menue-knopf { background: var(--tally); color: #fff; }
 .menue-liste {
-  position: absolute; top: 100%; left: 0; z-index: 60;
+  position: fixed; z-index: 60;
   min-width: 250px; max-height: 70vh; overflow-y: auto;
   padding: 4px 0;
   background: var(--flaeche-hoch); border: 1px solid var(--linie-stark);
@@ -610,11 +620,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .lader-balken i { display: block; height: 100%; width: 40%; background: var(--tally); border-radius: 999px; animation: wandern 1.1s infinite ease-in-out; }
 @keyframes wandern { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
 
-/* ---------- Vergleich --------------------------------------------------- */
-.vergleich { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.vergleich-spalte { border: 1px solid var(--linie); border-radius: .5rem; padding: .5rem; max-height: 55vh; overflow: auto; font-family: var(--mono); font-size: .75rem; white-space: pre-wrap; }
-.diff-weg { background: var(--tally-grund); color: var(--tally); text-decoration: line-through; }
-.diff-neu { background: var(--gut-grund); color: var(--gut); }
+/* Der alte Vergleichs-Dialog ist fort; seine Regeln standen hier und hätten
+   die neue Ansicht beschnitten (max-height: 55vh). Die gültigen Regeln stehen
+   weiter unten unter „Vergleich als eigene Ansicht". Nur die Spalte im
+   Schutz-Dialog braucht noch eine eigene Form. */
+.schutz-spalte { border: 1px solid var(--linie); padding: .5rem; max-height: 55vh; overflow: auto; font-family: var(--mono); font-size: .75rem; white-space: pre-wrap; }
 
 @media (max-width: 60rem) {
   .rumpf { grid-template-columns: 1fr; }
@@ -785,3 +795,119 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .werkzeug[disabled] { opacity: .4; cursor: not-allowed; }
 .seiten-kopf { display: flex; flex-wrap: nowrap; gap: 3px; margin-bottom: 8px; }
 .seiten-kopf .knopf { padding: 3px 5px; }
+
+/* ---------- Vergleich als eigene Ansicht -------------------------------- */
+/* Liegt in derselben Rasterzelle wie die Bühne und tritt an ihre Stelle. */
+.buehne, .vergleich-ansicht { grid-column: 2; grid-row: 1; min-height: 0; }
+.vergleich-ansicht {
+  display: flex; flex-direction: column;
+  background: var(--buehne-tief); overflow: hidden;
+}
+.vergleich-ansicht[hidden] { display: none; }
+.vergleich-kopf {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 8px 12px; background: var(--chrome-600); color: #fff; flex: none;
+}
+.vergleich-titel { display: flex; align-items: baseline; gap: 10px; }
+.vergleich-titel strong { font-size: 12px; font-weight: 600; }
+.vergleich-titel .mono { color: rgba(255,255,255,.66); font-size: 9.5px; letter-spacing: .4px; text-transform: uppercase; }
+.vergleich-legende { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; }
+.vergleich-legende .leise { color: rgba(255,255,255,.6); }
+.vergleich-nav { display: flex; gap: 4px; flex: none; }
+.vergleich-nav .knopf { color: #fff; border-color: rgba(255,255,255,.28); background: transparent; }
+.vergleich-nav .knopf:hover { background: rgba(255,255,255,.14); }
+.diff-marke {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .4px; text-transform: uppercase;
+  padding: 2px 6px; white-space: nowrap;
+}
+.diff-marke-neu { background: rgba(15,118,110,.34); color: var(--tally-hell); }
+.diff-marke-weg { background: rgba(139,58,58,.34); color: #f0a9a9; }
+.vergleich-hinweis {
+  margin: 0; padding: 8px 12px; flex: none;
+  background: var(--chrome-700); color: rgba(255,255,255,.78); font-size: 11.5px;
+}
+.vergleich {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  padding: 16px; overflow: auto; flex: 1; min-height: 0; align-content: start;
+}
+.vergleich-seite { background: var(--papier); box-shadow: var(--schatten-blatt); padding: 0 0 18px; }
+.vergleich-kennung {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 18px; border-bottom: 1px solid #d8d3c9;
+  font-size: 9.5px; letter-spacing: .6px; text-transform: uppercase; color: #8b8478;
+}
+.vergleich-spalte {
+  padding: 16px 18px 0; font-family: var(--serif); font-size: 12.5px; line-height: 1.78;
+  color: #22282c; white-space: pre-wrap; word-break: break-word;
+}
+.diff-weg { background: rgba(139,58,58,.14); text-decoration: line-through; }
+.diff-neu { background: rgba(15,118,110,.13); }
+
+/* ---------- Schmale Fenster --------------------------------------------- */
+/* Das Handoff entwirft dafür eine eigene iOS-App. Eine zweite Anwendung wäre
+   der Sonderzweig, den die Projektanweisung ausschließt — also muss dieselbe
+   Werkbank auf einem schmalen Fenster arbeiten.
+
+   Der eigentliche Fehler war nicht die Breite, sondern dass die Statusleiste
+   sich nicht stauchen ließ: sie steht in einer Grid-Zeile, ihr min-content
+   war 827 px breit, und damit wurde das ganze Fenster 827 px breit — mit
+   waagerechtem Bildlauf über alles. Ein `min-width: 0` an der richtigen
+   Stelle ist die halbe Antwort. */
+.huelle { min-width: 0; }
+.kopf, .menueleiste, .werkzeugzeile, .fuss, .rumpf { min-width: 0; }
+.fuss-mitte { min-width: 0; }
+.fuss > * { min-width: 0; }
+
+@media (max-width: 1180px) {
+  :root { --leiste-rechts: 260px; }
+}
+
+/* Unter 980 px treten die Leisten aus dem Raster heraus und legen sich als
+   Schubfächer über die Bühne. Sonst bliebe für das Blatt nichts übrig. */
+@media (max-width: 980px) {
+  .rumpf { grid-template-columns: 1fr; position: relative; }
+  .leiste {
+    position: absolute; top: 0; bottom: 0; z-index: 30;
+    width: 17rem; max-width: 86vw;
+    box-shadow: var(--schatten-tafel);
+  }
+  .leiste-links  { grid-column: 1; left: 0; }
+  .leiste-rechts { grid-column: 1; right: 0; }
+  .buehne, .vergleich-ansicht { grid-column: 1; }
+  /* Geschlossen heißt hier wirklich fort, nicht nur schmal. */
+  .huelle[data-links="zu"] .leiste-links,
+  .huelle[data-rechts="zu"] .leiste-rechts { display: none; }
+  .huelle[data-links="zu"]  { --leiste-links: 0px; }
+  .huelle[data-rechts="zu"] { --leiste-rechts: 0px; }
+  .vergleich { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  /* Das Blattformat und der Werkzeughinweis sind Beiwerk; die Seitenzahl und
+     der Zoom sind es nicht. Die Leiste selbst darf nichts durchlassen — sonst
+     macht sie das ganze Dokument breiter als das Fenster, und die Anwendung
+     wandert beim Wischen zur Seite. */
+  .fuss { overflow: hidden; }
+  .fuss-mitte { display: none; }
+  #feld-zoom { max-width: 6.5rem; }
+  /* Ansichtsdrehung und Thema stehen im Menü „Ansicht"; unten fehlt der Platz. */
+  #knopf-drehen, #knopf-thema { display: none; }
+  .wortmarke-wort { display: none; }
+  .werkzeug span { display: none; }
+  .werkzeug { padding: 0 8px; }
+  .werkzeug-rechts .werkzeug span { display: inline; }
+  .menue-knopf { padding: 0 7px; }
+  .menue-stand { display: none; }
+  .dok-reiter { max-width: 11rem; }
+}
+
+@media (max-width: 520px) {
+  .menue-liste { min-width: min(21rem, 92vw); }
+  .ordnen-gitter { grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); }
+  .ordnen-blatt { height: 10rem; }
+  .einstellungen { grid-template-columns: 1fr; }
+  .einst-kategorien { flex-direction: row; overflow-x: auto; margin: -14px -14px 8px; border-right: 0; border-bottom: 1px solid var(--linie); }
+  .einst-kategorie { white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; }
+  .einst-kategorie.ist-aktiv { border-left: 0; border-bottom-color: var(--tally); }
+  .einst-inhalt { padding: 0; }
+}

@@ -36,7 +36,7 @@ import { alsExcel } from './excel.js';
 import { pruefe as pruefeZugang, SPRACHEN } from './barrierefrei.js';
 import { oeffneAusweis } from './signieren.js';
 import { textDerSeite } from './dokument.js';
-import { vergleicheMitDatei } from './vergleich.js';
+import { vergleicheMitDatei, schliesseVergleich, vergleichOffen } from './vergleich.js';
 
 /* ---------- Befehlsregister ------------------------------------------------ */
 
@@ -148,7 +148,7 @@ function baueBefehle() {
         titel: 'Schutz und Rechte',
         rumpf: el('div', {},
           el('p', { klasse: 'hinweis', text: 'Stand der Datei, die beim Sichern entstehen würde:' }),
-          el('pre', { klasse: 'vergleich-spalte', text: text || 'Keine Verschlüsselung.' })),
+          el('pre', { klasse: 'schutz-spalte', text: text || 'Keine Verschlüsselung.' })),
         knoepfe: [{ beschriftung: 'Schließen', betont: true }],
       });
     });
@@ -1783,6 +1783,7 @@ export function starteOberflaeche() {
   zeichneWerkzeugleiste();
 
   // Kopf und Fuß
+  $('#knopf-seitenleiste').addEventListener('click', () => fuehreAus('leiste:umschalten'));
   $('#knopf-befehle').addEventListener('click', zeigePalette);
   $('#knopf-sichern').addEventListener('click', () => fuehreAus('sichern'));
   $('#knopf-fokus-aus').addEventListener('click', () => setzeFokus(false));
@@ -1868,6 +1869,8 @@ export function starteOberflaeche() {
   });
   hoer('seite:gewechselt', aktualisiereFuss);
   hoer('mappen:geaendert', zeichneDokumentreiter);
+  /* Ein Vergleich gilt für das Dokument, in dem er begonnen wurde. */
+  hoer('dokument:geladen', () => { if (vergleichOffen()) schliesseVergleich(); });
   hoer('dokument:geladen', zeichneDokumentreiter);
   hoer('dokument:geaendert', zeichneDokumentreiter);
   hoer('werkzeug:gewechselt', aktualisiereFuss);

@@ -46,7 +46,7 @@ drei Wege in die Anwendung offen. Dazu wird ins verlinkte Stilblatt gesehen:
 IBM Plex ist eingebunden, ein Verweis auf Google Fonts steht nirgends, der
 Akzent `#0f766e` ist gesetzt, und die Schnitte kommen als `font/woff2` von
 derselben Seite. Damit läuft dort dieselbe Anwendung, die `pruefen.mjs` und
-`vollpruefung.mjs` im Browser durchgemessen haben — 96 + 79 Prüfungen,
+`vollpruefung.mjs` im Browser durchgemessen haben — 96 + 83 Prüfungen,
 darunter Texterkennung, qpdf-Verschlüsselung und die digitale Unterschrift.
 
 ## Örtlich ansehen
@@ -120,6 +120,11 @@ Seite sonst als serverseitig ansieht — ohne Adapter bricht der Bau dann ab.
 
 ## Was auf der Seite steht
 
+- **Was zuerst steht**: dass die Werkbank mitdenkt. „Läuft lokal" trägt als
+  Aufmacher nicht mehr — mehrere Wettbewerber werben inzwischen wörtlich damit.
+  Der Abschnitt „Und gegenüber den anderen" nennt vier Punkte, die auch gegen
+  diese tragen (Mitdenken, keine Installation, Word/Excel, Barrierefreiheit)
+  und sagt im selben Atemzug, was die anderen können und die Werkbank nicht.
 - **Kontakt**: hnvr.me digital.
 - **Preis**: steht ausdrücklich noch nicht fest — die Seite verspricht keinen.
 - **Ausprobieren**: der Knopf führt in die laufende Anwendung unter

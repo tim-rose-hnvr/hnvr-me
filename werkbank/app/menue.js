@@ -99,6 +99,16 @@ export function starteMenue() {
   /* Ein Klick irgendwo sonst schließt das offene Menü; Escape ebenso. */
   document.addEventListener('click', (e) => { if (!e.target.closest('.menue')) schliesse(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') schliesse(); });
+  /* Verschiebt sich etwas, wird die Liste nachgeführt — nicht geschlossen.
+     Geschlossen hätte bedeutet: wer die Menüleiste auf einem schmalen Fenster
+     zur Seite schiebt, um an „Hilfe" zu kommen, schließt damit genau das
+     Menü, das er gerade geöffnet hat. */
+  const nachfuehren = () => {
+    if (!offen) return;
+    richteAus(offen.querySelector('.menue-knopf'), offen.querySelector('.menue-liste'));
+  };
+  window.addEventListener('resize', nachfuehren);
+  window.addEventListener('scroll', nachfuehren, true);
 
   hoer('historie:geaendert', frischeAuf);
   hoer('dokument:geladen', frischeAuf);
@@ -140,12 +150,36 @@ function kurzName(befehl) {
   return befehl.name.replace(/^Werkzeug: /, '');
 }
 
+/* Die aufgeklappte Liste wird ans Fenster gehängt, nicht an die Leiste.
+
+   Vorher hing sie in der Leiste. Damit die Leiste sie nicht beschnitt, musste
+   sie `overflow: visible` tragen — und sprengte dadurch auf schmalen Fenstern
+   das ganze Dokument nach rechts. Beides zusammen geht nur so: die Leiste darf
+   scrollen, die Liste liegt fest im Fenster und wird beim Öffnen ausgerichtet.
+   Nebenbei kann sie so nie wieder von irgendeinem Vorfahren geschnitten
+   werden. */
 function oeffne(huelle) {
   schliesse();
   offen = huelle;
   huelle.classList.add('ist-offen');
-  huelle.querySelector('.menue-liste').hidden = false;
-  huelle.querySelector('.menue-knopf').setAttribute('aria-expanded', 'true');
+  const knopf = huelle.querySelector('.menue-knopf');
+  const liste = huelle.querySelector('.menue-liste');
+  liste.hidden = false;
+  knopf.setAttribute('aria-expanded', 'true');
+  richteAus(knopf, liste);
+}
+
+function richteAus(knopf, liste) {
+  const kasten = knopf.getBoundingClientRect();
+  liste.style.top = `${Math.round(kasten.bottom)}px`;
+  liste.style.left = '0px';
+  /* Erst setzen, dann messen: die Breite steht erst fest, wenn die Liste
+     sichtbar ist. */
+  const breite = liste.getBoundingClientRect().width;
+  const rand = 8;
+  const links = Math.max(rand, Math.min(kasten.left, window.innerWidth - breite - rand));
+  liste.style.left = `${Math.round(links)}px`;
+  liste.style.maxHeight = `${Math.round(window.innerHeight - kasten.bottom - rand)}px`;
 }
 
 function schliesse() {

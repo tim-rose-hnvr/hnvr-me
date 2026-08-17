@@ -1,7 +1,10 @@
 ---
 /* Startseite — die Marketingseite.
-   Der Aufbau folgt einem Gedanken: erst zeigen, was das Werkzeug ist, dann
-   warum es lokal läuft, dann was es kann, dann ehrlich, was es nicht kann.
+   Der Aufbau folgt einem Gedanken: erst das, was nur sie kann (mitdenken),
+   dann warum sie lokal läuft, dann was sie kann, dann der Unterschied zu den
+   anderen lokalen Werkzeugen, dann der Abgleich mit Acrobat — und am Ende
+   ehrlich, was fehlt. „Läuft lokal" trägt als Argument allein nicht mehr:
+   das sagen inzwischen mehrere.
    Die Zahlen im Abgleich und im Prüfstand stammen aus dem Repository
    (werkbank/README.md) und werden dort gepflegt. */
 import Grundgeruest from '../layouts/Grundgeruest.astro';
@@ -13,18 +16,20 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
     <div class="held">
       <div>
         <span class="marke">Werkzeug für PDF</span>
-        <h1>Ihre Dateien bleiben,<br>wo sie hingehören.</h1>
+        <h1>Sie liest das Dokument,<br>bevor Sie es tun.</h1>
         <p class="these">
-          Lesen, kommentieren, schwärzen, Formulare ausfüllen und anlegen, mit
-          Zertifikat unterschreiben, Text erkennen, nach Word und Excel
-          ausgeben, mit Kennwort schützen.
-          <strong>Alles im Browser, alles auf diesem Gerät.</strong>
-          Kein Konto, kein Upload, keine Verbindung nach draußen — auch nicht
-          für die Texterkennung und nicht für die Verschlüsselung.
+          Die Werkbank sieht sich an, was Sie geöffnet haben, und sagt, was
+          ansteht: offene Pflichtfelder, ein Scan ohne Textebene, sechs
+          personenbezogene Angaben vor der Weitergabe.
+          <strong>Jeder Hinweis nennt seinen Grund und erledigt die Arbeit auf
+          Knopfdruck.</strong>
+          Dazu alles Übliche — schwärzen, unterschreiben, Formulare anlegen,
+          nach Word und Excel ausgeben. Im Browser, ohne Installation, ohne
+          Konto, ohne dass eine Datei das Gerät verlässt.
         </p>
         <div class="knopf-reihe">
           <a class="knopf-voll" href="/werkbank/index.html">Werkbank öffnen</a>
-          <a class="knopf-rand" href="#abgleich">Abgleich mit Acrobat</a>
+          <a class="knopf-rand" href="#unterschied-lokal">Was sie anders macht</a>
         </div>
         <p class="klein leise" style="margin-top:.8rem">
           Die Anwendung liegt unter <code>/werkbank/index.html</code> auf derselben Seite und
@@ -182,6 +187,54 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <span class="tat">Zum ersten Feld</span>
       </div>
     </div>
+  </section>
+
+  <section class="spur" id="unterschied-lokal">
+    <span class="marke">Und gegenüber den anderen</span>
+    <h2 class="lauf">„Läuft lokal" sagen inzwischen viele.</h2>
+    <div class="lauf">
+      <p>
+        Es gibt eine Reihe von PDF-Arbeitsplätzen, die auf dasselbe zielen:
+        Lizenz statt Abo, Texterkennung auf dem Gerät, kein Cloud-Zwang. Das
+        ist gut — und es heißt, dass „lokal" als Argument allein nicht mehr
+        reicht. Vier Dinge unterscheiden die Werkbank auch von diesen:
+      </p>
+    </div>
+    <div class="raster raster-zwei">
+      <div class="eintrag">
+        <h3>Sie denkt mit</h3>
+        <p>Andere zeigen Werkzeuge und warten. Die Werkbank liest bis zu
+        sechzig Seiten und macht daraus zwölf begründete Vorschläge — jeder
+        wegklickbar, keiner geschieht von selbst. Das findet sich in keinem
+        vergleichbaren Programm.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Nichts zu installieren</h3>
+        <p>Die anderen sind Programme, die auf den Rechner müssen — mit
+        Rollout, Freigabe und Aktualisierung. Die Werkbank ist eine Adresse.
+        Wer sie öffnet, arbeitet; wer das Netz trennt, arbeitet weiter.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Nach Word und Excel</h3>
+        <p>Absätze, Überschriften und Auszeichnungen als
+        <span class="mono">.docx</span>; erkannte Tabellen als
+        <span class="mono">.xlsx</span>, mit Zahlen als Zahlen. Das ist der
+        Schritt, der sonst zum nächsten Anbieter führt — und zum Upload.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Barrierefreiheit mit Begründung</h3>
+        <p>Geprüft wird, was sich prüfen lässt; gesetzt wird nur, was ohne
+        Vermutung zu setzen ist. Automatisch „taggen" tut die Werkbank
+        ausdrücklich nicht — eine geratene Überschriftenebene schadet einem
+        Screenreader mehr, als sie nützt.</p>
+      </div>
+    </div>
+    <p class="lauf klein leise" style="margin-top:1.4rem">
+      Was die anderen können und die Werkbank nicht: gemeinsame Ablagen,
+      Freigabeläufe und „drei Bearbeiter live". Das braucht einen Server, auf
+      dem Ihre Dateien liegen. Genau den gibt es hier nicht — das ist kein
+      Versehen, sondern die Entscheidung.
+    </p>
   </section>
 
   <section class="invers" id="abgleich"><div class="spur">

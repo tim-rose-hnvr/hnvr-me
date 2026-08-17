@@ -664,9 +664,10 @@ await pruefe('Seiten ohne Text wählen', async () => {
 await pruefe('Vergleich mit anderer Datei', async () => {
   await seite.evaluate(() => window.werkbank.fuehreAus('vergleich'));
   await seite.setInputFiles('#dateiwahl-vergleich', join(WURZEL, 'beispiel', 'beispiel.pdf'));
-  await seite.waitForSelector('.vergleich', { timeout: 30000 });
-  const text = await seite.textContent('.dialog-rumpf .hinweis');
-  await dialogSchliessen();
+  await seite.waitForSelector('.vergleich-hinweis', { timeout: 60000 });
+  const text = await seite.textContent('.vergleich-hinweis');
+  await seite.keyboard.press('Escape');
+  await seite.waitForTimeout(400);
   return text.trim().slice(0, 60);
 });
 
@@ -1166,6 +1167,103 @@ await pruefe('Die Schriften kommen von hier, nicht aus dem Netz', async () => {
     .flatMap((b) => { try { return [...b.cssRules]; } catch { return []; } })
     .filter((r) => r.constructor.name === 'CSSFontFaceRule').length);
   return `${anzahl} Schnitte, alle aus fremd/schrift`;
+});
+
+
+console.log('\n== Vergleichsansicht und schmale Fenster ==');
+
+await pruefe('Der Vergleich ist eine eigene Ansicht, kein Dialog', async () => {
+  await seite.evaluate(() => window.werkbank.fuehreAus('vergleich'));
+  await seite.setInputFiles('#dateiwahl-vergleich', join(WURZEL, 'beispiel', 'beispiel.pdf'));
+  await seite.waitForSelector('.vergleich-kopf', { timeout: 60000 });
+  await seite.waitForTimeout(1000);
+  if (await dialogOffen()) throw new Error('es ist trotzdem ein Dialog');
+  if (!await seite.evaluate(() => document.querySelector('#buehne').hidden)) throw new Error('die Bühne steht noch');
+  const legende = (await seite.textContent('.vergleich-legende')).replace(/\s+/g, ' ');
+  if (!/hinzugefügt/.test(legende) || !/entfernt/.test(legende)) throw new Error(`Legende: ${legende}`);
+  const spalten = await seite.$$eval('.vergleich-spalte', (k) => k.length);
+  if (spalten !== 2) throw new Error(`${spalten} Spalten`);
+  return legende.trim().slice(0, 46);
+});
+
+await pruefe('Im Vergleich lässt sich blättern, Escape führt zurück', async () => {
+  const vorher = await seite.textContent('.vergleich-titel .mono');
+  await seite.click('.vergleich-nav .knopf >> nth=1');
+  await seite.waitForTimeout(500);
+  const nachher = await seite.textContent('.vergleich-titel .mono');
+  if (vorher === nachher) throw new Error('die Seite hat sich nicht geändert');
+  await seite.keyboard.press('Escape');
+  await seite.waitForTimeout(500);
+  const zu = await seite.evaluate(() => document.querySelector('#vergleich-ansicht').hidden
+    && !document.querySelector('#buehne').hidden);
+  if (!zu) throw new Error('Escape hat nicht geschlossen');
+  return `${vorher.trim()} → ${nachher.trim()}, dann zurück`;
+});
+
+await pruefe('Auf schmalen Fenstern scrollt nichts waagerecht', async () => {
+  /* Der eigentliche Fehler war nicht „sieht eng aus", sondern dass die
+     Menüleiste das Dokument breiter machte als das Fenster — dann wandert
+     beim Wischen die ganze Anwendung zur Seite. */
+  const befunde = [];
+  for (const [breite, hoehe, name] of [[402, 874, 'Telefon'], [820, 1180, 'Tablet']]) {
+    await seite.setViewportSize({ width: breite, height: hoehe });
+    await seite.waitForTimeout(1200);
+    const mass = await seite.evaluate(() => {
+      window.scrollTo(600, 0);
+      const x = window.scrollX;
+      window.scrollTo(0, 0);
+      return {
+        ueberhang: document.documentElement.scrollWidth - window.innerWidth,
+        gescrollt: x,
+        blatt: Math.round(document.querySelector('.blatt')?.getBoundingClientRect().width || 0),
+      };
+    });
+    if (mass.gescrollt > 0) {
+      const schuld = await seite.evaluate(() => {
+        const anfang = document.documentElement.scrollWidth;
+        const treffer = [];
+        for (const e of document.querySelectorAll('#huelle > *, .rumpf > *, body > *')) {
+          const alt = e.style.display; e.style.display = 'none';
+          if (document.documentElement.scrollWidth < anfang) treffer.push(e.id || e.tagName + '.' + String(e.className).split(' ')[0]);
+          e.style.display = alt;
+        }
+        return treffer;
+      });
+      throw new Error(`${name}: wandert um ${mass.gescrollt} px zur Seite — Ursache: ${schuld.join(', ') || 'unklar'}`);
+    }
+    if (mass.ueberhang > 0) throw new Error(`${name}: ${mass.ueberhang} px Überhang`);
+    if (mass.blatt < breite * 0.6) throw new Error(`${name}: das Blatt ist nur ${mass.blatt} px breit`);
+    befunde.push(`${name} ${mass.blatt} px Blatt`);
+  }
+  await seite.setViewportSize({ width: 1500, height: 950 });
+  await seite.waitForTimeout(900);
+  return befunde.join(', ');
+});
+
+await pruefe('Auch auf dem Telefon klappt jedes Menü sichtbar auf', async () => {
+  await seite.setViewportSize({ width: 402, height: 874 });
+  await seite.waitForTimeout(900);
+  const geprueft = [];
+  for (const i of [0, 4, 7]) {
+    await seite.locator('#menueleiste .menue-knopf').nth(i).click();
+    await seite.waitForTimeout(250);
+    const lage = await seite.evaluate(() => {
+      const liste = document.querySelector('.menue.ist-offen .menue-liste');
+      if (!liste || liste.hidden) return null;
+      const k = liste.getBoundingClientRect();
+      const oben = document.elementFromPoint(k.x + 10, k.y + 10);
+      return { links: Math.round(k.x), rechts: Math.round(k.right), traegt: !!oben?.closest('.menue-liste') };
+    });
+    if (!lage) throw new Error(`Menü ${i} bleibt zu`);
+    if (!lage.traegt) throw new Error(`Menü ${i} ist verdeckt`);
+    if (lage.links < 0 || lage.rechts > 402) throw new Error(`Menü ${i} ragt hinaus (${lage.links}…${lage.rechts})`);
+    geprueft.push(`${i}: ${lage.links}…${lage.rechts}`);
+    await seite.keyboard.press('Escape');
+    await seite.waitForTimeout(150);
+  }
+  await seite.setViewportSize({ width: 1500, height: 950 });
+  await seite.waitForTimeout(900);
+  return geprueft.join(' · ');
 });
 
 console.log('\n== Zusammenfassung ==');

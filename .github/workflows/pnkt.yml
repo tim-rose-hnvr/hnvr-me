@@ -1,0 +1,111 @@
+name: pnkt
+
+# Baut und prueft das Binaer bei jeder Aenderung an pnkt/ und legt es als
+# ladbare Datei ab. Damit ist der Schritt „online bringen" nur noch
+# Herunterladen und Starten — kein Go auf dem Zielrechner noetig.
+#
+# Die Veroeffentlichung mit fester Adresse macht pnkt-freigabe.yml.
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "pnkt/**"
+      - ".github/workflows/pnkt.yml"
+  pull_request:
+    paths:
+      - "pnkt/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pruefen:
+    name: Pruefen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: pnkt/go.mod
+
+      # gofmt zuerst: eine falsch eingerueckte Datei soll nicht erst nach
+      # den Tests auffallen.
+      - name: Satz pruefen
+        working-directory: pnkt
+        run: |
+          nicht_formatiert="$(gofmt -l .)"
+          if [ -n "$nicht_formatiert" ]; then
+            echo "Diese Dateien sind nicht gofmt-rein:"
+            echo "$nicht_formatiert"
+            exit 1
+          fi
+
+      - name: go vet
+        working-directory: pnkt
+        run: go vet ./...
+
+      - name: Tests
+        working-directory: pnkt
+        run: go test -race ./...
+
+  bauen:
+    name: Bauen
+    needs: pruefen
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # amd64 fuer den gewoehnlichen Server, arm64 fuer alles von
+        # Ampere bis Einplatinenrechner — die Weiterleitung braucht wenig.
+        ziel: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: pnkt/go.mod
+
+      # CGO aus: sonst haengt das Binaer an der libc des Bausystems.
+      # -trimpath nimmt die Pfade des Bausystems heraus, damit derselbe
+      # Quellstand ueberall dasselbe Binaer ergibt.
+      - name: Binaer bauen
+        working-directory: pnkt
+        env:
+          CGO_ENABLED: "0"
+          GOOS: linux
+          GOARCH: ${{ matrix.ziel }}
+        run: |
+          go build -trimpath -ldflags="-s -w" -o "pnkt-linux-${{ matrix.ziel }}" .
+          sha256sum "pnkt-linux-${{ matrix.ziel }}" > "pnkt-linux-${{ matrix.ziel }}.sha256"
+          ls -l "pnkt-linux-${{ matrix.ziel }}"
+
+      # Ein Binaer, das nicht startet, ist kein Binaer. Auf amd64 laesst
+      # sich das hier pruefen; arm64 laeuft auf diesem Laeufer nicht.
+      - name: Selbsttest
+        if: matrix.ziel == 'amd64'
+        working-directory: pnkt
+        run: |
+          ./pnkt-linux-amd64 -adresse 127.0.0.1:8099 -daten "$RUNNER_TEMP/daten" &
+          dienst=$!
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8099/gesundheit >/dev/null 2>&1; then break; fi
+            sleep 0.5
+          done
+          curl -fsS http://127.0.0.1:8099/gesundheit
+          curl -fsS -o /dev/null http://127.0.0.1:8099/
+          curl -fsS -o /dev/null "http://127.0.0.1:8099/qr.svg?inhalt=https://pnkt.me/test&form=tropfen"
+          curl -fsS -o /dev/null http://127.0.0.1:8099/zentrale
+          kill "$dienst"
+          echo "Selbsttest bestanden"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pnkt-linux-${{ matrix.ziel }}
+          path: |
+            pnkt/pnkt-linux-${{ matrix.ziel }}
+            pnkt/pnkt-linux-${{ matrix.ziel }}.sha256
+          retention-days: 90

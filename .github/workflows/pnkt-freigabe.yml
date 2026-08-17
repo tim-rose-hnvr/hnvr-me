@@ -1,0 +1,56 @@
+name: pnkt Freigabe
+
+# Baut die Binaere und haengt sie an eine Veroeffentlichung. Ausgeloest
+# von einem Etikett:
+#
+#   git tag pnkt-v1.0.0 && git push origin pnkt-v1.0.0
+#
+# Getrennt von pnkt.yml, weil Etiketten und Pfadfilter sich in einem
+# push-Ausloeser nicht zuverlaessig vertragen.
+
+on:
+  push:
+    tags: ["pnkt-v*"]
+  workflow_dispatch:
+    inputs:
+      etikett:
+        description: "Etikett der Veroeffentlichung, z. B. pnkt-v1.0.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  freigeben:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: pnkt/go.mod
+
+      - name: Tests
+        working-directory: pnkt
+        run: go test ./...
+
+      - name: Binaere bauen
+        working-directory: pnkt
+        run: |
+          for arch in amd64 arm64; do
+            CGO_ENABLED=0 GOOS=linux GOARCH="$arch" \
+              go build -trimpath -ldflags="-s -w" -o "pnkt-linux-$arch" .
+            sha256sum "pnkt-linux-$arch" > "pnkt-linux-$arch.sha256"
+          done
+          ls -l pnkt-linux-*
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.etikett || github.ref_name }}
+          files: |
+            pnkt/pnkt-linux-amd64
+            pnkt/pnkt-linux-amd64.sha256
+            pnkt/pnkt-linux-arm64
+            pnkt/pnkt-linux-arm64.sha256
+          generate_release_notes: true

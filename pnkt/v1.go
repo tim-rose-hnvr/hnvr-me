@@ -91,13 +91,52 @@ type rendernWunsch struct {
 	Stufe     string  `json:"stufe"`
 	AlsJson   bool    `json:"alsJson"`
 	Stil      struct {
-		Modulform   string `json:"modulform"`
-		Augenrahmen string `json:"augenrahmen"`
-		Augenkern   string `json:"augenkern"`
-		Vordergrund string `json:"vordergrund"`
-		Hintergrund string `json:"hintergrund"`
-		Ruhezone    int    `json:"ruhezone"`
+		Modulform   string          `json:"modulform"`
+		Augenrahmen string          `json:"augenrahmen"`
+		Augenkern   string          `json:"augenkern"`
+		Vordergrund json.RawMessage `json:"vordergrund"` // Hexfarbe oder Verlauf
+		Hintergrund string          `json:"hintergrund"`
+		Ruhezone    int             `json:"ruhezone"`
+		Logo        float64         `json:"logo"`
+		Rahmen      *struct {
+			Art       string `json:"art"`
+			Text      string `json:"text"`
+			Farbe     string `json:"farbe"`
+			Textfarbe string `json:"textfarbe"`
+		} `json:"rahmen"`
 	} `json:"stil"`
+}
+
+// vordergrund liest entweder eine Hexfarbe oder einen Verlauf, wie das
+// veroeffentlichte Beispiel es zeigt:
+//
+//	"vordergrund": "#0d0d12"
+//	"vordergrund": { "art": "linear", "winkel": 45,
+//	                 "stops": [{"pos":0,"farbe":"#4f39f6"}, …] }
+func vordergrundLesen(roh json.RawMessage) (string, *qr.Verlauf) {
+	if len(roh) == 0 {
+		return "", nil
+	}
+	var hex string
+	if err := json.Unmarshal(roh, &hex); err == nil {
+		return hex, nil
+	}
+	var v struct {
+		Art    string  `json:"art"`
+		Winkel float64 `json:"winkel"`
+		Stops  []struct {
+			Pos   float64 `json:"pos"`
+			Farbe string  `json:"farbe"`
+		} `json:"stops"`
+	}
+	if err := json.Unmarshal(roh, &v); err != nil || len(v.Stops) < 2 {
+		return "", nil
+	}
+	verlauf := &qr.Verlauf{Art: v.Art, Winkel: v.Winkel}
+	for _, s := range v.Stops {
+		verlauf.Haelt = append(verlauf.Haelt, qr.Halt{Pos: s.Pos, Farbe: s.Farbe})
+	}
+	return "", verlauf
 }
 
 // rendern erzeugt einen Code. Ohne Konto, ohne Schluessel — und traegt
@@ -139,14 +178,20 @@ func (d *dienst) rendern(w http.ResponseWriter, r *http.Request) {
 	g.Modulform = oder(wunsch.Stil.Modulform, "quadrat")
 	g.Augenrahmen = oder(wunsch.Stil.Augenrahmen, "quadrat")
 	g.Augenkern = oder(wunsch.Stil.Augenkern, "quadrat")
-	g.Vordergrund = oder(wunsch.Stil.Vordergrund, "#000000")
+	hexVorn, verlauf := vordergrundLesen(wunsch.Stil.Vordergrund)
+	g.Vordergrund = oder(hexVorn, "#000000")
+	g.Verlauf = verlauf
 	g.Hintergrund = oder(wunsch.Stil.Hintergrund, "#ffffff")
 	g.RuhezoneMod = ruhezone
+	g.LogoAnteil = wunsch.Stil.Logo
+	if r := wunsch.Stil.Rahmen; r != nil {
+		g.Rahmen = &qr.Rahmen{Art: r.Art, Text: r.Text, Farbe: r.Farbe, Textfarbe: r.Textfarbe}
+	}
 
 	urteil := druck.Pruefe(druck.Vorgabe{
 		BreiteMm: breite, ModuleJeKante: s.Kante, Fehlerkorrektur: stufe.String(),
 		Verfahren: oder(wunsch.Verfahren, "offset"), RuhezoneModule: ruhezone,
-		Vordergrund: g.Vordergrund, Hintergrund: g.Hintergrund,
+		Vordergrund: pruefFarbe(g), Hintergrund: g.Hintergrund,
 		Modulform: g.Modulform, Augenrahmen: g.Augenrahmen, Augenkern: g.Augenkern,
 	})
 
@@ -267,4 +312,21 @@ func (d *dienst) listeCodesFuer(w http.ResponseWriter, sch *speicher.Schluessel)
 func (d *dienst) legeCodeAnFuer(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
 	r.Header.Set("x-punkt-konto", sch.KontoID)
 	d.legeCodeAn(w, r)
+}
+
+// pruefFarbe liefert die Farbe, gegen die der Kontrast gerechnet wird.
+// Bei einem Verlauf ist das die hellste Marke — sie entscheidet, ob der
+// Code an seiner schwaechsten Stelle noch traegt. Wer nur die dunkelste
+// prueft, gibt Verlaeufe frei, die oben auslaufen.
+func pruefFarbe(g qr.Gestalt) string {
+	if g.Verlauf == nil || len(g.Verlauf.Haelt) == 0 {
+		return g.Vordergrund
+	}
+	hellste, hoechste := g.Verlauf.Haelt[0].Farbe, -1.0
+	for _, h := range g.Verlauf.Haelt {
+		if l := druck.Kontrast(h.Farbe, "#000000"); l > hoechste {
+			hoechste, hellste = l, h.Farbe
+		}
+	}
+	return hellste
 }

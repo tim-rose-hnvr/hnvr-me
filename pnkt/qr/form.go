@@ -1,6 +1,9 @@
 package qr
 
-import "math"
+import (
+	"math"
+	"strings"
+)
 
 // Die Geometrie liegt an einer Stelle, nicht in jedem Ausgabeformat neu.
 // Sonst zeigt die Vorschau etwas anderes als die Druckdatei — und das
@@ -15,29 +18,66 @@ const (
 	ArtRundRechteck = "rundrechteck"
 	ArtKreis        = "kreis"
 	ArtPolygon      = "polygon"
+	ArtText         = "text"
 )
+
+// VerlaufMarke steht als Farbe an jeder Form, die den Verlauf der
+// Zeichnung traegt. Die Ausgabeformate loesen sie je nach ihren Mitteln
+// auf — SVG mit einer Verlaufsdefinition, PDF und EPS mit einer
+// Schattierung innerhalb einer Beschneidung.
+const VerlaufMarke = "$verlauf"
+
+// Halt ist eine Farbe an einer Stelle des Verlaufs, 0 bis 1.
+type Halt struct {
+	Pos   float64
+	Farbe string
+}
+
+// Verlauf beschreibt einen Farbverlauf ueber die gesamte Codeflaeche.
+type Verlauf struct {
+	Art    string // linear oder radial
+	Winkel float64
+	Haelt  []Halt
+}
 
 // Form ist eine einzelne Flaeche. Ist Loch gesetzt, wird sie mit der
 // Even-odd-Regel gefuellt — so entsteht der Rahmen eines Auges.
 type Form struct {
-	Art    string
-	X, Y   float64
-	B, H   float64
-	R      float64      // Eckradius oder Kreisradius
-	Punkte [][2]float64 // fuer ArtPolygon
-	Farbe  string       // Hexfarbe
-	Loch   *Form
+	Art     string
+	X, Y    float64
+	B, H    float64
+	R       float64      // Eckradius oder Kreisradius
+	Ecken   [4]float64   // Eckradien einzeln: links oben, rechts oben, rechts unten, links unten
+	Punkte  [][2]float64 // fuer ArtPolygon
+	Farbe   string       // Hexfarbe oder VerlaufMarke
+	Text    string       // fuer ArtText
+	Groesse float64      // Schriftgroesse in Millimetern
+	Loch    *Form
+}
+
+// EckenOderR liefert die vier Eckradien; ist keiner gesetzt, gilt R.
+func (f Form) EckenOderR() [4]float64 {
+	if f.Ecken != [4]float64{} {
+		return f.Ecken
+	}
+	return [4]float64{f.R, f.R, f.R, f.R}
 }
 
 // Zeichnung ist alles, was gedruckt wird.
 type Zeichnung struct {
 	BreiteMm, HoeheMm float64
 	Hintergrund       string // leer heisst durchsichtig
+	Verlauf           *Verlauf
 	Formen            []Form
+	// CodeVon und CodeBis umschliessen die Codeflaeche ohne Ruhezone.
+	// Der Verlauf spannt sich darueber, nicht ueber das ganze Blatt —
+	// sonst verschiebt eine groessere Ruhezone die Farben.
+	CodeVon, CodeBis [2]float64
 }
 
 // Formen rechnet das Symbol in Grundformen um.
 func (s *Symbol) Formen(g Gestalt) Zeichnung {
+	// Der Verlauf ersetzt die Vordergrundfarbe an jeder Form.
 	if g.BreiteMm <= 0 {
 		g.BreiteMm = 40
 	}
@@ -47,24 +87,40 @@ func (s *Symbol) Formen(g Gestalt) Zeichnung {
 	if g.Vordergrund == "" {
 		g.Vordergrund = "#000000"
 	}
+	vordergrund := g.Vordergrund
+	if g.Verlauf != nil && len(g.Verlauf.Haelt) >= 2 {
+		vordergrund = VerlaufMarke
+	}
 	augenFarbe := g.AugenFarbe
 	if augenFarbe == "" {
-		augenFarbe = g.Vordergrund
+		augenFarbe = vordergrund
 	}
 
 	m := g.BreiteMm / float64(s.Kante)
 	rand := float64(g.RuhezoneMod) * m
 	gesamt := g.BreiteMm + 2*rand
 
-	z := Zeichnung{BreiteMm: gesamt, HoeheMm: gesamt, Hintergrund: g.Hintergrund}
+	z := Zeichnung{
+		BreiteMm: gesamt, HoeheMm: gesamt, Hintergrund: g.Hintergrund,
+		CodeVon: [2]float64{rand, rand},
+		CodeBis: [2]float64{rand + g.BreiteMm, rand + g.BreiteMm},
+	}
+	if g.Verlauf != nil && len(g.Verlauf.Haelt) >= 2 {
+		z.Verlauf = g.Verlauf
+	}
 
 	for y := 0; y < s.Kante; y++ {
 		for x := 0; x < s.Kante; x++ {
 			if !s.Dunkel(x, y) || s.istAuge(x, y) || s.istAusgespart(x, y, g.LogoAnteil) {
 				continue
 			}
-			z.Formen = append(z.Formen, modulform(g.Modulform,
-				rand+float64(x)*m, rand+float64(y)*m, m, g.Vordergrund))
+			form := modulform(g.Modulform, rand+float64(x)*m, rand+float64(y)*m, m, vordergrund)
+			if g.Modulform == "fliessend" {
+				// Fliessend verbindet Nachbarn: eine Ecke wird nur dort
+				// gerundet, wo kein gesetztes Modul anschliesst.
+				form = fliessend(s, x, y, rand+float64(x)*m, rand+float64(y)*m, m, vordergrund, g.LogoAnteil)
+			}
+			z.Formen = append(z.Formen, form)
 		}
 	}
 
@@ -74,7 +130,67 @@ func (s *Symbol) Formen(g Gestalt) Zeichnung {
 		y := rand + float64(ecke[1])*m
 		z.Formen = append(z.Formen, augenformen(x, y, m, g.Augenrahmen, g.Augenkern, augenFarbe)...)
 	}
+
+	if g.Rahmen != nil && g.Rahmen.Art != "" && g.Rahmen.Art != "keiner" {
+		z = mitRahmen(z, *g.Rahmen, m)
+	}
 	return z
+}
+
+// mitRahmen legt eine Flaeche unter den Code und schreibt die
+// Aufforderung darunter. Der Code selbst wird dabei nicht verkleinert —
+// die Modulgroesse ist eine Druckentscheidung und darf nicht still
+// dadurch sinken, dass jemand eine Beschriftung dazunimmt.
+func mitRahmen(z Zeichnung, r Rahmen, modul float64) Zeichnung {
+	text := strings.TrimSpace(r.Text)
+	if text == "" {
+		text = "JETZT SCANNEN"
+	}
+	farbe := r.Farbe
+	if farbe == "" {
+		farbe = "#141018"
+	}
+	textfarbe := r.Textfarbe
+	if textfarbe == "" {
+		textfarbe = "#ffffff"
+	}
+
+	balken := modul * 4
+	luft := modul * 1.5
+	hoehe := z.HoeheMm + balken
+
+	unten := []Form{}
+	if r.Art == "schild" {
+		// Der Code sitzt auf einer Platte mit gerundeten Ecken.
+		unten = append(unten, Form{Art: ArtRundRechteck, X: 0, Y: 0,
+			B: z.BreiteMm, H: hoehe, R: modul * 2, Farbe: farbe})
+		// Helle Flaeche unter dem Code, damit der Kontrast bleibt.
+		unten = append(unten, Form{Art: ArtRundRechteck,
+			X: z.CodeVon[0] - modul, Y: z.CodeVon[1] - modul,
+			B: z.CodeBis[0] - z.CodeVon[0] + 2*modul,
+			H: z.CodeBis[1] - z.CodeVon[1] + 2*modul,
+			R: modul, Farbe: oderFarbe(z.Hintergrund, "#ffffff")})
+	} else {
+		unten = append(unten, Form{Art: ArtRechteck, X: 0, Y: z.HoeheMm,
+			B: z.BreiteMm, H: balken, Farbe: farbe})
+	}
+
+	beschriftung := Form{Art: ArtText, X: z.BreiteMm / 2, Y: hoehe - balken/2 + luft/3,
+		Groesse: balken * 0.42, Text: text, Farbe: textfarbe}
+
+	z.HoeheMm = hoehe
+	z.Formen = append(unten, append(z.Formen, beschriftung)...)
+	if r.Art == "schild" {
+		z.Hintergrund = ""
+	}
+	return z
+}
+
+func oderFarbe(wert, ersatz string) string {
+	if strings.TrimSpace(wert) == "" {
+		return ersatz
+	}
+	return wert
 }
 
 func modulform(form string, x, y, m float64, farbe string) Form {
@@ -163,4 +279,38 @@ func augenformen(x, y, m float64, rahmen, kern, farbe string) []Form {
 	}
 
 	return []Form{aussen, mitte}
+}
+
+// gesetztUndSichtbar sagt, ob das Nachbarmodul dunkel und nicht ausgespart ist.
+func gesetztUndSichtbar(s *Symbol, x, y int, logo float64) bool {
+	if x < 0 || y < 0 || x >= s.Kante || y >= s.Kante {
+		return false
+	}
+	return s.Dunkel(x, y) && !s.istAuge(x, y) && !s.istAusgespart(x, y, logo)
+}
+
+// fliessend rundet nur die Ecken, an denen kein Nachbar anschliesst.
+// Dadurch wachsen benachbarte Module zu einer Flaeche zusammen — der
+// Scanner sieht mehr zusammenhaengenden Kontrast als bei runden Punkten.
+func fliessend(s *Symbol, x, y int, px, py, m float64, farbe string, logo float64) Form {
+	oben := gesetztUndSichtbar(s, x, y-1, logo)
+	unten := gesetztUndSichtbar(s, x, y+1, logo)
+	links := gesetztUndSichtbar(s, x-1, y, logo)
+	rechts := gesetztUndSichtbar(s, x+1, y, logo)
+
+	r := m * 0.5
+	ecken := [4]float64{r, r, r, r} // links oben, rechts oben, rechts unten, links unten
+	if oben || links {
+		ecken[0] = 0
+	}
+	if oben || rechts {
+		ecken[1] = 0
+	}
+	if unten || rechts {
+		ecken[2] = 0
+	}
+	if unten || links {
+		ecken[3] = 0
+	}
+	return Form{Art: ArtRundRechteck, X: px, Y: py, B: m, H: m, Ecken: ecken, Farbe: farbe}
 }

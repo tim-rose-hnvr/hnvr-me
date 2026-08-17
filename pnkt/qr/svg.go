@@ -2,6 +2,7 @@ package qr
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -17,6 +18,18 @@ type Gestalt struct {
 	Hintergrund string  // Hexfarbe, leer heisst durchsichtig
 	AugenFarbe  string  // leer heisst wie Vordergrund
 	LogoAnteil  float64 // 0 bis 1, Kantenanteil der Aussparung
+	Verlauf     *Verlauf
+	Rahmen      *Rahmen
+}
+
+// Rahmen ist die Fassung um den Code, meist mit einer Aufforderung.
+// Sie kostet Platz, holt aber Scans: ein Code ohne Beschriftung wird
+// auf einem Plakat regelmaessig fuer Zierrat gehalten.
+type Rahmen struct {
+	Art       string // keiner, balken, schild
+	Text      string
+	Farbe     string // Flaeche des Rahmens
+	Textfarbe string
 }
 
 // StandardGestalt ist die Fassung, die immer scannt: schwarz auf weiss,
@@ -64,6 +77,10 @@ func (s *Symbol) SVG(g Gestalt) string {
 	fmt.Fprintf(&b, `<desc>pnkt.me QR Version %d Stufe %s Maske %d, Modul %.4g mm</desc>`,
 		s.Version, s.Stufe, s.Maske, g.BreiteMm/float64(s.Kante))
 
+	if z.Verlauf != nil {
+		b.WriteString(svgVerlauf(z))
+	}
+
 	if z.Hintergrund != "" {
 		fmt.Fprintf(&b, `<rect width="%.4g" height="%.4g" fill="%s"/>`,
 			z.BreiteMm, z.HoeheMm, z.Hintergrund)
@@ -74,7 +91,7 @@ func (s *Symbol) SVG(g Gestalt) string {
 	sammel := map[string]*strings.Builder{}
 	var reihenfolge []string
 	for _, f := range z.Formen {
-		if f.Loch != nil {
+		if f.Loch != nil || f.Art == ArtText {
 			continue
 		}
 		if _, da := sammel[f.Farbe]; !da {
@@ -84,7 +101,7 @@ func (s *Symbol) SVG(g Gestalt) string {
 		svgPfad(sammel[f.Farbe], f)
 	}
 	for _, farbe := range reihenfolge {
-		fmt.Fprintf(&b, `<path fill="%s" d="%s"/>`, farbe, sammel[farbe].String())
+		fmt.Fprintf(&b, `<path fill="%s" d="%s"/>`, svgFarbe(farbe), sammel[farbe].String())
 	}
 
 	// Formen mit Aussparung brauchen die Even-odd-Regel und einen eigenen Pfad.
@@ -95,11 +112,66 @@ func (s *Symbol) SVG(g Gestalt) string {
 		var p strings.Builder
 		svgPfad(&p, f)
 		svgPfad(&p, *f.Loch)
-		fmt.Fprintf(&b, `<path fill="%s" fill-rule="evenodd" d="%s"/>`, f.Farbe, p.String())
+		fmt.Fprintf(&b, `<path fill="%s" fill-rule="evenodd" d="%s"/>`, svgFarbe(f.Farbe), p.String())
+	}
+
+	// Beschriftung zuletzt, damit sie ueber allem liegt.
+	for _, f := range z.Formen {
+		if f.Art != ArtText {
+			continue
+		}
+		fmt.Fprintf(&b, `<text x="%.4g" y="%.4g" fill="%s" font-size="%.4g" `+
+			`font-family="Helvetica,Arial,sans-serif" font-weight="700" `+
+			`letter-spacing="%.4g" text-anchor="middle">%s</text>`,
+			f.X, f.Y, svgFarbe(f.Farbe), f.Groesse, f.Groesse*0.08, svgSchutz(f.Text))
 	}
 
 	b.WriteString(`</svg>`)
 	return b.String()
+}
+
+// svgFarbe loest die Verlaufsmarke auf.
+func svgFarbe(farbe string) string {
+	if farbe == VerlaufMarke {
+		return "url(#verlauf)"
+	}
+	return farbe
+}
+
+func svgSchutz(s string) string {
+	return strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;").Replace(s)
+}
+
+// svgVerlauf spannt den Verlauf ueber die Codeflaeche, nicht ueber das
+// Blatt — sonst verschiebt eine groessere Ruhezone die Farben.
+func svgVerlauf(z Zeichnung) string {
+	v := z.Verlauf
+	var haelt strings.Builder
+	for _, h := range v.Haelt {
+		fmt.Fprintf(&haelt, `<stop offset="%.4g" stop-color="%s"/>`, h.Pos, h.Farbe)
+	}
+	if v.Art == "radial" {
+		mx := (z.CodeVon[0] + z.CodeBis[0]) / 2
+		my := (z.CodeVon[1] + z.CodeBis[1]) / 2
+		r := (z.CodeBis[0] - z.CodeVon[0]) / 2
+		return fmt.Sprintf(`<defs><radialGradient id="verlauf" gradientUnits="userSpaceOnUse" `+
+			`cx="%.4g" cy="%.4g" r="%.4g">%s</radialGradient></defs>`, mx, my, r, haelt.String())
+	}
+	x1, y1, x2, y2 := verlaufsachse(z)
+	return fmt.Sprintf(`<defs><linearGradient id="verlauf" gradientUnits="userSpaceOnUse" `+
+		`x1="%.4g" y1="%.4g" x2="%.4g" y2="%.4g">%s</linearGradient></defs>`,
+		x1, y1, x2, y2, haelt.String())
+}
+
+// verlaufsachse rechnet den Winkel in zwei Punkte um. 0 Grad laeuft von
+// links nach rechts, 90 Grad von oben nach unten.
+func verlaufsachse(z Zeichnung) (x1, y1, x2, y2 float64) {
+	mx := (z.CodeVon[0] + z.CodeBis[0]) / 2
+	my := (z.CodeVon[1] + z.CodeBis[1]) / 2
+	halb := (z.CodeBis[0] - z.CodeVon[0]) / 2
+	w := z.Verlauf.Winkel * math.Pi / 180
+	dx, dy := math.Cos(w)*halb, math.Sin(w)*halb
+	return mx - dx, my - dy, mx + dx, my + dy
 }
 
 func svgPfad(b *strings.Builder, f Form) {
@@ -109,19 +181,26 @@ func svgPfad(b *strings.Builder, f Form) {
 		fmt.Fprintf(b, "M%.4g %.4ga%.4g %.4g 0 1 0 %.4g 0a%.4g %.4g 0 1 0 %.4g 0z",
 			f.X-f.R, f.Y, f.R, f.R, 2*f.R, f.R, f.R, -2*f.R)
 	case ArtRundRechteck:
-		g := f.B - 2*f.R
-		h := f.H - 2*f.R
-		fmt.Fprintf(b,
-			"M%.4g %.4g"+
-				"h%.4ga%.4g %.4g 0 0 1 %.4g %.4g"+
-				"v%.4ga%.4g %.4g 0 0 1 %.4g %.4g"+
-				"h%.4ga%.4g %.4g 0 0 1 %.4g %.4g"+
-				"v%.4ga%.4g %.4g 0 0 1 %.4g %.4gz",
-			f.X+f.R, f.Y,
-			g, f.R, f.R, f.R, f.R,
-			h, f.R, f.R, -f.R, f.R,
-			-g, f.R, f.R, -f.R, -f.R,
-			-h, f.R, f.R, f.R, -f.R)
+		e := f.EckenOderR()
+		lo, ro, ru, lu := e[0], e[1], e[2], e[3]
+		fmt.Fprintf(b, "M%.4g %.4g", f.X+lo, f.Y)
+		fmt.Fprintf(b, "h%.4g", f.B-lo-ro)
+		if ro > 0 {
+			fmt.Fprintf(b, "a%.4g %.4g 0 0 1 %.4g %.4g", ro, ro, ro, ro)
+		}
+		fmt.Fprintf(b, "v%.4g", f.H-ro-ru)
+		if ru > 0 {
+			fmt.Fprintf(b, "a%.4g %.4g 0 0 1 %.4g %.4g", ru, ru, -ru, ru)
+		}
+		fmt.Fprintf(b, "h%.4g", -(f.B - ru - lu))
+		if lu > 0 {
+			fmt.Fprintf(b, "a%.4g %.4g 0 0 1 %.4g %.4g", lu, lu, -lu, -lu)
+		}
+		fmt.Fprintf(b, "v%.4g", -(f.H - lu - lo))
+		if lo > 0 {
+			fmt.Fprintf(b, "a%.4g %.4g 0 0 1 %.4g %.4g", lo, lo, lo, -lo)
+		}
+		b.WriteString("z")
 	case ArtPolygon:
 		for i, p := range f.Punkte {
 			if i == 0 {

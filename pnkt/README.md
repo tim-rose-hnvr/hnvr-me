@@ -39,7 +39,7 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 | `gs1` | GTIN-Prüfziffer nach Modulo 10, Digital Link bauen und zurücklesen |
 | `inhalt` | GiroCode nach EPC069-12 mit IBAN-Prüfung (ISO 13616, Modulo 97, Längentabelle je Land), vCard 3.0, WLAN |
 | `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler |
-| `ausgabe` | PDF und EPS von Hand geschrieben — echter Vektor in Punkt, ohne fremdes Paket |
+| `ausgabe` | PDF und EPS von Hand geschrieben — echter Vektor in Punkt, ohne fremdes Paket. Verläufe als Schattierung (PDF Typ 2 und 3, PostScript `shfill`), Beschriftung in Helvetica |
 | `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio |
 
 ### Die Ablage
@@ -137,10 +137,19 @@ Gefunden hat diese Prüfung unter anderem einen echten Fehler: das immer
 dunkle Modul wurde von den Platzhaltern der Formatangabe wieder
 überschrieben.
 
-Die Druckdateien sind ebenso gegengelesen: **PDF wird gerastert und der
-Code darin zurückgelesen**, für alle sechs Modulformen. EPS ist strukturell
-geprüft (BoundingBox, Pfade, Even-odd-Füllung), aber hier mangels
-Ghostscript **nicht im Bild nachgewiesen** — das steht offen.
+Die Druckdateien sind ebenso gegengelesen, und **jetzt alle drei**:
+neun Fassungen — einfarbig, drei Verläufe, fließende Module, zwei Rahmen
+und die Kombination aus allem — je als SVG, PDF und EPS gerastert und
+zurückgelesen. **27 von 27.** SVG über Chromium, PDF über pdfium, EPS
+über Ghostscript. Die frühere Lücke bei EPS ist damit geschlossen.
+
+Dabei kam ein Fehler heraus, den nur das Auge findet und kein Decoder:
+Die Beschriftung im Rahmen kam als Buchstabensalat heraus, weil Go seine
+Zeichenketten als UTF-8 hält und die eingebauten Schriften von PDF und
+PostScript Latin-1 erwarten — ein Umlaut sind zwei Byte und wurden als
+zwei falsche Zeichen gesetzt. Im SVG fiel nichts auf, das kann UTF-8.
+Behoben durch Umkodierung und, in EPS, durch Umschalten der Schrift auf
+`ISOLatin1Encoding`.
 
 Die Geometrie liegt an einer Stelle: SVG, PDF und EPS lesen dieselben
 Grundformen. Sonst zeigt die Vorschau etwas anderes als die Druckdatei,
@@ -170,6 +179,24 @@ sind Testzubehör, kein Bestandteil. Das Binär bleibt abhängigkeitsfrei.
 
 ---
 
+## Gestaltung
+
+Elf der zwölf Modulformen, vier Rahmen- und vier Kernformen, dazu:
+
+- **Verläufe** linear und radial, in **allen drei** Ausgabeformaten — im
+  PDF als Schattierung vom Typ 2 und 3, in EPS über `shfill`. Der Verlauf
+  wird nicht je Modul gemalt, sondern einmal über die Fläche und auf die
+  Module beschnitten; sonst bekäme jedes Modul denselben Ausschnitt und
+  der Verlauf wäre keiner.
+- **Fließende Module**, die sich mit ihren Nachbarn verbinden: gerundet
+  wird nur die Ecke, an der kein gesetztes Modul anschließt.
+- **Rahmen mit Aufforderung** als Balken oder Schild. Der Code wird dabei
+  **nicht** verkleinert — die Modulgröße ist eine Druckentscheidung und
+  darf nicht still dadurch sinken, dass jemand eine Beschriftung dazunimmt.
+
+Beim Verlauf rechnet die Prüfung den Kontrast gegen die **hellste** Marke.
+Wer nur die dunkelste prüft, gibt Verläufe frei, die oben auslaufen.
+
 ## Massenanlage
 
 Das Stück, das eine Agentur täglich braucht:
@@ -195,18 +222,12 @@ Module für das gewählte Verfahren.
 
 Gemessen am veröffentlichten Stand von pnkt.me fehlt dieser Fassung:
 
-- **Fließend** als Modulform — sie verbindet benachbarte Module und
-  braucht dafür Nachbarschaftswissen, das die Geometrie noch nicht hat.
-  Zehn der zwölf Formen stehen, ebenso vier Rahmen- und vier Kernformen.
-- **Verläufe** in allen drei Ausgabeformaten.
-- **Rahmen mit Beschriftung** („JETZT SCANNEN").
+- **Sonderfarben und CMYK.** PDF und EPS schreiben RGB. Für den
+  Offsetdruck gehört dort ein Volltonkanal hin.
 - **Ordner, Suche, Löschen, Mitarbeitende** in der Zentrale.
 - **Regeln als Liste** mit Zeitzone, wie die Schnittstellenseite sie zeigt
   (`{art:land, werte:[…], ziel}`); hier liegen sie noch als Zuordnung.
 - **UTM mit Platzhaltern** wie `{land}-{geraet}`.
-- **EPS im Bild nachweisen.** Struktur stimmt, ein Rasterbeleg fehlt.
-- **Sonderfarben und CMYK.** PDF und EPS schreiben heute RGB. Für den
-  Offsetdruck gehört dort ein Volltonkanal hin.
 - **Produktpass.** Die gehostete Seite hinter dem Code ist die
   eigentliche Anforderung der ESPR.
 - **Übernahme aus Wix.** `PK_Codes` lässt sich zeilenweise in

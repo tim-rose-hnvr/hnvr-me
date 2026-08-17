@@ -141,10 +141,22 @@ p {
   letter-spacing: -0.01em;
 }
 
+/* Das Lockup aus dem Handoff: rotes Plättchen mit dem Zeichen darin, nicht das
+   nackte Zeichen. 30 px, Radius 11 px, Wortmarke 800 — und immer klein
+   geschrieben, so steht es im Markenbaukasten. */
 .wortmarke svg {
-  width: 16px;
-  height: 16px;
-  color: var(--akzent);
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  border-radius: 11px;
+  background: var(--akzent);
+  color: var(--akzent-text);
+}
+
+.wortmarke {
+  font-weight: 800;
+  font-size: 17px;
+  text-transform: lowercase;
 }
 
 .kopfnavi {

@@ -11,17 +11,19 @@
    Rahmen.
    ============================================================ */
 
-/* Die Farben des Produkts, nicht die seines Herstellers. Die Quelle steht in
+/* Die Farben des Produkts aus dem Designsystem „Modernist" — heller Grund,
+   Ink als Text und Kontur, Rot ausschließlich als Handlung. Die Quelle steht in
    `kern/marke.ts`; hier sind sie ausgeschrieben, weil eine CSS-Datei nichts
-   importieren kann. Ändert sich die Marke, ändern sich diese sechs Zeilen mit. */
+   importieren kann. Ändert sich die Marke, ändern sich diese Zeilen mit. */
 :root {
-  --w-grund: #0b0f10;
-  --w-flaeche: #141a1b;
-  --w-linie: rgba(244, 241, 236, 0.14);
-  --w-vg: #f4f1ec;
-  --w-neben: rgba(244, 241, 236, 0.6);
-  --w-leise: rgba(244, 241, 236, 0.4);
-  --w-akzent: #00c2a8;
+  --w-grund: #f3f2f2;
+  --w-flaeche: #eae9e9;
+  --w-linie: #d7d3d3;
+  --w-vg: #201e1d;
+  --w-neben: rgba(32, 30, 29, 0.7);
+  --w-leise: rgba(32, 30, 29, 0.45);
+  --w-akzent: #ec3013;
+  --w-akzent-tief: #ae1800;
 }
 
 *,
@@ -64,9 +66,17 @@ body {
 }
 
 .wmarke svg {
-  width: 16px;
-  height: 16px;
-  color: var(--w-akzent);
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--w-akzent);
+  color: #fff;
+}
+
+.wmarke {
+  font-weight: 800;
+  text-transform: lowercase;
 }
 
 .wnavi {
@@ -315,14 +325,18 @@ input[type='range'] {
   background: var(--w-flaeche);
 }
 
+/* Auf hellem Grund muss die Meldung dunkel sein. Rot als Fließtext nur in der
+   tiefen Stufe — `#ec3013` schafft den Kontrast auf `#f3f2f2` nicht. */
 .befund--fehler {
-  border-color: #e11d48;
-  color: #ffd7de;
+  border-color: var(--w-akzent);
+  background: #fff2ef;
+  color: #ae1800;
 }
 
 .befund--warnung {
-  border-color: #e0b77a;
-  color: #f5e6cd;
+  border-color: #d9a441;
+  background: #fdf6e7;
+  color: #6b4a05;
 }
 
 .befund--gut {
@@ -374,7 +388,7 @@ input[type='range'] {
 .wknopf--voll {
   background: var(--w-akzent);
   border-color: transparent;
-  color: #04211c;
+  color: #ffffff;
 }
 
 /* Der Hauptweg bekommt eine eigene Zeile. Was darunter steht, sind die
@@ -698,4 +712,31 @@ input[type='date'] {
 /* Der Dateiwähler steckt in einer Schaltfläche. */
 .wknopf input[type='file'] {
   display: none;
+}
+
+/* Standfuß auch hier: die Werkstatt gehört zum Produkt, nicht daneben. */
+.wknopf {
+  box-shadow: 0 4px 0 0 var(--w-linie);
+  transition:
+    transform 130ms ease,
+    box-shadow 130ms ease;
+}
+
+.wknopf--voll {
+  box-shadow: 0 4px 0 0 var(--w-akzent-tief);
+}
+
+.wknopf:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 0 var(--w-linie);
+}
+
+.wknopf--voll:active {
+  box-shadow: 0 1px 0 0 var(--w-akzent-tief);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wknopf {
+    transition: none;
+  }
 }

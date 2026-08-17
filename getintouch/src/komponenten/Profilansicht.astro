@@ -54,7 +54,12 @@ const abschnitte = ordne(profil.bloecke.filter((b) => b.aktiv && b.id !== haupt?
 const adresseKurz = adresse.replace(/^https?:\/\/(www\.)?/, '');
 ---
 
-<div class="blatt" data-schaltflaeche={gestaltung.schaltflaeche} data-aufbau={gestaltung.aufbau}>
+<div
+  class="blatt"
+  data-schaltflaeche={gestaltung.schaltflaeche}
+  data-aufbau={gestaltung.aufbau}
+  data-vorlage={gestaltung.vorlage}
+>
   {
     /* Der Aufbau „Held" lebt vom Titelbild. Fehlt es, tritt eine Fläche aus den
        eigenen Farben an seine Stelle — sonst klappte die Anordnung in sich

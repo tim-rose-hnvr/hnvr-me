@@ -770,3 +770,55 @@ summary:focus-visible {
 .blatt[data-aufbau='held'] main {
   margin-top: 4px;
 }
+
+/* ============================================================
+   Standfuß — das Tastgefühl der Marke
+   ============================================================
+
+   Aus dem Design-Handoff: kein Weichzeichner-Schatten, sondern ein harter
+   Versatz nach unten, der beim Drücken einsinkt. Vier Pixel Fuß, beim Druck
+   einer — die Fläche wandert drei Pixel nach unten und kommt in 130 ms zurück.
+   Das ist die eine Bewegung, die man an einer Schaltfläche wirklich spürt.
+
+   Nur die Vorgabe-Vorlage trägt ihn: die übrigen zwölf haben ihre eigene
+   Formensprache, und ein Standfuß unter einem Glas-Knopf wäre Unsinn.
+   ============================================================ */
+
+.blatt[data-vorlage='signal'] .aktion--haupt,
+.blatt[data-vorlage='signal'] .visitenkarte,
+.blatt[data-vorlage='signal'] .kachel {
+  transition:
+    transform 130ms ease,
+    box-shadow 130ms ease;
+}
+
+.blatt[data-vorlage='signal'] .aktion--haupt {
+  box-shadow: 0 4px 0 0 var(--signal-tief, #ae1800);
+}
+
+.blatt[data-vorlage='signal'] .visitenkarte,
+.blatt[data-vorlage='signal'] .kachel {
+  box-shadow: 0 4px 0 0 var(--linie);
+}
+
+.blatt[data-vorlage='signal'] .aktion--haupt:active,
+.blatt[data-vorlage='signal'] .visitenkarte:active,
+.blatt[data-vorlage='signal'] .kachel:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 0 var(--signal-tief, #ae1800);
+}
+
+.blatt[data-vorlage='signal'] .visitenkarte:active,
+.blatt[data-vorlage='signal'] .kachel:active {
+  box-shadow: 0 1px 0 0 var(--linie);
+}
+
+/* Wer keine Bewegung will, bekommt keine — der Handoff hält ausdrücklich fest,
+   dass das im Prototyp fehlt und im Produkt zu ergänzen ist. */
+@media (prefers-reduced-motion: reduce) {
+  .blatt[data-vorlage='signal'] .aktion--haupt,
+  .blatt[data-vorlage='signal'] .visitenkarte,
+  .blatt[data-vorlage='signal'] .kachel {
+    transition: none;
+  }
+}

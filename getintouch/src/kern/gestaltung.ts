@@ -66,6 +66,7 @@ export interface Schriftart {
  * Auswahl stellen, wo sie schaden.
  */
 export const SCHRIFTEN: Schriftart[] = [
+  { id: 'archivo', name: 'Archivo', css: '"Archivo", system-ui, sans-serif', eigen: true, zweck: 'beides' },
   { id: 'system', name: 'System', css: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', eigen: false, zweck: 'beides' },
   { id: 'dm', name: 'DM Sans', css: '"DM Sans", system-ui, sans-serif', eigen: true, zweck: 'beides' },
   { id: 'inter', name: 'Inter', css: '"Inter", system-ui, sans-serif', eigen: true, zweck: 'beides' },
@@ -158,7 +159,7 @@ function g(werte: Partial<Gestaltung> & Pick<Gestaltung, 'vorlage' | 'grund' | '
  * Farbton unterscheiden, sind ein Design mit zwanzig Anstrichen.
  */
 export const VORLAGEN: Gestaltung[] = [
-  g({ vorlage: 'signal', ...MARKENFARBEN }),
+  g({ vorlage: 'signal', ...MARKENFARBEN, radius: 22, schrift: 'archivo', anzeige: 'archivo' }),
   g({ vorlage: 'feuer', grund: '#0F0F0F', grund2: '#1B1B1B', vordergrund: '#F1EFEB', akzent: '#FF7120', akzentText: '#141410' }),
   // Weiße Schrift auf diesem Orange kommt nur auf 2,8:1 — deshalb steht hier
   // dunkle Schrift auf der Hauptschaltfläche, nicht helle.

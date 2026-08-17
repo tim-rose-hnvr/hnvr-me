@@ -26,21 +26,28 @@ export const MARKE = {
 } as const;
 
 /**
- * Das Zeichen: zwei Wege, die in einem Punkt zusammenlaufen.
+ * Das Zeichen: eine gefüllte Scheibe und ein offener Ring, die sich berühren —
+ * „du" und „die anderen".
  *
- * Das ist buchstäblich das Produkt — viele Kontaktwege, eine Adresse — und es
- * ist bewusst das Gegenteil eines Baums, in dem sich Wege verzweigen. Geprüft
- * wurde es bis 16 Pixel und einfarbig auf hellem wie dunklem Grund, weil es
- * neben einem QR-Code auf einem Fahrzeug landen kann und dort weder Farbe noch
- * Größe garantiert sind.
+ * Aus der Geometrie des Design-Handoffs gerechnet, nicht nachgezeichnet: Kreise
+ * mit r = 20,5 % der Kantenlänge, Mittelpunkte bei x = 38,5 % und 64,5 %,
+ * y = 50 %, Ringstärke 8,5 %. Auf 100 gerechnet ergibt das r = 20,5, Mitten bei
+ * 38,5 und 64,5, Strich 8,5 — und weil ein Ring auf seiner Mittellinie
+ * gezeichnet wird, hat sein Pfad den Radius 20,5 − 8,5/2 = 16,25.
+ *
+ * Der Handoff hält fest, dass ein echtes SVG des Zeichens fehlte und aus dieser
+ * Geometrie neu zu zeichnen sei. Das ist es.
  *
  * `currentColor` überall: das Zeichen nimmt die Farbe an, in der es steht.
  */
 export const SIGNET =
   '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">' +
-  '<g fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">' +
-  '<path d="M14 18C44 18 48 50 62 50"/><path d="M14 82C44 82 48 50 62 50"/></g>' +
-  '<circle cx="78" cy="50" r="13" fill="currentColor"/></svg>';
+  // Die Scheibe, aus der der Ring samt 2,5 Einheiten Luft ausgespart ist. Als
+  // gerechneter Pfad statt als Maske: eine Maske bräuchte eine `id`, und das
+  // Zeichen steht mehrfach auf derselben Seite. Die Bogenenden sind die
+  // Schnittpunkte beider Kreise, auf drei Stellen gerechnet.
+  '<path d="M49.409 32.643A20.5 20.5 0 1 0 49.409 67.357A23 23 0 0 0 49.409 32.643Z" fill="currentColor"/>' +
+  '<circle cx="64.5" cy="50" r="16.25" fill="none" stroke="currentColor" stroke-width="8.5"/></svg>';
 
 /** Der Asterisk von hnvr.me. Steht nur noch dort, wo der Hersteller gemeint ist. */
 export const HERSTELLERZEICHEN =
@@ -58,10 +65,30 @@ export const HERSTELLERZEICHEN =
  * unberührt in `gestaltung.ts`.
  */
 export const MARKENFARBEN = {
-  grund: '#0B0F10',
-  grund2: '#141A1B',
-  vordergrund: '#F4F1EC',
-  akzent: '#00C2A8',
-  /** Text auf der Signalfarbe. Dunkel, weil Weiß auf dem Ton nicht trägt. */
-  akzentText: '#04211C',
+  grund: '#F3F2F2',
+  grund2: '',
+  vordergrund: '#201E1D',
+  akzent: '#EC3013',
+  /** Text auf der Signalfarbe. */
+  akzentText: '#FFFFFF',
+} as const;
+
+/**
+ * Die übrigen Werte aus dem Designsystem „Modernist", soweit der Kern sie
+ * braucht. Vollständig stehen sie in `design-system/modernist-styles.css` des
+ * Handoffs; hier nur, was im Code auftaucht.
+ *
+ * `signalTief` trägt den Standfuß unter der Hauptschaltfläche und dient als
+ * Textfarbe dort, wo Rot auf hellem Grund lesbar sein muss — reines `#EC3013`
+ * schafft als Fließtext den Kontrast nicht.
+ */
+export const MARKENWERTE = {
+  flaeche: '#EAE9E9',
+  signalHover: '#DD2B0F',
+  signalTief: '#AE1800',
+  rose: '#FFE0D9',
+  roseHell: '#FFF2EF',
+  linie: '#D7D3D3',
+  /** Der harte Versatz unter Knöpfen und Karten. Kein Weichzeichner. */
+  standfuss: 4,
 } as const;

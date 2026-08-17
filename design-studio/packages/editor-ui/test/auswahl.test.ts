@@ -35,7 +35,12 @@ function aufbau() {
     'Vorbelegung',
     {
       name: 'Schlagzeile',
-      platzhalter: { schluessel: 'schlagzeile', bearbeitbar: ['text'], beschriftung: null },
+      platzhalter: {
+        schluessel: 'schlagzeile',
+        bearbeitbar: ['text'],
+        beschriftung: null,
+        bindung: null,
+      },
     },
     w,
   );

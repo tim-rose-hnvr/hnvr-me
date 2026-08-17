@@ -47,6 +47,20 @@ export interface Platzhalter {
   bearbeitbar: readonly Bearbeitbar[];
   /** Anzeigetext im Bedienfeld, wenn der Elementname zu technisch ist. */
   beschriftung: string | null;
+  /**
+   * Verweis auf ein Feld der Aussage. Ist er gesetzt, ist der Inhalt dieses
+   * Elements **keine Kopie, sondern eine Sicht**: er wird beim Anzeigen
+   * aufgelöst und zieht nach, wenn die Aussage sich ändert.
+   *
+   * Genau hier liegt der Unterschied zu „Magic Resize" in anderen Werkzeugen:
+   * dort entsteht beim Umformatieren eine unabhängige Datei, und ab dem Moment
+   * laufen die Fassungen auseinander.
+   *
+   * `null` heißt: gewöhnlicher Platzhalter, der Inhalt steht im Element.
+   * Der Typ ist absichtlich `string`, damit `modell` nicht von `aussage`
+   * abhängt — geprüft wird beim Auflösen.
+   */
+  bindung: string | null;
 }
 
 /** Verweis auf eine Datei im Assetspeicher. Die URL ist ein Zwischenstand, die id trägt. */

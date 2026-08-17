@@ -6,6 +6,8 @@
  * `editor-ui`, alles Gespeicherte hinter den Schnittstellen in `wix-adapter`.
  */
 
+export * from './aussage/aussage.js';
+export * from './aussage/bindung.js';
 export * from './kommandos/element.js';
 export * from './kommandos/schutz.js';
 export * from './kommandos/stack.js';
@@ -16,7 +18,7 @@ export * from './modell/erzeugen.js';
 export * from './modell/masse.js';
 export * from './modell/navigation.js';
 export * from './modell/schema.js';
-
 export * from './pruefung/druck.js';
+export * from './pruefung/wirkung.js';
 
 export * from './vorlage/vorlage.js';

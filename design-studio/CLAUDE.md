@@ -21,6 +21,12 @@ erzwungene Markenkonformität und saubere Druckvorstufe.
 
 ## Leitprinzipien
 
+**Die Aussage ist das Produkt, nicht der Entwurf.** Das steht vor allem anderen:
+eine Sache erscheint in fünf Formaten, und am Markt sind das fünf Kopien, die ab
+dem ersten Umformatieren auseinanderlaufen. Hier binden Platzhalter auf Felder
+einer Aussage und werden beim Anzeigen aufgelöst, nie kopiert. Der Termin steht
+**einmal**. Wer diese Regel aufweicht, baut wieder Canva.
+
 1. **Kein Render-SDK, nirgends.** Der Editor zeichnet über `render`, das Druck-PDF
    entsteht über `export`. Beides steht unter MIT-lizenzierten Bausteinen. Es gibt keine
    Lizenzgebühr und keine Domain-Klausel — das war der Grund, warum `editor-core` von
@@ -51,7 +57,7 @@ negative Koordinaten. Das ist gewollt.
 
 ---
 
-## Sechs Regeln, die aus echten Fehlern stammen
+## Neun Regeln, die aus echten Fehlern stammen
 
 Jede davon war einmal falsch und ist durch einen Test abgesichert. Wer sie
 aufweicht, holt den Fehler zurück.
@@ -76,11 +82,24 @@ aufweicht, holt den Fehler zurück.
    Bindestriche über den ganzen Text. Der sichtbare Trennstrich am Zeilenende ist
    umgekehrt gar kein Zeichen, sondern wird vom Umbruch erzeugt — er muss beim
    Zeilenwechsel selbst gesetzt werden.
+7. **Zeichen zählen ist keine Satzmessung.** Die Kürzungsstufe wurde über eine
+   mittlere Zeichenbreite von 0,5 em geschätzt. Eine fette Grotesk baut mit
+   rund 0,62 em: der Titel brach in drei statt zwei Zeilen und lief über den
+   Untertitel — gemeldet als „passt". Wo gesetzt werden kann, misst der Browser
+   (`render/src/messen.ts`); die Schätzung bleibt nur Vorfilter für Umgebungen
+   ohne Satz. `Bindungsbefund.gemessen` sagt, was entschieden hat.
+8. **Lagevergleiche brauchen eine Toleranz.** `x + (breite − 2·rand)` ist nicht
+   bitgleich mit `breite − rand`. Ohne `LAGE_TOLERANZ` meldete die Druckprüfung
+   für jedes sauber eingerückte Element einen Sicherheitsabstandsverstoß.
+9. **Ein getipptes Feld ist selbst die Quelle.** Ein gebundener Termin blieb
+   leer, weil die Auflösung zusätzlich ein Textfeld `termin` verlangte. Der
+   Zeitpunkt genügt; nur ohne ihn zählt getippter Text.
 
-Vier bis sechs haben dasselbe Muster: **der Fehlerfall ist nicht der Absturz,
+Vier bis acht haben dasselbe Muster: **der Fehlerfall ist nicht der Absturz,
 sondern das falsche, plausibel aussehende Ergebnis.** Keiner wäre ohne
 Sichtprüfung aufgefallen — deshalb legt die Ausgabekette neben jedes PDF einen
-PNG-Abzug.
+PNG-Abzug, und deshalb misst der Leuchttisch-Test im echten Browser nach, dass
+kein Text aus seinem Rahmen läuft.
 
 Und die Lehre für Tests: **Doppelgänger müssen so unfreundlich sein wie der
 echte Dienst.** Fehler 3 blieb nur deshalb liegen, weil der Testdoppelgänger
@@ -109,13 +128,15 @@ abgeschaltet. Die beiden dürfen sich nicht widersprechen.
 ```
 packages/
   editor-core/   Dokumentmodell, Kommando-Stack, Markenkit, Vorlagen — framework-frei
-  render/        Entwurf → HTML, mit Silbentrennung. Ein Renderer für beides.
+    aussage/     Aussage, Kürzungsstufen, Bindung — die These in Code
+    pruefung/    druck.ts (ist die Datei in Ordnung?) + wirkung.ts (wirkt sie?)
+  render/        Entwurf → HTML, Silbentrennung, Textmesser. Ein Renderer für beides.
   export/        Satz im headless Browser → PDF/X-4 in CMYK
   editor-ui/     Auswahl, Ziehen, Live-Prüfung — ohne Rahmenwerk
   wix-adapter/   Wix Data, Media, Members hinter der Speicherschnittstelle
   embed/         Custom Element für Fremdprojekte         (noch nicht angelegt)
 apps/
-  studio/        Probemodell — eine HTML-Datei, alles eingebettet
+  studio/        Leuchttisch — eine HTML-Datei, alles eingebettet
   spike-pdf/     Messung: läuft WASM im Browser unter Wix-CSP?
 ```
 
@@ -151,6 +172,11 @@ Seiten gehen, ohne dort React zu erzwingen.
 - **Serverfunktion für Wix-Medien.** Private Dateien brauchen eine befristete Download-URL,
   und der Aufruf verlangt erhöhte Rechte. `WixBlobSpeicher.downloadUrlAufloeser` ist dafür
   schon austauschbar — der Endpunkt fehlt.
+- **Kapazitätsschätzung nur als Vorfilter.** `kapazitaetInZeichen` bleibt für
+  Server und Tests, ist aber systematisch zu großzügig. Wo ein DOM da ist, muss
+  `erzeugeTextmesser` benutzt werden — sonst kehrt Regel 7 zurück.
+- **Sperrflächen veralten.** Die Anteile in `SPERRFLAECHEN` sind Näherungen und
+  ändern sich ohne Ankündigung. Vor einer Auslieferung nachmessen.
 - **Griffe ziehen noch nicht.** `rahmenNachGriff` ist da und getestet, die Anbindung an
   Zeigerereignisse fehlt.
 - Schrifteinbettung im PDF braucht Embedding-Lizenzen. Bis auf Weiteres nur SIL-OFL-Schriften.

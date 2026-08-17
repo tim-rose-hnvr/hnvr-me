@@ -69,17 +69,38 @@ export function sicherheitskasten(masse: Masse, sicherheitsabstand: number): Kas
   return { x: sicherheitsabstand, y: sicherheitsabstand, breite, hoehe };
 }
 
+/**
+ * Toleranz für Lagevergleiche, in Pixeln.
+ *
+ * Ein Element, das rechnerisch genau am Sicherheitsabstand endet, endet in
+ * Gleitkomma oft ein paar Bit daneben: `x + (breite - 2·rand)` ist nicht
+ * bitgleich mit `breite - rand`. Ohne Toleranz meldete die Druckprüfung
+ * deshalb für jedes sauber eingerückte Element einen Sicherheitsabstands-
+ * verstoß — sechs falsche Warnungen je Plakat, die das Protokoll unbrauchbar
+ * machen.
+ *
+ * 1e-6 px sind bei 300 dpi rund 0,1 Nanometer. Alles darunter ist keine Lage,
+ * sondern Rechenrauschen. Echte Verstöße liegen um Größenordnungen darüber.
+ */
+export const LAGE_TOLERANZ = 1e-6;
+
 export function enthaelt(aussen: Kasten, innen: Kasten): boolean {
   return (
-    innen.x >= aussen.x &&
-    innen.y >= aussen.y &&
-    innen.x + innen.breite <= aussen.x + aussen.breite &&
-    innen.y + innen.hoehe <= aussen.y + aussen.hoehe
+    innen.x >= aussen.x - LAGE_TOLERANZ &&
+    innen.y >= aussen.y - LAGE_TOLERANZ &&
+    innen.x + innen.breite <= aussen.x + aussen.breite + LAGE_TOLERANZ &&
+    innen.y + innen.hoehe <= aussen.y + aussen.hoehe + LAGE_TOLERANZ
   );
 }
 
+/** Echte Überlappung. Bündig anstoßende Kanten überschneiden sich nicht. */
 export function ueberschneidet(a: Kasten, b: Kasten): boolean {
-  return a.x < b.x + b.breite && b.x < a.x + a.breite && a.y < b.y + b.hoehe && b.y < a.y + a.hoehe;
+  return (
+    a.x + LAGE_TOLERANZ < b.x + b.breite &&
+    b.x + LAGE_TOLERANZ < a.x + a.breite &&
+    a.y + LAGE_TOLERANZ < b.y + b.hoehe &&
+    b.y + LAGE_TOLERANZ < a.y + a.hoehe
+  );
 }
 
 /**

@@ -14,7 +14,7 @@ import {
 import { druckEntwurf, erzeugeText, mitElementen, testWerkzeuge } from './hilfen.js';
 
 function platzhalter(bearbeitbar: Platzhalter['bearbeitbar']): Platzhalter {
-  return { schluessel: 'schlagzeile', bearbeitbar, beschriftung: 'Schlagzeile' };
+  return { schluessel: 'schlagzeile', bearbeitbar, beschriftung: 'Schlagzeile', bindung: null };
 }
 
 describe('gesperrte Elemente', () => {

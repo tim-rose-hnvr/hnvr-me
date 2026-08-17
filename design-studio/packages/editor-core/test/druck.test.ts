@@ -228,3 +228,53 @@ describe('Sonstiges', () => {
     expect(regeln(entwurf)).not.toContain('anschnitt-zu-kurz');
   });
 });
+
+describe('Lagevergleiche vertragen Rechenrauschen', () => {
+  it('meldet ein sauber eingerücktes Element nicht als Sicherheitsabstandsverstoß', () => {
+    // Genau so entstehen Layouts: x = rand, breite = format - 2·rand. In
+    // Gleitkomma ist x + breite dann ein paar Bit von format - rand entfernt.
+    // Ohne Toleranz meldete die Prüfung für jedes eingerückte Element einen
+    // Verstoß — sechs falsche Warnungen je Plakat.
+    const w = testWerkzeuge();
+    const basis = druckEntwurf(w);
+    const rand = basis.sicherheitsabstand;
+    expect(rand).toBeGreaterThan(0);
+
+    const entwurf = mitElementen(
+      basis,
+      erzeugeText(
+        {
+          x: rand,
+          y: rand,
+          breite: basis.masse.breite - 2 * rand,
+          hoehe: basis.masse.hoehe - 2 * rand,
+        },
+        'bündig',
+        { name: 'Satzspiegel' },
+        w,
+      ),
+    );
+
+    expect(pruefeDruck(entwurf, { pruefeAufloesung: false }).map((b) => b.regel)).not.toContain(
+      'sicherheitsabstand',
+    );
+  });
+
+  it('meldet einen echten Verstoß weiterhin', () => {
+    const w = testWerkzeuge();
+    const basis = druckEntwurf(w);
+    const entwurf = mitElementen(
+      basis,
+      erzeugeText(
+        { x: basis.sicherheitsabstand - 1, y: 500, breite: 400, hoehe: 100 },
+        'zu weit außen',
+        { name: 'Randnotiz' },
+        w,
+      ),
+    );
+
+    expect(pruefeDruck(entwurf, { pruefeAufloesung: false }).map((b) => b.regel)).toContain(
+      'sicherheitsabstand',
+    );
+  });
+});

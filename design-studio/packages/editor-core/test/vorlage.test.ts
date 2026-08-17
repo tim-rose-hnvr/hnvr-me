@@ -38,6 +38,7 @@ function vorlage(): Vorlage {
           schluessel: 'schlagzeile',
           bearbeitbar: ['text'],
           beschriftung: 'Schlagzeile',
+          bindung: null,
         },
       },
       w,
@@ -47,7 +48,12 @@ function vorlage(): Vorlage {
       logo,
       {
         name: 'Logo',
-        platzhalter: { schluessel: 'logo', bearbeitbar: ['bild'], beschriftung: 'Kundenlogo' },
+        platzhalter: {
+          schluessel: 'logo',
+          bearbeitbar: ['bild'],
+          beschriftung: 'Kundenlogo',
+          bindung: null,
+        },
       },
       w,
     ),
@@ -163,7 +169,12 @@ describe('erzeugeAusVorlage', () => {
           'rechteck',
           {
             name: 'Akzent',
-            platzhalter: { schluessel: 'akzent', bearbeitbar: ['farbe'], beschriftung: null },
+            platzhalter: {
+              schluessel: 'akzent',
+              bearbeitbar: ['farbe'],
+              beschriftung: null,
+              bindung: null,
+            },
           },
           w,
         ),
@@ -193,7 +204,12 @@ describe('erzeugeAusVorlage', () => {
           'rechteck',
           {
             name: 'Block',
-            platzhalter: { schluessel: 'block', bearbeitbar: ['farbe'], beschriftung: null },
+            platzhalter: {
+              schluessel: 'block',
+              bearbeitbar: ['farbe'],
+              beschriftung: null,
+              bindung: null,
+            },
           },
           w,
         ),
@@ -289,6 +305,7 @@ describe('erzeugeAusVorlage', () => {
                     schluessel: 'logo',
                     bearbeitbar: ['text' as const],
                     beschriftung: null,
+                    bindung: null,
                   },
                 }
               : e,

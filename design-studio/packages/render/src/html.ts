@@ -15,7 +15,7 @@
  * rechts unten verschoben, damit nichts negativ wird.
  */
 
-import type { Entwurf, Entwurfselement, Seite } from '@studio/editor-core';
+import type { Entwurf, Entwurfselement, Seite, TextElement } from '@studio/editor-core';
 import { type Sprache, setzeTrennstriche } from './trennung.js';
 
 export interface Schriftquelle {
@@ -103,6 +103,29 @@ function kennzeichen(element: Entwurfselement): string {
   return teile.join(' ');
 }
 
+/**
+ * Die typografischen Eigenschaften eines Textelements als CSS.
+ *
+ * Getrennt von `rahmenStil`, weil der Textmesser genau diese Eigenschaften
+ * braucht — aber mit freier Höhe. Würde er sie nachbauen, liefe die Messung
+ * irgendwann von der Darstellung weg, und das Werkzeug würde wieder lügen.
+ */
+export function schriftStil(element: TextElement): string {
+  return [
+    `font-family:${cssZeichenkette(element.schriftFamilie)}`,
+    `font-size:${element.schriftGroesse}px`,
+    `font-weight:${element.schriftStaerke}`,
+    `font-style:${element.kursiv ? 'italic' : 'normal'}`,
+    `line-height:${element.zeilenabstand}`,
+    `letter-spacing:${element.laufweite}px`,
+    `text-align:${AUSRICHTUNG[element.ausrichtung]}`,
+    `color:${element.farbe}`,
+    'overflow-wrap:break-word',
+    'white-space:pre-wrap',
+    'margin:0',
+  ].join(';');
+}
+
 function rahmenStil(element: Entwurfselement, versatzX: number, versatzY: number): string {
   const teile = [
     'position:absolute',
@@ -143,20 +166,7 @@ function elementHtml(
 
   switch (element.typ) {
     case 'text': {
-      const stil = [
-        basis,
-        `font-family:${cssZeichenkette(element.schriftFamilie)}`,
-        `font-size:${element.schriftGroesse}px`,
-        `font-weight:${element.schriftStaerke}`,
-        `font-style:${element.kursiv ? 'italic' : 'normal'}`,
-        `line-height:${element.zeilenabstand}`,
-        `letter-spacing:${element.laufweite}px`,
-        `text-align:${AUSRICHTUNG[element.ausrichtung]}`,
-        `color:${element.farbe}`,
-        'overflow-wrap:break-word',
-        'white-space:pre-wrap',
-        'margin:0',
-      ].join(';');
+      const stil = [basis, schriftStil(element)].join(';');
 
       // Trennstriche vor dem Maskieren einsetzen: U+00AD ist ein Zeichen, kein
       // Markup, und muss durch die Maskierung unverändert durchkommen.

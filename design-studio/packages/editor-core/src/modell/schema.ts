@@ -181,10 +181,12 @@ function pruefePlatzhalter(p: Pruefer, roh: unknown, pfad: string): Platzhalter 
     p.melde(`${pfad}.bearbeitbar`, 'ein Platzhalter ohne bearbeitbare Eigenschaft ist sinnlos');
   }
   const beschriftung = o['beschriftung'];
+  const bindung = o['bindung'] ?? null;
   return {
     schluessel: p.text(o['schluessel'], `${pfad}.schluessel`, { nichtLeer: true }),
     bearbeitbar: [...new Set(bearbeitbar)],
     beschriftung: beschriftung === null ? null : p.text(beschriftung, `${pfad}.beschriftung`),
+    bindung: bindung === null ? null : p.text(bindung, `${pfad}.bindung`, { nichtLeer: true }),
   };
 }
 

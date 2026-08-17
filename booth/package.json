@@ -1,0 +1,22 @@
+{
+  "name": "youbooth-booth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "youbooth — Booth und Cockpit als Desktop-App",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4400",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
+    "@types/qrcode": "^1.5.5",
+    "typescript": "^5.9.2",
+    "vite": "^8.2.1"
+  }
+}

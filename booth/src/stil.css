@@ -1,0 +1,604 @@
+/* Booth-Oberfläche: dunkel, große Ziele, lesbar aus ~80 cm Abstand.
+   Die Werte stammen aus demselben Gestaltungssystem wie die Website
+   (youbooth/src/styles/tokens.css) — hier nur, was der Booth braucht. */
+
+:root {
+  --ink: #0b0b0d;
+  --ink-soft: #17171c;
+  --ink-hoch: #22222a;
+  --amber: #f2b23e;
+  --amber-ink: #141008;
+  --hell: #f4f2ee;
+  --hell-leise: rgba(244, 242, 238, 0.62);
+  --hell-still: rgba(244, 242, 238, 0.45);
+  --linie: rgba(244, 242, 238, 0.14);
+  --ok: #17b187;
+  --warn: #e0483c;
+
+  --schrift: 'Archivo Variable', Archivo, system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --r-knopf: 14px;
+  --r-karte: 18px;
+  --r-kreis: 999px;
+
+  /* Kleinstes Antippziel — nie darunter. */
+  --ziel: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--ink);
+  color: var(--hell);
+  font-family: var(--schrift);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+#booth {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Kopf- und Fußleiste ------------------------------------------------ */
+
+.leiste {
+  height: 72px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex: none;
+}
+
+.leiste--fuss {
+  height: 64px;
+  border-top: 1px solid var(--linie);
+}
+
+.mono {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hell-still);
+}
+
+.mono--amber {
+  color: var(--amber);
+}
+
+.zustand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lampe {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-kreis);
+  background: var(--ok);
+  display: block;
+}
+
+.lampe--warn {
+  background: var(--warn);
+}
+
+/* --- Bühne -------------------------------------------------------------- */
+
+.buehne {
+  flex: 1;
+  position: relative;
+  display: flex;
+  gap: 24px;
+  padding: 0 32px 8px;
+  min-height: 0;
+}
+
+.bild {
+  flex: 1;
+  position: relative;
+  border-radius: var(--r-karte);
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* Live-Bild wird gespiegelt gezeigt — Gäste erwarten den Spiegel. */
+#video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.bild__hinweis {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 40px;
+  background: repeating-linear-gradient(135deg, #16161b 0 14px, #101015 14px 28px);
+}
+
+.spalte {
+  width: 380px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* --- Schrift ------------------------------------------------------------ */
+
+h1,
+h2 {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+}
+
+h1 {
+  font-size: clamp(38px, 4.4vw, 68px);
+}
+
+h2 {
+  font-size: clamp(26px, 2.6vw, 40px);
+}
+
+p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--hell-leise);
+}
+
+/* --- Knöpfe ------------------------------------------------------------- */
+
+.knopf {
+  min-height: var(--ziel);
+  padding: 0 28px;
+  border-radius: var(--r-knopf);
+  border: 1px solid transparent;
+  background: var(--ink-soft);
+  color: var(--hell);
+  font-family: var(--schrift);
+  font-weight: 700;
+  font-size: 19px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.knopf:active {
+  transform: scale(0.98);
+}
+
+.knopf--amber {
+  background: var(--amber);
+  color: var(--amber-ink);
+  box-shadow: 0 10px 30px -12px rgba(242, 178, 62, 0.8);
+}
+
+.knopf--rahmen {
+  background: transparent;
+  border-color: var(--linie);
+}
+
+.knopf--gross {
+  min-height: 88px;
+  font-size: 24px;
+  padding: 0 40px;
+}
+
+.knopf--breit {
+  width: 100%;
+}
+
+.knopf:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 4px;
+}
+
+/* --- Auswahlkacheln ----------------------------------------------------- */
+
+.arten {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.art {
+  min-height: 150px;
+  border-radius: var(--r-karte);
+  border: 2px solid var(--linie);
+  background: var(--ink-soft);
+  color: var(--hell);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: flex-end;
+  cursor: pointer;
+  font-family: var(--schrift);
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+}
+
+.art:active {
+  transform: scale(0.99);
+}
+
+.art.gewaehlt {
+  border-color: var(--amber);
+  background: rgba(242, 178, 62, 0.12);
+}
+
+.art__name {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 28px;
+}
+
+.art__zeilen {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* --- Countdown ---------------------------------------------------------- */
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: rgba(11, 11, 13, 0.35);
+}
+
+.ring {
+  width: min(38vh, 320px);
+  aspect-ratio: 1;
+  border-radius: var(--r-kreis);
+  border: 10px solid rgba(242, 178, 62, 0.25);
+  border-top-color: var(--amber);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: drehen 1s linear infinite;
+}
+
+.ring__zahl {
+  font-weight: 800;
+  font-size: min(22vh, 170px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  animation: gegendrehen 1s linear infinite;
+}
+
+.zahl-gross {
+  font-weight: 800;
+  font-size: min(34vh, 280px);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.balken {
+  width: min(60%, 620px);
+  height: 22px;
+  border-radius: var(--r-kreis);
+  background: rgba(244, 242, 238, 0.16);
+  overflow: hidden;
+}
+
+.balken span {
+  display: block;
+  height: 100%;
+  background: var(--amber);
+  transition: width 0.1s linear;
+}
+
+.regie {
+  font-weight: 700;
+  font-size: clamp(22px, 2.4vw, 34px);
+  text-align: center;
+  padding: 0 40px;
+}
+
+@keyframes drehen {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes gegendrehen {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* Blitz im Auslösemoment */
+.blitz {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.blitz.aus {
+  animation: blitzen 0.5s ease-out;
+}
+
+@keyframes blitzen {
+  0% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* --- Ergebnis ----------------------------------------------------------- */
+
+.ergebnis {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.wege {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  width: 100%;
+}
+
+.weg {
+  min-height: 96px;
+  border-radius: var(--r-knopf);
+  border: 1px solid var(--linie);
+  background: var(--ink-soft);
+  color: var(--hell);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  justify-content: center;
+  cursor: pointer;
+  font-family: var(--schrift);
+  text-align: left;
+}
+
+.weg--haupt {
+  background: var(--amber);
+  color: var(--amber-ink);
+  border-color: transparent;
+}
+
+.weg--haupt .mono {
+  color: rgba(20, 16, 8, 0.7);
+}
+
+.weg__name {
+  font-weight: 700;
+  font-size: 21px;
+}
+
+.weg[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Chips und Fortschritt --------------------------------------------- */
+
+.chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--r-kreis);
+  border: 1px solid var(--linie);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hell-leise);
+  background: transparent;
+  cursor: pointer;
+}
+
+.chip.an {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.fortschritt {
+  display: flex;
+  gap: 8px;
+}
+
+.fortschritt span {
+  width: 46px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(244, 242, 238, 0.2);
+  display: block;
+}
+
+.fortschritt span.fertig {
+  background: var(--amber);
+}
+
+/* --- Attract ------------------------------------------------------------ */
+
+.attract {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(rgba(11, 11, 13, 0.55), rgba(11, 11, 13, 0.8));
+}
+
+.laufband {
+  height: 44px;
+  background: var(--amber);
+  color: var(--amber-ink);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  flex: none;
+}
+
+.laufband div {
+  display: flex;
+  gap: 48px;
+  white-space: nowrap;
+  animation: laufen 22s linear infinite;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+@keyframes laufen {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* --- Überlagerungen ----------------------------------------------------- */
+
+.decke {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 11, 13, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  z-index: 20;
+}
+
+.tafel {
+  background: var(--ink-soft);
+  border: 1px solid var(--linie);
+  border-radius: var(--r-karte);
+  padding: 32px;
+  width: min(760px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.qrfeld {
+  background: #fff;
+  padding: 20px;
+  border-radius: var(--r-knopf);
+  align-self: center;
+}
+
+.qrfeld canvas,
+.qrfeld img {
+  display: block;
+  width: min(300px, 60vw);
+  height: auto;
+}
+
+.feldzeile {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.eingabe {
+  flex: 1 1 240px;
+  min-height: var(--ziel);
+  border-radius: var(--r-knopf);
+  border: 1px solid var(--linie);
+  background: var(--ink);
+  color: var(--hell);
+  padding: 0 20px;
+  font-family: var(--schrift);
+  font-size: 19px;
+}
+
+.eingabe:focus {
+  outline: none;
+  border-color: var(--amber);
+}
+
+.hinweiszeile {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--hell-still);
+}
+
+.nur-vorlese {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring,
+  .ring__zahl,
+  .laufband div,
+  .blitz.aus {
+    animation: none;
+  }
+}

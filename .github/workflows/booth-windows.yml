@@ -1,0 +1,56 @@
+name: Booth · Windows-Paket
+
+# Baut das Windows-Installationspaket der Booth-App.
+# Läuft bei jedem Push auf die Booth-Dateien und lässt sich von Hand starten.
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'booth/**'
+      - '.github/workflows/booth-windows.yml'
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: booth/package-lock.json
+
+      - name: Rust einrichten
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust-Zwischenstände zwischenspeichern
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: booth/src-tauri
+
+      - name: Abhängigkeiten holen
+        working-directory: booth
+        run: npm ci
+
+      - name: Weboberfläche bauen
+        working-directory: booth
+        run: npm run build
+
+      - name: Windows-Paket bauen
+        working-directory: booth
+        run: npx tauri build --bundles nsis,msi
+
+      # Ohne Codesigning-Zertifikat warnt SmartScreen beim ersten Start.
+      # Sobald ein Zertifikat vorliegt: als Secret hinterlegen und hier
+      # signieren (siehe booth/README.md).
+      - name: Paket als Artefakt ablegen
+        uses: actions/upload-artifact@v4
+        with:
+          name: youbooth-windows
+          path: |
+            booth/src-tauri/target/release/bundle/nsis/*.exe
+            booth/src-tauri/target/release/bundle/msi/*.msi
+          if-no-files-found: error

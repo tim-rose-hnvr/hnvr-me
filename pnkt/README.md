@@ -87,6 +87,7 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `PUT /api/v1/marke` | Marke setzen | Inhaber |
 | `GET/POST /api/v1/mitarbeitende`, `DELETE …/{id}` | Personen der Organisation | Schlüssel / Inhaber |
 | `GET /qr.svg\|pdf\|eps?inhalt=…` | derselbe Vektor über die Adresszeile | offen |
+| `POST /api/v1/inhalt` | Felder zu Nutzlast: vCard, WLAN, GiroCode, GS1 | offen |
 | `GET /` | Studio | offen |
 
 `POST /api/v1/rendern` trägt das Urteil im Antwortkopf `x-punkt-pruefung`
@@ -232,6 +233,28 @@ einzeln schreibt):
 | `sonder.pdf`, `sonder.eps` | Cyan, Magenta, Yellow, Black **und `HKS 13 K`** |
 
 Alle sechs Dateien bleiben lesbar.
+
+## Studio
+
+Alles an einem Ort, in der Reihenfolge des Ablaufs statt der Technik:
+**Inhalt, Form, Farbe, Rahmen, Druck**. Das Urteil steht neben der
+Vorschau und nicht am Ende — eine Warnung nach dem Export hilft niemandem
+mehr.
+
+- Sechs Inhaltstypen; IBAN und GTIN werden **auf dem Server** geprüft,
+  bevor überhaupt ein Code entsteht.
+- Elf Modulformen, vier Rahmen- und vier Kernformen, mit der Messung
+  daneben: quadratische und leicht gerundete Augen 40 von 40, Blatt und
+  Rund kein einziges Mal.
+- Vier Farbwelten: Hexfarbe, CMYK, Sonderfarbe, Verlauf.
+- Rahmen mit Aufforderung, Logoaussparung, Ruhezone, Fehlerkorrektur.
+- Druckverfahren mit den veröffentlichten Grenzwerten und der Faustregel
+  für den Leseabstand.
+- Export als SVG, PDF und EPS — echter Vektor. PNG rechnet der Browser
+  aus demselben SVG; für den Druck nimmt man es nicht.
+
+Die Marke kommt aus dem Hostnamen: dasselbe Studio trägt bei jedem
+Kunden dessen Gesicht.
 
 ## White-Label
 

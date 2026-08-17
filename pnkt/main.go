@@ -63,6 +63,7 @@ func main() {
 	weg.HandleFunc("GET /api/v1/typen", d.typen)
 	weg.HandleFunc("POST /api/v1/rendern", d.rendern)
 	weg.HandleFunc("GET /api/v1/vorlage.csv", d.vorlageCSV)
+	weg.HandleFunc("POST /api/v1/inhalt", d.inhaltBauen)
 	weg.HandleFunc("GET /api/v1/druckpruefung", d.druckpruefung)
 	weg.HandleFunc("GET /api/v1/gs1", d.gs1Bauen)
 	weg.HandleFunc("POST /api/v1/konten", d.kontoAnlegen)

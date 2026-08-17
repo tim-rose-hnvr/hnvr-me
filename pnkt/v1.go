@@ -2,11 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"pnkt.me/pnkt/ausgabe"
 	"pnkt.me/pnkt/druck"
+	"pnkt.me/pnkt/gs1"
+	"pnkt.me/pnkt/inhalt"
 	"pnkt.me/pnkt/qr"
 	"pnkt.me/pnkt/speicher"
 )
@@ -422,4 +425,79 @@ func (d *dienst) mitarbeitendeEntlassen(w http.ResponseWriter, r *http.Request, 
 		Gegenstand: r.PathValue("id"),
 	})
 	d.jsonAus(w, http.StatusOK, map[string]string{"zustand": "beendet"})
+}
+
+// --- Inhalt bauen ---------------------------------------------------------
+
+// inhaltBauen macht aus Feldern die Nutzlast eines Codes. Das geschieht
+// hier und nicht im Browser, weil hier die Pruefungen liegen: eine IBAN
+// mit falscher Pruefsumme oder eine GTIN mit falscher Pruefziffer darf
+// gar nicht erst zu einem Code werden.
+func (d *dienst) inhaltBauen(w http.ResponseWriter, r *http.Request) {
+	var wunsch struct {
+		Typ    string            `json:"typ"`
+		Felder map[string]string `json:"felder"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<18)).Decode(&wunsch); err != nil {
+		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": err.Error()})
+		return
+	}
+	f := func(k string) string { return strings.TrimSpace(wunsch.Felder[k]) }
+
+	var text string
+	var err error
+
+	switch strings.ToLower(wunsch.Typ) {
+	case "", "url":
+		text = f("url")
+		if text != "" && !strings.Contains(text, ":") {
+			// Ohne Verfahren oeffnet kein Telefon die Adresse.
+			text = "https://" + text
+		}
+	case "text":
+		text = f("text")
+	case "vcard":
+		text, err = inhalt.VCard(inhalt.Karte{
+			Vorname: f("vorname"), Nachname: f("nachname"), Firma: f("firma"),
+			Stellung: f("stellung"), Telefon: f("telefon"), Mobil: f("mobil"),
+			Mail: f("mail"), Netz: f("netz"), Strasse: f("strasse"),
+			Ort: f("ort"), PLZ: f("plz"), Land: f("land"),
+		})
+	case "wlan":
+		text, err = inhalt.WLAN(inhalt.Netz{
+			SSID: f("ssid"), Passwort: f("schluessel"), Art: f("art"),
+			Versteckt: f("versteckt") == "ja",
+		})
+	case "girocode":
+		var betrag float64
+		if b := strings.Replace(f("betrag"), ",", ".", 1); b != "" {
+			betrag = zahl(b, 0)
+		}
+		text, err = inhalt.GiroCode(inhalt.Ueberweisung{
+			Empfaenger: f("empfaenger"), IBAN: f("iban"), BIC: f("bic"),
+			BetragEuro: betrag, Zweck: f("zweck"), Referenz: f("referenz"),
+		})
+	case "gs1":
+		text, err = gs1.DigitalLink(gs1.Angaben{
+			GTIN: f("gtin"), Charge: f("charge"),
+			Serie: f("serie"), Verfaellt: f("verfaellt"),
+		}, d.host)
+	default:
+		err = fmt.Errorf("unbekannter Typ %q", wunsch.Typ)
+	}
+
+	if err != nil {
+		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": err.Error()})
+		return
+	}
+	if strings.TrimSpace(text) == "" {
+		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": "noch nichts eingetragen"})
+		return
+	}
+
+	// Die Laenge entscheidet ueber die Version und damit ueber die
+	// Groesse im Druck — sie gehoert in die Antwort.
+	d.jsonAus(w, http.StatusOK, map[string]any{
+		"text": text, "zeichen": len([]rune(text)), "bytes": len(text),
+	})
 }

@@ -89,6 +89,28 @@ importers:
         specifier: ^3.0.5
         version: 3.2.7(@types/node@26.2.0)(tsx@4.23.12)
 
+  packages/embed:
+    dependencies:
+      '@studio/editor-core':
+        specifier: workspace:*
+        version: link:../editor-core
+      '@studio/render':
+        specifier: workspace:*
+        version: link:../render
+    devDependencies:
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
+      playwright-core:
+        specifier: ^1.58.0
+        version: 1.62.1
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.5
+        version: 3.2.7(@types/node@26.2.0)(tsx@4.23.12)
+
   packages/export:
     dependencies:
       '@pdf-lib/fontkit':

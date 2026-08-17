@@ -48,6 +48,30 @@ Druckerei auch. `pruefung/wirkung.ts` prüft, ob das **Ergebnis** funktioniert:
 Alle Schwellen stehen als benannte Konstanten im Modul, damit sie diskutierbar
 und änderbar sind, statt in einer Bedingung zu verschwinden.
 
+## Der Baustein für fremde Seiten
+
+```html
+<design-studio></design-studio>
+<script type="module">
+  import { registriere } from '@studio/embed';
+  registriere();
+  const el = document.querySelector('design-studio');
+  el.schriften = SCHRIFTEN;          // erst die Schriften …
+  el.aussage = AUSSAGE;              // … dann die Daten
+  el.ausspielungen = AUSSPIELUNGEN;
+  el.addEventListener('aussage-geaendert', (e) => sichere(e.detail.aussage));
+</script>
+```
+
+Ohne Rahmenwerk, damit er in eine Wix-Seite genauso geht wie in eine
+React-Anwendung, ohne dort etwas zu erzwingen. Objekte kommen als
+**Eigenschaften**, nicht als Attribute: sie durch JSON und HTML-Maskierung zu
+schleusen wäre dieselbe Fehlerklasse wie beim `style`-Attribut.
+
+Geprüft wird er gegen eine bewusst feindselige Testseite, die alles auf Comic
+Sans, Magenta und gestrichelte Ränder zieht. Was dabei herauskam, steht als
+Regeln 10 bis 12 in `CLAUDE.md`.
+
 ## Der Leuchttisch
 
 `apps/studio` zeigt nie ein einzelnes Format, sondern alle fünf gleichzeitig,
@@ -65,16 +89,16 @@ Sekunde, was das mit jedem Format macht.
 
 | Paket | Zustand |
 |---|---|
-| `packages/editor-core` | Modell, Kommandos, Markenkit, Vorlagen, **Aussage**, **Wirkungsprüfung** — 162 Tests |
+| `packages/editor-core` | Modell, Kommandos, Markenkit, Vorlagen, **Aussage**, **Wirkungsprüfung** — 179 Tests |
 | `packages/render` | Entwurf → HTML, Silbentrennung, **Textmesser** — 8 Tests |
 | `packages/export` | Satz im Browser → PDF/X-4 in CMYK — 18 Tests |
 | `packages/editor-ui` | Auswahl, Ziehen, Live-Prüfung — 15 Tests |
-| `packages/wix-adapter` | Wix Headless hinter der Speicherschnittstelle — 31 Tests |
+| `packages/wix-adapter` | Wix Headless hinter der Speicherschnittstelle, **Aussagen** — 49 Tests |
+| `packages/embed` | **`<design-studio>`** als Custom Element, in feindseliger Fremdseite geprüft — 9 Tests |
 | `apps/studio` | **Leuchttisch**, im echten Browser durchgefahren — 8 Tests |
 | `apps/spike-pdf` | CSP-Messung mit eigenem Selbsttest — 5 Tests |
-| `packages/embed` | offen — Custom Element für Fremdprojekte |
 
-**247 Tests**, Linter und Typecheck sauber.
+**287 Tests**, Linter und Typecheck sauber.
 
 ## Der Druckweg ist lizenzfrei — bewiesen
 
@@ -159,7 +183,7 @@ Serverfunktion, die `apps/studio` braucht.**
 
 ## Was beim Härten gefunden wurde
 
-Neun echte Fehler, alle inzwischen durch Tests abgesichert — die Regeln
+Zwölf echte Fehler, alle inzwischen durch Tests abgesichert — die Regeln
 dahinter stehen in `CLAUDE.md`:
 
 1. Rückgängig nahm von zehn Ziehschritten nur einen zurück, weil die Umkehrung
@@ -190,7 +214,18 @@ dahinter stehen in `CLAUDE.md`:
    *Textfeld* `termin` verlangte. Der Zeitpunkt allein genügt; nur ohne ihn
    zählt, was jemand getippt hat („nach Vereinbarung").
 
-Vier bis acht haben dasselbe Muster: **der Fehlerfall ist nicht der Absturz,
+10. Der Schattenbaum hielt die fremden Selektoren draußen, aber nicht die
+    **Vererbung**: das `!important` der Fremdseite traf das Wirtselement, und
+    der ganze Inhalt erbte Comic Sans.
+11. `@font-face` im Schattenbaum wird stillschweigend ignoriert — die
+    Markenschrift wäre in jeder Einbettung durch die Ersatzschrift ersetzt
+    worden.
+12. Der Messknoten hing in `document.body`, wo `div { border: 3px }` der
+    Fremdseite jede gemessene Höhe um sechs Pixel verfälschte. Nach dem Umzug in
+    den Schattenbaum löschte ihn das Neuzeichnen mit — und ein losgelöster
+    Knoten hat Höhe 0, also passte plötzlich jede Fassung.
+
+Vier bis acht und zehn bis zwölf haben dasselbe Muster: **der Fehlerfall ist nicht der Absturz,
 sondern das falsche, plausibel aussehende Ergebnis.** Deshalb legt der
 Druck-Spike neben jedem PDF einen PNG-Abzug ab — und deshalb prüft der
 Leuchttisch-Test im echten Browser nach, dass kein Text aus seinem Rahmen

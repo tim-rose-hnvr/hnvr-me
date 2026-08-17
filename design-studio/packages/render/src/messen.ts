@@ -13,11 +13,18 @@
  * Hier misst stattdessen der Browser. Dieselben CSS-Eigenschaften wie in der
  * Darstellung (`schriftStil`), dieselbe Silbentrennung, nur mit freier Höhe.
  *
- * ## Grenzen
+ * ## Zwei Grenzen
  *
- * Gemessen wird gegen die Schriften, die auf der Seite **geladen** sind. Ist
- * die Markenschrift noch nicht da, misst Chromium die Ersatzschrift und die
- * Zahl ist falsch. Deshalb wartet `warteAufSchriften` vorher ab.
+ * 1. Gemessen wird gegen die Schriften, die auf der Seite **geladen** sind. Ist
+ *    die Markenschrift noch nicht da, misst Chromium die Ersatzschrift und die
+ *    Zahl ist falsch. Deshalb wartet `warteAufSchriften` vorher ab.
+ * 2. **Der Messknoten steht in einem fremden Dokument.** Hängt er in
+ *    `document.body`, treffen ihn die Regeln der einbettenden Seite. Eine Seite
+ *    mit `div { border: 3px }` verfälschte jede Messung um sechs Pixel — genug,
+ *    um eine Kürzungsstufe falsch zu wählen, und wieder ohne jeden Absturz.
+ *    Deshalb setzt der Knoten alles zurück, was die Höhe beeinflusst, und der
+ *    Einbettende kann über `behaelter` einen Schattenbaum angeben, in den keine
+ *    fremde Regel hineinreicht.
  */
 
 import type { TextElement } from '@studio/editor-core';
@@ -26,13 +33,31 @@ import { type Sprache, setzeTrennstriche } from './trennung.js';
 
 export interface Messoptionen {
   sprache?: Sprache;
+  /**
+   * Wohin der Messknoten gehängt wird. Vorgabe ist `document.body`; in einer
+   * fremden Seite sollte hier der eigene Schattenbaum stehen.
+   */
+  behaelter?: ParentNode;
 }
 
 export type Textmesser = ((text: string, element: TextElement) => number) & {
   aufraeumen: () => void;
 };
 
-const VERSTECKT = 'position:absolute;left:-100000px;top:0;visibility:hidden;pointer-events:none';
+/**
+ * Alles zurücksetzen, was die gemessene Höhe verändern könnte. Hängt der Knoten
+ * in einer fremden Seite, treffen ihn deren Regeln: eine Seite mit
+ * `div { border: 3px }` verfälschte jede Messung um sechs Pixel — genug, um
+ * eine Kürzungsstufe falsch zu wählen, und wieder ohne jeden Absturz.
+ *
+ * `all:initial` scheidet aus: es zöge auch `display` auf `inline`, und dann
+ * hätte der Knoten überhaupt keine sinnvolle Höhe mehr.
+ */
+const VERSTECKT =
+  'position:absolute;left:-100000px;top:0;visibility:hidden;pointer-events:none;' +
+  'display:block;box-sizing:content-box;border:0;padding:0;margin:0;' +
+  'text-transform:none;word-spacing:normal;text-indent:0;' +
+  'min-height:0;max-height:none;transform:none;zoom:1';
 
 /**
  * Ein Messer, der Texte in einem verborgenen Knoten setzt und die Höhe liest.
@@ -44,7 +69,7 @@ export function erzeugeTextmesser(dokument: Document, optionen: Messoptionen = {
   const knoten = dokument.createElement('div');
   knoten.setAttribute('aria-hidden', 'true');
   knoten.style.cssText = VERSTECKT;
-  dokument.body.append(knoten);
+  (optionen.behaelter ?? dokument.body).append(knoten);
 
   const messen = (text: string, element: TextElement): number => {
     knoten.style.cssText = `${VERSTECKT};width:${element.breite}px;height:auto;${schriftStil(element)}`;

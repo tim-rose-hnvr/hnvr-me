@@ -1,0 +1,27 @@
+{
+  "name": "@studio/embed",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "bauen": "node bauen.mjs",
+    "test": "vitest run",
+    "test:coverage": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@studio/editor-core": "workspace:*",
+    "@studio/render": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "playwright-core": "^1.58.0",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  }
+}

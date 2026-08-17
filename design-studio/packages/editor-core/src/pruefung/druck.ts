@@ -114,8 +114,16 @@ export function pruefeDruck(entwurf: Entwurf, optionen: Druckoptionen = {}): Dru
 
     // Inhalt zu dicht am Schnitt. Nur für Elemente, die nicht ohnehin
     // randabfallend sind — ein Vollflächenbild darf über den Rand.
+    //
+    // Ein Element, das das **ganze** Endformat bedeckt, ist per Definition
+    // randabfallend: an ihm kann nichts weggeschnitten werden, was zählt. Ohne
+    // diese Ausnahme bekam jeder Vollflächenhintergrund eine Warnung, die nichts
+    // bedeutet — und eine Warnung, die immer kommt, liest bald niemand mehr.
+    const randabfallend = enthaelt(rahmen, trim);
+
     if (
       entwurf.sicherheitsabstand > 0 &&
+      !randabfallend &&
       enthaelt(trim, rahmen) &&
       !enthaelt(safe, rahmen) &&
       ueberschneidet(safe, rahmen)

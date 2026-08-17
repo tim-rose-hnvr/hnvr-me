@@ -278,3 +278,44 @@ describe('Lagevergleiche vertragen Rechenrauschen', () => {
     );
   });
 });
+
+describe('Randabfallende Flächen', () => {
+  it('meldet einen Vollflächenhintergrund nicht als zu dicht am Schnitt', () => {
+    // Er bedeckt das ganze Endformat — an ihm kann nichts weggeschnitten
+    // werden, was zählt. Eine Warnung, die immer kommt, liest bald niemand.
+    const w = testWerkzeuge();
+    const basis = druckEntwurf(w);
+    const entwurf = mitElementen(
+      basis,
+      erzeugeForm(
+        { x: 0, y: 0, breite: basis.masse.breite, hoehe: basis.masse.hoehe },
+        'rechteck',
+        { name: 'Grund', fuellung: '#0a5c8a' },
+        w,
+      ),
+    );
+
+    expect(pruefeDruck(entwurf, { pruefeAufloesung: false }).map((b) => b.regel)).not.toContain(
+      'sicherheitsabstand',
+    );
+  });
+
+  it('meldet eine fast randabfallende Fläche weiterhin', () => {
+    // Ein Balken, der nur oben über das Endformat ragt, ist keine Vollfläche.
+    const w = testWerkzeuge();
+    const basis = druckEntwurf(w);
+    const entwurf = mitElementen(
+      basis,
+      erzeugeForm(
+        { x: 0, y: 0, breite: basis.masse.breite, hoehe: basis.masse.hoehe * 0.3 },
+        'rechteck',
+        { name: 'Kopfbalken', fuellung: '#0a5c8a' },
+        w,
+      ),
+    );
+
+    expect(pruefeDruck(entwurf, { pruefeAufloesung: false }).map((b) => b.regel)).toContain(
+      'sicherheitsabstand',
+    );
+  });
+});

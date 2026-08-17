@@ -6,7 +6,7 @@
  * Backend ist damit ein zweiter Adapter und keine Änderung am Produkt.
  */
 
-import type { Entwurf, Markenkit, Vorlage } from '@studio/editor-core';
+import type { Aussage, Entwurf, Markenkit, Vorlage } from '@studio/editor-core';
 
 export class SpeicherFehler extends Error {
   readonly ursache: unknown;
@@ -48,6 +48,51 @@ export interface EntwurfSpeicher {
   loesche(mandant: Mandant, entwurfId: string): Promise<void>;
   /** Liste für die Übersicht — ohne den Entwurfsinhalt, der ist zu groß. */
   liste(mandant: Mandant, abfrage?: Seitenabfrage): Promise<Kurzfassung[]>;
+}
+
+/**
+ * Kurzfassung einer Aussage für Listen. Der Termin gehört dazu, weil die
+ * Übersicht sonst nicht zeigen könnte, welche Aussagen abgelaufen sind — und
+ * genau danach sucht man in einer Liste von hundert.
+ */
+export interface AussagenKurzfassung {
+  id: string;
+  name: string;
+  geaendertAm: string;
+  termin: string | null;
+}
+
+/**
+ * Aussagen sind klein — ein paar Textfelder, weit unter jeder Datensatzgrenze.
+ * Ausgelagert wird hier nichts.
+ *
+ * `verwendetVon` ist kein Komfort, sondern Pflicht: eine gelöschte Aussage
+ * lässt jede Ausspielung zurück, die auf sie bindet, und die zeigt dann leere
+ * Platzhalter. Wer löschen will, muss vorher wissen, was daran hängt.
+ */
+export interface AussageSpeicher {
+  lade(mandant: Mandant, aussageId: string): Promise<Aussage>;
+  sichere(mandant: Mandant, aussage: Aussage): Promise<void>;
+  /** Verweigert die Löschung, solange Entwürfe auf die Aussage binden. */
+  loesche(mandant: Mandant, aussageId: string): Promise<void>;
+  liste(mandant: Mandant, abfrage?: Seitenabfrage): Promise<AussagenKurzfassung[]>;
+  /** Die Entwürfe, die auf diese Aussage binden. */
+  verwendetVon(mandant: Mandant, aussageId: string): Promise<Kurzfassung[]>;
+}
+
+/** Löschen abgelehnt, weil noch etwas daran hängt. */
+export class NochInVerwendung extends SpeicherFehler {
+  readonly verwender: readonly Kurzfassung[];
+
+  constructor(art: string, id: string, verwender: readonly Kurzfassung[]) {
+    const namen = verwender.map((v) => `„${v.name}"`).join(', ');
+    super(
+      `${art} "${id}" wird noch von ${verwender.length} Entwurf/Entwürfen verwendet: ${namen}. ` +
+        'Erst die Bindungen lösen, dann löschen.',
+    );
+    this.name = 'NochInVerwendung';
+    this.verwender = verwender;
+  }
 }
 
 export interface VorlagenSpeicher {

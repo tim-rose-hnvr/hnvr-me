@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   type Aussage,
+  bindetOhneQuelle,
   feldwert,
   gebundeneFelder,
   kapazitaetInZeichen,
@@ -338,5 +339,40 @@ describe('Gemessen statt geschätzt', () => {
     // „12. September 2026" bräuchte zwei, „12.9.26" passt in eine.
     const gemessen = loeseBindungen(entwurf, AUSSAGE, messerMitZeichenbreite(0.62)).befunde[0];
     expect(gemessen?.text).toBe('12.9.26');
+  });
+});
+
+describe('Ausspielung ohne Quelle', () => {
+  it('erkennt einen Entwurf, der bindet, aber keine Aussage nennt', () => {
+    const w = testWerkzeuge();
+    const entwurf = mitElementen(
+      druckEntwurf(w),
+      erzeugeText(
+        { x: 0, y: 0, breite: 500, hoehe: 100 },
+        '',
+        {
+          platzhalter: {
+            schluessel: 'titel',
+            bearbeitbar: ['text'],
+            beschriftung: null,
+            bindung: 'titel',
+          },
+        },
+        w,
+      ),
+    );
+
+    expect(bindetOhneQuelle(entwurf)).toBe(true);
+    expect(bindetOhneQuelle({ ...entwurf, aussageId: 'aussage-1' })).toBe(false);
+  });
+
+  it('lässt einen frei getippten Entwurf in Ruhe', () => {
+    // Ohne Bindungen braucht es keine Aussage — das ist kein Mangel.
+    const w = testWerkzeuge();
+    const entwurf = mitElementen(
+      druckEntwurf(w),
+      erzeugeText({ x: 0, y: 0, breite: 500, hoehe: 100 }, 'von Hand getippt', {}, w),
+    );
+    expect(bindetOhneQuelle(entwurf)).toBe(false);
   });
 });

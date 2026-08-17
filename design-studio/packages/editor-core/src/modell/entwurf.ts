@@ -187,6 +187,14 @@ export interface Entwurf {
   seiten: Seite[];
   markenkitId: string | null;
   vorlageId: string | null;
+  /**
+   * Die Aussage, aus der dieser Entwurf seine Inhalte bezieht.
+   *
+   * Ohne sie sind gebundene Platzhalter nicht auflösbar — ein Entwurf mit
+   * Bindungen und ohne `aussageId` ist eine Ausspielung ohne Quelle. `null` ist
+   * trotzdem gültig: ein frei getippter Entwurf braucht keine Aussage.
+   */
+  aussageId: string | null;
   /** ISO-8601 in UTC. */
   erstelltAm: string;
   geaendertAm: string;

@@ -8,6 +8,7 @@
 
 export * from './aussage/aussage.js';
 export * from './aussage/bindung.js';
+export * from './aussage/schema.js';
 export * from './kommandos/element.js';
 export * from './kommandos/schutz.js';
 export * from './kommandos/stack.js';

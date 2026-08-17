@@ -54,6 +54,7 @@ export interface EntwurfOptionen {
   format: Format;
   markenkitId?: string | null;
   vorlageId?: string | null;
+  aussageId?: string | null;
 }
 
 export function erzeugeEntwurf(
@@ -75,6 +76,7 @@ export function erzeugeEntwurf(
     seiten: [erzeugeSeite('Seite 1', werkzeuge)],
     markenkitId: optionen.markenkitId ?? null,
     vorlageId: optionen.vorlageId ?? null,
+    aussageId: optionen.aussageId ?? null,
     erstelltAm: zeitpunkt,
     geaendertAm: zeitpunkt,
   };

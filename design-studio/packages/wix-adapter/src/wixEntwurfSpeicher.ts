@@ -41,6 +41,13 @@ interface EntwurfDatensatz extends WixDatensatz {
   geaendertAm: string;
   vorlageId: string | null;
   markenkitId: string | null;
+  /**
+   * Eigenes Feld, nicht nur im JSON: `AussageSpeicher.verwendetVon` filtert
+   * danach, und Wix Data kann nicht in ein JSON-Textfeld hineinsehen. Ohne
+   * dieses Feld fände die Verwendungsprüfung nie einen Verwender und jede
+   * Löschung einer Aussage ginge stillschweigend durch.
+   */
+  aussageId: string | null;
   /** JSON des Entwurfs, wenn er klein genug ist — sonst `null`. */
   inhalt: string | null;
   /** Blob-id des ausgelagerten JSON, wenn er zu groß war — sonst `null`. */
@@ -119,6 +126,7 @@ export class WixEntwurfSpeicher implements EntwurfSpeicher {
       geaendertAm: entwurf.geaendertAm,
       vorlageId: entwurf.vorlageId,
       markenkitId: entwurf.markenkitId,
+      aussageId: entwurf.aussageId,
       inhalt,
       inhaltDateiId,
       inhaltDateiUrl,

@@ -57,7 +57,7 @@ negative Koordinaten. Das ist gewollt.
 
 ---
 
-## Neun Regeln, die aus echten Fehlern stammen
+## Zwölf Regeln, die aus echten Fehlern stammen
 
 Jede davon war einmal falsch und ist durch einen Test abgesichert. Wer sie
 aufweicht, holt den Fehler zurück.
@@ -94,9 +94,27 @@ aufweicht, holt den Fehler zurück.
 9. **Ein getipptes Feld ist selbst die Quelle.** Ein gebundener Termin blieb
    leer, weil die Auflösung zusätzlich ein Textfeld `termin` verlangte. Der
    Zeitpunkt genügt; nur ohne ihn zählt getippter Text.
+10. **Der Schattenbaum schützt vor Selektoren, nicht vor Vererbung.** Eine
+    Fremdseite mit `* { font-family: … !important }` trifft auch das
+    Wirtselement — das steht im Dokumentbaum. Ein `!important` von dort schlägt
+    die `:host`-Regel, und jedes Kind im Schattenbaum **erbt** die fremde
+    Schrift. Vererbbare Eigenschaften gehören deshalb zusätzlich auf einen
+    inneren Knoten, den kein fremder Selektor erreicht. Das Wirtselement selbst
+    ist nicht zu verteidigen — geschützt wird der Inhalt, nicht die Hülle.
+11. **`@font-face` wirkt im Schattenbaum nicht.** Schriftgesichter werden nur
+    aus dem Dokumentbaum aufgelöst; eine Regel im Schattenbaum wird
+    stillschweigend ignoriert und der Browser setzt in der Ersatzschrift weiter.
+    Die Schriftregeln gehen deshalb ins Dokument, alles andere in den Schatten.
+12. **Ein Messknoten muss angehängt und abgeschirmt sein.** Zweimal falsch
+    gemessen, zweimal ohne Fehlermeldung: Erst hing der Knoten in
+    `document.body`, wo `div { border: 3px }` der Fremdseite jede Höhe um sechs
+    Pixel verfälschte. Dann löschte ihn das Neuzeichnen mit — und ein
+    losgelöster Knoten hat Höhe 0, also passte plötzlich jede Fassung und die
+    Wahl fiel immer auf „lang". Der Knoten steht jetzt neben dem gezeichneten
+    Inhalt, nicht darin, und setzt alle höhenwirksamen Eigenschaften zurück.
 
-Vier bis acht haben dasselbe Muster: **der Fehlerfall ist nicht der Absturz,
-sondern das falsche, plausibel aussehende Ergebnis.** Keiner wäre ohne
+Vier bis acht und zehn bis zwölf haben dasselbe Muster: **der Fehlerfall ist
+nicht der Absturz, sondern das falsche, plausibel aussehende Ergebnis.** Keiner wäre ohne
 Sichtprüfung aufgefallen — deshalb legt die Ausgabekette neben jedes PDF einen
 PNG-Abzug, und deshalb misst der Leuchttisch-Test im echten Browser nach, dass
 kein Text aus seinem Rahmen läuft.
@@ -128,13 +146,13 @@ abgeschaltet. Die beiden dürfen sich nicht widersprechen.
 ```
 packages/
   editor-core/   Dokumentmodell, Kommando-Stack, Markenkit, Vorlagen — framework-frei
-    aussage/     Aussage, Kürzungsstufen, Bindung — die These in Code
+    aussage/     Aussage, Kürzungsstufen, Bindung, Schema — die These in Code
     pruefung/    druck.ts (ist die Datei in Ordnung?) + wirkung.ts (wirkt sie?)
   render/        Entwurf → HTML, Silbentrennung, Textmesser. Ein Renderer für beides.
   export/        Satz im headless Browser → PDF/X-4 in CMYK
   editor-ui/     Auswahl, Ziehen, Live-Prüfung — ohne Rahmenwerk
   wix-adapter/   Wix Data, Media, Members hinter der Speicherschnittstelle
-  embed/         Custom Element für Fremdprojekte         (noch nicht angelegt)
+  embed/         <design-studio> als Custom Element für Fremdprojekte
 apps/
   studio/        Leuchttisch — eine HTML-Datei, alles eingebettet
   spike-pdf/     Messung: läuft WASM im Browser unter Wix-CSP?
@@ -177,6 +195,9 @@ Seiten gehen, ohne dort React zu erzwingen.
   `erzeugeTextmesser` benutzt werden — sonst kehrt Regel 7 zurück.
 - **Sperrflächen veralten.** Die Anteile in `SPERRFLAECHEN` sind Näherungen und
   ändern sich ohne Ankündigung. Vor einer Auslieferung nachmessen.
+- **Aussagen-Oberfläche fehlt.** `AussageSpeicher` und Schema stehen, aber es
+  gibt keine Maske zum Anlegen und Verwalten von Aussagen — nur die Bearbeitung
+  der bestehenden im Baustein.
 - **Griffe ziehen noch nicht.** `rahmenNachGriff` ist da und getestet, die Anbindung an
   Zeigerereignisse fehlt.
 - Schrifteinbettung im PDF braucht Embedding-Lizenzen. Bis auf Weiteres nur SIL-OFL-Schriften.

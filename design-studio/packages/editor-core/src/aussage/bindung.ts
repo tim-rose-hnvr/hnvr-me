@@ -190,6 +190,16 @@ function waehleGemessen(
   return { ...kuerzeste, passt: false };
 }
 
+/**
+ * Ein Entwurf mit Bindungen, aber ohne `aussageId`, ist eine Ausspielung ohne
+ * Quelle: die Platzhalter bleiben leer, und zwar erst sichtbar beim nächsten
+ * Öffnen. Entsteht, wenn eine Aussage gelöscht oder ein Entwurf von Hand kopiert
+ * wurde. Ein frei getippter Entwurf ohne Bindungen ist dagegen in Ordnung.
+ */
+export function bindetOhneQuelle(entwurf: Entwurf): boolean {
+  return entwurf.aussageId === null && gebundeneFelder(entwurf).length > 0;
+}
+
 /** Alle Felder, auf die ein Entwurf sich stützt. Für die Vollständigkeitsprüfung. */
 export function gebundeneFelder(entwurf: Entwurf): Feldschluessel[] {
   const felder = new Set<Feldschluessel>();

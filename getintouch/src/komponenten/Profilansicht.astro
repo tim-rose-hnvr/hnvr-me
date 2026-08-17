@@ -54,10 +54,24 @@ const abschnitte = ordne(profil.bloecke.filter((b) => b.aktiv && b.id !== haupt?
 const adresseKurz = adresse.replace(/^https?:\/\/(www\.)?/, '');
 ---
 
-<div class="blatt" data-schaltflaeche={gestaltung.schaltflaeche}>
-  {profil.kopf.titelbild && <img class="titelbild" src={profil.kopf.titelbild} alt="" />}
+<div class="blatt" data-schaltflaeche={gestaltung.schaltflaeche} data-aufbau={gestaltung.aufbau}>
+  {
+    /* Der Aufbau „Held" lebt vom Titelbild. Fehlt es, tritt eine Fläche aus den
+       eigenen Farben an seine Stelle — sonst klappte die Anordnung in sich
+       zusammen und die Vorlage sähe aus wie ein Fehler. */
+    profil.kopf.titelbild ? (
+      <img class="titelbild" src={profil.kopf.titelbild} alt="" />
+    ) : (
+      gestaltung.aufbau === 'held' && <div class="titelbild titelbild--ersatz" aria-hidden="true" />
+    )
+  }
 
-  <header class:list={['kopf', profil.kopf.titelbild && 'kopf--mitTitelbild']}>
+  <header
+    class:list={[
+      'kopf',
+      (profil.kopf.titelbild || gestaltung.aufbau === 'held') && 'kopf--mitTitelbild',
+    ]}
+  >
     {
       profil.kopf.bild && (
         <img

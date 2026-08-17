@@ -668,3 +668,105 @@ summary:focus-visible {
     display: flex !important;
   }
 }
+
+/* ============================================================
+   Aufbau — dieselben Bausteine, andere Anordnung
+   ============================================================
+
+   Die Farben und Schriften machen aus einer Vorlage noch kein Design. Was eine
+   Seite wirklich anders aussehen lässt, ist die Anordnung, und die steht hier:
+   ein Gitter aus Karten („Bento") und ein Titelbild, auf dem der Name liegt
+   („Held"). Beide benutzen dieselben Bausteine wie die Liste — es gibt weiter
+   nur einen Renderer, und was hier steht, kann deshalb nicht auseinanderlaufen.
+   ============================================================ */
+
+/* --- Bento ------------------------------------------------ */
+
+/* `main` wird zum Gitter, und die Zwischenbehälter treten beiseite
+   (`display: contents`), damit ihre Kinder selbst zu Kacheln des Gitters
+   werden. Ohne das läge ein Gitter im Gitter und nichts würde sich verzahnen. */
+.blatt[data-aufbau='bento'] main {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-content: start;
+}
+
+.blatt[data-aufbau='bento'] .entscheidung,
+.blatt[data-aufbau='bento'] .gitter {
+  display: contents;
+}
+
+/* Die Entscheidung bleibt die Entscheidung: sie nimmt die volle Breite. */
+.blatt[data-aufbau='bento'] .aktion--haupt,
+.blatt[data-aufbau='bento'] .visitenkarte {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+/* Kacheln werden quadratisch und stellen sich auf, statt zu liegen — das ist
+   der Unterschied zwischen einer Kachel und einem Knopf. */
+.blatt[data-aufbau='bento'] .kachel {
+  /* Nicht ganz quadratisch: ein Quadrat mit Zeichen oben und Wort unten steht
+     zur Hälfte leer. 6:5 behält die Anmutung der Karte, ohne das Loch. */
+  aspect-ratio: 6 / 5;
+  justify-content: flex-end;
+  padding: 15px;
+}
+
+.blatt[data-aufbau='bento'] .kachel > .zeichen:first-child {
+  margin-bottom: auto;
+}
+
+/* Alles, was Fließtext ist, spannt über beide Spalten — in einer halben Spalte
+   wäre es nicht mehr lesbar, sondern nur noch schmal. */
+.blatt[data-aufbau='bento'] .marke,
+.blatt[data-aufbau='bento'] .textblock,
+.blatt[data-aufbau='bento'] .trenner,
+.blatt[data-aufbau='bento'] main > .aktion:not(.aktion--haupt) {
+  grid-column: 1 / -1;
+}
+
+.blatt[data-aufbau='bento'] .marke {
+  margin-top: 14px;
+}
+
+/* --- Held ------------------------------------------------- */
+
+/* Das Titelbild trägt die Seite, der Kopf liegt darauf. Ohne Bild tritt eine
+   Fläche aus Akzent und Grundfarbe an seine Stelle. */
+.blatt[data-aufbau='held'] .titelbild {
+  aspect-ratio: 16 / 10;
+}
+
+/* Ohne Foto reicht ein flacheres Band — sonst ist die halbe Seite Fläche.
+   Die Kennzeichnung muss so genau sein wie die Regel darüber, sonst gewinnt
+   das Seitenverhältnis des Titelbildes. */
+.blatt[data-aufbau='held'] .titelbild--ersatz {
+  aspect-ratio: 16 / 8;
+}
+
+.titelbild--ersatz {
+  background:
+    radial-gradient(120% 90% at 15% 0%, color-mix(in srgb, var(--akzent) 55%, transparent), transparent 70%),
+    var(--kachel);
+}
+
+/* Der Kopf rückt über den unteren Rand des Bildes und bekommt einen Verlauf
+   mit, damit der Name auf jedem Foto lesbar bleibt — auch auf einem hellen. */
+.blatt[data-aufbau='held'] .kopf {
+  position: relative;
+  margin-top: -128px;
+  padding: 96px 18px 26px;
+  background: linear-gradient(to top, var(--grund-fest) 42%, color-mix(in srgb, var(--grund-fest) 74%, transparent) 72%, transparent);
+  margin-inline: -22px;
+}
+
+.blatt[data-aufbau='held'] .kopf .bild {
+  margin-top: 0;
+  outline: 3px solid var(--grund-fest);
+}
+
+.blatt[data-aufbau='held'] main {
+  margin-top: 4px;
+}

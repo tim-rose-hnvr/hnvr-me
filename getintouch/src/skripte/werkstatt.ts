@@ -21,6 +21,7 @@
 
 import {
   abweichung,
+  AUFBAUTEN,
   cssVariablen,
   FLIESSTEXTSCHRIFTEN,
   istFarbe,
@@ -88,10 +89,16 @@ let zeitschalter: ReturnType<typeof setTimeout> | undefined;
 
 const rahmen = frage<HTMLIFrameElement>('#vorschaurahmen');
 
-/** Alles außer der Gestaltung — daran hängt, ob die Vorschau neu laden muss. */
+/**
+ * Alles außer der Gestaltung — daran hängt, ob die Vorschau neu laden muss.
+ *
+ * Der Aufbau zählt mit, obwohl er zur Gestaltung gehört: Farben lassen sich als
+ * Variablen nachschieben, eine andere Anordnung nicht. Der Aufbau „Held" bringt
+ * ohne Titelbild eine eigene Fläche mit, und die muss erst entstehen.
+ */
 function inhaltsAbdruck(p: Profil): string {
-  const { gestaltung: _weg, ...rest } = p;
-  return JSON.stringify(rest);
+  const { gestaltung, ...rest } = p;
+  return JSON.stringify({ ...rest, aufbau: gestaltung.aufbau });
 }
 
 function sichern() {
@@ -124,7 +131,10 @@ function gestaltungAnwenden() {
     koerper.style.setProperty(name, wert);
   }
   const blatt = koerper.querySelector('.blatt');
-  if (blatt) blatt.setAttribute('data-schaltflaeche', entwurf.gestaltung.schaltflaeche);
+  if (blatt) {
+    blatt.setAttribute('data-schaltflaeche', entwurf.gestaltung.schaltflaeche);
+    blatt.setAttribute('data-aufbau', entwurf.gestaltung.aufbau);
+  }
   const bild = koerper.querySelector('.bild');
   if (bild) bild.className = `bild bild--${entwurf.gestaltung.bildform}`;
 }
@@ -834,6 +844,11 @@ function zeichneGestaltung() {
       el('h2', { class: 'wmarke2', text: 'Vorlage' }),
       el('p', { class: 'whinweis', text: 'Ein Anfang. Danach ist alles frei.' }),
       el('div', { class: 'vorlagen', role: 'group' }, vorlagen),
+    ]),
+    el('div', { class: 'feldgruppe' }, [
+      el('h2', { class: 'wmarke2', text: 'Aufbau' }),
+      knopfgruppe('Anordnung', 'aufbau', AUFBAUTEN.map((a) => ({ wert: a.kennung, name: a.name }))),
+      el('p', { class: 'whinweis', text: AUFBAUTEN.find((a) => a.kennung === g.aufbau)?.beschreibung ?? '' }),
     ]),
     el('div', { class: 'feldgruppe' }, [
       el('h2', { class: 'wmarke2', text: 'Farben' }),

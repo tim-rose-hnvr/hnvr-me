@@ -13,6 +13,7 @@ import { herkunft } from '../src/kern/ausgabe.ts';
 import { MARKENFARBEN } from '../src/kern/marke.ts';
 import {
   abweichung,
+  AUFBAUTEN,
   FLIESSTEXTSCHRIFTEN,
   GESTALTUNG_VORGABE,
   hintergrund,
@@ -433,6 +434,20 @@ describe('Vorlagen', () => {
     strictEqual(VORLAGEN[0]!.vorlage, GESTALTUNG_VORGABE.vorlage);
     strictEqual(GESTALTUNG_VORGABE.akzent, MARKENFARBEN.akzent);
     strictEqual(GESTALTUNG_VORGABE.grund, MARKENFARBEN.grund);
+  });
+
+  /* Der eigentliche Vorwurf an die Konkurrenz — „n Designs, die alle gleich
+     aufgebaut sind" — muss auch für die eigenen Vorlagen widerlegbar sein.
+     Farbe und Schrift allein reichen dafür nicht. */
+  it('benutzen mehr als eine Anordnung — sonst wäre es ein Layout mit dreizehn Anstrichen', () => {
+    const anordnungen = new Set(VORLAGEN.map((v) => v.aufbau));
+    strictEqual(anordnungen.size, AUFBAUTEN.length, `nur ${anordnungen.size} von ${AUFBAUTEN.length} Anordnungen`);
+    for (const a of AUFBAUTEN) {
+      ok(
+        VORLAGEN.filter((v) => v.aufbau === a.kennung).length >= 2,
+        `„${a.name}" kommt in weniger als zwei Vorlagen vor`,
+      );
+    }
   });
 
   it('benutzen mehr als eine Schriftmischung — sonst wäre es ein Design mit zwölf Anstrichen', () => {

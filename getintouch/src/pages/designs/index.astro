@@ -11,7 +11,7 @@
  * Ein Klick führt auf `/designs/<kennung>`, wo dieselbe Vorlage an einem
  * vollständigen Profil läuft.
  */
-import { cssVariablen, schrift, vorlage, vorlagenName, VORLAGEN } from '../../kern/gestaltung.ts';
+import { AUFBAUTEN, cssVariablen, schrift, vorlage, vorlagenName, VORLAGEN } from '../../kern/gestaltung.ts';
 import { zeichen } from '../../kern/zeichen.ts';
 import { MARKE, SIGNET } from '../../kern/marke.ts';
 import '../../stile/marketing.css';
@@ -30,6 +30,8 @@ export const prerender = false;
 
 Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
 
+const aufbauName = (k: string) => AUFBAUTEN.find((a) => a.kennung === k)?.name ?? k;
+
 const rahmen = vorlage('signal');
 const rahmenStil = Object.entries(cssVariablen(rahmen))
   .map(([name, wert]) => `${name}:${wert}`)
@@ -37,12 +39,13 @@ const rahmenStil = Object.entries(cssVariablen(rahmen))
 
 const titel = `Dreizehn Designs — ${MARKE.name}`;
 const beschreibung =
-  'Dreizehn Vorlagen, jede mit eigenem Schriftpaar und geprüftem Kontrast. Dazu freie Farben, Eckenradius, ' +
-  'Stil der Schaltflächen und ein Hintergrundbild mit Schleier.';
+  'Drei echte Anordnungen — Liste, Bento-Gitter, Titelbild — in dreizehn Vorlagen, jede mit eigenem Schriftpaar ' +
+  'und geprüftem Kontrast. Dazu freie Farben, Eckenradius, Stil der Schaltflächen und ein Hintergrundbild.';
 
 const stellschrauben = [
   { titel: 'Farben', text: 'Grundfarbe, zweite Farbe für den Verlauf samt Winkel, Textfarbe, Akzent und die Schrift auf dem Akzent — alles frei.' },
   { titel: 'Schrift', text: 'Zwölf Familien, je eine für Überschriften und eine für Fließtext. Selbst ausgeliefert, kein Google-Aufruf.' },
+  { titel: 'Anordnung', text: 'Liste, Bento-Gitter oder Titelbild — dieselben Bausteine, drei verschiedene Seiten. Frei wählbar, unabhängig von Farbe und Schrift.' },
   { titel: 'Form', text: 'Eckenradius stufenlos von scharfkantig bis rund, Schaltflächen gefüllt, als Kontur oder als Glas, Profilbild rund oder als Karte.' },
   { titel: 'Hintergrundbild', text: 'Eigenes Foto mit einstellbarem Schleier. Unter der Hälfte meldet sich der Wächter: über einem hellen Himmel ist kein Text mehr lesbar.' },
 ];
@@ -82,8 +85,9 @@ const stellschrauben = [
           <p class="marke">gestaltung</p>
           <h1>Dreizehn Designs,<br />kein einziges geraten.</h1>
           <p class="fuehrung">
-            Jede Vorlage bringt ein eigenes Schriftpaar mit, nicht bloß einen anderen Farbton. Und jede ist gegen
-            WCAG durchgerechnet — was nicht lesbar wäre, steht hier nicht zur Wahl.
+            Drei Anordnungen, nicht dreizehn Anstriche derselben: eine ruhige Liste, ein Gitter aus Karten und ein
+            Titelbild, auf dem der Name liegt. Dazu je ein eigenes Schriftpaar. Und jede ist gegen WCAG
+            durchgerechnet — was nicht lesbar wäre, steht hier nicht zur Wahl.
           </p>
         </section>
 
@@ -122,7 +126,7 @@ const stellschrauben = [
                     </span>
                     <span class="probe__fuss">
                       <b>{vorlagenName(v.vorlage)}</b>
-                      <span>{schrift(v.anzeige).name} + {schrift(v.schrift).name}</span>
+                      <span>{aufbauName(v.aufbau)} · {schrift(v.anzeige).name} + {schrift(v.schrift).name}</span>
                     </span>
                   </a>
                 );

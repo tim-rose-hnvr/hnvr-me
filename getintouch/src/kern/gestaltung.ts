@@ -19,6 +19,32 @@ import { MARKENFARBEN } from './marke.ts';
 export type Schaltflaechenstil = 'gefuellt' | 'kontur' | 'glas';
 export type Bildform = 'rund' | 'karte';
 
+/**
+ * Der Aufbau — wie die Seite angeordnet ist, nicht wie sie eingefärbt ist.
+ *
+ * Das ist die Achse, an der sich entscheidet, ob ein Baukasten wirklich
+ * verschiedene Designs hat oder nur verschiedene Anstriche. Vorlagen, die sich
+ * bloß in Farbe und Schrift unterscheiden, sind ein Design mit n Lackierungen —
+ * genau der Vorwurf, den dieses Programm der Konkurrenz macht, und den es sich
+ * eine Zeit lang selbst hat gefallen lassen müssen.
+ *
+ *  - `liste`  Untereinander, links ausgerichtet. Ruhig, schnell zu erfassen,
+ *             richtig für reine Kontaktseiten.
+ *  - `bento`  Ein Gitter aus verschieden großen Karten. Was ein Besucher als
+ *             „modern" liest, und die Anordnung, die viele Wege verträgt,
+ *             ohne zur Liste zu werden.
+ *  - `held`   Ein Titelbild über die volle Breite, Name und Status darauf.
+ *             Für alle, deren Arbeit man sehen muss, bevor man anruft:
+ *             Handwerk, Gastronomie, Salon.
+ */
+export type Aufbau = 'liste' | 'bento' | 'held';
+
+export const AUFBAUTEN: { kennung: Aufbau; name: string; beschreibung: string }[] = [
+  { kennung: 'liste', name: 'Liste', beschreibung: 'Untereinander, links ausgerichtet. Ruhig und schnell zu erfassen.' },
+  { kennung: 'bento', name: 'Bento', beschreibung: 'Ein Gitter aus verschieden großen Karten. Verträgt viele Wege.' },
+  { kennung: 'held', name: 'Held', beschreibung: 'Titelbild über die volle Breite, Name und Status darauf.' },
+];
+
 export interface Schriftart {
   id: string;
   name: string;
@@ -75,6 +101,7 @@ export interface Gestaltung {
   radius: number;
   schaltflaeche: Schaltflaechenstil;
   bildform: Bildform;
+  aufbau: Aufbau;
   /** Schriftkennung für Fließtext. */
   schrift: string;
   /** Schriftkennung für Überschriften. */
@@ -108,6 +135,7 @@ function g(werte: Partial<Gestaltung> & Pick<Gestaltung, 'vorlage' | 'grund' | '
     radius: 16,
     schaltflaeche: 'gefuellt',
     bildform: 'rund',
+    aufbau: 'liste',
     schrift: 'dm',
     anzeige: 'clash',
     bild: '',
@@ -134,17 +162,17 @@ export const VORLAGEN: Gestaltung[] = [
   g({ vorlage: 'feuer', grund: '#0F0F0F', grund2: '#1B1B1B', vordergrund: '#F1EFEB', akzent: '#FF7120', akzentText: '#141410' }),
   // Weiße Schrift auf diesem Orange kommt nur auf 2,8:1 — deshalb steht hier
   // dunkle Schrift auf der Hauptschaltfläche, nicht helle.
-  g({ vorlage: 'creme', grund: '#F1EFEB', grund2: '#FFFFFF', vordergrund: '#141410', akzent: '#FF7120', akzentText: '#141410' }),
+  g({ vorlage: 'creme', aufbau: 'bento', grund: '#F1EFEB', grund2: '#FFFFFF', vordergrund: '#141410', akzent: '#FF7120', akzentText: '#141410' }),
   g({ vorlage: 'tinte', grund: '#F7F7F5', vordergrund: '#111111', akzent: '#1D4ED8', akzentText: '#FFFFFF', radius: 6, schaltflaeche: 'kontur', schrift: 'space', anzeige: 'space' }),
-  g({ vorlage: 'ozean', grund: '#04121E', grund2: '#0B3C5C', vordergrund: '#EAF6FF', akzent: '#35C7F2', akzentText: '#04121E', schrift: 'inter', anzeige: 'inter' }),
-  g({ vorlage: 'wald', grund: '#08150F', grund2: '#12402A', vordergrund: '#E9F5EE', akzent: '#4ADE80', akzentText: '#062712', schrift: 'inter', anzeige: 'space' }),
-  g({ vorlage: 'papier', grund: '#EFE7DA', grund2: '#FBF7F0', vordergrund: '#2B2118', akzent: '#B23A0C', akzentText: '#FFFFFF', radius: 10, bildform: 'karte', schrift: 'fraunces', anzeige: 'fraunces' }),
-  g({ vorlage: 'sand', grund: '#1C1A17', grund2: '#2A251E', vordergrund: '#F3EADB', akzent: '#E0B77A', akzentText: '#231D14', radius: 22, schrift: 'inter', anzeige: 'bebas' }),
+  g({ vorlage: 'ozean', aufbau: 'held', grund: '#04121E', grund2: '#0B3C5C', vordergrund: '#EAF6FF', akzent: '#35C7F2', akzentText: '#04121E', schrift: 'inter', anzeige: 'inter' }),
+  g({ vorlage: 'wald', aufbau: 'bento', grund: '#08150F', grund2: '#12402A', vordergrund: '#E9F5EE', akzent: '#4ADE80', akzentText: '#062712', schrift: 'inter', anzeige: 'space' }),
+  g({ vorlage: 'papier', aufbau: 'held', grund: '#EFE7DA', grund2: '#FBF7F0', vordergrund: '#2B2118', akzent: '#B23A0C', akzentText: '#FFFFFF', radius: 10, bildform: 'karte', schrift: 'fraunces', anzeige: 'fraunces' }),
+  g({ vorlage: 'sand', aufbau: 'bento', grund: '#1C1A17', grund2: '#2A251E', vordergrund: '#F3EADB', akzent: '#E0B77A', akzentText: '#231D14', radius: 22, schrift: 'inter', anzeige: 'bebas' }),
   // Rosé statt Rot: #F43F5E trägt weiße Schrift nur mit 3,7:1, #E11D48 mit 4,7:1.
-  g({ vorlage: 'abend', grund: '#150406', grund2: '#4A0D16', vordergrund: '#FFE9EC', akzent: '#E11D48', akzentText: '#FFFFFF', radius: 999, schaltflaeche: 'glas', schrift: 'poppins', anzeige: 'poppins' }),
+  g({ vorlage: 'abend', aufbau: 'held', grund: '#150406', grund2: '#4A0D16', vordergrund: '#FFE9EC', akzent: '#E11D48', akzentText: '#FFFFFF', radius: 999, schaltflaeche: 'glas', schrift: 'poppins', anzeige: 'poppins' }),
   g({ vorlage: 'stein', grund: '#FFFFFF', vordergrund: '#000000', akzent: '#000000', akzentText: '#FFFFFF', radius: 0, schaltflaeche: 'kontur', schrift: 'mono', anzeige: 'mono' }),
-  g({ vorlage: 'salon', grund: '#FDF2F4', grund2: '#FFFFFF', vordergrund: '#3B1F27', akzent: '#A81A52', akzentText: '#FFFFFF', radius: 20, bildform: 'karte', schrift: 'dm', anzeige: 'playfair' }),
-  g({ vorlage: 'nacht', grund: '#111111', grund2: '#171719', vordergrund: '#E9E9F1', akzent: '#CEC4EF', akzentText: '#121319', radius: 32, bildform: 'karte', schrift: 'syne', anzeige: 'syne' }),
+  g({ vorlage: 'salon', aufbau: 'held', grund: '#FDF2F4', grund2: '#FFFFFF', vordergrund: '#3B1F27', akzent: '#A81A52', akzentText: '#FFFFFF', radius: 20, bildform: 'karte', schrift: 'dm', anzeige: 'playfair' }),
+  g({ vorlage: 'nacht', aufbau: 'bento', grund: '#111111', grund2: '#171719', vordergrund: '#E9E9F1', akzent: '#CEC4EF', akzentText: '#121319', radius: 32, bildform: 'karte', schrift: 'syne', anzeige: 'syne' }),
   g({ vorlage: 'plakat', grund: '#0B0B0B', grund2: '#141414', vordergrund: '#F2F2F2', akzent: '#C6F24E', akzentText: '#101401', radius: 4, schrift: 'space', anzeige: 'anton' }),
 ];
 
@@ -415,6 +443,7 @@ export function lieseGestaltung(roh: unknown): { gestaltung: Gestaltung | null; 
     heraus.schaltflaeche = daten.schaltflaeche;
   }
   if (daten.bildform === 'rund' || daten.bildform === 'karte') heraus.bildform = daten.bildform;
+  if (AUFBAUTEN.some((a) => a.kennung === daten.aufbau)) heraus.aufbau = daten.aufbau as Aufbau;
   if (typeof daten.schrift === 'string') heraus.schrift = schrift(daten.schrift).id;
   if (typeof daten.anzeige === 'string') heraus.anzeige = schrift(daten.anzeige).id;
 

@@ -312,11 +312,34 @@ sichtbar bleiben — sonst sucht man einen Fehler, wo nur nichts eingerichtet is
 
 Bestehende Kampagnen: `hnvr.me` sieben, die übrigen keine.
 
-**Die eigentliche Grenze ist die E-Mail-Zahl, nicht die Kampagnenzahl.** 200 E-Mails im
-Monat heißt: eine Tanzschule mit 312 Kontakten bekommt **keine einzige** vollständige
-Aussendung. Beliebig viele Kampagnen zu je 200 Empfängern nützen ihr nichts.
-
 Und dasselbe Muster wie bei Social: **Terminierung ist auch bei E-Mail abgeschaltet.**
+
+### Vollständiges Portfolio, alle zwölf Sites
+
+Social-Kontingent und Terminierung sind **auf allen zwölf Sites identisch**: `0/10`
+Beiträge im Monat, `SCHEDULE_POST` aus, E-Mail-Paket `Free200` mit 200 E-Mails.
+Der einzige Unterschied liegt in der Empfängerliste:
+
+| Kundensite | Kontakte | 200 E-Mails reichen? |
+|---|---:|---|
+| **Hanomag Ersatzteile** | **3 690** | **nein — bei weitem nicht** |
+| hnvr.me | 17 | ja |
+| Tanzschule Bothe | 8 | ja |
+| PUNKT | 2 | ja |
+| Saalwerk, youbooth.me, Hanomag-Service, Vinery Färber, Eggers Eventservice, Festhalle Ahrend, eventcue, Der Anzünder | je 1 | ja |
+
+**Das dreht die Reihenfolge um.** Die frühere Annahme, das E-Mail-Kontingent sei der
+Engpass, stimmt für elf von zwölf Sites nicht — dort ist die Liste schlicht leer. Ein
+Newsletter hat für sie heute **keinen Wert**, weil es niemanden zu benachrichtigen gibt.
+
+Zwei Folgerungen:
+
+1. **Social zuerst, E-Mail später.** Der universelle Engpass ist die abgeschaltete
+   Terminierung bei Social, nicht das E-Mail-Kontingent.
+2. **Hanomag Ersatzteile ist der Sonderfall und zugleich der beste Beweiskunde.** 3 690
+   Kontakte bei 200 E-Mails im Monat heißt: eine einzige vollständige Aussendung dauert
+   über 18 Monate. Dort ist E-Mail nicht Beiwerk, sondern der ganze Zweck — und dort
+   rechnet sich ein bezahlter E-Mail-Plan sofort.
 
 ---
 
@@ -328,8 +351,10 @@ Und dasselbe Muster wie bei Social: **Terminierung ist auch bei E-Mail abgeschal
    nicht. Bleibt Schritt 0.
 2. Preise von Essentials und Pro, und der Widerspruch 250 gegen „unlimited".
 3. Verhalten bei ungültigem Token: Was geschieht mit bereits geplanten Items?
-4. ~~Welche der Bestandssites haben bereits einen Social-Plan?~~ **Beantwortet:** keine,
-   alle sechs geprüften laufen frei. Sechs weitere Sites noch ungemessen.
+4. ~~Welche der Bestandssites haben bereits einen Social-Plan?~~ **Beantwortet:** keine.
+   Alle zwölf laufen frei, mit identischen Werten.
+5. Was kostet ein bezahlter E-Mail-Plan? Nur für Hanomag Ersatzteile nötig, dort aber
+   sofort — und dort trägt er sich vermutlich auch.
 
 ---
 

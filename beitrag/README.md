@@ -23,7 +23,15 @@ Kürzel steht auf Papier, und Papier lässt sich nicht löschen. Wird es neu
 vergeben, zeigt ein gedrucktes Plakat eines Tages auf das Ziel eines
 Fremden — und niemand kann es zurückholen.
 
-Zwei Handgriffe beheben das, beide in `punkt-zentrale.js`:
+**Der erste Teil ist erledigt.** `maepux` liegt seit dem 17. August als
+stillgelegte Zeile in `PK_Codes` und ist damit dauerhaft belegt:
+`/r/maepux` antwortet jetzt **410** statt 404, und der Versuch, das Kürzel
+erneut zu vergeben, scheitert am Index (`WDE0123`). Dafür war keine
+Codeänderung nötig — der laufende Stand behandelt stillgelegte Codes
+bereits richtig. `PK_Codes` hat außerdem ein neues Feld `geloescht`.
+
+Was noch fehlt, ist das **künftige** Löschen: es entfernt die Zeile weiter,
+statt sie stillzulegen. Zwei Handgriffe in `punkt-zentrale.js`:
 
 ```js
 import { loeschePlan, verwaisteKuerzel, sperrzeile, kuerzelFrei } from '../lib/punkt-zentrale.js';
@@ -34,15 +42,17 @@ await wixData.update('PK_Codes', aenderung);
 await wixData.insert('PK_Ereignisse', { ...ereignis, kontoId, wer, zeit: new Date().toISOString() });
 
 // 2 · Einmalig: die bereits verwaisten Kürzel zurücksperren.
+//     Für maepux ist das erledigt; die Funktion findet künftige.
 for (const k of verwaisteKuerzel(alleCodes, alleEreignisse)) {
   await wixData.insert('PK_Codes', sperrzeile(k, kontoId));
 }
 ```
 
-Dazu muss die Liste `geloescht !== true` filtern und die Weiterleitung
-den Fall abfangen: ein gelöschter Code bekommt eine lesbare Seite
-(„Dieser Code wurde gelöscht"), kein „unbekannt" und niemals ein fremdes
-Ziel. Statuscode **410**, nicht 404 — diesen Code gab es.
+Dazu muss die Liste `geloescht !== true` filtern. Die Weiterleitung
+braucht nichts weiter: sie liefert für einen Code mit `aktiv: false`
+bereits **410**. Nur der Satz auf der Seite passt nicht ganz — dort steht
+„vorübergehend deaktiviert", und für ein Löschen wäre „dauerhaft gelöscht,
+das Kürzel bleibt gesperrt" richtiger.
 
 `kuerzelFrei` ist die freundliche Antwort davor; der Schutz bleibt der
 Index. Zwei gleichzeitige Anfragen bestehen jede Vorabfrage und legen

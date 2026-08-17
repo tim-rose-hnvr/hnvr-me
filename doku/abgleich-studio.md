@@ -47,8 +47,20 @@ Ebenfalls durch Abwesenheit im Bündel belegt:
 | Lücke | Beleg | in `pnkt/` vorhanden |
 |---|---|---|
 | **Sonderfarben** | kein `Separation`, kein `setcmykcolor`, kein `DocumentCustomColors` | ja, mit Ghostscript-Auszug nachgewiesen |
-| **GS1 Digital Link** | kein `GTIN`, kein `digitalLink`, kein `/01/` | ja, samt Prüfziffer und Kassenmaßen |
-| **Produktpass** | keine Sammlung, kein Feld, keine Seite | ja, öffentliche Seite mit beschränkten Angaben |
+| **GS1 Digital Link** | Felder `gtin` und `gs1Json` sind da, das Bündel benutzt sie nicht | ja, samt Prüfziffer und Kassenmaßen |
+| **Produktpass** | Feld `passJson` ist da, das Bündel benutzt es nicht | ja, öffentliche Seite mit beschränkten Angaben |
+
+### Zweite Berichtigung: das Datenmodell ist weiter als die Oberfläche
+
+Ein Blick in das Schema von `PK_Codes` — nicht in das Bündel — zeigt
+**`passJson`, `gtin`, `gs1Json`, `ordnerName`, `gesperrtWegen`,
+`gueltigBis`, `druckJson`, `herkunft`**. Das Datenmodell hat Produktpass
+und GS1 also längst vorgesehen; nur die ausgelieferte Oberfläche greift
+nicht darauf zu.
+
+Damit sind die beiden Zeilen oben keine fehlenden Merkmale, sondern
+**halbfertige**: der Platz ist da, die Bedienung fehlt. Das ist eine
+andere und deutlich kleinere Aufgabe, als sie hier zuerst stand.
 
 ### Berichtigung: Mitarbeitende fehlen nicht
 
@@ -73,11 +85,22 @@ Index `kuerzel-eindeutig` wirkt nur auf vorhandene Zeilen — das Kürzel
 ist also **wieder frei und kann ein zweites Mal vergeben werden.**
 
 Das Kürzel steht möglicherweise auf Papier. Wird es neu vergeben, zeigt
-ein gedrucktes Plakat eines Tages auf das Ziel eines Fremden. In `pnkt/`
-ist das behoben: gelöscht heißt dort stillgelegt, das Kürzel bleibt
-dauerhaft belegt, ein Scan bekommt 410 mit lesbarer Seite. Für den
-Wix-Stand liegt die Behebung als `beitrag/punkt-zentrale.js` bereit,
-zusammen mit der Funktion, die die bereits verwaisten Kürzel findet.
+ein gedrucktes Plakat eines Tages auf das Ziel eines Fremden.
+
+**Am 17. August behoben, im laufenden Projekt.** `maepux` liegt jetzt als
+stillgelegte Zeile in `PK_Codes`; der eindeutige Index hält das Kürzel
+dauerhaft besetzt. Nachgeprüft:
+
+| | vorher | nachher |
+|---|---|---|
+| `/r/maepux` | 404 „Diesen Code kennen wir nicht" | **410 „Nicht abrufbar"** |
+| Kürzel neu vergeben | ging | **`WDE0123`, abgewiesen** |
+
+Keine Zeile Code war dafür nötig — der laufende Stand beantwortet einen
+stillgelegten Code bereits richtig. Dazu ist `PK_Codes` um ein Feld
+`geloescht` gewachsen, damit künftiges Löschen die Zeile stehen lassen
+kann statt sie zu entfernen. Der Rest liegt als
+`beitrag/punkt-zentrale.js` bereit.
 
 Dazu drei Dinge, die keine Codefrage sind:
 

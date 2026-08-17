@@ -74,6 +74,8 @@ type Speicher struct {
 	zaehler    map[string]*Tageszaehler // nach CodeID + Tag
 	konten     map[string]*Konto        // nach ID
 	schluessel map[string]*Schluessel   // nach Abdruck
+	marken     map[string]*Marke        // nach Organisation
+	markenHost map[string]*Marke        // nach Hostname
 
 	codeDatei     *os.File
 	ereignisDatei *os.File
@@ -97,6 +99,8 @@ func Oeffne(verzeichnis string) (*Speicher, error) {
 		zaehler:     map[string]*Tageszaehler{},
 		konten:      map[string]*Konto{},
 		schluessel:  map[string]*Schluessel{},
+		marken:      map[string]*Marke{},
+		markenHost:  map[string]*Marke{},
 	}
 
 	if err := s.lade("codes.jsonl", func(zeile []byte) error {
@@ -131,6 +135,8 @@ func Oeffne(verzeichnis string) (*Speicher, error) {
 			s.konten[z.Konto.ID] = z.Konto
 		case z.Schluessel != nil:
 			s.schluessel[z.Schluessel.Abdruck] = z.Schluessel
+		case z.Marke != nil:
+			s.marke(z.Marke)
 		}
 		return nil
 	}); err != nil {

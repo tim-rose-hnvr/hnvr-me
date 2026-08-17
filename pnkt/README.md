@@ -83,6 +83,9 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `PATCH /api/v1/codes/{id}` | Ziel ändern — neue Fassung, Protokolleintrag | Schlüssel |
 | `GET /api/v1/codes/{id}/statistik`, `/protokoll` | Auswertung, Änderungsgeschichte | Schlüssel |
 | `POST /api/v1/massenanlage` | CSV hinein, ZIP heraus | Schlüssel |
+| `GET /api/v1/marke` | Erscheinungsbild des aufgerufenen Hostnamens | offen |
+| `PUT /api/v1/marke` | Marke setzen | Inhaber |
+| `GET/POST /api/v1/mitarbeitende`, `DELETE …/{id}` | Personen der Organisation | Schlüssel / Inhaber |
 | `GET /qr.svg\|pdf\|eps?inhalt=…` | derselbe Vektor über die Adresszeile | offen |
 | `GET /` | Studio | offen |
 
@@ -230,6 +233,57 @@ einzeln schreibt):
 
 Alle sechs Dateien bleiben lesbar.
 
+## White-Label
+
+Ein Binär, viele Marken, auseinandergehalten am **Hostnamen**. Eine
+Agentur kann ihren Kunden damit einen eigenen Dienst anbieten, ohne dass
+jemand eine zweite Anlage betreibt.
+
+```
+PUT /api/v1/marke
+{ "name":"Bäckerei Klein", "host":"qr.baecker.de",
+  "primaer":"#7a4a12", "grund":"#fdf6e9", "tinte":"#2b1a06",
+  "logoSvg":"<svg …>", "impressum":"…", "datenschutz":"…" }
+```
+
+Derselbe unbekannte Code, über zwei Hostnamen gescannt:
+
+| Host | Titel | Fläche |
+|---|---|---|
+| `code.hnvr.me` | Unbekannter Code · hnvr.me | `#101014` |
+| `qr.baecker.de` | Unbekannter Code · Bäckerei Klein | `#fdf6e9` |
+
+Ein Hostname gehört genau einer Organisation — zwei Marken auf demselben
+Namen wären nicht auflösbar, und ein Kunde sähe die Hinweisseite eines
+anderen. Das Logo wird als SVG eingebettet, nicht verlinkt: eine
+Hinweisseite darf nichts nachladen müssen, um lesbar zu sein.
+
+Entscheidend ist, was eine Marke **nicht** ist: kein eigener Codestand
+und keine eigene Datenhaltung. Wer je Kunde einen Zweig aufmacht, pflegt
+nach dem dritten Kunden drei Programme.
+
+## Mitarbeitende
+
+Drei Rollen, wie in der Zentrale festgelegt:
+
+| Rolle | lesen | schreiben | verwalten |
+|---|---|---|---|
+| Inhaber | ja | ja | ja |
+| Redakteur | ja | ja | nein |
+| Leser | ja | nein | nein |
+
+Codes gehören der **Organisation**, nicht der einzelnen Person —
+Mitarbeitende sehen dieselben Codes wie der Inhaber, sonst wäre
+gemeinsame Arbeit an einer Kampagne nicht möglich. Eine fremde
+Organisation sieht nichts.
+
+Ein Schlüssel kann nie mehr dürfen als die Person, der er gehört: Wird
+jemand zum Leser herabgestuft, verlieren seine Schlüssel im selben
+Augenblick das Schreibrecht. Einladungen per E-Mail gibt es nicht — die
+Person legt sich selbst ein Konto an, der Inhaber holt sie herein. Damit
+wandert kein Passwort durch ein Postfach. Beim Entlassen bleibt das
+Konto bestehen; es gehört der Person, nicht der Organisation.
+
 ## Massenanlage
 
 Das Stück, das eine Agentur täglich braucht:
@@ -255,7 +309,8 @@ Module für das gewählte Verfahren.
 
 Gemessen am veröffentlichten Stand von pnkt.me fehlt dieser Fassung:
 
-- **Ordner, Suche, Löschen, Mitarbeitende** in der Zentrale.
+- **Ordner, Suche und Löschen** in der Zentrale.
+- **Übernahme aus Wix** — Feldabbildung steht, ein Trockenlauf fehlt.
 - **Produktpass.** Die gehostete Seite hinter dem Code ist die
   eigentliche Anforderung der ESPR.
 - **Übernahme aus Wix.** `PK_Codes` lässt sich zeilenweise in

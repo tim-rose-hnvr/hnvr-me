@@ -178,6 +178,27 @@ func (s *Speicher) LegeSchluesselAn(kontoID, name string, nurLesen bool) (*Schlu
 	return sch, klartext, nil
 }
 
+// OrgVon liefert die Organisation, zu der ein Schluessel gehoert.
+func (s *Speicher) OrgVon(sch *Schluessel) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if k, da := s.konten[sch.KontoID]; da {
+		return k.Organisation()
+	}
+	return sch.KontoID
+}
+
+// RolleVon liefert die Rolle des Kontos hinter einem Schluessel. Ein
+// Schluessel kann nie mehr duerfen als die Person, der er gehoert.
+func (s *Speicher) RolleVon(sch *Schluessel) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if k, da := s.konten[sch.KontoID]; da {
+		return k.Rolle
+	}
+	return RolleLeser
+}
+
 // PruefeSchluessel loest einen Schluessel auf. Gesucht wird ueber den
 // Abdruck — der Klartext liegt nirgends.
 func (s *Speicher) PruefeSchluessel(klartext string) (*Schluessel, error) {
@@ -228,4 +249,5 @@ type satz struct {
 	Art        string      `json:"art"`
 	Konto      *Konto      `json:"konto,omitempty"`
 	Schluessel *Schluessel `json:"schluessel,omitempty"`
+	Marke      *Marke      `json:"marke,omitempty"`
 }

@@ -38,6 +38,14 @@ func (d *dienst) mitSchluessel(schreibend bool, weiter func(http.ResponseWriter,
 				"fehler": "dieser Schluessel darf nur lesen"})
 			return
 		}
+		// Ein Schluessel kann nie mehr duerfen als die Person, der er
+		// gehoert. Wird jemand zum Leser herabgestuft, verlieren seine
+		// Schluessel im selben Augenblick das Schreibrecht.
+		if schreibend && !speicher.DarfSchreiben(d.ablage.RolleVon(sch)) {
+			d.jsonAus(w, http.StatusForbidden, map[string]string{
+				"fehler": "die Rolle dieses Kontos darf nur lesen"})
+			return
+		}
 		weiter(w, r, sch)
 	}
 }
@@ -302,15 +310,17 @@ func (d *dienst) schluesselAnlegen(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// listeCodesFuer zeigt nur die Codes des Kontos, zu dem der Schluessel gehoert.
+// listeCodesFuer zeigt die Codes der Organisation. Mitarbeitende sehen
+// dieselben Codes wie der Inhaber — sonst waere gemeinsame Arbeit an
+// einer Kampagne nicht moeglich.
 func (d *dienst) listeCodesFuer(w http.ResponseWriter, sch *speicher.Schluessel) {
-	d.jsonAus(w, http.StatusOK, d.ablage.Liste(sch.KontoID))
+	d.jsonAus(w, http.StatusOK, d.ablage.Liste(d.ablage.OrgVon(sch)))
 }
 
 // legeCodeAnFuer bindet den neuen Code an das Konto des Schluessels —
 // der Aufrufer kann sich kein fremdes Konto aussuchen.
 func (d *dienst) legeCodeAnFuer(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
-	r.Header.Set("x-punkt-konto", sch.KontoID)
+	r.Header.Set("x-punkt-konto", d.ablage.OrgVon(sch))
 	d.legeCodeAn(w, r)
 }
 
@@ -329,4 +339,87 @@ func pruefFarbe(g qr.Gestalt) string {
 		}
 	}
 	return hellste
+}
+
+// --- Marke und Mitarbeitende ---------------------------------------------
+
+// marke liefert das Erscheinungsbild. Ohne Schluessel wird die Marke des
+// aufgerufenen Hostnamens gezeigt — das braucht die Hinweisseite, und es
+// verraet nichts, was nicht ohnehin auf dem Bildschirm steht.
+func (d *dienst) markeLesen(w http.ResponseWriter, r *http.Request) {
+	m := d.ablage.MarkeNachHost(r.Host)
+	d.jsonAus(w, http.StatusOK, map[string]string{
+		"name": m.Name, "host": m.Host, "primaer": m.Primaer,
+		"grund": m.Grund, "tinte": m.Tinte, "logoSvg": m.LogoSVG,
+		"impressum": m.Impressum, "datenschutz": m.Datenschutz,
+	})
+}
+
+func (d *dienst) markeSetzen(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	if !speicher.DarfVerwalten(d.ablage.RolleVon(sch)) {
+		d.jsonAus(w, http.StatusForbidden, map[string]string{
+			"fehler": "die Marke setzt der Inhaber"})
+		return
+	}
+	var m speicher.Marke
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&m); err != nil {
+		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": err.Error()})
+		return
+	}
+	m.OrgID = d.ablage.OrgVon(sch)
+	if err := d.ablage.SetzeMarke(&m); err != nil {
+		d.jsonAus(w, http.StatusConflict, map[string]string{"fehler": err.Error()})
+		return
+	}
+	_ = d.ablage.Protokolliere(speicher.Ereignis{
+		KontoID: m.OrgID, Wer: "schnittstelle", Was: "marke.gesetzt",
+		Gegenstand: m.ID, Neu: m.Name + " auf " + m.Host,
+	})
+	d.jsonAus(w, http.StatusOK, m)
+}
+
+func (d *dienst) mitarbeitendeListe(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	d.jsonAus(w, http.StatusOK, d.ablage.Mitarbeitende(d.ablage.OrgVon(sch)))
+}
+
+func (d *dienst) mitarbeitendeAufnehmen(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	if !speicher.DarfVerwalten(d.ablage.RolleVon(sch)) {
+		d.jsonAus(w, http.StatusForbidden, map[string]string{
+			"fehler": "Mitarbeitende fuehrt der Inhaber"})
+		return
+	}
+	var wunsch struct{ Mail, Rolle string }
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<16)).Decode(&wunsch); err != nil {
+		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": err.Error()})
+		return
+	}
+	org := d.ablage.OrgVon(sch)
+	k, err := d.ablage.NimmMitarbeitendeAuf(org, wunsch.Mail, wunsch.Rolle)
+	if err != nil {
+		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": err.Error()})
+		return
+	}
+	_ = d.ablage.Protokolliere(speicher.Ereignis{
+		KontoID: org, Wer: "schnittstelle", Was: "mitarbeit.aufgenommen",
+		Gegenstand: k.ID, Neu: k.Mail + " als " + k.Rolle,
+	})
+	d.jsonAus(w, http.StatusOK, map[string]string{"id": k.ID, "mail": k.Mail, "rolle": k.Rolle})
+}
+
+func (d *dienst) mitarbeitendeEntlassen(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	if !speicher.DarfVerwalten(d.ablage.RolleVon(sch)) {
+		d.jsonAus(w, http.StatusForbidden, map[string]string{
+			"fehler": "Mitarbeitende fuehrt der Inhaber"})
+		return
+	}
+	org := d.ablage.OrgVon(sch)
+	if err := d.ablage.EntlasseMitarbeitende(org, r.PathValue("id")); err != nil {
+		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": err.Error()})
+		return
+	}
+	_ = d.ablage.Protokolliere(speicher.Ereignis{
+		KontoID: org, Wer: "schnittstelle", Was: "mitarbeit.beendet",
+		Gegenstand: r.PathValue("id"),
+	})
+	d.jsonAus(w, http.StatusOK, map[string]string{"zustand": "beendet"})
 }

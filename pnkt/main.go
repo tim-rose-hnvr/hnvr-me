@@ -68,6 +68,11 @@ func main() {
 	weg.HandleFunc("POST /api/v1/konten", d.kontoAnlegen)
 	weg.HandleFunc("POST /api/v1/anmelden", d.anmelden)
 	weg.HandleFunc("POST /api/v1/schluessel", d.schluesselAnlegen)
+	weg.HandleFunc("GET /api/v1/marke", d.markeLesen)
+	weg.HandleFunc("PUT /api/v1/marke", d.mitSchluessel(true, d.markeSetzen))
+	weg.HandleFunc("GET /api/v1/mitarbeitende", d.mitSchluessel(false, d.mitarbeitendeListe))
+	weg.HandleFunc("POST /api/v1/mitarbeitende", d.mitSchluessel(true, d.mitarbeitendeAufnehmen))
+	weg.HandleFunc("DELETE /api/v1/mitarbeitende/{id}", d.mitSchluessel(true, d.mitarbeitendeEntlassen))
 
 	// Mit Schluessel im Kopf x-punkt-schluessel.
 	weg.HandleFunc("GET /api/v1/codes", d.mitSchluessel(false,
@@ -132,27 +137,27 @@ func (d *dienst) weiterleiten(w http.ResponseWriter, r *http.Request) {
 
 	code, da := d.ablage.NachKuerzel(kuerzel)
 	if !da {
-		d.hinweis(w, http.StatusNotFound, "Unbekannter Code",
+		d.hinweisMitMarke(w, r, http.StatusNotFound, "Unbekannter Code",
 			"Diese Kurzadresse gibt es nicht. Vertippt beim Abschreiben?")
 		return
 	}
 	if code.Gesperrt != "" {
-		d.hinweis(w, http.StatusGone, "Gesperrt", "Dieser Code wurde gesperrt: "+code.Gesperrt)
+		d.hinweisMitMarke(w, r, http.StatusGone, "Gesperrt", "Dieser Code wurde gesperrt: "+code.Gesperrt)
 		return
 	}
 	if !code.Aktiv {
-		d.hinweis(w, http.StatusGone, "Stillgelegt", "Dieser Code ist zur Zeit nicht in Betrieb.")
+		d.hinweisMitMarke(w, r, http.StatusGone, "Stillgelegt", "Dieser Code ist zur Zeit nicht in Betrieb.")
 		return
 	}
 	if code.GueltigBis != nil && code.GueltigBis.Before(time.Now()) {
-		d.hinweis(w, http.StatusGone, "Abgelaufen", "Dieser Code war bis "+
+		d.hinweisMitMarke(w, r, http.StatusGone, "Abgelaufen", "Dieser Code war bis "+
 			code.GueltigBis.Format("02.01.2006")+" gueltig.")
 		return
 	}
 
 	ziel := waehleZiel(code, r)
 	if ziel == "" {
-		d.hinweis(w, http.StatusNotFound, "Ohne Ziel", "Fuer diesen Code ist kein Ziel hinterlegt.")
+		d.hinweisMitMarke(w, r, http.StatusNotFound, "Ohne Ziel", "Fuer diesen Code ist kein Ziel hinterlegt.")
 		return
 	}
 
@@ -288,7 +293,7 @@ func klassen(r *http.Request) []string {
 func (d *dienst) digitalLink(w http.ResponseWriter, r *http.Request) {
 	gtin14, err := gs1.PruefeGTIN(r.PathValue("gtin"))
 	if err != nil {
-		d.hinweis(w, http.StatusBadRequest, "Keine gueltige GTIN", err.Error())
+		d.hinweisMitMarke(w, r, http.StatusBadRequest, "Keine gueltige GTIN", err.Error())
 		return
 	}
 	for _, c := range d.ablage.Liste("") {
@@ -300,7 +305,7 @@ func (d *dienst) digitalLink(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	d.hinweis(w, http.StatusNotFound, "Artikel unbekannt",
+	d.hinweisMitMarke(w, r, http.StatusNotFound, "Artikel unbekannt",
 		"Zu dieser GTIN ist hier kein Ziel hinterlegt.")
 }
 
@@ -522,16 +527,47 @@ func (d *dienst) jsonAus(w http.ResponseWriter, lage int, wert any) {
 // Ein gedruckter Code darf nie in einem Serverfehler enden — dahinter
 // steht ein Mensch mit einem Telefon vor einem Plakat.
 func (d *dienst) hinweis(w http.ResponseWriter, lage int, titel, text string) {
+	d.hinweisMitMarke(w, nil, lage, titel, text)
+}
+
+// hinweisMitMarke zeigt die Seite im Gesicht des Hostnamens, ueber den
+// gescannt wurde. Wer den Code eines Kunden scannt, sieht dessen Marke —
+// das ist der sichtbare Teil des White-Label.
+func (d *dienst) hinweisMitMarke(w http.ResponseWriter, r *http.Request, lage int, titel, text string) {
+	m := speicher.StandardMarke()
+	if r != nil {
+		m = d.ablage.MarkeNachHost(r.Host)
+	}
+	logo := ""
+	if m.LogoSVG != "" {
+		logo = `<div class="logo">` + m.LogoSVG + `</div>`
+	}
+	fuss := ""
+	if m.Impressum != "" || m.Datenschutz != "" {
+		fuss = `<p class="fuss">`
+		if m.Impressum != "" {
+			fuss += `<a href="` + m.Impressum + `">Impressum</a> `
+		}
+		if m.Datenschutz != "" {
+			fuss += `<a href="` + m.Datenschutz + `">Datenschutz</a>`
+		}
+		fuss += `</p>`
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(lage)
 	fmt.Fprintf(w, `<!doctype html><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>%s</title>
+<title>%s · %s</title>
 <style>body{margin:0;display:grid;place-items:center;min-height:100vh;
-font:17px/1.5 ui-sans-serif,system-ui,sans-serif;background:#EBEEEE;color:#141A1C}
+font:17px/1.5 ui-sans-serif,system-ui,sans-serif;background:%s;color:%s}
 main{max-width:26rem;padding:2rem}h1{font-size:1.4rem;margin:0 0 .6rem}
-p{margin:0;color:#59666C}</style>
-<main><h1>%s</h1><p>%s</p></main>`, titel, titel, text)
+p{margin:0;opacity:.75}.logo{margin-bottom:1.2rem;max-width:9rem}
+.logo svg{width:100%%;height:auto}.marke{font-size:.72rem;font-weight:700;
+letter-spacing:.12em;text-transform:uppercase;color:%s;margin-bottom:.5rem}
+.fuss{margin-top:1.5rem;font-size:.8rem}.fuss a{color:inherit}</style>
+<main>%s<div class="marke">%s</div><h1>%s</h1><p>%s</p>%s</main>`,
+		titel, m.Name, m.Grund, m.Tinte, m.Primaer, logo, m.Name, titel, text, fuss)
 }
 
 func str(v any) string {

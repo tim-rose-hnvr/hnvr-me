@@ -6,7 +6,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "schriften": "node skripte/schriften-holen.mjs"
+    "schriften": "node skripte/schriften-holen.mjs",
+    "eine-datei": "astro build && node skripte/eine-datei.mjs"
   },
   "dependencies": { "astro": "^5" }
 }

@@ -140,6 +140,27 @@ Das ist nicht Marketing, sondern das Produkt, und ein guter Teil davon
 läuft bereits unter `/studio` und `/zentrale`. Es dort einzubauen ist die
 richtige Reihenfolge — nicht, es hier ein zweites Mal zu bauen.
 
+## Eine Datei zum Weitergeben
+
+`npm run eine-datei` baut die Seite und legt sie danach als **eine**
+HTML-Datei ab (`website/pnkt-me.html`, rund 4 MB). Darin steckt alles:
+die acht Schriftschnitte und alle Bilder als Daten-URI, der Stil im
+Dokument, die sieben Seiten als sieben Abschnitte. Die Wege dazwischen
+laufen über den Anker in der Adresse (`#werkstatt`, `#vorlagen~liste-gastro`),
+sodass Zurück und Vorwärts weiterhin stimmen.
+
+Wozu: die Seite ist vorzeigbar, bevor ein Server und eine Domain stehen.
+Eine Datei ohne einen einzigen Abruf nach außen lässt sich anhängen,
+weiterreichen oder auf einen Stick legen — und sie beweist nebenbei den
+Anspruch aus dem Fuß: nichts wird von fremden Servern geholt. Das Skript
+bricht ab, wenn nach dem Einbetten noch ein Verweis auf `/…` übrig ist.
+
+Der Ersatz für einen Server ist das nicht: es gibt keine getrennten
+Adressen, keine Sitemap, kein `robots.txt`. Für die Veröffentlichung
+unter `pnkt.me` gilt weiter `npm run build` und ein Webserver.
+
+---
+
 ## Eine Falle beim Bauen
 
 `export type` im Frontmatter einer `.astro`-Datei strippt der Compiler

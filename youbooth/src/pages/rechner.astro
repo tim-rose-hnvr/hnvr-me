@@ -1,0 +1,643 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import { basismodul, zusatzmodule } from '../daten/module';
+
+/**
+ * Verdienstrechner. Wie beim Konfigurator wird der Startzustand serverseitig
+ * gerechnet; die Regler aktualisieren im Browser dieselben Felder.
+ *
+ * Abweichung vom Entwurf: dort ist „Volles Set" mit 195 € beziffert, die
+ * Summe der 13 Zusatzmodule ergibt aber 205 €. Gerechnet wird mit den echten
+ * Modulpreisen, damit Rechner und Preisseite dieselbe Zahl zeigen.
+ */
+
+const vollesSet = zusatzmodule.reduce((a, m) => a + m.preis, 0);
+const galerieUndWall =
+  zusatzmodule.find((m) => m.id === 'galerie')!.preis +
+  zusatzmodule.find((m) => m.id === 'foto-wall')!.preis;
+
+const pakete = [
+  { id: 0, text: 'Nur Basis', preis: 0 },
+  { id: 1, text: 'Galerie + Wall', preis: galerieUndWall },
+  { id: 2, text: 'Volles Set', preis: vollesSet },
+];
+
+/** Kilometersatz für Hin- und Rückfahrt. */
+const KM_SATZ = 0.4;
+
+const regler = [
+  { id: 'preis', gruppe: 'einnahmen', text: 'Mietpreis pro Event', min: 150, max: 1500, schritt: 10, wert: 690 },
+  { id: 'events', gruppe: 'einnahmen', text: 'Events pro Monat', min: 1, max: 20, schritt: 1, wert: 6 },
+  { id: 'extra', gruppe: 'einnahmen', text: 'Zusatzverkauf pro Event (Drucke, Stunden)', min: 0, max: 400, schritt: 10, wert: 80 },
+  { id: 'drucke', gruppe: 'kosten', text: 'Ausdrucke pro Event', min: 0, max: 600, schritt: 10, wert: 200 },
+  { id: 'papierCt', gruppe: 'kosten', text: 'Materialkosten pro Druck', min: 0, max: 60, schritt: 1, wert: 22 },
+  { id: 'km', gruppe: 'kosten', text: 'Fahrt & Aufbau (km einfach)', min: 0, max: 200, schritt: 5, wert: 35 },
+  { id: 'stunden', gruppe: 'kosten', text: 'Betreuung vor Ort', min: 0, max: 12, schritt: 1, wert: 6 },
+  { id: 'lohn', gruppe: 'kosten', text: 'Stundensatz Betreuung', min: 0, max: 60, schritt: 5, wert: 20 },
+  { id: 'boxen', gruppe: 'lizenz', text: 'Boxen im Einsatz', min: 1, max: 6, schritt: 1, wert: 2 },
+];
+
+const w = Object.fromEntries(regler.map((r) => [r.id, r.wert])) as Record<string, number>;
+const startPaket = 1;
+
+const eur = (n: number, dez = 0) =>
+  new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: dez,
+    maximumFractionDigits: dez,
+  }).format(n);
+
+const material = w.drucke * (w.papierCt / 100);
+const fahrt = w.km * 2 * KM_SATZ;
+const betreuung = w.stunden * w.lohn;
+const einnahmen = w.preis + w.extra;
+const db = einnahmen - material - fahrt - betreuung;
+const marge = einnahmen > 0 ? Math.round((db / einnahmen) * 100) : 0;
+const lizenz = w.boxen * basismodul.preis + pakete[startPaket].preis;
+const dbMonat = db * w.events;
+const monat = dbMonat - lizenz;
+const anteil = lizenz / w.events;
+const breakEven = Math.max(1, Math.ceil(basismodul.preis / db));
+
+const rechendaten = { basispreis: basismodul.preis, kmSatz: KM_SATZ, pakete: pakete.map((p) => p.preis) };
+
+const beschriftung = (id: string, wert: number) => {
+  switch (id) {
+    case 'preis':
+    case 'extra':
+      return eur(wert);
+    case 'events':
+      return `${wert} ${wert === 1 ? 'Event' : 'Events'}`;
+    case 'drucke':
+      return `${wert} Stück`;
+    case 'papierCt':
+      return `${(wert / 100).toFixed(2).replace('.', ',')} €`;
+    case 'km':
+      return `${wert} km`;
+    case 'stunden':
+      return `${wert} h`;
+    case 'lohn':
+      return `${eur(wert)}/h`;
+    case 'boxen':
+      return `${wert} ${wert === 1 ? 'Box' : 'Boxen'}`;
+    default:
+      return String(wert);
+  }
+};
+
+const gruppen = [
+  { id: 'einnahmen', titel: 'Einnahmen' },
+  { id: 'kosten', titel: 'Kosten je Event' },
+];
+---
+
+<Marketing
+  titel="Rechner"
+  beschreibung="Mietpreis, Aufwand, Material und Fahrtweg einstellen — der Rechner zeigt Deckungsbeitrag pro Event, Monatsergebnis und ab wann sich eine zweite Box lohnt."
+>
+  <section class="hero">
+    <span class="mono mono--amber">Rechner</span>
+    <h1>Was bleibt pro Event übrig?</h1>
+    <p class="fliess">
+      Stell deine Zahlen ein: Mietpreis, Aufwand, Verbrauchsmaterial und Fahrtweg. Der Rechner zeigt
+      Deckungsbeitrag pro Event, Monatsergebnis und ab wann sich eine zweite Box lohnt. Alles nur
+      Rechnung, keine Versprechen.
+    </p>
+  </section>
+
+  <div class="rechner" data-rechendaten={JSON.stringify(rechendaten)}>
+    <div class="spalte-links">
+      {
+        gruppen.map((g) => (
+          <section class="karte">
+            <span class="mono">{g.titel}</span>
+            {regler
+              .filter((r) => r.gruppe === g.id)
+              .map((r) => (
+                <div class="regler">
+                  <label class="regler__kopf" for={`r-${r.id}`}>
+                    {r.text}
+                    <span class="regler__wert" data-wert={r.id}>
+                      {beschriftung(r.id, r.wert)}
+                    </span>
+                  </label>
+                  <input
+                    id={`r-${r.id}`}
+                    type="range"
+                    min={r.min}
+                    max={r.max}
+                    step={r.schritt}
+                    value={r.wert}
+                    data-regler={r.id}
+                  />
+                </div>
+              ))}
+          </section>
+        ))
+      }
+
+      <section class="karte">
+        <span class="mono">Lizenz & Module</span>
+        {
+          regler
+            .filter((r) => r.gruppe === 'lizenz')
+            .map((r) => (
+              <div class="regler">
+                <label class="regler__kopf" for={`r-${r.id}`}>
+                  {r.text}
+                  <span class="regler__wert" data-wert={r.id}>
+                    {beschriftung(r.id, r.wert)}
+                  </span>
+                </label>
+                <input
+                  id={`r-${r.id}`}
+                  type="range"
+                  min={r.min}
+                  max={r.max}
+                  step={r.schritt}
+                  value={r.wert}
+                  data-regler={r.id}
+                />
+              </div>
+            ))
+        }
+        <div class="regler">
+          <span class="regler__kopf">Modul-Paket</span>
+          <div class="segmente">
+            {
+              pakete.map((p) => (
+                <button
+                  class:list={['segment', { on: p.id === startPaket }]}
+                  type="button"
+                  data-paket={p.id}
+                  aria-pressed={p.id === startPaket ? 'true' : 'false'}
+                >
+                  {p.text} · {p.preis} €
+                </button>
+              ))
+            }
+          </div>
+        </div>
+        <span class="klein">
+          Basis kostet {basismodul.preis} € je Box und Monat. Zusatzmodule gelten kontoweit,
+          unabhängig von der Anzahl der Boxen.
+        </span>
+      </section>
+    </div>
+
+    <div class="spalte-rechts">
+      <section class="ergebnis">
+        <span class="mono mono--hell">Pro Event</span>
+        <div class="ergebnis__zahl">
+          <b data-wert="db">{eur(db)}</b>
+          <span class="mono mono--hell">Deckungsbeitrag</span>
+        </div>
+        <span class="balken">
+          <span class="balken__fuellung" data-wert="dbBalken" style={`width:${Math.max(0, Math.min(100, marge))}%`}></span>
+        </span>
+        <div class="zeilen">
+          <span class="zeile"><span>Einnahmen</span><span class="hell" data-wert="einnahmen">{eur(einnahmen)}</span></span>
+          <span class="zeile"><span>Material</span><span class="hell">− <span data-wert="material">{eur(material)}</span></span></span>
+          <span class="zeile"><span>Fahrt</span><span class="hell">− <span data-wert="fahrt">{eur(fahrt)}</span></span></span>
+          <span class="zeile"><span>Betreuung</span><span class="hell">− <span data-wert="betreuung">{eur(betreuung)}</span></span></span>
+          <span class="strich" aria-hidden="true"></span>
+          <span class="zeile"><span class="hell">Marge</span><span class="amber" data-wert="marge">{marge} %</span></span>
+        </div>
+      </section>
+
+      <section class="karte">
+        <span class="mono">Pro Monat</span>
+        <div class="monatszahl">
+          <b data-wert="monat">{eur(monat)}</b>
+          <span class="mono">Nach Software</span>
+        </div>
+        <div class="zeilen zeilen--hell">
+          <span class="zeile"><span>Deckungsbeitrag × Events</span><span class="dunkel" data-wert="dbMonat">{eur(dbMonat)}</span></span>
+          <span class="zeile"><span>youbooth-Lizenz</span><span class="dunkel">− <span data-wert="lizenz">{eur(lizenz)}</span></span></span>
+          <span class="zeile"><span>Software-Anteil je Event</span><span class="dunkel" data-wert="anteil">{eur(anteil, 2)}</span></span>
+        </div>
+        <span class="strich strich--hell" aria-hidden="true"></span>
+        <span class="klein" data-wert="hinweis">
+          Der Software-Anteil je Event liegt im niedrigen einstelligen Bereich der Marge — die
+          Rechnung trägt sich.
+        </span>
+      </section>
+
+      <section class="karte">
+        <span class="mono">Zweite Box</span>
+        <span class="display display--klein" data-wert="zweite">
+          Trägt sich ab {breakEven} {breakEven === 1 ? 'Event' : 'Events'}
+        </span>
+        <span class="klein">
+          Eine weitere Box kostet {basismodul.preis} € Lizenz im Monat. Ab
+          <span data-wert="breakEven">{breakEven}</span> zusätzlichen Events im Monat trägt sie sich
+          selbst — Hardware und Fahrten hier nicht eingerechnet.
+        </span>
+        <a class="knopf knopf--amber knopf--flach" href="/kontakt">Mit diesen Zahlen testen</a>
+      </section>
+    </div>
+  </div>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display">Zahlen aus echten Events statt aus der Schätzung</span>
+      <span class="beiwort">
+        Das Cockpit zählt Sessions, Drucke und Materialstand mit — nach dem ersten Event rechnet ihr
+        mit euren eigenen Werten.
+      </span>
+    </div>
+    <a class="knopf knopf--rahmen-hell knopf--mittel" href="/fuer-vermieter">Vermietung ansehen</a>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 52px var(--rand) 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(34px, 4vw, 56px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 640px;
+  }
+
+  .rechner {
+    padding: 44px var(--rand);
+    display: flex;
+    gap: 26px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .spalte-links {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .spalte-rechts {
+    flex: 1 1 380px;
+    min-width: min(360px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: sticky;
+    top: 90px;
+  }
+
+  .karte {
+    padding: 22px;
+    gap: 12px;
+  }
+
+  .klein {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: rgba(0, 0, 0, 0.55);
+  }
+
+  /* Regler */
+  .regler {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .regler__kopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-weight: 500;
+    font-size: 13.5px;
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .regler__wert {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  input[type='range'] {
+    width: 100%;
+    accent-color: var(--amber);
+    cursor: pointer;
+  }
+
+  .segmente {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .segment {
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 12.5px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: var(--weiss);
+    color: var(--text-leise);
+    transition: background var(--t-farbe), color var(--t-farbe), border-color var(--t-farbe);
+  }
+
+  .segment:hover {
+    border-color: rgba(0, 0, 0, 0.28);
+  }
+
+  .segment.on {
+    background: var(--ink-soft);
+    color: var(--weiss);
+    border-color: var(--ink-soft);
+  }
+
+  /* Ergebnis */
+  .ergebnis {
+    background: var(--ink);
+    color: var(--text-hell);
+    border-radius: 16px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ergebnis .mono--hell {
+    color: var(--text-hell-still);
+  }
+
+  .ergebnis__zahl {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .ergebnis__zahl b {
+    font-weight: 800;
+    font-size: clamp(40px, 5vw, 62px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--amber);
+  }
+
+  .balken {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--linie-dunkel);
+    overflow: hidden;
+    display: block;
+  }
+
+  .balken__fuellung {
+    display: block;
+    height: 10px;
+    border-radius: 5px;
+    background: var(--amber);
+    transition: width var(--t-transform);
+  }
+
+  .zeilen {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    font-weight: 500;
+    font-size: 13px;
+    color: rgba(244, 242, 238, 0.7);
+  }
+
+  .zeilen--hell {
+    gap: 8px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  .zeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .hell {
+    color: var(--text-hell);
+  }
+
+  .dunkel {
+    color: var(--text);
+  }
+
+  .amber {
+    color: var(--amber);
+  }
+
+  .strich {
+    height: 1px;
+    background: var(--linie-dunkel);
+    display: block;
+  }
+
+  .strich--hell {
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  .monatszahl {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .monatszahl b {
+    font-weight: 800;
+    font-size: clamp(30px, 3.4vw, 42px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--text);
+  }
+
+  .knopf--flach {
+    height: 46px;
+    font-size: 14px;
+    width: 100%;
+  }
+
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding-block: 52px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 720px;
+  }
+
+  .schluss .display {
+    font-size: clamp(26px, 2.6vw, 32px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15px;
+    color: var(--text-hell-leise);
+  }
+
+  @media (max-width: 900px) {
+    .spalte-rechts {
+      position: static;
+    }
+  }
+</style>
+
+<script>
+  const wurzel = document.querySelector<HTMLElement>('.rechner');
+
+  if (wurzel) {
+    const daten = JSON.parse(wurzel.dataset.rechendaten!) as {
+      basispreis: number;
+      kmSatz: number;
+      pakete: number[];
+    };
+
+    const zustand: Record<string, number> = {
+      preis: 690,
+      events: 6,
+      extra: 80,
+      drucke: 200,
+      papierCt: 22,
+      km: 35,
+      stunden: 6,
+      lohn: 20,
+      boxen: 2,
+      paket: 1,
+    };
+
+    const eur = (n: number, dez = 0) =>
+      new Intl.NumberFormat('de-DE', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: dez,
+        maximumFractionDigits: dez,
+      }).format(n);
+
+    const setze = (name: string, text: string) => {
+      const el = wurzel.querySelector<HTMLElement>(`[data-wert="${name}"]`);
+      if (el) el.textContent = text;
+    };
+
+    const beschriftung = (id: string, wert: number) => {
+      switch (id) {
+        case 'preis':
+        case 'extra':
+          return eur(wert);
+        case 'events':
+          return `${wert} ${wert === 1 ? 'Event' : 'Events'}`;
+        case 'drucke':
+          return `${wert} Stück`;
+        case 'papierCt':
+          return `${(wert / 100).toFixed(2).replace('.', ',')} €`;
+        case 'km':
+          return `${wert} km`;
+        case 'stunden':
+          return `${wert} h`;
+        case 'lohn':
+          return `${eur(wert)}/h`;
+        case 'boxen':
+          return `${wert} ${wert === 1 ? 'Box' : 'Boxen'}`;
+        default:
+          return String(wert);
+      }
+    };
+
+    function zeichne() {
+      const material = zustand.drucke * (zustand.papierCt / 100);
+      const fahrt = zustand.km * 2 * daten.kmSatz;
+      const betreuung = zustand.stunden * zustand.lohn;
+      const einnahmen = zustand.preis + zustand.extra;
+      const db = einnahmen - material - fahrt - betreuung;
+      const marge = einnahmen > 0 ? Math.round((db / einnahmen) * 100) : 0;
+      const lizenz = zustand.boxen * daten.basispreis + daten.pakete[zustand.paket];
+      const dbMonat = db * zustand.events;
+      const monat = dbMonat - lizenz;
+      const anteil = zustand.events > 0 ? lizenz / zustand.events : lizenz;
+      const traegtSich = db > 0;
+      const breakEven = traegtSich ? Math.max(1, Math.ceil(daten.basispreis / db)) : 0;
+
+      Object.keys(zustand).forEach((id) => {
+        if (id !== 'paket') setze(id, beschriftung(id, zustand[id]));
+      });
+
+      setze('db', eur(db));
+      setze('einnahmen', eur(einnahmen));
+      setze('material', eur(material));
+      setze('fahrt', eur(fahrt));
+      setze('betreuung', eur(betreuung));
+      setze('marge', `${marge} %`);
+      setze('dbMonat', eur(dbMonat));
+      setze('lizenz', eur(lizenz));
+      setze('monat', eur(monat));
+      setze('anteil', eur(anteil, 2));
+      setze('breakEven', traegtSich ? String(breakEven) : '—');
+      setze(
+        'zweite',
+        traegtSich
+          ? `Trägt sich ab ${breakEven} ${breakEven === 1 ? 'Event' : 'Events'}`
+          : 'Erst die Marge prüfen'
+      );
+
+      setze(
+        'hinweis',
+        monat < 0
+          ? 'Bei diesen Werten deckt der Monat die Lizenz nicht. Mehr Events, höherer Mietpreis oder weniger Freidrucke helfen zuerst.'
+          : anteil > db * 0.25
+            ? 'Der Software-Anteil je Event ist hoch — bei mehr Events sinkt er schnell, weil Zusatzmodule kontoweit gelten.'
+            : 'Der Software-Anteil je Event liegt im niedrigen einstelligen Bereich der Marge — die Rechnung trägt sich.'
+      );
+
+      const balken = wurzel!.querySelector<HTMLElement>('[data-wert="dbBalken"]');
+      if (balken) balken.style.width = `${Math.max(0, Math.min(100, marge))}%`;
+
+      wurzel!.querySelectorAll<HTMLButtonElement>('[data-paket]').forEach((b) => {
+        const an = Number(b.dataset.paket) === zustand.paket;
+        b.classList.toggle('on', an);
+        b.setAttribute('aria-pressed', String(an));
+      });
+    }
+
+    wurzel.addEventListener('input', (e) => {
+      const feld = e.target as HTMLInputElement;
+      if (!feld.dataset.regler) return;
+      zustand[feld.dataset.regler] = Number(feld.value);
+      zeichne();
+    });
+
+    wurzel.addEventListener('click', (e) => {
+      const knopf = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-paket]');
+      if (!knopf) return;
+      zustand.paket = Number(knopf.dataset.paket);
+      zeichne();
+    });
+
+    zeichne();
+  }
+</script>

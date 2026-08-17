@@ -1,0 +1,568 @@
+/* Grundschicht: Typografie T1 und die Bausteine, die auf fast jeder Seite vorkommen.
+   Seitenspezifisches bleibt in der jeweiligen .astro-Datei (scoped). */
+
+@import '@fontsource-variable/archivo';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/700.css';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--text);
+  font-family: var(--schrift);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+/* Das hidden-Attribut muss jedes display schlagen, sonst blenden Bausteine
+   mit eigenem display nicht aus. */
+[hidden] {
+  display: none !important;
+}
+
+/* --- T1: Archivo fett, eng, Versalien ---------------------------------- */
+
+/* Gewicht und Laufweite folgen dem gerenderten Entwurf: dort setzt sich die
+   spezifischere Regel des T1-Overrides durch, also 800 und -.025em — nicht die
+   900/-.035em aus der Handoff-Tabelle. */
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--schrift);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+h1 {
+  line-height: 0.94;
+  font-size: clamp(38px, 5vw, 72px);
+}
+
+h2 {
+  line-height: 0.96;
+  font-size: clamp(30px, 3.6vw, 46px);
+}
+
+h3 {
+  line-height: 1;
+  font-size: clamp(20px, 2vw, 26px);
+}
+
+/* Display-Text, der kein Ueberschriftenrang ist (im Prototyp die
+   'Instrument Serif'-Zeilen): fett und eng, aber gemischte Schreibweise. */
+.display {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+  font-size: clamp(24px, 2.4vw, 32px);
+  color: var(--text);
+  display: block;
+}
+
+.display--gross {
+  font-size: clamp(30px, 3vw, 40px);
+}
+
+.display--klein {
+  font-size: clamp(20px, 1.8vw, 26px);
+}
+
+p {
+  margin: 0;
+}
+
+/* Daten, Status, Kennungen, Uhrzeiten, Eyebrows */
+.mono {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-fein);
+  display: block;
+}
+
+.mono--amber {
+  color: var(--amber);
+  font-size: 11.5px;
+  letter-spacing: 0.24em;
+}
+
+.mono--hell {
+  color: var(--text-hell-fein);
+}
+
+.mono--still {
+  color: var(--text-still);
+  letter-spacing: 0.1em;
+}
+
+/* --- Flaechen ----------------------------------------------------------- */
+
+.abschnitt {
+  padding: 80px var(--rand);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.abschnitt--dunkel {
+  background: var(--ink);
+  color: var(--text-hell);
+}
+
+.abschnitt--tief {
+  background: var(--ink-soft);
+  color: var(--text-hell);
+}
+
+.abschnitt--dunkel h1,
+.abschnitt--dunkel h2,
+.abschnitt--dunkel h3,
+.abschnitt--tief h1,
+.abschnitt--tief h2,
+.abschnitt--tief h3,
+.abschnitt--dunkel .display,
+.abschnitt--tief .display,
+.karte--dunkel .display,
+.karte--dunkel h1,
+.karte--dunkel h2,
+.karte--dunkel h3 {
+  color: var(--text-hell);
+}
+
+.abschnitt--eng {
+  padding-block: 64px;
+}
+
+/* Titel links, Beiwort rechts — das wiederkehrende Abschnittsende */
+.abschnitt-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.fliess {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-leise);
+  max-width: var(--spalte-text);
+}
+
+.abschnitt--dunkel .fliess,
+.abschnitt--tief .fliess {
+  color: var(--text-hell-leise);
+}
+
+/* --- Karten ------------------------------------------------------------- */
+
+.karte {
+  background: var(--weiss);
+  border: 1px solid var(--linie);
+  border-radius: var(--r-karte);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--schatten-karte);
+}
+
+.karte--dunkel {
+  background: var(--ink);
+  color: var(--text-hell);
+  border-color: transparent;
+}
+
+.karte--gross {
+  border-radius: var(--r-karte-gross);
+  padding: 32px;
+  gap: 18px;
+}
+
+.karte__text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-leise);
+  flex: 1;
+}
+
+.karte--dunkel .karte__text {
+  color: var(--text-hell-leise);
+}
+
+/* Aufgesetztes Kennzeichen in der Kartenecke */
+.karte__marke {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--amber);
+  color: var(--amber-ink);
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  padding: 9px 16px;
+  border-bottom-left-radius: var(--r-chip);
+}
+
+.karte__marke--dunkel {
+  background: var(--ink-soft);
+  color: var(--text-hell);
+}
+
+/* --- Raster ------------------------------------------------------------- */
+
+.raster {
+  display: grid;
+  gap: 16px;
+}
+
+.raster--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.raster--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.raster--4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.raster--auto {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.reihe {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* --- Knoepfe ------------------------------------------------------------ */
+
+.knopf {
+  height: 52px;
+  padding: 0 22px;
+  border-radius: var(--r-knopf);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--schrift);
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--t-farbe), box-shadow var(--t-farbe),
+    background var(--t-farbe), border-color var(--t-farbe), color var(--t-farbe);
+}
+
+.knopf--amber {
+  background: var(--amber);
+  color: var(--amber-ink);
+  box-shadow: var(--schatten-cta);
+}
+
+.knopf--amber:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--schatten-cta-hover);
+  color: var(--amber-ink);
+}
+
+.knopf--dunkel {
+  background: var(--ink-soft);
+  color: var(--weiss);
+}
+
+.knopf--dunkel:hover {
+  background: var(--ink);
+  color: var(--weiss);
+}
+
+.knopf--rahmen {
+  border-color: var(--linie-stark);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.knopf--rahmen:hover {
+  border-color: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--text);
+}
+
+.knopf--rahmen-hell {
+  border-color: var(--linie-dunkel-stark);
+  color: var(--text-hell);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.knopf--rahmen-hell:hover {
+  border-color: rgba(244, 242, 238, 0.45);
+  background: rgba(244, 242, 238, 0.06);
+  color: var(--text-hell);
+}
+
+.knopf--gross {
+  height: 62px;
+  padding: 0 32px;
+  font-size: 17px;
+}
+
+.knopf--mittel {
+  height: 54px;
+  padding: 0 24px;
+  font-size: 15.5px;
+}
+
+/* --- Punktlisten -------------------------------------------------------- */
+
+.punkte {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.punkte li {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-leise);
+}
+
+.punkte li::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-kreis);
+  background: var(--ink-soft);
+  margin-top: 8px;
+  flex: none;
+}
+
+.abschnitt--dunkel .punkte li,
+.abschnitt--tief .punkte li,
+.karte--dunkel .punkte li {
+  color: rgba(244, 242, 238, 0.72);
+}
+
+.abschnitt--dunkel .punkte li::before,
+.abschnitt--tief .punkte li::before,
+.karte--dunkel .punkte li::before {
+  background: var(--amber);
+}
+
+/* Nummerierte Aufzaehlung mit Mono-Kennung */
+.schritte {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: schritt;
+}
+
+.schritte li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: rgba(244, 242, 238, 0.72);
+  counter-increment: schritt;
+}
+
+.schritte li::before {
+  content: '0' counter(schritt);
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+  flex: none;
+  width: 34px;
+}
+
+/* --- Links -------------------------------------------------------------- */
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+.pfeil {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.abschnitt--dunkel a:not(.knopf),
+.abschnitt--tief a:not(.knopf) {
+  color: var(--amber);
+}
+
+/* --- Kennzahlenband ----------------------------------------------------- */
+
+.kennzahlen {
+  background: var(--amber);
+  color: var(--amber-ink);
+  padding: 30px var(--rand);
+  display: flex;
+  gap: 56px;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.kennzahl {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.kennzahl b {
+  font-weight: 800;
+  font-size: 44px;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+
+.kennzahl span {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* --- Laufband ----------------------------------------------------------- */
+
+.laufband {
+  background: var(--amber);
+  color: var(--amber-ink);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  height: 38px;
+}
+
+.laufband div {
+  display: flex;
+  gap: 44px;
+  white-space: nowrap;
+  animation: laufband 20s linear infinite;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@keyframes laufband {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .laufband div {
+    animation: none;
+  }
+}
+
+/* --- Tastaturbedienung --------------------------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.nur-vorlese {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Umbrueche ----------------------------------------------------------- */
+
+@media (max-width: 1020px) {
+  .raster--4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .abschnitt {
+    padding-block: 56px;
+  }
+  .raster--3 {
+    grid-template-columns: 1fr;
+  }
+  .kennzahlen {
+    gap: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .raster--2,
+  .raster--4 {
+    grid-template-columns: 1fr;
+  }
+  .knopf--gross {
+    height: 56px;
+    padding: 0 24px;
+    font-size: 16px;
+  }
+}

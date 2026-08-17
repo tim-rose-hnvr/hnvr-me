@@ -1,0 +1,615 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Bildplatz from '../components/Bildplatz.astro';
+import BoxSchema from '../components/BoxSchema.astro';
+import Icon from '../components/Icon.astro';
+import { basismodul, zusatzmodule } from '../daten/module';
+
+const kennzahlen = [
+  { wert: '13', text: 'Module einzeln zubuchbar' },
+  { wert: '5', text: 'Aufnahmearten' },
+  { wert: '8', text: 'Wege zum Gast' },
+  { wert: '82', text: 'Druckvorlagen' },
+];
+
+const laufband = '3 · 2 · 1 · Cheese · Streifen in 13 Sekunden · 240 Vorlagen · 154 Boxen im Einsatz';
+
+const aufbau = [
+  'Systemkamera mit USB-Tethering, Live-View auf dem Screen',
+  '24″ Touch, hochkant oder quer montierbar',
+  'Ringlicht und Blitz, dimmbar für Zeitlupe',
+  'Sofortdrucker im Sockel, Streifen kommt vorn heraus',
+];
+
+const beispiele = [
+  { motiv: 'Hochzeit: Streifen', src: '/assets/shot-booth-attract.png', format: '16 / 9' },
+  { motiv: 'Gäste vor der Box', format: '3 / 2' },
+  { motiv: 'Foto-Wall am Beamer', src: '/assets/shot-mosaik.png', format: '16 / 9' },
+  { motiv: 'Messestand', src: '/assets/shot-editor.png', format: '16 / 9' },
+  { motiv: 'Druck in der Hand', format: '3 / 2' },
+  { motiv: 'Aufbau im Case', src: '/assets/shot-galerie.png', format: '16 / 9' },
+];
+
+const phasen = [
+  {
+    phase: 'Phase 1',
+    icon: 'einstellungen',
+    titel: 'Aufbauen',
+    text: 'Installations-Zentrum erkennt Kamera und Drucker, spielt Lizenz, Vorlagen und Event-Branding ein.',
+  },
+  {
+    phase: 'Phase 2',
+    icon: 'foto',
+    titel: 'Fotografieren',
+    text: 'Foto, Streifen, Boomerang, GIF oder Video — mit Freistellung auch ohne Greenscreen.',
+  },
+  {
+    phase: 'Phase 3',
+    icon: 'teilen',
+    titel: 'Weitergeben',
+    text: 'Sofortdruck plus QR, WhatsApp, Mail, SMS, Galerie und Gäste-Upload — QR läuft auch ohne Internet.',
+  },
+  {
+    phase: 'Phase 4',
+    icon: 'galerie',
+    titel: 'Abgeben',
+    text: 'Event-Galerie mit Löschfrist, Foto-Finder per Gesicht, Statistik für die Abrechnung.',
+  },
+];
+
+const offline = [
+  'Fernsteuerung am Handy: auslösen, pausieren, Testdruck, Bilder moderieren',
+  'Kiosk-PIN, damit Gäste nicht aus der Oberfläche fallen',
+  'Updates über die Leitung, aber nie automatisch mitten im Event',
+];
+
+// Sechs Module als Vorgeschmack — Reihenfolge wie im Entwurf.
+const gezeigt = ['foto-wall', 'foto-finder', 'gaestebuch', 'galerie', 'effekt-studio', 'vermietung'];
+const modulkacheln = gezeigt.map((id) => zusatzmodule.find((m) => m.id === id)!);
+
+const zielgruppen = [
+  {
+    kennung: 'Für Vermieter',
+    titel: 'Mehrere Boxen, ein Abend',
+    text: 'Puls jeder Box im Blick, Fernauftrag statt Anfahrt, Buchungen und Verträge im gleichen Konto.',
+    verweis: { text: 'Vermieter-Seite', ziel: '/fuer-vermieter' },
+  },
+  {
+    kennung: 'Für Studios',
+    titel: 'Eigene Marke, kein youbooth',
+    text: 'White-Label mit Logo, Attract-Text, Laufband und eigenem Druckdesign — auf Wunsch bis zur Galerie-Domain.',
+    verweis: { text: 'Designer & White-Label', ziel: '/system' },
+  },
+  {
+    kennung: 'Für feste Installationen',
+    titel: 'Läuft auch unbeaufsichtigt',
+    text: 'Leerlauf-Modus, Kiosk-PIN, Bezahlung vor dem Druck, Selbstprüfung mit Meldung bei Störung.',
+    verweis: { text: 'Betrieb & Support', ziel: '/support' },
+  },
+];
+---
+
+<Marketing
+  titel="Fotobox-Software für Vermieter"
+  beschreibung="youbooth ist die Software für Booth, Druck, Galerie, Foto-Wall, Gästebuch und Vermietung — offline lauffähig, per Handy fernsteuerbar, in eurer Marke."
+>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero__text">
+      <span class="mono mono--amber">Software + fertige Fotobox · PC, Mac, iPad</span>
+      <h1>Die Software, die den ganzen Abend trägt</h1>
+      <p class="fliess">
+        youbooth ist beides: die Software für Booth, Druck, Galerie, Foto-Wall, Gästebuch und
+        Vermietung — und auf Wunsch die fertige Fotobox dazu. Offline lauffähig, per Handy
+        fernsteuerbar, in eurer Marke — und modular, damit ihr nur zahlt, was ihr wirklich einsetzt.
+      </p>
+      <div class="reihe reihe--knoepfe">
+        <a class="knopf knopf--amber knopf--gross" href="/kontakt">14 Tage kostenlos testen</a>
+        <a class="knopf knopf--rahmen-hell knopf--gross" href="/system">System ansehen</a>
+      </div>
+      <span class="mono mono--hell">Ab 39 €/Mon. · monatlich kündbar · keine Hardware-Bindung</span>
+    </div>
+
+    <div class="hero__bild">
+      <span class="blitz" aria-hidden="true"></span>
+      <span class="streifen" aria-hidden="true"><i></i><i></i><i></i></span>
+      <Bildplatz
+        motiv="Foto: Booth im Einsatz, 16:9"
+        src="/assets/shot-booth-attract.png"
+        alt="Attract-Bildschirm einer youbooth-Fotobox"
+        radius={16}
+        laden="eager"
+      />
+    </div>
+  </section>
+
+  <!-- Kennzahlen -->
+  <div class="kennzahlen">
+    {
+      kennzahlen.map((k) => (
+        <span class="kennzahl">
+          <b>{k.wert}</b>
+          <span>{k.text}</span>
+        </span>
+      ))
+    }
+  </div>
+
+  <!-- Zwei Dinge, ein System -->
+  <section class="abschnitt">
+    <div class="abschnitt-kopf">
+      <h2>Zwei Dinge, ein System</h2>
+      <span class="mono mono--still">Software allein oder komplett mit Box</span>
+    </div>
+
+    <div class="reihe">
+      <article class="karte karte--gross karte--dunkel saeule">
+        <span class="karte__marke">Die Software</span>
+        <span class="display display--gross">youbooth läuft auf dem Rechner, den ihr schon habt</span>
+        <Bildplatz
+          motiv="Screenshot: Booth + Cockpit"
+          src="/assets/shot-cockpit.png"
+          alt="Cockpit von youbooth"
+        />
+        <ul class="punkte">
+          <li>Windows, macOS, iPad — Kiosk-Modus, PIN-geschützt</li>
+          <li>Eure Kamera und euer Drucker, kein Vendor-Lock</li>
+          <li>Monatlich ab 39 € je Box-Lizenz</li>
+        </ul>
+        <div class="reihe reihe--knoepfe fuss-knoepfe">
+          <a class="knopf knopf--amber" href="/system">Software ansehen</a>
+          <a class="knopf knopf--rahmen-hell" href="/support">Systemanforderungen</a>
+        </div>
+      </article>
+
+      <article class="karte karte--gross saeule">
+        <span class="karte__marke karte__marke--dunkel">Eure Hardware</span>
+        <span class="display display--gross">Läuft auf der Box, die ihr schon habt</span>
+        <Bildplatz motiv="Foto: Fotobox mit Screen und Drucker" />
+        <ul class="punkte">
+          <li>Systemkamera oder Webcam, Touch hochkant oder quer, Sofortdrucker</li>
+          <li>Shell-Box, Spiegel-Box oder RGB-Säule — alle Bauformen laufen gleich</li>
+          <li>Kompatibilitätsliste im Support — Kamera, Drucker, Touch</li>
+        </ul>
+        <div class="reihe reihe--knoepfe fuss-knoepfe">
+          <a class="knopf knopf--dunkel" href="/support">Anforderungen prüfen</a>
+          <a class="knopf knopf--rahmen" href="/fuer-vermieter">Für Vermieter</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Laufband -->
+  <div class="laufband" aria-hidden="true">
+    <div><span>{laufband}</span><span>{laufband}</span></div>
+  </div>
+
+  <!-- Aufbau einer Box -->
+  <section class="abschnitt abschnitt--dunkel aufbau">
+    <div class="aufbau__text">
+      <span class="mono mono--amber">So sieht eine Fotobox aus</span>
+      <h2>Kamera, Screen, Licht, Drucker — so ist eine Box aufgebaut</h2>
+      <p class="fliess">
+        Egal ob Shell-Box auf Stativ, Spiegel-Box oder RGB-Säule: die Software erwartet immer
+        Kamera, Touchscreen, Licht und optional einen Drucker. Hardware kauft ihr da, wo ihr wollt.
+      </p>
+      <ol class="schritte">
+        {aufbau.map((z) => <li>{z}</li>)}
+      </ol>
+      <div class="reihe reihe--knoepfe">
+        <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Anforderungen prüfen</a>
+        <a class="knopf knopf--rahmen-hell knopf--mittel" href="/download">Nur Software</a>
+      </div>
+    </div>
+
+    <div class="aufbau__schema">
+      <BoxSchema />
+    </div>
+  </section>
+
+  <!-- Beispiele -->
+  <section class="abschnitt">
+    <div class="abschnitt-kopf">
+      <h2>Beispiele aus echten Events</h2>
+      <span class="mono mono--still">Software-Screenshots · eigene Fotos einfach darüber ziehen</span>
+    </div>
+    <div class="raster raster--auto beispiele">
+      {
+        beispiele.map((b) => (
+          <Bildplatz motiv={b.motiv} src={b.src} format={b.format} alt={b.src ? b.motiv : undefined} />
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Abendverlauf -->
+  <section class="abschnitt">
+    <div class="abschnitt-kopf">
+      <h2>So läuft ein Abend</h2>
+      <p class="fliess schmal">
+        Vier Phasen, in denen niemand am Rechner stehen muss. Was Gäste sehen, ist dunkel und
+        großflächig; was ihr steuert, liegt hell und dicht im Cockpit.
+      </p>
+    </div>
+    <div class="raster raster--4">
+      {
+        phasen.map((p) => (
+          <article class="karte">
+            <span class="mono">{p.phase}</span>
+            <Icon name={p.icon} groesse={22} />
+            <span class="display display--klein">{p.titel}</span>
+            <span class="karte__text">{p.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Offline -->
+  <section class="abschnitt abschnitt--dunkel offline">
+    <div class="offline__bild">
+      <Bildplatz
+        motiv="Screenshot: Ausgabe mit QR"
+        src="/assets/shot-mosaik.png"
+        alt="Ausgabe-Bildschirm mit QR-Code"
+        format="16 / 10"
+        radius={16}
+      />
+    </div>
+    <div class="offline__text">
+      <h2>Läuft weiter, wenn das WLAN aussteigt</h2>
+      <p class="fliess">
+        Die Box arbeitet zuerst lokal: Aufnahme, Layout, Druck und QR-Download über den eigenen
+        Hotspot. Uploads gehen später raus, sobald es Netz gibt — der Abend hängt nie an einer
+        Leitung.
+      </p>
+      <ul class="punkte">
+        {offline.map((z) => <li>{z}</li>)}
+      </ul>
+      <a class="knopf knopf--rahmen-hell knopf--mittel selbst" href="/system">Technik im Detail</a>
+    </div>
+  </section>
+
+  <!-- Module -->
+  <section class="abschnitt">
+    <div class="abschnitt-kopf">
+      <h2>Module, die zusammenspielen</h2>
+      <a class="pfeil" href="/module">Alle 14 Module ansehen →</a>
+    </div>
+    <div class="raster raster--4 module">
+      <article class="karte karte--dunkel basis">
+        <span class="display">{basismodul.titel}</span>
+        <span class="karte__text">{basismodul.kurz}</span>
+        <a class="preis preis--amber" href={basismodul.pfad}>ab {basismodul.preis} €/Mon.</a>
+      </article>
+
+      {
+        modulkacheln.map((m) => (
+          <article class="karte modulkarte">
+            <a class="modulkarte__titel" href={m.pfad}>
+              <Icon name={m.icon} groesse={19} />
+              {m.titel}
+            </a>
+            <span class="karte__text">{m.kurz}</span>
+            <span class="preis">ab {m.preis} €</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Zielgruppen -->
+  <section class="abschnitt abschnitt--eng">
+    <div class="raster raster--3">
+      {
+        zielgruppen.map((z) => (
+          <article class="karte karte--gross">
+            <span class="mono">{z.kennung}</span>
+            <span class="display display--klein">{z.titel}</span>
+            <span class="karte__text">{z.text}</span>
+            <a class="pfeil" href={z.verweis.ziel}>
+              {z.verweis.text} →
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Schlussaufruf -->
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display display--gross">Erst testen, dann entscheiden</span>
+      <span class="beiwort">
+        14 Tage vollständig, ohne Hardware startklar über die Web-Sofortbild-Kamera.
+      </span>
+    </div>
+    <div class="reihe reihe--knoepfe">
+      <a class="knopf knopf--amber knopf--gross" href="/kontakt">Konto anlegen</a>
+      <a class="knopf knopf--rahmen-hell knopf--gross" href="/preise">Preise ansehen</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  /* Hero */
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 76px var(--rand) 84px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 52px;
+    align-items: center;
+  }
+
+  .hero__text {
+    flex: 1 1 460px;
+    min-width: min(440px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 640px;
+  }
+
+  .hero h1 {
+    font-size: clamp(44px, 5vw, 76px);
+  }
+
+  .hero .fliess {
+    font-size: 17.5px;
+    color: var(--text-hell-leise);
+  }
+
+  .hero .mono--hell {
+    letter-spacing: 0.08em;
+    font-size: 11px;
+  }
+
+  .hero__bild {
+    flex: 1 1 480px;
+    min-width: min(480px, 100%);
+    position: relative;
+  }
+
+  /* Blitz und ausgeworfener Streifen — beide rein dekorativ */
+  .blitz {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    border-radius: 16px;
+    z-index: 3;
+    pointer-events: none;
+    animation: blitz 7s linear infinite;
+  }
+
+  .streifen {
+    position: absolute;
+    right: -14px;
+    bottom: -26px;
+    width: 74px;
+    height: 150px;
+    background: #fff;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+    z-index: 2;
+    overflow: hidden;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 6px;
+    animation: auswurf 7s ease-out infinite;
+  }
+
+  .streifen i {
+    flex: 1;
+    background: #dcd6cb;
+    display: block;
+  }
+
+  @keyframes blitz {
+    0%,
+    88% {
+      opacity: 0;
+    }
+    92% {
+      opacity: 0.75;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes auswurf {
+    0%,
+    14% {
+      transform: translateY(-88%);
+    }
+    52%,
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blitz,
+    .streifen {
+      animation: none;
+    }
+    .blitz {
+      opacity: 0;
+    }
+  }
+
+  /* Zwei Dinge, ein System */
+  .saeule {
+    flex: 1 1 440px;
+    min-width: min(420px, 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .saeule .display {
+    max-width: 420px;
+  }
+
+  .fuss-knoepfe {
+    margin-top: auto;
+    gap: 12px;
+  }
+
+  .reihe--knoepfe {
+    gap: 12px;
+    align-items: center;
+  }
+
+  /* Aufbau */
+  .aufbau {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .aufbau__text {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .aufbau__schema {
+    flex: 1 1 400px;
+    min-width: min(340px, 100%);
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Beispiele */
+  .beispiele {
+    gap: 14px;
+  }
+
+  /* Abendverlauf */
+  .schmal {
+    max-width: 440px;
+    font-size: 15px;
+  }
+
+  .icon {
+    display: block;
+    flex: none;
+    opacity: 0.75;
+  }
+
+  /* Offline */
+  .offline {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 52px;
+    align-items: center;
+  }
+
+  .offline__bild {
+    flex: 1;
+    min-width: min(480px, 100%);
+  }
+
+  .offline__text {
+    flex: 1;
+    min-width: min(420px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .offline .fliess {
+    font-size: 16.5px;
+  }
+
+  .selbst {
+    align-self: flex-start;
+  }
+
+  /* Module */
+  .module {
+    gap: 16px;
+  }
+
+  .basis {
+    grid-column: span 2;
+  }
+
+  .modulkarte {
+    padding: 22px;
+    gap: 9px;
+  }
+
+  .modulkarte__titel {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  .modulkarte__titel:hover {
+    color: var(--link);
+  }
+
+  .preis {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .preis--amber {
+    font-size: 15px;
+    color: var(--amber);
+  }
+
+  .preis--amber:hover {
+    color: var(--amber);
+    text-decoration: underline;
+  }
+
+  /* Schluss */
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 36px;
+    flex-wrap: wrap;
+    padding-block: 64px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .schluss .display {
+    font-size: clamp(30px, 3.4vw, 42px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15.5px;
+    color: var(--text-hell-leise);
+  }
+
+  @media (max-width: 900px) {
+    .basis {
+      grid-column: span 2;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .basis {
+      grid-column: span 1;
+    }
+  }
+</style>

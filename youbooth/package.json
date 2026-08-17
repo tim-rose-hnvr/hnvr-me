@@ -1,0 +1,17 @@
+{
+  "name": "youbooth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "youbooth.me — Website und Oberflächen der Fotobox-Software",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@fontsource-variable/archivo": "^5.2.5",
+    "@fontsource/ibm-plex-mono": "^5.2.5",
+    "astro": "^7.2.2"
+  }
+}

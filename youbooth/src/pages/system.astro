@@ -1,0 +1,465 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Bildplatz from '../components/Bildplatz.astro';
+import Icon from '../components/Icon.astro';
+
+const oberflaechen = [
+  { text: 'Animationen ansehen', ziel: '/oberflaechen/booth-animationen', haupt: true },
+  { text: 'Mosaik-Wand', ziel: '/oberflaechen/mosaik-wand' },
+  { text: 'Kunden-Galerie', ziel: '/oberflaechen/kunden-galerie' },
+  { text: 'Onboarding', ziel: '/oberflaechen/onboarding' },
+  { text: 'Editor', ziel: '/oberflaechen/booth-editor' },
+  { text: 'iPhone-Apps', ziel: '/oberflaechen/iphone-apps' },
+  { text: 'Alle Oberflächen im Detail', ziel: '/oberflaechen/fotobox-system' },
+];
+
+const aufnahmearten = [
+  { icon: 'foto', titel: 'Foto', text: 'Ein Bild, Countdown wählbar, direkt druckbar' },
+  { icon: 'streifen', titel: 'Streifen', text: 'Drei Bilder, Doppelstreifen mit Schnittlinie' },
+  { icon: 'boomerang', titel: 'Boomerang', text: 'Kurze Sequenz vor und zurück' },
+  { icon: 'gif', titel: 'GIF', text: 'Bilderzahl, Tempo und Pingpong einstellbar' },
+  { icon: 'video', titel: 'Video', text: 'Bis 30 Sekunden mit Ton, für Grüße' },
+];
+
+const wege = [
+  { icon: 'druck', titel: 'Sofortdruck', text: 'Systemdruck, Doppelstreifen, Stundenlimit', hervor: true },
+  { icon: 'qr', titel: 'QR-Download', text: 'Über den eigenen Hotspot der Box' },
+  { icon: 'chat', titel: 'WhatsApp', text: 'Nummer am Screen eingeben' },
+  { icon: 'mail', titel: 'E-Mail', text: 'Mit Bildschirmtastatur, Adresse optional gespeichert' },
+  { icon: 'sms', titel: 'SMS', text: 'Fallback, wenn keine App vorhanden ist' },
+  { icon: 'teilen', titel: 'System-Teilen', text: 'AirDrop und Teilen-Dialog auf iPad' },
+  { icon: 'galerie', titel: 'Event-Galerie', text: 'Alle Bilder, mit Löschfrist und Moderation' },
+  { icon: 'upload', titel: 'Gäste-Upload', text: 'Eigene Handybilder und Hashtag-Feed dazu' },
+];
+
+const vorlagenzahlen = [
+  { wert: '82', text: 'Vorlagen' },
+  { wert: '65', text: 'Streifen' },
+  { wert: '17', text: 'Einzelbild' },
+];
+
+const gastoberflaechen = [
+  { icon: 'foto', titel: 'Booth', text: 'Kiosk am Touchscreen, 16:9' },
+  { icon: 'wand', titel: 'Mosaik-Wand', text: 'Wachsendes Bild aus allen Aufnahmen' },
+  { icon: 'slideshow', titel: 'Slideshow', text: 'Vollbild für Beamer und TV' },
+  { icon: 'gaestebuch', titel: 'Gästebuch', text: 'Zettelwand mit Text, Bild und Stimme' },
+  { icon: 'gesicht', titel: 'Foto-Finder', text: 'Selfie-Suche am Handy' },
+  { icon: 'teilen', titel: 'Teilen-Station', text: 'Extra-Tablet nur für Downloads' },
+  { icon: 'galerie', titel: 'Event-Microsite', text: 'Gebrandete Seite pro Event' },
+  { icon: 'wolke', titel: 'Web-Kamera', text: 'Fotobox im Browser, ohne Hardware' },
+];
+
+const animationen = [
+  {
+    titel: 'Wartebildschirm',
+    text: 'Attract-Loop mit Laufband, pulsierendem Start-Button und Event-Text — springt nach 45 Sekunden Leerlauf zurück.',
+  },
+  {
+    titel: '3 · 2 · 1',
+    text: 'Countdown als Ring, Zahl oder Balken, mit Regieanweisung und optionaler Sprachausgabe.',
+  },
+  {
+    titel: 'Cheese & Blitz',
+    text: 'Screen-Blitz im Auslösemoment, danach der Cheese-Text — frei formulierbar pro Event.',
+  },
+  {
+    titel: 'Übergänge',
+    text: 'Textanimation und Einblendungen zwischen den Schritten, damit nichts hart umschaltet.',
+  },
+];
+
+const betrieb = [
+  {
+    icon: 'statistik',
+    titel: 'Puls statt Rätselraten',
+    text: 'Jede Box meldet sich im Sekundentakt: Version, Sessions, Papier- und Tintenstand, Warteschlange.',
+  },
+  {
+    icon: 'fernbedienung',
+    titel: 'Fernauftrag',
+    text: 'Auslösen, pausieren, Testdruck, Queue leeren, Screen sperren — vom Cockpit oder vom Handy.',
+  },
+  {
+    icon: 'wolke',
+    titel: 'Update kontrolliert',
+    text: 'Neue Versionen und Inhalte gehen über die Leitung, werden aber von euch angestoßen.',
+  },
+  {
+    icon: 'galerie',
+    titel: 'Moderation',
+    text: 'Hashtag-Einspeisung und Gäste-Uploads erst nach Freigabe auf Wand und Galerie.',
+  },
+  {
+    icon: 'ticket',
+    titel: 'Kasse am Screen',
+    text: 'Bezahlung vor dem Druck, Limits pro Gast und pro Stunde, Umfrage mit Unterschrift.',
+  },
+  {
+    icon: 'einstellungen',
+    titel: 'Datenschutz eingebaut',
+    text: 'Löschfrist pro Event, Selfie-Suchbild wird verworfen, Hinweis für Gäste im Attract.',
+  },
+];
+---
+
+<Marketing
+  titel="Das System"
+  beschreibung="Kamera und Touchscreen vorne, ein Rechner mit youbooth in der Mitte, Drucker und Netz hinten. Alles Wesentliche passiert lokal."
+>
+  <section class="hero">
+    <div class="hero__text">
+      <span class="mono mono--amber">Das System</span>
+      <h1>Hardware, Software, Ausgabe</h1>
+      <p class="fliess">
+        Kamera und Touchscreen vorne, ein Rechner mit youbooth in der Mitte, Drucker und Netz
+        hinten. Alles Wesentliche passiert lokal — die Cloud ist Komfort, keine Voraussetzung.
+      </p>
+      <div class="reihe knopfreihe">
+        {
+          oberflaechen.map((o) => (
+            <a
+              class:list={['knopf', 'knopf--mittel', o.haupt ? 'knopf--amber' : 'knopf--rahmen-hell']}
+              href={o.ziel}
+            >
+              {o.text}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="hero__bild">
+      <Bildplatz motiv="Foto: Box mit Kamera, Screen, Drucker" format="4 / 3" radius={16} laden="eager" />
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Fünf Aufnahmearten</h2>
+    <div class="raster raster--5">
+      {
+        aufnahmearten.map((a) => (
+          <article class="artkarte">
+            <span class="artkarte__flaeche" aria-hidden="true" />
+            <span class="artkarte__text">
+              <span class="artkarte__titel">
+                <Icon name={a.icon} groesse={19} />
+                {a.titel}
+              </span>
+              <span class="klein">{a.text}</span>
+            </span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--dunkel">
+    <div class="abschnitt-kopf">
+      <h2>Acht Wege zum Gast</h2>
+      <span class="mono mono--hell">Druck und QR funktionieren ohne Internet</span>
+    </div>
+    <div class="raster raster--4 kacheln">
+      {
+        wege.map((w) => (
+          <article class:list={['kachel', { 'kachel--amber': w.hervor }]}>
+            <span class="kachel__titel">
+              <Icon name={w.icon} groesse={20} />
+              {w.titel}
+            </span>
+            <span class="kachel__text">{w.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt designer">
+    <div class="designer__text">
+      <h2>Designer, Vorlagen, eure Marke</h2>
+      <p class="fliess">
+        82 Druckvorlagen sind dabei — 65 Streifen und 17 Einzelbild. Der Druck-Designer und der
+        Bildschirm-Designer arbeiten mit demselben Layout-Modell: Bildfelder, Textfelder,
+        Logo-Slots. White-Label ersetzt Logo, Attract-Text und Laufband, sodass Gäste nur eure Marke
+        sehen.
+      </p>
+      <div class="reihe zahlenreihe">
+        {
+          vorlagenzahlen.map((z) => (
+            <span class="zahlchip">
+              <b>{z.wert}</b>
+              <span class="mono mono--still">{z.text}</span>
+            </span>
+          ))
+        }
+      </div>
+    </div>
+    <div class="designer__bild">
+      <Bildplatz
+        motiv="Screenshot: Druck-Designer"
+        src="/assets/shot-editor.png"
+        alt="Druck-Designer von youbooth"
+        format="16 / 11"
+        radius={16}
+      />
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--dunkel">
+    <h2>Acht Gäste-Oberflächen</h2>
+    <div class="raster raster--4 kacheln">
+      {
+        gastoberflaechen.map((o) => (
+          <article class="kachel">
+            <span class="kachel__titel kachel__titel--klein">
+              <Icon name={o.icon} groesse={19} />
+              {o.titel}
+            </span>
+            <span class="kachel__text">{o.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <div class="abschnitt-kopf">
+      <h2>Animationen am Screen</h2>
+      <a class="pfeil" href="/oberflaechen/booth-animationen">Live ansehen →</a>
+    </div>
+    <div class="raster raster--breit">
+      {
+        animationen.map((a) => (
+          <article class="karte">
+            <span class="display display--klein">{a.titel}</span>
+            <span class="karte__text">{a.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Betrieb und Fernsteuerung</h2>
+    <div class="raster raster--3">
+      {
+        betrieb.map((b) => (
+          <article class="karte">
+            <Icon name={b.icon} groesse={22} />
+            <span class="display display--klein">{b.titel}</span>
+            <span class="karte__text">{b.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <span class="display display--gross">Systemanforderungen und Installation</span>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--gross" href="/support">Zum Support-Bereich</a>
+      <a class="knopf knopf--rahmen-hell knopf--gross" href="/kontakt">Demo anfragen</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 64px var(--rand) 72px;
+    display: flex;
+    gap: 48px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .hero__text {
+    flex: 1;
+    min-width: min(520px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .hero h1 {
+    font-size: clamp(40px, 4.6vw, 66px);
+  }
+
+  .hero .fliess {
+    font-size: 17px;
+    color: var(--text-hell-leise);
+    max-width: 620px;
+  }
+
+  .hero__bild {
+    flex: 1;
+    min-width: min(460px, 100%);
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+
+  /* Aufnahmearten: Bildfläche oben, Text unten */
+  .raster--5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+
+  .artkarte {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--schatten-karte);
+  }
+
+  .artkarte__flaeche {
+    aspect-ratio: 3 / 2;
+    background: repeating-linear-gradient(135deg, #e3ded6 0 10px, #d8d2c8 10px 20px);
+    display: block;
+  }
+
+  .artkarte__text {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .artkarte__titel {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--text);
+  }
+
+  .klein {
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, 0.55);
+  }
+
+  /* Kacheln auf dunklem Grund */
+  .kacheln {
+    gap: 14px;
+  }
+
+  .kachel {
+    background: var(--ink-soft);
+    border: 1px solid rgba(244, 242, 238, 0.12);
+    border-radius: var(--r-chip);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--text-hell);
+  }
+
+  .kachel--amber {
+    background: var(--amber);
+    color: var(--amber-ink);
+    border-color: transparent;
+  }
+
+  .kachel__titel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  .kachel__titel--klein {
+    font-size: 17px;
+    gap: 9px;
+  }
+
+  .kachel__text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-hell-still);
+  }
+
+  .kachel--amber .kachel__text {
+    color: rgba(20, 16, 8, 0.75);
+  }
+
+  /* Designer */
+  .designer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 44px;
+    align-items: center;
+  }
+
+  .designer__text {
+    flex: 1;
+    min-width: min(460px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .designer__bild {
+    flex: 1;
+    min-width: min(420px, 100%);
+  }
+
+  .zahlenreihe {
+    gap: 14px;
+  }
+
+  .zahlchip {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-chip);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .zahlchip b {
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .raster--breit {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 36px;
+    flex-wrap: wrap;
+    padding-block: 60px;
+  }
+
+  .schluss .display {
+    max-width: 620px;
+    line-height: 1.05;
+  }
+
+  @media (max-width: 1020px) {
+    .raster--5 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .raster--5 {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

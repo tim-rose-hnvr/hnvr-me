@@ -1,0 +1,779 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import { basismodul, zusatzmodule } from '../daten/module';
+
+/**
+ * Konfigurator. Der Startzustand wird serverseitig gerechnet und ausgeliefert,
+ * das Skript unten aktualisiert dieselben Stellen im Browser. Ohne JavaScript
+ * bleibt ein vollstaendiger, lesbarer Beispielplan stehen.
+ */
+
+// Reihenfolge wie im Entwurf der Preisseite.
+const reihenfolge = [
+  'einwegkamera',
+  'foto-wall',
+  'foto-finder',
+  'galerie',
+  'gaestebuch',
+  'web-kamera',
+  'event-seiten',
+  'slideshow',
+  'effekt-studio',
+  'audio-gaestebuch',
+  'slow-motion',
+  'vermietung',
+  '360-booth',
+];
+const module = reihenfolge.map((id) => zusatzmodule.find((m) => m.id === id)!);
+
+const presets = [
+  { id: 'einsteiger', text: 'Einsteiger', boxen: 1, module: ['galerie'] },
+  {
+    id: 'team',
+    text: 'Vermieter mit Team',
+    boxen: 3,
+    module: ['foto-wall', 'galerie', 'gaestebuch', 'effekt-studio', 'vermietung'],
+  },
+  { id: 'agentur', text: 'Agentur & Messe', boxen: 5, module: module.map((m) => m.id) },
+];
+
+const eventstufen = [4, 6, 10, 16];
+
+// Startzustand
+const startBoxen = 2;
+const startModule = ['foto-wall', 'galerie', 'vermietung'];
+const startEvents = 6;
+
+const gewaehlt = module.filter((m) => startModule.includes(m.id));
+const basis = startBoxen * basismodul.preis;
+const modulsumme = gewaehlt.reduce((a, m) => a + m.preis, 0);
+const monat = basis + modulsumme;
+
+const eur = (n: number, dez = 0) =>
+  new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: dez,
+    maximumFractionDigits: dez,
+  }).format(n);
+
+const faqs = [
+  [
+    'Zahlen wir pro Box oder pro Konto?',
+    'Die Basis-Lizenz gilt je Box, alle Zusatzmodule kontoweit für beliebig viele Boxen. Wer drei Boxen betreibt, zahlt Module trotzdem nur einmal.',
+  ],
+  [
+    'Was passiert in der Nebensaison?',
+    'Module lassen sich monatlich abschalten, Lizenzen pausieren. Galerien, Vorlagen und Buchungen bleiben erhalten.',
+  ],
+  [
+    'Kostet Speicherplatz extra?',
+    'Nein. Pro Event gilt eine Löschfrist, standardmäßig 30 Tage, pro Kunde verlängerbar — nicht die Datenmenge zählt.',
+  ],
+  [
+    'Brauchen wir eigene Hardware?',
+    'Für den vollen Betrieb ja. Zum Testen reicht die Web-Sofortbild-Kamera im Browser, komplette Boxen gibt es auf der Hardware-Seite.',
+  ],
+  [
+    'Wie läuft die Kündigung?',
+    'Monatlich zum Monatsende im Cockpit, ohne Anruf. Bei Jahreszahlung endet der Vertrag zum Laufzeitende, Daten bleiben 30 Tage abrufbar.',
+  ],
+];
+
+// Werte, die das Skript im Browser braucht.
+const rechendaten = {
+  basispreis: basismodul.preis,
+  module: module.map((m) => ({ id: m.id, titel: m.titel, preis: m.preis })),
+  presets: presets.map((p) => ({ id: p.id, boxen: p.boxen, module: p.module })),
+};
+---
+
+<Marketing
+  titel="Preise"
+  beschreibung="Basis je Box, Module kontoweit. Boxen zählen, Module ein- und ausschalten, Zahlweise wechseln — die Summe rechnet mit."
+>
+  <section class="hero">
+    <span class="mono mono--amber">Preise · selbst zusammenstellen</span>
+    <h1>Klick dir deinen Plan zusammen</h1>
+    <p class="fliess">
+      Basis je Box, Module kontoweit. Alles anklickbar: Boxen zählen, Module ein- und ausschalten,
+      Zahlweise wechseln — die Summe rechnet mit. Keine versteckten Posten, monatlich kündbar.
+    </p>
+  </section>
+
+  <div class="konfigurator" data-rechendaten={JSON.stringify(rechendaten)}>
+    <div class="spalte-links">
+      <!-- 1 · Basis -->
+      <section class="karte">
+        <span class="mono">1 · Basis</span>
+        <div class="basiszeile">
+          <div class="basiszeile__text">
+            <span class="display display--klein">{basismodul.titel}</span>
+            <span class="klein">
+              {basismodul.preis} € je Box · Booth, Druck, Cockpit, Editor
+            </span>
+          </div>
+          <div class="zaehler">
+            <button class="stufe" type="button" data-boxen="minus" aria-label="Eine Box weniger">−</button>
+            <output class="zaehler__wert" data-feld="boxen" aria-live="polite">{startBoxen}</output>
+            <button class="stufe" type="button" data-boxen="plus" aria-label="Eine Box mehr">+</button>
+          </div>
+        </div>
+        <div class="segmente">
+          {
+            presets.map((p) => (
+              <button class="segment" type="button" data-preset={p.id} aria-pressed="false">
+                {p.text}
+              </button>
+            ))
+          }
+          <button class="segment" type="button" data-preset="leeren" aria-pressed="false">Alles ab</button>
+        </div>
+      </section>
+
+      <!-- 2 · Module -->
+      <section class="karte">
+        <div class="karte__kopf">
+          <span class="mono">2 · Module · kontoweit</span>
+          <span class="mono" data-feld="aktiv">{gewaehlt.length} von {module.length} aktiv</span>
+        </div>
+        <div class="modulliste">
+          {
+            module.map((m) => (
+              <button
+                class:list={['modul', { on: startModule.includes(m.id) }]}
+                type="button"
+                data-modul={m.id}
+                aria-pressed={startModule.includes(m.id) ? 'true' : 'false'}
+              >
+                <span class="haken" aria-hidden="true">✓</span>
+                <span class="modul__text">
+                  <span class="modul__name">{m.titel}</span>
+                  <span class="modul__kurz">{m.kurz}</span>
+                </span>
+                <span class="modul__preis">{m.preis} €</span>
+              </button>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- 3 · Zahlweise -->
+      <section class="karte">
+        <span class="mono">3 · Zahlweise</span>
+        <div class="segmente">
+          <button class="segment on" type="button" data-zahlweise="monat" aria-pressed="true">
+            Monatlich
+          </button>
+          <button class="segment" type="button" data-zahlweise="jahr" aria-pressed="false">
+            Jährlich · 2 Monate gratis
+          </button>
+        </div>
+        <span class="klein" data-feld="zahlhinweis">
+          Monatlich zahlen, monatlich kündigen. Jährlich spart zwei Monate.
+        </span>
+      </section>
+    </div>
+
+    <div class="spalte-rechts">
+      <section class="plan">
+        <span class="mono mono--hell">Dein Plan</span>
+        <div class="plan__summe">
+          <b data-feld="summe">{eur(monat)}</b>
+          <span class="mono mono--hell" data-feld="periode">/ Monat</span>
+        </div>
+
+        <div class="posten">
+          <span class="posten__zeile">
+            <span data-feld="basislabel">{startBoxen}× {basismodul.titel}</span>
+            <span class="posten__wert" data-feld="basiswert">{eur(basis)}</span>
+          </span>
+
+          <!-- Alle Posten stehen im Markup; gezeigt wird, was gewaehlt ist. -->
+          <div class="modulposten">
+            {
+              module.map((m) => (
+                <span class="posten__zeile" data-posten={m.id} hidden={!startModule.includes(m.id)}>
+                  <span>{m.titel}</span>
+                  <span class="posten__wert">{eur(m.preis)}</span>
+                </span>
+              ))
+            }
+          </div>
+
+          <span class="posten__leer" data-feld="leerhinweis" hidden={gewaehlt.length > 0}>
+            Noch keine Module gewählt — die Basis reicht für Booth, Druck und Cockpit.
+          </span>
+
+          <span class="posten__strich" aria-hidden="true"></span>
+
+          <span class="posten__zeile posten__zeile--summe">
+            <span>Summe</span>
+            <span data-feld="summe">{eur(monat)}</span>
+          </span>
+
+          <span class="posten__sparen" data-feld="sparen" hidden>
+            <span>Ersparnis</span>
+            <span data-feld="sparenwert">{eur(monat * 2)} im Jahr</span>
+          </span>
+        </div>
+
+        <div class="plan__knoepfe">
+          <a class="knopf knopf--amber" href="/kontakt">Diesen Plan 14 Tage testen</a>
+          <a class="knopf knopf--rahmen-hell knopf--flach" href="/rechner">
+            Was bleibt pro Event übrig?
+          </a>
+        </div>
+
+        <span class="mono mono--hell">Alle Preise netto · monatlich kündbar</span>
+      </section>
+
+      <section class="karte">
+        <span class="mono">Je Event gerechnet</span>
+        <span class="display display--klein" data-feld="jeevent">{eur(monat / startEvents, 2)}</span>
+        <span class="klein">
+          Bei <span data-feld="eventzahl">{startEvents} Events</span> im Monat. Mit dem Regler im
+          Rechner lässt sich das genauer durchspielen.
+        </span>
+        <div class="segmente">
+          {
+            eventstufen.map((e) => (
+              <button
+                class:list={['segment', { on: e === startEvents }]}
+                type="button"
+                data-events={e}
+                aria-pressed={e === startEvents ? 'true' : 'false'}
+              >
+                {e}
+              </button>
+            ))
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="abschnitt abschnitt--faq">
+    <h2 class="frei">Häufige Fragen zur Abrechnung</h2>
+    <div class="faqliste">
+      {
+        faqs.map(([frage, antwort], i) => (
+          <details class="faq" name="faq" open={i === 0}>
+            <summary>
+              {frage}
+              <span class="faq__zeichen" aria-hidden="true" />
+            </summary>
+            <span class="faq__text">{antwort}</span>
+          </details>
+        ))
+      }
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4vw, 54px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 660px;
+  }
+
+  .konfigurator {
+    padding: 44px var(--rand);
+    display: flex;
+    gap: 26px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .spalte-links {
+    flex: 1 1 460px;
+    min-width: min(440px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .spalte-rechts {
+    flex: 1 1 360px;
+    min-width: min(340px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: sticky;
+    top: 90px;
+  }
+
+  .karte {
+    padding: 22px;
+    gap: 12px;
+  }
+
+  .karte__kopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .klein {
+    font-size: 13px;
+    line-height: 1.55;
+    color: rgba(0, 0, 0, 0.55);
+  }
+
+  /* 1 · Basis */
+  .basiszeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .basiszeile__text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .zaehler {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .zaehler__wert {
+    font-weight: 800;
+    font-size: 34px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--text);
+    min-width: 44px;
+    text-align: center;
+  }
+
+  .stufe {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    background: var(--weiss);
+    cursor: pointer;
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--text-leise);
+    transition: border-color var(--t-farbe);
+  }
+
+  .stufe:hover {
+    border-color: rgba(0, 0, 0, 0.3);
+  }
+
+  /* Segmentschalter */
+  .segmente {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .segment {
+    padding: 10px 15px;
+    border-radius: var(--r-pille);
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 12.5px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: var(--weiss);
+    color: var(--text-leise);
+    transition: background var(--t-farbe), color var(--t-farbe), border-color var(--t-farbe);
+  }
+
+  .segment:hover {
+    border-color: rgba(0, 0, 0, 0.28);
+  }
+
+  .segment.on {
+    background: var(--ink-soft);
+    color: var(--weiss);
+    border-color: var(--ink-soft);
+  }
+
+  /* 2 · Module */
+  .modulliste {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .modul {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 16px;
+    border-radius: 11px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: var(--weiss);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    width: 100%;
+    transition: border-color var(--t-farbe), background var(--t-farbe);
+  }
+
+  .modul:hover {
+    border-color: rgba(0, 0, 0, 0.24);
+  }
+
+  .modul.on {
+    border-color: var(--amber);
+    background: rgba(242, 178, 62, 0.08);
+  }
+
+  .haken {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    border: 2px solid rgba(0, 0, 0, 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    font-weight: 700;
+    font-size: 12px;
+    color: transparent;
+  }
+
+  .modul.on .haken {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--amber-ink);
+  }
+
+  .modul__text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .modul__name {
+    font-weight: 600;
+    font-size: 14.5px;
+    color: var(--text);
+  }
+
+  .modul__kurz {
+    font-size: 12.5px;
+    color: rgba(0, 0, 0, 0.55);
+  }
+
+  .modul__preis {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    flex: none;
+  }
+
+  /* Planzusammenfassung */
+  .plan {
+    background: var(--ink);
+    color: var(--text-hell);
+    border-radius: 16px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .plan .mono--hell {
+    color: var(--text-hell-still);
+  }
+
+  .plan__summe {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .plan__summe b {
+    font-weight: 800;
+    font-size: clamp(38px, 5vw, 58px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--amber);
+  }
+
+  .posten {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    font-weight: 500;
+    font-size: 13px;
+    color: rgba(244, 242, 238, 0.7);
+  }
+
+  .modulposten {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .posten__zeile {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .posten__wert,
+  .posten__zeile--summe > :first-child {
+    color: var(--text-hell);
+  }
+
+  .posten__zeile--summe > :last-child {
+    color: var(--amber);
+  }
+
+  .posten__leer {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: rgba(244, 242, 238, 0.45);
+  }
+
+  .posten__strich {
+    height: 1px;
+    background: var(--linie-dunkel);
+    display: block;
+  }
+
+  .posten__sparen {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 12.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ok);
+  }
+
+  .plan__knoepfe {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: 4px;
+  }
+
+  .plan__knoepfe .knopf {
+    width: 100%;
+  }
+
+  .knopf--flach {
+    height: 46px;
+    font-size: 13.5px;
+  }
+
+  /* Fragen */
+  .abschnitt--faq {
+    padding-block: 0 56px;
+    gap: 20px;
+  }
+
+  .frei {
+    text-transform: none;
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1.02;
+  }
+
+  .faqliste {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .faq {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-chip);
+    overflow: hidden;
+  }
+
+  .faq summary {
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    list-style: none;
+  }
+
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__zeichen::after {
+    content: '+';
+    font-size: 20px;
+    color: var(--amber);
+    flex: none;
+  }
+
+  .faq[open] .faq__zeichen::after {
+    content: '−';
+  }
+
+  .faq__text {
+    display: block;
+    padding: 0 20px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(0, 0, 0, 0.62);
+  }
+
+  @media (max-width: 900px) {
+    .spalte-rechts {
+      position: static;
+    }
+  }
+</style>
+
+<script>
+  type Rechendaten = {
+    basispreis: number;
+    module: { id: string; titel: string; preis: number }[];
+    presets: { id: string; boxen: number; module: string[] }[];
+  };
+
+  const wurzel = document.querySelector<HTMLElement>('.konfigurator');
+
+  if (wurzel) {
+    const daten: Rechendaten = JSON.parse(wurzel.dataset.rechendaten!);
+
+    const zustand = {
+      boxen: 2,
+      module: new Set(['foto-wall', 'galerie', 'vermietung']),
+      jahr: false,
+      events: 6,
+    };
+
+    const eur = (n: number, dez = 0) =>
+      new Intl.NumberFormat('de-DE', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: dez,
+        maximumFractionDigits: dez,
+      }).format(n);
+
+    const feld = (name: string) => wurzel.querySelectorAll<HTMLElement>(`[data-feld="${name}"]`);
+    const setzeText = (name: string, text: string) =>
+      feld(name).forEach((el) => (el.textContent = text));
+
+    function zeichne() {
+      const gewaehlt = daten.module.filter((m) => zustand.module.has(m.id));
+      const basis = zustand.boxen * daten.basispreis;
+      const monat = basis + gewaehlt.reduce((a, m) => a + m.preis, 0);
+      // Jahreszahlung: zwoelf Monate nutzen, zehn zahlen.
+      const summe = zustand.jahr ? monat * 10 : monat;
+
+      setzeText('boxen', String(zustand.boxen));
+      setzeText('aktiv', `${gewaehlt.length} von ${daten.module.length} aktiv`);
+      setzeText('summe', eur(summe));
+      setzeText('periode', zustand.jahr ? '/ Jahr' : '/ Monat');
+      setzeText('basislabel', `${zustand.boxen}× Komplette Fotobox`);
+      setzeText('basiswert', eur(basis));
+      setzeText('jeevent', eur(zustand.events > 0 ? monat / zustand.events : monat, 2));
+      setzeText('eventzahl', `${zustand.events} ${zustand.events === 1 ? 'Event' : 'Events'}`);
+      setzeText(
+        'zahlhinweis',
+        zustand.jahr
+          ? 'Jahreszahlung: zwölf Monate nutzen, zehn zahlen — Umstellung jederzeit möglich.'
+          : 'Monatlich zahlen, monatlich kündigen. Jährlich spart zwei Monate.'
+      );
+
+      // Einzelposten ein- und ausblenden
+      wurzel!.querySelectorAll<HTMLElement>('[data-posten]').forEach((zeile) => {
+        zeile.hidden = !zustand.module.has(zeile.dataset.posten!);
+      });
+
+      feld('leerhinweis').forEach((el) => (el.hidden = gewaehlt.length > 0));
+      feld('sparen').forEach((el) => (el.hidden = !zustand.jahr));
+      setzeText('sparenwert', `${eur(monat * 2)} im Jahr`);
+
+      // Schalter
+      wurzel!.querySelectorAll<HTMLButtonElement>('[data-modul]').forEach((b) => {
+        const an = zustand.module.has(b.dataset.modul!);
+        b.classList.toggle('on', an);
+        b.setAttribute('aria-pressed', String(an));
+      });
+
+      wurzel!.querySelectorAll<HTMLButtonElement>('[data-zahlweise]').forEach((b) => {
+        const an = (b.dataset.zahlweise === 'jahr') === zustand.jahr;
+        b.classList.toggle('on', an);
+        b.setAttribute('aria-pressed', String(an));
+      });
+
+      wurzel!.querySelectorAll<HTMLButtonElement>('[data-events]').forEach((b) => {
+        const an = Number(b.dataset.events) === zustand.events;
+        b.classList.toggle('on', an);
+        b.setAttribute('aria-pressed', String(an));
+      });
+
+      wurzel!.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) => {
+        const preset = daten.presets.find((p) => p.id === b.dataset.preset);
+        const an = preset
+          ? preset.boxen === zustand.boxen &&
+            preset.module.length === zustand.module.size &&
+            preset.module.every((id) => zustand.module.has(id))
+          : zustand.module.size === 0;
+        b.classList.toggle('on', an);
+        b.setAttribute('aria-pressed', String(an));
+      });
+    }
+
+    wurzel.addEventListener('click', (e) => {
+      const knopf = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
+      if (!knopf) return;
+
+      const { boxen, modul, zahlweise, events, preset } = knopf.dataset;
+
+      if (boxen === 'plus') zustand.boxen = Math.min(12, zustand.boxen + 1);
+      else if (boxen === 'minus') zustand.boxen = Math.max(1, zustand.boxen - 1);
+      else if (modul) {
+        if (zustand.module.has(modul)) zustand.module.delete(modul);
+        else zustand.module.add(modul);
+      } else if (zahlweise) zustand.jahr = zahlweise === 'jahr';
+      else if (events) zustand.events = Number(events);
+      else if (preset === 'leeren') zustand.module.clear();
+      else if (preset) {
+        const p = daten.presets.find((x) => x.id === preset);
+        if (p) {
+          zustand.boxen = p.boxen;
+          zustand.module = new Set(p.module);
+        }
+      } else return;
+
+      zeichne();
+    });
+
+    zeichne();
+  }
+</script>

@@ -1,0 +1,73 @@
+/* Gestaltungswerte aus dem Handoff. Einzige Quelle fuer Farbe, Mass und Bewegung.
+   Regel: ein Akzent (amber), zwei Grundflaechen (ink, paper), drei Zustandsfarben. */
+
+:root {
+  /* Farben */
+  --ink: #0b0b0d;
+  --ink-soft: #17171c;
+  --amber: #f2b23e;
+  --amber-ink: #141008;
+  --paper: #f6f4f1;
+  --weiss: #ffffff;
+  --deep: #8e2b26;
+
+  --linie: rgba(0, 0, 0, 0.09);
+  --linie-stark: rgba(0, 0, 0, 0.15);
+  --linie-dunkel: rgba(244, 242, 238, 0.14);
+  --linie-dunkel-zart: rgba(244, 242, 238, 0.1);
+  --linie-dunkel-stark: rgba(244, 242, 238, 0.25);
+
+  --text: #17171c;
+  --text-leise: rgba(0, 0, 0, 0.58);
+  --text-still: rgba(0, 0, 0, 0.45);
+  --text-fein: rgba(0, 0, 0, 0.4);
+
+  --text-hell: #f4f2ee;
+  --text-hell-leise: rgba(244, 242, 238, 0.62);
+  --text-hell-still: rgba(244, 242, 238, 0.5);
+  --text-hell-fein: rgba(244, 242, 238, 0.4);
+
+  --link: #a8412f;
+  --link-hover: #7d2f21;
+
+  /* Zustaende — nie dekorativ verwenden */
+  --ok: #17b187;
+  --warn: #e0483c;
+
+  /* Mass */
+  --rand: clamp(20px, 4vw, 56px);
+  --breite: 1240px;
+  --spalte-text: 720px;
+
+  --r-pille: 9px;
+  --r-knopf: 10px;
+  --r-chip: 12px;
+  --r-karte: 14px;
+  --r-karte-gross: 18px;
+  --r-flaeche: 22px;
+  --r-kreis: 999px;
+
+  /* Schatten */
+  --schatten-karte: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --schatten-hoch: 0 18px 40px -28px rgba(0, 0, 0, 0.45);
+  --schatten-cta: 0 6px 18px -8px rgba(242, 178, 62, 0.75);
+  --schatten-cta-hover: 0 10px 24px -8px rgba(242, 178, 62, 0.9);
+  --schatten-kopf: 0 12px 30px -22px rgba(0, 0, 0, 0.9);
+
+  /* Bewegung */
+  --t-farbe: 0.15s ease;
+  --t-transform: 0.2s ease;
+  --t-klapp: 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Schrift */
+  --schrift: 'Archivo Variable', Archivo, system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-farbe: 0s;
+    --t-transform: 0s;
+    --t-klapp: 0s;
+  }
+}

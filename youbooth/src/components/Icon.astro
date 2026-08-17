@@ -1,0 +1,47 @@
+---
+/**
+ * Strich-Icons inline, damit `currentColor` greift — auf hellem wie auf
+ * dunklem Grund dieselbe Datei, ohne Filter-Trick.
+ */
+const dateien = import.meta.glob<string>('../icons/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+
+interface Props {
+  name: string;
+  groesse?: number;
+  class?: string;
+}
+
+const { name, groesse = 20, class: klasse } = Astro.props;
+const roh = dateien[`../icons/${name}.svg`];
+
+if (!roh) {
+  throw new Error(`Icon "${name}" fehlt in src/icons/`);
+}
+---
+
+<span
+  class:list={['icon', klasse]}
+  style={`--groesse:${groesse}px`}
+  aria-hidden="true"
+  set:html={roh}
+/>
+
+<style>
+  .icon {
+    display: block;
+    flex: none;
+    width: var(--groesse);
+    height: var(--groesse);
+    opacity: 0.75;
+  }
+
+  .icon :global(svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>

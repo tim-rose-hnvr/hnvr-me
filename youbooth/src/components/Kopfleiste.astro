@@ -1,0 +1,280 @@
+---
+import { hauptnavigation } from '../daten/navigation';
+
+const pfad = Astro.url.pathname.replace(/\/$/, '') || '/';
+const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
+---
+
+<header class="kopf">
+  <a class="marke" href="/">
+    <img src="/assets/youbooth-mark.svg" alt="" width="30" height="30" />
+    <span class="wortmarke">youbooth<em>.me</em></span>
+  </a>
+
+  <button
+    class="burger"
+    type="button"
+    aria-expanded="false"
+    aria-controls="hauptnavigation"
+    aria-label="Menü öffnen"
+  >
+    <i></i><i></i><i></i>
+  </button>
+
+  <div class="rechts">
+    <a class="ghost" href="/anmelden">Anmelden</a>
+    <a class="cta" href="/kontakt">14 Tage testen</a>
+  </div>
+
+  <nav class="links" id="hauptnavigation" aria-label="Hauptnavigation">
+    {
+      hauptnavigation.map((v) => (
+        <a href={v.ziel} class={istAktiv(v.ziel) ? 'on' : ''} aria-current={istAktiv(v.ziel) ? 'page' : undefined}>
+          {v.text}
+        </a>
+      ))
+    }
+  </nav>
+</header>
+
+<style>
+  .kopf {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: rgba(11, 11, 13, 0.86);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border-bottom: 1px solid var(--linie-dunkel-zart);
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2.2vw, 38px);
+    padding: 0 var(--rand);
+    min-height: 74px;
+    color: var(--text-hell);
+    flex-wrap: wrap;
+    box-shadow: var(--schatten-kopf);
+  }
+
+  .marke {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: var(--text-hell);
+    text-decoration: none;
+    flex: none;
+    padding: 6px 0;
+  }
+
+  .marke img {
+    display: block;
+    transition: transform var(--t-transform);
+  }
+
+  .marke:hover img {
+    transform: rotate(-6deg) scale(1.05);
+  }
+
+  .marke:hover {
+    color: var(--text-hell);
+  }
+
+  .wortmarke {
+    font-weight: 900;
+    font-size: 25px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    text-transform: lowercase;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+  }
+
+  .wortmarke em {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 12.5px;
+    font-style: normal;
+    letter-spacing: 0.02em;
+    color: var(--amber);
+    transform: translateY(-1px);
+  }
+
+  .links {
+    display: flex;
+    align-items: center;
+    gap: clamp(4px, 0.9vw, 12px);
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+  }
+
+  .links a {
+    color: var(--text-hell-leise);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 13.5px;
+    padding: 9px 11px;
+    border-radius: var(--r-pille);
+    white-space: nowrap;
+    transition: color var(--t-farbe), background var(--t-farbe);
+  }
+
+  .links a:hover {
+    color: var(--text-hell);
+    background: rgba(244, 242, 238, 0.08);
+  }
+
+  .links a.on {
+    color: var(--amber-ink);
+    background: var(--amber);
+  }
+
+  .rechts {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: none;
+  }
+
+  .ghost,
+  .cta {
+    height: 40px;
+    border-radius: var(--r-knopf);
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 12.5px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .ghost {
+    padding: 0 16px;
+    border: 1px solid rgba(244, 242, 238, 0.2);
+    color: var(--text-hell);
+    transition: border-color var(--t-farbe), background var(--t-farbe);
+  }
+
+  .ghost:hover {
+    border-color: rgba(244, 242, 238, 0.45);
+    background: rgba(244, 242, 238, 0.06);
+    color: var(--text-hell);
+  }
+
+  .cta {
+    padding: 0 18px;
+    background: var(--amber);
+    color: var(--amber-ink);
+    box-shadow: var(--schatten-cta);
+    transition: transform var(--t-farbe), box-shadow var(--t-farbe);
+  }
+
+  .cta:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--schatten-cta-hover);
+    color: var(--amber-ink);
+  }
+
+  .burger {
+    display: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+    border: 1px solid rgba(244, 242, 238, 0.2);
+    background: none;
+    cursor: pointer;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4.5px;
+    margin-left: auto;
+    flex: none;
+    transition: border-color var(--t-farbe);
+  }
+
+  .burger:hover {
+    border-color: rgba(244, 242, 238, 0.45);
+  }
+
+  .burger i {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: var(--text-hell);
+    border-radius: 2px;
+    transition: transform var(--t-transform), opacity var(--t-farbe);
+  }
+
+  @media (max-width: 1160px) {
+    .burger {
+      display: flex;
+    }
+
+    .links {
+      order: 5;
+      flex: 1 1 100%;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2px;
+      display: none;
+      padding: 10px 0 18px;
+      border-top: 1px solid var(--linie-dunkel-zart);
+    }
+
+    .links a {
+      padding: 15px 12px;
+      font-size: 16px;
+      border-radius: var(--r-knopf);
+    }
+
+    .kopf[data-offen] .links {
+      display: flex;
+    }
+
+    .kopf[data-offen] .burger i:nth-child(1) {
+      transform: translateY(6.5px) rotate(45deg);
+    }
+
+    .kopf[data-offen] .burger i:nth-child(2) {
+      opacity: 0;
+    }
+
+    .kopf[data-offen] .burger i:nth-child(3) {
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+
+    .rechts {
+      order: 3;
+    }
+
+    .ghost {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .wortmarke {
+      font-size: 22px;
+    }
+    .wortmarke em {
+      font-size: 11px;
+    }
+    .cta {
+      height: 38px;
+      padding: 0 14px;
+      font-size: 12px;
+    }
+  }
+</style>
+
+<script>
+  const kopf = document.querySelector<HTMLElement>('.kopf');
+  const burger = kopf?.querySelector<HTMLButtonElement>('.burger');
+
+  burger?.addEventListener('click', () => {
+    const offen = kopf!.hasAttribute('data-offen');
+    kopf!.toggleAttribute('data-offen', !offen);
+    burger.setAttribute('aria-expanded', String(!offen));
+    burger.setAttribute('aria-label', offen ? 'Menü öffnen' : 'Menü schließen');
+  });
+</script>

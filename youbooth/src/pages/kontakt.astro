@@ -1,0 +1,727 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+
+/**
+ * Testkonto- und Demo-Anfrage.
+ *
+ * Der Entwurf simuliert das Absenden. Hier steht ein echtes <form>: Auswahl
+ * laeuft ueber Radios (funktioniert ohne JavaScript), die Zeitfenster blendet
+ * CSS per :has() ein. Das Skript prueft die Eingaben erst beim Absenden — wie
+ * im Entwurf — und zeigt die Bestaetigung.
+ *
+ * OFFEN: Es gibt noch keinen Endpunkt, der die Anfrage entgegennimmt. Bis der
+ * steht, wird das Absenden abgefangen. Sobald es ihn gibt: `action` setzen und
+ * den preventDefault-Zweig im Skript entfernen.
+ */
+
+const vorteile = [
+  'Ohne eigene Hardware startklar über die Web-Kamera',
+  'Vorlagen und Branding aus der Testphase bleiben erhalten',
+  'Läuft die Phase aus, bleiben Daten 30 Tage abrufbar',
+];
+
+const boxstufen = ['1', '2–4', '5–10', 'mehr', 'noch keine'];
+const zeitfenster = ['Di 10:00', 'Di 14:00', 'Mi 11:00', 'Do 16:00'];
+
+const hinweise = [
+  {
+    kennung: 'Umstieg',
+    titel: 'Vorlagen übernehmen',
+    text: 'Bestehende Druckvorlagen und Kundenlisten bauen wir beim Start um — einfach mitschicken.',
+  },
+  {
+    kennung: 'Schulung',
+    titel: 'Eine Stunde fürs Team',
+    text: 'Aufbau und Bedienung, danach stellt auch die Aushilfe die Box allein.',
+  },
+  {
+    kennung: 'Hardware',
+    titel: 'Empfehlung ohne Verkaufsinteresse',
+    text: 'Wir verkaufen keine Hardware — aber wir nennen Kamera-, Drucker- und Touch-Kombinationen, die im Alltag laufen.',
+    verweis: { text: 'Anforderungen', ziel: '/support' },
+  },
+];
+---
+
+<Marketing
+  titel="Kontakt"
+  beschreibung="Testkonto mit allen 14 Modulen, ohne Wasserzeichen und ohne Kreditkarte — oder 30 Minuten Demo am Live-System."
+>
+  <section class="hero">
+    <div class="hero__text">
+      <span class="mono mono--amber">Testphase & Demo</span>
+      <h1>14 Tage, alles offen</h1>
+      <p class="fliess">
+        Konto mit allen 14 Modulen, ohne Wasserzeichen und ohne Kreditkarte. Wenn du willst, zeigen
+        wir in 30 Minuten den Ablauf am Live-System — Booth, Cockpit und Buchungsseite.
+      </p>
+      <ul class="punkte">
+        {vorteile.map((v) => <li>{v}</li>)}
+      </ul>
+      <div class="direkt">
+        <span class="mono mono--hell">Direkt</span>
+        <span class="direkt__zeile">
+          <a href="mailto:hallo@youbooth.me">hallo@youbooth.me</a>
+          {' · '}
+          <a href="tel:+49234555018">+49 234 555 018</a>
+        </span>
+        <span class="direkt__text">
+          Mo–Fr 9–18 Uhr. Für laufende Events gilt die Notfallnummer aus dem Cockpit, auch am
+          Wochenende.
+        </span>
+      </div>
+    </div>
+
+    <div class="formularkarte">
+      <form class="formular" novalidate>
+        <span class="display display--gross" data-feld="titel">Testkonto anlegen</span>
+
+        <fieldset class="wahl">
+          <legend class="nur-vorlese">Anliegen</legend>
+          <input type="radio" id="art-test" name="anliegen" value="testkonto" checked />
+          <label class="segment" for="art-test">Testkonto</label>
+          <input type="radio" id="art-demo" name="anliegen" value="demo" />
+          <label class="segment" for="art-demo">Demo-Termin</label>
+        </fieldset>
+
+        <div class="reihe zweispaltig">
+          <div class="feld">
+            <label class="marke" for="name">Name</label>
+            <input class="eingabe" id="name" name="name" placeholder="Vor- und Nachname" required />
+            <span class="fehler" id="fehler-name" hidden>Bitte Namen angeben</span>
+          </div>
+          <div class="feld">
+            <label class="marke" for="firma">Firma <span class="optional">optional</span></label>
+            <input class="eingabe" id="firma" name="firma" placeholder="Boxwerk GmbH" />
+          </div>
+        </div>
+
+        <div class="feld">
+          <label class="marke" for="email">E-Mail</label>
+          <input
+            class="eingabe"
+            id="email"
+            name="email"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="name@firma.de"
+            required
+          />
+          <span class="fehler" id="fehler-email" hidden>Bitte E-Mail angeben</span>
+        </div>
+
+        <fieldset class="termine">
+          <legend class="marke">Wunschtermin</legend>
+          <div class="wahl">
+            {
+              zeitfenster.map((z, i) => (
+                <>
+                  <input type="radio" id={`slot-${i}`} name="zeitfenster" value={z} />
+                  <label class="segment" for={`slot-${i}`}>
+                    {z}
+                  </label>
+                </>
+              ))
+            }
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="marke">Wie viele Boxen betreibt ihr?</legend>
+          <div class="wahl">
+            {
+              boxstufen.map((b, i) => (
+                <>
+                  <input type="radio" id={`box-${i}`} name="boxen" value={b} checked={i === 0} />
+                  <label class="segment" for={`box-${i}`}>
+                    {b}
+                  </label>
+                </>
+              ))
+            }
+          </div>
+        </fieldset>
+
+        <div class="feld">
+          <label class="marke" for="fall">
+            Wichtigster Anwendungsfall <span class="optional">optional</span>
+          </label>
+          <textarea
+            class="eingabe eingabe--gross"
+            id="fall"
+            name="anwendungsfall"
+            maxlength="400"
+            placeholder="z. B. Hochzeiten am Wochenende, zwei Boxen, Sofortdruck"></textarea>
+          <span class="zaehler" data-feld="zeichen">0 / 400 Zeichen</span>
+        </div>
+
+        <div class="feld">
+          <label class="einwilligung" for="datenschutz">
+            <input type="checkbox" id="datenschutz" name="datenschutz" required />
+            <span class="kasten" aria-hidden="true">✓</span>
+            <span>
+              Ich habe die <a href="/datenschutz">Datenschutzhinweise</a> gelesen und bin mit der
+              Kontaktaufnahme einverstanden.
+            </span>
+          </label>
+          <span class="fehler" id="fehler-datenschutz" hidden>
+            Ohne Einwilligung können wir nicht antworten
+          </span>
+        </div>
+
+        <button class="knopf knopf--amber absenden" type="submit" data-feld="absenden">
+          Testkonto anlegen
+        </button>
+        <span class="mono" data-feld="status" role="status">
+          Keine Kreditkarte · keine automatische Verlängerung
+        </span>
+      </form>
+
+      <div class="bestaetigung" hidden>
+        <span class="haken" aria-hidden="true">✓</span>
+        <span class="display display--gross" data-feld="dankTitel">Konto ist unterwegs</span>
+        <span class="danktext" data-feld="dankText">
+          Die Zugangsdaten liegen in wenigen Minuten in deinem Postfach. Die 14 Tage starten erst
+          mit der ersten Anmeldung.
+        </span>
+
+        <div class="zusammenfassung">
+          <span class="mono">Deine Angaben</span>
+          <span class="zusammenfassung__zeile"><span>Name</span><span data-feld="zName">—</span></span>
+          <span class="zusammenfassung__zeile"><span>E-Mail</span><span data-feld="zMail">—</span></span>
+          <span class="zusammenfassung__zeile"><span>Boxen</span><span data-feld="zBoxen">1</span></span>
+          <span class="zusammenfassung__zeile"><span>Anliegen</span><span data-feld="zArt">Testkonto</span></span>
+        </div>
+
+        <span class="fortschritt"><span></span></span>
+        <span class="mono">Antwort werktags innerhalb von vier Stunden</span>
+
+        <div class="reihe knopfreihe">
+          <a class="knopf knopf--dunkel knopf--flach" href="/download">Software laden</a>
+          <button class="segment" type="button" data-feld="neu">Neue Anfrage</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <div class="raster raster--breit">
+      {
+        hinweise.map((h) => (
+          <article class="karte">
+            <span class="mono">{h.kennung}</span>
+            <span class="display display--klein">{h.titel}</span>
+            <span class="karte__text">{h.text}</span>
+            {h.verweis && (
+              <a class="pfeil pfeil--klein" href={h.verweis.ziel}>
+                {h.verweis.text} →
+              </a>
+            )}
+          </article>
+        ))
+      }
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    gap: 44px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .hero__text {
+    flex: 1 1 440px;
+    min-width: min(420px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4vw, 54px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 520px;
+  }
+
+  .hero .punkte li {
+    color: rgba(244, 242, 238, 0.72);
+  }
+
+  .hero .punkte li::before {
+    background: var(--amber);
+    width: 7px;
+    height: 7px;
+  }
+
+  .direkt {
+    background: var(--ink-soft);
+    border-radius: var(--r-karte);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 480px;
+  }
+
+  .direkt__zeile {
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--text-hell);
+  }
+
+  .direkt__zeile a {
+    color: var(--text-hell);
+  }
+
+  .direkt__zeile a:hover {
+    color: var(--amber);
+  }
+
+  .direkt__text {
+    font-size: 13px;
+    line-height: 1.55;
+    color: rgba(244, 242, 238, 0.55);
+  }
+
+  /* Formularkarte */
+  .formularkarte {
+    flex: 1 1 440px;
+    min-width: min(420px, 100%);
+    background: var(--weiss);
+    border-radius: 16px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .formular {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  fieldset {
+    border: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .feld {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .zweispaltig {
+    gap: 12px;
+  }
+
+  .zweispaltig .feld {
+    flex: 1 1 180px;
+  }
+
+  .marke {
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--text-leise);
+  }
+
+  .optional {
+    color: rgba(0, 0, 0, 0.35);
+  }
+
+  .eingabe {
+    height: 52px;
+    border-radius: var(--r-knopf);
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    padding: 0 15px;
+    font-family: var(--schrift);
+    font-size: 14.5px;
+    color: var(--text);
+    background: var(--weiss);
+    width: 100%;
+  }
+
+  .eingabe--gross {
+    min-height: 104px;
+    padding: 13px 15px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
+  .eingabe:focus {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.18);
+  }
+
+  .eingabe[aria-invalid='true'] {
+    border-color: var(--warn);
+    box-shadow: 0 0 0 3px rgba(224, 72, 60, 0.14);
+  }
+
+  .fehler {
+    font-weight: 500;
+    font-size: 11.5px;
+    color: #a5291f;
+  }
+
+  .zaehler {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-fein);
+    align-self: flex-end;
+  }
+
+  /* Auswahl als Radios mit Segment-Optik */
+  .wahl {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+
+  .wahl input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .segment {
+    padding: 11px 15px;
+    border-radius: var(--r-pille);
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 12.5px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: var(--weiss);
+    color: var(--text-leise);
+    transition: background var(--t-farbe), color var(--t-farbe), border-color var(--t-farbe);
+  }
+
+  .segment:hover {
+    border-color: rgba(0, 0, 0, 0.28);
+  }
+
+  .wahl input:checked + .segment {
+    background: var(--ink-soft);
+    color: var(--weiss);
+    border-color: var(--ink-soft);
+  }
+
+  .wahl input:focus-visible + .segment {
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+  }
+
+  /* Zeitfenster nur beim Demo-Termin — ohne JavaScript */
+  .termine {
+    display: none;
+  }
+
+  .formular:has(#art-demo:checked) .termine {
+    display: flex;
+  }
+
+  /* Einwilligung */
+  .einwilligung {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    cursor: pointer;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-leise);
+  }
+
+  .einwilligung input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .kasten {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid rgba(0, 0, 0, 0.22);
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 11px;
+    color: transparent;
+    margin-top: 1px;
+  }
+
+  .einwilligung input:checked + .kasten {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--amber-ink);
+  }
+
+  .einwilligung input:focus-visible + .kasten {
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+  }
+
+  .absenden {
+    height: 56px;
+    font-size: 16px;
+    width: 100%;
+  }
+
+  /* Bestätigung */
+  .bestaetigung {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+    animation: einblenden 0.4s ease-out both;
+  }
+
+  .haken {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--r-kreis);
+    background: var(--ok);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 24px;
+    animation: aufploppen 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  }
+
+  .danktext {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: rgba(0, 0, 0, 0.62);
+  }
+
+  .zusammenfassung {
+    width: 100%;
+    background: var(--paper);
+    border-radius: 11px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .zusammenfassung__zeile {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 500;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .fortschritt {
+    height: 5px;
+    width: 100%;
+    border-radius: 3px;
+    background: #e4e0d9;
+    display: block;
+    overflow: hidden;
+  }
+
+  .fortschritt span {
+    display: block;
+    height: 5px;
+    background: var(--amber);
+    transform-origin: left;
+    animation: fuellen 1.2s ease-out both;
+  }
+
+  .knopfreihe {
+    gap: 10px;
+  }
+
+  .knopf--flach {
+    height: 48px;
+    padding: 0 20px;
+    font-size: 14px;
+  }
+
+  @keyframes einblenden {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes aufploppen {
+    from {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fuellen {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bestaetigung,
+    .haken,
+    .fortschritt span {
+      animation: none;
+    }
+  }
+
+  .raster--breit {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+
+  .pfeil--klein {
+    font-size: 13px;
+  }
+</style>
+
+<script>
+  const karte = document.querySelector<HTMLElement>('.formularkarte');
+  const formular = karte?.querySelector<HTMLFormElement>('.formular');
+  const bestaetigung = karte?.querySelector<HTMLElement>('.bestaetigung');
+
+  if (karte && formular && bestaetigung) {
+    const feld = (name: string) => karte.querySelector<HTMLElement>(`[data-feld="${name}"]`);
+
+    const name = formular.querySelector<HTMLInputElement>('#name')!;
+    const email = formular.querySelector<HTMLInputElement>('#email')!;
+    const datenschutz = formular.querySelector<HTMLInputElement>('#datenschutz')!;
+    const fall = formular.querySelector<HTMLTextAreaElement>('#fall')!;
+
+    /** Erst nach dem ersten Absendeversuch werden Fehler gezeigt. */
+    let geprueft = false;
+
+    const istDemo = () =>
+      formular.querySelector<HTMLInputElement>('input[name="anliegen"]:checked')?.value === 'demo';
+
+    const gueltig = () => ({
+      name: name.value.trim().length >= 2,
+      email: /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email.value.trim()),
+      datenschutz: datenschutz.checked,
+    });
+
+    function markiere(eingabe: HTMLElement, fehlerId: string, ok: boolean, text?: string) {
+      const meldung = document.getElementById(fehlerId);
+      const zeigen = geprueft && !ok;
+      eingabe.setAttribute('aria-invalid', String(zeigen));
+      if (zeigen) eingabe.setAttribute('aria-describedby', fehlerId);
+      else eingabe.removeAttribute('aria-describedby');
+      if (meldung) {
+        meldung.hidden = !zeigen;
+        if (text) meldung.textContent = text;
+      }
+    }
+
+    function zeichne() {
+      const v = gueltig();
+      const demo = istDemo();
+
+      feld('titel')!.textContent = demo ? 'Demo-Termin buchen' : 'Testkonto anlegen';
+      feld('absenden')!.textContent = demo ? 'Termin anfragen' : 'Testkonto anlegen';
+      feld('zeichen')!.textContent = `${fall.value.length} / 400 Zeichen`;
+
+      markiere(name, 'fehler-name', v.name);
+      markiere(
+        email,
+        'fehler-email',
+        v.email,
+        email.value.trim() === '' ? 'Bitte E-Mail angeben' : 'Diese Adresse sieht nicht vollständig aus'
+      );
+      markiere(datenschutz, 'fehler-datenschutz', v.datenschutz);
+
+      const allesOk = v.name && v.email && v.datenschutz;
+      feld('status')!.textContent =
+        geprueft && !allesOk
+          ? 'Bitte markierte Felder prüfen'
+          : 'Keine Kreditkarte · keine automatische Verlängerung';
+    }
+
+    formular.addEventListener('input', zeichne);
+    formular.addEventListener('change', zeichne);
+
+    formular.addEventListener('submit', (e) => {
+      // Solange kein Endpunkt existiert, wird hier abgefangen.
+      e.preventDefault();
+      geprueft = true;
+      const v = gueltig();
+      zeichne();
+
+      if (!(v.name && v.email && v.datenschutz)) {
+        const erstes = formular.querySelector<HTMLElement>('[aria-invalid="true"]');
+        erstes?.focus();
+        return;
+      }
+
+      const demo = istDemo();
+      const zeitfenster = formular.querySelector<HTMLInputElement>(
+        'input[name="zeitfenster"]:checked'
+      )?.value;
+      const boxen = formular.querySelector<HTMLInputElement>('input[name="boxen"]:checked')?.value;
+
+      feld('dankTitel')!.textContent = demo ? 'Termin vorgemerkt' : 'Konto ist unterwegs';
+      feld('dankText')!.textContent = demo
+        ? 'Wir bestätigen den Termin per Mail und schicken einen Link — für die Demo brauchst du nur einen Browser.'
+        : 'Die Zugangsdaten liegen in wenigen Minuten in deinem Postfach. Die 14 Tage starten erst mit der ersten Anmeldung.';
+      feld('zName')!.textContent = name.value.trim() || '—';
+      feld('zMail')!.textContent = email.value.trim() || '—';
+      feld('zBoxen')!.textContent = boxen ?? '—';
+      feld('zArt')!.textContent = demo
+        ? `Demo-Termin${zeitfenster ? ` · ${zeitfenster}` : ''}`
+        : 'Testkonto';
+
+      formular.hidden = true;
+      bestaetigung.hidden = false;
+      bestaetigung.querySelector<HTMLElement>('.display')?.focus();
+    });
+
+    feld('neu')?.addEventListener('click', () => {
+      formular.reset();
+      geprueft = false;
+      zeichne();
+      bestaetigung.hidden = true;
+      formular.hidden = false;
+      name.focus();
+    });
+
+    zeichne();
+  }
+</script>

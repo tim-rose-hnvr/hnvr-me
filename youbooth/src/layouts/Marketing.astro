@@ -1,0 +1,58 @@
+---
+import '../styles/global.css';
+import Kopfleiste from '../components/Kopfleiste.astro';
+import Fusszeile from '../components/Fusszeile.astro';
+
+interface Props {
+  titel: string;
+  beschreibung: string;
+}
+
+const { titel, beschreibung } = Astro.props;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titel} · youbooth</title>
+    <meta name="description" content={beschreibung} />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="/assets/favicon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/assets/favicon-180.png" />
+    <meta name="theme-color" content="#0b0b0d" />
+    <meta property="og:title" content={`${titel} · youbooth`} />
+    <meta property="og:description" content={beschreibung} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="de_DE" />
+  </head>
+  <body>
+    <a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+    <Kopfleiste />
+    <main id="inhalt">
+      <slot />
+    </main>
+    <Fusszeile />
+
+    <style>
+      .sprung {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        z-index: 100;
+        background: var(--amber);
+        color: var(--amber-ink);
+        padding: 12px 18px;
+        border-radius: 0 0 var(--r-knopf) 0;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .sprung:focus {
+        left: 0;
+        color: var(--amber-ink);
+      }
+    </style>
+  </body>
+</html>

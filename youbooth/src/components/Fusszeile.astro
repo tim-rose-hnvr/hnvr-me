@@ -1,0 +1,148 @@
+---
+import { fusszeile } from '../daten/navigation';
+
+const jahr = 2026;
+---
+
+<footer class="fuss">
+  <div class="spalten">
+    <div class="marke">
+      <span class="zeile">
+        <img src="/assets/youbooth-mark.svg" alt="" width="26" height="26" />
+        <span class="wortmarke">youbooth</span>
+      </span>
+      <span class="satz">
+        Fotobox-Software für Vermieter, Studios und feste Installationen. Made in Germany,
+        DSGVO-konform betrieben.
+      </span>
+    </div>
+
+    {
+      fusszeile.map((spalte) => (
+        <nav class="spalte" aria-label={spalte.titel}>
+          <span class="mono mono--hell">{spalte.titel}</span>
+          {spalte.verweise.map((v) => (
+            <a href={v.ziel}>{v.text}</a>
+          ))}
+        </nav>
+      ))
+    }
+
+    <div class="spalte">
+      <span class="mono mono--hell">Kontakt</span>
+      <a href="/kontakt">Demo anfragen</a>
+      <a href="mailto:hallo@youbooth.me">hallo@youbooth.me</a>
+      <span class="still">Mo–Fr 9–18 Uhr</span>
+    </div>
+  </div>
+
+  <div class="recht">
+    <span>© {jahr} youbooth</span>
+    <span class="rechtslinks">
+      <a href="/impressum">Impressum</a>
+      <a href="/datenschutz">Datenschutz</a>
+      <a href="/agb">AGB</a>
+    </span>
+  </div>
+</footer>
+
+<style>
+  .fuss {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 52px var(--rand) 34px;
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+  }
+
+  .spalten {
+    display: flex;
+    gap: 56px;
+    flex-wrap: wrap;
+  }
+
+  .marke {
+    flex: 1;
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .zeile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .zeile img {
+    display: block;
+  }
+
+  .wortmarke {
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: -0.04em;
+    text-transform: lowercase;
+  }
+
+  .satz {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text-hell-still);
+    max-width: 300px;
+  }
+
+  .spalte {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .spalte a,
+  .still {
+    font-weight: 500;
+    font-size: 13.5px;
+    color: rgba(244, 242, 238, 0.68);
+    text-decoration: none;
+    transition: color var(--t-farbe);
+  }
+
+  .spalte a:hover {
+    color: var(--text-hell);
+  }
+
+  .still {
+    color: var(--text-hell-still);
+  }
+
+  .recht {
+    border-top: 1px solid var(--linie-dunkel-zart);
+    padding-top: 22px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-hell-fein);
+  }
+
+  .rechtslinks {
+    display: flex;
+    gap: 20px;
+  }
+
+  .recht a {
+    color: var(--text-hell-fein);
+    text-decoration: none;
+  }
+
+  .recht a:hover {
+    color: var(--text-hell);
+  }
+</style>

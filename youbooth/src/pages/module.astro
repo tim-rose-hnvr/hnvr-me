@@ -1,0 +1,255 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Icon from '../components/Icon.astro';
+import { basismodul, zusatzmodule } from '../daten/module';
+
+const grundsaetze = [
+  {
+    titel: 'Pro Konto, nicht pro Box',
+    text: 'Zusatzmodule gelten für alle gekoppelten Boxen. Nur die Basis-Lizenz zählt je Box.',
+  },
+  {
+    titel: 'Monatlich umbaubar',
+    text: 'Saisonbetrieb ist vorgesehen: Module in der Nebensaison abschalten, Daten bleiben erhalten.',
+  },
+  {
+    titel: 'Alles testbar',
+    text: 'Jedes Modul 14 Tage vollständig, ohne Wasserzeichen — auch mitten in einer laufenden Lizenz.',
+  },
+];
+---
+
+<Marketing
+  titel="Module"
+  beschreibung="Die komplette Fotobox ist die Basis. Alles andere schaltet ihr monatlich dazu oder wieder ab — pro Konto, nicht pro Box."
+>
+  <section class="hero">
+    <div class="hero__text">
+      <span class="mono mono--amber">14 Module · einzeln zubuchbar</span>
+      <h1>Nimm, was der Abend braucht</h1>
+      <p class="fliess">
+        Die komplette Fotobox ist die Basis. Alles andere schaltet ihr monatlich dazu oder wieder
+        ab — pro Konto, nicht pro Box. Jedes Modul lässt sich 14 Tage testen.
+      </p>
+    </div>
+    <a class="knopf knopf--amber knopf--mittel" href="/preise">Plan zusammenstellen</a>
+  </section>
+
+  <section class="abschnitt abschnitt--liste">
+    <article class="basis">
+      <div class="basis__text">
+        <span class="mono mono--amber">Basis-Modul · Pflicht</span>
+        <span class="display display--gross"><a href={basismodul.pfad}>{basismodul.titel}</a></span>
+        <span class="basis__beschreibung">{basismodul.text}</span>
+      </div>
+      <div class="basis__preis">
+        <b>ab {basismodul.preis} €</b>
+        <span class="mono mono--hell">{basismodul.kennung}</span>
+      </div>
+    </article>
+
+    <div class="raster raster--3">
+      {
+        zusatzmodule.map((m) => (
+          <article class="karte modul">
+            <span class="modul__titel">
+              <Icon name={m.icon} groesse={20} />
+              <a href={m.pfad}>{m.titel}</a>
+            </span>
+            <span class="karte__text">{m.text}</span>
+            <a class="pfeil pfeil--klein" href={m.pfad}>
+              Details ansehen →
+            </a>
+            <span class="modul__fuss">
+              <span class="modul__preis">ab {m.preis} €</span>
+              <span class="mono">{m.kennung}</span>
+            </span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--eng">
+    <div class="reihe">
+      {
+        grundsaetze.map((g) => (
+          <article class="karte grundsatz">
+            <span class="display display--klein">{g.titel}</span>
+            <span class="karte__text">{g.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <span class="display display--gross">Unsicher, welche Module ihr braucht?</span>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--gross" href="/kontakt">Kurz beraten lassen</a>
+      <a class="knopf knopf--rahmen-hell knopf--gross" href="/preise">Preisbeispiele</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 64px var(--rand) 72px;
+    display: flex;
+    gap: 48px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .hero__text {
+    flex: 1;
+    min-width: min(520px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .hero h1 {
+    font-size: clamp(40px, 4.6vw, 66px);
+  }
+
+  .hero .fliess {
+    font-size: 17px;
+    color: var(--text-hell-leise);
+    max-width: 620px;
+  }
+
+  .abschnitt--liste {
+    padding-block: 56px 24px;
+    gap: 18px;
+  }
+
+  /* Basis-Modul als breite dunkle Zeile über dem Raster */
+  .basis {
+    background: var(--ink);
+    color: var(--text-hell);
+    border-radius: 16px;
+    padding: 34px;
+    display: flex;
+    gap: 36px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .basis__text {
+    flex: 1;
+    min-width: min(420px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .basis .display {
+    font-size: clamp(30px, 3vw, 40px);
+  }
+
+  .basis .display a {
+    color: var(--text-hell);
+  }
+
+  .basis .display a:hover {
+    color: var(--amber);
+  }
+
+  .basis__beschreibung {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--text-hell-leise);
+    max-width: 560px;
+  }
+
+  .basis__preis {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .basis__preis b {
+    font-weight: 800;
+    font-size: 44px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--amber);
+  }
+
+  .basis__preis .mono {
+    letter-spacing: 0.1em;
+    font-size: 10.5px;
+    color: var(--text-hell-still);
+  }
+
+  /* Modulkarten */
+  .modul {
+    gap: 11px;
+  }
+
+  .modul__titel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  .modul__titel a {
+    color: var(--text);
+  }
+
+  .modul__titel a:hover {
+    color: var(--link);
+  }
+
+  .pfeil--klein {
+    font-size: 12.5px;
+  }
+
+  .modul__fuss {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .modul__preis {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .modul__fuss .mono {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  .grundsatz {
+    flex: 1;
+    min-width: min(340px, 100%);
+    padding: 26px;
+  }
+
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 36px;
+    flex-wrap: wrap;
+    padding-block: 60px;
+  }
+
+  .schluss .display {
+    max-width: 640px;
+    line-height: 1.05;
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+</style>

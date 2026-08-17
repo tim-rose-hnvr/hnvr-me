@@ -1,0 +1,68 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import { geplanteRouten } from '../daten/navigation';
+
+/**
+ * Platzhalter fuer die Routen, die die Entwuerfe vorsehen, die aber noch nicht
+ * umgesetzt sind. So bleibt jede Verlinkung klickbar und es ist sichtbar, was
+ * noch fehlt. Sobald eine Seite als eigene .astro-Datei existiert, faellt sie
+ * hier automatisch heraus.
+ */
+export function getStaticPaths() {
+  const vorhanden = new Set(
+    Object.keys(import.meta.glob('./**/*.astro'))
+      .filter((datei) => !datei.includes('['))
+      .map((datei) =>
+        datei
+          .replace('./', '/')
+          .replace(/\.astro$/, '')
+          .replace(/\/index$/, '/')
+      )
+      .map((route) => (route.length > 1 ? route.replace(/\/$/, '') : route))
+  );
+
+  return geplanteRouten
+    .filter((r) => !vorhanden.has(r.pfad))
+    .map((r) => ({
+      params: { pfad: r.pfad.replace(/^\//, '') },
+      props: { titel: r.titel, quelle: r.quelle },
+    }));
+}
+
+const { titel, quelle } = Astro.props;
+---
+
+<Marketing titel={titel} beschreibung={`${titel} — diese Seite entsteht gerade.`}>
+  <section class="abschnitt platzhalter">
+    <span class="mono mono--still">In Arbeit</span>
+    <h1>{titel}</h1>
+    <p class="fliess">
+      Diese Seite ist im Entwurf fertig und wird gerade umgesetzt. Die Gestaltungsvorlage dazu ist
+      <code>{quelle}</code>.
+    </p>
+    <div class="reihe reihe--knoepfe">
+      <a class="knopf knopf--amber" href="/">Zur Startseite</a>
+      <a class="knopf knopf--rahmen" href="/kontakt">Kontakt aufnehmen</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .platzhalter {
+    min-height: 52vh;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 13.5px;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+
+  .reihe--knoepfe {
+    gap: 12px;
+  }
+</style>

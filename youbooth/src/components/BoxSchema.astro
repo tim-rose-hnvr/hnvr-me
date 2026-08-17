@@ -1,0 +1,349 @@
+---
+/**
+ * Schematische Fotobox aus reinem CSS — Ringlicht, Kamera, Touchscreen,
+ * Druckerschacht. Zeigt den Aufbau, ohne ein Foto zu brauchen.
+ * Der Screen wechselt zwischen Attract-Zustand und Countdown.
+ */
+---
+
+<div class="schema" role="img" aria-label="Schema einer Fotobox: Ringlicht, Kamera, 24-Zoll-Touchscreen, Druckerschacht im Sockel">
+  <span class="ringlicht"></span>
+  <span class="hals"></span>
+
+  <div class="korpus">
+    <div class="kopfzeile">
+      <span class="linse"><span></span></span>
+      <span class="mono mono--hell">Kamera · 24 MP</span>
+      <span class="lampe"></span>
+    </div>
+
+    <div class="screen">
+      <div class="raster"></div>
+      <div class="attract">
+        <span class="mono mono--amber">Tippen zum Start</span>
+        <span class="satz">Ein Bild für die Ewigkeit</span>
+      </div>
+      <div class="countdown">
+        <span class="ring"><span class="ziffer">3</span></span>
+      </div>
+      <span class="mono mono--hell beschriftung">24″ Touch</span>
+    </div>
+
+    <div class="druckzeile">
+      <span class="schacht"><span class="abzug"></span></span>
+      <span class="mono mono--hell">Druck</span>
+    </div>
+  </div>
+
+  <span class="sockelhals"></span>
+  <span class="saeule"></span>
+  <span class="fuss"></span>
+  <span class="mono mono--hell unterschrift">Schema · alle Bauformen funktionieren gleich</span>
+</div>
+
+<style>
+  .schema {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ringlicht {
+    width: 78px;
+    height: 78px;
+    border-radius: var(--r-kreis);
+    border: 9px solid var(--amber);
+    display: block;
+    animation: licht 4.2s ease-in-out infinite;
+  }
+
+  .hals {
+    width: 14px;
+    height: 26px;
+    background: #22222a;
+    display: block;
+  }
+
+  .korpus {
+    width: 100%;
+    background: var(--ink-soft);
+    border: 1px solid var(--linie-dunkel);
+    border-radius: var(--r-karte-gross);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 26px 60px rgba(0, 0, 0, 0.55);
+  }
+
+  .kopfzeile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .linse {
+    width: 46px;
+    height: 46px;
+    border-radius: var(--r-kreis);
+    background: var(--ink);
+    border: 4px solid #2f2f39;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: linse 5s ease-in-out infinite;
+  }
+
+  .linse span {
+    width: 16px;
+    height: 16px;
+    border-radius: var(--r-kreis);
+    background: #3b3b46;
+    display: block;
+  }
+
+  .kopfzeile .mono {
+    font-size: 8.5px;
+    letter-spacing: 0.16em;
+  }
+
+  .lampe {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--r-kreis);
+    background: var(--ok);
+    display: block;
+  }
+
+  .screen {
+    aspect-ratio: 9 / 16;
+    max-height: 280px;
+    border-radius: var(--r-knopf);
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--linie-dunkel-zart);
+  }
+
+  .raster {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(135deg, #1b1b20 0 10px, #141419 10px 20px);
+  }
+
+  .attract,
+  .countdown {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .attract {
+    flex-direction: column;
+    gap: 9px;
+    padding: 10%;
+    text-align: center;
+    animation: screen1 8s linear infinite;
+  }
+
+  .attract .mono {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+  }
+
+  .satz {
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    font-size: clamp(15px, 2vw, 22px);
+    line-height: 1.1;
+    color: var(--text-hell);
+  }
+
+  .countdown {
+    animation: screen2 8s linear infinite;
+  }
+
+  .ring {
+    width: 46%;
+    aspect-ratio: 1;
+    border-radius: var(--r-kreis);
+    border: 5px solid rgba(242, 178, 62, 0.25);
+    border-top-color: var(--amber);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: dreh 1s linear infinite;
+  }
+
+  .ziffer {
+    font-weight: 800;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--text-hell);
+  }
+
+  .beschriftung {
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 7px;
+    letter-spacing: 0.14em;
+  }
+
+  .druckzeile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .druckzeile .mono {
+    font-size: 8px;
+    letter-spacing: 0.14em;
+    flex: none;
+  }
+
+  .schacht {
+    flex: 1;
+    height: 12px;
+    border-radius: 6px;
+    background: var(--ink);
+    border: 1px solid rgba(244, 242, 238, 0.12);
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .abzug {
+    position: absolute;
+    left: 14%;
+    right: 14%;
+    top: 2px;
+    bottom: -70%;
+    background: var(--text-hell);
+    border-radius: 2px;
+    display: block;
+    animation: abzug 6s ease-in-out infinite;
+  }
+
+  .sockelhals {
+    width: 56%;
+    height: 16px;
+    background: #22222a;
+    border-radius: 0 0 6px 6px;
+    display: block;
+  }
+
+  .saeule {
+    width: 34%;
+    height: 220px;
+    background: linear-gradient(#22222a, #1a1a21);
+    display: block;
+  }
+
+  .fuss {
+    width: 74%;
+    height: 14px;
+    background: #2a2a33;
+    border-radius: 8px;
+    display: block;
+  }
+
+  .unterschrift {
+    margin-top: 14px;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: rgba(244, 242, 238, 0.35);
+  }
+
+  @keyframes licht {
+    0%,
+    100% {
+      opacity: 0.55;
+      box-shadow: 0 0 26px 6px rgba(242, 178, 62, 0.25);
+    }
+    50% {
+      opacity: 1;
+      box-shadow: 0 0 46px 12px rgba(242, 178, 62, 0.42);
+    }
+  }
+
+  @keyframes linse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(0.94);
+    }
+  }
+
+  @keyframes dreh {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(0.94);
+    }
+  }
+
+  @keyframes screen1 {
+    0%,
+    44% {
+      opacity: 1;
+    }
+    52%,
+    96% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes screen2 {
+    0%,
+    44% {
+      opacity: 0;
+    }
+    52%,
+    96% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes abzug {
+    0%,
+    12% {
+      transform: translateY(-88%);
+    }
+    46%,
+    100% {
+      transform: translateY(6%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ringlicht,
+    .linse,
+    .attract,
+    .countdown,
+    .ring,
+    .abzug {
+      animation: none;
+    }
+    .countdown {
+      opacity: 0;
+    }
+  }
+</style>

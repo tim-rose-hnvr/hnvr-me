@@ -9,7 +9,17 @@ import { describe, it } from 'node:test';
 import { adresseFuer, adresseFuerNetzwerk, istSichereAdresse, normalisiereNummer, zuWhatsappNummer } from '../src/kern/ziele.ts';
 import { baueVcard, vcardDateiname } from '../src/kern/vcard.ts';
 import { alsDatenadresse } from '../src/kern/bild.ts';
-import { kontrast, pruefeLesbarkeit, vorlage, VORLAGEN } from '../src/kern/gestaltung.ts';
+import {
+  FLIESSTEXTSCHRIFTEN,
+  hintergrund,
+  kontrast,
+  lieseGestaltung,
+  pruefeLesbarkeit,
+  SCHRIFTEN,
+  vorlage,
+  vorlagenName,
+  VORLAGEN,
+} from '../src/kern/gestaltung.ts';
 import { darstellungFuer, hauptaktionFuer, lieseProfil, pruefeSlug } from '../src/kern/profil.ts';
 import type { Aktionsblock, Visitenkarte } from '../src/kern/profil.ts';
 
@@ -346,5 +356,77 @@ describe('Darstellung', () => {
     });
     ok(!ergebnis.ok);
     ok(ergebnis.fehler.some((f) => f.stelle === 'bloecke[0].form'));
+  });
+});
+
+describe('Hintergrundbild', () => {
+  it('bleibt ohne Bild eine reine Farbe oder ein Verlauf', () => {
+    strictEqual(hintergrund({ ...vorlage('stein') }), '#FFFFFF');
+    ok(hintergrund({ ...vorlage('hnvr') }).startsWith('linear-gradient(160deg,'));
+  });
+
+  it('legt den Schleier über das Bild, nicht darunter', () => {
+    const mitBild = { ...vorlage('hnvr'), bild: '/bilder/halle.jpg', schleier: 0.6 };
+    const wert = hintergrund(mitBild);
+    // Der Belag steht zuerst — in CSS liegt die erste Schicht oben.
+    ok(wert.startsWith('linear-gradient(rgba(15,15,15,0.6), rgba(15,15,15,0.6))'), wert);
+    ok(wert.includes('url("/bilder/halle.jpg") center / cover no-repeat'));
+    // Die Grundfarbe bleibt als letzte Schicht stehen, falls das Bild fehlt.
+    ok(wert.endsWith('#0F0F0F'));
+  });
+
+  it('warnt, wenn der Schleier zu dünn für ein Foto ist', () => {
+    const duenn = { ...vorlage('hnvr'), bild: '/bilder/halle.jpg', schleier: 0.2 };
+    const befunde = pruefeLesbarkeit(duenn);
+    ok(befunde.some((b) => b.schwere === 'fehler' && /Schleier/.test(b.meldung)));
+
+    const dicht = { ...vorlage('hnvr'), bild: '/bilder/halle.jpg', schleier: 0.7 };
+    deepStrictEqual(pruefeLesbarkeit(dicht), []);
+  });
+
+  it('lässt kein fremdes Schema als Hintergrundbild durch', () => {
+    const gut = lieseGestaltung({ vorlage: 'hnvr', bild: '/bilder/halle.jpg' });
+    strictEqual(gut.gestaltung?.bild, '/bilder/halle.jpg');
+
+    const schlecht = lieseGestaltung({ vorlage: 'hnvr', bild: 'http://fremd.example/verfolger.gif' });
+    ok(schlecht.fehler.length > 0);
+    strictEqual(schlecht.gestaltung?.bild, '');
+  });
+});
+
+describe('Schriftangebot', () => {
+  it('liefert zwölf Familien, alle bis auf System selbst ausgeliefert', () => {
+    strictEqual(SCHRIFTEN.length, 12);
+    strictEqual(SCHRIFTEN.filter((s) => !s.eigen).length, 1, 'nur „System" lädt nichts nach');
+  });
+
+  it('hält Plakatschriften aus dem Fließtext heraus', () => {
+    const nurAnzeige = SCHRIFTEN.filter((s) => s.zweck === 'anzeige').map((s) => s.id);
+    deepStrictEqual(nurAnzeige.sort(), ['anton', 'bebas', 'clash']);
+    ok(!FLIESSTEXTSCHRIFTEN.some((s) => nurAnzeige.includes(s.id)));
+  });
+
+  it('gibt jeder Schrift eine Rückfallebene', () => {
+    for (const s of SCHRIFTEN) {
+      ok(s.css.includes(','), `„${s.name}" hat keinen Ersatz, wenn die Datei fehlt`);
+    }
+  });
+});
+
+describe('Vorlagen', () => {
+  it('sind zwölf und haben eindeutige Kennungen', () => {
+    strictEqual(VORLAGEN.length, 12);
+    strictEqual(new Set(VORLAGEN.map((v) => v.vorlage)).size, 12);
+  });
+
+  it('benutzen mehr als eine Schriftmischung — sonst wäre es ein Design mit zwölf Anstrichen', () => {
+    const paare = new Set(VORLAGEN.map((v) => `${v.anzeige}/${v.schrift}`));
+    ok(paare.size >= 9, `nur ${paare.size} verschiedene Schriftpaare`);
+  });
+
+  it('haben für jede Kennung einen Anzeigenamen', () => {
+    for (const v of VORLAGEN) {
+      ok(vorlagenName(v.vorlage) !== v.vorlage || v.vorlage === 'hnvr', `„${v.vorlage}" ohne Namen`);
+    }
   });
 });

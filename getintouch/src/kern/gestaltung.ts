@@ -24,28 +24,36 @@ export interface Schriftart {
   css: string;
   /** Selbst ausgeliefert unter /schriften — kein CDN, kein Fremdaufruf. */
   eigen: boolean;
+  /** `anzeige` taugt nur für Überschriften, `beides` auch als Fließtext. */
+  zweck: 'anzeige' | 'beides';
 }
 
+/**
+ * Zwölf Familien, alle selbst ausgeliefert. Deklariert sind sie alle, geladen
+ * wird nur, was eine Seite tatsächlich benutzt — so verlangt es die Norm für
+ * `@font-face`. Das Angebot kostet eine Profilseite deshalb kein einziges Byte.
+ *
+ * `zweck` sagt, wofür eine Familie taugt. Plakatschriften wie Anton oder Bebas
+ * sind als Fließtext unlesbar; der Editor soll sie später gar nicht erst zur
+ * Auswahl stellen, wo sie schaden.
+ */
 export const SCHRIFTEN: Schriftart[] = [
-  {
-    id: 'system',
-    name: 'System',
-    css: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    eigen: false,
-  },
-  {
-    id: 'dm',
-    name: 'DM Sans',
-    css: '"DM Sans", system-ui, sans-serif',
-    eigen: true,
-  },
-  {
-    id: 'clash',
-    name: 'Clash Display',
-    css: '"Clash Display", "DM Sans", system-ui, sans-serif',
-    eigen: true,
-  },
+  { id: 'system', name: 'System', css: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', eigen: false, zweck: 'beides' },
+  { id: 'dm', name: 'DM Sans', css: '"DM Sans", system-ui, sans-serif', eigen: true, zweck: 'beides' },
+  { id: 'inter', name: 'Inter', css: '"Inter", system-ui, sans-serif', eigen: true, zweck: 'beides' },
+  { id: 'poppins', name: 'Poppins', css: '"Poppins", system-ui, sans-serif', eigen: true, zweck: 'beides' },
+  { id: 'space', name: 'Space Grotesk', css: '"Space Grotesk", system-ui, sans-serif', eigen: true, zweck: 'beides' },
+  { id: 'syne', name: 'Syne', css: '"Syne", system-ui, sans-serif', eigen: true, zweck: 'beides' },
+  { id: 'playfair', name: 'Playfair Display', css: '"Playfair Display", Georgia, serif', eigen: true, zweck: 'beides' },
+  { id: 'fraunces', name: 'Fraunces', css: '"Fraunces", Georgia, serif', eigen: true, zweck: 'beides' },
+  { id: 'mono', name: 'JetBrains Mono', css: '"JetBrains Mono", ui-monospace, monospace', eigen: true, zweck: 'beides' },
+  { id: 'clash', name: 'Clash Display', css: '"Clash Display", "DM Sans", system-ui, sans-serif', eigen: true, zweck: 'anzeige' },
+  { id: 'anton', name: 'Anton', css: '"Anton", Impact, system-ui, sans-serif', eigen: true, zweck: 'anzeige' },
+  { id: 'bebas', name: 'Bebas Neue', css: '"Bebas Neue", Impact, system-ui, sans-serif', eigen: true, zweck: 'anzeige' },
 ];
+
+/** Familien, die als Fließtext taugen. */
+export const FLIESSTEXTSCHRIFTEN = SCHRIFTEN.filter((s) => s.zweck === 'beides');
 
 export function schrift(id: string): Schriftart {
   return SCHRIFTEN.find((s) => s.id === id) ?? SCHRIFTEN[0]!;
@@ -69,7 +77,27 @@ export interface Gestaltung {
   schrift: string;
   /** Schriftkennung für Überschriften. */
   anzeige: string;
+  /**
+   * Hintergrundbild. Leer heißt: nur Farbe.
+   *
+   * Über einem Foto ist kein Kontrast berechenbar — ein heller Himmel und ein
+   * dunkler Baum stehen in derselben Fläche. Deshalb liegt zwischen Bild und
+   * Text immer ein Schleier aus der Grundfarbe, und der Wächter rechnet gegen
+   * diese Grundfarbe. Nur so bleibt die Aussage über die Lesbarkeit wahr.
+   */
+  bild: string;
+  /** Deckkraft des Schleiers über dem Bild, 0 bis 1. */
+  schleier: number;
 }
+
+/**
+ * Unterhalb dieses Schleiers ist über einem beliebigen Foto keine Lesbarkeit
+ * mehr zuzusichern. Der Wert stammt nicht aus einer Norm, sondern aus dem
+ * Umstand, dass ein Foto in derselben Fläche nahezu Weiß und nahezu Schwarz
+ * zeigen kann: erst ab etwa der Hälfte dominiert die Grundfarbe so weit, dass
+ * der gerechnete Kontrast trägt.
+ */
+export const SCHLEIER_MINDESTENS = 0.5;
 
 function g(werte: Partial<Gestaltung> & Pick<Gestaltung, 'vorlage' | 'grund' | 'vordergrund' | 'akzent' | 'akzentText'>): Gestaltung {
   return {
@@ -80,28 +108,57 @@ function g(werte: Partial<Gestaltung> & Pick<Gestaltung, 'vorlage' | 'grund' | '
     bildform: 'rund',
     schrift: 'dm',
     anzeige: 'clash',
+    bild: '',
+    schleier: 0.68,
     ...werte,
   };
 }
 
 /**
- * Neun Vorlagen. Die erste ist das Hausdesign von hnvr.me und bleibt die
+ * Zwölf Vorlagen. Die erste ist das Hausdesign von hnvr.me und bleibt die
  * Vorgabe — eine neue Seite sieht sofort nach etwas aus.
+ *
+ * Jede Vorlage bringt ein eigenes Schriftpaar mit, nicht bloß andere Farben.
+ * Genau daran scheitern die Baukästen: zwanzig „Designs", die sich nur im
+ * Farbton unterscheiden, sind ein Design mit zwanzig Anstrichen.
  */
 export const VORLAGEN: Gestaltung[] = [
   g({ vorlage: 'hnvr', grund: '#0F0F0F', grund2: '#1B1B1B', vordergrund: '#F1EFEB', akzent: '#FF7120', akzentText: '#141410' }),
   // Weiße Schrift auf dem Hausorange kommt nur auf 2,8:1 — deshalb steht hier
   // dunkle Schrift auf der Hauptschaltfläche, nicht helle.
   g({ vorlage: 'creme', grund: '#F1EFEB', grund2: '#FFFFFF', vordergrund: '#141410', akzent: '#FF7120', akzentText: '#141410' }),
-  g({ vorlage: 'tinte', grund: '#F7F7F5', vordergrund: '#111111', akzent: '#1D4ED8', akzentText: '#FFFFFF', radius: 6, schaltflaeche: 'kontur' }),
-  g({ vorlage: 'ozean', grund: '#04121E', grund2: '#0B3C5C', vordergrund: '#EAF6FF', akzent: '#35C7F2', akzentText: '#04121E' }),
-  g({ vorlage: 'wald', grund: '#08150F', grund2: '#12402A', vordergrund: '#E9F5EE', akzent: '#4ADE80', akzentText: '#062712' }),
-  g({ vorlage: 'papier', grund: '#EFE7DA', grund2: '#FBF7F0', vordergrund: '#2B2118', akzent: '#B23A0C', akzentText: '#FFFFFF', radius: 10, bildform: 'karte' }),
-  g({ vorlage: 'sand', grund: '#1C1A17', grund2: '#2A251E', vordergrund: '#F3EADB', akzent: '#E0B77A', akzentText: '#231D14', radius: 22 }),
+  g({ vorlage: 'tinte', grund: '#F7F7F5', vordergrund: '#111111', akzent: '#1D4ED8', akzentText: '#FFFFFF', radius: 6, schaltflaeche: 'kontur', schrift: 'space', anzeige: 'space' }),
+  g({ vorlage: 'ozean', grund: '#04121E', grund2: '#0B3C5C', vordergrund: '#EAF6FF', akzent: '#35C7F2', akzentText: '#04121E', schrift: 'inter', anzeige: 'inter' }),
+  g({ vorlage: 'wald', grund: '#08150F', grund2: '#12402A', vordergrund: '#E9F5EE', akzent: '#4ADE80', akzentText: '#062712', schrift: 'inter', anzeige: 'space' }),
+  g({ vorlage: 'papier', grund: '#EFE7DA', grund2: '#FBF7F0', vordergrund: '#2B2118', akzent: '#B23A0C', akzentText: '#FFFFFF', radius: 10, bildform: 'karte', schrift: 'fraunces', anzeige: 'fraunces' }),
+  g({ vorlage: 'sand', grund: '#1C1A17', grund2: '#2A251E', vordergrund: '#F3EADB', akzent: '#E0B77A', akzentText: '#231D14', radius: 22, schrift: 'inter', anzeige: 'bebas' }),
   // Rosé statt Rot: #F43F5E trägt weiße Schrift nur mit 3,7:1, #E11D48 mit 4,7:1.
-  g({ vorlage: 'abend', grund: '#150406', grund2: '#4A0D16', vordergrund: '#FFE9EC', akzent: '#E11D48', akzentText: '#FFFFFF', radius: 999, schaltflaeche: 'glas' }),
-  g({ vorlage: 'stein', grund: '#FFFFFF', vordergrund: '#000000', akzent: '#000000', akzentText: '#FFFFFF', radius: 0, schaltflaeche: 'kontur', schrift: 'system', anzeige: 'system' }),
+  g({ vorlage: 'abend', grund: '#150406', grund2: '#4A0D16', vordergrund: '#FFE9EC', akzent: '#E11D48', akzentText: '#FFFFFF', radius: 999, schaltflaeche: 'glas', schrift: 'poppins', anzeige: 'poppins' }),
+  g({ vorlage: 'stein', grund: '#FFFFFF', vordergrund: '#000000', akzent: '#000000', akzentText: '#FFFFFF', radius: 0, schaltflaeche: 'kontur', schrift: 'mono', anzeige: 'mono' }),
+  g({ vorlage: 'salon', grund: '#FDF2F4', grund2: '#FFFFFF', vordergrund: '#3B1F27', akzent: '#A81A52', akzentText: '#FFFFFF', radius: 20, bildform: 'karte', schrift: 'dm', anzeige: 'playfair' }),
+  g({ vorlage: 'nacht', grund: '#111111', grund2: '#171719', vordergrund: '#E9E9F1', akzent: '#CEC4EF', akzentText: '#121319', radius: 32, bildform: 'karte', schrift: 'syne', anzeige: 'syne' }),
+  g({ vorlage: 'plakat', grund: '#0B0B0B', grund2: '#141414', vordergrund: '#F2F2F2', akzent: '#C6F24E', akzentText: '#101401', radius: 4, schrift: 'space', anzeige: 'anton' }),
 ];
+
+/** Namen für die Anzeige. Die Kennung bleibt technisch, der Name darf schön sein. */
+const VORLAGENNAMEN: Record<string, string> = {
+  hnvr: 'hnvr',
+  creme: 'Creme',
+  tinte: 'Tinte',
+  ozean: 'Ozean',
+  wald: 'Wald',
+  papier: 'Papier',
+  sand: 'Sand',
+  abend: 'Abend',
+  stein: 'Stein',
+  salon: 'Salon',
+  nacht: 'Nacht',
+  plakat: 'Plakat',
+};
+
+export function vorlagenName(id: string): string {
+  return VORLAGENNAMEN[id] ?? id;
+}
 
 export const GESTALTUNG_VORGABE: Gestaltung = VORLAGEN[0]!;
 
@@ -218,6 +275,17 @@ export function pruefeLesbarkeit(gestaltung: Gestaltung): Lesbarkeitsbefund[] {
     }
   }
 
+  // Über einem Foto ist kein Kontrast berechenbar: ein heller Himmel und ein
+  // dunkler Baum liegen in derselben Fläche. Nur der Schleier macht die
+  // Rechnung oben überhaupt gültig.
+  if (gestaltung.bild && gestaltung.schleier < SCHLEIER_MINDESTENS) {
+    befunde.push({
+      schwere: gestaltung.schleier < 0.3 ? 'fehler' : 'warnung',
+      meldung:
+        'Der Schleier über dem Hintergrundbild ist zu dünn. Auf hellen Stellen des Bildes wird der Text unlesbar — entweder den Schleier kräftiger stellen oder das Bild weglassen.',
+    });
+  }
+
   return befunde;
 }
 
@@ -225,12 +293,30 @@ export function pruefeLesbarkeit(gestaltung: Gestaltung): Lesbarkeitsbefund[] {
  * Die abgeleiteten Werte, die als CSS-Variablen auf die Seite gehen.
  * Ein einziger Ort, an dem aus sechs Entscheidungen ein vollständiges Bild wird.
  */
+/**
+ * Der fertige Wert für den Seitenhintergrund.
+ *
+ * Mit Bild liegt der Schleier aus der Grundfarbe *über* dem Foto — als
+ * Verlauf aus zwei gleichen Farbstopps, weil CSS keinen einfarbigen Belag über
+ * einem Bild kennt. Der Schleier ist keine Verzierung, sondern die Bedingung
+ * dafür, dass die Kontrastrechnung überhaupt gilt.
+ */
+export function hintergrund(gestaltung: Gestaltung): string {
+  const { grund, grund2, winkel, bild, schleier } = gestaltung;
+  const flaeche = grund2 ? `linear-gradient(${winkel}deg, ${grund}, ${grund2})` : grund;
+
+  if (!bild) return flaeche;
+
+  const belag = mitDeckkraft(grund, Math.min(Math.max(schleier, 0), 1));
+  return `linear-gradient(${belag}, ${belag}), url(${JSON.stringify(bild)}) center / cover no-repeat, ${grund}`;
+}
+
 export function cssVariablen(gestaltung: Gestaltung): Record<string, string> {
-  const { grund, grund2, winkel, vordergrund, akzent, akzentText, radius } = gestaltung;
+  const { grund, vordergrund, akzent, akzentText, radius } = gestaltung;
   const dunkel = istDunkel(grund);
 
   return {
-    '--grund': grund2 ? `linear-gradient(${winkel}deg, ${grund}, ${grund2})` : grund,
+    '--grund': hintergrund(gestaltung),
     '--grund-fest': grund,
     '--vg': vordergrund,
     '--vg-neben': mitDeckkraft(vordergrund, 0.62),
@@ -279,6 +365,20 @@ export function lieseGestaltung(roh: unknown): { gestaltung: Gestaltung | null; 
     heraus.radius = daten.radius;
   }
   if (typeof daten.winkel === 'number') heraus.winkel = ((daten.winkel % 360) + 360) % 360;
+
+  if (typeof daten.bild === 'string') {
+    const wert = daten.bild.trim();
+    // Nur eigene Pfade und https — ein `javascript:` im url() wäre zwar
+    // wirkungslos, ein fremder Host aber ein stiller Aufruf bei jedem Besuch.
+    if (wert === '' || wert.startsWith('/') || wert.startsWith('https://') || wert.startsWith('data:image/')) {
+      heraus.bild = wert;
+    } else {
+      fehler.push('„bild" muss ein eigener Pfad, eine https-Adresse oder eine Datenadresse sein.');
+    }
+  }
+  if (typeof daten.schleier === 'number' && daten.schleier >= 0 && daten.schleier <= 1) {
+    heraus.schleier = daten.schleier;
+  }
   if (daten.schaltflaeche === 'gefuellt' || daten.schaltflaeche === 'kontur' || daten.schaltflaeche === 'glas') {
     heraus.schaltflaeche = daten.schaltflaeche;
   }

@@ -49,8 +49,8 @@ const merkmale = [
   },
   {
     zeichen: 'haken',
-    titel: 'Neun geprüfte Designs',
-    text: 'Nicht achtzehn ungeprüfte. Ein Kontrastwächter nach WCAG rechnet jede freie Farbwahl nach und sagt in Worten, was nicht mehr lesbar ist.',
+    titel: 'Zwölf geprüfte Designs',
+    text: 'Jedes mit eigenem Schriftpaar aus zwölf selbst ausgelieferten Familien — nicht zwölf Anstriche desselben Layouts. Farben, Radius und Form bleiben frei, ein Kontrastwächter nach WCAG passt auf.',
   },
   {
     zeichen: 'laden',
@@ -150,7 +150,10 @@ const fragen = [
             <Fragment set:html={SIGNET} />
             <span>Get in Touch</span>
           </a>
-          <a class="leise" href="https://hnvr.me" target="_blank" rel="noopener noreferrer">von hnvr.me ↗</a>
+          <nav class="kopfnavi">
+            <a href="/designs">Designs</a>
+            <a href="https://hnvr.me" target="_blank" rel="noopener noreferrer">von hnvr.me ↗</a>
+          </nav>
         </header>
 
         <!-- Kopf -->
@@ -312,6 +315,7 @@ const fragen = [
               Seite anfragen
               <Fragment set:html={zeichen('pfeil')} />
             </a>
+            <a class="knopf" href="/designs">Zwölf Designs ansehen</a>
             <a class="knopf" href="tel:+4951112282286">
               <Fragment set:html={zeichen('telefon')} />
               +49 511 12282286

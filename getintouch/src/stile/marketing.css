@@ -147,6 +147,21 @@ p {
   color: var(--akzent);
 }
 
+.kopfnavi {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+}
+
+.kopfnavi a {
+  color: var(--vg-neben);
+  text-decoration: none;
+}
+
+.kopfnavi a:hover {
+  color: var(--vg);
+}
+
 .kopf {
   padding: 40px 0 76px;
 }

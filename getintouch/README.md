@@ -14,6 +14,8 @@ Stufe 2, der Editor für Besucher, kommt darauf.
 | Adresse | Was |
 |---|---|
 | `/` | Verkaufsseite (statisch vorgebaut) |
+| `/designs` | Galerie aller zwölf Vorlagen |
+| `/designs/<kennung>` | eine Vorlage am vollständigen Profil |
 | `/t/<name>` | die öffentliche Profilseite |
 | `/t/<name>/karte.vcf` | die Visitenkarte als Datei |
 | `/t/<name>/qr.svg` | der QR-Code |
@@ -42,8 +44,9 @@ Host, setzt kein Cookie und bindet kein Analyse-Werkzeug ein.
 Jede Kombination war erlaubt, keine geprüft. Zwei der übernommenen Vorlagen
 waren messbar unlesbar (weiße Schrift auf Orange kommt auf 2,8:1, nötig sind
 4,5:1).
-→ Neun Vorlagen, jede geprüft. `pruefeLesbarkeit` sagt in Worten, was nicht
-mehr geht, und der Test lässt keine unlesbare Vorlage durch.
+→ Zwölf Vorlagen, jede geprüft und mit eigenem Schriftpaar.
+`pruefeLesbarkeit` sagt in Worten, was nicht mehr geht, und ein Test lässt
+keine unlesbare Vorlage durch.
 
 **4. Eine Linkliste hat keine Rangfolge.**
 Vierzehn gleich aussehende Schaltflächen sind keine Antwort auf die Frage
@@ -116,6 +119,41 @@ ein verlorener Knopf am linken Rand.
 Linksbündig statt mittig ist Absicht: mittige Sätze lesen sich langsamer, große
 Schrift braucht eine Kante, und **alle** Wettbewerber zentrieren.
 
+## Gestaltung
+
+Zwölf Vorlagen, jede mit **eigenem Schriftpaar** — nicht zwölf Anstriche
+desselben Layouts. Zu sehen unter `/designs`, jede einzelne unter
+`/designs/<kennung>` an einem vollständigen Profil, gerendert von derselben
+Komponente wie die echte Seite.
+
+| Stellschraube | Werte |
+|---|---|
+| Farben | `grund`, `grund2` + `winkel` für den Verlauf, `vordergrund`, `akzent`, `akzentText` |
+| Schrift | zwölf Familien, getrennt für `anzeige` (Überschriften) und `schrift` (Fließtext) |
+| Form | `radius` 0–999, `schaltflaeche` gefüllt/kontur/glas, `bildform` rund/karte |
+| Hintergrundbild | `bild` + `schleier` 0–1 |
+
+Nebentext, Kachelfüllung und Linien werden abgeleitet, statt einzeln
+einstellbar zu sein — so bleibt jede freie Farbwahl in sich stimmig, statt dass
+acht Regler gegeneinander laufen.
+
+**Der Wächter.** `pruefeLesbarkeit` rechnet nach WCAG 2.1 und meldet in
+Klartext, was nicht mehr trägt. Ein Test lässt keine mitgelieferte Vorlage
+durch, die dabei einen Fehler auslöst — zwei der ursprünglich übernommenen
+Farbpaare sind daran hängengeblieben und wurden korrigiert.
+
+**Hintergrundbild.** Über einem Foto ist kein Kontrast berechenbar: ein heller
+Himmel und ein dunkler Baum liegen in derselben Fläche. Deshalb liegt zwischen
+Bild und Text immer ein Schleier aus der Grundfarbe, und der Wächter rechnet
+gegen diese Grundfarbe. Unter 50 % Schleier meldet er sich, unter 30 % ist es
+ein Fehler. Nur so bleibt die Aussage über die Lesbarkeit wahr.
+
+**Schriften.** Alle zwölf Familien liegen unter `public/schriften` und werden
+selbst ausgeliefert — kein Google-Aufruf, kein CDN. Deklariert sind alle,
+geladen wird nur, was eine Seite benutzt; das Angebot kostet eine Profilseite
+also kein Byte. Anton, Bebas Neue und Clash Display sind als `zweck: 'anzeige'`
+markiert und taugen nur für Überschriften.
+
 ### Die neue Idee: die Seite kennt die Uhrzeit
 
 Wer sonntags um 23 Uhr den QR-Code am Fahrzeug scannt und auf „Jetzt anrufen"
@@ -144,7 +182,8 @@ src/kern/                Die Fachlogik, ohne Astro und ohne Browser
   zeit.ts                Wanduhr in der Zeitzone des Betriebs
   erreichbarkeit.ts      Öffnungszeiten → Lage → Statuszeile
   profil.ts              Datenmodell, Prüfung, Wahl der Hauptaktion
-  gestaltung.ts          Neun Vorlagen, Ableitungen, Kontrastwächter
+  gestaltung.ts          Zwölf Vorlagen, Schriften, Ableitungen, Kontrastwächter
+  aufbau.ts              Blöcke → Gitter oder Zeile
   zeichen.ts             Strichalphabet als SVG
   ziele.ts               Rohwert → sichere Adresse (tel:, wa.me, mailto: …)
   vcard.ts               vCard 3.0 nach RFC 2426
@@ -152,9 +191,10 @@ src/kern/                Die Fachlogik, ohne Astro und ohne Browser
   speicher/              Ablage: Wix-CMS mit Rückfall auf die Dateien
 src/komponenten/         Astro-Bausteine der Seite
 src/pages/index.astro    Die Verkaufsseite
+src/pages/designs/       Galerie und Vorlagen-Vorführung
 src/pages/t/[slug].astro Die öffentliche Seite
 src/pages/t/[slug]/      karte.vcf und qr.svg
-test/                    59 Tests auf die Regeln oben
+test/                    69 Tests auf die Regeln oben
 ```
 
 Der Kern kennt weder Astro noch das DOM. Der Editor aus Stufe 2 benutzt
@@ -168,7 +208,7 @@ aussieht, sondern dieselbe Rechnung anstellt.
 ```bash
 npm install
 npm run dev        # http://localhost:4321 — Verkaufsseite, Profile unter /t/<name>
-npm test           # 59 Tests, ohne zusätzliche Abhängigkeiten
+npm test           # 69 Tests, ohne zusätzliche Abhängigkeiten
 npm run pruefen    # astro check
 npm run build
 ```
@@ -222,7 +262,7 @@ Kanäle: `link`, `telefon`, `mobil`, `whatsapp`, `mail`, `termin`, `route`,
 Blockarten: `aktion`, `ueberschrift`, `text`, `trenner`.
 Darstellung: `form` mit `kachel` oder `zeile` — ohne Angabe entscheidet der Kanal.
 Vorlagen: `hnvr`, `creme`, `tinte`, `ozean`, `wald`, `papier`, `sand`, `abend`,
-`stein`.
+`stein`, `salon`, `nacht`, `plakat`.
 
 Zeitfenster über Mitternacht (`"von": "20:00", "bis": "03:00"`) gehören zum
 Starttag. Aneinandergrenzende Fenster werden zusammengezogen, eine Mittagspause

@@ -1,0 +1,104 @@
+---
+/**
+ * Das Profilblatt — der eine Renderer.
+ *
+ * Sowohl die öffentliche Seite unter `/t/…` als auch die Design-Galerie unter
+ * `/designs/…` benutzen genau diese Komponente. Damit ist eine Vorschau nie
+ * „ungefähr wie" die echte Seite, sondern buchstäblich dieselbe. Der Editor aus
+ * Stufe 2 hängt sich an dieselbe Stelle.
+ *
+ * Der Aufbau folgt der Dringlichkeit, nicht der Reihenfolge einer Liste:
+ *
+ *   1. Wer ist das, und ist da gerade jemand?
+ *   2. Die eine Aktion, die jetzt trägt — und die Karte fürs Adressbuch.
+ *   3. Die übrigen direkten Wege, als Gitter statt als Balkenreihe.
+ *   4. Was es sonst zu lesen gibt, ruhig.
+ *   5. Kanäle, Code, Absender.
+ */
+import Statuszeile from './Statuszeile.astro';
+import Aktionsknopf from './Aktionsknopf.astro';
+import Aktionskachel from './Aktionskachel.astro';
+import Visitenkartenknopf from './Visitenkartenknopf.astro';
+import Kanalreihe from './Kanalreihe.astro';
+import Codebereich from './Codebereich.astro';
+import Fussbereich from './Fussbereich.astro';
+
+import { ordne } from '../kern/aufbau.ts';
+import type { Lage } from '../kern/erreichbarkeit.ts';
+import type { Gestaltung } from '../kern/gestaltung.ts';
+import { hauptaktionFuer, type Profil } from '../kern/profil.ts';
+import { adresseFuer } from '../kern/ziele.ts';
+
+interface Props {
+  profil: Profil;
+  gestaltung: Gestaltung;
+  lage: Lage | null;
+  /** Vollständige Adresse dieser Seite. */
+  adresse: string;
+}
+
+const { profil, gestaltung, lage, adresse } = Astro.props;
+
+const haupt = hauptaktionFuer(profil, lage?.offen ?? true);
+const hauptAdresse = haupt ? adresseFuer(haupt.kanal, haupt.ziel) : null;
+const abschnitte = ordne(profil.bloecke.filter((b) => b.aktiv && b.id !== haupt?.id));
+const adresseKurz = adresse.replace(/^https?:\/\/(www\.)?/, '');
+---
+
+<div class="blatt" data-schaltflaeche={gestaltung.schaltflaeche}>
+  {profil.kopf.titelbild && <img class="titelbild" src={profil.kopf.titelbild} alt="" />}
+
+  <header class:list={['kopf', profil.kopf.titelbild && 'kopf--mitTitelbild']}>
+    {
+      profil.kopf.bild && (
+        <img
+          class:list={['bild', `bild--${gestaltung.bildform}`]}
+          src={profil.kopf.bild}
+          width="88"
+          height="88"
+          alt=""
+        />
+      )
+    }
+
+    <h1 class="name">{profil.kopf.name}</h1>
+    {profil.kopf.rolle && <p class="rolle">{profil.kopf.rolle}</p>}
+    {lage && <Statuszeile lage={lage} zusage={profil.erreichbarkeit?.zusage} />}
+    {profil.kopf.beschreibung && <p class="beschreibung">{profil.kopf.beschreibung}</p>}
+  </header>
+
+  <main>
+    {/* Die Entscheidung: jetzt erreichen — oder für später behalten. */}
+    <section class="entscheidung" aria-label="Kontakt aufnehmen">
+      {haupt && hauptAdresse && <Aktionsknopf block={haupt} adresse={hauptAdresse} haupt />}
+      {profil.visitenkarte && <Visitenkartenknopf karte={profil.visitenkarte} slug={profil.slug} />}
+    </section>
+
+    {
+      abschnitte.map((abschnitt) => {
+        if (abschnitt.was === 'gitter') {
+          return (
+            <div class="gitter" data-anzahl={abschnitt.bloecke.length}>
+              {abschnitt.bloecke.map(({ block, adresse: ziel }) => (
+                <Aktionskachel block={block} adresse={ziel} />
+              ))}
+            </div>
+          );
+        }
+        if (abschnitt.was === 'zeile') {
+          return <Aktionsknopf block={abschnitt.block} adresse={abschnitt.adresse} />;
+        }
+        const { block } = abschnitt;
+        if (block.art === 'ueberschrift') return <h2 class="marke">{block.beschriftung}</h2>;
+        if (block.art === 'text') return <p class="textblock">{block.beschriftung}</p>;
+        return <hr class="trenner" />;
+      })
+    }
+  </main>
+
+  <Kanalreihe kanaele={profil.kanaele} />
+
+  <Codebereich slug={profil.slug} adresse={adresse} adresseKurz={adresseKurz} />
+
+  <Fussbereich rechtliches={profil.rechtliches} />
+</div>

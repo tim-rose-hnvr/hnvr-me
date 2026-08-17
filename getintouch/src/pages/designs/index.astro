@@ -1,0 +1,159 @@
+---
+/**
+ * Die Design-Galerie.
+ *
+ * Jede Kachel ist kein Farbmuster, sondern ein verkleinertes echtes Blatt:
+ * Kopfzeile, Statuszeile, Hauptaktion, Kachelgitter — mit den Variablen der
+ * jeweiligen Vorlage. Wer eine Vorlage anhand von drei Farbpunkten aussucht,
+ * wählt blind; erst die Schriftmischung und die Form der Schaltflächen machen
+ * den Unterschied aus.
+ *
+ * Ein Klick führt auf `/designs/<kennung>`, wo dieselbe Vorlage an einem
+ * vollständigen Profil läuft.
+ */
+import { cssVariablen, schrift, vorlage, vorlagenName, VORLAGEN } from '../../kern/gestaltung.ts';
+import { SIGNET, zeichen } from '../../kern/zeichen.ts';
+import '../../stile/marketing.css';
+import '../../stile/galerie.css';
+
+export const prerender = true;
+
+const rahmen = vorlage('hnvr');
+const rahmenStil = Object.entries(cssVariablen(rahmen))
+  .map(([name, wert]) => `${name}:${wert}`)
+  .join(';');
+
+const titel = 'Zwölf Designs — Get in Touch';
+const beschreibung =
+  'Zwölf Vorlagen, jede mit eigenem Schriftpaar und geprüftem Kontrast. Dazu freie Farben, Eckenradius, ' +
+  'Stil der Schaltflächen und ein Hintergrundbild mit Schleier.';
+
+const stellschrauben = [
+  { titel: 'Farben', text: 'Grundfarbe, zweite Farbe für den Verlauf samt Winkel, Textfarbe, Akzent und die Schrift auf dem Akzent — alles frei.' },
+  { titel: 'Schrift', text: 'Zwölf Familien, je eine für Überschriften und eine für Fließtext. Selbst ausgeliefert, kein Google-Aufruf.' },
+  { titel: 'Form', text: 'Eckenradius stufenlos von scharfkantig bis rund, Schaltflächen gefüllt, als Kontur oder als Glas, Profilbild rund oder als Karte.' },
+  { titel: 'Hintergrundbild', text: 'Eigenes Foto mit einstellbarem Schleier. Unter der Hälfte meldet sich der Wächter: über einem hellen Himmel ist kein Text mehr lesbar.' },
+];
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titel}</title>
+    <meta name="description" content={beschreibung} />
+    <meta name="theme-color" content={rahmen.grund} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={titel} />
+    <meta property="og:description" content={beschreibung} />
+    <link rel="stylesheet" href="/schriften/schriften.css" />
+  </head>
+
+  <body style={rahmenStil}>
+    <div class="seite">
+      <div class="bahn">
+        <header class="kopfzeile">
+          <a class="wortmarke" href="/">
+            <Fragment set:html={SIGNET} />
+            <span>Get in Touch</span>
+          </a>
+          <a class="leise" href="/t/hnvr">echte Seite ↗</a>
+        </header>
+
+        <section class="kopf">
+          <p class="marke">gestaltung</p>
+          <h1>Zwölf Designs,<br />kein einziges geraten.</h1>
+          <p class="fuehrung">
+            Jede Vorlage bringt ein eigenes Schriftpaar mit, nicht bloß einen anderen Farbton. Und jede ist gegen
+            WCAG durchgerechnet — was nicht lesbar wäre, steht hier nicht zur Wahl.
+          </p>
+        </section>
+
+        <section>
+          <p class="marke">zur auswahl</p>
+          <div class="galerie">
+            {
+              VORLAGEN.map((v) => {
+                const stil = Object.entries(cssVariablen(v))
+                  .map(([name, wert]) => `${name}:${wert}`)
+                  .join(';');
+                return (
+                  <a class="probe" href={`/designs/${v.vorlage}`}>
+                    {/* Die Variablen gelten nur innerhalb des Blattes — der Fuß
+                        der Kachel bleibt im Design der Galerie, sonst stünde
+                        heller Text auf hellem Grund. */}
+                    <span class="probe__blatt" style={stil}>
+                      <span class="probe__bild" />
+                      <span class="probe__name">{vorlagenName(v.vorlage)}</span>
+                      <span class="probe__rolle">Digitalagentur · Hannover</span>
+                      <span class="probe__status">
+                        <span class="probe__punkt" />
+                        Jetzt erreichbar
+                      </span>
+                      <span class="probe__haupt">
+                        <Fragment set:html={zeichen('telefon')} />
+                        Jetzt anrufen
+                      </span>
+                      <span class="probe__gitter">
+                        <span class="probe__kachel" />
+                        <span class="probe__kachel" />
+                        <span class="probe__kachel" />
+                      </span>
+                      <span class="probe__zeile" />
+                      <span class="probe__zeile" />
+                    </span>
+                    <span class="probe__fuss">
+                      <b>{vorlagenName(v.vorlage)}</b>
+                      <span>{schrift(v.anzeige).name} + {schrift(v.schrift).name}</span>
+                    </span>
+                  </a>
+                );
+              })
+            }
+          </div>
+        </section>
+
+        <section>
+          <p class="marke">und dann frei</p>
+          <h2>Vorlagen sind ein Anfang,<br />kein Gefängnis.</h2>
+          <div class="merkmale">
+            {
+              stellschrauben.map((s) => (
+                <div class="merkmal">
+                  <h3>{s.titel}</h3>
+                  <p>{s.text}</p>
+                </div>
+              ))
+            }
+          </div>
+          <p class="quelle">
+            Der Kontrastwächter rechnet jede freie Farbwahl nach WCAG 2.1 nach und meldet in Worten, was nicht mehr
+            trägt — nicht in Zahlen, die niemandem weiterhelfen.
+          </p>
+        </section>
+
+        <section class="schluss">
+          <p class="marke">bereit?</p>
+          <h2>Welche soll es sein?</h2>
+          <div class="knopfreihe">
+            <a class="knopf knopf--voll" href="mailto:hallo@hnvr.me?subject=Get%20in%20Touch%20%E2%80%94%20Seite%20anlegen">
+              Seite anfragen
+              <Fragment set:html={zeichen('pfeil')} />
+            </a>
+            <a class="knopf" href="/">Zurück zur Übersicht</a>
+          </div>
+        </section>
+
+        <footer class="fuss">
+          <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
+          <span>
+            <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
+            ·
+            <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
+          </span>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

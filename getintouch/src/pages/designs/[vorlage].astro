@@ -1,0 +1,161 @@
+---
+/**
+ * Eine Vorlage am echten Inhalt.
+ *
+ * Kein Farbmuster und kein abfotografiertes Beispiel: hier läuft dieselbe
+ * `Profilansicht` wie unter `/t/…`, nur mit einer anderen Gestaltung. Wer eine
+ * Vorlage beurteilen will, sieht sie mit vollständigem Profil, mit
+ * Statuszeile, Kachelgitter und Visitenkarte.
+ *
+ * Die Seite trägt eine Leiste zum Weiterblättern und `noindex` — sie ist eine
+ * Vorführung, kein Inhalt für Suchmaschinen.
+ */
+import Profilblatt from '../../layouts/Profilblatt.astro';
+import Profilansicht from '../../komponenten/Profilansicht.astro';
+import { zeichen } from '../../kern/zeichen.ts';
+
+import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
+import { schrift, vorlage, vorlagenName, VORLAGEN } from '../../kern/gestaltung.ts';
+import { ablage } from '../../kern/speicher/index.ts';
+
+export const prerender = false;
+
+const kennung = Astro.params.vorlage!;
+const bekannt = VORLAGEN.some((v) => v.vorlage === kennung);
+if (!bekannt) {
+  return new Response('Diese Vorlage gibt es nicht.', {
+    status: 404,
+    headers: { 'content-type': 'text/plain; charset=utf-8' },
+  });
+}
+
+/** Vorgeführt wird an dem Profil, das ohnehin gepflegt ist. */
+const quelle = ablage();
+const slug = (await quelle.liste())[0];
+const profil = slug ? await quelle.hole(slug) : null;
+
+if (!profil) {
+  return new Response('Es gibt noch kein Profil zum Vorführen.', {
+    status: 404,
+    headers: { 'content-type': 'text/plain; charset=utf-8' },
+  });
+}
+
+const gestaltung = vorlage(kennung);
+const lage = profil.erreichbarkeit ? bewerteErreichbarkeit(profil.erreichbarkeit, new Date()) : null;
+const adresse = new URL(`/t/${profil.slug}`, Astro.site ?? Astro.url).toString();
+
+const stelle = VORLAGEN.findIndex((v) => v.vorlage === kennung);
+const vorige = VORLAGEN[(stelle - 1 + VORLAGEN.length) % VORLAGEN.length]!;
+const naechste = VORLAGEN[(stelle + 1) % VORLAGEN.length]!;
+
+const paar = `${schrift(gestaltung.anzeige).name} + ${schrift(gestaltung.schrift).name}`;
+---
+
+<Profilblatt
+  titel={`Vorlage ${vorlagenName(kennung)} — Get in Touch`}
+  beschreibung={`Die Vorlage ${vorlagenName(kennung)} an einem vollständigen Profil.`}
+  gestaltung={gestaltung}
+  adresse={new URL(`/designs/${kennung}`, Astro.site ?? Astro.url).toString()}
+  indexierbar={false}
+>
+  <Profilansicht profil={profil} gestaltung={gestaltung} lage={lage} adresse={adresse} />
+
+  <nav class="blaetterleiste" aria-label="Vorlagen durchblättern">
+    <a class="blaetterleiste__pfeil" href={`/designs/${vorige.vorlage}`} aria-label={`Vorige Vorlage: ${vorlagenName(vorige.vorlage)}`}>
+      <Fragment set:html={zeichen('pfeil')} />
+    </a>
+    <a class="blaetterleiste__mitte" href="/designs">
+      <b>{vorlagenName(kennung)}</b>
+      <span>{paar} · {stelle + 1} von {VORLAGEN.length}</span>
+    </a>
+    <a class="blaetterleiste__pfeil blaetterleiste__pfeil--vor" href={`/designs/${naechste.vorlage}`} aria-label={`Nächste Vorlage: ${vorlagenName(naechste.vorlage)}`}>
+      <Fragment set:html={zeichen('pfeil')} />
+    </a>
+  </nav>
+</Profilblatt>
+
+<style is:global>
+  /* Nur auf dieser Vorführseite: die Leiste gehört nicht zum Produkt. */
+  .blaetterleiste {
+    position: fixed;
+    left: 50%;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    align-items: stretch;
+    gap: 1px;
+    width: min(430px, calc(100% - 28px));
+    background: var(--linie);
+    border: 1px solid var(--linie);
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: 0 14px 40px -14px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+  }
+
+  .blaetterleiste a {
+    background: var(--grund-fest);
+    color: var(--vg);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .blaetterleiste__pfeil {
+    width: 52px;
+    flex: none;
+  }
+
+  .blaetterleiste__pfeil svg {
+    width: 19px;
+    height: 19px;
+    transform: rotate(180deg);
+  }
+
+  .blaetterleiste__pfeil--vor svg {
+    transform: none;
+  }
+
+  .blaetterleiste__mitte {
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 1px;
+    padding: 10px 12px;
+    text-align: center;
+    line-height: 1.2;
+    min-width: 0;
+  }
+
+  .blaetterleiste__mitte b {
+    font-family: var(--anzeige);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .blaetterleiste__mitte span {
+    font-size: 11px;
+    color: var(--vg-neben);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  .blaetterleiste a:hover {
+    background: var(--kachel-aktiv);
+  }
+
+  /* Platz, damit die Leiste den Seitenfuß nicht verdeckt. */
+  .blatt {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+
+  @media print {
+    .blaetterleiste {
+      display: none;
+    }
+  }
+</style>

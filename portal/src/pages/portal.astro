@@ -1,0 +1,56 @@
+---
+/* Kundenbereich — Schritt zwei.
+
+   Die Anmeldung übernimmt Wix' Astro-Integration: sie stellt nach dem
+   Anhängen /api/auth/login und /api/auth/logout bereit und verwaltet die
+   Sitzung. Erst danach lässt sich hier der angemeldete Mensch auslesen —
+   die dafür nötigen drei Zeilen stehen in der README dieses Ordners.
+   (Sie stehen dort und nicht hier, weil Astro schon beim Bauen nach dem
+   Wort im Quelltext sucht und die Seite sonst als serverseitig ansieht.)
+
+   Solange das Projekt nicht angehängt ist, gäbe es keine Sitzung — deshalb
+   steht hier vorerst der abgemeldete Zustand mit dem Weg hinein. */
+import Grundgeruest from '../layouts/Grundgeruest.astro';
+---
+<Grundgeruest titel="Kundenbereich — Werkbank" anmeldenZeigen={false}>
+  <main>
+    <section class="spur">
+      <span class="marke">Kundenbereich</span>
+      <h2 class="lauf">Anmelden</h2>
+      <div class="portal-karte">
+        <h2>In Vorbereitung</h2>
+        <p class="leise">
+          Hier entsteht der Bereich für Kundinnen und Kunden: Bezug der
+          Anwendung, Lizenzen im Team, Rechnungen. Die Anmeldung läuft über
+          Wix — Konten, Kennwörter und Sitzungen liegen dort, nicht in einer
+          selbstgebauten Benutzerverwaltung.
+        </p>
+        <a class="knopf-voll" href="/api/auth/login">Mit Wix anmelden</a>
+        <p class="klein leise" style="margin-top:1rem">
+          Der Weg <code>/api/auth/login</code> entsteht, sobald das Projekt an
+          Wix angehängt ist.
+        </p>
+      </div>
+
+      <h2 class="lauf" style="margin-top:3rem">Was hier als Nächstes hineinkommt</h2>
+      <div class="schritte lauf">
+        <div class="schritt">
+          <span class="nr">1</span>
+          <div><b>Anmeldung</b><p>Mitgliederkonten über Wix, ohne eigene Kennwortverwaltung.</p></div>
+        </div>
+        <div class="schritt">
+          <span class="nr">2</span>
+          <div><b>Bezug der Anwendung</b><p>Die Werkbank zum Selbstbetrieb im eigenen Netz, mit Fassung und Änderungsliste.</p></div>
+        </div>
+        <div class="schritt">
+          <span class="nr">3</span>
+          <div><b>Lizenzen und Rechnungen</b><p>Plätze im Team verwalten, Belege abrufen.</p></div>
+        </div>
+        <div class="schritt">
+          <span class="nr">4</span>
+          <div><b>Die Anwendung selbst</b><p>Bleibt, was sie ist: sie läuft auf dem Gerät. Der Kundenbereich verwaltet den Zugang, nicht die Dokumente.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Grundgeruest>

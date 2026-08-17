@@ -1,0 +1,277 @@
+---
+/* Startseite — die Marketingseite.
+   Der Aufbau folgt einem Gedanken: erst zeigen, was das Werkzeug ist, dann
+   warum es lokal läuft, dann was es kann, dann ehrlich, was es nicht kann.
+   Die Zahlen im Abgleich und im Prüfstand stammen aus dem Repository
+   (werkbank/README.md) und werden dort gepflegt. */
+import Grundgeruest from '../layouts/Grundgeruest.astro';
+---
+<Grundgeruest titel="Werkbank — PDF-Arbeit auf Ihrem Gerät">
+<main>
+
+  <section class="spur">
+    <div class="held">
+      <div>
+        <span class="marke">Werkzeug für PDF</span>
+        <h1>Ihre Dateien bleiben,<br>wo sie hingehören.</h1>
+        <p class="these">
+          Lesen, kommentieren, schwärzen, Formulare ausfüllen, unterschreiben,
+          Text erkennen, nach Word ausgeben, mit Kennwort schützen.
+          <strong>Alles im Browser, alles auf diesem Gerät.</strong>
+          Kein Konto, kein Upload, keine Verbindung nach draußen — auch nicht
+          für die Texterkennung und nicht für die Verschlüsselung.
+        </p>
+        <div class="stempel">
+          Ohne Abo
+          <span>läuft auch offline</span>
+        </div>
+      </div>
+
+      <div class="leiste" role="img" aria-label="Werkzeugleiste der Werkbank mit fünfzehn Werkzeugen">
+        <div class="leiste-kopf">
+          <i class="ampel"></i><i class="ampel"></i><i class="ampel"></i>
+          <span class="leiste-titel">Vertragsentwurf.pdf — 5 Seiten</span>
+        </div>
+        <div class="werkzeuge">
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 3l7 17 2-7 7-2z"/></svg>Auswahl<kbd>V</kbd></div>
+          <div class="werkzeug hebt"><svg viewBox="0 0 24 24"><path d="M3 20h18M6 16l9-9 3 3-9 9H6z"/></svg>Hervorheben<kbd>H</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M6 4v7a6 6 0 0 0 12 0V4M5 20h14"/></svg>Unterstreichen<kbd>U</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 12h16M7 6h10M7 18h10"/></svg>Durchstreichen<kbd>D</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 4h16v11H9l-5 5z"/></svg>Notiz<kbd>N</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M3 17c4 0 4-10 8-10s4 10 8 10"/></svg>Freihand<kbd>F</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M5 5h14M12 5v14M9 19h6"/></svg>Text<kbd>T</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/></svg>Rechteck<kbd>R</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M12 5c4.4 0 8 3.1 8 7s-3.6 7-8 7-8-3.1-8-7 3.6-7 8-7z"/></svg>Ellipse<kbd>E</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 20L20 4M20 4h-7M20 4v7"/></svg>Pfeil<kbd>P</kbd></div>
+          <div class="werkzeug hebt"><svg viewBox="0 0 24 24"><path d="M4 20h7M14 4l6 6-9 9H5v-6z"/></svg>Text ersetzen<kbd>B</kbd></div>
+          <div class="werkzeug hebt"><svg viewBox="0 0 24 24"><path d="M4 8h16v8H4zM4 4h16"/></svg>Schwärzen<kbd>S</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M3 18c3 0 5-12 8-12s2 9 4 9 2-3 6-3"/></svg>Unterschrift<kbd>G</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M5 20h14M7 16h10V9l-3-5H10L7 9z"/></svg>Stempel<kbd>Z</kbd></div>
+          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/></svg>Bereich<kbd>M</kbd></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <span class="marke">Der Punkt</span>
+    <h2 class="lauf">Die Arbeit findet auf Ihrem Schreibtisch statt.<br>Die Datei sollte auch dort bleiben.</h2>
+    <div class="lauf">
+      <p>
+        Wer heute ein PDF schwärzt, einen Scan durchsuchbar macht oder ein
+        Formular ausfüllt, lädt die Datei in aller Regel zu einem Anbieter hoch
+        und zahlt monatlich dafür. Bei einem Mietvertrag mag das gehen. Bei
+        einer Personalakte, einem Gutachten oder einem Sitzungsprotokoll ist es
+        eine Entscheidung, die niemand nebenbei treffen sollte.
+      </p>
+      <p>
+        Die Werkbank dreht das um: Sie ist eine Anwendung, die im Browser läuft
+        und nichts sendet. Texterkennung und Verschlüsselung — genau die beiden
+        Stellen, an denen andere hochladen — laufen hier auf demselben Gerät,
+        an dem Sie sitzen. Man kann das Netzwerkkabel ziehen und
+        weiterarbeiten.
+      </p>
+    </div>
+  </section>
+
+  <section class="spur">
+    <span class="marke">Was sie kann</span>
+    <h2 class="lauf">Der Alltag, vollständig.</h2>
+    <div class="raster raster-drei">
+      <div class="eintrag">
+        <h3>Lesen und finden</h3>
+        <p>Fortlaufender Seitenfluss, Miniaturen, Lesezeichen, Volltextsuche mit
+        Groß- und Kleinschreibung und ganzem Wort. Hell und dunkel.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Kommentieren</h3>
+        <p>Hervorheben, Unterstreichen, Durchstreichen, Notiz, Freihand, Text,
+        Formen, Stempel — mit Liste, Sprungmarken und Textbericht.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Texterkennung</h3>
+        <p>Deutsch und Englisch, bis 300 dpi. Der erkannte Text liegt danach
+        unsichtbar hinter dem Bild: Scans werden durchsuchbar und kopierbar.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Schwärzen, das hält</h3>
+        <p>Die betroffene Seite wird gerastert. Der Text darunter ist danach
+        wirklich fort — nicht nur von einem Rechteck verdeckt.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Formulare und Unterschrift</h3>
+        <p>Vorhandene Felder aller Arten direkt auf der Seite ausfüllen.
+        Unterschrift zeichnen, tippen oder als Bild laden.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Text ersetzen</h3>
+        <p>Auf eine Stelle klicken und neu schreiben. Lage, Größe und Farben
+        werden aus der Seite übernommen.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Seiten ordnen</h3>
+        <p>Ziehen, drehen, löschen, verdoppeln, mehrere Dateien
+        zusammenführen, in Teile zerlegen, Auszüge ausgeben.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Nach Word</h3>
+        <p>Absätze, Überschriften, fette und kursive Stellen, Seitenumbrüche —
+        als <span class="mono">.docx</span> zum Weiterschreiben.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Schützen und verkleinern</h3>
+        <p>Kennwort mit AES-256, Rechte für Drucken, Ändern und Kopieren.
+        Verkleinern mit Vorher-Nachher. Reparieren und Vergleichen.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <span class="marke">Der Unterschied</span>
+    <h2 class="lauf">Sie liest das Dokument, bevor Sie es tun.</h2>
+    <p class="lauf" style="margin-bottom:1.8rem">
+      Nach dem Öffnen sieht die Werkbank sich bis zu sechzig Seiten an und sagt,
+      was ansteht. Jeder Vorschlag nennt seinen Grund, erledigt die Arbeit auf
+      Knopfdruck — und lässt sich wegklicken. Nichts geschieht von selbst.
+    </p>
+    <div class="faelle">
+      <div class="fall">
+        <span class="befund">Befund: kein auswählbarer Text</span>
+        <span class="satz">„Texterkennung liest das Bild und legt den Text unsichtbar dahinter. Danach lässt sich suchen und hervorheben wie in einem gesetzten Dokument."</span>
+        <span class="tat">Text erkennen</span>
+      </div>
+      <div class="fall">
+        <span class="befund">Befund: IBAN, Geburtsdatum, Rufnummer</span>
+        <span class="satz">„Sechs personenbezogene Angaben gefunden. Vor der Weitergabe schwärzen? Die betroffenen Seiten werden gerastert, damit der Text wirklich verschwindet."</span>
+        <span class="tat">Fundstellen zeigen</span>
+      </div>
+      <div class="fall">
+        <span class="befund">Befund: Formular mit leeren Feldern</span>
+        <span class="satz">„Vier Felder offen. Ich springe zum ersten leeren Feld und setze den Schreibpunkt hinein."</span>
+        <span class="tat">Zum ersten Feld</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <span class="marke">Abgleich</span>
+    <h2 class="lauf">Neunundzwanzig Werkzeuge von Acrobat, ehrlich durchgezählt.</h2>
+    <p class="lauf" style="margin-bottom:1.5rem">
+      Kein Vergleich, der nur die eigenen Stärken zeigt. Hier steht auch, was
+      fehlt — und warum.
+    </p>
+    <div class="tabellenrahmen">
+      <table>
+        <thead>
+          <tr><th scope="col">Acrobat</th><th scope="col">Werkbank</th><th scope="col">Anmerkung</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>PDF exportieren</td><td class="stand ja">ja</td><td class="grund">PDF, Word, Text, PNG</td></tr>
+          <tr><td>Ausfüllen und Signieren</td><td class="stand ja">ja</td><td class="grund">Felder und sichtbare Unterschrift</td></tr>
+          <tr><td>PDF bearbeiten</td><td class="stand teil">teilweise</td><td class="grund">Text ersetzen ja, Bilder im PDF nein</td></tr>
+          <tr><td>PDF erstellen</td><td class="stand teil">teilweise</td><td class="grund">aus Bildern ja, aus Word nein</td></tr>
+          <tr><td>Dateien zusammenführen</td><td class="stand ja">ja</td><td class="grund"></td></tr>
+          <tr><td>Seiten verwalten</td><td class="stand ja">ja</td><td class="grund">sortieren, drehen, löschen, teilen</td></tr>
+          <tr><td>Scan &amp; OCR</td><td class="stand teil">teilweise</td><td class="grund">Erkennung ja, Scangerät nein</td></tr>
+          <tr><td>PDF-Datei schützen</td><td class="stand ja">ja</td><td class="grund">AES-256, Rechte</td></tr>
+          <tr><td>PDF-Datei schwärzen</td><td class="stand ja">ja</td><td class="grund">mit Rasterung</td></tr>
+          <tr><td>PDF komprimieren</td><td class="stand ja">ja</td><td class="grund">mit Vorher-Nachher</td></tr>
+          <tr><td>Kommentare hinzufügen</td><td class="stand ja">ja</td><td class="grund">zehn Werkzeuge, Liste, Bericht</td></tr>
+          <tr><td>Stempel hinzufügen</td><td class="stand ja">ja</td><td class="grund">Vorlagen, eigener Text, Datum</td></tr>
+          <tr><td>Dateien vergleichen</td><td class="stand ja">ja</td><td class="grund">wortweise je Seite</td></tr>
+          <tr><td>In PDF konvertieren</td><td class="stand teil">teilweise</td><td class="grund">Bilder ja, Office nein</td></tr>
+          <tr><td>Suchindex hinzufügen</td><td class="stand teil">teilweise</td><td class="grund">im Dokument ja, über Ordner nein</td></tr>
+          <tr><td>Geführte Aktionen</td><td class="stand teil">teilweise</td><td class="grund">Befehlspalette statt Stapelbetrieb</td></tr>
+          <tr><td>Benutzerdefiniertes Tool</td><td class="stand teil">teilweise</td><td class="grund">jede Fähigkeit ist ein Befehl</td></tr>
+          <tr><td>Formular vorbereiten</td><td class="stand nein">nein</td><td class="grund">echte Lücke, baubar</td></tr>
+          <tr><td>Ein Zertifikat verwenden</td><td class="stand nein">nein</td><td class="grund">echte Lücke, der nächste große Schritt</td></tr>
+          <tr><td>Barrierefreiheit vorbereiten</td><td class="stand nein">nein</td><td class="grund">echte Lücke, baubar</td></tr>
+          <tr><td>E-Signaturen anfordern</td><td class="stand nein">nein</td><td class="grund">braucht einen Server</td></tr>
+          <tr><td>Zum Kommentieren senden</td><td class="stand nein">nein</td><td class="grund">braucht einen Server</td></tr>
+          <tr><td>Diese PDF-Datei übersetzen</td><td class="stand nein">nein</td><td class="grund">braucht einen Dienst</td></tr>
+          <tr><td>Diese PDF stilisieren</td><td class="stand nein">nein</td><td class="grund">braucht einen Dienst</td></tr>
+          <tr><td>Druckproduktion</td><td class="stand nein">nein</td><td class="grund">Druckvorstufe, Farbauszüge</td></tr>
+          <tr><td>Objekte messen</td><td class="stand nein">nein</td><td class="grund"></td></tr>
+          <tr><td>PDF-Standards anwenden</td><td class="stand nein">nein</td><td class="grund">PDF/A, PDF/X</td></tr>
+          <tr><td>Rich Media hinzufügen</td><td class="stand nein">nein</td><td class="grund">bewusst nicht: Video im PDF ist eine Sicherheitslücke mit Abspieltaste</td></tr>
+          <tr><td>JavaScript verwenden</td><td class="stand nein">nein</td><td class="grund">bewusst nicht: seit Jahren ein Einfallstor</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="bilanz">
+      <div class="zahl betont"><b>18</b><span>ganz oder teilweise vorhanden</span></div>
+      <div class="zahl"><b>6</b><span>brauchen Server oder Dienst</span></div>
+      <div class="zahl"><b>2</b><span>bewusst abgelehnt</span></div>
+      <div class="zahl"><b>3</b><span>echte Lücken, hier baubar</span></div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <span class="marke">Grenzen</span>
+    <h2 class="lauf">Was sie nicht kann, steht hier — nicht im Kleingedruckten.</h2>
+    <div class="grenzen">
+      <div class="grenze">
+        <b>Kein qualifiziertes Signieren</b>
+        <span>Die Unterschrift ist ein Bild. Für eIDAS braucht es ein Zertifikat, eine PAdES-Struktur und für „qualifiziert" eine Signaturkarte oder einen Vertrauensdiensteanbieter.</span>
+      </div>
+      <div class="grenze">
+        <b>Keine Tabellen nach Word</b>
+        <span>Eine Tabelle wird zu Absätzen, nicht zu einem Word-Raster. Übernommen wird der Aufbau, nicht das Layout.</span>
+      </div>
+      <div class="grenze">
+        <b>Texterkennung irrt</b>
+        <span>Sie nennt ihre Sicherheit in Prozent. Zahlen, Namen und Kennzeichen gehören geprüft.</span>
+      </div>
+      <div class="grenze">
+        <b>Ersetzter Text in Helvetica</b>
+        <span>Die Originalschrift wird nicht nachgebildet. Bei ausgefallenen Schriften sieht man den Unterschied.</span>
+      </div>
+      <div class="grenze">
+        <b>Kein unbekanntes Kennwort</b>
+        <span>Entschlüsseln geht mit Kennwort. Ohne Kennwort geht es nicht — auch hier nicht.</span>
+      </div>
+      <div class="grenze">
+        <b>Lesezeichen beim Umbau</b>
+        <span>Sie bleiben erhalten, solange Seitenfolge und Drehung unverändert sind. Beides steht vor dem Sichern im Dialog.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="pruefstand">
+      <span class="marke">Prüfstand</span>
+      <h2>Geprüft wird das Ergebnis, nicht das Versprechen.</h2>
+      <p style="max-width:34rem">
+        Zwei Läufe fahren die Anwendung in einem echten Browser durch: einer
+        prüft, was am Ende in der Datei steht, der andere, ob sich alles bedienen
+        lässt. Beide schlagen auch dann fehl, wenn in der Browserkonsole ein
+        einziger Fehler auftaucht.
+      </p>
+      <div class="zeilen">
+        <div class="zeile"><i>✓</i> geschwärzte Seite trägt keinen auslesbaren Text mehr <em>Datei geprüft</em></div>
+        <div class="zeile"><i>✓</i> gesicherter Scan trägt unsichtbaren, auslesbaren Text <em>Datei geprüft</em></div>
+        <div class="zeile"><i>✓</i> geschützte Datei ohne Kennwort verschlossen, mit Kennwort offen <em>Datei geprüft</em></div>
+        <div class="zeile"><i>✓</i> Formularwert und Stempel stehen in der Ausgabe <em>Datei geprüft</em></div>
+        <div class="zeile"><i>✓</i> Word-Datei: Pflichtteile, Absätze, Überschriften, Sonderzeichen <em>Datei geprüft</em></div>
+        <div class="zeile"><i>✓</i> jedes Werkzeug, jeder Dialog, Tastatur und Zwischenablage <em>Bedienung geprüft</em></div>
+        <div class="zeile"><i>✓</i> 113 Prüfungen, keine offen <em>Stand heute</em></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <span class="marke">Noch offen</span>
+    <h2 class="lauf">Drei Dinge stehen noch nicht fest.</h2>
+    <div class="offen lauf">
+      <p><strong>Diese Seite ist ein Entwurf.</strong> Was hier fehlt, fehlt
+      absichtlich — es soll nichts behauptet werden, was nicht entschieden ist:</p>
+      <ul>
+        <li>Preis und Lizenz — Kauf, Miete, offener Quellcode oder eine Mischung</li>
+        <li>Bezugsweg — Download zum Selbstbetrieb, im eigenen Netz oder über eine Adresse</li>
+        <li>Kontaktadresse für Rückfragen</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+</Grundgeruest>

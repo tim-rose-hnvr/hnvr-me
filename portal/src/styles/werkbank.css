@@ -1,0 +1,284 @@
+/* Werkbank — Gestaltung der Seite.
+   Farben und Schriften stammen aus der Anwendung selbst (werkbank/app/stil.css):
+   Papiergrau, Tinte, Eisenoxidrot. Keine externe Schrift — dieselbe Regel,
+   nach der die Werkbank gebaut ist, gilt auch für ihre Seite. */
+:root {
+  --grund:        #EBEEEE;
+  --flaeche:      #FFFFFF;
+  --flaeche-tief: #E2E6E7;
+  --tinte:        #141A1C;
+  --tinte-leise:  #59666C;
+  --linie:        #D0D7D9;
+  --linie-stark:  #A9B4B8;
+  --tally:        #A82E23;
+  --tally-grund:  #F7E7E5;
+  --gut:          #0D5A4D;
+  --gut-grund:    #DFEDEA;
+  --warn:         #7E5300;
+
+  --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Helvetica Neue", Arial, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+           Georgia, serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+          "Liberation Mono", monospace;
+
+  --spur: 62rem;
+  --lauf: 34rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --grund:        #111618;
+    --flaeche:      #192023;
+    --flaeche-tief: #212A2E;
+    --tinte:        #E4E9EA;
+    --tinte-leise:  #93A1A7;
+    --linie:        #2A3438;
+    --linie-stark:  #47555A;
+    --tally:        #F0705C;
+    --tally-grund:  #37211E;
+    --gut:          #63BFA9;
+    --gut-grund:    #14302B;
+    --warn:         #E2B15C;
+  }
+}
+:root[data-theme="dark"] {
+  --grund:        #111618;
+  --flaeche:      #192023;
+  --flaeche-tief: #212A2E;
+  --tinte:        #E4E9EA;
+  --tinte-leise:  #93A1A7;
+  --linie:        #2A3438;
+  --linie-stark:  #47555A;
+  --tally:        #F0705C;
+  --tally-grund:  #37211E;
+  --gut:          #63BFA9;
+  --gut-grund:    #14302B;
+  --warn:         #E2B15C;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--grund);
+  color: var(--tinte);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.spur { width: min(var(--spur), 100% - 2.5rem); margin-inline: auto; }
+.lauf { max-width: var(--lauf); }
+
+section { padding: clamp(3rem, 7vw, 5.5rem) 0; border-top: 1px solid var(--linie); }
+section:first-of-type { border-top: 0; }
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.6rem, 7vw, 4.4rem); line-height: 1.02; letter-spacing: -.02em; }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.3rem); line-height: 1.15; margin-bottom: 1rem; }
+h3 { font-size: 1.0625rem; font-family: var(--sans); font-weight: 600; margin-bottom: .25rem; }
+p { margin: 0 0 1rem; }
+p:last-child { margin-bottom: 0; }
+
+.marke {
+  font-family: var(--mono);
+  font-size: .75rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--tinte-leise);
+  display: block;
+  margin-bottom: .9rem;
+}
+.leise { color: var(--tinte-leise); }
+.klein { font-size: .9375rem; }
+
+/* ---------- Kopf ---------------------------------------------------------- */
+.kopfzeile {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; padding: 1.1rem 0; border-bottom: 1px solid var(--linie);
+}
+.wortmarke {
+  font-family: var(--serif); font-size: 1.2rem; font-weight: 600;
+  display: flex; align-items: center; gap: .55rem;
+}
+.wortmarke svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: var(--tally); stroke-width: 1.5; }
+.kopfzeile .klein { color: var(--tinte-leise); }
+
+/* ---------- Held ---------------------------------------------------------- */
+.held { display: grid; gap: 2.5rem; align-items: start; }
+/* Ohne min-width: 0 sprengen Rasterkinder auf schmalen Geräten die Spur. */
+.held > * { min-width: 0; }
+@media (min-width: 60rem) { .held { grid-template-columns: 1.15fr .85fr; gap: 3.5rem; } }
+
+.these { font-size: 1.2rem; margin-top: 1.5rem; max-width: 32rem; }
+.these strong { font-weight: 600; }
+
+/* Der Stempel — das einzige laute Element der Seite. Er stammt aus der
+   Anwendung: dort setzt man damit „Genehmigt" oder „Entwurf" auf eine Seite. */
+.stempel {
+  display: inline-flex; flex-direction: column; align-items: center; gap: .1rem;
+  border: 3px solid var(--tally); color: var(--tally);
+  border-radius: .5rem; padding: .7rem 1.4rem;
+  font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  font-size: 1.05rem; line-height: 1.1;
+  transform: rotate(-4deg);
+  margin-top: 2.2rem;
+  animation: aufdruck .5s cubic-bezier(.2, 1.5, .4, 1) both;
+}
+.stempel span { font-size: .6rem; letter-spacing: .18em; opacity: .85; font-weight: 600; }
+@keyframes aufdruck {
+  from { transform: rotate(-4deg) scale(1.35); opacity: 0; }
+  to   { transform: rotate(-4deg) scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .stempel { animation: none; } }
+
+/* Werkzeugleiste als Beweisstück */
+.leiste {
+  background: var(--flaeche); border: 1px solid var(--linie); border-radius: .9rem;
+  padding: .9rem; box-shadow: 0 1px 2px rgba(20,26,28,.06), 0 14px 40px rgba(20,26,28,.09);
+}
+.leiste-kopf {
+  display: flex; align-items: center; gap: .4rem; padding: 0 .3rem .7rem;
+  border-bottom: 1px solid var(--linie); margin-bottom: .7rem;
+}
+.ampel { width: .55rem; height: .55rem; border-radius: 50%; background: var(--linie-stark); }
+.leiste-titel { font-size: .8125rem; color: var(--tinte-leise); margin-left: .35rem; }
+.werkzeuge { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: .25rem; }
+.werkzeug {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .45rem .5rem; border-radius: .45rem; font-size: .8125rem;
+  color: var(--tinte-leise);
+  min-width: 0; white-space: nowrap; overflow: hidden;
+}
+.werkzeug svg { width: 1.05rem; height: 1.05rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.werkzeug.hebt { background: var(--tally-grund); color: var(--tally); }
+.werkzeug kbd {
+  margin-left: auto; flex: none; font-family: var(--mono); font-size: .6875rem;
+  color: var(--linie-stark);
+}
+
+/* ---------- Raster -------------------------------------------------------- */
+.raster { display: grid; gap: 1.5rem 2rem; }
+@media (min-width: 44rem) { .raster { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 66rem) { .raster-drei { grid-template-columns: repeat(3, 1fr); } }
+.eintrag { border-top: 2px solid var(--tinte); padding-top: .8rem; }
+.eintrag p { font-size: .9375rem; color: var(--tinte-leise); }
+
+/* ---------- Mitdenken ----------------------------------------------------- */
+.faelle { display: grid; gap: 1rem; }
+@media (min-width: 52rem) { .faelle { grid-template-columns: repeat(3, 1fr); } }
+.fall {
+  background: var(--flaeche); border: 1px solid var(--linie);
+  border-radius: .7rem; padding: 1.1rem 1.2rem;
+  display: flex; flex-direction: column; gap: .5rem;
+}
+.fall .befund {
+  font-family: var(--mono); font-size: .6875rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--tinte-leise);
+}
+.fall .satz { font-size: .9375rem; }
+.fall .tat {
+  align-self: flex-start; margin-top: auto;
+  background: var(--tally-grund); color: var(--tally);
+  border-radius: .3rem; padding: .15rem .5rem;
+  font-size: .75rem; font-weight: 600;
+}
+
+/* ---------- Tabelle ------------------------------------------------------- */
+.tabellenrahmen { overflow-x: auto; border: 1px solid var(--linie); border-radius: .7rem; background: var(--flaeche); }
+table { border-collapse: collapse; width: 100%; font-size: .9375rem; min-width: 34rem; }
+th, td { text-align: left; padding: .55rem .9rem; border-bottom: 1px solid var(--linie); vertical-align: top; }
+thead th {
+  font-family: var(--mono); font-size: .6875rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--tinte-leise); font-weight: 500;
+  background: var(--flaeche-tief); position: sticky; top: 0;
+}
+tbody tr:last-child td { border-bottom: 0; }
+td.stand { white-space: nowrap; font-weight: 600; }
+.ja   { color: var(--gut); }
+.teil { color: var(--warn); }
+.nein { color: var(--tinte-leise); font-weight: 400; }
+td.grund { color: var(--tinte-leise); font-size: .875rem; }
+
+.bilanz { display: grid; gap: .75rem; margin-top: 1.5rem; }
+@media (min-width: 44rem) { .bilanz { grid-template-columns: repeat(4, 1fr); } }
+.zahl {
+  border-left: 3px solid var(--linie-stark); padding-left: .8rem;
+}
+.zahl b { display: block; font-family: var(--serif); font-size: 1.9rem; line-height: 1; }
+.zahl span { font-size: .8125rem; color: var(--tinte-leise); }
+.zahl.betont { border-left-color: var(--tally); }
+.zahl.betont b { color: var(--tally); }
+
+/* ---------- Grenzen ------------------------------------------------------- */
+.grenzen { display: grid; gap: .1rem; }
+.grenze { display: grid; gap: .2rem 1.2rem; padding: .9rem 0; border-bottom: 1px solid var(--linie); }
+@media (min-width: 48rem) { .grenze { grid-template-columns: 16rem 1fr; } }
+.grenze b { font-weight: 600; }
+.grenze span { color: var(--tinte-leise); font-size: .9375rem; }
+.grenze:last-child { border-bottom: 0; }
+
+/* ---------- Prüfstand ----------------------------------------------------- */
+.pruefstand {
+  background: var(--tinte); color: var(--grund); border-radius: 1rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+.pruefstand h2 { color: var(--grund); }
+.pruefstand .marke { color: rgba(235,238,238,.55); }
+.pruefstand p { color: rgba(235,238,238,.75); }
+.zeilen { font-family: var(--mono); font-size: .8125rem; display: grid; gap: .35rem; margin-top: 1.5rem; }
+.zeile { display: flex; flex-wrap: wrap; gap: .2rem .7rem; align-items: baseline; color: rgba(235,238,238,.9); }
+.zeile i { color: #63BFA9; font-style: normal; }
+.zeile em { color: rgba(235,238,238,.5); font-style: normal; margin-left: auto; }
+
+/* ---------- Offen / Abschluss --------------------------------------------- */
+.offen {
+  border: 2px dashed var(--linie-stark); border-radius: .7rem;
+  padding: 1.2rem 1.4rem; background: var(--flaeche);
+}
+.offen ul { margin: .6rem 0 0; padding-left: 1.1rem; color: var(--tinte-leise); font-size: .9375rem; }
+.offen li { margin-bottom: .3rem; }
+
+.fusszeile {
+  border-top: 1px solid var(--linie); padding: 2rem 0 3rem;
+  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between;
+  color: var(--tinte-leise); font-size: .875rem;
+}
+
+/* ---------- Wege im Kopf ---------------------------------------------------- */
+.wortmarke { color: inherit; text-decoration: none; }
+.kopf-wege { display: flex; align-items: center; gap: 1rem; }
+.kopf-wege a { color: var(--tinte-leise); text-decoration: none; }
+.kopf-wege a:hover { color: var(--tinte); }
+.kopf-wege a:focus-visible { outline: 2px solid var(--tally); outline-offset: 3px; border-radius: .25rem; }
+.knopf-still {
+  border: 1px solid var(--linie-stark); border-radius: .45rem;
+  padding: .3rem .75rem; font-size: .875rem; color: var(--tinte) !important;
+}
+.knopf-still:hover { background: var(--flaeche-tief); }
+
+/* ---------- Kundenbereich --------------------------------------------------- */
+.portal-karte {
+  background: var(--flaeche); border: 1px solid var(--linie);
+  border-radius: .9rem; padding: clamp(1.4rem, 4vw, 2.2rem);
+  max-width: 34rem;
+}
+.portal-karte h2 { margin-bottom: .75rem; }
+.knopf-voll {
+  display: inline-block; margin-top: 1.2rem;
+  background: var(--tally); color: #fff; text-decoration: none;
+  border-radius: .5rem; padding: .6rem 1.2rem; font-weight: 600;
+}
+.knopf-voll:hover { filter: brightness(1.08); }
+.knopf-voll:focus-visible { outline: 2px solid var(--tinte); outline-offset: 2px; }
+.schritte { display: grid; gap: .9rem; margin-top: 1.5rem; counter-reset: schritt; }
+.schritt { display: grid; grid-template-columns: 1.6rem 1fr; gap: .8rem; align-items: start; }
+.schritt b { font-weight: 600; }
+.schritt .nr {
+  font-family: var(--mono); font-size: .75rem; color: var(--tally);
+  border: 1px solid var(--tally); border-radius: 50%;
+  width: 1.5rem; height: 1.5rem; display: grid; place-items: center;
+}
+.schritt p { font-size: .9375rem; color: var(--tinte-leise); margin: .1rem 0 0; }

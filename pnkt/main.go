@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"pnkt.me/pnkt/ausgabe"
+	"pnkt.me/pnkt/bogen"
 	"pnkt.me/pnkt/druck"
 	"pnkt.me/pnkt/farbe"
 	"pnkt.me/pnkt/gestalt"
@@ -157,6 +158,7 @@ func wege(d *dienst) *http.ServeMux {
 	weg.HandleFunc("GET /qr.svg", d.qrSVG)
 	weg.HandleFunc("GET /qr.pdf", d.qrPDF)
 	weg.HandleFunc("GET /qr.eps", d.qrEPS)
+	weg.HandleFunc("GET /aufsteller.pdf", d.aufstellerPDF)
 	weg.HandleFunc("GET /{$}", d.studio)
 	weg.HandleFunc("GET /{kuerzel}", d.weiterleiten)
 
@@ -640,6 +642,36 @@ func (d *dienst) qrEPS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/postscript")
 	w.Header().Set("Content-Disposition", `attachment; filename="pnkt.eps"`)
 	_, _ = w.Write(ausgabe.EPS(s.Formen(g), "pnkt QR"))
+}
+
+// aufstellerPDF liefert eine fertige Karte: Code, Ueberschrift,
+// Aufforderung, Fusszeile. Die Kantenlaenge des Codes kommt aus dem
+// Kartenformat und nicht aus der Anfrage — ein Tischaufsteller wird aus
+// etwa 30 cm gelesen, und dafuer sind 28 mm richtig, egal was im Studio
+// eingestellt war.
+func (d *dienst) aufstellerPDF(w http.ResponseWriter, r *http.Request) {
+	s, g, gut := d.ausWunsch(w, r)
+	if !gut {
+		return
+	}
+	f := r.URL.Query()
+	karte := bogen.KarteNach(oder(f.Get("karte"), "a6"))
+	m := d.ablage.MarkeNachHost(r.Host)
+
+	z := bogen.Aufsteller(s, g, karte, bogen.Aufstellertext{
+		Ueberschrift: f.Get("ueberschrift"),
+		Aufforderung: oder(f.Get("aufforderung"), "Jetzt scannen"),
+		Fuss:         f.Get("fuss"),
+		// Der Kartengrund ist nicht der Codegrund: der Code steht auf
+		// einer hellen Flaeche, die Karte in der Hausfarbe. Ein
+		// gemeinsamer Wert waere kuerzer und wuerde den Kontrast des
+		// Codes an die Gestaltung der Karte koppeln.
+	}, oder(f.Get("kartengrund"), m.Grund), m.Tinte, m.Primaer)
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition",
+		fmt.Sprintf(`attachment; filename="pnkt-aufsteller-%s.pdf"`, karte.Schluessel))
+	_, _ = w.Write(ausgabe.PDF(z, "pnkt Aufsteller "+karte.Name))
 }
 
 // --- Hilfen ---------------------------------------------------------------

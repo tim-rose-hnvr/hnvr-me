@@ -101,6 +101,7 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `PUT /api/v1/marke` | Marke setzen | Inhaber |
 | `GET/POST /api/v1/mitarbeitende`, `DELETE …/{id}` | Personen der Organisation | Schlüssel / Inhaber |
 | `GET /qr.svg\|pdf\|eps?inhalt=…` | derselbe Vektor über die Adresszeile | offen |
+| `GET /aufsteller.pdf?inhalt=…&karte=a6` | fertige Karte: Code, Überschrift, Aufforderung, Fuß | offen |
 | `POST /api/v1/inhalt` | Felder zu Nutzlast: vCard, WLAN, GiroCode, GS1 | offen |
 | `GET /` | Studio | offen |
 | `GET /zentrale` | Zentrale: suchen, ordnen, löschen | offen |
@@ -433,6 +434,34 @@ Zahlen eintreffen — und das fällt erst auf, wenn die Aufsteller stehen.
 Im ZIP: `bogen-01.pdf` und folgende, `einzeln/` mit SVG und PDF je Stück,
 `bericht.csv` mit Note, Modulgröße und Befunden je Zeile, `LIESMICH.txt`.
 
+### Aufsteller
+
+Die häufigste gedruckte Form überhaupt: eine Karte auf dem Tisch, ein
+Code darauf, zwei Zeilen Text. Vier Formate — A7 als Tischkarte, A6 als
+Postkarte, A5 für den Tresen, 10 × 10 cm.
+
+```
+GET /aufsteller.pdf?inhalt=…&karte=a6&ueberschrift=Speisekarte
+                   &aufforderung=Jetzt+scannen&fuss=Tisch+12
+```
+
+**Die Kantenlänge des Codes kommt aus dem Format, nicht aus der
+Anfrage.** Ein Tischaufsteller wird aus etwa 30 cm gelesen, dafür sind
+28 mm richtig — unabhängig davon, was im Studio eingestellt war. Wer die
+Karte größer macht, bekommt mehr Weißraum, keinen größeren Code.
+
+Der Code behält seinen eigenen Grund als helle Fläche unter sich. Ließe
+man ihn weg, fiele mit der Farbe auch der Kontrast unter den Tisch,
+gegen den vorher geprüft wurde.
+
+Text im Anschnitt gibt es nicht: was dort steht, ist weg, sobald die
+Maschine einen halben Millimeter danebenliegt. Zu langer Text wird
+abgeschnitten statt über den Rand geschoben.
+
+Die Schrift auf der Karte ist Helvetica-Bold, nicht Caprasimo — das PDF
+wird ohne eingebettete Schrift geschrieben, und die Basisschriften sind
+das, worauf sich jeder Betrachter und jeder Belichter verlassen kann.
+
 ### Zwei Regeln des Bogens
 
 **Ein Stück wird nie verkleinert, damit mehr daraufpasst.** Die
@@ -668,8 +697,11 @@ Länge der Kurzdomain bestimmt die Größe jedes gedruckten Codes.
 - **Strecken.** Mehrstufige Wege mit Messung je Übergang. Das Datenmodell
   dafür gibt es noch nicht, und es ist die größte offene Ecke des
   Entwurfs.
-- **Aufsteller A6 und Vorlagen.** Der Bogen kann jedes Format; was fehlt,
-  sind die fertigen Aufbauten mit Text und Rahmen darum.
+- **Vorlagen für Landeseiten.** Die Vorlagenseite nennt sechs: Karte
+  kompakt, Angebot gegen E-Mail, Produktpass, Event-Programm,
+  Terminbuchung, Newsletter schlicht. Gebaut ist davon der Produktpass —
+  er musste es sein, die ESPR verlangt ihn. Die anderen fünf sind ein
+  eigenes Stück Arbeit: eine Landeseite ist kein Code.
 
 ---
 

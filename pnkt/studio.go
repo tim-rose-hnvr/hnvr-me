@@ -144,6 +144,11 @@ a.knopf.stark:hover{background:var(--color-accent-600);border-color:var(--color-
             <a class="knopf stark" id="a-pdf" download="pnkt.pdf">PDF</a>
             <a class="knopf stark" id="a-eps" download="pnkt.eps">EPS</a>
             <button class="knopf" id="a-png" type="button">PNG 2048</button>
+            <a class="knopf" id="a-aufsteller" download="pnkt-aufsteller.pdf">Aufsteller A6</a>
+          </div>
+          <div class="reihe" style="margin-top:.2rem">
+            <label>Überschrift des Aufstellers<input id="auf-kopf" placeholder="Speisekarte"></label>
+            <label>Aufforderung<input id="auf-ruf" value="Jetzt scannen"></label>
           </div>
           <p class="hinweis">SVG, PDF und EPS sind echter Vektor in Millimetermaß.
              PNG rechnet der Browser aus demselben SVG — für den Druck nimmt man es nicht.</p>
@@ -446,6 +451,34 @@ async function zeichnen() {
   e("bild").src = url;
   e("a-svg").href = url;
 
+  // Der Aufsteller ist eine fertige Karte und keine Ausgabe desselben
+  // Codes: die Kantenlaenge kommt aus dem Kartenformat, nicht aus dem
+  // Feld „Breite". Deshalb ein eigener Weg statt eines dritten Formats.
+  const kf = new URLSearchParams({
+    inhalt: inhaltText, karte: "a6", stufe: e("stufe").value,
+    form: modulform, augenrahmen: e("augenrahmen").value,
+    augenkern: e("augenkern").value, hintergrund: e("hintergrund").value,
+    ruhezone: e("ruhezone").value, logo: e("logo").value,
+    ueberschrift: e("auf-kopf").value, aufforderung: e("auf-ruf").value,
+  });
+  const vg = vordergrund();
+  if (typeof vg === "string") {
+    kf.set("vordergrund", vg);
+    e("a-aufsteller").href = "/aufsteller.pdf?" + kf.toString();
+    e("a-aufsteller").removeAttribute("aria-disabled");
+    e("a-aufsteller").title = "A6-Karte mit Code, Überschrift und Aufforderung";
+    e("a-aufsteller").style.opacity = "";
+  } else {
+    // Ein Verlauf laesst sich nicht in eine Adresszeile schreiben. Statt
+    // still einen schwarzen Aufsteller zu liefern, faellt der Knopf aus
+    // und sagt warum.
+    e("a-aufsteller").removeAttribute("href");
+    e("a-aufsteller").setAttribute("aria-disabled", "true");
+    e("a-aufsteller").title = "Der Aufsteller kann noch keinen Verlauf — " +
+      "für ihn eine der drei anderen Farbwelten wählen.";
+    e("a-aufsteller").style.opacity = ".45";
+  }
+
   for (const [id, format] of [["a-pdf","pdf"], ["a-eps","eps"]]) {
     const b = await datei(format);
     const u2 = URL.createObjectURL(b);
@@ -475,7 +508,8 @@ let warten;
 function spaeter(f) { clearTimeout(warten); warten = setTimeout(f, 180); }
 ["breite","stufe","verfahren","ruhezone","logo","augenrahmen","augenkern","vordergrund",
  "hintergrund","c","m","y","k","sondername","v1","v2","verlaufart","winkel","rahmenart",
- "rahmentext","rahmenfarbe","rahmentextfarbe","kasse","abstand"]
+ "rahmentext","rahmenfarbe","rahmentextfarbe","kasse","abstand",
+ "auf-kopf","auf-ruf"]
   .forEach(id => e(id).addEventListener("input", () => spaeter(zeichnen)));
 
 felderZeichnen();

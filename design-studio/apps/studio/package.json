@@ -1,22 +1,23 @@
 {
-  "name": "@studio/spike-druck",
+  "name": "@studio/studio",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "bauen": "node bauen.mjs",
     "typecheck": "tsc --noEmit",
-    "erzeuge": "node bin/erzeuge.mjs"
+    "test": "vitest run",
+    "test:coverage": "vitest run"
   },
   "dependencies": {
-    "@pdf-lib/fontkit": "^1.1.1",
     "@studio/editor-core": "workspace:*",
-    "pdf-lib": "^1.17.1"
+    "@studio/editor-ui": "workspace:*",
+    "@studio/render": "workspace:*"
   },
   "devDependencies": {
-    "playwright-core": "^1.58.0",
+    "esbuild": "^0.28.2",
     "typescript": "^5.7.3",
+    "playwright-core": "^1.58.0",
     "vitest": "^3.0.5"
   }
 }

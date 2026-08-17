@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "noEmit": true,
-    "types": ["vitest/globals", "node"],
-    "paths": { "@studio/editor-core": ["../../packages/editor-core/src/index.ts"] }
-  },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
-}

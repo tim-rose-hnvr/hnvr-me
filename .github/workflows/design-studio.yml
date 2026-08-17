@@ -52,24 +52,25 @@ jobs:
           CHROMIUM_PFAD: /usr/bin/google-chrome
         run: pnpm run test:coverage
 
-      # Der Spike ist ein Messwerkzeug — hier wird geprüft, dass er überhaupt
-      # etwas misst. Ohne Browser überspringt er sich selbst, deshalb wird der
-      # Pfad ausdrücklich gesetzt statt auf die Selbstsuche zu vertrauen.
-      - name: Spike-Selbsttest
+      # Der CSP-Spike ist ein Messwerkzeug — hier wird geprüft, dass er
+      # überhaupt etwas misst. Ohne Browser überspringt er sich selbst, deshalb
+      # wird der Pfad ausdrücklich gesetzt statt auf die Selbstsuche zu bauen.
+      - name: CSP-Spike-Selbsttest
         env:
           CHROMIUM_PFAD: /usr/bin/google-chrome
         run: pnpm run spike
 
-      - name: Druck-Spike sichern
+      - name: Probemodell bauen
+        run: pnpm run probemodell
+
+      - name: Probemodell sichern
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: druckspike
-          path: |
-            design-studio/apps/spike-druck/ausgabe/spike.pdf
-            design-studio/apps/spike-druck/ausgabe/abzug.png
+          name: probemodell
+          path: design-studio/apps/studio/ausgabe/probemodell.html
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 14
 
       - name: Abdeckungsbericht sichern
         if: always()

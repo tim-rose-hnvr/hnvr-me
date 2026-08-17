@@ -21,10 +21,10 @@ erzwungene Markenkonformität und saubere Druckvorstufe.
 
 ## Leitprinzipien
 
-1. **`editor-core` besitzt das Dokumentformat, kein SDK.** Polotno, Konva, was auch immer
-   gerendert wird, bleibt hinter `editor-ui` verborgen. `editor-core` darf kein Render-SDK
-   importieren. Grund: Lizenzkosten und Wechselrisiko. Ein SDK-Tausch muss eine Portierung
-   von einem Paket sein, kein Neuanfang.
+1. **Kein Render-SDK, nirgends.** Der Editor zeichnet über `render`, das Druck-PDF
+   entsteht über `export`. Beides steht unter MIT-lizenzierten Bausteinen. Es gibt keine
+   Lizenzgebühr und keine Domain-Klausel — das war der Grund, warum `editor-core` von
+   Anfang an SDK-frei gebaut wurde, und es hat sich ausgezahlt.
 2. **Vorlage zuerst, freies Gestalten als Ausnahme.** Der Standardfall ist ein gesperrtes
    Layout mit ausgefüllten Platzhaltern. Kunden sollen markenkonforme Ergebnisse bekommen,
    keine kreative Spielwiese.
@@ -51,7 +51,7 @@ negative Koordinaten. Das ist gewollt.
 
 ---
 
-## Drei Regeln, die aus echten Fehlern stammen
+## Sechs Regeln, die aus echten Fehlern stammen
 
 Jede davon war einmal falsch und ist durch einen Test abgesichert. Wer sie
 aufweicht, holt den Fehler zurück.
@@ -66,10 +66,27 @@ aufweicht, holt den Fehler zurück.
 3. **Private Wix-Dateien sind über ihre `url` nicht lesbar** — sie antwortet mit
    403. Lesen geht nur über eine befristete URL aus `generateFileDownloadUrl`,
    und das braucht erhöhte Rechte, also eine Serverfunktion.
+4. **Schriften nur als `data:`-URI.** Eine per `setContent` gesetzte Seite hat
+   keine Dateiherkunft; Chromium verweigert dann jeden `file://`-Unterabruf und
+   setzt lautlos in der Ersatzschrift weiter.
+5. **CSS-Zeichenketten in `style`-Attributen brauchen einfache Anführungszeichen.**
+   `JSON.stringify` beendet das Attribut vorzeitig — wieder stille Ersatzschrift.
+6. **Weiche Trennstriche sind nicht an ihrer Breite zu erkennen.** Chromium gibt
+   ihnen auch mitten im Wort etwa 0,02 px. Wer das als „gesetzt" liest, streut
+   Bindestriche über den ganzen Text. Der sichtbare Trennstrich am Zeilenende ist
+   umgekehrt gar kein Zeichen, sondern wird vom Umbruch erzeugt — er muss beim
+   Zeilenwechsel selbst gesetzt werden.
 
-Und die Lehre daraus für Tests: **Doppelgänger müssen so unfreundlich sein wie
-der echte Dienst.** Fehler 3 blieb nur deshalb liegen, weil der Testdoppelgänger
+Vier bis sechs haben dasselbe Muster: **der Fehlerfall ist nicht der Absturz,
+sondern das falsche, plausibel aussehende Ergebnis.** Keiner wäre ohne
+Sichtprüfung aufgefallen — deshalb legt die Ausgabekette neben jedes PDF einen
+PNG-Abzug.
+
+Und die Lehre für Tests: **Doppelgänger müssen so unfreundlich sein wie der
+echte Dienst.** Fehler 3 blieb nur deshalb liegen, weil der Testdoppelgänger
 eine URL zurückgab, die funktionierte — der echte Media Manager tut das nicht.
+Fehler 5 blieb liegen, weil der Test den *angeforderten* statt den *benutzten*
+Font prüfte.
 
 ## Werkzeuge
 
@@ -92,14 +109,22 @@ abgeschaltet. Die beiden dürfen sich nicht widersprechen.
 ```
 packages/
   editor-core/   Dokumentmodell, Kommando-Stack, Markenkit, Vorlagen — framework-frei
+  render/        Entwurf → HTML, mit Silbentrennung. Ein Renderer für beides.
+  export/        Satz im headless Browser → PDF/X-4 in CMYK
+  editor-ui/     Auswahl, Ziehen, Live-Prüfung — ohne Rahmenwerk
   wix-adapter/   Wix Data, Media, Members hinter der Speicherschnittstelle
-  editor-ui/     React, Render-SDK gekapselt              (noch nicht angelegt)
-  export/        Social (PNG/JPG) + Druck (PDF/X, CMYK)   (noch nicht angelegt)
   embed/         Custom Element für Fremdprojekte         (noch nicht angelegt)
 apps/
-  spike-pdf/     Messung: laeuft PDF/X mit WASM unter Wix-CSP?
-  studio/        Astro — das Produkt                      (noch nicht angelegt)
+  studio/        Probemodell — eine HTML-Datei, alles eingebettet
+  spike-pdf/     Messung: läuft WASM im Browser unter Wix-CSP?
 ```
+
+**Der Renderer ist derselbe für Bildschirm und Druck.** Editor und PDF laufen
+beide durch `packages/render`. Deshalb kann die Vorschau nicht lügen, und es
+gibt keinen zweiten Renderer, der irgendwann auseinanderläuft.
+
+**Kein Rahmenwerk in `editor-ui`.** Der Editor soll als Custom Element in fremde
+Seiten gehen, ohne dort React zu erzwingen.
 
 ---
 
@@ -116,10 +141,18 @@ apps/
 
 ## Offene Punkte
 
-- **Polotno-Lizenz für Mehrfach-Domain-Einbau ist ungeklärt.** Self-Serve deckt laut
-  Preisseite nur *a single domain under one brand family*. Bis das schriftlich geklärt ist,
-  wird `editor-ui` nicht gegen Polotno gebaut. Der Kern ist bewusst SDK-frei, damit diese
-  Klärung nichts blockiert.
-- CSP: CMYK-Konvertierung braucht `wasm-unsafe-eval`, PDF/X-1a-Flattening braucht
-  `OffscreenCanvas`. Ob Wix Headless das durchlässt, misst `apps/spike-pdf`.
+- **ICC-Profil einbetten.** Im OutputIntent steht bisher nur die registrierte
+  Druckbedingung, kein `/DestOutputProfile`. Für strenge Abnehmer muss ein CMYK-Profil
+  hinein; die Lizenzlage der ECI-Profile ist vorher zu klären.
+- **Preflight-Abnahme.** veraPDF prüft kein PDF/X (die Profile enden bei PDF/A-4). Vor dem
+  ersten echten Auftrag muss ein Preflight-Werkzeug oder die Druckerei gegenlesen.
+- **Farbmanagement.** `export/farbe.ts` rechnet ohne ICC um: vorhersagbar, aber nicht
+  farbverbindlich. Echte Umrechnung über Little CMS als WASM.
+- **Serverfunktion für Wix-Medien.** Private Dateien brauchen eine befristete Download-URL,
+  und der Aufruf verlangt erhöhte Rechte. `WixBlobSpeicher.downloadUrlAufloeser` ist dafür
+  schon austauschbar — der Endpunkt fehlt.
+- **Griffe ziehen noch nicht.** `rahmenNachGriff` ist da und getestet, die Anbindung an
+  Zeigerereignisse fehlt.
 - Schrifteinbettung im PDF braucht Embedding-Lizenzen. Bis auf Weiteres nur SIL-OFL-Schriften.
+- Polotno bleibt eine Option für die Oberfläche, ist aber **nicht mehr blockierend**.
+  Falls es doch gekauft wird: Domain-Klausel prüfen.

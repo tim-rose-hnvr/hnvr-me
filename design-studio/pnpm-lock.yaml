@@ -20,6 +20,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^3.2.7
         version: 3.2.7(vitest@3.2.7(@types/node@26.2.0)(tsx@4.23.12))
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
       pdf-lib:
         specifier: ^1.17.1
         version: 1.17.1
@@ -36,14 +39,67 @@ importers:
         specifier: ^3.0.5
         version: 3.2.7(@types/node@26.2.0)(tsx@4.23.12)
 
-  apps/spike-druck:
+  apps/studio:
+    dependencies:
+      '@studio/editor-core':
+        specifier: workspace:*
+        version: link:../../packages/editor-core
+      '@studio/editor-ui':
+        specifier: workspace:*
+        version: link:../../packages/editor-ui
+      '@studio/render':
+        specifier: workspace:*
+        version: link:../../packages/render
+    devDependencies:
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
+      playwright-core:
+        specifier: ^1.58.0
+        version: 1.62.1
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.5
+        version: 3.2.7(@types/node@26.2.0)(tsx@4.23.12)
+
+  packages/editor-core:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.5
+        version: 3.2.7(@types/node@26.2.0)(tsx@4.23.12)
+
+  packages/editor-ui:
+    dependencies:
+      '@studio/editor-core':
+        specifier: workspace:*
+        version: link:../editor-core
+      '@studio/render':
+        specifier: workspace:*
+        version: link:../render
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.5
+        version: 3.2.7(@types/node@26.2.0)(tsx@4.23.12)
+
+  packages/export:
     dependencies:
       '@pdf-lib/fontkit':
         specifier: ^1.1.1
         version: 1.1.1
       '@studio/editor-core':
         specifier: workspace:*
-        version: link:../../packages/editor-core
+        version: link:../editor-core
+      '@studio/render':
+        specifier: workspace:*
+        version: link:../render
       pdf-lib:
         specifier: ^1.17.1
         version: 1.17.1
@@ -58,7 +114,14 @@ importers:
         specifier: ^3.0.5
         version: 3.2.7(@types/node@26.2.0)(tsx@4.23.12)
 
-  packages/editor-core:
+  packages/render:
+    dependencies:
+      '@studio/editor-core':
+        specifier: workspace:*
+        version: link:../editor-core
+      hyphen:
+        specifier: ^1.14.1
+        version: 1.14.1
     devDependencies:
       typescript:
         specifier: ^5.7.3
@@ -675,6 +738,9 @@ packages:
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
+
+  hyphen@1.14.1:
+    resolution: {integrity: sha512-kvL8xYl5QMTh+LwohVN72ciOxC0OEV79IPdJSTwEXok9y9QHebXGdFgrED4sWfiax/ODx++CAMk3hMy4XPJPOw==}
 
   is-fullwidth-code-point@3.0.0:
     resolution: {integrity: sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==}
@@ -1429,6 +1495,8 @@ snapshots:
   has-flag@4.0.0: {}
 
   html-escaper@2.0.2: {}
+
+  hyphen@1.14.1: {}
 
   is-fullwidth-code-point@3.0.0: {}
 

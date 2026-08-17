@@ -14,14 +14,16 @@ fremde Projekte.
 
 | Paket | Zustand |
 |---|---|
-| `packages/editor-core` | steht, 117 Tests, 91 % Abdeckung |
-| `packages/wix-adapter` | steht, 31 Tests, 92 % Abdeckung |
-| `apps/spike-pdf` | messbereit, mit eigenem Selbsttest (5 Tests) |
-| `apps/spike-druck` | **Kette bewiesen**, 33 Tests |
-| `packages/editor-ui` | offen — der Lizenzweg ist nicht mehr zwingend, siehe unten |
-| `packages/export` | offen, Bauplan steht in `apps/spike-druck` |
-| `packages/embed` | offen |
-| `apps/studio` | offen |
+| `packages/editor-core` | Dokumentmodell, Kommandos, Markenkit, Vorlagen — 117 Tests |
+| `packages/render` | Entwurf → HTML, mit Silbentrennung — 8 Tests |
+| `packages/export` | Satz im Browser → PDF/X-4 in CMYK — 18 Tests |
+| `packages/editor-ui` | Auswahl, Ziehen, Live-Prüfung — 15 Tests |
+| `packages/wix-adapter` | Wix Headless hinter der Speicherschnittstelle — 31 Tests |
+| `apps/studio` | **Probemodell**, im Browser durchgefahren — 9 Tests |
+| `apps/spike-pdf` | CSP-Messung mit eigenem Selbsttest — 5 Tests |
+| `packages/embed` | offen — Custom Element für Fremdprojekte |
+
+**198 Tests**, Linter und Typecheck sauber.
 
 ## Der Druckweg ist lizenzfrei — bewiesen
 
@@ -60,9 +62,14 @@ WASM im Browser**. Der CSP-Spike (`apps/spike-pdf`) entscheidet damit nur noch
 ```bash
 pnpm install
 pnpm run check         # Linter, Typen, Tests mit Abdeckung
+pnpm run probemodell   # baut apps/studio/ausgabe/probemodell.html
 pnpm run spike         # Selbsttest des CSP-Spikes
 pnpm run spike:druck   # die Druckkette bis zum PDF/X-4
 ```
+
+Das Probemodell ist **eine** HTML-Datei: Skript, Stil und Schriften eingebettet,
+kein Netzabruf. Sie läuft per Doppelklick, in einem Wix Custom Element und in
+einem abgeschotteten Netz gleichermaßen.
 
 `pnpm run check` ist das Tor: dasselbe läuft in der CI
 (`.github/workflows/design-studio.yml`) bei jedem Push. Biome übernimmt Linten

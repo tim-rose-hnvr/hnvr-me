@@ -1,21 +1,25 @@
 ---
 /**
- * Die Verkaufsseite.
+ * Die Startseite, nach dem Aufbau des Design-Handoffs.
  *
- * Sie hält sich an dieselbe Regel wie das Produkt: nichts behaupten, was die
- * Seite nicht selbst einlöst.
+ * Übernommen ist die Anordnung: Heldenbereich zweispaltig mit Abzeichen,
+ * großer Überschrift und dem Adressfeld links, einer schwebenden Karte rechts;
+ * darunter eine Reihe Kennzahlen, drei Karten „was eine Linkliste nicht kann",
+ * drei Schritte, ein Vorlagen-Anriss und ein rotes Abschlussbanner.
  *
- *  - Der Vergleich mit der Konkurrenz steht in Zahlen, die an der
- *    ausgelieferten Seite gemessen wurden, mit Datum und Methode dabei.
- *  - Es gibt einen Abschnitt „Was heute fehlt". Auf einer Verkaufsseite ist das
- *    unüblich; hier ist es der einzige Weg, die übrigen Aussagen glaubwürdig zu
- *    halten. Er wird mitgepflegt: seit die Werkstatt steht, steht dort nicht
- *    mehr „kein Editor", sondern „kein Konto".
- *  - Der Hauptknopf führt auf eine echte Seite, nicht auf ein Bild davon.
+ * Nicht übernommen ist erfundener Inhalt. Der Handoff setzt in die
+ * Kennzahlenreihe 7,5 % Kontaktrate und 4,9 Bewertungsschnitt und darunter zwei
+ * Kundenzitate. Beides gibt es nicht: es hat noch kein Kunde diese Seite
+ * benutzt, und Bewertungen sind nicht einmal gebaut. Eine Startseite, die mit
+ * ausgedachten Zahlen und ausgedachten Menschen wirbt, wäre genau das, was
+ * dieses Produkt der Konkurrenz vorwirft. An ihrer Stelle stehen Zahlen, die am
+ * ausgelieferten HTML gemessen sind, und der Abschnitt „was heute fehlt".
  *
- * Statisch vorgebaut: hier ändert sich nichts je Aufruf.
+ * Auch kein Produktfoto: der Handoff hält selbst fest, dass Bildmaterial fehlt
+ * und vom Kunden kommen muss. Statt eines grauen Platzhalters steht rechts die
+ * Sache selbst — dieselbe Seite zu zwei Uhrzeiten.
  */
-import { cssVariablen, vorlage } from '../kern/gestaltung.ts';
+import { cssVariablen, vorlage, vorlagenName } from '../kern/gestaltung.ts';
 import { zeichen } from '../kern/zeichen.ts';
 import { MARKE, SIGNET } from '../kern/marke.ts';
 import '../stile/marketing.css';
@@ -32,75 +36,57 @@ const beschreibung =
   'Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code auf einer Seite. ' +
   'Sie stellt nach vorn, was gerade wirklich trägt — im Betrieb den Anruf, danach den schriftlichen Weg.';
 
-const merkmale = [
+/** Gemessen, nicht behauptet. Woher die Zahl kommt, steht jeweils daneben. */
+const kennzahlen = [
+  { zahl: '25 KB', was: 'HTML einer Profilseite', neben: 'Linktree: 190 KB' },
+  { zahl: '11', was: 'Vorlagen, drei Anordnungen', neben: 'jede WCAG-geprüft' },
+  { zahl: '0', was: 'eigenes Tracking', neben: 'kein Cookie von uns' },
+  { zahl: '2 Min.', was: 'bis die Seite steht', neben: 'ohne Konto', rose: true },
+];
+
+const koennen = [
   {
     zeichen: 'uhr',
-    titel: 'Kennt die Öffnungszeiten',
-    text: 'Im Betrieb steht der Anruf oben, danach der schriftliche Weg — mit ehrlicher Ansage, wann geantwortet wird. Gerechnet in deiner Zeitzone, nicht in der des Besuchers.',
+    ton: 'signal',
+    titel: 'Sie kennt deine Öffnungszeiten',
+    text: 'Im Betrieb steht der Anruf oben. Danach der schriftliche Weg, mit ehrlicher Ansage, wann geantwortet wird — gerechnet in deiner Zeitzone, nicht in der des Besuchers.',
+    chips: ['Jetzt erreichbar · bis 18:00', 'Gerade geschlossen'],
+  },
+  {
+    zeichen: 'mail',
+    ton: 'ink',
+    titel: 'Geschrieben wird auf der Seite',
+    text: 'Absicht wählen, Anliegen tippen, fertig — statt den Besucher nach WhatsApp zu schicken und zu hoffen, dass er dort weiß, was er sagen soll. Bei dir kommt eine sortierte Anfrage an.',
+    chips: ['Anfrage für einen Auftrag', 'Termin', 'Etwas anderes'],
   },
   {
     zeichen: 'visitenkarte',
-    titel: 'Digitale Visitenkarte',
-    text: 'Ein Tipp, und du stehst mit Foto im Adressbuch. vCard 3.0 — das Format, das iPhone, Android und Outlook seit Jahren lesen. Eine Datei, kein Formular.',
-  },
-  {
-    zeichen: 'qr',
-    titel: 'QR-Code, der gültig bleibt',
-    text: 'Als SVG vom Server, scharf in jeder Druckgröße. Er zeigt auf die Seite, nicht auf die Daten — Nummer und Anschrift kannst du ändern, ohne neu zu drucken.',
-  },
-  {
-    zeichen: 'haken',
-    titel: 'Drei Anordnungen, elf Designs',
-    text: 'Ruhige Liste, Gitter aus Karten oder Titelbild mit dem Namen darauf — die Seite wird anders aufgebaut, nicht bloß anders angestrichen. Dazu zwölf selbst ausgelieferte Schriftfamilien, freie Farben und ein Kontrastwächter nach WCAG.',
-  },
-  {
-    zeichen: 'laden',
-    titel: 'Läuft ohne JavaScript',
-    text: 'Die Seite kommt fertig vom Server. Auch mit blockierten Skripten sind Kontaktwege, Visitenkarte und QR-Code vollständig da — und die Vorschau in WhatsApp stimmt.',
-  },
-  {
-    zeichen: 'schloss',
-    titel: 'Kein Tracking von uns',
-    text: 'Schriften und Bilder liegen auf demselben Server. Die Seite selbst lädt nichts von Dritten nach und schreibt niemanden an, der sie ansieht. Was das Hosting darüber hinaus mitgibt, steht weiter unten.',
+    ton: 'rose',
+    titel: 'Sie landet im Adressbuch',
+    text: 'Ein Tipp, und du stehst mit Foto drin. Dazu ein QR-Code, der auf die Seite zeigt statt auf die Daten: Nummer ändern, ohne neu zu drucken.',
+    chips: ['vCard 3.0', 'QR als SVG'],
   },
 ];
 
-/**
- * Gemessen am ausgelieferten HTML von linktr.ee/linktree — und am eigenen.
- *
- * Die eigenen Zahlen stehen doppelt: was das Programm erzeugt, und was beim
- * Besucher ankommt. Der Unterschied sind vier Skripte, die die Auslieferung von
- * Wix in jede Seite spritzt (Cookie-Richtlinie, Telemetrie, Analytics). Sie
- * stammen nicht aus diesem Code und lassen sich aus ihm nicht entfernen.
- * Die Zahl kleinzurechnen, indem man nur die eigene Hälfte zeigt, wäre genau
- * die Sorte Werbeaussage, gegen die diese Tabelle steht.
- */
-const vergleich = {
-  stand: 'August 2026',
-  zeilen: [
-    { was: 'HTML einer Profilseite', andere: '190 KB', wir: '25 KB' },
-    { was: 'Skripte', andere: '52', wir: '1 eigenes, 4 vom Hosting' },
-    { was: 'Nachgeladen von fremden Hosts', andere: '3', wir: '1 (Wix)' },
-    { was: 'Links auf fremde Profile', andere: '60', wir: '0' },
-    { was: 'Werbung auf deiner Seite', andere: 'Affiliate-Verweise', wir: 'keine' },
-  ],
-};
+const schritte = [
+  { titel: 'Adresse aussuchen', text: 'Kurz und merkbar. Sie steht später auf dem Fahrzeug — lieber einmal länger überlegen.' },
+  { titel: 'In der Werkstatt bauen', text: 'Kontaktwege, Öffnungszeiten, Design. Rechts läuft die echte Seite mit, kein Abbild davon.' },
+  { titel: 'Abgeben, wir schalten frei', text: 'Ein Klick öffnet die Mail mit deinem Entwurf darin. Zurück kommt die fertige Adresse.' },
+];
+
+const anrisse = ['signal', 'nachtschicht', 'papier', 'werkbank'];
 
 const offen = [
   {
     marke: 'in Arbeit',
     titel: 'Konto',
-    text: 'Bauen kannst du deine Seite selbst — in der Werkstatt, mit der echten Seite als Vorschau. Veröffentlichen geht noch über uns: du schickst den Entwurf, wir schalten ihn frei.',
+    text: 'Bauen kannst du deine Seite selbst. Veröffentlichen geht noch über uns: du schickst den Entwurf, wir schalten ihn frei.',
   },
-  {
-    marke: 'in Arbeit',
-    titel: 'Zahlen',
-    text: 'Aufrufe und Klicks je Block werden noch nicht gezählt. Kommt zusammen mit dem Konto.',
-  },
+  { marke: 'in Arbeit', titel: 'Termine und Bewertungen', text: 'Entworfen und eingeplant, aber nicht gebaut. Steht auch so auf der Preisseite.' },
   {
     marke: 'auf Anfrage',
     titel: 'Eigene Domain',
-    text: 'Heute läuft jede Seite unter der Adresse des Dienstes. Eine eigene Domain davorzusetzen ist machbar, aber Handarbeit — und weil im QR-Code die Adresse steckt, gehört sie vor den ersten Druck geklärt.',
+    text: 'Heute läuft jede Seite unter der Adresse des Dienstes. Weil im QR-Code die Adresse steckt, gehört das vor den ersten Druck geklärt.',
   },
 ];
 
@@ -108,30 +94,22 @@ const fragen = [
   {
     frage: 'Was kostet das?',
     antwort:
-      'Die Seite mit Kontaktwegen, Visitenkarte und QR-Code kostet nichts — dauerhaft, ohne Werbung. Pro liegt bei 9 € im Monat, Studio fürs Team bei 39 €. Alle Zeilen im Einzelnen stehen unter „Preise", samt der ehrlichen Kennzeichnung, was davon noch geplant und nicht gebaut ist.',
+      'Zurzeit nichts — das System ist jung. Was später Geld kosten soll, steht trotzdem schon auf der Preisseite, damit dich in einem Jahr nichts überrascht.',
   },
   {
     frage: 'Funktioniert „Kontakt speichern" auf jedem Handy?',
     antwort:
-      'Ja. Die Datei ist eine vCard 3.0 — bewusst nicht die neuere Fassung 4.0, denn die wird auf genau den Geräten unzuverlässig gelesen, auf denen die Karte am häufigsten landet. Am Rechner öffnet sie Outlook oder das Adressbuch.',
+      'Ja. Die Datei ist eine vCard 3.0 — bewusst nicht die neuere Fassung 4.0, denn die wird auf genau den Geräten unzuverlässig gelesen, auf denen die Karte am häufigsten landet.',
   },
   {
     frage: 'Woher weiß die Seite, ob ich erreichbar bin?',
     antwort:
-      'Aus den Öffnungszeiten, die im Profil stehen — samt Feiertagen und Sonderzeiten. Sind keine gepflegt, steht auch keine Statuszeile da. Eine erfundene Verfügbarkeit wäre schlimmer als gar keine Angabe.',
+      'Aus den Öffnungszeiten im Profil, samt Feiertagen und Sonderzeiten. Sind keine gepflegt, steht auch keine Statuszeile da. Eine erfundene Verfügbarkeit wäre schlimmer als gar keine Angabe.',
   },
   {
-    frage: 'Kann ich die Adresse später ändern?',
-    antwort:
-      'Ja. Aber gedruckte QR-Codes und geteilte Links zeigen danach ins Leere — drucke also erst, wenn der Name steht.',
-  },
-  {
-    // Bewusst ohne Angabe eines Speicherorts: die Wix-Infrastruktur macht dazu
-    // keine Zusage, die wir hier guten Gewissens wiederholen könnten. Was diese
-    // Seite selbst tut, ist dagegen nachprüfbar — und genau das steht da.
     frage: 'Wo liegen die Daten?',
     antwort:
-      'Die Profile liegen auf der Wix-Infrastruktur, die hnvr.me auch für seine übrigen Projekte nutzt; Einzelheiten stehen in der Datenschutzerklärung. Die Seite selbst lädt nichts von Dritten nach und meldet niemandem, wer sie geöffnet hat. Wix legt allerdings vier eigene Skripte in jede ausgelieferte Seite — Cookie-Richtlinie, Telemetrie und Besucherzählung. Die kommen nicht aus diesem Programm und lassen sich aus ihm auch nicht entfernen.',
+      'Auf der Wix-Infrastruktur, die hnvr.me auch für seine übrigen Projekte nutzt. Die Seite selbst lädt nichts von Dritten nach und meldet niemandem, wer sie geöffnet hat. Wix legt allerdings vier eigene Skripte in jede ausgelieferte Seite — Cookie-Richtlinie, Telemetrie und Besucherzählung. Die kommen nicht aus diesem Programm.',
   },
 ];
 ---
@@ -169,124 +147,151 @@ const fragen = [
           </nav>
         </header>
 
-        <!-- Kopf -->
-        <section class="kopf">
-          <p class="marke">kontaktseite</p>
-          <h1>Die Seite weiß,<br />wann du da bist.</h1>
-          <p class="fuehrung">
-            Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code unter einer kurzen Adresse. Nach vorn stellt
-            sie, was gerade wirklich trägt: im Betrieb den Anruf, danach den schriftlichen Weg.
-          </p>
-          <div class="knopfreihe">
-            <a class="knopf knopf--voll" href="/t/hnvr">
-              Echte Seite ansehen
-              <Fragment set:html={zeichen('pfeil')} />
-            </a>
-            <a class="knopf" href="/werkstatt">
-              <Fragment set:html={zeichen('stift')} />
-              Seite selbst bauen
-            </a>
+        <section class="held">
+          <div class="held__text">
+            <p class="abzeichen">
+              <Fragment set:html={zeichen('uhr')} />
+              Ein Link, der antwortet
+            </p>
+            <h1>Deine Leute sollen dich erreichen, nicht nur anklicken.</h1>
+            <p class="fuehrung">
+              Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code unter einer kurzen Adresse. Nach vorn stellt
+              sie, was gerade wirklich trägt: im Betrieb den Anruf, danach den schriftlichen Weg.
+            </p>
+
+            <form class="adressfeld" action="/werkstatt" method="get">
+              <span class="adressfeld__praefix">/t/</span>
+              <input type="text" name="name" placeholder="deinname" spellcheck="false" autocomplete="off" />
+              <button type="submit" class="knopf knopf--voll">Sichern</button>
+            </form>
+            <p class="leise">Kostenlos starten · ohne Konto · in zwei Minuten live</p>
+          </div>
+
+          {/* Kein Produktfoto: der Handoff hält fest, dass Bildmaterial fehlt.
+              Statt eines Platzhalters steht hier die Sache selbst. */}
+          <div class="held__probe">
+            <div class="lagen">
+              <div class="lage">
+                <p class="lage__zeit">Mittwoch, 14:00</p>
+                <p class="lage__status lage__status--offen">
+                  <span class="lage__punkt"></span>
+                  Jetzt erreichbar · bis 18:00
+                </p>
+                <p class="lage__knopf">
+                  <Fragment set:html={zeichen('telefon')} />
+                  Jetzt anrufen
+                </p>
+                <p class="lage__nach">Der Anruf steht oben, weil jemand da ist.</p>
+              </div>
+              <div class="lage">
+                <p class="lage__zeit">Samstag, 23:00</p>
+                <p class="lage__status">
+                  <Fragment set:html={zeichen('uhr')} />
+                  Gerade geschlossen · Montag ab 9:00
+                </p>
+                <p class="lage__knopf">
+                  <Fragment set:html={zeichen('whatsapp')} />
+                  WhatsApp schreiben
+                </p>
+                <p class="lage__nach">Nachts führt der schriftliche Weg — mit ehrlicher Ansage.</p>
+              </div>
+            </div>
+            <p class="schwebe">
+              <span class="schwebe__punkt"></span>
+              Dieselbe Seite, zwei Zeitpunkte
+            </p>
           </div>
         </section>
 
-        <!-- Die Uhr -->
+        <section>
+          <div class="zahlen">
+            {
+              kennzahlen.map((k) => (
+                <div class:list={['zahl', k.rose && 'zahl--rose']}>
+                  <b>{k.zahl}</b>
+                  <span>{k.was}</span>
+                  <em>{k.neben}</em>
+                </div>
+              ))
+            }
+          </div>
+          <p class="quelle">
+            Größe und Skriptzahl im August 2026 am ausgelieferten HTML gemessen — an beiden Seiten, nicht an
+            Werbeaussagen. Vier weitere Skripte kommen auf unserer Seite von der Auslieferung durch Wix dazu; sie
+            stammen nicht aus diesem Programm und lassen sich aus ihm nicht entfernen.
+          </p>
+        </section>
+
         <section>
           <p class="marke">der unterschied</p>
-          <h2>Ein Knopf, der die Uhrzeit kennt.</h2>
-          <p class="fuehrung" style="margin-top:18px">
-            Wer sonntags um 23 Uhr den Code am Fahrzeug scannt und auf „Jetzt anrufen“ tippt, landet im Nichts und ist
-            weg. Dieselbe Seite, zwei Zeitpunkte:
-          </p>
-
-          <div class="lagen">
-            <div class="lage">
-              <p class="lage__zeit">Mittwoch, 14:00</p>
-              <p class="lage__status lage__status--offen">
-                <span class="lage__punkt" aria-hidden="true"></span>
-                Jetzt erreichbar · bis 18:00
-              </p>
-              <div class="lage__knopf">
-                <Fragment set:html={zeichen('telefon')} />
-                Jetzt anrufen
-              </div>
-              <p class="lage__nach">Darunter: WhatsApp, Termin, E-Mail, Anfahrt.</p>
-            </div>
-
-            <div class="lage">
-              <p class="lage__zeit">Samstag, 23:00</p>
-              <p class="lage__status">
-                <Fragment set:html={zeichen('uhr')} />
-                Gerade geschlossen · Montag ab 9:00
-              </p>
-              <div class="lage__knopf">
-                <Fragment set:html={zeichen('whatsapp')} />
-                WhatsApp schreiben
-              </div>
-              <p class="lage__nach">Der Anruf rutscht nach unten. Niemand wird enttäuscht.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Merkmale -->
-        <section>
-          <p class="marke">was drin ist</p>
-          <h2>Mehr als eine Linkliste.</h2>
-          <div class="merkmale">
+          <h2>Drei Dinge, die eine<br />Linkliste nicht kann.</h2>
+          <div class="koennen">
             {
-              merkmale.map((m) => (
-                <div class="merkmal">
-                  <Fragment set:html={zeichen(m.zeichen)} />
-                  <h3>{m.titel}</h3>
-                  <p>{m.text}</p>
+              koennen.map((k) => (
+                <div class="kann">
+                  <span class={`kann__zeichen kann__zeichen--${k.ton}`}>
+                    <Fragment set:html={zeichen(k.zeichen)} />
+                  </span>
+                  <h3>{k.titel}</h3>
+                  <p>{k.text}</p>
+                  <div class="kann__chips">
+                    {k.chips.map((c) => (
+                      <span class="chip">{c}</span>
+                    ))}
+                  </div>
                 </div>
               ))
             }
           </div>
         </section>
 
-        <!-- Vergleich -->
         <section>
-          <p class="marke">ehrlich verglichen</p>
-          <h2>Was auf der Seite eines<br />Handwerkers nichts zu suchen hat.</h2>
-          <p class="fuehrung" style="margin-top:18px">
-            Der bekannteste Anbieter hängt unter jedes Profil ein Karussell mit fremden Konten, die eigene Preisliste
-            und Affiliate-Verweise auf Werbekunden. Wer deinen QR-Code scannt, bekommt deinen Wettbewerb mitgeliefert.
-          </p>
-
-          <div class="tabellenrahmen">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Gemessen an einer Profilseite</th>
-                  <th scope="col">Üblicher Anbieter</th>
-                  <th scope="col">Get in Touch</th>
-                </tr>
-              </thead>
-              <tbody>
-                {
-                  vergleich.zeilen.map((z) => (
-                    <tr>
-                      <th scope="row">{z.was}</th>
-                      <td data-spalte="Üblicher Anbieter">{z.andere}</td>
-                      <td class="wert--wir" data-spalte="Get in Touch">
-                        {z.wir}
-                      </td>
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
+          <p class="marke">so läuft's</p>
+          <h2>Von der Idee zur Adresse.</h2>
+          <div class="schritte">
+            {
+              schritte.map((s, i) => (
+                <div class="schritt">
+                  <span class="schritt__zahl">{i + 1}</span>
+                  <h3>{s.titel}</h3>
+                  <p>{s.text}</p>
+                </div>
+              ))
+            }
           </div>
+        </section>
 
+        <section>
+          <p class="marke">ein look pro charakter</p>
+          <h2>Elf Vorlagen,<br />drei Anordnungen.</h2>
+          <div class="anrisse">
+            {
+              anrisse.map((k) => {
+                const v = vorlage(k);
+                const s = Object.entries(cssVariablen(v))
+                  .map(([n, w]) => `${n}:${w}`)
+                  .join(';');
+                return (
+                  <a class="anriss" href={`/designs/${k}`}>
+                    <span class="anriss__blatt" style={s}>
+                      <span class="anriss__bild" />
+                      <span class="anriss__name">{vorlagenName(k)}</span>
+                      <span class="anriss__knopf" />
+                      <span class="anriss__zeile" />
+                      <span class="anriss__zeile" />
+                    </span>
+                    <span class="anriss__fuss">{vorlagenName(k)}</span>
+                  </a>
+                );
+              })
+            }
+          </div>
           <p class="quelle">
-            Erhoben {vergleich.stand} an beiden ausgelieferten Seiten — nicht an Werbeaussagen. „Nachgeladen von fremden
-            Hosts“ zählt Skripte, Schriften und Bilder, die der Browser beim Öffnen von dritten Servern holt. Die vier
-            Skripte auf unserer Seite stammen aus der Auslieferung von Wix und nicht aus diesem Programm; auf einem
-            eigenen Server bleibt es beim einen.
+            Alle elf stehen in der <a href="/designs">Galerie</a> — jede mit eigenem Schriftpaar und eigener
+            Anordnung, jede gegen WCAG durchgerechnet.
           </p>
         </section>
 
-        <!-- Was fehlt -->
         <section>
           <p class="marke">was heute fehlt</p>
           <h2>Damit du es nicht selbst<br />herausfinden musst.</h2>
@@ -295,45 +300,37 @@ const fragen = [
               offen.map((o) => (
                 <li>
                   <span class="offen__marke">{o.marke}</span>
-                  <span>
-                    <b>{o.titel}</b> — {o.text}
-                  </span>
+                  <b>{o.titel}</b>
+                  <span>{o.text}</span>
                 </li>
               ))
             }
           </ul>
         </section>
 
-        <!-- Fragen -->
         <section>
-          <p class="marke">häufige fragen</p>
-          <h2>Kurz beantwortet.</h2>
+          <p class="marke">fragen</p>
           <div class="fragen">
             {
               fragen.map((f) => (
-                <details class="frage">
-                  <summary>{f.frage}</summary>
+                <div class="frage">
+                  <h3>{f.frage}</h3>
                   <p>{f.antwort}</p>
-                </details>
+                </div>
               ))
             }
           </div>
         </section>
 
-        <!-- Schluss -->
-        <section class="schluss">
+        <section class="banner">
           <p class="marke">bereit?</p>
-          <h2>Ein Link, und sie erreichen dich.</h2>
+          <h2>Hör auf, Leute wegzuschicken.</h2>
           <div class="knopfreihe">
-            <a class="knopf knopf--voll" href="/werkstatt">
-              In der Werkstatt anfangen
+            <a class="knopf knopf--hell" href="/werkstatt">
+              Seite bauen
               <Fragment set:html={zeichen('pfeil')} />
             </a>
-            <a class="knopf" href="/designs">Elf Designs ansehen</a>
-            <a class="knopf" href="tel:+4951112282286">
-              <Fragment set:html={zeichen('telefon')} />
-              +49 511 12282286
-            </a>
+            <a class="knopf knopf--kontur" href="/t/hnvr">Echte Seite ansehen</a>
           </div>
         </section>
 

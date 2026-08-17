@@ -885,3 +885,399 @@ summary:focus-visible {
   font-size: 13px;
   color: var(--vg-leise);
 }
+
+/* ============================================================
+   Startseite nach dem Design-Handoff
+   ============================================================ */
+
+.held {
+  display: grid;
+  gap: 34px;
+  align-items: center;
+  padding: 20px 0 8px;
+}
+
+@media (min-width: 900px) {
+  .held {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+}
+
+.held h1 {
+  margin: 16px 0 0;
+  font-family: var(--anzeige);
+  font-weight: 800;
+  font-size: clamp(38px, 6.4vw, 62px);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  text-wrap: pretty;
+}
+
+.abzeichen {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 15px;
+  border-radius: 999px;
+  background: #ffe0d9;
+  color: #ae1800;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.abzeichen svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Das Adressfeld: eine Pille mit harter Kontur, wie im Handoff. */
+.adressfeld {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 26px;
+  padding: 6px 6px 6px 17px;
+  border: 2px solid var(--vg);
+  border-radius: 30px;
+  max-width: 480px;
+}
+
+.adressfeld__praefix {
+  color: var(--vg-leise);
+  font-size: 14px;
+  flex: none;
+}
+
+.adressfeld input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 10px 0;
+}
+
+.adressfeld input:focus-visible {
+  outline: none;
+}
+
+.adressfeld .knopf {
+  flex: none;
+  padding: 11px 19px;
+  font-size: 14px;
+}
+
+.leise {
+  margin: 11px 0 0;
+  font-size: 13px;
+  color: var(--vg-leise);
+}
+
+.held__probe {
+  position: relative;
+}
+
+.schwebe {
+  position: absolute;
+  right: 6px;
+  bottom: -14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 11px 16px;
+  border-radius: 18px;
+  background: var(--grund);
+  border: 1px solid var(--linie);
+  box-shadow: 0 4px 0 0 var(--linie);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.schwebe__punkt {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--akzent);
+}
+
+/* --- Kennzahlen ------------------------------------------- */
+
+.zahlen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.zahl {
+  display: grid;
+  gap: 3px;
+  padding: 22px 20px;
+  border-radius: 26px;
+  background: var(--kachel);
+  border: 1px solid var(--linie);
+}
+
+.zahl--rose {
+  background: #ffe0d9;
+  border-color: transparent;
+}
+
+.zahl b {
+  font-family: var(--anzeige);
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: -0.03em;
+}
+
+.zahl span {
+  font-size: 14px;
+}
+
+.zahl em {
+  font-style: normal;
+  font-size: 12.5px;
+  color: var(--vg-leise);
+}
+
+/* --- Drei Karten ------------------------------------------ */
+
+.koennen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.kann {
+  padding: 24px 22px;
+  border: 1px solid var(--linie);
+  border-radius: 26px;
+  background: var(--kachel);
+}
+
+.kann__zeichen {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.kann__zeichen svg {
+  width: 22px;
+  height: 22px;
+}
+
+.kann__zeichen--signal {
+  background: var(--akzent);
+  color: var(--akzent-text);
+}
+
+.kann__zeichen--ink {
+  background: var(--vg);
+  color: var(--grund);
+}
+
+.kann__zeichen--rose {
+  background: #ffe0d9;
+  color: #ae1800;
+}
+
+.kann h3 {
+  margin: 0 0 8px;
+  font-family: var(--anzeige);
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+
+.kann p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--vg-neben);
+}
+
+.kann__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--linie);
+  font-size: 12.5px;
+  color: var(--vg-neben);
+}
+
+/* --- Schritte --------------------------------------------- */
+
+.schritte {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.schritt {
+  padding: 22px 20px;
+  border: 1px solid var(--linie);
+  border-radius: 26px;
+}
+
+.schritt__zahl {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--akzent);
+  color: var(--akzent-text);
+  font-family: var(--anzeige);
+  font-weight: 800;
+  font-size: 15px;
+  margin-bottom: 14px;
+}
+
+.schritt h3 {
+  margin: 0 0 6px;
+  font-family: var(--anzeige);
+  font-weight: 800;
+  font-size: 17px;
+}
+
+.schritt p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--vg-neben);
+}
+
+/* --- Vorlagen-Anriss -------------------------------------- */
+
+.anrisse {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.anriss {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid var(--linie);
+  border-radius: 22px;
+  overflow: hidden;
+  transition: transform 0.18s ease;
+}
+
+.anriss:hover {
+  transform: translateY(-4px);
+}
+
+.anriss__blatt {
+  display: block;
+  padding: 18px 16px 22px;
+  background: var(--grund);
+  color: var(--vg);
+}
+
+.anriss__bild {
+  display: block;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--akzent);
+  margin-bottom: 12px;
+}
+
+.anriss__name {
+  display: block;
+  font-family: var(--anzeige);
+  font-weight: 800;
+  font-size: 17px;
+  margin-bottom: 10px;
+}
+
+.anriss__knopf {
+  display: block;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--akzent);
+  margin-bottom: 9px;
+}
+
+.anriss__zeile {
+  display: block;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--kachel);
+  margin-bottom: 6px;
+}
+
+.anriss__fuss {
+  display: block;
+  padding: 11px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-top: 1px solid var(--linie);
+}
+
+/* --- Abschlussbanner -------------------------------------- */
+
+.banner {
+  padding: 46px 34px;
+  border-radius: 32px;
+  background: var(--akzent);
+  color: var(--akzent-text);
+}
+
+.banner .marke {
+  color: var(--akzent-text);
+  opacity: 0.85;
+}
+
+.banner .marke::before {
+  color: var(--akzent-text);
+}
+
+.banner h2 {
+  color: var(--akzent-text);
+}
+
+.knopf--hell {
+  background: var(--grund);
+  color: var(--vg);
+  border-color: transparent;
+  box-shadow: 0 4px 0 0 #ae1800;
+}
+
+.knopf--kontur {
+  border-color: var(--akzent-text);
+  color: var(--akzent-text);
+}
+
+/* Der Fließtext braucht Luft zur Überschrift — bei 62 px Versalhöhe klebt er
+   sonst daran. Und die schwebende Karte darf keinen Text verdecken. */
+.held__text .fuehrung {
+  margin-top: 20px;
+}
+
+.held__probe {
+  padding-bottom: 30px;
+}
+
+.schwebe {
+  bottom: 0;
+}

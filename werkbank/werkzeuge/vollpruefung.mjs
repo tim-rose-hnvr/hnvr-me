@@ -931,6 +931,48 @@ await pruefe('der Weg zurueck aus dem Fokus steht im Fuss', async () => {
   return `wieder ${alle} Seiten`;
 });
 
+
+console.log('\n== Neue Dialoge ==');
+
+await ladeBeispiel();
+
+for (const [befehl, ueberschrift] of [
+  ['excel:ausgeben', 'Nach Excel ausgeben'],
+  ['barrierefrei', 'Barrierefreiheit'],
+  ['signieren', 'Digital unterschreiben'],
+]) {
+  await pruefe(`Dialog „${ueberschrift}" geht auf und wieder zu`, async () => {
+    await seite.evaluate((b) => window.werkbank.fuehreAus(b), befehl);
+    await seite.waitForTimeout(600);
+    const titel = await seite.evaluate(() => document.querySelector('.dialog-kopf h2')?.textContent || '');
+    if (titel !== ueberschrift) throw new Error(`Titel war „${titel}"`);
+    await dialogSchliessen();
+    if (await dialogOffen()) throw new Error('bleibt offen');
+    return titel;
+  });
+}
+
+await pruefe('Formularfeld-Werkzeug legt einen Entwurf an', async () => {
+  await seite.evaluate(() => window.werkbank.fuehreAus('werkzeug:feld'));
+  const blatt = await seite.$('.blatt >> nth=0');
+  const kasten = await blatt.boundingBox();
+  await seite.mouse.move(kasten.x + 80, kasten.y + 140);
+  await seite.mouse.down();
+  await seite.mouse.move(kasten.x + 300, kasten.y + 180, { steps: 8 });
+  await seite.mouse.up();
+  await seite.waitForTimeout(500);
+  const titel = await seite.evaluate(() => document.querySelector('.dialog-kopf h2')?.textContent || '');
+  if (titel !== 'Formularfeld anlegen') throw new Error(`kein Dialog, Titel war „${titel}"`);
+  await seite.click('.schirm button:has-text("Anlegen")');
+  await seite.waitForTimeout(500);
+  const entwuerfe = await seite.evaluate(() => window.werkbank.zustand.anmerkungen.filter((a) => a.art === 'feldneu').length);
+  if (entwuerfe !== 1) throw new Error(`${entwuerfe} Entwürfe`);
+  const sichtbar = await seite.evaluate(() => document.querySelectorAll('.feld-entwurf').length);
+  if (!sichtbar) throw new Error('der Entwurf ist auf der Seite nicht zu sehen');
+  await seite.evaluate(() => window.werkbank.fuehreAus('werkzeug:auswahl'));
+  return 'Rahmen gezogen, Feld angelegt, Platzhalter sichtbar';
+});
+
 console.log('\n== Zusammenfassung ==');
 const fehlgeschlagen = ergebnisse.filter((e) => !e.ok);
 console.log(`${ergebnisse.length - fehlgeschlagen.length} von ${ergebnisse.length} in Ordnung`);

@@ -3,8 +3,8 @@
 Eine PDF-Arbeitsumgebung im Browser: lesen, kommentieren, Text erkennen und
 ersetzen, schwärzen, Formulare ausfüllen, unterschreiben, mit Kennwort
 schützen, Seiten umbauen, zusammenführen, teilen, verkleinern, vergleichen,
-ausgeben. Läuft vollständig lokal — kein Server, kein Konto, kein Netz, keine
-Gebühr. Auch Texterkennung und Verschlüsselung, sonst die üblichen Gründe für
+ausgeben, digital unterschreiben. Läuft vollständig lokal — kein Server, kein
+Konto, kein Netz, keine Gebühr. Auch Texterkennung und Verschlüsselung, sonst die üblichen Gründe für
 einen Upload, laufen auf diesem Gerät.
 
 Sie ist als Gegenentwurf zu Adobe Acrobat gebaut: gleiche Arbeit, weniger
@@ -33,14 +33,14 @@ ohne eine eigene Datei zu suchen.
 
 ## Wo alles steht
 
-Ein Befehl, den niemand findet, gibt es nicht. Deshalb hat jeder der 72
+Ein Befehl, den niemand findet, gibt es nicht. Deshalb hat jeder der 76
 Befehle einen Weg mit der Maus:
 
 - **Menüleiste** unter dem Kopf — Datei, Bearbeiten, Seiten, Ansicht,
   Werkzeuge, Gehe zu, Schutz, Hilfe. Sie wird aus dem Befehlsregister gebaut,
   nicht daneben gepflegt; was nirgends einsortiert ist, landet sichtbar unter
   „Weiteres". Der Prüflauf lässt keinen Befehl ohne Menüweg durch.
-- **Werkzeugleiste** im Kopf — die fünfzehn Werkzeuge zum Zeigen und Zeichnen.
+- **Werkzeugleiste** im Kopf — die sechzehn Werkzeuge zum Zeigen und Zeichnen.
 - **Rückgängig und Wiederholen** als Knöpfe im Kopf, mit dem Namen des
   Schritts im Tooltip („Rückgängig: 3 Seiten gelöscht").
 - **Seiten ordnen** (`Strg+Umschalt+O`, Knopf über den Miniaturen) — alle
@@ -125,9 +125,42 @@ Seiten groß nebeneinander, Mehrfachauswahl, Ziehen zum Sortieren. Und
 **Nur gewählte Seiten zeigen**, wenn man sich auf wenige Seiten beschränken
 will, ohne die übrigen zu löschen.
 
-**Formulare** — vorhandene AcroForm-Felder werden erkannt und direkt auf der
-Seite ausgefüllt (Text, mehrzeilig, Ankreuzfeld, Auswahlliste, Optionsfeld).
-Beim Sichern wahlweise ausfüllbar belassen oder fest einbrennen.
+**Formulare ausfüllen** — vorhandene AcroForm-Felder werden erkannt und direkt
+auf der Seite ausgefüllt (Text, mehrzeilig, Ankreuzfeld, Auswahlliste,
+Optionsfeld). Beim Sichern wahlweise ausfüllbar belassen oder fest einbrennen.
+
+**Formulare anlegen** — Werkzeug `K`, Rahmen ziehen, Art wählen: Textfeld,
+mehrzeiliges Feld, Ankreuzfeld, Auswahlliste, Optionsfeld, Unterschriftsfeld.
+Bis zum Sichern ist es ein Platzhalter, den man verschieben und löschen kann;
+erst beim Schreiben entsteht ein echtes Feld. Auf geschwärzten Seiten wird
+keines angelegt — die werden zum Bild, ein Eingabefeld darüber wäre ein
+Widerspruch. Der Prüflauf schreibt alle sechs Arten und liest sie zurück.
+
+**Nach Excel** — `.xlsx` mit einem Blatt je Seite. Ein PDF kennt keine
+Tabellen, nur Buchstaben an Punkten; als Tabelle gilt hier, was in mindestens
+drei Zeilen hintereinander an denselben Stellen beginnt. Findet das nichts,
+holt der zweite Weg („jede Zeile ins Raster") den Text trotzdem. Zahlen werden
+als Zahlen geschrieben, Bestellnummern mit führender Null bleiben Text. Nicht
+übernommen: Rahmen, Farben, verbundene Zellen, Formeln, Bilder.
+
+**Digital unterschreiben** — mit einem Zertifikat aus einer `.p12`, nicht als
+Bild. Über die Bytes der Datei wird ein Hashwert gebildet und signiert; ändert
+danach jemand ein Zeichen, meldet jeder Betrachter, dass das Dokument nach der
+Unterschrift verändert wurde. Das Ergebnis ist PAdES-B-B mit dem verlangten
+`signingCertificateV2`. Grenzen, die im Dialog stehen: eine Unterschrift je
+Datei (eine zweite darüber bräche die erste), kein Zeitstempel von einem Dienst
+— die Signaturzeit ist die Uhr des Geräts —, keine Abfrage von Sperrlisten. Ob
+die Unterschrift als qualifiziert gilt, entscheidet das Zertifikat, nicht
+dieses Programm. Der Prüflauf lässt openssl nachrechnen und prüft, dass ein
+geändertes Byte die Signatur bricht.
+
+**Barrierefreiheit** — Prüfung mit Begründung statt Ampel: fehlender
+Strukturbaum, fehlende Dokumentsprache, Titel, Felder ohne Beschriftung, Seiten
+ohne Text, Bilder. Was ohne Vermutung zu setzen ist, setzt die Werkbank auf
+Knopfdruck: Sprache, Titel, „Titel statt Dateiname anzeigen", Feldbeschriftungen
+(`/TU`). Was sie **nicht** tut, ist automatisch auszeichnen. Eine geratene
+Überschriftenebene ist für einen Screenreader schlimmer als gar keine; die
+Auszeichnung gehört in das Programm, das die Datei erzeugt.
 
 **Schwärzen** — Rechteck ziehen. Beim Sichern wird die betroffene Seite
 gerastert und das Rechteck deckend gefüllt: der Text darunter ist danach
@@ -171,7 +204,7 @@ Werkzeug für Werkzeug, in der Reihenfolge, in der Acrobat sie anbietet.
 
 | Acrobat | Werkbank | Anmerkung |
 |---|---|---|
-| PDF exportieren | **ja** | PDF, Word (.docx), Text, PNG |
+| PDF exportieren | **ja** | PDF, Word (.docx), Excel (.xlsx), Text, PNG |
 | Diese PDF stilisieren | nein | Gestaltung durch ein Sprachmodell — braucht einen Dienst |
 | Ausfüllen und Signieren | **ja** | Formularfelder und sichtbare Unterschrift |
 | PDF bearbeiten | **teilweise** | Text bearbeiten ja; Bilder und Objekte im PDF nein |
@@ -179,23 +212,23 @@ Werkzeug für Werkzeug, in der Reihenfolge, in der Acrobat sie anbietet.
 | Diese PDF-Datei übersetzen | nein | Übersetzungsdienst |
 | PDF erstellen | **teilweise** | aus Bildern ja; aus Word oder Excel nein |
 | Dateien zusammenführen | **ja** | |
-| Seiten verwalten | **ja** | sortieren, drehen, löschen, verdoppeln, auszugsweise ausgeben |
+| Seiten verwalten | **ja** | eigene Ansicht „Seiten ordnen“: sortieren, drehen, löschen, verdoppeln, auszugsweise ausgeben |
 | Zum Kommentieren senden | nein | gemeinsames Kommentieren braucht einen Server |
 | Scan & OCR | **teilweise** | Texterkennung ja; ein Scangerät ansteuern nein |
 | PDF-Datei schützen | **ja** | AES-256, Rechte für Drucken, Ändern, Kopieren |
 | PDF-Datei schwärzen | **ja** | mit Rasterung, der Text ist wirklich fort |
 | PDF komprimieren | **ja** | „Verkleinern", mit Vorher/Nachher |
-| Formular vorbereiten | nein | Felder ausfüllen ja, Felder anlegen noch nicht |
+| Formular vorbereiten | **ja** | Rahmen ziehen, Art wählen: Text, mehrzeilig, Ankreuz, Auswahl, Option, Unterschrift |
 | Kommentare hinzufügen | **ja** | zehn Werkzeuge, Liste, Bericht |
 | In PDF konvertieren | **teilweise** | Bilder ja; Office-Dateien nein |
 | Stempel hinzufügen | **ja** | Vorlagen und eigener Text, wahlweise mit Datum |
-| Ein Zertifikat verwenden | nein | kryptografische Signatur — der nächste große Ausbau |
+| Ein Zertifikat verwenden | **ja** | PAdES-B-B aus einer .p12; kein Zeitstempeldienst, keine Sperrlisten |
 | Druckproduktion verwenden | nein | Druckvorstufe, Farbauszüge |
 | Objekte messen | nein | |
 | Dateien vergleichen | **ja** | wortweiser Textvergleich je Seite |
 | Rich Media hinzufügen | nein | bewusst nicht: Video im PDF ist eine Sicherheitslücke mit Abspieltaste |
 | Geführte Aktionen verwenden | **teilweise** | Befehlspalette statt Aktionsfolgen; kein Stapelbetrieb über Ordner |
-| Barrierefreiheit vorbereiten | nein | Tags und Lesereihenfolge |
+| Barrierefreiheit vorbereiten | **teilweise** | Prüfung mit Begründung; Sprache, Titel und Feldbeschriftungen werden gesetzt. Auszeichnung (Tags) nicht — sie wäre geraten |
 | PDF-Standards anwenden | nein | PDF/A, PDF/X |
 | Suchindex hinzufügen | **teilweise** | Volltextsuche im Dokument ja; Index über einen Ordner nein |
 | JavaScript verwenden | nein | bewusst nicht: JavaScript im PDF ist seit Jahren ein Einfallstor |
@@ -210,17 +243,27 @@ anlegen, Barrierefreiheit — sind echte Lücken und ließen sich hier bauen.
 
 Ehrlicher als eine lange Merkmalsliste:
 
-- **Keine kryptografische Signatur.** Die Unterschrift ist ein Bild. Für eine
-  fortgeschrittene oder qualifizierte Signatur nach eIDAS braucht es ein
-  Zertifikat, eine PAdES-Struktur und bei „qualifiziert" eine Signaturkarte
-  oder einen Vertrauensdiensteanbieter. Das ist der nächste sinnvolle Ausbau.
+- **Nur eine Unterschrift je Datei.** Eine zweite über die erste hinweg
+  verlangt eine inkrementelle Ergänzung: die Datei müsste angehängt statt neu
+  geschrieben werden. Die Werkbank kann das nicht — und sagt es, statt die
+  erste Unterschrift stillschweigend zu brechen.
+- **Kein Zeitstempel von einem Dienst und keine Sperrlistenabfrage.** Die
+  Signaturzeit ist die Uhr des Geräts. Damit ist das Ergebnis PAdES-B-B, nicht
+  -B-T oder -B-LT. Beides bräuchte einen Dienst im Netz; der Saal soll von
+  nichts abhängen.
+- **„Qualifiziert" entscheidet das Zertifikat.** Die Werkbank rechnet die
+  Signatur; ob sie qualifiziert ist, hängt an Ihrem Zertifikat und seinem
+  Aussteller. Eine Signaturkarte am Gerät kann sie nicht ansprechen.
+- **Keine Auszeichnung (Tags) für Barrierefreiheit.** Prüfen ja, Sprache und
+  Titel setzen ja — aber ein fertiges PDF nachträglich auszuzeichnen heißt
+  raten, und eine falsche Überschriftenebene schadet mehr, als sie nützt.
 - **Ersetzter Text wird in Helvetica gesetzt.** Die Originalschrift wird nicht
   nachgebildet; bei ausgefallenen Schriften sieht man den Unterschied.
 - **Texterkennung ist nie fehlerfrei.** Sie nennt ihre Sicherheit in Prozent.
   Zahlen, Namen und Kennzeichen gehören geprüft.
-- **Kein Export nach Excel.** Nach Word ja, aber ohne Tabellenerkennung —
-  eine Tabelle wird zu Absätzen, nicht zu einem Word-Raster.
-- **Keine Formularfelder anlegen.** Vorhandene ausfüllen ja, neue setzen nein.
+- **Die Excel-Ausgabe erkennt Tabellen, sie versteht sie nicht.** Verbundene
+  Zellen, mehrzeilige Kopfzeilen und Tabellen ohne gleiche Spaltenanfänge
+  fallen durch. Deshalb steht der zweite Weg daneben, der jede Zeile mitnimmt.
 - **Ein unbekanntes Kennwort bleibt unbekannt.** qpdf entschlüsselt mit
   Kennwort, es knackt keines.
 - **Lesezeichen** bleiben nur erhalten, solange Seitenfolge und Drehung
@@ -235,6 +278,8 @@ app/dokument.js     Quellen laden, Seitenfolge, Text, Merkmale, Formularfelder
 app/ansicht.js      Seitenfluss, Zoom, Textebene, Koordinatenwandlung
 app/anmerkungen.js  Anmerkungsmodell, Darstellung, Zeigerbedienung
 app/seiten.js       Miniaturen, Auswahl, Umsortieren
+app/ordnen.js       Seiten ordnen: alle Seiten gross, ziehen zum Sortieren
+app/menue.js        Menueleiste, aus dem Befehlsregister gebaut
 app/suche.js        Volltextsuche und Trefferhervorhebung
 app/formulare.js    AcroForm-Felder ausfüllen
 app/texterkennung.js Tesseract ansteuern, Wörter in PDF-Punkte umrechnen
@@ -242,12 +287,15 @@ app/schutz.js       qpdf ansteuern: Kennwort, Rechte, Reparatur
 app/unterschrift.js Unterschrift zeichnen, tippen, laden
 app/vergleich.js    Wortvergleich zweier Dateien
 app/word.js         Aufbau lesen und als .docx schreiben
-app/zip.js          ZIP-Schreiber (ein .docx ist ein ZIP)
+app/excel.js        Tabellen erkennen und als .xlsx schreiben
+app/zip.js          ZIP-Schreiber (.docx und .xlsx sind ZIPs)
+app/signieren.js    PKCS#12 lesen, CMS bauen, PDF signieren (PAdES)
+app/barrierefrei.js Barrierefreiheit pruefen und setzen, was ohne Raten geht
 app/mitdenken.js    Befunde und Vorschläge
 app/ausgabe.js      Schreiben über pdf-lib
 app/oberflaeche.js  Befehlsregister, Tafeln, Tastatur
-fremd/              pdf.js, pdf-lib, tesseract.js, qpdf — siehe fremd/HERKUNFT.md
-werkzeuge/          Beispieldatei bauen, Prüflauf fahren
+fremd/              pdf.js, pdf-lib, tesseract.js, qpdf, node-forge — siehe fremd/HERKUNFT.md
+werkzeuge/          Beispieldatei bauen, Prüfläufe fahren, ZIP wieder aufmachen
 ```
 
 ### Datenmodell
@@ -298,8 +346,8 @@ Zwei Läufe in einem echten Chromium, beide ohne Netz, und ein dritter gegen
 die veröffentlichte Seite:
 
 ```sh
-node werkzeuge/pruefen.mjs        # 58 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 65 Prüfungen — die Bedienung
+node werkzeuge/pruefen.mjs        # 96 Prüfungen — das Ergebnis in der Datei
+node werkzeuge/vollpruefung.mjs   # 69 Prüfungen — die Bedienung
 node werkzeuge/live-pruefen.mjs   # 12 Prüfungen — was der Hoster ausliefert
 ```
 
@@ -313,6 +361,14 @@ Mitdenken-Regel einmal ausgelöst, Zoomanzeige deckt sich mit dem Zoom.
 Für die Word-Ausgabe wird die `.docx` von Hand ausgepackt und geprüft:
 Pflichtteile vorhanden, Absätze, Überschriftenvorlage, fette Stellen,
 Seitenumbrüche, Text der ersten und letzten Seite, saubere Sonderzeichen.
+Dasselbe für die `.xlsx`: Pflichtteile, Kopfzeile der erkannten Tabelle, eine
+Zahl, die als Zahl und nicht als Text geschrieben ist. Alle sechs
+Formularfeldarten werden angelegt und aus der gesicherten Datei zurückgelesen.
+Die Barrierefreiheit wird zweimal geprüft: dass der Bericht die Mängel nennt,
+und dass Sprache, Titel und Feldbeschriftungen danach wirklich im Katalog
+stehen. Bei der Unterschrift rechnet **openssl** die Signatur nach — und ein
+absichtlich verändertes Byte muss sie brechen, sonst gilt der Lauf als
+gescheitert.
 
 **`vollpruefung.mjs`** fragt: Lässt sich alles bedienen? Zoomstufen, Drehen,
 Blättern, Tastatur, Tafeln, jedes Werkzeug, Anmerkung wählen, verschieben,

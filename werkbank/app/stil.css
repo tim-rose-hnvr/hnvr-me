@@ -479,3 +479,26 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 
 .seiten-ordnen-knopf { width: 100%; justify-content: center; margin-bottom: .5rem; font-weight: 600; }
+
+/* ---------- Formularfeld-Entwurf ----------------------------------------- */
+/* Ein Feld, das es noch nicht gibt. Es sieht bewusst nach Bauplan aus und
+   nicht nach Eingabefeld -- sonst tippt jemand hinein und wundert sich. */
+.feld-entwurf {
+  border: 1.5px dashed var(--tally);
+  background: color-mix(in srgb, var(--tally) 8%, transparent);
+  border-radius: .1875rem;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.feld-entwurf span {
+  font-size: .6875rem; color: var(--tally); font-weight: 600;
+  white-space: nowrap; padding: 0 .25rem; pointer-events: none;
+}
+
+/* ---------- Barrierefreiheitsbericht ------------------------------------- */
+.zugang-punkt { padding: .5rem 0; border-top: 1px solid var(--linie); }
+.zugang-punkt:first-of-type { border-top: 0; }
+.zugang-punkt p { margin: .25rem 0 .375rem; }
+.zugang-fehler strong { color: var(--tally); }
+.zugang-warnung strong { color: var(--warn); }
+.zugang-gut strong { color: var(--gut); }

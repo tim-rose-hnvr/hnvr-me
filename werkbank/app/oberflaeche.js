@@ -18,7 +18,7 @@ import {
   zuPdfPunkt, blattVon, aktuelleSkala,
 } from './ansicht.js';
 import {
-  WERKZEUGE, FARBEN, starteWerkzeuge, setzeSichtHoler, anmerkungsListe, fuegeAn, entferne,
+  WERKZEUGE, FARBEN, FELDARTEN, starteWerkzeuge, setzeSichtHoler, anmerkungsListe, fuegeAn, entferne,
   aendere, waehleAn, uebernehmeAuswahl, bezeichne, hatUnterschrift,
 } from './anmerkungen.js';
 import { starteSeiten, drehe, loesche, verdopple, gewaehlteOderAktuelle } from './seiten.js';
@@ -31,6 +31,9 @@ import { starteMitdenken, tafelMitdenken, befunde, musterListe, untersuche } fro
 import { sichereDokument, seitenAusgeben, teileDokument, seiteAlsBild, istUnveraendertesGeruest, vorschlagsname, baueDokument, verkleinere } from './ausgabe.js';
 import { zeigeErkennungsDialog, erkennungsUebersicht } from './texterkennung.js';
 import { alsWord } from './word.js';
+import { alsExcel } from './excel.js';
+import { pruefe as pruefeZugang, SPRACHEN } from './barrierefrei.js';
+import { oeffneAusweis } from './signieren.js';
 import { textDerSeite } from './dokument.js';
 import { vergleicheMitDatei } from './vergleich.js';
 
@@ -63,6 +66,7 @@ function baueBefehle() {
     sichereBytes(await blob.arrayBuffer(), vorschlagsname(`-seite-${zustand.aktuelleSeite}`).replace(/\.pdf$/i, '.png'), 'image/png');
   });
   befehl('word:ausgeben', 'Nach Word ausgeben (.docx) …', 'Datei', zeigeWordDialog);
+  befehl('excel:ausgeben', 'Tabellen nach Excel ausgeben (.xlsx) …', 'Datei', zeigeExcelDialog);
   befehl('bilder:zuPdf', 'PDF aus Bildern erstellen …', 'Datei', () => $('#dateiwahl-bilder').click());
   befehl('text:kopieren', 'Auswahl oder Seitentext kopieren', 'Text', async () => {
     const auswahl = String(window.getSelection() || '').trim();
@@ -131,6 +135,8 @@ function baueBefehle() {
       ? 'Ohne Kennwort gesichert — die neue Datei ist für jeden lesbar.'
       : 'Das Dokument trug keinen Schutz; die Datei ist unverändert offen.', { dauer: 5000 });
   });
+  befehl('barrierefrei', 'Barrierefreiheit prüfen …', 'Hilfe', zeigeBarrierefreiDialog);
+  befehl('signieren', 'Digital unterschreiben (Zertifikat) …', 'Schutz', zeigeSignaturDialog);
   befehl('schutz:zeigen', 'Schutz und Rechte anzeigen', 'Schutz', async () => {
     await mitLader('Rechte werden gelesen …', async () => {
       const { rechte } = await import('./schutz.js');
@@ -684,6 +690,191 @@ async function bilderZuPdf(dateien) {
   });
 }
 
+/* ---------- Digital unterschreiben ------------------------------------------ */
+
+function zeigeSignaturDialog() {
+  let ausweis = null;
+
+  const dateifeld = el('input', { type: 'file', klasse: 'feld', accept: '.p12,.pfx', stil: { flex: '1' } });
+  const kennwortfeld = el('input', { type: 'password', klasse: 'feld', stil: { flex: '1' }, autocomplete: 'off' });
+  const grundfeld = el('input', { klasse: 'feld', stil: { flex: '1' }, value: 'Ich bestätige dieses Dokument' });
+  const ortfeld = el('input', { klasse: 'feld', stil: { flex: '1' }, placeholder: 'Hannover' });
+  const bericht = el('div', { klasse: 'zugang-punkt' });
+
+  /* Ändern und Verlassen des Kennwortfelds lösen beide eine Prüfung aus.
+     Ohne Marke schreiben zwei Läufe nacheinander in denselben Kasten. */
+  let lauf = 0;
+  const pruefeAusweis = async () => {
+    const meiner = ++lauf;
+    const datei = dateifeld.files?.[0];
+    bericht.innerHTML = '';
+    ausweis = null;
+    if (!datei || !kennwortfeld.value) return;
+    try {
+      const geoeffnet = await oeffneAusweis(await datei.arrayBuffer(), kennwortfeld.value);
+      if (meiner !== lauf) return;
+      ausweis = geoeffnet;
+      const b = ausweis.beschreibung;
+      const warnung = b.abgelaufen ? 'Das Zertifikat ist abgelaufen.'
+        : b.nochNichtGueltig ? 'Das Zertifikat gilt noch nicht.' : '';
+      bericht.classList.toggle('zugang-warnung', !!warnung);
+      bericht.classList.toggle('zugang-gut', !warnung);
+      /* append(null) schriebe das Wort „null" auf den Bildschirm. */
+      bericht.append(...[
+        el('strong', { text: warnung ? `!  ${b.name}` : `✓  ${b.name}` }),
+        el('p', { klasse: 'klein leise' },
+          `${b.organisation ? `${b.organisation}, ` : ''}${b.land || ''} · ausgestellt von ${b.aussteller}`,
+          el('br'),
+          `gültig ${datum(b.gueltigVon)} bis ${datum(b.gueltigBis)}`),
+        warnung ? el('p', { klasse: 'klein', text: `${warnung} Unterschreiben ist möglich, die Prüfung wird das aber anmerken.` }) : null,
+      ].filter(Boolean));
+    } catch (fehler) {
+      if (meiner !== lauf) return;
+      bericht.classList.add('zugang-fehler');
+      bericht.append(el('strong', { text: `✕  ${fehler.message}` }));
+    }
+  };
+  dateifeld.addEventListener('change', pruefeAusweis);
+  kennwortfeld.addEventListener('change', pruefeAusweis);
+  kennwortfeld.addEventListener('blur', pruefeAusweis);
+
+  zeigeDialog({
+    titel: 'Digital unterschreiben',
+    rumpf: el('div', {},
+      el('p', { klasse: 'hinweis' },
+        'Das ist etwas anderes als die Unterschrift unter „Werkzeuge": die ist ein Bild und beweist nichts. ',
+        'Hier wird über die Bytes der Datei ein Hashwert gebildet und mit dem Schlüssel aus Ihrer ',
+        'Ausweisdatei signiert. Ändert danach jemand ein Zeichen, meldet jeder Betrachter, dass das ',
+        'Dokument nach der Unterschrift verändert wurde.'),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Ausweisdatei' }), dateifeld),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Kennwort' }), kennwortfeld),
+      bericht,
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Grund' }), grundfeld),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Ort' }), ortfeld),
+      el('p', { klasse: 'hinweis' },
+        'Die Datei verlässt dieses Gerät nicht, auch die Ausweisdatei nicht. ',
+        'Grenzen: eine Unterschrift je Datei (eine zweite darüber würde die erste brechen), ',
+        'kein Zeitstempel von einem Dienst — die Signaturzeit ist die Uhr dieses Geräts — ',
+        'und keine Abfrage von Sperrlisten. Das ergibt PAdES-B-B. Ob die Unterschrift als ',
+        'qualifiziert gilt, entscheidet Ihr Zertifikat, nicht dieses Programm.')),
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Unterschreiben und sichern', betont: true,
+        tun: () => {
+          if (!ausweis) { sage('Erst Ausweisdatei und Kennwort angeben', { art: 'warn' }); return false; }
+          mitLader('Dokument wird unterschrieben …', () => sichereDokument({
+            signatur: {
+              ausweis,
+              grund: grundfeld.value.trim(),
+              ort: ortfeld.value.trim(),
+              name: ausweis.beschreibung.name,
+            },
+          })).then(() => sage(`Unterschrieben als ${ausweis.beschreibung.name}`, { dauer: 6000 }));
+        },
+      },
+    ],
+  });
+}
+
+function zeigeBarrierefreiDialog() {
+  const wurzel = el('div', {}, el('p', { klasse: 'hinweis', text: 'Wird geprüft …' }));
+  zeigeDialog({
+    titel: 'Barrierefreiheit',
+    rumpf: wurzel,
+    knoepfe: [{ beschriftung: 'Schließen' }],
+  });
+
+  pruefeZugang().then((punkte) => {
+    wurzel.innerHTML = '';
+    const fehler = punkte.filter((p) => p.stufe === 'fehler').length;
+    const warnungen = punkte.filter((p) => p.stufe === 'warnung').length;
+
+    wurzel.append(el('p', { klasse: 'hinweis' },
+      fehler || warnungen
+        ? `${fehler} Punkt${fehler === 1 ? '' : 'e'} zu klären, ${warnungen} Hinweis${warnungen === 1 ? '' : 'e'}.`
+        : 'Nichts zu beanstanden, soweit sich das maschinell feststellen lässt.'));
+
+    for (const punkt of punkte) {
+      wurzel.append(el('div', { klasse: `zugang-punkt zugang-${punkt.stufe}` },
+        el('strong', { text: `${{ fehler: '✕', warnung: '!', gut: '✓' }[punkt.stufe]}  ${punkt.titel}` }),
+        punkt.text ? el('p', { klasse: 'klein leise', text: punkt.text }) : null,
+        punkt.befehl
+          ? el('button', { klasse: 'knopf knopf-klein', text: 'Jetzt erledigen',
+              beiClick: () => { schliesseDialog(); fuehreAus(punkt.befehl); } })
+          : null));
+    }
+
+    const behebbar = punkte.filter((p) => p.behebbar);
+    if (!behebbar.length) return;
+
+    const sprachwahl = el('select', { klasse: 'feld' },
+      ...SPRACHEN.map((s) => el('option', { value: s.wert, text: s.name })));
+    const titelfeld = el('input', { klasse: 'feld', stil: { flex: '1' },
+      value: zustand.eigenschaften?.titel || zustand.name.replace(/\.pdf$/i, '') });
+
+    wurzel.append(
+      el('hr', { klasse: 'menue-trenner' }),
+      el('p', { klasse: 'hinweis', text: 'Was sich ohne Vermutung setzen lässt, setzt die Werkbank beim nächsten Sichern:' }),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Sprache' }), sprachwahl),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Titel' }), titelfeld),
+      el('button', { klasse: 'knopf', text: 'Übernehmen und sichern', beiClick: () => {
+        zustand.zugang = { sprache: sprachwahl.value, titel: titelfeld.value.trim(), feldbeschriftungen: true };
+        schliesseDialog();
+        fuehreAus('sichern');
+      } }));
+  }).catch((fehler) => {
+    wurzel.innerHTML = '';
+    wurzel.append(el('p', { klasse: 'hinweis', text: `Die Prüfung ist gescheitert: ${fehler.message}` }));
+  });
+}
+
+function zeigeExcelDialog() {
+  const umfang = el('select', { klasse: 'feld' },
+    el('option', { value: 'alle', text: `Alle Seiten (${zustand.folge.length})` }),
+    el('option', { value: 'auswahl', text: `Gewählte Seiten (${zustand.gewaehlteSeiten.size})` }));
+  const weg = el('select', { klasse: 'feld' },
+    el('option', { value: 'tabellen', text: 'Nur erkannte Tabellen' }),
+    el('option', { value: 'alles', text: 'Jede Zeile ins Raster' }));
+
+  zeigeDialog({
+    titel: 'Nach Excel ausgeben',
+    rumpf: el('div', {},
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Umfang' }), umfang),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Weg' }), weg),
+      el('p', { klasse: 'hinweis' },
+        'Ein PDF kennt keine Tabellen, nur Buchstaben an Punkten. Als Tabelle gilt hier, ',
+        'was in mindestens drei Zeilen hintereinander an denselben Stellen beginnt. ',
+        'Findet das nichts, holt „Jede Zeile ins Raster" den Text trotzdem — dann steht ',
+        'auch Fließtext in den Zellen.'),
+      el('p', { klasse: 'hinweis' },
+        'Je Seite entsteht ein Blatt. Zahlen werden als Zahlen geschrieben, damit sich ',
+        'damit rechnen lässt; Bestellnummern mit führender Null bleiben Text. ',
+        'Nicht übernommen: Rahmen, Farben, verbundene Zellen, Formeln, Bilder.')),
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Ausgeben', betont: true,
+        tun: () => mitLader('Tabellen werden gelesen …', async () => {
+          try {
+            const { bytes, blaetter, zeilen, zellen, uebersprungen } = await alsExcel({
+              seiten: umfang.value === 'auswahl' && zustand.gewaehlteSeiten.size ? [...zustand.gewaehlteSeiten] : null,
+              nurTabellen: weg.value === 'tabellen',
+            });
+            sichereBytes(bytes, vorschlagsname('').replace(/\.pdf$/i, '.xlsx'),
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            sage(uebersprungen
+              ? `${zeilen} Zeilen, ${zellen} Zellen auf ${blaetter} Blättern — ${uebersprungen} Seite${uebersprungen === 1 ? '' : 'n'} ohne Tabelle übersprungen`
+              : `${zeilen} Zeilen, ${zellen} Zellen auf ${blaetter} Blättern ausgegeben`, { dauer: 6000 });
+          } catch (fehler) {
+            sage(fehler.message, { art: 'warn', dauer: 8000 });
+          }
+        }),
+      },
+    ],
+  });
+}
+
 function zeigeWordDialog() {
   const umfang = el('select', { klasse: 'feld' },
     el('option', { value: 'alle', text: `Alle Seiten (${zustand.folge.length})` }),
@@ -1011,6 +1202,68 @@ function bearbeiteNotiz(id) {
   setTimeout(() => { feld.focus(); feld.select(); }, 30);
 }
 
+/* ---------- Formularfeld anlegen -------------------------------------------- */
+
+/* Acrobat nennt das „Formular vorbereiten". Der Rahmen steht schon; hier
+   werden Art und Name bestimmt. Geschrieben wird das Feld erst beim Sichern —
+   bis dahin ist es ein Platzhalter, den man verschieben und löschen kann. */
+function neuesFeld(rahmen) {
+  const vorhandene = new Set([
+    ...zustand.formularfelder.map((f) => f.name),
+    ...zustand.anmerkungen.filter((a) => a.art === 'feldneu').map((a) => a.name),
+  ]);
+  let vorschlag = `Feld ${vorhandene.size + 1}`;
+  while (vorhandene.has(vorschlag)) vorschlag = `Feld ${Number(vorschlag.split(' ')[1]) + 1}`;
+
+  const artwahl = el('select', { klasse: 'feld' },
+    ...Object.entries(FELDARTEN).map(([wert, name]) => el('option', { value: wert, text: name })));
+  const namensfeld = el('input', { klasse: 'feld', value: vorschlag, stil: { flex: '1' } });
+  const optionenfeld = el('input', { klasse: 'feld', placeholder: 'Ja, Nein, Vielleicht', stil: { flex: '1' } });
+  const pflicht = el('input', { type: 'checkbox' });
+
+  const optionenZeile = el('div', { klasse: 'zeile', hidden: true },
+    el('label', { text: 'Auswahl' }), optionenfeld);
+  artwahl.addEventListener('change', () => {
+    optionenZeile.hidden = !['auswahl', 'option'].includes(artwahl.value);
+  });
+
+  zeigeDialog({
+    titel: 'Formularfeld anlegen',
+    rumpf: el('div', {},
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Art' }), artwahl),
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Name' }), namensfeld),
+      optionenZeile,
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Pflichtfeld' }),
+        el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, pflicht, 'muss ausgefüllt werden')),
+      el('p', { klasse: 'hinweis' },
+        'Der Name steht später in der ausgefüllten Datei und muss im Dokument einmalig sein. ',
+        'Das Feld wird beim Sichern geschrieben — bis dahin lässt sich der Rahmen verschieben und löschen. ',
+        'Ein Unterschriftsfeld wird angelegt, aber nicht ausgefüllt: dafür braucht es ein Zertifikat.')),
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Anlegen', betont: true,
+        tun: () => {
+          const name = namensfeld.value.trim();
+          if (!name) return sage('Das Feld braucht einen Namen', { art: 'warn' });
+          if (vorhandene.has(name)) return sage(`„${name}" gibt es schon`, { art: 'warn' });
+          const optionen = optionenfeld.value.split(',').map((o) => o.trim()).filter(Boolean);
+          if (['auswahl', 'option'].includes(artwahl.value) && optionen.length < 2) {
+            return sage('Mindestens zwei Auswahlmöglichkeiten, mit Komma getrennt', { art: 'warn' });
+          }
+          fuegeAn({
+            art: 'feldneu', seiteId: rahmen.seiteId,
+            x: rahmen.x, y: rahmen.y, b: rahmen.b, h: rahmen.h,
+            feldArt: artwahl.value, name, optionen, pflicht: pflicht.checked,
+          });
+          sage(`${FELDARTEN[artwahl.value]} „${name}" angelegt — wird beim Sichern geschrieben`);
+        },
+      },
+    ],
+  });
+  setTimeout(() => { namensfeld.focus(); namensfeld.select(); }, 30);
+}
+
 function ersetzeText(stelle) {
   const feld = el('input', { klasse: 'feld', stil: { flex: '1' }, value: stelle.text });
   const rastern = el('input', { type: 'checkbox' });
@@ -1287,6 +1540,7 @@ export function starteOberflaeche() {
   hoer('anmerkung:bearbeiten', bearbeiteNotiz);
   hoer('anmerkung:neuerText', neuerText);
   hoer('anmerkung:textErsetzen', ersetzeText);
+  hoer('anmerkung:neuesFeld', neuesFeld);
   hoer('anmerkung:stempel', setzeStempel);
   hoer('bereich:aufgenommen', nimmBereichAuf);
   hoer('suche:geaendert', zeichneSuchergebnisse);

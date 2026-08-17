@@ -9,11 +9,14 @@
 import { createServer } from 'node:http';
 import { readFile, mkdtemp, rm } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { extname, join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 
 const WURZEL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const lauf = promisify(execFile);
 const ARTEN = {
   '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript',
   '.css': 'text/css', '.pdf': 'application/pdf', '.json': 'application/json',
@@ -54,6 +57,24 @@ const seite = await browser.newPage({ viewport: { width: 1500, height: 950 }, ac
 const fehler = [];
 seite.on('pageerror', (e) => fehler.push(`PAGEERROR: ${e.message}`));
 seite.on('console', (m) => { if (m.type() === 'error') fehler.push(m.text()); });
+
+/* Das Beispiel frisch laden — die spaeteren Abschnitte bauen aufeinander auf
+   und sollen nicht die Anmerkungen des vorigen erben. */
+const ladeBeispiel = async () => {
+  await seite.goto(basis);
+  await seite.click('#knopf-beispiel');
+  await seite.waitForSelector('.blatt canvas');
+  await seite.waitForTimeout(2200);
+};
+
+/* Eine Aktion ausloesen und die dabei erzeugte Datei ablegen. */
+let ladungZaehler = 0;
+const ladungVon = async (tun) => {
+  const [ladung] = await Promise.all([seite.waitForEvent('download', { timeout: 45000 }), tun()]);
+  const pfad = join(ablage, `ladung-${++ladungZaehler}-${ladung.suggestedFilename()}`);
+  await ladung.saveAs(pfad);
+  return pfad;
+};
 
 try {
   console.log('\nLaden und Darstellen');
@@ -453,6 +474,236 @@ try {
   }));
   pruefe(entsperrt.seiten === 5 && entsperrt.war, 'mit richtigem Kennwort geht die Datei auf', JSON.stringify(entsperrt));
   pruefe(entsperrt.vorschlag, 'die Werkbank bietet an, den Schutz wiederherzustellen');
+
+
+  /* ---------- Formularfelder anlegen ------------------------------------- */
+
+  console.log('\nFormularfelder anlegen');
+  {
+    await ladeBeispiel();
+    const angelegt = await seite.evaluate(async () => {
+      const { fuegeAn } = await import('./app/anmerkungen.js');
+      const z = window.werkbank.zustand;
+      const s1 = z.folge[0].id;
+      const arten = [
+        { feldArt: 'text', name: 'PruefText', y: 700 },
+        { feldArt: 'mehrzeilig', name: 'PruefMehr', y: 640 },
+        { feldArt: 'ankreuz', name: 'PruefHaken', y: 580 },
+        { feldArt: 'auswahl', name: 'PruefWahl', y: 520, optionen: ['A', 'B'] },
+        { feldArt: 'option', name: 'PruefOption', y: 440, optionen: ['Ja', 'Nein'] },
+        { feldArt: 'unterschrift', name: 'PruefSignatur', y: 360 },
+      ];
+      for (const a of arten) fuegeAn({ art: 'feldneu', seiteId: s1, x: 60, y: a.y, b: 200, h: 40, ...a, optionen: a.optionen || [] });
+      return arten.length;
+    });
+    const mitFeldern = await ladungVon(() => seite.evaluate(() => window.werkbank.fuehreAus('sichern')));
+    const lib = await import('../fremd/pdf-lib.mjs');
+    const dok = await lib.PDFDocument.load(new Uint8Array(await readFile(mitFeldern)));
+    const felder = dok.getForm().getFields();
+    const namen = felder.map((f) => f.getName());
+    pruefe(namen.filter((n) => n.startsWith('Pruef')).length === angelegt,
+      `alle ${angelegt} angelegten Feldarten stehen im gesicherten PDF`,
+      namen.filter((n) => n.startsWith('Pruef')).join(', '));
+    const wahl = felder.find((f) => f.getName() === 'PruefWahl');
+    pruefe(wahl instanceof lib.PDFDropdown && wahl.getOptions().join('/') === 'A/B',
+      'die Auswahlliste trägt ihre Möglichkeiten');
+    const option = felder.find((f) => f.getName() === 'PruefOption');
+    pruefe(option instanceof lib.PDFRadioGroup && option.getOptions().length === 2,
+      'das Optionsfeld trägt zwei Möglichkeiten');
+    const mehr = felder.find((f) => f.getName() === 'PruefMehr');
+    pruefe(mehr instanceof lib.PDFTextField && mehr.isMultiline(), 'das mehrzeilige Feld ist mehrzeilig');
+    /* Das Unterschriftsfeld ist kein pdf-lib-Feldtyp; es zählt nur mit. */
+    pruefe(namen.includes('PruefSignatur'), 'auch das Unterschriftsfeld steht im Formular');
+  }
+
+  /* ---------- Excel ------------------------------------------------------- */
+
+  console.log('\nExcel-Ausgabe');
+  {
+    await ladeBeispiel();
+    const tabellen = await seite.evaluate(async () => {
+      const { alsExcel } = await import('./app/excel.js');
+      const e = await alsExcel({ nurTabellen: true });
+      globalThis.__x = e.bytes;
+      return { blaetter: e.blaetter, zeilen: e.zeilen, zellen: e.zellen };
+    });
+    pruefe(tabellen.blaetter === 1 && tabellen.zeilen >= 6,
+      'die Tabelle im Beispiel wird als einziges Blatt erkannt', JSON.stringify(tabellen));
+
+    const rohXlsx = await seite.evaluate(() => [...globalThis.__x]);
+    const xlsx = Buffer.from(rohXlsx);
+    pruefe(xlsx[0] === 0x50 && xlsx[1] === 0x4b, 'die .xlsx ist ein gültiges ZIP');
+
+    /* Ins Archiv sehen: die Pflichtteile und der Inhalt der ersten Zeile. */
+    const { unzipRoh } = await import('./zip-lesen.mjs');
+    const teile = unzipRoh(xlsx);
+    for (const pflicht of ['[Content_Types].xml', '_rels/.rels', 'xl/workbook.xml',
+      'xl/_rels/workbook.xml.rels', 'xl/styles.xml', 'xl/worksheets/sheet1.xml']) {
+      pruefe(teile.has(pflicht), `die .xlsx enthält ${pflicht}`);
+    }
+    const blatt = teile.get('xl/worksheets/sheet1.xml') || '';
+    pruefe(/<t xml:space="preserve">Platz<\/t>/.test(blatt), 'die Kopfzeile der Tabelle steht im Blatt');
+    pruefe(/<c r="A2"><v>1<\/v><\/c>/.test(blatt), 'eine Zahl steht als Zahl, nicht als Text');
+    pruefe(/<t xml:space="preserve">Kamerapreset<\/t>/.test(blatt), 'die vierte Spalte ist erkannt worden');
+
+    const alles = await seite.evaluate(async () => {
+      const { alsExcel } = await import('./app/excel.js');
+      const e = await alsExcel({ nurTabellen: false });
+      return e.blaetter;
+    });
+    pruefe(alles === 5, 'im Rastermodus bekommt jede Seite ein Blatt', String(alles));
+  }
+
+  /* ---------- Barrierefreiheit -------------------------------------------- */
+
+  console.log('\nBarrierefreiheit');
+  {
+    await ladeBeispiel();
+    const befund = await seite.evaluate(async () => {
+      const m = await import('./app/barrierefrei.js');
+      return (await m.pruefe()).map((p) => `${p.stufe}:${p.id}`);
+    });
+    pruefe(befund.includes('fehler:struktur'), 'die fehlende Auszeichnung wird gemeldet');
+    pruefe(befund.includes('fehler:sprache'), 'die fehlende Dokumentsprache wird gemeldet');
+    pruefe(befund.includes('fehler:felder'), 'Formularfelder ohne Beschriftung werden gemeldet');
+    pruefe(befund.includes('fehler:scan'), 'die Seite ohne Text wird gemeldet');
+
+    await seite.evaluate(() => {
+      window.werkbank.zustand.zugang = { sprache: 'de-DE', titel: 'Geprüfter Vertrag', feldbeschriftungen: true };
+    });
+    const zugaenglich = await ladungVon(() => seite.evaluate(() => window.werkbank.fuehreAus('sichern')));
+    const lib = await import('../fremd/pdf-lib.mjs');
+    const dok = await lib.PDFDocument.load(new Uint8Array(await readFile(zugaenglich)));
+    const N = (n) => lib.PDFName.of(n);
+    pruefe(String(dok.catalog.get(N('Lang'))) === '(de-DE)', 'die Dokumentsprache steht im Katalog');
+    const vp = dok.catalog.get(N('ViewerPreferences'));
+    const vpd = vp?.get ? vp : dok.context.lookup(vp);
+    pruefe(String(vpd?.get(N('DisplayDocTitle'))) === 'true', 'der Titel wird statt des Dateinamens angezeigt');
+    pruefe(dok.getTitle() === 'Geprüfter Vertrag', 'der Titel ist gesetzt', String(dok.getTitle()));
+    const felder = dok.getForm().getFields();
+    const mitTU = felder.filter((f) => f.acroField.dict.get(N('TU'))).length;
+    pruefe(mitTU === felder.length && felder.length > 0,
+      `alle ${felder.length} Felder haben eine Beschriftung bekommen`, String(mitTU));
+    await seite.evaluate(() => { window.werkbank.zustand.zugang = null; });
+  }
+
+
+  /* ---------- Digital unterschreiben --------------------------------------- */
+
+  console.log('\nDigital unterschreiben');
+  {
+    /* Ein echtes Zertifikat, von openssl erzeugt — kein forge-eigenes. So
+       prüft der Lauf auch, dass die Werkbank eine .p12 lesen kann, die sie
+       nicht selbst geschrieben hat. Ohne openssl wird der Abschnitt
+       ausgelassen und das ausdrücklich gesagt, statt still zu bestehen. */
+    let p12Pfad = null;
+    let certPfad = null;
+    try {
+      certPfad = join(ablage, 'pruef.crt');
+      const keyPfad = join(ablage, 'pruef.key');
+      p12Pfad = join(ablage, 'pruef.p12');
+      await lauf('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-keyout', keyPfad,
+        '-out', certPfad, '-days', '30', '-nodes',
+        '-subj', '/C=DE/O=Werkbank Pruefung/CN=Prueflauf']);
+      await lauf('openssl', ['pkcs12', '-export', '-out', p12Pfad,
+        '-inkey', keyPfad, '-in', certPfad, '-passout', 'pass:probe']);
+    } catch (fehler) {
+      console.log(`  – ausgelassen: openssl steht nicht bereit (${String(fehler.message).split('\n')[0]})`);
+      p12Pfad = null;
+    }
+
+    if (p12Pfad) {
+      await ladeBeispiel();
+      const p12B64 = (await readFile(p12Pfad)).toString('base64');
+
+      const falsch = await seite.evaluate(async (b64) => {
+        const roh = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        try { await (await import('./app/signieren.js')).oeffneAusweis(roh, 'daneben'); return null; }
+        catch (f) { return f.message; }
+      }, p12B64);
+      pruefe(/Kennwort/i.test(falsch || ''), 'ein falsches Kennwort wird als solches gemeldet', String(falsch));
+
+      const beschreibung = await seite.evaluate(async (b64) => {
+        const roh = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        const a = await (await import('./app/signieren.js')).oeffneAusweis(roh, 'probe');
+        globalThis.__ausweis = a;
+        return a.beschreibung;
+      }, p12B64);
+      pruefe(beschreibung.name === 'Prueflauf' && beschreibung.organisation === 'Werkbank Pruefung',
+        'die Ausweisdatei wird gelesen und der Inhaber genannt', JSON.stringify(beschreibung));
+      pruefe(!beschreibung.abgelaufen && !beschreibung.nochNichtGueltig, 'die Gültigkeit wird geprüft');
+
+      const unterschrieben = await ladungVon(() => seite.evaluate(async () => {
+        const { sichereDokument } = await import('./app/ausgabe.js');
+        await sichereDokument({ dateiname: 'unterschrieben.pdf', signatur: {
+          ausweis: globalThis.__ausweis, grund: 'Prüflauf', ort: 'Hannover', name: 'Prueflauf',
+        } });
+      }));
+
+      const roh = await readFile(unterschrieben);
+      const bereich = /\/ByteRange\s*\[\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*\]/.exec(roh.toString('latin1'));
+      pruefe(!!bereich, 'die unterschriebene Datei trägt einen ByteRange');
+      const [, a1, b1, c1, d1] = bereich.map(Number);
+      pruefe(Number(c1) + Number(d1) === roh.length, 'der ByteRange reicht bis zum Dateiende',
+        `${c1}+${d1} vs ${roh.length}`);
+
+      const inhalt = /\/Contents\s*<([0-9A-Fa-f]+)>/.exec(roh.toString('latin1'));
+      pruefe(Number(b1) === inhalt.index + '/Contents <'.length - 1
+        || roh.toString('latin1').indexOf('<', inhalt.index) === Number(b1),
+        'die Lücke im ByteRange deckt genau den Platz der Signatur');
+
+      /* Der eigentliche Beweis: openssl rechnet die Signatur nach. */
+      const derVoll = Buffer.from(inhalt[1], 'hex');
+      const derLaenge = derVoll[1] < 0x80
+        ? 2 + derVoll[1]
+        : 2 + (derVoll[1] & 0x7f) + derVoll.readUIntBE(2, derVoll[1] & 0x7f);
+      const derPfad = join(ablage, 'signatur.der');
+      const inhaltPfad = join(ablage, 'signiert.bin');
+      const { writeFile } = await import('node:fs/promises');
+      await writeFile(derPfad, derVoll.subarray(0, derLaenge));
+      await writeFile(inhaltPfad, Buffer.concat([
+        roh.subarray(Number(a1), Number(a1) + Number(b1)),
+        roh.subarray(Number(c1), Number(c1) + Number(d1)),
+      ]));
+
+      const pruefeMitOpenssl = async (datei) => {
+        try {
+          await lauf('openssl', ['cms', '-verify', '-binary', '-inform', 'DER', '-in', derPfad,
+            '-content', datei, '-certfile', certPfad, '-noverify', '-out', '/dev/null']);
+          return true;
+        } catch { return false; }
+      };
+      pruefe(await pruefeMitOpenssl(inhaltPfad), 'openssl bestätigt die Signatur');
+
+      /* Und die Gegenprobe: ein geändertes Byte muss sie brechen. */
+      const manipuliert = Buffer.from(await readFile(inhaltPfad));
+      manipuliert[Math.floor(manipuliert.length / 2)] ^= 0xff;
+      const manipuliertPfad = join(ablage, 'manipuliert.bin');
+      await writeFile(manipuliertPfad, manipuliert);
+      pruefe(!(await pruefeMitOpenssl(manipuliertPfad)), 'ein geändertes Byte bricht die Signatur');
+
+      /* PAdES verlangt das Attribut, das die Signatur an dieses Zertifikat bindet. */
+      const { stdout: attribute } = await lauf('openssl', ['cms', '-cmsout', '-inform', 'DER', '-in', derPfad, '-print']);
+      pruefe(/signingCertificateV2/.test(attribute), 'das von PAdES verlangte signingCertificateV2 ist dabei');
+      pruefe(/signingTime/.test(attribute) && /messageDigest/.test(attribute),
+        'Signierzeit und Inhaltshash stehen als signierte Attribute drin');
+
+      const unterschrift = roh.toString('latin1');
+      pruefe(/\/SubFilter\s*\/ETSI\.CAdES\.detached/.test(unterschrift), 'das Feld ist als PAdES gekennzeichnet');
+      pruefe(/\/Reason\s*\(Pr/.test(unterschrift), 'der angegebene Grund steht in der Datei');
+
+      /* Unterschreiben und Verschlüsseln zusammen muss abgelehnt werden. */
+      const abgelehnt = await seite.evaluate(async () => {
+        const { baueDokument } = await import('./app/ausgabe.js');
+        try {
+          await baueDokument({ signatur: { ausweis: globalThis.__ausweis }, schutz: { benutzer: 'geheim' } });
+          return null;
+        } catch (f) { return f.message; }
+      });
+      pruefe(/Unterschreiben und Kennwortschutz/.test(abgelehnt || ''),
+        'Unterschreiben und Kennwortschutz zusammen wird abgelehnt statt still gebrochen', String(abgelehnt));
+    }
+  }
 
   console.log(`\nKonsolenfehler: ${fehler.length}`);
   pruefe(fehler.length === 0, 'kein Fehler in der Browserkonsole', fehler.slice(0, 3).join(' | '));

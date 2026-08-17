@@ -15,8 +15,9 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <span class="marke">Werkzeug für PDF</span>
         <h1>Ihre Dateien bleiben,<br>wo sie hingehören.</h1>
         <p class="these">
-          Lesen, kommentieren, schwärzen, Formulare ausfüllen, unterschreiben,
-          Text erkennen, nach Word ausgeben, mit Kennwort schützen.
+          Lesen, kommentieren, schwärzen, Formulare ausfüllen und anlegen, mit
+          Zertifikat unterschreiben, Text erkennen, nach Word und Excel
+          ausgeben, mit Kennwort schützen.
           <strong>Alles im Browser, alles auf diesem Gerät.</strong>
           Kein Konto, kein Upload, keine Verbindung nach draußen — auch nicht
           für die Texterkennung und nicht für die Verschlüsselung.
@@ -36,7 +37,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         </div>
       </div>
 
-      <div class="leiste" role="img" aria-label="Werkzeugleiste der Werkbank mit fünfzehn Werkzeugen">
+      <div class="leiste" role="img" aria-label="Werkzeugleiste der Werkbank mit sechzehn Werkzeugen">
         <div class="leiste-kopf">
           <i class="ampel"></i><i class="ampel"></i><i class="ampel"></i>
           <span class="leiste-titel">Vertragsentwurf.pdf — 5 Seiten</span>
@@ -57,6 +58,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M3 18c3 0 5-12 8-12s2 9 4 9 2-3 6-3"/></svg>Unterschrift<kbd>G</kbd></div>
           <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M5 20h14M7 16h10V9l-3-5H10L7 9z"/></svg>Stempel<kbd>Z</kbd></div>
           <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/></svg>Bereich<kbd>M</kbd></div>
+          <div class="werkzeug hebt"><svg viewBox="0 0 24 24"><path d="M3 7h18v10H3zM7 10h6"/></svg>Formularfeld<kbd>K</kbd></div>
         </div>
       </div>
     </div>
@@ -128,6 +130,26 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         als <span class="mono">.docx</span> zum Weiterschreiben.</p>
       </div>
       <div class="eintrag">
+        <h3>Digital unterschreiben</h3>
+        <p>Mit Zertifikat aus einer <span class="mono">.p12</span>, nicht als Bild.
+        Wird die Datei danach geändert, meldet das jeder Betrachter.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Formulare anlegen</h3>
+        <p>Rahmen ziehen, Art wählen: Text, mehrzeilig, Ankreuz, Auswahl,
+        Option, Unterschriftsfeld.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Nach Excel</h3>
+        <p>Tabellen werden erkannt und als <span class="mono">.xlsx</span>
+        ausgegeben — ein Blatt je Seite, Zahlen als Zahlen.</p>
+      </div>
+      <div class="eintrag">
+        <h3>Barrierefreiheit</h3>
+        <p>Prüfung mit Begründung. Sprache, Titel und Feldbeschriftungen setzt
+        die Werkbank; auszeichnen tut sie nicht — das wäre geraten.</p>
+      </div>
+      <div class="eintrag">
         <h3>Schützen und verkleinern</h3>
         <p>Kennwort mit AES-256, Rechte für Drucken, Ändern und Kopieren.
         Verkleinern mit Vorher-Nachher. Reparieren und Vergleichen.</p>
@@ -175,12 +197,12 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           <tr><th scope="col">Acrobat</th><th scope="col">Werkbank</th><th scope="col">Anmerkung</th></tr>
         </thead>
         <tbody>
-          <tr><td>PDF exportieren</td><td class="stand ja">ja</td><td class="grund">PDF, Word, Text, PNG</td></tr>
+          <tr><td>PDF exportieren</td><td class="stand ja">ja</td><td class="grund">PDF, Word, Excel, Text, PNG</td></tr>
           <tr><td>Ausfüllen und Signieren</td><td class="stand ja">ja</td><td class="grund">Felder und sichtbare Unterschrift</td></tr>
           <tr><td>PDF bearbeiten</td><td class="stand teil">teilweise</td><td class="grund">Text bearbeiten ja, Bilder im PDF nein</td></tr>
           <tr><td>PDF erstellen</td><td class="stand teil">teilweise</td><td class="grund">aus Bildern ja, aus Word nein</td></tr>
           <tr><td>Dateien zusammenführen</td><td class="stand ja">ja</td><td class="grund"></td></tr>
-          <tr><td>Seiten verwalten</td><td class="stand ja">ja</td><td class="grund">sortieren, drehen, löschen, teilen</td></tr>
+          <tr><td>Seiten verwalten</td><td class="stand ja">ja</td><td class="grund">eigene Ordnen-Ansicht: sortieren, drehen, löschen, teilen</td></tr>
           <tr><td>Scan &amp; OCR</td><td class="stand teil">teilweise</td><td class="grund">Erkennung ja, Scangerät nein</td></tr>
           <tr><td>PDF-Datei schützen</td><td class="stand ja">ja</td><td class="grund">AES-256, Rechte</td></tr>
           <tr><td>PDF-Datei schwärzen</td><td class="stand ja">ja</td><td class="grund">mit Rasterung</td></tr>
@@ -192,9 +214,9 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           <tr><td>Suchindex hinzufügen</td><td class="stand teil">teilweise</td><td class="grund">im Dokument ja, über Ordner nein</td></tr>
           <tr><td>Geführte Aktionen</td><td class="stand teil">teilweise</td><td class="grund">Befehlspalette statt Stapelbetrieb</td></tr>
           <tr><td>Benutzerdefiniertes Tool</td><td class="stand teil">teilweise</td><td class="grund">jede Fähigkeit ist ein Befehl</td></tr>
-          <tr><td>Formular vorbereiten</td><td class="stand nein">nein</td><td class="grund">echte Lücke, baubar</td></tr>
-          <tr><td>Ein Zertifikat verwenden</td><td class="stand nein">nein</td><td class="grund">echte Lücke, der nächste große Schritt</td></tr>
-          <tr><td>Barrierefreiheit vorbereiten</td><td class="stand nein">nein</td><td class="grund">echte Lücke, baubar</td></tr>
+          <tr><td>Formular vorbereiten</td><td class="stand ja">ja</td><td class="grund">sechs Feldarten, Rahmen ziehen</td></tr>
+          <tr><td>Ein Zertifikat verwenden</td><td class="stand ja">ja</td><td class="grund">PAdES-B-B aus einer .p12; ohne Zeitstempeldienst</td></tr>
+          <tr><td>Barrierefreiheit vorbereiten</td><td class="stand teil">teilweise</td><td class="grund">Prüfung, Sprache, Titel, Feldbeschriftungen; auszeichnen nein</td></tr>
           <tr><td>E-Signaturen anfordern</td><td class="stand nein">nein</td><td class="grund">braucht einen Server</td></tr>
           <tr><td>Zum Kommentieren senden</td><td class="stand nein">nein</td><td class="grund">braucht einen Server</td></tr>
           <tr><td>Diese PDF-Datei übersetzen</td><td class="stand nein">nein</td><td class="grund">braucht einen Dienst</td></tr>
@@ -261,9 +283,11 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <div class="zeile"><i>✓</i> gesicherter Scan trägt unsichtbaren, auslesbaren Text <em>Datei geprüft</em></div>
         <div class="zeile"><i>✓</i> geschützte Datei ohne Kennwort verschlossen, mit Kennwort offen <em>Datei geprüft</em></div>
         <div class="zeile"><i>✓</i> Formularwert und Stempel stehen in der Ausgabe <em>Datei geprüft</em></div>
-        <div class="zeile"><i>✓</i> Word-Datei: Pflichtteile, Absätze, Überschriften, Sonderzeichen <em>Datei geprüft</em></div>
+        <div class="zeile"><i>✓</i> Word- und Excel-Datei: Pflichtteile, Absätze, erkannte Tabelle, Zahlen als Zahlen <em>Datei geprüft</em></div>
+        <div class="zeile"><i>✓</i> alle sechs Formularfeldarten stehen im gesicherten PDF <em>Datei geprüft</em></div>
+        <div class="zeile"><i>✓</i> openssl bestätigt die Unterschrift; ein geändertes Byte bricht sie <em>Datei geprüft</em></div>
         <div class="zeile"><i>✓</i> jedes Werkzeug, jeder Dialog, Tastatur und Zwischenablage <em>Bedienung geprüft</em></div>
-        <div class="zeile"><i>✓</i> 113 Prüfungen, keine offen <em>Stand heute</em></div>
+        <div class="zeile"><i>✓</i> 165 Prüfungen, keine offen <em>Stand heute</em></div>
       </div>
     </div>
   </section>
@@ -294,7 +318,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       </div>
       <div>
         <h3>Stand</h3>
-        <p class="leise">113 Prüfungen, alle bestanden. Änderungen laufen offen im Repository.</p>
+        <p class="leise">165 Prüfungen, alle bestanden. Änderungen laufen offen im Repository.</p>
       </div>
     </div>
   </section>

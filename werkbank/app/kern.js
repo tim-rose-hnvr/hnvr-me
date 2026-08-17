@@ -38,6 +38,8 @@ export const zustand = {
   gewaehlteAnmerkung: null,
   geaendert: false,
   gliederung: null,
+  /** Barrierefreiheit: was beim naechsten Sichern gesetzt wird */
+  zugang: null,
   eigenschaften: null,
   /** Merkfähigkeit des Assistenten */
   gedaechtnis: {

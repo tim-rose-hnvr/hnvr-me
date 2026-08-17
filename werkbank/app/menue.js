@@ -20,7 +20,7 @@ const MENUES = [
     'datei:oeffnen', 'datei:anhaengen', 'bilder:zuPdf', T,
     'sichern', 'sichern:als', 'sichern:einbrennen', T,
     'seiten:ausgeben', 'teilen', T,
-    'word:ausgeben', 'text:ausgeben', 'bild:ausgeben', T,
+    'word:ausgeben', 'excel:ausgeben', 'text:ausgeben', 'bild:ausgeben', T,
     'drucken', T,
     'verkleinern', 'reparieren', 'linearisieren', T,
     'vergleich', 'eigenschaften',
@@ -47,7 +47,7 @@ const MENUES = [
     'werkzeug:auswahl', T,
     'werkzeug:hervor', 'werkzeug:unterstrich', 'werkzeug:durchstrich', 'werkzeug:notiz', T,
     'werkzeug:freihand', 'werkzeug:text', 'werkzeug:rechteck', 'werkzeug:ellipse', 'werkzeug:pfeil', T,
-    'werkzeug:ersetzen', 'werkzeug:schwaerzen', T,
+    'werkzeug:ersetzen', 'werkzeug:schwaerzen', 'werkzeug:feld', T,
     'werkzeug:unterschrift', 'unterschrift:anlegen', 'werkzeug:stempel', 'werkzeug:bereich', T,
     'suche:treffer-hervorheben',
   ]],
@@ -57,8 +57,8 @@ const MENUES = [
     'springe:unterschrift', 'muster:zeigen', 'formular:naechstes', T,
     'palette',
   ]],
-  ['Schutz', ['schutz:setzen', 'schutz:entfernen', 'schutz:zeigen']],
-  ['Hilfe', ['hilfe']],
+  ['Schutz', ['signieren', T, 'schutz:setzen', 'schutz:entfernen', 'schutz:zeigen']],
+  ['Hilfe', ['barrierefrei', T, 'hilfe']],
 ];
 
 /* Befehle, die auch ohne geöffnetes Dokument etwas tun. Alle übrigen werden

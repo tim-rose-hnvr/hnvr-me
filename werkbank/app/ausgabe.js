@@ -13,6 +13,8 @@
 
 import { zustand, farbeZuAnteilen, sage, sichereBytes, fremdWeg } from './kern.js';
 import { quelleVon, holeSeite } from './dokument.js';
+import { setzeZugaenglichkeit } from './barrierefrei.js';
+import { legePlatzhalterAn, fuelleSignatur } from './signieren.js';
 
 let pdflib = null;
 export async function starteSchreiber() {
@@ -81,15 +83,39 @@ export async function baueDokument(optionen = {}) {
   }
 
   await schreibeErkanntenText(ziel, folge, versatzKarte);
+  /* Vor den Anmerkungen: die neuen Felder sollen unter den gezeichneten
+     Sachen liegen, nicht darüber. */
+  await legeNeueFelderAn(ziel, folge, versatzKarte);
   await maleAnmerkungen(ziel, folge, versatzKarte);
   ziel.setProducer('Werkbank');
   ziel.setModificationDate(new Date());
+
+  if (zustand.zugang) {
+    const gesetzt = setzeZugaenglichkeit(ziel, pdflib, zustand.zugang);
+    if (gesetzt.length) sage(`Für die Barrierefreiheit gesetzt: ${gesetzt.join(', ')}`, { dauer: 6000 });
+  }
   if (optionen.metadatenEntfernen) {
     ziel.setAuthor('');
     ziel.setCreator('');
     ziel.setSubject('');
     ziel.setKeywords([]);
     try { ziel.catalog.delete(pdflib.PDFName.of('Metadata')); } catch { /* nicht vorhanden */ }
+  }
+
+  /* Unterschreiben und Verschlüsseln schließen einander aus: qpdf schreibt
+     die Datei neu, und danach passt kein Hashwert mehr. Lieber jetzt sagen
+     als hinterher eine Datei mit kaputter Unterschrift abliefern. */
+  if (optionen.signatur && (optionen.schutz?.benutzer || optionen.schutz?.besitzer)) {
+    throw new Error('Unterschreiben und Kennwortschutz gehen nicht zusammen: '
+      + 'die Verschlüsselung schreibt die Datei neu und bricht die Unterschrift.');
+  }
+
+  if (optionen.signatur) {
+    legePlatzhalterAn(ziel, pdflib, optionen.signatur);
+    /* Ohne Objektströme: der Platzhalter muss in den fertigen Bytes im
+       Klartext auffindbar bleiben. */
+    const roh = await ziel.save({ useObjectStreams: false });
+    return await fuelleSignatur(roh, optionen.signatur.ausweis);
   }
 
   let bytes = await ziel.save({ useObjectStreams: true });
@@ -154,6 +180,118 @@ function nurWinAnsi(text) {
 }
 
 /* ---------- Formularwerte -------------------------------------------------- */
+
+/* Neue Formularfelder anlegen — Acrobats „Formular vorbereiten".
+
+   Die Felder entstehen erst hier, nicht beim Zeichnen: erst beim Sichern ist
+   klar, auf welcher Seite des Ausgabedokuments der Rahmen landet und wie weit
+   sie verschoben wurde. Gerasterte Seiten (Schwärzung) bekommen keine Felder —
+   ein Eingabefeld über einer Schwärzung wäre ein Widerspruch in sich. */
+async function legeNeueFelderAn(ziel, folge, versatzKarte) {
+  const neue = zustand.anmerkungen.filter((a) => a.art === 'feldneu');
+  if (!neue.length) return 0;
+
+  let formular;
+  try { formular = ziel.getForm(); } catch (fehler) {
+    console.warn('Kein Formular im Ausgabedokument:', fehler?.message);
+    return 0;
+  }
+
+  const schon = new Set(formular.getFields().map((f) => f.getName()));
+  let gelegt = 0;
+
+  for (const eintrag of folge) {
+    const ziel_ = versatzKarte.get(eintrag.id);
+    if (!ziel_) continue;
+    const { seite, versatz } = ziel_;
+    const vx = -versatz.x, vy = -versatz.y;
+
+    for (const a of neue.filter((x) => x.seiteId === eintrag.id)) {
+      if (GESCHWAERZT(eintrag.id)) {
+        sage(`„${a.name}" wurde nicht angelegt: die Seite wird geschwärzt und dabei zum Bild`, { art: 'warn' });
+        continue;
+      }
+      if (schon.has(a.name)) {
+        sage(`„${a.name}" gibt es im Dokument schon — Feld übersprungen`, { art: 'warn' });
+        continue;
+      }
+      const lage = { x: a.x + vx, y: a.y + vy, width: a.b, height: a.h };
+      try {
+        if (a.feldArt === 'ankreuz') {
+          const feld = formular.createCheckBox(a.name);
+          feld.addToPage(seite, lage);
+          if (a.pflicht) feld.enableRequired();
+        } else if (a.feldArt === 'auswahl') {
+          const feld = formular.createDropdown(a.name);
+          feld.addOptions(a.optionen);
+          feld.addToPage(seite, lage);
+          if (a.pflicht) feld.enableRequired();
+        } else if (a.feldArt === 'option') {
+          const feld = formular.createRadioGroup(a.name);
+          /* Jede Möglichkeit bekommt ein eigenes Kästchen, untereinander im
+             gezogenen Rahmen — sonst lägen alle übereinander. */
+          const hoehe = a.h / a.optionen.length;
+          a.optionen.forEach((wahl, i) => {
+            feld.addOptionToPage(wahl, seite, {
+              x: lage.x, y: lage.y + a.h - hoehe * (i + 1),
+              width: Math.min(hoehe, a.b), height: hoehe,
+            });
+          });
+          if (a.pflicht) feld.enableRequired();
+        } else if (a.feldArt === 'unterschrift') {
+          legeUnterschriftsfeldAn(ziel, seite, a, vx, vy);
+        } else {
+          const feld = formular.createTextField(a.name);
+          if (a.feldArt === 'mehrzeilig') feld.enableMultiline();
+          feld.addToPage(seite, lage);
+          if (a.pflicht) feld.enableRequired();
+        }
+        schon.add(a.name);
+        gelegt += 1;
+      } catch (fehler) {
+        console.warn(`Feld "${a.name}" ließ sich nicht anlegen:`, fehler?.message);
+        sage(`„${a.name}" ließ sich nicht anlegen`, { art: 'warn' });
+      }
+    }
+  }
+  return gelegt;
+}
+
+/* pdf-lib kennt keine Unterschriftsfelder. Das Widget wird deshalb von Hand
+   gebaut — dieselben Bausteine wie im Beispielerzeuger, damit ein Betrachter
+   es als Unterschriftsstelle erkennt. */
+function legeUnterschriftsfeldAn(ziel, seite, a, vx, vy) {
+  const { PDFName, PDFNumber, PDFString, PDFArray, PDFDict } = pdflib;
+  const kontext = ziel.context;
+
+  const widget = kontext.obj({
+    Type: 'Annot', Subtype: 'Widget', FT: 'Sig',
+    T: PDFString.of(a.name),
+    F: PDFNumber.of(4),   // sichtbar beim Drucken
+    Rect: [a.x + vx, a.y + vy, a.x + vx + a.b, a.y + vy + a.h],
+    P: seite.ref,
+  });
+  const ref = kontext.register(widget);
+
+  let annots = seite.node.get(PDFName.of('Annots'));
+  if (!annots) { annots = PDFArray.withContext(kontext); seite.node.set(PDFName.of('Annots'), annots); }
+  annots.push(ref);
+
+  const katalog = ziel.catalog;
+  let acro = katalog.get(PDFName.of('AcroForm'));
+  if (!acro) {
+    acro = PDFDict.withContext(kontext);
+    acro.set(PDFName.of('Fields'), PDFArray.withContext(kontext));
+    katalog.set(PDFName.of('AcroForm'), acro);
+  }
+  const acroDict = acro instanceof PDFDict ? acro : kontext.lookup(acro, PDFDict);
+  let felder = acroDict.get(PDFName.of('Fields'));
+  if (!felder) { felder = PDFArray.withContext(kontext); acroDict.set(PDFName.of('Fields'), felder); }
+  const felderArray = felder instanceof PDFArray ? felder : kontext.lookup(felder, PDFArray);
+  felderArray.push(ref);
+  /* Ohne SigFlags halten manche Betrachter das Feld für ein leeres Widget. */
+  acroDict.set(PDFName.of('SigFlags'), PDFNumber.of(3));
+}
 
 async function schreibeFormular(dokument, { einbrennen = false } = {}) {
   if (!zustand.formularfelder.length) return;
@@ -451,6 +589,11 @@ export async function verkleinere({ dichte = 110, guete = 0.72 } = {}) {
   await maleAnmerkungen(ziel, zustand.folge, versatzKarte);
   ziel.setProducer('Werkbank');
   ziel.setModificationDate(new Date());
+
+  if (zustand.zugang) {
+    const gesetzt = setzeZugaenglichkeit(ziel, pdflib, zustand.zugang);
+    if (gesetzt.length) sage(`Für die Barrierefreiheit gesetzt: ${gesetzt.join(', ')}`, { dauer: 6000 });
+  }
   return ziel.save({ useObjectStreams: true });
 }
 

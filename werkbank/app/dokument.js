@@ -233,6 +233,10 @@ export async function ermittleFormularfelder() {
         optionen: (a.options || []).map((o) => ({ wert: o.exportValue ?? o.displayValue, text: o.displayValue ?? o.exportValue })),
         wert: a.fieldValue ?? '',
         anWert: a.exportValue || 'Yes',
+        /* /TU — der zugängliche Name des Feldes. Eine Sprachausgabe liest
+           ihn statt „Textfeld". Fehlt er, meldet das die Barrierefreiheits-
+           prüfung. */
+        beschriftung: a.alternativeText || '',
         mehrzeilig: !!a.multiLine,
         nurLesen: !!a.readOnly,
         pflicht: !!a.required,

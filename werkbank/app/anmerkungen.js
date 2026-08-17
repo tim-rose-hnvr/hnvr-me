@@ -24,12 +24,24 @@ export const WERKZEUGE = [
   { id: 'unterschrift', name: 'Unterschrift',  kuerzel: 'G', zeichen: 'M3 18c3 0 5-12 8-12s2 9 4 9 2-3 6-3' },
   { id: 'stempel',      name: 'Stempel',       kuerzel: 'Z', zeichen: 'M5 20h14M7 16h10V9l-3-5H10L7 9z' },
   { id: 'bereich',      name: 'Bereich kopieren', kuerzel: 'M', zeichen: 'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4' },
+  { id: 'feld',         name: 'Formularfeld anlegen', kuerzel: 'K', zeichen: 'M3 7h18v10H3zM7 10h6' },
 ];
+
+/* Die Feldarten, die pdf-lib schreiben kann. Ein Unterschriftsfeld wird
+   angelegt, aber nicht ausgefüllt — dafür braucht es ein Zertifikat. */
+export const FELDARTEN = {
+  text: 'Textfeld',
+  mehrzeilig: 'Mehrzeiliges Textfeld',
+  ankreuz: 'Ankreuzfeld',
+  auswahl: 'Auswahlliste',
+  option: 'Optionsfeld',
+  unterschrift: 'Unterschriftsfeld',
+};
 
 export const FARBEN = ['#FFD400', '#67E667', '#7FD3FF', '#FF9BD2', '#FF6B4A', '#A82E23', '#1B6AC9', '#111111'];
 
 const TEXTWERKZEUGE = new Set(['hervor', 'unterstrich', 'durchstrich']);
-const ZIEHWERKZEUGE = new Set(['rechteck', 'ellipse', 'pfeil', 'schwaerzen', 'unterschrift', 'bereich']);
+const ZIEHWERKZEUGE = new Set(['rechteck', 'ellipse', 'pfeil', 'schwaerzen', 'unterschrift', 'bereich', 'feld']);
 
 let entwurf = null;   // laufende Zeichnung { art, seiteId, punkte/rechteck, knoten }
 let letzteUnterschrift = null;
@@ -198,6 +210,27 @@ export function zeichneAnmerkungen(ebene, eintrag, sicht) {
       continue;
     }
 
+    if (a.art === 'feldneu') {
+      /* Der Platzhalter für ein noch nicht geschriebenes Feld. Er sieht
+         bewusst nicht wie ein echtes Feld aus — sonst tippt jemand hinein
+         und wundert sich, dass nichts ankommt. Das Feld entsteht erst beim
+         Sichern; bis dahin steht hier nur, was entstehen wird. */
+      const [x1, y1] = zuBild(a.x, a.y + a.h);
+      const [x2, y2] = zuBild(a.x + a.b, a.y);
+      const kasten = el('div', {
+        klasse: 'anmerkung-griff feld-entwurf', daten: { anmerkung: a.id },
+        title: `${FELDARTEN[a.feldArt] || a.feldArt}: ${a.name}`,
+        stil: {
+          position: 'absolute', left: `${Math.min(x1, x2)}px`, top: `${Math.min(y1, y2)}px`,
+          width: `${Math.abs(x2 - x1)}px`, height: `${Math.abs(y2 - y1)}px`,
+          pointerEvents: 'auto', cursor: 'move',
+          outline: gewaehlt ? '2px dashed var(--tally)' : '',
+        },
+      }, el('span', { text: a.name }));
+      ebene.append(kasten);
+      continue;
+    }
+
     if (a.art === 'unterschrift') {
       const [x1, y1] = zuBild(a.x, a.y + a.h);
       const [x2, y2] = zuBild(a.x + a.b, a.y);
@@ -355,6 +388,16 @@ export function starteWerkzeuge(spur, zuPdfPunkt) {
     if (e.art === 'bereich') {
       // Kein Eintrag im Dokument: der Bereich wird nur abgelichtet.
       melde('bereich:aufgenommen', {
+        seiteId: e.seiteId,
+        x: Math.min(e.x, e.x2), y: Math.min(e.y, e.y2), b: breite, h: hoehe,
+      });
+      melde('anmerkungen:geaendert');
+      return;
+    }
+    if (e.art === 'feld') {
+      /* Erst der Rahmen, dann die Frage nach Art und Namen — das Feld
+         entsteht im Dialog, nicht schon beim Loslassen der Maus. */
+      melde('anmerkung:neuesFeld', {
         seiteId: e.seiteId,
         x: Math.min(e.x, e.x2), y: Math.min(e.y, e.y2), b: breite, h: hoehe,
       });

@@ -18,12 +18,22 @@ Nachladen zur Laufzeit (Leitprinzip 2 der Projektanweisung).
 | `sprachen/deu.traineddata.gz` | `tessdata_fast` (deu) | 4.0.0 | Apache-2.0 |
 | `sprachen/eng.traineddata.gz` | `tessdata_fast` (eng) | 4.0.0 | Apache-2.0 |
 | `qpdf.wasm`, `qpdf.js`, `qpdf.mjs`, `browser.js` | `@jspawn/qpdf-wasm` | 0.0.2 | Apache-2.0 |
+| `forge.mjs` | `node-forge/dist/forge.min.js` | 1.4.0 | BSD-3-Clause (oder GPL-2.0) |
 
 Arbeitsteilung: `pdf.js` liest und zeichnet, `pdf-lib` schreibt, `tesseract.js`
 erkennt Text in Bildern, `qpdf` verschlüsselt, entschlüsselt, repariert und
-linearisiert. Keines der vier kann die Aufgabe eines anderen übernehmen.
+linearisiert, `node-forge` liest PKCS#12-Ausweisdateien und rechnet die
+Signatur. Keines der fünf kann die Aufgabe eines anderen übernehmen.
 
-Zusammen rund 14 MB. Das ist der Preis dafür, dass die Werkbank ohne Netz
+`forge.mjs` ist das unveränderte `dist/forge.min.js`, nur in ein ES-Modul
+gewickelt (die Werkbank lädt ausschließlich ES-Module, das Bündel ist UMD).
+Gebraucht wird es an genau einer Stelle: `app/signieren.js`. Eine `.p12` zu
+öffnen heißt, ASN.1 zu lesen und mit 3DES oder AES zu entschlüsseln — die
+Web-Crypto-Schnittstelle des Browsers kann kein 3DES, und eigene Kryptografie
+ist in diesem Projekt ausgeschlossen. Die CMS-Struktur baut `app/signieren.js`
+selbst zusammen; das ist Kodierung nach RFC 5652, keine Kryptografie.
+
+Zusammen rund 12 MB. Das ist der Preis dafür, dass die Werkbank ohne Netz
 arbeitet — Texterkennung und Verschlüsselung sind sonst genau die Stellen, an
 denen andere Anbieter die Datei auf einen fremden Server laden.
 
@@ -66,6 +76,8 @@ cp node_modules/tesseract.js-core/tesseract-core-simd-lstm.{js,wasm}  werkbank/f
 #   gzip -9 -c deu.traineddata > werkbank/fremd/sprachen/deu.traineddata.gz
 #   gzip -9 -c eng.traineddata > werkbank/fremd/sprachen/eng.traineddata.gz
 cp node_modules/@jspawn/qpdf-wasm/{qpdf.wasm,qpdf.js,qpdf.mjs,browser.js} werkbank/fremd/
+# node-forge: UMD in ein ES-Modul wickeln (Kopf mit module/exports, Fuss mit export default)
+#   siehe Kopfkommentar in werkbank/fremd/forge.mjs
 node werkbank/werkzeuge/pruefen.mjs                  # danach den Prüflauf fahren
 ```
 

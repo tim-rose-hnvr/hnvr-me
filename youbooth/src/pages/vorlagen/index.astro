@@ -1,0 +1,415 @@
+---
+import Marketing from '../../layouts/Marketing.astro';
+import Vorlagenblatt from '../../components/Vorlagenblatt.astro';
+import { vorlagen, anlaesseDerVorlagen, formate, bibliothek } from '../../daten/vorlagen';
+
+/**
+ * Vorlagen-Galerie. Anlass und Format kombinieren sich mit UND.
+ * Alle sechzehn Beispiele stehen im Markup, gefiltert wird im Browser.
+ */
+
+const kennzahlen = [
+  `${bibliothek.gesamt} Designs in der Bibliothek`,
+  `${vorlagen.length} Beispiele hier`,
+  '4 Formate je Design',
+  'Eigene Layouts auf Zuruf',
+];
+---
+
+<Marketing
+  titel="Vorlagen-Galerie"
+  beschreibung="Kein Store, keine Einzelkäufe: jedes Design gehört zur Lizenz und kommt als Set — Fotoformat, Streifen, 4er-Raster und Screen-Variante."
+>
+  <section class="hero">
+    <span class="mono mono--amber">Vorlagen-Galerie · alles inklusive</span>
+    <h1>Aufwendige Designs, ohne Aufpreis</h1>
+    <p class="fliess">
+      Kein Store, keine Einzelkäufe: jedes Design gehört zur Lizenz und kommt als Set — Fotoformat,
+      Streifen, 4er-Raster und Screen-Variante. Filter unten klicken, Kombination sofort sehen.
+    </p>
+    <div class="zahlenzeile">
+      {kennzahlen.map((k) => <span class="mono mono--hell">{k}</span>)}
+    </div>
+  </section>
+
+  <div class="galerie">
+    <div class="filter">
+      <button class="chip on" type="button" data-anlass="alle" aria-pressed="true">
+        Alle Anlässe
+      </button>
+      {
+        anlaesseDerVorlagen.map((a) => (
+          <button class="chip" type="button" data-anlass={a} aria-pressed="false">
+            {a}
+          </button>
+        ))
+      }
+
+      <span class="trenner" aria-hidden="true"></span>
+
+      <button class="chip on" type="button" data-format="alle" aria-pressed="true">
+        Alle Formate
+      </button>
+      {
+        formate.map((f) => (
+          <button class="chip" type="button" data-format={f} aria-pressed="false">
+            {f}
+          </button>
+        ))
+      }
+
+      <span class="filter__rechts">
+        <span class="mono" data-feld="treffer" role="status">
+          {vorlagen.length} von {vorlagen.length} Beispielen · Bibliothek {bibliothek.gesamt}
+        </span>
+        <button class="chip" type="button" data-feld="zuruecksetzen">Zurücksetzen</button>
+      </span>
+    </div>
+
+    <div class="inhalt">
+      <article class="leerkarte" data-feld="leer" hidden>
+        <span class="mono">Kein Treffer</span>
+        <h2 class="frei">Nichts in dieser Kombination</h2>
+        <span class="leerkarte__text">
+          Wir bauen Layouts auch auf Zuruf — schickt Farben, Schrift und Logo, alle vier Formate
+          kommen zurück.
+        </span>
+        <a class="pfeil pfeil--klein" href="/kontakt">Layout anfragen →</a>
+      </article>
+
+      <div class="raster">
+        {
+          vorlagen.map((v, i) => (
+            <article
+              class="vorlage"
+              data-vorlage
+              data-anlass-wert={v.anlass}
+              data-formate={v.formate.join('|')}
+              style={`--verzug:${(Math.min(i, 12) * 0.04).toFixed(2)}s`}
+            >
+              <Vorlagenblatt vorlage={v} />
+              <div class="vorlage__fuss">
+                <span class="vorlage__name">{v.name}</span>
+                <span class="mono">
+                  {v.anlass} · {v.merkmal}
+                </span>
+                <div class="marken">
+                  <span class="marke marke--inklusive">Inklusive</span>
+                  {v.formate.map((f) => (
+                    <span class="marke">{f}</span>
+                  ))}
+                </div>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <section class="abschnitt abschnitt--dunkel">
+    <h2>Sammlungen nach Anlass</h2>
+    <p class="fliess">
+      Zahlen beziehen sich auf die vollständige Bibliothek im Konto — oben seht ihr
+      {vorlagen.length} Beispiele daraus.
+    </p>
+    <div class="raster raster--schmal">
+      {
+        bibliothek.sammlungen.map((s) => (
+          <article class="sammlung">
+            <span class="sammlung__titel">{s.titel}</span>
+            <span class="sammlung__text">{s.text}</span>
+          </article>
+        ))
+      }
+      <article class="sammlung sammlung--wunsch">
+        <span class="mono mono--amber">Auf Wunsch</span>
+        <span class="sammlung__titel">Euer eigenes Layout</span>
+        <span class="sammlung__text">Ebenfalls ohne Aufpreis, Lieferung in zwei Werktagen.</span>
+        <a class="knopf knopf--rahmen-hell knopf--flach" href="/kontakt">Anfragen</a>
+      </article>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 52px var(--rand) 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4.2vw, 56px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 640px;
+  }
+
+  .zahlenzeile {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .zahlenzeile .mono {
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    color: rgba(244, 242, 238, 0.45);
+  }
+
+  .filter {
+    padding: 24px var(--rand) 20px;
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .chip {
+    padding: 10px 15px;
+    border-radius: 20px;
+    background: var(--weiss);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: rgba(0, 0, 0, 0.65);
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background var(--t-farbe), color var(--t-farbe), border-color var(--t-farbe);
+  }
+
+  .chip:hover {
+    border-color: rgba(0, 0, 0, 0.3);
+  }
+
+  .chip.on {
+    background: var(--ink-soft);
+    color: var(--weiss);
+    border-color: var(--ink-soft);
+  }
+
+  .trenner {
+    width: 1px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.12);
+    display: block;
+    margin: 0 5px;
+  }
+
+  .filter__rechts {
+    margin-left: auto;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .inhalt {
+    padding: 30px var(--rand) 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .leerkarte {
+    background: var(--weiss);
+    border: 1px dashed rgba(0, 0, 0, 0.2);
+    border-radius: var(--r-karte);
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    align-items: flex-start;
+  }
+
+  .frei {
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+
+  .leerkarte__text {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-leise);
+  }
+
+  .raster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 24px;
+  }
+
+  .vorlage {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: einfliegen 0.45s ease-out both var(--verzug);
+  }
+
+  .vorlage__fuss {
+    padding: 16px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .vorlage__name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .vorlage__fuss .mono {
+    font-size: 9.5px;
+    letter-spacing: 0.09em;
+  }
+
+  .marken {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: 6px;
+  }
+
+  .marke {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 8px;
+    border-radius: 5px;
+    background: #f2efe9;
+    color: var(--text-leise);
+  }
+
+  .marke--inklusive {
+    background: var(--amber);
+    color: var(--amber-ink);
+  }
+
+  @keyframes einfliegen {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vorlage {
+      animation: none;
+    }
+  }
+
+  /* Sammlungen */
+  .raster--schmal {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  .sammlung {
+    background: var(--ink-soft);
+    border: 1px solid rgba(244, 242, 238, 0.12);
+    border-radius: var(--r-karte);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .sammlung--wunsch {
+    background: rgba(242, 178, 62, 0.1);
+    border-color: var(--amber);
+  }
+
+  .sammlung__titel {
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  .sammlung__text {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-hell-leise);
+  }
+
+  .knopf--flach {
+    height: 42px;
+    font-size: 13px;
+    border-radius: var(--r-pille);
+  }
+</style>
+
+<script>
+  const galerie = document.querySelector<HTMLElement>('.galerie');
+
+  if (galerie) {
+    const zustand = { anlass: 'alle', format: 'alle' };
+    const gesamt = galerie.querySelectorAll('[data-vorlage]').length;
+    const bibliothek = 240;
+
+    function zeichne() {
+      let treffer = 0;
+
+      galerie!.querySelectorAll<HTMLElement>('[data-vorlage]').forEach((karte) => {
+        const anlassPasst =
+          zustand.anlass === 'alle' || karte.dataset.anlassWert === zustand.anlass;
+        const formatPasst =
+          zustand.format === 'alle' || karte.dataset.formate!.split('|').includes(zustand.format);
+        const passt = anlassPasst && formatPasst;
+        karte.hidden = !passt;
+        if (passt) treffer++;
+      });
+
+      const leer = galerie!.querySelector<HTMLElement>('[data-feld="leer"]');
+      if (leer) leer.hidden = treffer > 0;
+
+      const trefferfeld = galerie!.querySelector<HTMLElement>('[data-feld="treffer"]');
+      if (trefferfeld) {
+        trefferfeld.textContent = `${treffer} von ${gesamt} Beispielen · Bibliothek ${bibliothek}`;
+      }
+
+      (['anlass', 'format'] as const).forEach((art) => {
+        galerie!
+          .querySelectorAll<HTMLButtonElement>(`[data-${art}]`)
+          .forEach((b) => {
+            const an = b.dataset[art] === zustand[art];
+            b.classList.toggle('on', an);
+            b.setAttribute('aria-pressed', String(an));
+          });
+      });
+    }
+
+    galerie.addEventListener('click', (e) => {
+      const knopf = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
+      if (!knopf) return;
+
+      if (knopf.dataset.anlass) zustand.anlass = knopf.dataset.anlass;
+      else if (knopf.dataset.format) zustand.format = knopf.dataset.format;
+      else if (knopf.dataset.feld === 'zuruecksetzen') {
+        zustand.anlass = 'alle';
+        zustand.format = 'alle';
+      } else return;
+
+      zeichne();
+    });
+
+    zeichne();
+  }
+</script>

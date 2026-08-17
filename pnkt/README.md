@@ -43,11 +43,12 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 | `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler, Produktpässe |
 | `pass` | Prüfung eines Produktpasses auf Vollständigkeit — Identität, Verantwortlicher, Stoffe, Nutzung und Ende |
 | `uebernahme` | Bestand aus dem Wix-Datenspeicher holen. Trockenlauf zuerst, immer |
+| `seite` | Die kleine Landeseite hinter einem Code — gezeichnet mit `html/template`, weil hier fremder Text in HTML landet |
 | `serie` | Aus einer Tabelle Ziele machen: Muster mit `{Spalte}`, geprüft gegen die Kopfzeile, bevor eine Zeile umgesetzt wird |
 | `bogen` | Ausschießen: viele Stücke auf ein Blatt, mit Anschnitt und Schnittmarken in der Passerfarbe |
 | `gestalt` | Das Erscheinungsbild im Binär: Tokenschicht des Organic-Systems, Caprasimo und Figtree als eingebettete woff2, vierzehn Zeichen, Marke |
 | `ausgabe` | PDF und EPS von Hand geschrieben — echter Vektor in Punkt, ohne fremdes Paket. Verläufe als Schattierung (PDF Typ 2 und 3, PostScript `shfill`), Beschriftung in Helvetica |
-| `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio, Zentrale, Serie, Zahlen, Produktpass |
+| `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio, Zentrale, Landeseite, Serie, Zahlen, Produktpass |
 
 ### Die Ablage
 
@@ -80,6 +81,7 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 |---|---|---|
 | `GET /r/{kuerzel}` und `GET /{kuerzel}` | Weiterleitung, zählt den Scan | offen |
 | `GET /r/{kuerzel}/vorschau` | Ziel anzeigen, ohne hinzugehen und ohne zu zählen | offen |
+| `GET /r/{kuerzel}/weiter` | der Knopf einer Landeseite: zählt den zweiten Schritt | offen |
 | `GET /01/{gtin}` | GS1 Digital Link — Auflösung über die GTIN | offen |
 | `GET /api/v1/typen` | Inhaltstypen samt Formularaufbau | offen |
 | `POST /api/v1/rendern` | Code erzeugen — SVG, PDF oder EPS | offen |
@@ -92,6 +94,9 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `DELETE /api/v1/codes/{id}` | Code löschen, Kürzel bleibt reserviert | Inhaber |
 | `GET /api/v1/codes/{id}/statistik`, `/protokoll` | Auswertung, Änderungsgeschichte | Schlüssel |
 | `GET /api/v1/codes/{id}/fassungen` | alle Stände des Codes, älteste zuerst | Schlüssel |
+| `GET/PUT/DELETE /api/v1/codes/{id}/seite` | Landeseite lesen, setzen, entfernen | Schlüssel |
+| `GET /api/v1/vorlagen` | die Vorlagen samt ausgefülltem Beispiel | offen |
+| `POST /api/v1/seite/pruefen`, `/seite/vorschau` | Seite messen und zeichnen, ohne zu speichern | offen |
 | `POST /api/v1/codes/{id}/fassungen/{nr}` | einen früheren Stand zurückholen | Schlüssel |
 | `POST /api/v1/massenanlage` | CSV hinein, ZIP heraus | Schlüssel |
 | `POST /api/v1/serie/vorschau` | Serie durchrechnen, ohne etwas anzulegen | Schlüssel |
@@ -105,6 +110,7 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `POST /api/v1/inhalt` | Felder zu Nutzlast: vCard, WLAN, GiroCode, GS1 | offen |
 | `GET /` | Studio | offen |
 | `GET /zentrale` | Zentrale: suchen, ordnen, löschen | offen |
+| `GET /landeseite` | Editor für die Landeseite, mit Vorschau im Telefonrahmen | offen |
 | `GET /serie` | Serien-Assistent: Tabelle, Muster, Vorschau, Bogen | offen |
 | `GET /zahlen` | Zahlen: ein Satz, dann die Diagramme | offen |
 | `GET /gestalt/organic.css`, `/gestalt/schrift/{datei}` | Tokenschicht und Schriften aus dem Binär | offen |
@@ -398,6 +404,65 @@ Liste müsste jemand vierhundert Dateien einzeln ansehen — und dann sieht
 sie niemand an. Fehlerhafte Zeilen brechen den Lauf nicht ab, sie stehen
 mit Grund im Bericht: falsche Prüfziffer, fehlendes Ziel, zu kleine
 Module für das gewählte Verfahren.
+
+## Landeseite
+
+Ein QR-Code auf einem Tisch führt fast nie dorthin, wo er hinführen
+sollte. Er führt auf eine Startseite, die auf dem Telefon vier Sekunden
+lädt, oder auf ein PDF, das man aufziehen muss. Wer eine Speisekarte
+sucht, sieht zuerst ein Cookie-Banner.
+
+Ein Code kann deshalb statt einer fremden Adresse eine **eigene kleine
+Seite** tragen: Titel, ein paar Zeilen, ein Knopf. Vier Vorlagen — Karte
+kompakt, Event-Programm, Kurz erklärt, Wegweiser. Gebaut wird sie unter
+`/landeseite`, mit Vorschau im Telefonrahmen daneben.
+
+Die Seite kommt aus **einem Stück**: kein Nachladen, kein Banner, keine
+Schriftart von einem fremden Server, kein Zählpixel. Das ist auch eine
+Rechnung — wer vor einem Aufsteller steht, lädt über Mobilfunk, und eine
+Seite, die drei weitere Dateien holt, braucht drei weitere Umläufe. Bei
+300 ms Umlaufzeit ist das die Sekunde, nach der die Hälfte wieder
+weglegt. Die CSP der ausgelieferten Seite ist deshalb
+`default-src 'none'`.
+
+Gezeichnet wird mit `html/template` und nicht mit `fmt.Fprintf`. Hier
+kommt zum ersten Mal fremder Text in die Ausgabe — Speisekarten, Preise,
+Anmerkungen, die jemand eingetippt hat. `html/template` kennt den
+Unterschied zwischen Text, Attribut und Adresse; von Hand wird das früher
+oder später falsch.
+
+**Ein Ziel darf nur http, https, mailto oder tel sein.** Das ist keine
+Formsache: ein Ziel landet in einem `href`, und `javascript:` an dieser
+Stelle ist fremder Code auf der eigenen Domain. Geprüft wird beim
+Speichern, und `html/template` prüft beim Zeichnen ein zweites Mal —
+zwei Schranken, weil eine Seite auch aus einer älteren Ablage kommen
+kann.
+
+Die Grenzen (12 Abschnitte, 40 Zeilen je Abschnitt) sind aus demselben
+Grund gesetzt: eine Karte mit dreihundert Zeilen lädt im Keller nicht
+mehr und ist auch nicht mehr zu lesen. So etwas gehört hinter den Knopf.
+
+Eine Seite zu entfernen, geht nur, wenn der Code ein Ziel hat — sonst
+liefe er danach ins Leere, und das merkt man erst beim nächsten Scan,
+vor dem Aufsteller.
+
+### Die Strecke
+
+Der Knopf ist der zweite Schritt und die einzige Stelle, an der ein
+zweites Mal gezählt wird. Aus **Scan** und **Knopf** entsteht eine
+Rate — zwei Schritte, eine Zahl. Mehr behauptet das System nicht.
+
+Der Schritt erhöht die Scanzahl **nicht**. Wer den Knopf drückt, hat
+nicht zweimal gescannt; zählte er mit, hätte jede Seite mit Knopf mehr
+Scans als der gedruckte Code hergibt, und die Rate wäre nicht mehr
+auszurechnen, weil der Nenner den Zähler enthielte. Er steht auch nicht
+in der Klassenliste neben Gerät und Sprache — dort ergäbe er
+Prozentwerte über hundert.
+
+Ein Code **ohne** Landeseite hat keinen Knopf und steht nicht im Nenner.
+Unter 30 Scans nennt der Satz oben keine Rate: aus vier Scans und einem
+Knopfdruck „25 Prozent" zu machen, wäre dieselbe Erfindung wie eine beste
+Zeit aus zwölf Scans. Die Zahlen selbst stehen trotzdem da.
 
 ## Serie und Druckbogen
 
@@ -697,11 +762,16 @@ Länge der Kurzdomain bestimmt die Größe jedes gedruckten Codes.
 - **Strecken.** Mehrstufige Wege mit Messung je Übergang. Das Datenmodell
   dafür gibt es noch nicht, und es ist die größte offene Ecke des
   Entwurfs.
-- **Vorlagen für Landeseiten.** Die Vorlagenseite nennt sechs: Karte
-  kompakt, Angebot gegen E-Mail, Produktpass, Event-Programm,
-  Terminbuchung, Newsletter schlicht. Gebaut ist davon der Produktpass —
-  er musste es sein, die ESPR verlangt ihn. Die anderen fünf sind ein
-  eigenes Stück Arbeit: eine Landeseite ist kein Code.
+- **Die zwei Vorlagen, die E-Mail-Adressen einsammeln** („Angebot gegen
+  E-Mail", „Newsletter schlicht"). Sie sind nicht vergessen, sondern
+  bewusst nicht gebaut: eine Anmeldung ohne Doppelbestätigung ist in
+  Deutschland angreifbar, und die Doppelbestätigung braucht eine
+  E-Mail. Dieses System verschickt keine — aus demselben Grund gibt es
+  keine Einladung per Post, sondern nur „die Person legt sich selbst ein
+  Konto an". Wer das ändern will, ändert eine Grundentscheidung, nicht
+  eine Vorlage. **Terminbuchung** fehlt aus demselben Grund von der
+  anderen Seite: sie braucht einen Kalender, und der gehört keinem
+  QR-System.
 
 ---
 

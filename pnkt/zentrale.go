@@ -73,6 +73,7 @@ h1{font-family:var(--font-heading);font-size:1.5rem;letter-spacing:-.02em;margin
     <nav class="werkwege" aria-label="Bereiche">
       <a class="werkweg" href="/">Studio</a>
       <a class="werkweg werkweg-aktiv" href="/zentrale" aria-current="page">Zentrale</a>
+      <a class="werkweg" href="/landeseite">Landeseite</a>
       <a class="werkweg" href="/serie">Serie</a>
       <a class="werkweg" href="/zahlen">Zahlen</a>
     </nav>

@@ -33,13 +33,15 @@ type Klassenwert struct {
 
 // Codewert ist eine Zeile der Codetabelle.
 type Codewert struct {
-	ID      string `json:"id"`
-	Kuerzel string `json:"kuerzel"`
-	Name    string `json:"name"`
-	Ordner  string `json:"ordner,omitempty"`
-	Ziel    string `json:"ziel"`
-	Scans   int    `json:"scans"`
-	Aktiv   bool   `json:"aktiv"`
+	ID       string `json:"id"`
+	Kuerzel  string `json:"kuerzel"`
+	Name     string `json:"name"`
+	Ordner   string `json:"ordner,omitempty"`
+	Ziel     string `json:"ziel"`
+	Scans    int    `json:"scans"`
+	Weiter   int    `json:"weiter"` // Knopfdruecke auf der Landeseite
+	Aktiv    bool   `json:"aktiv"`
+	MitSeite bool   `json:"mitSeite,omitempty"`
 }
 
 // Uebersicht ist das ganze Bild eines Zeitraums.
@@ -54,6 +56,11 @@ type Uebersicht struct {
 	CodesGesamt int    `json:"codesGesamt"`
 	CodesStumm  int    `json:"codesStumm"`
 	Aussage     string `json:"aussage"`
+	// Die Strecke: Scans auf Codes mit Landeseite und die Knopfdruecke
+	// darauf. Nur diese beiden Zahlen sind vergleichbar — ein Code ohne
+	// Seite hat keinen Knopf und gehoert nicht in den Nenner.
+	SeitenScans int `json:"seitenScans"`
+	Weiter      int `json:"weiter"`
 }
 
 // Uebersicht rechnet den Zeitraum [von, bis] einer Organisation aus.
@@ -78,6 +85,7 @@ func (s *Speicher) Uebersicht(orgID string, von, bis time.Time) Uebersicht {
 
 	jeTag := map[string]int{}
 	jeCode := map[string]int{}
+	weiterJeCode := map[string]int{}
 	jeKlasse := map[string]map[string]int{}
 	// stundeJeWochentag[Wochentag][Stunde] fuer die Aussage.
 	stundeJeWochentag := map[time.Weekday]map[int]int{}
@@ -98,6 +106,15 @@ func (s *Speicher) Uebersicht(orgID string, von, bis time.Time) Uebersicht {
 		for name, n := range z.Zaehler {
 			art, wert, gut := strings.Cut(name, ":")
 			if !gut {
+				continue
+			}
+			if art == "schritt" {
+				// Schritte sind keine Klasse neben Geraet und Sprache:
+				// sie zaehlen dieselben Leute ein zweites Mal. In der
+				// Klassenliste ergaeben sie Prozentwerte ueber hundert.
+				if wert == "weiter" {
+					weiterJeCode[z.CodeID] += n
+				}
 				continue
 			}
 			if art == "stunde" {
@@ -150,9 +167,14 @@ func (s *Speicher) Uebersicht(orgID string, von, bis time.Time) Uebersicht {
 		if jeCode[id] == 0 {
 			u.CodesStumm++
 		}
+		if c.Seite != nil {
+			u.SeitenScans += jeCode[id]
+			u.Weiter += weiterJeCode[id]
+		}
 		u.Codes = append(u.Codes, Codewert{
 			ID: id, Kuerzel: c.Kuerzel, Name: c.Name, Ordner: c.Ordner,
-			Ziel: c.Ziel, Scans: jeCode[id], Aktiv: c.Aktiv,
+			Ziel: c.Ziel, Scans: jeCode[id], Weiter: weiterJeCode[id],
+			Aktiv: c.Aktiv, MitSeite: c.Seite != nil,
 		})
 	}
 	sort.Slice(u.Codes, func(i, j int) bool {
@@ -175,6 +197,13 @@ func (s *Speicher) Uebersicht(orgID string, von, bis time.Time) Uebersicht {
 // falscher: nach dem Satz „Samstagmittag ist deine beste Zeit" wird ein
 // Werbebudget verschoben.
 const MindestScansFuerZeitaussage = 60
+
+// MindestScansFuerRate ist die Schwelle fuer die Rate zwischen Scan und
+// Knopf. Sie ist kleiner als die fuer die Zeit, weil hier nur eine Zahl
+// geteilt wird und nicht 168 Kaesten besetzt werden muessen — aber sie
+// ist nicht null: aus vier Scans und einem Knopfdruck „25 Prozent" zu
+// machen, ist eine Erfindung.
+const MindestScansFuerRate = 30
 
 var wochentage = [...]string{"Sonntag", "Montag", "Dienstag", "Mittwoch",
 	"Donnerstag", "Freitag", "Samstag"}
@@ -205,6 +234,15 @@ func Aussage(u Uebersicht, stundeJeWochentag map[time.Weekday]map[int]int) strin
 			// sieht nach Panne aus.
 			satz += " — " + bester + " allein trägt " + strconv.Itoa(anteil) + " Prozent"
 		}
+	}
+
+	// Die Rate der Landeseiten. Sie steht nur da, wenn genug Scans
+	// dahinterstehen — aus vier Scans und einem Knopfdruck „25 Prozent"
+	// zu machen, waere dieselbe Erfindung wie eine beste Zeit aus zwoelf
+	// Scans.
+	if u.SeitenScans >= MindestScansFuerRate {
+		satz += "; von " + zahlDeutsch(u.SeitenScans) + " Scans auf einer Landeseite " +
+			"gingen " + strconv.Itoa(u.Weiter*100/u.SeitenScans) + " Prozent weiter"
 	}
 
 	if u.Gesamt >= MindestScansFuerZeitaussage {

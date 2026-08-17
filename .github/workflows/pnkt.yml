@@ -101,6 +101,8 @@ jobs:
           curl -fsS -o /dev/null http://127.0.0.1:8099/zentrale
           curl -fsS -o /dev/null http://127.0.0.1:8099/serie
           curl -fsS -o /dev/null http://127.0.0.1:8099/zahlen
+          curl -fsS -o /dev/null http://127.0.0.1:8099/landeseite
+          curl -fsS -o /dev/null http://127.0.0.1:8099/api/v1/vorlagen
           curl -fsS -o /dev/null "http://127.0.0.1:8099/aufsteller.pdf?inhalt=https://pnkt.me/test&karte=a6"
           # Die Gestaltdateien liegen im Binaer. Fehlen sie dort, faellt
           # es sonst erst im Browser auf — und zwar lautlos: die Seite

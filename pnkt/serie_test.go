@@ -205,7 +205,7 @@ func TestZahlenZeigenNurEigenes(t *testing.T) {
 // style-src ohne 'self' laesst die Seite lautlos ungestylt.
 func TestSeitenLiefernUndDuerfenGestaltLaden(t *testing.T) {
 	w := baueWelt(t)
-	for _, weg := range []string{"/", "/zentrale", "/serie", "/zahlen"} {
+	for _, weg := range []string{"/", "/zentrale", "/serie", "/zahlen", "/landeseite"} {
 		a := w.ruf("GET", weg, "", "")
 		if a.Code != http.StatusOK {
 			t.Errorf("%s: %d", weg, a.Code)

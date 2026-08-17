@@ -31,6 +31,7 @@ import (
 	"pnkt.me/pnkt/gs1"
 	"pnkt.me/pnkt/qr"
 	"pnkt.me/pnkt/regel"
+	"pnkt.me/pnkt/seite"
 	"pnkt.me/pnkt/speicher"
 )
 
@@ -134,6 +135,13 @@ func wege(d *dienst) *http.ServeMux {
 		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.charge(w, r) }))
 	weg.HandleFunc("POST /api/v1/serie/vorschau", d.mitSchluessel(false, d.serienVorschau))
 	weg.HandleFunc("POST /api/v1/serie", d.mitSchluessel(true, d.serienPaket))
+	weg.HandleFunc("GET /api/v1/vorlagen", d.seitenVorlagen)
+	weg.HandleFunc("POST /api/v1/seite/pruefen", d.seitePruefen)
+	weg.HandleFunc("POST /api/v1/seite/vorschau", d.seiteVorschau)
+	weg.HandleFunc("GET /landeseite", d.landeseite)
+	weg.HandleFunc("GET /api/v1/codes/{id}/seite", d.mitSchluessel(false, d.seiteLesen))
+	weg.HandleFunc("PUT /api/v1/codes/{id}/seite", d.mitSchluessel(true, d.seiteSetzen))
+	weg.HandleFunc("DELETE /api/v1/codes/{id}/seite", d.mitSchluessel(true, d.seiteWeg))
 	weg.HandleFunc("GET /zentrale", d.zentrale)
 	weg.HandleFunc("GET /serie", d.serienseite)
 	weg.HandleFunc("GET /api/v1/zahlen", d.mitSchluessel(false, d.zahlenDaten))
@@ -152,6 +160,7 @@ func wege(d *dienst) *http.ServeMux {
 	// kurze — auf einer eigenen Kurzdomain zaehlt jedes Zeichen.
 	weg.HandleFunc("GET /r/{kuerzel}", d.weiterleiten)
 	weg.HandleFunc("GET /r/{kuerzel}/vorschau", d.vorschau)
+	weg.HandleFunc("GET /r/{kuerzel}/weiter", d.weiterVonSeite)
 	weg.HandleFunc("GET /01/{gtin}/", d.digitalLinkOderPass)
 	weg.HandleFunc("GET /01/{gtin}", d.digitalLinkOderPass)
 
@@ -202,6 +211,14 @@ func (d *dienst) weiterleiten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Traegt der Code eine eigene Seite, ist sie das Ziel des Scans.
+	// Der Knopf darauf ist der zweite Schritt und wird eigens gezaehlt.
+	if code.Seite != nil {
+		d.ablage.Zaehle(code.ID, klassen(r), time.Now())
+		d.zeigeSeite(w, r, code)
+		return
+	}
+
 	ziel := waehleZiel(code, r, d.landkopf)
 	if ziel == "" {
 		d.hinweisMitMarke(w, r, http.StatusNotFound, "Ohne Ziel", "Fuer diesen Code ist kein Ziel hinterlegt.")
@@ -209,6 +226,65 @@ func (d *dienst) weiterleiten(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d.ablage.Zaehle(code.ID, klassen(r), time.Now())
+
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Referrer-Policy", "no-referrer")
+	http.Redirect(w, r, ziel, http.StatusFound)
+}
+
+// zeigeSeite liefert die Landeseite eines Codes.
+func (d *dienst) zeigeSeite(w http.ResponseWriter, r *http.Request, code *speicher.Code) {
+	m := d.ablage.MarkeNachHost(r.Host)
+	roh, err := seite.Zeichne(code.Seite, m, "/r/"+code.Kuerzel+"/weiter")
+	if err != nil {
+		// Eine Seite, die nicht zu zeichnen ist, darf keinen Scan in
+		// einen Serverfehler laufen lassen. Dahinter steht ein Mensch
+		// vor einem Aufsteller.
+		d.hinweisMitMarke(w, r, http.StatusInternalServerError, "Seite nicht darstellbar",
+			"Die hinterlegte Seite liess sich nicht zeichnen.")
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	// Keine fremde Quelle, kein Skript: die Seite ist ein Dokument aus
+	// einem Stueck. Die Regel steht hier und nicht nur in der Absicht.
+	w.Header().Set("Content-Security-Policy",
+		"default-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; "+
+			"img-src 'self' data:; form-action 'none'; base-uri 'none'")
+	w.Header().Set("Referrer-Policy", "no-referrer")
+	// Eine Landeseite darf einen Augenblick im Zwischenspeicher liegen:
+	// vor einem Aufsteller scannen mehrere Leute dasselbe kurz
+	// nacheinander. Laenger nicht — das Ziel kann sich jederzeit aendern.
+	w.Header().Set("Cache-Control", "public, max-age=60")
+	_, _ = w.Write(roh)
+}
+
+// weiterVonSeite ist der Knopf auf der Landeseite: er zaehlt den zweiten
+// Schritt und leitet dann weiter. Ohne diesen Umweg waere die Rate
+// zwischen Scan und Handlung nicht zu messen — und ohne Rate ist eine
+// Strecke nur eine Behauptung.
+func (d *dienst) weiterVonSeite(w http.ResponseWriter, r *http.Request) {
+	code, da := d.ablage.NachKuerzel(r.PathValue("kuerzel"))
+	if !da || code.Geloescht || !code.Aktiv || code.Gesperrt != "" {
+		d.hinweisMitMarke(w, r, http.StatusNotFound, "Unbekannter Code",
+			"Diese Kurzadresse gibt es nicht mehr.")
+		return
+	}
+	ziel := ""
+	if code.Seite != nil && code.Seite.Handlung != nil {
+		ziel = code.Seite.Handlung.Ziel
+	}
+	if ziel == "" {
+		ziel = waehleZiel(code, r, d.landkopf)
+	}
+	if ziel == "" {
+		d.hinweisMitMarke(w, r, http.StatusNotFound, "Ohne Ziel",
+			"Fuer diesen Knopf ist kein Ziel hinterlegt.")
+		return
+	}
+	// Der Schritt bekommt eine eigene Klasse und keinen eigenen Zaehler:
+	// so steht er in derselben Zeile wie der Scan und laesst sich nicht
+	// versehentlich getrennt auswerten.
+	d.ablage.ZaehleSchritt(code.ID, []string{"schritt:weiter"}, time.Now())
 
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Referrer-Policy", "no-referrer")

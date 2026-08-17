@@ -45,7 +45,8 @@ func (d *dienst) zahlenseite(w http.ResponseWriter, r *http.Request) {
 			"font-src 'self'; img-src 'self' data:")
 	fmt.Fprintf(w, zahlenSeite, m.Name, gestalt.Kopf(),
 		m.Grund, m.Tinte, m.Primaer, gestalt.MarkeLockup(m.Name, "/", false),
-		strconv.Itoa(speicher.MindestScansFuerZeitaussage))
+		strconv.Itoa(speicher.MindestScansFuerZeitaussage),
+		strconv.Itoa(speicher.MindestScansFuerRate))
 }
 
 const zahlenSeite = `<!doctype html>
@@ -98,6 +99,18 @@ input:focus-visible{border-color:var(--color-accent)}
 .verlauf .tag:hover{background:var(--color-accent-700)}
 .achse{display:flex;justify-content:space-between;font-size:.72rem;color:var(--leise);
  padding-top:.4rem}
+/* Die Strecke: zwei Stufen, nebeneinander, mit der Rate dazwischen.
+   Ein Trichter waere huebscher und wuerde eine Verjuengung zeigen, die
+   aus zwei Zahlen nicht abzulesen ist. */
+.strecke{display:flex;align-items:stretch;gap:.6rem;flex-wrap:wrap}
+.stufe{flex:1;min-width:9rem;background:var(--color-bg);border-radius:var(--radius-lg);
+ padding:14px 16px}
+.stufe .wert{font-family:var(--font-heading);font-size:1.5rem;line-height:1.1;
+ font-variant-numeric:tabular-nums}
+.stufe .was{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--leise)}
+.stufe .dazu{font-size:.8rem;color:var(--leise);margin-top:.3rem}
+.rate{display:grid;place-items:center;padding:0 .4rem;font-weight:700;
+ color:var(--color-accent-700);font-variant-numeric:tabular-nums}
 .riegel{display:flex;flex-direction:column;gap:.5rem}
 .riegel .zeile{display:grid;grid-template-columns:7.5rem 1fr 3.5rem;gap:.6rem;
  align-items:center;font-size:.85rem}
@@ -131,6 +144,7 @@ td.ziel{color:var(--leise);overflow-wrap:anywhere;max-width:22rem}
     <nav class="werkwege" aria-label="Bereiche">
       <a class="werkweg" href="/">Studio</a>
       <a class="werkweg" href="/zentrale">Zentrale</a>
+      <a class="werkweg" href="/landeseite">Landeseite</a>
       <a class="werkweg" href="/serie">Serie</a>
       <a class="werkweg werkweg-aktiv" href="/zahlen" aria-current="page">Zahlen</a>
     </nav>
@@ -166,6 +180,14 @@ td.ziel{color:var(--leise);overflow-wrap:anywhere;max-width:22rem}
     </div>
   </div>
 
+  <div class="tafel" id="streckefeld" style="margin-top:1.1rem" hidden>
+    <div class="tafel-kopf"><span>Strecke</span><span id="streckestand"></span></div>
+    <div class="tafel-koerper">
+      <div class="strecke" id="strecke"></div>
+      <p class="hinweis" id="streckehinweis"></p>
+    </div>
+  </div>
+
   <div class="tafel" id="verlauffeld" style="margin-top:1.1rem" hidden>
     <div class="tafel-kopf"><span>Verlauf</span><span id="verlaufstand"></span></div>
     <div class="tafel-koerper">
@@ -192,6 +214,7 @@ const e = (id) => document.getElementById(id);
 // nennt der Satz keine beste Zeit, und die Seite soll denselben Wert
 // zeigen, nach dem der Server entscheidet.
 const MINDEST = %s;
+const MINDESTRATE = %s;
 let tage = 30;
 let holen = null;
 
@@ -238,11 +261,13 @@ async function laden() {
 }
 
 function verbergen() {
-  for (const id of ["satzfeld", "verlauffeld", "klassenfeld", "codefeld"]) e(id).hidden = true;
+  for (const id of ["satzfeld", "streckefeld", "verlauffeld", "klassenfeld", "codefeld"])
+    e(id).hidden = true;
 }
 
 function zeigen(d) {
   for (const id of ["satzfeld", "verlauffeld", "klassenfeld", "codefeld"]) e(id).hidden = false;
+  strecke(d);
   e("zeitraumtext").textContent = d.von + " bis " + d.bis;
   e("satz").textContent = d.aussage;
 
@@ -300,16 +325,42 @@ function zeigen(d) {
   e("codestand").textContent = d.codes.length + " Codes";
   e("codes").innerHTML = d.codes.length
     ? "<table><thead><tr><th>Code</th><th>Ziel</th><th style=\"text-align:right\">Scans</th>" +
-      "<th>Stand</th></tr></thead><tbody>" +
+      "<th style=\"text-align:right\">Weiter</th><th>Stand</th></tr></thead><tbody>" +
       d.codes.map(c =>
         "<tr><td><b>" + entschaerft(c.name || c.kuerzel) + "</b><br>" +
         '<span style="color:var(--leise);font-size:.8rem">/' + entschaerft(c.kuerzel) +
         (c.ordner ? " · " + entschaerft(c.ordner) : "") + "</span></td>" +
         '<td class="ziel">' + entschaerft(c.ziel) + "</td>" +
         '<td class="n">' + zahlDeutsch(c.scans) + "</td>" +
+        '<td class="n">' + (c.mitSeite
+          ? zahlDeutsch(c.weiter) + (c.scans
+              ? ' <span style="color:var(--leise)">· ' +
+                Math.round(c.weiter * 100 / c.scans) + " %%</span>" : "")
+          : '<span style="color:var(--leise)">—</span>') + "</td>" +
         "<td>" + (c.aktiv ? "" : '<span class="stumm">abgeschaltet</span>') + "</td></tr>").join("") +
       "</tbody></table>"
     : '<div class="leer">Noch kein Code angelegt.</div>';
+}
+
+// Die Strecke steht nur da, wo es sie gibt: ohne Landeseite gibt es
+// keinen zweiten Schritt, und eine leere Tafel mit zwei Nullen
+// behauptet, es sei etwas gemessen worden.
+function strecke(d) {
+  e("streckefeld").hidden = !d.seitenScans;
+  if (!d.seitenScans) return;
+  const rate = Math.round(d.weiter * 100 / d.seitenScans);
+  e("streckestand").textContent = d.codes.filter(c => c.mitSeite).length + " mit Landeseite";
+  e("strecke").innerHTML =
+    '<div class="stufe"><div class="wert">' + zahlDeutsch(d.seitenScans) + "</div>" +
+      '<div class="was">Scan</div><div class="dazu">Code gescannt, Seite geladen</div></div>' +
+    '<div class="rate">→ ' + rate + " %%</div>" +
+    '<div class="stufe"><div class="wert">' + zahlDeutsch(d.weiter) + "</div>" +
+      '<div class="was">Knopf</div><div class="dazu">weiter zum Ziel</div></div>';
+  e("streckehinweis").textContent = d.seitenScans < MINDESTRATE
+    ? "Unter " + MINDESTRATE + " Scans steht die Rate nicht im Satz oben: aus " +
+      "vier Scans und einem Knopfdruck „25 Prozent\" zu machen, wäre eine Erfindung."
+    : "Gemessen wird der Knopf auf der Landeseite. Ein Code ohne Seite hat keinen " +
+      "Knopf und steht nicht im Nenner.";
 }
 
 function kachel(wert, was) {

@@ -119,6 +119,7 @@ a.knopf.stark:hover{background:var(--color-accent-600);border-color:var(--color-
     <nav class="werkwege" aria-label="Bereiche">
       <a class="werkweg werkweg-aktiv" href="/" aria-current="page">Studio</a>
       <a class="werkweg" href="/zentrale">Zentrale</a>
+      <a class="werkweg" href="/landeseite">Landeseite</a>
       <a class="werkweg" href="/serie">Serie</a>
       <a class="werkweg" href="/zahlen">Zahlen</a>
     </nav>

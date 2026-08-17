@@ -35,6 +35,7 @@ type Code struct {
 	Stil       map[string]any    `json:"stil,omitempty"`   // Gestaltung, wie das Studio sie sichert
 	Inhalt     map[string]any    `json:"inhalt,omitempty"` // die Felder, aus denen die Nutzlast entstand
 	Ziel       string            `json:"ziel"`
+	Seite      *Seite            `json:"seite,omitempty"` // kleine Landeseite statt fremder Adresse
 	Regeln     map[string]any    `json:"regeln,omitempty"`
 	UTM        map[string]string `json:"utm,omitempty"`
 	GTIN       string            `json:"gtin,omitempty"`
@@ -516,6 +517,22 @@ func (s *Speicher) FreiesKuerzel() string {
 
 // Zaehle erhoeht die Zaehler eines Codes fuer den heutigen Tag.
 func (s *Speicher) Zaehle(codeID string, klassen []string, jetzt time.Time) int {
+	return s.zaehleMit(codeID, klassen, jetzt, true)
+}
+
+// ZaehleSchritt zaehlt einen weiteren Schritt desselben Scans — den
+// Knopf auf einer Landeseite etwa.
+//
+// Er erhoeht Gesamt NICHT. Gesamt ist die Zahl der Scans, und wer den
+// Knopf drueckt, hat nicht zweimal gescannt. Zaehlte der Schritt mit,
+// haette jede Seite mit einem Knopf ploetzlich mehr Scans als der
+// gedruckte Code hergibt — und die Rate zwischen beiden waere nicht
+// mehr auszurechnen, weil der Nenner den Zaehler enthielte.
+func (s *Speicher) ZaehleSchritt(codeID string, klassen []string, jetzt time.Time) int {
+	return s.zaehleMit(codeID, klassen, jetzt, false)
+}
+
+func (s *Speicher) zaehleMit(codeID string, klassen []string, jetzt time.Time, istScan bool) int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -526,7 +543,9 @@ func (s *Speicher) Zaehle(codeID string, klassen []string, jetzt time.Time) int 
 		z = &Tageszaehler{CodeID: codeID, Tag: tag, Zaehler: map[string]int{}}
 		s.zaehler[schluessel] = z
 	}
-	z.Gesamt++
+	if istScan {
+		z.Gesamt++
+	}
 	for _, k := range klassen {
 		z.Zaehler[k]++
 	}

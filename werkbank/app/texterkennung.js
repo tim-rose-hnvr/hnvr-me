@@ -24,14 +24,20 @@ let laufendeSprache = null;
 let abbruch = false;
 
 /* Die Ergebnisse liegen im Zustand (zustand.ocr), nicht in diesem Modul:
-   Ansicht, Suche und Ausgabe lesen sie, ohne dieses Modul zu laden. */
-export const erkannt = zustand.ocr;
+   Ansicht, Suche und Ausgabe lesen sie, ohne dieses Modul zu laden.
 
-export function hatErkennung(seiteId) { return erkannt.has(seiteId); }
-export function erkennungVon(seiteId) { return erkannt.get(seiteId) || null; }
+   Bewusst kein `const erkannt = zustand.ocr` auf oberster Ebene: seit es
+   mehrere Mappen gibt, wird `zustand.ocr` beim Reiterwechsel gegen eine
+   andere Map getauscht. Eine beim Laden gemerkte Referenz zeigte dann auf
+   die Map des vorigen Reiters — die Erkennung liefe, und das Ergebnis käme
+   nie an. */
+const erkannt = () => zustand.ocr;
+
+export function hatErkennung(seiteId) { return zustand.ocr.has(seiteId); }
+export function erkennungVon(seiteId) { return zustand.ocr.get(seiteId) || null; }
 
 export function textAusErkennung(seiteId) {
-  const treffer = erkannt.get(seiteId);
+  const treffer = erkannt().get(seiteId);
   if (!treffer) return '';
   return treffer.zeilen.map((z) => z.text).join('\n');
 }
@@ -120,7 +126,7 @@ export async function erkenneSeiten({ seiten, sprache = 'deu', dichte = 200, bei
     }
 
     const konfidenz = woerter.length ? woerter.reduce((s, w) => s + w.konf, 0) / woerter.length : 0;
-    erkannt.set(eintrag.id, { woerter, zeilen, sprache, dichte, konfidenz, zeit: Date.now() });
+    erkannt().set(eintrag.id, { woerter, zeilen, sprache, dichte, konfidenz, zeit: Date.now() });
     angelegt.push(eintrag.id);
     melde('ocr:seite', { seiteId: eintrag.id, woerter: woerter.length, konfidenz });
   }
@@ -150,7 +156,7 @@ function sammleZeilen(data) {
 
 /** Legt unsichtbare, auswählbare Wörter über eine gerenderte Seite. */
 export function legeErkannteTextebene(behaelter, seiteId, sicht) {
-  const treffer = erkannt.get(seiteId);
+  const treffer = erkannt().get(seiteId);
   if (!treffer) return false;
   for (const wort of treffer.woerter) {
     const [x1, y1] = sicht.convertToViewportPoint(wort.x, wort.y + wort.h);
@@ -247,9 +253,9 @@ async function laufeMitAnzeige(seiten, sprache, dichte) {
     if (angelegt.length) {
       const nachher = new Map(erkannt);
       merkeSchritt(`Text auf ${angelegt.length} Seite${angelegt.length === 1 ? '' : 'n'} erkannt`,
-        () => { erkannt.clear(); for (const [k, v] of vorher) erkannt.set(k, v); melde('ocr:geaendert'); },
-        () => { erkannt.clear(); for (const [k, v] of nachher) erkannt.set(k, v); melde('ocr:geaendert'); });
-      const gesamtKonf = angelegt.reduce((s, id) => s + (erkannt.get(id)?.konfidenz || 0), 0) / angelegt.length;
+        () => { erkannt().clear(); for (const [k, v] of vorher) erkannt().set(k, v); melde('ocr:geaendert'); },
+        () => { erkannt().clear(); for (const [k, v] of nachher) erkannt().set(k, v); melde('ocr:geaendert'); });
+      const gesamtKonf = angelegt.reduce((s, id) => s + (erkannt().get(id)?.konfidenz || 0), 0) / angelegt.length;
       sage(`${angelegt.length} Seite${angelegt.length === 1 ? '' : 'n'} erkannt in ${dauer} s · Sicherheit ${Math.round(gesamtKonf)} %`);
     } else {
       sage('Nichts erkannt', { art: 'warn' });
@@ -277,8 +283,8 @@ function uebersetzeStatus(status) {
 
 /** Übersicht für die rechte Tafel. */
 export function erkennungsUebersicht() {
-  if (!erkannt.size) return null;
-  const seiten = [...erkannt.entries()].map(([id, wert]) => ({ seite: nummerVon(id), ...wert }))
+  if (!erkannt().size) return null;
+  const seiten = [...erkannt().entries()].map(([id, wert]) => ({ seite: nummerVon(id), ...wert }))
     .filter((e) => e.seite > 0)
     .sort((a, b) => a.seite - b.seite);
   const woerter = seiten.reduce((s, e) => s + e.woerter.length, 0);

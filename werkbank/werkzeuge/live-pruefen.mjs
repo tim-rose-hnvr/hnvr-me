@@ -34,6 +34,7 @@ const BASIS = (process.argv[2] || 'https://werkbank-b2ce6ab2-hnvrme.wix-site-hos
 const NOETIGE_TYPEN = {
   '.wasm': 'application/wasm',
   '.gz': 'application/gzip',
+  '.woff2': /font/,
   '.js': /javascript/,
   '.mjs': /javascript/,
   '.html': /text\/html/,
@@ -90,6 +91,28 @@ pruefe(startText.includes('Werkbank öffnen'), 'Knopf „Werkbank öffnen" steht
 pruefe(/href="\/werkbank\/index\.html"/.test(startText), 'der Knopf zeigt auf die Anwendung');
 pruefe(/hnvr\.me/i.test(startText), 'Kontakt hnvr.me digital steht auf der Seite');
 pruefe(!/\d+\s*(€|EUR|Euro)\s*(\/|pro)/i.test(startText), 'kein Preis versprochen');
+
+console.log('\n== Gestaltung und Schriften ==');
+/* Die Schriftangaben stehen nicht im HTML, sondern im daraus verlinkten
+   Stilblatt — Astro zieht das CSS heraus. Also dort nachsehen, nicht im
+   Seitenquelltext raten. */
+const stilWege = [...startText.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map((m) => m[1]);
+let stil = '';
+for (const weg of stilWege) {
+  const antwort = await hole(weg.startsWith('http') ? new URL(weg).pathname : weg);
+  if (antwort.code === 200) stil += antwort.koerper.toString('utf8');
+}
+pruefe(stilWege.length > 0, 'die Seite verlinkt ein Stilblatt', `${stilWege.length} gefunden`);
+pruefe(/IBM Plex/.test(stil), 'das Stilblatt bindet IBM Plex ein');
+pruefe(!/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(stil + startText),
+  'kein Verweis auf Google Fonts');
+pruefe(/#0f766e/i.test(stil), 'der Akzent aus dem Handoff steht im Stilblatt');
+
+for (const schnitt of ['plex-sans-400', 'plex-serif-600', 'plex-mono-400']) {
+  const antwort = await hole(`/schrift/${schnitt}.woff2`);
+  pruefe(antwort.code === 200 && /font|octet-stream/.test(antwort.typ),
+    `${schnitt}.woff2 kommt von dieser Seite`, `HTTP ${antwort.code} ${antwort.typ}`);
+}
 
 console.log('\n== Wege in die Anwendung ==');
 for (const weg of ['/werkbank/index.html', '/werkbank/', '/werkbank']) {

@@ -1,71 +1,160 @@
 /* Werkbank — Gestaltung.
-   Farbwerte und Schriftwahl folgen der Sitzungssystem-Doku (doku/aufbau-und-durchlauf.html).
-   Keine externe Schrift, kein CDN: alles liegt lokal. */
+
+   Farben, Schriften, Abstände und Formen folgen dem Handoff „PDF Studio":
+   Akzent #0f766e, dunkle Chrome #1d2327, IBM Plex in drei Schnitten, nur
+   4er-Schritte im Raster, Radius 0 — alles kantig.
+
+   Zwei Abweichungen vom Handoff, mit Grund:
+
+   · **Die Schriften liegen bei, nicht bei Google.** Das Handoff nennt Google
+     Fonts; die Werkbank darf nichts nachladen (Leitprinzip 2). Acht Schnitte
+     liegen als woff2 in fremd/schrift, zusammen 176 kB.
+   · **Es gibt eine dunkle Fassung.** Das Handoff ist nur hell gedacht. Die
+     dunklen Werte sind daraus abgeleitet: der Akzent wird zu accent-light
+     (#7fd6cd), weil #0f766e auf dunklem Grund nicht mehr trägt. */
+
+/* ---------- Schriften (liegen bei, kein CDN) ---------------------------- */
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../fremd/schrift/plex-sans-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('../fremd/schrift/plex-sans-500.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('../fremd/schrift/plex-sans-600.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Serif'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../fremd/schrift/plex-serif-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Serif'; font-style: italic; font-weight: 400; font-display: swap;
+  src: url('../fremd/schrift/plex-serif-400-italic.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Serif'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('../fremd/schrift/plex-serif-600.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../fremd/schrift/plex-mono-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('../fremd/schrift/plex-mono-500.woff2') format('woff2'); }
 
 :root {
-  --grund:        #EBEEEE;
+  --grund:        #E9EAEC;
   --flaeche:      #FFFFFF;
-  --flaeche-tief: #E2E6E7;
-  --flaeche-hoch: #F6F8F8;
-  --tinte:        #141A1C;
-  --tinte-leise:  #59666C;
-  --linie:        #D0D7D9;
-  --linie-stark:  #A9B4B8;
-  --tally:        #A82E23;
-  --tally-grund:  #F7E7E5;
-  --warn:         #7E5300;
-  --warn-grund:   #F6ECDA;
-  --gut:          #0D5A4D;
-  --gut-grund:    #DFEDEA;
-  --schatten:     0 1px 2px rgba(20,26,28,.08), 0 8px 24px rgba(20,26,28,.10);
+  --flaeche-tief: #E6E9EB;
+  --flaeche-hoch: #F4F5F6;
+  --tafel:        #EFF1F2;
+  --menue-grund:  #E7E9EB;
+  --tinte:        #171C20;
+  --tinte-leise:  #77828A;
+  --linie:        #DDE1E4;
+  --linie-stark:  #CFD4D8;
+  --tally:        #0F766E;
+  --tally-hover:  #0E6B64;
+  --tally-hell:   #7FD6CD;
+  --tally-grund:  rgba(15,118,110,.10);
+  --warn:         #B4530A;
+  --warn-grund:   rgba(180,83,10,.10);
+  --gut:          #0F766E;
+  --gut-grund:    rgba(15,118,110,.10);
+  --gefahr:       #8B3A3A;
 
-  --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          "Helvetica Neue", Arial, sans-serif;
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  /* Dunkle Chrome: Titelleiste, Statusleiste, Aktionsleisten. */
+  --chrome-900:   #1D2327;
+  --chrome-800:   #22292E;
+  --chrome-700:   #2A3236;
+  --chrome-600:   #3F474C;
+  --chrome-linie: #2C3438;
+  --chrome-text:  #FFFFFF;
+  --chrome-leise: #8B979C;
 
-  --kopfhoehe: 3.25rem;
-  --menuehoehe: 2rem;
-  --fusshoehe: 2.5rem;
-  --leiste-links: 15rem;
-  --leiste-rechts: 19rem;
+  --buehne:       #5F686E;
+  --buehne-tief:  #4F585E;
+  --papier:       #FDFCF9;
+
+  --schatten:     0 1px 3px rgba(0,0,0,.06);
+  --schatten-blatt: 0 6px 22px rgba(0,0,0,.34);
+  --schatten-tafel: 0 14px 30px rgba(18,24,28,.26);
+  --schatten-dialog: 0 24px 60px rgba(0,0,0,.4);
+
+  --sans: 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
+  --serif: 'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
+  --mono: 'IBM Plex Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Handoff: Titelleiste 38, Menü 27, Werkzeuge 46, Status 30. */
+  --kopfhoehe: 38px;
+  --menuehoehe: 27px;
+  --werkzeughoehe: 46px;
+  --fusshoehe: 30px;
+  --leiste-links: 196px;
+  --leiste-rechts: 296px;
 }
 
 @media (prefers-color-scheme: dark) {
+  :root:not([data-thema="hell"]) { --dunkel: 1; }
+}
+:root[data-thema="dunkel"] { --dunkel: 1; }
+
+/* Die dunkle Fassung erbt Aufbau und Abstände und tauscht nur die Farben.
+   Doppelt geschrieben, weil CSS keine Verzweigung auf eine Variable kennt. */
+@media (prefers-color-scheme: dark) {
   :root:not([data-thema="hell"]) {
-    --grund:        #111618;
-    --flaeche:      #192023;
-    --flaeche-tief: #212A2E;
-    --flaeche-hoch: #232D31;
+    --grund:        #14191C;
+    --flaeche:      #1D2327;
+    --flaeche-tief: #262E33;
+    --flaeche-hoch: #22292E;
+    --tafel:        #1A2024;
+    --menue-grund:  #191F23;
     --tinte:        #E4E9EA;
-    --tinte-leise:  #93A1A7;
-    --linie:        #2A3438;
-    --linie-stark:  #47555A;
-    --tally:        #F0705C;
-    --tally-grund:  #37211E;
+    --tinte-leise:  #8B979C;
+    --linie:        #2C3438;
+    --linie-stark:  #3F474C;
+    --tally:        #7FD6CD;
+    --tally-hover:  #A2E4DD;
+    --tally-hell:   #7FD6CD;
+    --tally-grund:  rgba(127,214,205,.14);
     --warn:         #E2B15C;
-    --warn-grund:   #322715;
-    --gut:          #63BFA9;
-    --gut-grund:    #14302B;
-    --schatten:     0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.45);
+    --warn-grund:   rgba(226,177,92,.14);
+    --gut:          #7FD6CD;
+    --gut-grund:    rgba(127,214,205,.14);
+    --gefahr:       #E38B8B;
+    --chrome-900:   #12171A;
+    --chrome-800:   #171C20;
+    --chrome-700:   #1F262A;
+    --chrome-600:   #2C3438;
+    --chrome-linie: #232B2F;
+    --buehne:       #2A3236;
+    --buehne-tief:  #22292E;
+    --schatten:     0 1px 3px rgba(0,0,0,.5);
+    --schatten-blatt: 0 6px 22px rgba(0,0,0,.6);
+    --schatten-tafel: 0 14px 30px rgba(0,0,0,.6);
+    --schatten-dialog: 0 24px 60px rgba(0,0,0,.7);
   }
 }
 :root[data-thema="dunkel"] {
-  --grund:        #111618;
-  --flaeche:      #192023;
-  --flaeche-tief: #212A2E;
-  --flaeche-hoch: #232D31;
+  --grund:        #14191C;
+  --flaeche:      #1D2327;
+  --flaeche-tief: #262E33;
+  --flaeche-hoch: #22292E;
+  --tafel:        #1A2024;
+  --menue-grund:  #191F23;
   --tinte:        #E4E9EA;
-  --tinte-leise:  #93A1A7;
-  --linie:        #2A3438;
-  --linie-stark:  #47555A;
-  --tally:        #F0705C;
-  --tally-grund:  #37211E;
+  --tinte-leise:  #8B979C;
+  --linie:        #2C3438;
+  --linie-stark:  #3F474C;
+  --tally:        #7FD6CD;
+  --tally-hover:  #A2E4DD;
+  --tally-hell:   #7FD6CD;
+  --tally-grund:  rgba(127,214,205,.14);
   --warn:         #E2B15C;
-  --warn-grund:   #322715;
-  --gut:          #63BFA9;
-  --gut-grund:    #14302B;
-  --schatten:     0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.45);
+  --warn-grund:   rgba(226,177,92,.14);
+  --gut:          #7FD6CD;
+  --gut-grund:    rgba(127,214,205,.14);
+  --gefahr:       #E38B8B;
+  --chrome-900:   #12171A;
+  --chrome-800:   #171C20;
+  --chrome-700:   #1F262A;
+  --chrome-600:   #2C3438;
+  --chrome-linie: #232B2F;
+  --buehne:       #2A3236;
+  --buehne-tief:  #22292E;
+  --schatten:     0 1px 3px rgba(0,0,0,.5);
+  --schatten-blatt: 0 6px 22px rgba(0,0,0,.6);
+  --schatten-tafel: 0 14px 30px rgba(0,0,0,.6);
+  --schatten-dialog: 0 24px 60px rgba(0,0,0,.7);
 }
 
 * { box-sizing: border-box; }
@@ -73,7 +162,7 @@ html, body { height: 100%; }
 body {
   margin: 0;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: 12.5px;
   line-height: 1.45;
   color: var(--tinte);
   background: var(--grund);
@@ -88,7 +177,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- Grundgerüst ------------------------------------------------ */
 .huelle {
   display: grid;
-  grid-template-rows: var(--kopfhoehe) var(--menuehoehe) 1fr var(--fusshoehe);
+  grid-template-rows: var(--kopfhoehe) var(--menuehoehe) var(--werkzeughoehe) 1fr var(--fusshoehe);
   height: 100dvh;
 }
 .rumpf {
@@ -96,84 +185,241 @@ button, input, select, textarea { font: inherit; color: inherit; }
   grid-template-columns: var(--leiste-links) 1fr var(--leiste-rechts);
   min-height: 0;
 }
-.huelle[data-links="zu"]  { --leiste-links: 0rem; }
-.huelle[data-rechts="zu"] { --leiste-rechts: 0rem; }
+.huelle[data-links="zu"]  { --leiste-links: 0px; }
+.huelle[data-rechts="zu"] { --leiste-rechts: 0px; }
 .leiste {
-  background: var(--flaeche);
-  border-right: 1px solid var(--linie);
+  background: var(--tafel);
+  border-right: 1px solid var(--linie-stark);
   display: flex; flex-direction: column;
   min-height: 0; overflow: hidden;
 }
-.leiste-rechts { border-right: 0; border-left: 1px solid var(--linie); }
+.leiste-rechts { border-right: 0; border-left: 1px solid var(--linie-stark); }
 .huelle[data-links="zu"] .leiste-links,
 .huelle[data-rechts="zu"] .leiste-rechts { display: none; }
-
-.kopf, .fuss {
-  display: flex; align-items: center; gap: .5rem;
-  padding: 0 .625rem;
-  background: var(--flaeche);
-  border-bottom: 1px solid var(--linie);
+.leiste-fuss {
+  display: flex; gap: 6px; padding: 8px; flex: none;
+  border-top: 1px solid var(--linie); background: var(--tafel);
 }
-.fuss { border-bottom: 0; border-top: 1px solid var(--linie); justify-content: space-between; font-size: .8125rem; }
-.fuss-gruppe { display: flex; align-items: center; gap: .375rem; }
-.kopf-links { display: flex; align-items: center; gap: .5rem; min-width: 0; flex: 0 0 auto; }
-.kopf-mitte { display: flex; align-items: center; gap: .125rem; flex: 1 1 auto; justify-content: center; overflow-x: auto; scrollbar-width: none; }
-.kopf-mitte::-webkit-scrollbar { display: none; }
-.kopf-rechts { display: flex; align-items: center; gap: .375rem; flex: 0 0 auto; }
-.titel { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
-.titel strong { font-size: .9375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 13rem; }
-.titel-zusatz { font-size: .75rem; color: var(--tinte-leise); white-space: nowrap; }
+.leiste-fuss .knopf { flex: 1; justify-content: center; }
+
+/* ---------- Titelleiste ------------------------------------------------- */
+.kopf {
+  display: flex; align-items: stretch; gap: 0;
+  background: var(--chrome-900); color: var(--chrome-text);
+  padding: 0 8px 0 0;
+}
+/* .marke war schon vergeben (Seitenzahl der Miniatur) — die Wortmarke heißt
+   deshalb .wortmarke. Ein Klassenname, zweimal benutzt, ist ein Fehler, den
+   erst der Bildschirmabzug zeigt. */
+.wortmarke {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 12px; border-right: 1px solid var(--chrome-linie); flex: none;
+}
+/* Gefaltete Seite, nach der Beschreibung im Handoff: Rechteck 4:5 mit
+   abgeschnittener Ecke, darauf das hellere Fold-Dreieck. */
+.wortmarke-zeichen {
+  width: 17px; height: 21px; position: relative; flex: none;
+  background: var(--tally);
+  clip-path: polygon(0 0, 66% 0, 100% 30%, 100% 100%, 0 100%);
+}
+.wortmarke-zeichen::after {
+  content: ''; position: absolute; right: 0; top: 0;
+  width: 34%; height: 30%; background: var(--tally-hell);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+.wortmarke-wort { font-family: var(--serif); font-weight: 600; font-size: 13.5px; white-space: nowrap; }
+
+.dokument-reiter {
+  display: flex; align-items: stretch; flex: 1 1 auto; min-width: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.dokument-reiter::-webkit-scrollbar { display: none; }
+.dok-reiter {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; border: 0; background: none; cursor: pointer;
+  color: var(--chrome-leise); font-size: 11.5px; max-width: 15rem; flex: none;
+  border-right: 1px solid var(--chrome-linie);
+}
+.dok-reiter:hover { background: var(--chrome-800); }
+.dok-reiter.ist-aktiv {
+  background: var(--chrome-700); color: var(--chrome-text);
+  box-shadow: inset 0 -2px 0 var(--tally-hell);
+}
+.dok-reiter-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dok-reiter-zahl { font-family: var(--mono); font-size: 9px; color: var(--chrome-leise); flex: none; }
+.dok-reiter-zu {
+  border: 0; background: none; color: var(--chrome-leise); cursor: pointer;
+  font-size: 13px; line-height: 1; padding: 2px 3px; flex: none;
+}
+.dok-reiter-zu:hover { color: var(--chrome-text); background: var(--chrome-600); }
+.dok-reiter-neu {
+  border: 0; background: none; color: var(--chrome-leise); cursor: pointer;
+  padding: 0 12px; font-size: 15px; flex: none;
+}
+.dok-reiter-neu:hover { color: var(--chrome-text); background: var(--chrome-800); }
+
+.kopf-rechts { display: flex; align-items: center; gap: 6px; flex: none; }
+.knopf-chrome {
+  border: 1px solid var(--chrome-600); background: transparent; color: var(--chrome-text);
+  padding: 4px 9px; font-size: 11px;
+}
+.knopf-chrome:hover { background: var(--chrome-700); }
+.knopf-voll {
+  border: 1px solid var(--tally); background: var(--tally); color: #fff;
+  padding: 5px 11px; font-size: 11px; font-weight: 500;
+}
+.knopf-voll:hover { background: var(--tally-hover); border-color: var(--tally-hover); }
+
+/* ---------- Menüleiste -------------------------------------------------- */
+.menueleiste {
+  display: flex; align-items: stretch; gap: 0;
+  padding: 0 4px;
+  background: var(--menue-grund);
+  border-bottom: 1px solid var(--linie-stark);
+  overflow: visible;
+}
+.menue-stand {
+  margin-left: auto; align-self: center; padding: 0 10px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--tinte-leise); white-space: nowrap;
+}
+.menue { position: relative; display: flex; }
+.menue-knopf {
+  border: 0; background: none; color: var(--tinte);
+  font: inherit; font-size: 11.5px; padding: 0 10px;
+  cursor: pointer; white-space: nowrap; border-radius: 0;
+}
+.menue-knopf:hover { background: var(--flaeche-tief); }
+.menue.ist-offen .menue-knopf { background: var(--tally); color: #fff; }
+.menue-liste {
+  position: absolute; top: 100%; left: 0; z-index: 60;
+  min-width: 250px; max-height: 70vh; overflow-y: auto;
+  padding: 4px 0;
+  background: var(--flaeche-hoch); border: 1px solid var(--linie-stark);
+  box-shadow: var(--schatten-tafel);
+}
+.menue-eintrag {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  width: 100%; padding: 6px 14px;
+  border: 0; background: none; color: var(--tinte);
+  font: inherit; font-size: 11.5px; text-align: left; cursor: pointer;
+}
+.menue-eintrag:hover:not(:disabled) { background: var(--flaeche-tief); }
+.menue-eintrag:disabled { color: var(--tinte-leise); opacity: .55; cursor: default; }
+.menue-eintrag.ist-an .menue-name::before { content: '✓ '; }
+.menue-name { white-space: nowrap; }
+.menue-kuerzel { font-family: var(--mono); font-size: 9.5px; color: var(--tinte-leise); white-space: nowrap; }
+.menue-trenner { margin: 4px 0; border: 0; border-top: 1px solid var(--linie); }
+
+/* ---------- Werkzeugzeile ----------------------------------------------- */
+.werkzeugzeile {
+  display: flex; align-items: center; gap: 4px;
+  padding: 0 0 0 8px;
+  background: var(--flaeche-hoch);
+  border-bottom: 1px solid var(--linie-stark);
+  overflow-x: auto; scrollbar-width: thin;
+}
+.werkzeug {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 10px; flex: none;
+  border: 1px solid var(--linie); background: var(--flaeche);
+  color: var(--tinte); font-size: 11.5px; cursor: pointer;
+}
+.werkzeug:hover { background: var(--flaeche-tief); }
+.werkzeug.ist-aktiv {
+  background: var(--tally); border-color: var(--tally); color: #fff;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,.22);
+}
+.werkzeug .sinnbild { width: 15px; height: 15px; }
+.werkzeug-trenner {
+  width: 1px; height: 24px; background: var(--linie-stark);
+  margin-right: 9px; padding-right: 0; flex: none;
+}
+/* Die rechte Gruppe bleibt erreichbar, auch wenn die Zeile scrollt. */
+.werkzeug-rechts {
+  position: sticky; right: 0; margin-left: auto; flex: none;
+  display: flex; align-items: center; gap: 4px;
+  padding: 0 8px 0 12px; background: var(--flaeche-hoch);
+  box-shadow: -12px 0 12px -6px rgba(0,0,0,.10);
+}
 
 /* ---------- Bedienelemente --------------------------------------------- */
 .knopf {
-  display: inline-flex; align-items: center; gap: .4rem;
-  padding: .4rem .625rem;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
   border: 1px solid var(--linie-stark);
-  border-radius: .5rem;
-  background: var(--flaeche-hoch);
+  border-radius: 0;
+  background: var(--flaeche);
+  color: var(--tinte);
   cursor: pointer;
   white-space: nowrap;
-  transition: background .12s, border-color .12s, transform .06s;
+  font-size: 11.5px;
+  transition: background .12s, border-color .12s;
 }
 .knopf:hover { background: var(--flaeche-tief); }
-.knopf:active { transform: translateY(1px); }
 .knopf:focus-visible { outline: 2px solid var(--tally); outline-offset: 1px; }
 .knopf-still { border-color: transparent; background: transparent; }
 .knopf-still:hover { background: var(--flaeche-tief); }
-.knopf-klein { padding: .25rem .45rem; }
-.knopf-gross { padding: .55rem 1rem; font-weight: 600; }
+.knopf-klein { padding: 3px 7px; font-size: 11px; }
+.knopf-gross { padding: 8px 16px; font-weight: 600; font-size: 13px; }
 .knopf[disabled] { opacity: .45; cursor: not-allowed; }
-.knopf.ist-aktiv { background: var(--tally-grund); border-color: var(--tally); color: var(--tally); }
-.knopf-gefahr { color: var(--tally); }
-
-.werkzeug { padding: .4rem .5rem; border-radius: .5rem; border: 1px solid transparent; background: transparent; cursor: pointer; display: inline-flex; align-items: center; gap: .35rem; }
-.werkzeug:hover { background: var(--flaeche-tief); }
-.werkzeug.ist-aktiv { background: var(--tally-grund); border-color: var(--tally); color: var(--tally); }
-.werkzeug-trenner { width: 1px; height: 1.4rem; background: var(--linie); margin: 0 .25rem; }
+.knopf.ist-aktiv { background: var(--tally); border-color: var(--tally); color: #fff; }
+.knopf-gefahr { color: var(--gefahr); }
 
 .feld {
-  padding: .3rem .45rem;
+  padding: 4px 6px;
   border: 1px solid var(--linie-stark);
-  border-radius: .4rem;
+  border-radius: 0;
   background: var(--flaeche);
+  color: var(--tinte);
   min-width: 0;
 }
-.feld-schmal { width: 3.25rem; text-align: center; }
+.feld-schmal { width: 44px; text-align: center; font-family: var(--mono); font-size: 11px; }
 .feld:focus-visible { outline: 2px solid var(--tally); outline-offset: 0; }
 
-.reiter { display: flex; border-bottom: 1px solid var(--linie); flex: none; }
+.reiter { display: flex; border-bottom: 1px solid var(--linie-stark); flex: none; background: var(--tafel); }
 .reiter-knopf {
-  flex: 1; padding: .5rem .25rem; border: 0; background: transparent; cursor: pointer;
-  font-size: .8125rem; color: var(--tinte-leise); border-bottom: 2px solid transparent;
+  flex: 1; padding: 7px 4px; border: 0; background: transparent; cursor: pointer;
+  font-size: 11px; font-weight: 500; color: var(--tinte-leise); border-bottom: 2px solid transparent;
 }
-.reiter-knopf.ist-aktiv { color: var(--tinte); border-bottom-color: var(--tally); font-weight: 600; }
-.tafel { display: none; overflow: auto; flex: 1; min-height: 0; padding: .5rem; }
+.reiter-knopf:hover { color: var(--tinte); }
+.reiter-knopf.ist-aktiv { color: var(--tally); border-bottom-color: var(--tally); }
+.tafel { display: none; overflow: auto; flex: 1; min-height: 0; padding: 8px; }
 .tafel.ist-aktiv { display: block; }
+.tafel[hidden] { display: none; }
+
+/* ---------- Statusleiste ------------------------------------------------ */
+.fuss {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 10px;
+  background: var(--chrome-700); color: var(--chrome-text);
+  font-size: 11px; white-space: nowrap;
+  justify-content: space-between;
+}
+.fuss-gruppe { display: flex; align-items: center; gap: 6px; flex: none; }
+.fuss-mitte {
+  display: flex; align-items: center; gap: 14px;
+  flex: 1 1 auto; min-width: 0; overflow: hidden;
+  color: var(--chrome-leise); font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: .4px; text-transform: uppercase;
+}
+.fuss-mitte > span { overflow: hidden; text-overflow: ellipsis; }
+.fuss .knopf { color: var(--chrome-text); border-color: var(--chrome-600); background: transparent; }
+.fuss .knopf:hover { background: var(--chrome-600); }
+.fuss .feld { background: var(--chrome-800); border-color: var(--chrome-600); color: var(--chrome-text); }
+.fuss .leise { color: var(--chrome-leise); }
+.fuss-fokus { gap: 8px; }
+.fuss-fokus[hidden] { display: none; }
+.fokus-marke {
+  padding: 1px 6px; background: var(--tally); color: #fff;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .4px; text-transform: uppercase;
+}
+.mono { font-family: var(--mono); }
 
 /* ---------- Bühne ------------------------------------------------------ */
 .buehne {
   overflow: auto;
-  background: var(--grund);
+  background: var(--buehne);
   position: relative;
   outline: none;
   scroll-behavior: auto;
@@ -182,16 +428,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .blatt {
   position: relative;
-  background: #fff;
-  box-shadow: var(--schatten);
+  background: var(--papier);
+  box-shadow: var(--schatten-blatt);
   flex: none;
   --seiten-schub: 0;
 }
 .blatt canvas { display: block; width: 100%; height: 100%; border-radius: 1px; }
 .blatt.ist-gewaehlt { outline: 2px solid var(--tally); outline-offset: 3px; }
 .blatt-nummer {
-  position: absolute; left: 50%; transform: translateX(-50%); bottom: -1.15rem;
-  font-size: .6875rem; color: var(--tinte-leise); pointer-events: none;
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: -18px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .4px;
+  color: rgba(255,255,255,.72); pointer-events: none;
 }
 
 /* Textebene (Auswahl, Suche) */
@@ -376,46 +623,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 @media print { .kopf, .fuss, .leiste, .meldungen { display: none !important; } }
 
-/* ---------- Menüleiste --------------------------------------------------- */
-/* Der Weg mit der Maus zu jedem Befehl. Bewusst eine eigene Zeile und nicht
-   im Kopf: dort stehen die Werkzeuge, und beides zusammen wird eng. */
-.menueleiste {
-  display: flex; align-items: stretch; gap: 0;
-  padding: 0 .5rem;
-  background: var(--flaeche);
-  border-bottom: 1px solid var(--linie);
-  /* Kein overflow hier: eine Leiste, die ihren Inhalt beschneidet, beschneidet
-     auch die aufgeklappte Liste — das Menue oeffnet dann unsichtbar. */
-  overflow: visible;
-}
-.menue { position: relative; display: flex; }
-.menue-knopf {
-  border: 0; background: none; color: var(--tinte);
-  font: inherit; font-size: .8125rem; padding: 0 .625rem;
-  cursor: pointer; white-space: nowrap; border-radius: 0;
-}
-.menue-knopf:hover { background: var(--flaeche-tief); }
-.menue.ist-offen .menue-knopf { background: var(--flaeche-tief); font-weight: 600; }
-.menue-liste {
-  position: absolute; top: 100%; left: 0; z-index: 60;
-  min-width: 21rem; max-height: 70vh; overflow-y: auto;
-  padding: .25rem;
-  background: var(--flaeche); border: 1px solid var(--linie); border-radius: .5rem;
-  box-shadow: var(--schatten);
-}
-.menue-eintrag {
-  display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
-  width: 100%; padding: .3125rem .5rem;
-  border: 0; border-radius: .3125rem; background: none; color: var(--tinte);
-  font: inherit; font-size: .8125rem; text-align: left; cursor: pointer;
-}
-.menue-eintrag:hover:not(:disabled) { background: var(--flaeche-tief); }
-.menue-eintrag:disabled { color: var(--tinte-leise); opacity: .5; cursor: default; }
-.menue-eintrag.ist-an .menue-name::before { content: '✓ '; }
-.menue-name { white-space: nowrap; }
-.menue-kuerzel { color: var(--tinte-leise); font-size: .75rem; white-space: nowrap; }
-.menue-trenner { margin: .25rem .5rem; border: 0; border-top: 1px solid var(--linie); }
-
 /* ---------- Seiten ordnen ------------------------------------------------ */
 /* Vollbild, weil Ordnen heißt: alle Seiten gleichzeitig sehen. */
 .ordnen {
@@ -470,13 +677,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Fokus: nur gewählte Seiten ----------------------------------- */
 .blatt.ist-verborgen { display: none; }
-.fuss-fokus { gap: .5rem; }
-/* .fuss-gruppe setzt display:flex und wuerde [hidden] sonst uebergehen. */
-.fuss-fokus[hidden] { display: none; }
-.fokus-marke {
-  padding: .0625rem .375rem; border-radius: .25rem;
-  background: var(--tally-grund); color: var(--tally); font-weight: 600;
-}
 
 .seiten-ordnen-knopf { width: 100%; justify-content: center; margin-bottom: .5rem; font-weight: 600; }
 
@@ -502,3 +702,86 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .zugang-fehler strong { color: var(--tally); }
 .zugang-warnung strong { color: var(--warn); }
 .zugang-gut strong { color: var(--gut); }
+
+/* ---------- Rechte Tafeln: Faden, Felder, Verlauf ------------------------ */
+.filterreihe { display: flex; gap: 4px; margin-bottom: 8px; }
+.faden {
+  background: var(--flaeche); border: 1px solid var(--linie);
+  border-left: 3px solid var(--linie-stark);
+  padding: 8px 10px; margin-bottom: 6px; cursor: pointer;
+}
+.faden:hover { border-left-color: var(--tally); }
+.faden.ist-aktiv { border-left-color: var(--tally); box-shadow: inset 0 0 0 1px var(--tally-grund); }
+.faden-kopf { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.faden-kopf strong { font-size: 11.5px; font-weight: 600; }
+.faden-text { margin: 4px 0 0; font-size: 11.5px; line-height: 1.55; }
+.faden-antwort {
+  margin: 6px 0 0 10px; padding-left: 8px; border-left: 1px solid var(--linie);
+}
+.faden-antwort p { margin: 2px 0 0; font-size: 11.5px; line-height: 1.5; }
+.faden-fuss { display: flex; gap: 4px; margin-top: 8px; }
+
+.feldzeile {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 8px 4px; border-bottom: 1px solid var(--linie); cursor: pointer;
+}
+.feldzeile:hover { background: var(--flaeche-tief); }
+.feldzeile-name { font-size: 11.5px; font-weight: 500; }
+.wertmarke {
+  font-family: var(--mono); font-size: 9.5px; padding: 2px 6px;
+  background: var(--flaeche-tief); color: var(--tinte-leise); white-space: nowrap;
+}
+.wertmarke.ist-offen { background: var(--warn-grund); color: var(--warn); font-weight: 500; }
+
+.verlauf-zeile { display: flex; gap: 10px; padding: 6px 2px; }
+.verlauf-marke {
+  width: 8px; height: 8px; background: var(--tally); flex: none; margin-top: 4px;
+  box-shadow: 0 12px 0 -3.5px var(--linie-stark);
+}
+.verlauf-zeile > div { font-size: 11.5px; }
+
+/* ---------- Einstellungen ------------------------------------------------ */
+.einstellungen { display: grid; grid-template-columns: 206px 1fr; min-height: 26rem; }
+.einst-kategorien {
+  display: flex; flex-direction: column; border-right: 1px solid var(--linie);
+  background: var(--tafel); margin: -14px 0 -14px -14px; padding: 8px 0;
+}
+.einst-kategorie {
+  border: 0; background: none; text-align: left; cursor: pointer;
+  padding: 8px 14px; font-size: 12px; color: var(--tinte);
+  border-left: 2px solid transparent;
+}
+.einst-kategorie:hover { background: var(--flaeche-tief); }
+.einst-kategorie.ist-aktiv { color: var(--tally); background: var(--flaeche-tief); border-left-color: var(--tally); font-weight: 500; }
+.einst-inhalt { padding: 0 4px 0 18px; overflow-y: auto; max-height: 60vh; }
+.einst-inhalt h3 { font-family: var(--serif); font-size: 18px; font-weight: 600; margin: 0 0 10px; }
+.einst-zeile {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 13px 0; border-bottom: 1px solid var(--linie);
+}
+.einst-name { font-size: 12px; font-weight: 500; }
+.einst-hinweis { font-size: 11px; color: var(--tinte-leise); margin-top: 2px; }
+
+.pille {
+  width: 38px; height: 20px; flex: none; cursor: pointer;
+  border: 1px solid var(--linie-stark); background: var(--flaeche-tief);
+  border-radius: 10px; padding: 1px; display: flex; align-items: center;
+}
+.pille i { width: 16px; height: 16px; background: var(--tinte-leise); display: block; transition: transform .12s, background .12s; }
+.pille.ist-an { background: var(--tally); border-color: var(--tally); }
+.pille.ist-an i { background: #fff; transform: translateX(18px); }
+
+.segmente { display: flex; border: 1px solid var(--linie-stark); background: var(--flaeche); flex: none; }
+.segment {
+  border: 0; background: none; cursor: pointer; padding: 4px 10px;
+  font-size: 11px; color: var(--tinte); border-right: 1px solid var(--linie);
+}
+.segment:last-child { border-right: 0; }
+.segment:hover { background: var(--flaeche-tief); }
+.segment.ist-an { background: var(--tally); color: #fff; }
+
+.ohne-seitenzahlen .blatt-nummer { display: none; }
+.werkzeug-schmal { padding: 0 8px; }
+.werkzeug[disabled] { opacity: .4; cursor: not-allowed; }
+.seiten-kopf { display: flex; flex-wrap: nowrap; gap: 3px; margin-bottom: 8px; }
+.seiten-kopf .knopf { padding: 3px 5px; }

@@ -31,18 +31,45 @@ mehrzeiligem Feld, Ankreuzfeld, Auswahlliste, Optionsfeld und einem echten
 Unterschriftsfeld. Damit lässt sich jede Fähigkeit der Werkbank ausprobieren,
 ohne eine eigene Datei zu suchen.
 
+## Gestaltung
+
+Oberfläche und Marketingseite folgen dem Handoff „PDF Studio": Akzent
+`#0f766e`, dunkle Chrome `#1d2327`, Bühne `#5f686e`, Papier `#fdfcf9`,
+IBM Plex in Sans, Serif und Mono, nur 4er-Schritte im Raster, **Radius 0** —
+alles kantig. Aufbau von oben: Titelleiste 38 px mit Dokumentreitern,
+Menüleiste 27 px, Werkzeugzeile 46 px mit beschrifteten Gruppen und einer
+rechten Gruppe, die beim Scrollen stehen bleibt, dann Bühne mit den beiden
+Leisten (196 px links, 296 px rechts), unten Statusleiste 30 px.
+
+Zwei Abweichungen vom Handoff, beide mit Grund:
+
+- **Die Schriften liegen bei, nicht bei Google.** Das Handoff nennt Google
+  Fonts; die Werkbank darf nichts nachladen. Acht Schnitte als woff2 in
+  `fremd/schrift`, zusammen 176 kB. Der Prüflauf sieht in jeder
+  `@font-face`-Regel nach und schlägt fehl, sobald eine fremde Adresse
+  darin steht.
+- **Es gibt eine dunkle Fassung.** Das Handoff ist nur hell gedacht. Die
+  dunklen Werte sind daraus abgeleitet; der Akzent wird dort zu `#7fd6cd`,
+  weil `#0f766e` auf dunklem Grund nicht mehr trägt.
+
+Nicht übernommen wurde alles, was einen Server braucht: Avatare, „3 Bearbeiter
+live", gemeinsame Ablage, Signaturanforderungen an Externe. Ein Team-Merkmal,
+das ohne Server nicht geht, wäre in dieser Werkbank eine Attrappe.
+
 ## Wo alles steht
 
-Ein Befehl, den niemand findet, gibt es nicht. Deshalb hat jeder der 76
+Ein Befehl, den niemand findet, gibt es nicht. Deshalb hat jeder der 77
 Befehle einen Weg mit der Maus:
 
 - **Menüleiste** unter dem Kopf — Datei, Bearbeiten, Seiten, Ansicht,
   Werkzeuge, Gehe zu, Schutz, Hilfe. Sie wird aus dem Befehlsregister gebaut,
   nicht daneben gepflegt; was nirgends einsortiert ist, landet sichtbar unter
   „Weiteres". Der Prüflauf lässt keinen Befehl ohne Menüweg durch.
-- **Werkzeugleiste** im Kopf — die sechzehn Werkzeuge zum Zeigen und Zeichnen.
-- **Rückgängig und Wiederholen** als Knöpfe im Kopf, mit dem Namen des
-  Schritts im Tooltip („Rückgängig: 3 Seiten gelöscht").
+- **Werkzeugzeile** unter dem Menü — die sechzehn Werkzeuge, in fünf Gruppen,
+  die wichtigsten mit Beschriftung. Rechts bleiben „OCR ausführen" und
+  „Exportieren" beim Scrollen stehen.
+- **Rückgängig und Wiederholen** ganz links in der Werkzeugzeile, mit dem
+  Namen des Schritts im Tooltip („Rückgängig: 3 Seiten gelöscht").
 - **Seiten ordnen** (`Strg+Umschalt+O`, Knopf über den Miniaturen) — alle
   Seiten groß nebeneinander: ziehen sortiert um, Umschalt und Strg wählen
   mehrere, dann drehen, verdoppeln, löschen, als eigene Datei sichern oder
@@ -51,6 +78,17 @@ Befehle einen Weg mit der Maus:
   gewählte Seiten zeigen". Die übrigen treten zurück, ohne dass am Dokument
   etwas geändert wird; die Seitennummern bleiben die des Dokuments. Im Fuß
   steht, dass ein Ausschnitt sichtbar ist, mit dem Weg zurück daneben.
+- **Dokumentreiter** in der Titelleiste — mehrere Dateien gleichzeitig offen,
+  jede mit eigener Seitenfolge, eigenen Anmerkungen und eigener
+  Rückgängig-Kette. Der Prüflauf legt eine Anmerkung in den zweiten Reiter und
+  besteht darauf, dass sie im ersten nicht auftaucht.
+- **Rechte Leiste mit vier Reitern** — Hinweise (das Mitdenken), Kommentare
+  (Fäden mit Antworten und Erledigt-Zustand), Felder (mit Pflichtstatus),
+  Verlauf (die Rückgängig-Kette als Zeitleiste).
+- **Einstellungen** (`Ansicht → Einstellungen`) — sieben Kategorien. Jeder
+  Schalter wirkt sofort; einer, der erst nach „Übernehmen" etwas tut, wird
+  zweimal gedrückt. Bewusst ohne Browser-Speicher: die Einstellungen gelten
+  für diese Sitzung, die Werkbank hinterlässt nichts.
 - **Befehlspalette** (`Strg+K`) für alle, die lieber tippen.
 
 ## Was mitdenkt
@@ -280,6 +318,7 @@ app/anmerkungen.js  Anmerkungsmodell, Darstellung, Zeigerbedienung
 app/seiten.js       Miniaturen, Auswahl, Umsortieren
 app/ordnen.js       Seiten ordnen: alle Seiten gross, ziehen zum Sortieren
 app/menue.js        Menueleiste, aus dem Befehlsregister gebaut
+app/mappen.js       mehrere Dateien offen: Reiter und Zustandstausch
 app/suche.js        Volltextsuche und Trefferhervorhebung
 app/formulare.js    AcroForm-Felder ausfüllen
 app/texterkennung.js Tesseract ansteuern, Wörter in PDF-Punkte umrechnen
@@ -347,8 +386,8 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 96 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 69 Prüfungen — die Bedienung
-node werkzeuge/live-pruefen.mjs   # 12 Prüfungen — was der Hoster ausliefert
+node werkzeuge/vollpruefung.mjs   # 79 Prüfungen — die Bedienung
+node werkzeuge/live-pruefen.mjs   # 19 Prüfungen — was der Hoster ausliefert
 ```
 
 **`pruefen.mjs`** fragt: Stimmt, was herauskommt? Geschwärzte Seite ohne

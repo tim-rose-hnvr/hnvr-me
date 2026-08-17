@@ -24,6 +24,7 @@ import {
 import { starteSeiten, drehe, loesche, verdopple, gewaehlteOderAktuelle } from './seiten.js';
 import { starteOrdnen, umschalteOrdnen, schliesseOrdnen } from './ordnen.js';
 import { starteMenue } from './menue.js';
+import { starteMappen, mappenListe, neueMappe, wechsleZu, schliesse as schliesseMappe, frischeAuf as frischeMappen } from './mappen.js';
 import { starteSuche, suche, trefferListe, weiter, zurueck, leere as leereSuche, markiereAlle, suchbegriff, textAusgeben } from './suche.js';
 import { formularTafel, zumNaechstenFeld, hatFormular, offeneFelder } from './formulare.js';
 import { zeigeUnterschriftDialog } from './unterschrift.js';
@@ -135,6 +136,7 @@ function baueBefehle() {
       ? 'Ohne Kennwort gesichert — die neue Datei ist für jeden lesbar.'
       : 'Das Dokument trug keinen Schutz; die Datei ist unverändert offen.', { dauer: 5000 });
   });
+  befehl('einstellungen', 'Einstellungen …', 'Ansicht', () => zeigeEinstellungen());
   befehl('barrierefrei', 'Barrierefreiheit prüfen …', 'Hilfe', zeigeBarrierefreiDialog);
   befehl('signieren', 'Digital unterschreiben (Zertifikat) …', 'Schutz', zeigeSignaturDialog);
   befehl('schutz:zeigen', 'Schutz und Rechte anzeigen', 'Schutz', async () => {
@@ -250,22 +252,117 @@ export function setzeWerkzeug(id) {
   zeichneRechteTafel();
 }
 
+/* Die Werkzeugzeile nach dem Handoff: Sinnbild **und** Beschriftung, in vier
+   Gruppen getrennt, und rechts eine Gruppe, die beim Scrollen stehen bleibt.
+   Nur Sinnbilder waren die stille Annahme, jeder kenne sie schon. */
+/* Beschriftet werden die Werkzeuge, nach denen jemand sucht. Die Formen
+   (Rechteck, Ellipse, Pfeil) tragen nur ihr Sinnbild: sie sind selbsterklärend
+   und würden die Zeile sonst auf zwei Bildschirmbreiten dehnen. */
+const WERKZEUGGRUPPEN = [
+  [['auswahl', true], ['text', true]],
+  [['hervor', true], ['unterstrich', false], ['durchstrich', false], ['notiz', true]],
+  [['freihand', false], ['rechteck', false], ['ellipse', false], ['pfeil', false]],
+  [['ersetzen', true], ['schwaerzen', true]],
+  [['feld', true], ['unterschrift', true], ['stempel', false], ['bereich', false]],
+];
+
+/* Die Dokumentreiter in der Titelleiste. Sie sind die einzige Stelle, an der
+   sichtbar wird, dass mehrere Dateien offen sein koennen. */
+function zeichneDokumentreiter() {
+  const leiste = $('#dokument-reiter');
+  if (!leiste) return;
+  leiste.innerHTML = '';
+
+  for (const mappe of mappenListe()) {
+    const reiter = el('button', {
+      klasse: `dok-reiter ${mappe.aktiv ? 'ist-aktiv' : ''}`,
+      role: 'tab', 'aria-selected': mappe.aktiv ? 'true' : 'false',
+      title: mappe.name,
+      beiClick: () => wechsleZu(mappe.id),
+    },
+      el('span', { klasse: 'dok-reiter-name', text: mappe.geaendert ? `${mappe.name} •` : mappe.name }),
+      mappe.seiten ? el('span', { klasse: 'dok-reiter-zahl', text: `${mappe.seiten} S.` }) : null);
+
+    reiter.append(el('button', {
+      klasse: 'dok-reiter-zu', 'aria-label': `${mappe.name} schließen`, text: '✕',
+      beiClick: async (ereignis) => {
+        ereignis.stopPropagation();
+        if (mappe.geaendert && !await frage({
+          titel: 'Ungesicherte Änderungen',
+          text: `„${mappe.name}" hat Änderungen, die noch nicht gesichert sind. Wirklich schließen?`,
+          jaText: 'Schließen', gefahr: true,
+        })) return;
+        schliesseMappe(mappe.id);
+      },
+    }));
+    leiste.append(reiter);
+  }
+
+  leiste.append(el('button', {
+    klasse: 'dok-reiter-neu', text: '+', title: 'Weitere Datei öffnen',
+    beiClick: () => { neueMappe(); $('#dateiwahl').click(); },
+  }));
+}
+
 function zeichneWerkzeugleiste() {
   const leiste = $('#werkzeugleiste');
+  if (!leiste) return;
   leiste.innerHTML = '';
-  for (const werkzeug of WERKZEUGE) {
+
+  /* Rückgängig und Wiederholen stehen ganz links, vor den Werkzeugen. Das
+     Handoff sieht sie nicht vor; sie hier wegzulassen wäre aber ein Rückschritt
+     hinter das, was die Werkbank schon konnte. */
+  for (const [id, name, zeichen] of [
+    ['rueckgaengig', 'Rückgängig', 'M9 14L4 9l5-5M4 9h9a6 6 0 0 1 0 12H8'],
+    ['wiederholen', 'Wiederholen', 'M15 14l5-5-5-5M20 9h-9a6 6 0 0 0 0 12h5'],
+  ]) {
+    const naechster = id === 'rueckgaengig'
+      ? zustand.historie[zustand.historieZeiger]
+      : zustand.historie[zustand.historieZeiger + 1];
     const knopf = el('button', {
-      klasse: `werkzeug ${zustand.werkzeug === werkzeug.id ? 'ist-aktiv' : ''}`,
-      title: `${werkzeug.name} (${werkzeug.kuerzel})`,
-      'aria-pressed': zustand.werkzeug === werkzeug.id ? 'true' : 'false',
-      beiClick: () => setzeWerkzeug(werkzeug.id),
+      klasse: 'werkzeug werkzeug-schmal', id: `knopf-${id}`,
+      title: naechster ? `${name}: ${naechster.beschreibung}` : name,
+      'aria-label': name,
+      disabled: id === 'rueckgaengig'
+        ? zustand.historieZeiger < 0
+        : zustand.historieZeiger >= zustand.historie.length - 1,
+      beiClick: () => fuehreAus(id),
     });
-    knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${werkzeug.zeichen}"/></svg>`;
+    knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${zeichen}"/></svg>`;
     leiste.append(knopf);
-    if (werkzeug.id === 'auswahl' || werkzeug.id === 'durchstrich' || werkzeug.id === 'text') {
-      leiste.append(el('span', { klasse: 'werkzeug-trenner' }));
-    }
   }
+  leiste.append(el('span', { klasse: 'werkzeug-trenner' }));
+
+  WERKZEUGGRUPPEN.forEach((gruppe, i) => {
+    for (const [id, beschriftet] of gruppe) {
+      const werkzeug = WERKZEUGE.find((w) => w.id === id);
+      if (!werkzeug) continue;
+      const aktiv = zustand.werkzeug === werkzeug.id;
+      const knopf = el('button', {
+        klasse: `werkzeug ${beschriftet ? '' : 'werkzeug-schmal'} ${aktiv ? 'ist-aktiv' : ''}`,
+        title: `${werkzeug.name} (${werkzeug.kuerzel})`,
+        'aria-label': werkzeug.name,
+        'aria-pressed': aktiv ? 'true' : 'false',
+        beiClick: () => setzeWerkzeug(werkzeug.id),
+      });
+      const kurz = werkzeug.name.replace(' anlegen', '').replace(' kopieren', '');
+      knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${werkzeug.zeichen}"/></svg>`
+        + (beschriftet ? `<span>${kurz}</span>` : '');
+      leiste.append(knopf);
+    }
+    if (i < WERKZEUGGRUPPEN.length - 1) leiste.append(el('span', { klasse: 'werkzeug-trenner' }));
+  });
+
+  const rechts = el('div', { klasse: 'werkzeug-rechts' });
+  for (const [id, name, zeichen] of [
+    ['texterkennung', 'OCR ausführen', 'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M8 10h8M8 14h5'],
+    ['sichern:als', 'Exportieren', 'M12 3v11M8 11l4 4 4-4M4 20h16'],
+  ]) {
+    const knopf = el('button', { klasse: 'werkzeug', title: name, beiClick: () => fuehreAus(id) });
+    knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${zeichen}"/></svg><span>${name}</span>`;
+    rechts.append(knopf);
+  }
+  leiste.append(rechts);
 }
 
 /* ---------- Tafeln --------------------------------------------------------- */
@@ -375,37 +472,165 @@ function hilfenSuche() {
   return { springeZu: (i) => import('./suche.js').then((m) => m.springeZu(i, hilfen())) };
 }
 
-function zeichneAnmerkungstafel() {
-  const tafel = $('#tafel-anmerkungen');
-  tafel.innerHTML = '';
-  const liste = anmerkungsListe();
-  if (!liste.length) {
-    tafel.append(el('p', { klasse: 'hinweis', text: 'Noch keine Anmerkungen. Werkzeug wählen und auf der Seite ziehen — oder Text markieren und H drücken.' }));
-    return;
-  }
-  tafel.append(el('div', { klasse: 'zeile' },
-    el('span', { klasse: 'hinweis', text: `${liste.length} Anmerkungen` }),
-    el('button', { klasse: 'knopf knopf-klein', text: 'Bericht', title: 'Alle Anmerkungen als Textdatei', beiClick: anmerkungsBericht })));
-
-  for (const a of liste) {
-    const eintrag = el('button', {
-      klasse: `eintrag ${zustand.gewaehlteAnmerkung === a.id ? 'ist-aktiv' : ''}`,
-      beiClick: () => { waehleAn(a.id); zeigeSeite(a.seite); },
-    },
-      el('div', { klasse: 'eintrag-kopf' },
-        el('span', {}, el('span', { klasse: 'punkt', stil: { background: a.farbe || '#000' } }), ' ', bezeichne(a)),
-        el('span', { klasse: 'marke', text: `S. ${a.seite}` })),
-      a.text ? el('div', { klasse: 'eintrag-zeile', text: a.text }) : null);
-    tafel.append(eintrag);
-  }
-}
-
 async function anmerkungsBericht() {
   const zeilen = ['Anmerkungen zu ' + zustand.name, ''];
   for (const a of anmerkungsListe()) {
     zeilen.push(`Seite ${a.seite} · ${bezeichne(a)}${a.text ? `: ${a.text}` : ''}`);
   }
   sichereBytes(new TextEncoder().encode(zeilen.join('\n')), vorschlagsname('-anmerkungen').replace(/\.pdf$/i, '.txt'), 'text/plain');
+}
+
+
+/* ---------- Rechte Leiste: vier Tafeln --------------------------------- */
+
+/* Das Handoff trennt Kommentare, Felder und Verlauf in eigene Reiter. Vorher
+   stand alles untereinander in einer Spalte — bei einem Dokument mit
+   Vorschlaegen, Formular und Anmerkungen musste man scrollen, um irgendetwas
+   zu finden. */
+function zeigeRechteTafel(name) {
+  $$('#reiter-rechts .reiter-knopf').forEach((k) => k.classList.toggle('ist-aktiv', k.dataset.rtafel === name));
+  $$('.leiste-rechts .tafel').forEach((t) => t.classList.toggle('ist-aktiv', t.dataset.rtafel === name));
+  zeichneRechteTafeln();
+}
+
+function zeichneRechteTafeln() {
+  zeichneKommentartafel();
+  zeichneFeldertafel();
+  zeichneVerlauftafel();
+}
+
+/* Kommentare mit Faden: Antworten und ein Erledigt-Zustand. Bisher war eine
+   Anmerkung ein Strich auf dem Papier; ein Kommentar in einer Runde ist aber
+   ein Gespraech, das irgendwann abgehakt wird. */
+function zeichneKommentartafel() {
+  const tafel = $('#tafel-kommentare');
+  if (!tafel || !tafel.classList.contains('ist-aktiv')) return;
+  tafel.innerHTML = '';
+
+  const alle = anmerkungsListe();
+  const offen = alle.filter((a) => !a.erledigt);
+  const erledigt = alle.filter((a) => a.erledigt);
+  const gezeigt = zustand.kommentarfilter === 'erledigt' ? erledigt : offen;
+
+  tafel.append(el('div', { klasse: 'filterreihe' },
+    ...[['offen', `Offen ${offen.length}`], ['erledigt', `Erledigt ${erledigt.length}`]].map(([wert, text]) =>
+      el('button', {
+        klasse: `knopf knopf-klein ${(zustand.kommentarfilter || 'offen') === wert ? 'ist-aktiv' : ''}`,
+        text,
+        beiClick: () => { zustand.kommentarfilter = wert; zeichneKommentartafel(); },
+      })),
+    alle.length ? el('button', {
+      klasse: 'knopf knopf-klein', text: 'Bericht', title: 'Alle Kommentare als Textdatei',
+      stil: { marginLeft: 'auto' }, beiClick: anmerkungsBericht,
+    }) : null));
+
+  if (!gezeigt.length) {
+    tafel.append(el('p', { klasse: 'hinweis', text: zustand.kommentarfilter === 'erledigt'
+      ? 'Noch nichts abgehakt.' : 'Keine offenen Kommentare. Mit N eine Notiz setzen.' }));
+    return;
+  }
+
+  for (const a of gezeigt) {
+    const karte = el('div', {
+      klasse: `faden ${zustand.gewaehlteAnmerkung === a.id ? 'ist-aktiv' : ''}`,
+      beiClick: () => { waehleAn(a.id); melde('seiten:springe', nummerVon(a.seiteId)); },
+    },
+      el('div', { klasse: 'faden-kopf' },
+        el('strong', { text: bezeichne(a) }),
+        el('span', { klasse: 'mono klein leise', text: `S.${nummerVon(a.seiteId)} · ${uhrzeit(a.erstellt)}` })),
+      a.text ? el('p', { klasse: 'faden-text', text: a.text }) : null,
+      ...(a.antworten || []).map((antwort) => el('div', { klasse: 'faden-antwort' },
+        el('span', { klasse: 'mono klein leise', text: uhrzeit(antwort.zeit) }),
+        el('p', { text: antwort.text }))));
+
+    /* Antwortfeld und Erledigt-Knopf nur im geöffneten Faden — wie im
+       Handoff. Sonst liegt das Eingabefeld mitten auf der Karte und fängt
+       jeden Klick ab, mit dem man den Faden überhaupt öffnen wollte. */
+    if (zustand.gewaehlteAnmerkung === a.id) {
+      const feld = el('input', { klasse: 'feld', placeholder: 'Antworten …', stil: { flex: '1' } });
+      feld.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || !feld.value.trim()) return;
+        e.preventDefault();
+        antworteAuf(a.id, feld.value.trim());
+      });
+      feld.addEventListener('click', (e) => e.stopPropagation());
+
+      karte.append(el('div', { klasse: 'faden-fuss' }, feld,
+        el('button', {
+          klasse: 'knopf knopf-klein', text: a.erledigt ? 'Wieder öffnen' : 'Erledigt',
+          beiClick: (e) => { e.stopPropagation(); erledigeAnmerkung(a.id, !a.erledigt); },
+        })));
+    }
+    tafel.append(karte);
+  }
+}
+
+const uhrzeit = (zeit) => new Date(zeit || Date.now()).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+function antworteAuf(id, text) {
+  const a = zustand.anmerkungen.find((x) => x.id === id);
+  if (!a) return;
+  a.antworten = [...(a.antworten || []), { text, zeit: Date.now() }];
+  melde('anmerkungen:geaendert');
+  sage('Antwort vermerkt');
+}
+
+function erledigeAnmerkung(id, erledigt) {
+  aendere(id, { erledigt }, erledigt ? 'Kommentar erledigt' : 'Kommentar wieder geöffnet');
+  zeichneKommentartafel();
+}
+
+/* Felder: was das Formular verlangt, auf einen Blick — mit Pflichtstatus. */
+function zeichneFeldertafel() {
+  const tafel = $('#tafel-felder');
+  if (!tafel || !tafel.classList.contains('ist-aktiv')) return;
+  tafel.innerHTML = '';
+
+  if (!zustand.formularfelder.length) {
+    tafel.append(el('p', { klasse: 'hinweis', text: 'Dieses Dokument hat kein Formular. Mit dem Werkzeug „Formularfeld" (K) lässt sich eines anlegen.' }));
+    return;
+  }
+
+  const offen = zustand.formularfelder.filter((f) => f.pflicht && !zustand.formularwerte.get(f.name));
+  tafel.append(el('p', { klasse: 'hinweis' },
+    `${zustand.formularfelder.length} Felder`,
+    offen.length ? `, ${offen.length} Pflichtfeld${offen.length === 1 ? '' : 'er'} offen` : ', alle Pflichtfelder ausgefüllt'));
+
+  for (const feld of zustand.formularfelder) {
+    const wert = zustand.formularwerte.get(feld.name);
+    const fehlt = feld.pflicht && !wert;
+    tafel.append(el('div', {
+      klasse: 'feldzeile', beiClick: () => { melde('seiten:springe', nummerVon(feld.seiteId)); },
+    },
+      el('div', {},
+        el('span', { klasse: 'mono klein leise', text: feld.art.toUpperCase() }),
+        el('div', { klasse: 'feldzeile-name', text: feld.name })),
+      el('span', {
+        klasse: `wertmarke ${fehlt ? 'ist-offen' : ''}`,
+        text: wert ? String(wert).slice(0, 24) : (feld.pflicht ? 'PFLICHT' : 'leer'),
+      })));
+  }
+}
+
+/* Verlauf: die Rückgängig-Kette, von hinten gelesen. Sie war schon da —
+   sichtbar war sie nur im Tooltip eines Knopfes. */
+function zeichneVerlauftafel() {
+  const tafel = $('#tafel-verlauf');
+  if (!tafel || !tafel.classList.contains('ist-aktiv')) return;
+  tafel.innerHTML = '';
+
+  const schritte = zustand.gedaechtnis.letzteAktionen;
+  if (!schritte.length) {
+    tafel.append(el('p', { klasse: 'hinweis', text: 'Noch nichts geändert.' }));
+    return;
+  }
+  for (const schritt of schritte) {
+    tafel.append(el('div', { klasse: 'verlauf-zeile' },
+      el('i', { klasse: 'verlauf-marke' }),
+      el('div', {},
+        el('div', { text: schritt.beschreibung }),
+        el('span', { klasse: 'mono klein leise', text: uhrzeit(schritt.zeit) }))));
+  }
 }
 
 function zeichneRechteTafel() {
@@ -688,6 +913,119 @@ async function bilderZuPdf(dateien) {
     sichereBytes(await dokument.save(), 'bilder.pdf');
     sage(`${gezaehlt} Bild${gezaehlt === 1 ? '' : 'er'} zu einem PDF gemacht`);
   });
+}
+
+
+/* ---------- Einstellungen ------------------------------------------------ */
+
+/* Bis hierher hatte die Werkbank keine Einstellungen: alles war entweder fest
+   oder ein Befehl. Das Handoff sieht acht Kategorien vor; hier stehen nur die,
+   die wirklich etwas bewirken — ein Schalter ohne Wirkung ist eine Luege.
+
+   Bewusst kein Browser-Speicher: die Einstellungen gelten fuer diese Sitzung.
+   localStorage waere ein Datenspeicher, den niemand geloescht bekommt, und
+   die Werkbank verspricht, nichts zu hinterlassen. */
+export const EINSTELLUNGEN = {
+  'anzeige.thema':        { kategorie: 'Anzeige & Lesen', name: 'Erscheinung', hinweis: 'Hell, dunkel oder nach Systemeinstellung', art: 'wahl', werte: [['system', 'System'], ['hell', 'Hell'], ['dunkel', 'Dunkel']], wert: 'system' },
+  'anzeige.zoom':         { kategorie: 'Anzeige & Lesen', name: 'Zoom beim Öffnen', hinweis: 'Womit eine frisch geöffnete Datei beginnt', art: 'wahl', werte: [['breite', 'Breite'], ['seite', 'Ganze Seite'], ['1', '100 %']], wert: 'breite' },
+  'anzeige.nummern':      { kategorie: 'Anzeige & Lesen', name: 'Seitenzahlen unter dem Blatt', hinweis: '', art: 'schalter', wert: true },
+
+  'anmerkung.staerke':    { kategorie: 'Anmerkungen', name: 'Strichstärke', hinweis: 'Für Freihand, Rechteck, Ellipse, Pfeil', art: 'wahl', werte: [['1', 'Dünn'], ['2', 'Normal'], ['4', 'Dick']], wert: '2' },
+  'anmerkung.groesse':    { kategorie: 'Anmerkungen', name: 'Schriftgröße für Textmarken', hinweis: 'In Punkt', art: 'wahl', werte: [['10', '10'], ['12', '12'], ['16', '16']], wert: '12' },
+
+  'ocr.sprache':          { kategorie: 'OCR & Text', name: 'Sprache der Texterkennung', hinweis: '', art: 'wahl', werte: [['deu', 'Deutsch'], ['eng', 'Englisch']], wert: 'deu' },
+  'ocr.dichte':           { kategorie: 'OCR & Text', name: 'Auflösung', hinweis: 'Höher ist genauer und langsamer', art: 'wahl', werte: [['150', '150 dpi'], ['200', '200 dpi'], ['300', '300 dpi']], wert: '200' },
+
+  'schutz.metadaten':     { kategorie: 'Speicher & Privatsphäre', name: 'Metadaten beim Sichern entfernen', hinweis: 'Verfasser, Erzeuger, Stichwörter', art: 'schalter', wert: false },
+  'schutz.warnen':        { kategorie: 'Speicher & Privatsphäre', name: 'Vor Weitergabe personenbezogener Angaben warnen', hinweis: '', art: 'schalter', wert: true },
+
+  'mitdenken.an':         { kategorie: 'Allgemein', name: 'Hinweise zum Dokument zeigen', hinweis: 'Die Vorschläge in der rechten Leiste', art: 'schalter', wert: true },
+  'mitdenken.hoechstens': { kategorie: 'Allgemein', name: 'Höchstens so viele Hinweise', hinweis: '', art: 'wahl', werte: [['3', '3'], ['6', '6'], ['12', '12']], wert: '6' },
+};
+
+const KATEGORIEN = ['Allgemein', 'Anzeige & Lesen', 'Anmerkungen', 'OCR & Text', 'Signaturen', 'Speicher & Privatsphäre', 'Tastenkürzel'];
+let offeneKategorie = 'Allgemein';
+
+export function einstellung(schluessel) { return EINSTELLUNGEN[schluessel]?.wert; }
+
+function zeigeEinstellungen(kategorie = offeneKategorie) {
+  offeneKategorie = kategorie;
+  const inhalt = el('div', { klasse: 'einst-inhalt' });
+  const liste = el('nav', { klasse: 'einst-kategorien' });
+
+  const zeichneInhalt = () => {
+    inhalt.innerHTML = '';
+    inhalt.append(el('h3', { text: offeneKategorie }));
+
+    if (offeneKategorie === 'Signaturen') {
+      inhalt.append(el('p', { klasse: 'hinweis' },
+        'Unterschrieben wird mit einem Zertifikat aus einer .p12-Datei — unter „Schutz → Digital unterschreiben". ',
+        'Es gibt hier nichts einzustellen: die Werkbank speichert weder Zertifikat noch Kennwort, weil beides ',
+        'die Sitzung nicht überdauern soll.'));
+      return;
+    }
+    if (offeneKategorie === 'Tastenkürzel') {
+      const mitKuerzel = befehle.filter((b) => b.kuerzel);
+      inhalt.append(el('p', { klasse: 'hinweis', text: `${mitKuerzel.length} Befehle haben ein Kürzel. Änderbar sind sie nicht — sie folgen dem, was Betrachter und Textprogramme seit Jahren belegen.` }));
+      for (const b of mitKuerzel) {
+        inhalt.append(el('div', { klasse: 'einst-zeile' },
+          el('div', {}, el('div', { klasse: 'einst-name', text: b.name })),
+          el('kbd', { klasse: 'menue-kuerzel', text: b.kuerzel })));
+      }
+      return;
+    }
+
+    const eintraege = Object.entries(EINSTELLUNGEN).filter(([, e]) => e.kategorie === offeneKategorie);
+    for (const [schluessel, eintrag] of eintraege) {
+      inhalt.append(el('div', { klasse: 'einst-zeile' },
+        el('div', {},
+          el('div', { klasse: 'einst-name', text: eintrag.name }),
+          eintrag.hinweis ? el('div', { klasse: 'einst-hinweis', text: eintrag.hinweis }) : null),
+        eintrag.art === 'schalter' ? schalter(schluessel, eintrag) : wahl(schluessel, eintrag)));
+    }
+  };
+
+  const schalter = (schluessel, eintrag) => {
+    const knopf = el('button', {
+      klasse: `pille ${eintrag.wert ? 'ist-an' : ''}`, role: 'switch',
+      'aria-checked': eintrag.wert ? 'true' : 'false', 'aria-label': eintrag.name,
+      daten: { einstellung: schluessel },
+      beiClick: () => { eintrag.wert = !eintrag.wert; wendeAn(schluessel); zeichneInhalt(); },
+    }, el('i', {}));
+    return knopf;
+  };
+
+  const wahl = (schluessel, eintrag) => el('div', { klasse: 'segmente', daten: { einstellung: schluessel } },
+    ...eintrag.werte.map(([wert, text]) => el('button', {
+      klasse: `segment ${String(eintrag.wert) === wert ? 'ist-an' : ''}`, text,
+      beiClick: () => { eintrag.wert = wert; wendeAn(schluessel); zeichneInhalt(); },
+    })));
+
+  for (const name of KATEGORIEN) {
+    liste.append(el('button', {
+      klasse: `einst-kategorie ${name === offeneKategorie ? 'ist-aktiv' : ''}`, text: name,
+      beiClick: () => { offeneKategorie = name; liste.querySelectorAll('.einst-kategorie').forEach((k) => k.classList.toggle('ist-aktiv', k.textContent === name)); zeichneInhalt(); },
+    }));
+  }
+  zeichneInhalt();
+
+  zeigeDialog({
+    titel: 'Einstellungen',
+    breit: true,
+    rumpf: el('div', { klasse: 'einstellungen' }, liste, inhalt),
+    knoepfe: [{ beschriftung: 'Schließen', betont: true }],
+  });
+}
+
+/* Eine Einstellung wirkt sofort — nicht erst nach „Übernehmen". Ein Schalter,
+   der erst nach einem zweiten Knopfdruck etwas tut, wird zweimal gedrückt. */
+function wendeAn(schluessel) {
+  const wert = EINSTELLUNGEN[schluessel].wert;
+  if (schluessel === 'anzeige.thema') wendeThemaAn(wert);
+  if (schluessel === 'anmerkung.staerke') zustand.strichstaerke = Number(wert);
+  if (schluessel === 'anmerkung.groesse') zustand.schriftgroesse = Number(wert);
+  if (schluessel === 'anzeige.nummern') document.documentElement.classList.toggle('ohne-seitenzahlen', !wert);
+  if (schluessel === 'mitdenken.an' || schluessel === 'mitdenken.hoechstens') { untersuche(); zeichneRechteTafel(); }
 }
 
 /* ---------- Digital unterschreiben ------------------------------------------ */
@@ -1431,6 +1769,7 @@ function starteTastatur() {
 
 export function starteOberflaeche() {
   baueBefehle();
+  starteMappen();
   starteAnsicht();
   starteSeiten();
   starteOrdnen();
@@ -1444,12 +1783,12 @@ export function starteOberflaeche() {
   zeichneWerkzeugleiste();
 
   // Kopf und Fuß
-  $('#knopf-seitenleiste').addEventListener('click', () => fuehreAus('leiste:umschalten'));
   $('#knopf-befehle').addEventListener('click', zeigePalette);
   $('#knopf-sichern').addEventListener('click', () => fuehreAus('sichern'));
-  $('#knopf-rueckgaengig').addEventListener('click', () => fuehreAus('rueckgaengig'));
-  $('#knopf-wiederholen').addEventListener('click', () => fuehreAus('wiederholen'));
   $('#knopf-fokus-aus').addEventListener('click', () => setzeFokus(false));
+  $('#knopf-einstellungen').addEventListener('click', zeigeEinstellungen);
+  $('#knopf-einfuegen').addEventListener('click', () => fuehreAus('datei:anhaengen'));
+  $('#knopf-aufteilen').addEventListener('click', () => fuehreAus('teilen'));
   $('#knopf-zurueck').addEventListener('click', () => zeigeSeite(zustand.aktuelleSeite - 1));
   $('#knopf-vor').addEventListener('click', () => zeigeSeite(zustand.aktuelleSeite + 1));
   $('#knopf-kleiner').addEventListener('click', () => zoomeSchritt(-1));
@@ -1465,6 +1804,11 @@ export function starteOberflaeche() {
   // Reiter links
   $$('#reiter-links .reiter-knopf').forEach((knopf) => {
     knopf.addEventListener('click', () => zeigeLeiste('links', knopf.dataset.tafel));
+  });
+
+  // Reiter rechts
+  $$('#reiter-rechts .reiter-knopf').forEach((knopf) => {
+    knopf.addEventListener('click', () => zeigeRechteTafel(knopf.dataset.rtafel));
   });
 
   // Dateiwahl
@@ -1513,18 +1857,21 @@ export function starteOberflaeche() {
   hoer('dokument:geladen', () => {
     $('#huelle').hidden = false;
     $('#empfang').hidden = true;
-    $('#titel-name').textContent = zustand.name;
     zeichneGliederung();
     zeichneRechteTafel();
-    zeichneAnmerkungstafel();
+    zeichneRechteTafeln();
     aktualisiereFuss();
   });
   hoer('dokument:geaendert', () => {
-    $('#titel-zusatz').textContent = `${zustand.folge.length} Seiten${zustand.geaendert ? ' · ungesichert' : ''}${zustand.quellen.size > 1 ? ` · ${zustand.quellen.size} Quellen` : ''}`;
+    ($('#titel-zusatz') || {}).textContent = `${zustand.folge.length} Seiten${zustand.geaendert ? ' · ungesichert' : ''}${zustand.quellen.size > 1 ? ` · ${zustand.quellen.size} Quellen` : ''}`;
     zeichneRechteTafel();
   });
   hoer('seite:gewechselt', aktualisiereFuss);
-  hoer('historie:geaendert', aktualisiereRueckgaengig);
+  hoer('mappen:geaendert', zeichneDokumentreiter);
+  hoer('dokument:geladen', zeichneDokumentreiter);
+  hoer('dokument:geaendert', zeichneDokumentreiter);
+  hoer('werkzeug:gewechselt', aktualisiereFuss);
+  hoer('historie:geaendert', () => { aktualisiereRueckgaengig(); zeichneVerlauftafel(); });
   hoer('auswahl:geaendert', aktualisiereFuss);
   hoer('ordnen:auszug', async () => {
     const ids = gewaehlteOderAktuelle();
@@ -1533,10 +1880,10 @@ export function starteOberflaeche() {
   });
   hoer('zoom:geaendert', aktualisiereZoomAnzeige);
   hoer('ansicht:neu', aktualisiereZoomAnzeige);
-  hoer('seiten:geaendert', () => { aktualisiereFuss(); zeichneRechteTafel(); });
+  hoer('seiten:geaendert', () => { aktualisiereFuss(); zeichneRechteTafel(); zeichneRechteTafeln(); });
   hoer('seiten:springe', (nummer) => zeigeSeite(nummer));
-  hoer('anmerkungen:geaendert', () => { zeichneAnmerkungstafel(); zeichneRechteTafel(); });
-  hoer('anmerkung:gewaehlt', zeichneRechteTafel);
+  hoer('anmerkungen:geaendert', () => { zeichneRechteTafel(); zeichneRechteTafeln(); });
+  hoer('anmerkung:gewaehlt', () => { zeichneRechteTafel(); zeichneKommentartafel(); });
   hoer('anmerkung:bearbeiten', bearbeiteNotiz);
   hoer('anmerkung:neuerText', neuerText);
   hoer('anmerkung:textErsetzen', ersetzeText);
@@ -1546,7 +1893,7 @@ export function starteOberflaeche() {
   hoer('suche:geaendert', zeichneSuchergebnisse);
   hoer('mitdenken:geaendert', zeichneRechteTafel);
   hoer('ocr:geaendert', () => { zeichneRechteTafel(); aktualisiereFuss(); });
-  hoer('formular:geaendert', () => zeichneRechteTafel());
+  hoer('formular:geaendert', () => { zeichneRechteTafel(); zeichneFeldertafel(); });
   hoer('werkzeug:gewechselt', zeichneWerkzeugleiste);
   // Klick in ein Unterschriftsfeld: anlegen und gleich passend einsetzen —
   // niemand soll danach noch einen Rahmen aufziehen müssen.
@@ -1582,6 +1929,9 @@ export function starteOberflaeche() {
 }
 
 async function oeffne(dateien, anhaengen) {
+  /* „Datei oeffnen" ersetzt nicht mehr, was offen ist: es kommt ein Reiter
+     dazu. Nur in eine leere Mappe wird direkt geladen. */
+  if (!anhaengen && hatDokument()) neueMappe();
   await mitLader(anhaengen ? 'Datei wird angehängt …' : 'Datei wird geöffnet …', async () => {
     await oeffneDateien(dateien, { anhaengen });
     if (anhaengen) { await ermittleFormularfelder(); await ermittleMerkmale(); untersuche(); melde('seiten:geaendert'); }
@@ -1618,22 +1968,55 @@ function aktualisiereFuss() {
   if (zustand.anmerkungen.length) teile.push(`${zustand.anmerkungen.length} Anmerkungen`);
   if (befunde.gescannt) teile.push('Scan ohne Textebene');
   melder.textContent = teile.join(' · ');
+
+  const stand = $('#menue-stand');
+  if (stand) {
+    stand.textContent = zustand.folge.length
+      ? `${zustand.name} · ${zustand.folge.length} Seiten · ${zustand.geaendert ? 'geändert' : 'gesichert'}`
+      : '';
+  }
+  const format = $('#fuss-format');
+  if (format) {
+    const eintrag = zustand.folge[zustand.aktuelleSeite - 1];
+    format.textContent = eintrag ? seitenformat(eintrag) : '–';
+  }
+  const werkzeugfeld = $('#fuss-werkzeug');
+  if (werkzeugfeld) {
+    const werkzeug = WERKZEUGE.find((w) => w.id === zustand.werkzeug);
+    werkzeugfeld.textContent = werkzeug ? `Werkzeug: ${werkzeug.name}` : '';
+  }
   aktualisiereRueckgaengig();
   aktualisiereFokusanzeige();
+}
+
+/* „A4 · 210 × 297 mm" im Fuß: die Blattgroesse ist die Angabe, nach der in
+   einer Sitzung am haeufigsten gefragt wird. Ein PDF-Punkt ist 1/72 Zoll. */
+const BLATTMASSE = [
+  { name: 'A4', b: 210, h: 297 }, { name: 'A3', b: 297, h: 420 },
+  { name: 'A5', b: 148, h: 210 }, { name: 'Letter', b: 216, h: 279 },
+  { name: 'Legal', b: 216, h: 356 },
+];
+/* Die Masse kommen aus der Ansicht, die die Seite ohnehin schon vermessen
+   hat — ein zweiter, asynchroner Weg dafuer waere im Fuss zu langsam. */
+function seitenformat(eintrag) {
+  const blatt = blattVon(eintrag.id);
+  const skala = blatt?.skala;
+  const knoten = blatt?.knoten;
+  if (!knoten || !skala) return '–';
+  const mm = (punkte) => Math.round(punkte * 25.4 / 72);
+  const b = mm(knoten.offsetWidth / skala), h = mm(knoten.offsetHeight / skala);
+  const quer = b > h;
+  const [kurz, lang] = quer ? [h, b] : [b, h];
+  const treffer = BLATTMASSE.find((m) => Math.abs(m.b - kurz) <= 2 && Math.abs(m.h - lang) <= 2);
+  return `${treffer ? `${treffer.name}${quer ? ' quer' : ''} · ` : ''}${b} × ${h} mm`;
 }
 
 /* Zwei Knöpfe, die vorher nur als Tastenkombination existierten. Ein Mensch,
    der einen Fehler gemacht hat, sucht einen Knopf, keine Kombination. */
 function aktualisiereRueckgaengig() {
-  const zurueck = $('#knopf-rueckgaengig');
-  const vor = $('#knopf-wiederholen');
-  if (!zurueck || !vor) return;
-  const naechsterZurueck = zustand.historie[zustand.historieZeiger];
-  const naechsterVor = zustand.historie[zustand.historieZeiger + 1];
-  zurueck.disabled = zustand.historieZeiger < 0;
-  vor.disabled = zustand.historieZeiger >= zustand.historie.length - 1;
-  zurueck.title = naechsterZurueck ? `Rückgängig: ${naechsterZurueck.beschreibung} (Strg+Z)` : 'Rückgängig (Strg+Z)';
-  vor.title = naechsterVor ? `Wiederholen: ${naechsterVor.beschreibung} (Strg+Umschalt+Z)` : 'Wiederholen (Strg+Umschalt+Z)';
+  /* Die beiden Knöpfe stehen in der Werkzeugzeile und werden mit ihr
+     gezeichnet — Zustand und Tooltip entstehen dort. */
+  zeichneWerkzeugleiste();
 }
 
 /* ---------- Nur gewählte Seiten zeigen -------------------------------------- */

@@ -17,24 +17,35 @@ import '../styles/werkbank.css';
   <meta property="og:type" content="website" />
 </head>
 <body>
-  <header class="spur">
-    <div class="kopfzeile">
-      <a class="wortmarke" href="/">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h4"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg>
-        Werkbank
+  <header class="kopf">
+    <div class="spur kopfzeile">
+      <a class="markenzug" href="/">
+        <span class="markenzug-zeichen" aria-hidden="true"></span>
+        <span>
+          <span class="markenzug-wort">Werkbank</span>
+          <span class="markenzug-unterzeile">hnvr.me digital</span>
+        </span>
       </a>
       <nav class="kopf-wege">
+        <a class="klein" href="/#abgleich">Abgleich</a>
+        <a class="klein" href="/#pruefstand">Prüfstand</a>
         <a class="klein" href="/portal">Kundenbereich</a>
-        {anmeldenZeigen && <a class="knopf-still" href="/api/auth/login">Anmelden</a>}
+        {anmeldenZeigen && <a class="knopf-voll" href="/api/auth/login">Anmelden</a>}
       </nav>
     </div>
   </header>
 
   <slot />
 
-  <footer class="spur fusszeile">
-    <div>Werkbank — PDF-Arbeit auf Ihrem Gerät</div>
-    <div>hnvr.me digital</div>
+  <footer class="invers">
+    <div class="spur fusszeile">
+      <div>
+        <span class="markenzug-wort">Werkbank</span>
+        <p class="klein leise" style="max-width:26rem">PDF-Arbeit auf Ihrem Gerät. Kein Konto, kein Upload, kein Abo.</p>
+      </div>
+      <div class="klein leise mono">PDF · OCR · PAdES-B-B · KEIN CLOUD-ZWANG</div>
+      <div class="klein leise">hnvr.me digital</div>
+    </div>
   </footer>
 </body>
 </html>

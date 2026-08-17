@@ -42,10 +42,10 @@ export function baueMiniaturen() {
   const kopf = el('div', { klasse: 'seiten-kopf' },
     el('button', { klasse: 'knopf knopf-klein', text: 'Alle', beiClick: () => { zustand.folge.forEach((e) => zustand.gewaehlteSeiten.add(e.id)); melde('auswahl:geaendert'); } }),
     el('button', { klasse: 'knopf knopf-klein', text: 'Keine', beiClick: () => { zustand.gewaehlteSeiten.clear(); melde('auswahl:geaendert'); } }),
-    el('button', { klasse: 'knopf knopf-klein', text: '↺', title: 'Links drehen', beiClick: () => drehe(-90) }),
-    el('button', { klasse: 'knopf knopf-klein', text: '↻', title: 'Rechts drehen', beiClick: () => drehe(90) }),
-    el('button', { klasse: 'knopf knopf-klein', text: '⧉', title: 'Verdoppeln', beiClick: verdopple }),
-    el('button', { klasse: 'knopf knopf-klein knopf-gefahr', text: '␥', title: 'Löschen', beiClick: loesche }));
+    el('button', { klasse: 'knopf knopf-klein', text: '↺', title: 'Gewählte Seiten links drehen', 'aria-label': 'Links drehen', beiClick: () => drehe(-90) }),
+    el('button', { klasse: 'knopf knopf-klein', text: '↻', title: 'Gewählte Seiten rechts drehen', 'aria-label': 'Rechts drehen', beiClick: () => drehe(90) }),
+    el('button', { klasse: 'knopf knopf-klein', text: '⧉', title: 'Gewählte Seiten verdoppeln', 'aria-label': 'Verdoppeln', beiClick: verdopple }),
+    el('button', { klasse: 'knopf knopf-klein knopf-gefahr', text: '✕', title: 'Gewählte Seiten löschen', 'aria-label': 'Löschen', beiClick: loesche }));
   behaelter.append(kopf);
 
   gitter = el('div', { klasse: 'miniaturen' });

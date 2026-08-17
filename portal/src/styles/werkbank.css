@@ -2,44 +2,74 @@
    Farben und Schriften stammen aus der Anwendung selbst (werkbank/app/stil.css):
    Papiergrau, Tinte, Eisenoxidrot. Keine externe Schrift — dieselbe Regel,
    nach der die Werkbank gebaut ist, gilt auch für ihre Seite. */
+/* Werkbank — Gestaltung der Seite.
+
+   Farben, Schriften und Formen folgen demselben Handoff wie die Anwendung
+   („PDF Studio"): Akzent #0f766e, dunkle Chrome #1d2327, IBM Plex, Radius 0.
+   Seite und Anwendung sollen wie ein Stück wirken — wer auf „Werkbank öffnen"
+   klickt, soll nicht das Gefühl haben, ein anderes Haus zu betreten.
+
+   Die Schriften liegen unter public/schrift und kommen nicht von Google:
+   dieselbe Regel, nach der die Werkbank gebaut ist, gilt auch für ihre Seite. */
+
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('/schrift/plex-sans-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('/schrift/plex-sans-500.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('/schrift/plex-sans-600.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Serif'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('/schrift/plex-serif-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Serif'; font-style: italic; font-weight: 400; font-display: swap;
+  src: url('/schrift/plex-serif-400-italic.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Serif'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('/schrift/plex-serif-600.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('/schrift/plex-mono-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('/schrift/plex-mono-500.woff2') format('woff2'); }
+
 :root {
-  --grund:        #EBEEEE;
+  --grund:        #ECEEF0;
   --flaeche:      #FFFFFF;
-  --flaeche-tief: #E2E6E7;
-  --tinte:        #141A1C;
-  --tinte-leise:  #59666C;
-  --linie:        #D0D7D9;
-  --linie-stark:  #A9B4B8;
-  --tally:        #A82E23;
-  --tally-grund:  #F7E7E5;
-  --gut:          #0D5A4D;
-  --gut-grund:    #DFEDEA;
-  --warn:         #7E5300;
+  --flaeche-tief: #F5F6F7;
+  --tinte:        #15191C;
+  --tinte-leise:  #59636A;
+  --linie:        #D7DBDE;
+  --linie-stark:  #C3C9CD;
+  --tally:        #0F766E;
+  --tally-grund:  rgba(15,118,110,.10);
+  --tally-hell:   #7FD6CD;
+  --gut:          #0F766E;
+  --gut-grund:    rgba(15,118,110,.10);
+  --warn:         #B4530A;
+  --chrome-900:   #1D2327;
+  --chrome-800:   #22292E;
+  --chrome-linie: #2C3438;
+  --chrome-leise: #8B979C;
 
-  --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          "Helvetica Neue", Arial, sans-serif;
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
-           Georgia, serif;
-  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
-          "Liberation Mono", monospace;
+  --sans: 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
+  --serif: 'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
+  --mono: 'IBM Plex Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
-  --spur: 62rem;
+  --spur: 75rem;
   --lauf: 34rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --grund:        #111618;
-    --flaeche:      #192023;
-    --flaeche-tief: #212A2E;
+    --grund:        #14191C;
+    --flaeche:      #1D2327;
+    --flaeche-tief: #22292E;
     --tinte:        #E4E9EA;
     --tinte-leise:  #93A1A7;
     --linie:        #2A3438;
     --linie-stark:  #47555A;
-    --tally:        #F0705C;
-    --tally-grund:  #37211E;
-    --gut:          #63BFA9;
-    --gut-grund:    #14302B;
+    --tally:        #7FD6CD;
+    --tally-grund:  rgba(127,214,205,.14);
+    --tally-hell:   #7FD6CD;
+    --gut:          #7FD6CD;
+    --gut-grund:    rgba(127,214,205,.14);
     --warn:         #E2B15C;
   }
 }
@@ -120,7 +150,7 @@ p:last-child { margin-bottom: 0; }
 .stempel {
   display: inline-flex; flex-direction: column; align-items: center; gap: .1rem;
   border: 3px solid var(--tally); color: var(--tally);
-  border-radius: .5rem; padding: .7rem 1.4rem;
+  border-radius: 0; padding: .7rem 1.4rem;
   font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
   font-size: 1.05rem; line-height: 1.1;
   transform: rotate(-4deg);
@@ -136,7 +166,7 @@ p:last-child { margin-bottom: 0; }
 
 /* Werkzeugleiste als Beweisstück */
 .leiste {
-  background: var(--flaeche); border: 1px solid var(--linie); border-radius: .9rem;
+  background: var(--flaeche); border: 1px solid var(--linie); border-radius: 0;
   padding: .9rem; box-shadow: 0 1px 2px rgba(20,26,28,.06), 0 14px 40px rgba(20,26,28,.09);
 }
 .leiste-kopf {
@@ -148,7 +178,7 @@ p:last-child { margin-bottom: 0; }
 .werkzeuge { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: .25rem; }
 .werkzeug {
   display: flex; align-items: center; gap: .5rem;
-  padding: .45rem .5rem; border-radius: .45rem; font-size: .8125rem;
+  padding: .45rem .5rem; border-radius: 0; font-size: .8125rem;
   color: var(--tinte-leise);
   min-width: 0; white-space: nowrap; overflow: hidden;
 }
@@ -171,7 +201,7 @@ p:last-child { margin-bottom: 0; }
 @media (min-width: 52rem) { .faelle { grid-template-columns: repeat(3, 1fr); } }
 .fall {
   background: var(--flaeche); border: 1px solid var(--linie);
-  border-radius: .7rem; padding: 1.1rem 1.2rem;
+  border-radius: 0; padding: 1.1rem 1.2rem;
   display: flex; flex-direction: column; gap: .5rem;
 }
 .fall .befund {
@@ -182,12 +212,12 @@ p:last-child { margin-bottom: 0; }
 .fall .tat {
   align-self: flex-start; margin-top: auto;
   background: var(--tally-grund); color: var(--tally);
-  border-radius: .3rem; padding: .15rem .5rem;
+  border-radius: 0; padding: .15rem .5rem;
   font-size: .75rem; font-weight: 600;
 }
 
 /* ---------- Tabelle ------------------------------------------------------- */
-.tabellenrahmen { overflow-x: auto; border: 1px solid var(--linie); border-radius: .7rem; background: var(--flaeche); }
+.tabellenrahmen { overflow-x: auto; border: 1px solid var(--linie); border-radius: 0; background: var(--flaeche); }
 table { border-collapse: collapse; width: 100%; font-size: .9375rem; min-width: 34rem; }
 th, td { text-align: left; padding: .55rem .9rem; border-bottom: 1px solid var(--linie); vertical-align: top; }
 thead th {
@@ -222,7 +252,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 
 /* ---------- Prüfstand ----------------------------------------------------- */
 .pruefstand {
-  background: var(--tinte); color: var(--grund); border-radius: 1rem;
+  background: var(--tinte); color: var(--grund); border-radius: 0;
   padding: clamp(1.5rem, 4vw, 2.5rem);
 }
 .pruefstand h2 { color: var(--grund); }
@@ -235,7 +265,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 
 /* ---------- Offen / Abschluss --------------------------------------------- */
 .offen {
-  border: 2px dashed var(--linie-stark); border-radius: .7rem;
+  border: 2px dashed var(--linie-stark); border-radius: 0;
   padding: 1.2rem 1.4rem; background: var(--flaeche);
 }
 .offen ul { margin: .6rem 0 0; padding-left: 1.1rem; color: var(--tinte-leise); font-size: .9375rem; }
@@ -252,9 +282,9 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .kopf-wege { display: flex; align-items: center; gap: 1rem; }
 .kopf-wege a { color: var(--tinte-leise); text-decoration: none; }
 .kopf-wege a:hover { color: var(--tinte); }
-.kopf-wege a:focus-visible { outline: 2px solid var(--tally); outline-offset: 3px; border-radius: .25rem; }
+.kopf-wege a:focus-visible { outline: 2px solid var(--tally); outline-offset: 3px; border-radius: 0; }
 .knopf-still {
-  border: 1px solid var(--linie-stark); border-radius: .45rem;
+  border: 1px solid var(--linie-stark); border-radius: 0;
   padding: .3rem .75rem; font-size: .875rem; color: var(--tinte) !important;
 }
 .knopf-still:hover { background: var(--flaeche-tief); }
@@ -262,14 +292,14 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 /* ---------- Kundenbereich --------------------------------------------------- */
 .portal-karte {
   background: var(--flaeche); border: 1px solid var(--linie);
-  border-radius: .9rem; padding: clamp(1.4rem, 4vw, 2.2rem);
+  border-radius: 0; padding: clamp(1.4rem, 4vw, 2.2rem);
   max-width: 34rem;
 }
 .portal-karte h2 { margin-bottom: .75rem; }
 .knopf-voll {
   display: inline-block; margin-top: 1.2rem;
   background: var(--tally); color: #fff; text-decoration: none;
-  border-radius: .5rem; padding: .6rem 1.2rem; font-weight: 600;
+  border-radius: 0; padding: .6rem 1.2rem; font-weight: 600;
 }
 .knopf-voll:hover { filter: brightness(1.08); }
 .knopf-voll:focus-visible { outline: 2px solid var(--tinte); outline-offset: 2px; }
@@ -286,7 +316,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 /* ---------- Handlungsaufforderungen ----------------------------------------- */
 .knopf-reihe { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.8rem; }
 .knopf-rand {
-  display: inline-block; border: 1px solid var(--linie-stark); border-radius: .5rem;
+  display: inline-block; border: 1px solid var(--linie-stark); border-radius: 0;
   padding: .6rem 1.2rem; color: var(--tinte); text-decoration: none; font-weight: 600;
 }
 .knopf-rand:hover { background: var(--flaeche-tief); }
@@ -297,3 +327,63 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 @media (min-width: 44rem) { .abbinder { grid-template-columns: repeat(3, 1fr); } }
 .abbinder h3 { margin-bottom: .3rem; }
 .abbinder p { font-size: .9375rem; }
+
+/* ---------- Handoff-Nachzug: dunkle Nav, kantige Karten, Mono-Marken ----- */
+/* Das Handoff setzt die Navigation auf #1d2327 und macht die Vergleichs-
+   sektion invers. Beides trägt die Aussage: die Seite gehört zu einem
+   Werkzeug, nicht zu einer Broschüre. */
+.kopf {
+  background: var(--chrome-900); border-bottom: 0; position: sticky; top: 0; z-index: 40;
+}
+.kopf a, .kopf strong, .kopf .leise { color: #fff; }
+.kopf .leise { color: var(--chrome-leise); }
+.kopf-wege a:hover { color: var(--tally-hell); }
+
+/* .marke ist auf dieser Seite schon vergeben (das Mono-Etikett über jeder
+   Rubrik). Der Markenzug heißt deshalb anders — derselbe Fehler wie in der
+   Anwendung, an derselben Stelle, mit demselben Bild als Beweis. */
+.markenzug {
+  display: inline-flex; align-items: center; gap: .6rem;
+  text-decoration: none; color: #fff;
+}
+.markenzug:hover { color: #fff; }
+.markenzug-zeichen {
+  width: 23px; height: 28px; position: relative; flex: none;
+  background: var(--tally);
+  clip-path: polygon(0 0, 66% 0, 100% 30%, 100% 100%, 0 100%);
+}
+.markenzug-zeichen::after {
+  content: ''; position: absolute; right: 0; top: 0;
+  width: 34%; height: 30%; background: var(--tally-hell);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+.markenzug-wort { font-family: var(--serif); font-weight: 600; font-size: 1.05rem; letter-spacing: 0; text-transform: none; display: block; }
+.markenzug-unterzeile {
+  font-family: var(--mono); font-size: .5rem; letter-spacing: 1.6px;
+  text-transform: uppercase; color: var(--chrome-leise); display: block;
+}
+
+h1, h2, h3 { font-family: var(--serif); }
+h1 { font-size: clamp(2.2rem, 5vw, 3.44rem); line-height: 1.06; letter-spacing: -.6px; font-weight: 600; }
+h2 { font-size: clamp(1.5rem, 3vw, 1.94rem); letter-spacing: -.3px; font-weight: 600; }
+h3 { font-size: 1.06rem; font-weight: 600; }
+.marke, .mono, .stempel, .markenzug-unterzeile { font-family: var(--mono); }
+
+/* Die invers gesetzte Vergleichssektion. */
+.invers { background: var(--chrome-900); color: #fff; }
+.invers h2, .invers h3 { color: #fff; }
+.invers .leise, .invers p { color: #c6ced2; }
+.invers table { border-color: var(--chrome-linie); }
+.invers th, .invers td { border-color: var(--chrome-linie); color: #c6ced2; }
+.invers thead th { background: var(--chrome-800); color: var(--chrome-leise); }
+.invers .stand.ja { color: var(--tally-hell); background: rgba(15,118,110,.18); }
+.invers .tabellenrahmen { background: var(--chrome-800); border-color: var(--chrome-linie); }
+.kopf .spur.kopfzeile { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: .7rem; padding-bottom: .7rem; }
+.kopf-wege { display: flex; align-items: center; gap: 1.1rem; }
+.knopf-voll {
+  background: var(--tally); color: #fff; border: 1px solid var(--tally);
+  padding: .35rem .8rem; text-decoration: none; font-size: .8125rem; font-weight: 500;
+}
+.knopf-voll:hover { background: #0E6B64; color: #fff; }
+.fusszeile { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: flex-start; padding-top: 2.5rem; padding-bottom: 2.5rem; }
+.invers .fusszeile .markenzug-wort { color: #fff; font-family: var(--serif); font-size: 1.05rem; }

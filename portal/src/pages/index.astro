@@ -184,7 +184,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
     </div>
   </section>
 
-  <section class="spur" id="abgleich">
+  <section class="invers" id="abgleich"><div class="spur">
     <span class="marke">Abgleich</span>
     <h2 class="lauf">Neunundzwanzig Werkzeuge von Acrobat, ehrlich durchgezählt.</h2>
     <p class="lauf" style="margin-bottom:1.5rem">
@@ -230,20 +230,20 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       </table>
     </div>
     <div class="bilanz">
-      <div class="zahl betont"><b>18</b><span>ganz oder teilweise vorhanden</span></div>
+      <div class="zahl betont"><b>20</b><span>ganz oder teilweise vorhanden</span></div>
       <div class="zahl"><b>6</b><span>brauchen Server oder Dienst</span></div>
       <div class="zahl"><b>2</b><span>bewusst abgelehnt</span></div>
-      <div class="zahl"><b>3</b><span>echte Lücken, hier baubar</span></div>
+      <div class="zahl"><b>1</b><span>echte Lücke: Druckvorstufe</span></div>
     </div>
-  </section>
+  </div></section>
 
   <section class="spur">
     <span class="marke">Grenzen</span>
     <h2 class="lauf">Was sie nicht kann, steht hier — nicht im Kleingedruckten.</h2>
     <div class="grenzen">
       <div class="grenze">
-        <b>Kein qualifiziertes Signieren</b>
-        <span>Die Unterschrift ist ein Bild. Für eIDAS braucht es ein Zertifikat, eine PAdES-Struktur und für „qualifiziert" eine Signaturkarte oder einen Vertrauensdiensteanbieter.</span>
+        <b>Eine Unterschrift je Datei</b>
+        <span>Signiert wird mit Zertifikat nach PAdES-B-B. Eine zweite Unterschrift über die erste hinweg bräuchte eine inkrementelle Ergänzung — die Werkbank sagt das, statt die erste stillschweigend zu brechen. Kein Zeitstempeldienst, keine Sperrlisten.</span>
       </div>
       <div class="grenze">
         <b>Keine Tabellen nach Word</b>
@@ -268,7 +268,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
     </div>
   </section>
 
-  <section class="spur">
+  <section class="spur" id="pruefstand">
     <div class="pruefstand">
       <span class="marke">Prüfstand</span>
       <h2>Geprüft wird das Ergebnis, nicht das Versprechen.</h2>
@@ -287,7 +287,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <div class="zeile"><i>✓</i> alle sechs Formularfeldarten stehen im gesicherten PDF <em>Datei geprüft</em></div>
         <div class="zeile"><i>✓</i> openssl bestätigt die Unterschrift; ein geändertes Byte bricht sie <em>Datei geprüft</em></div>
         <div class="zeile"><i>✓</i> jedes Werkzeug, jeder Dialog, Tastatur und Zwischenablage <em>Bedienung geprüft</em></div>
-        <div class="zeile"><i>✓</i> 165 Prüfungen, keine offen <em>Stand heute</em></div>
+        <div class="zeile"><i>✓</i> 187 Prüfungen, keine offen <em>Stand heute</em></div>
       </div>
     </div>
   </section>
@@ -318,7 +318,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       </div>
       <div>
         <h3>Stand</h3>
-        <p class="leise">165 Prüfungen, alle bestanden. Änderungen laufen offen im Repository.</p>
+        <p class="leise">187 Prüfungen, alle bestanden. Änderungen laufen offen im Repository.</p>
       </div>
     </div>
   </section>

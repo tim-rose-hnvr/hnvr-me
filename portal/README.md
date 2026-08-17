@@ -7,6 +7,13 @@ Astro-5-Projekt mit der Marketingseite der Werkbank und dem Gerüst für den
 späteren Kundenbereich, angehängt an **Wix Headless**: Wix übernimmt Hosting,
 Anmeldung und Umgebungsvariablen.
 
+Gestaltung wie die Anwendung: Akzent `#0f766e`, dunkle Navigation und dunkler
+Fuß `#1d2327`, invers gesetzter Abgleich, IBM Plex in Sans, Serif und Mono,
+Radius 0. Die Schriften liegen unter `public/schrift` und kommen nicht von
+Google — dieselbe Regel wie in der Werkbank. Seite und Anwendung sollen wie
+ein Stück wirken: wer auf „Werkbank öffnen" klickt, soll nicht das Gefühl
+haben, ein anderes Haus zu betreten.
+
 ```
 src/pages/index.astro       Marketingseite
 src/pages/portal.astro      Kundenbereich (Schritt zwei)

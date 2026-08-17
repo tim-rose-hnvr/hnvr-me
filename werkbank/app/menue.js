@@ -41,7 +41,7 @@ const MENUES = [
     'ansicht:groesser', 'ansicht:kleiner', 'ansicht:breite', 'ansicht:seite', T,
     'ansicht:drehen', T,
     'leiste:umschalten', 'leiste:rechtsUmschalten', 'leiste:seiten', T,
-    'ansicht:thema',
+    'ansicht:thema', 'einstellungen',
   ]],
   ['Werkzeuge', [
     'werkzeug:auswahl', T,
@@ -71,7 +71,8 @@ const MENUES = [
    beim Auswerten schon auf `befehle` zugreift, bekommt es in der zeitlichen
    Totzone — die Anwendung startet dann gar nicht. */
 const OHNE_DOKUMENT = new Set([
-  'datei:oeffnen', 'bilder:zuPdf', 'palette', 'hilfe', 'ansicht:thema', 'unterschrift:anlegen',
+  'datei:oeffnen', 'bilder:zuPdf', 'palette', 'hilfe', 'ansicht:thema',
+  'unterschrift:anlegen', 'einstellungen',
 ]);
 
 let offen = null;
@@ -89,7 +90,11 @@ export function starteMenue() {
   const nachzuegler = unsortierteBefehle();
   const gruppen = nachzuegler.length ? [...MENUES, ['Weiteres', nachzuegler]] : MENUES;
 
+  const stand = $('#menue-stand');
   for (const [titel, ids] of gruppen) leiste.append(baueMenue(titel, ids));
+  /* Der Dokumentstand steht rechts — dafür muss er ans Ende, sonst schiebt
+     sein margin-left:auto die Menüs vor sich her. */
+  if (stand) leiste.append(stand);
 
   /* Ein Klick irgendwo sonst schließt das offene Menü; Escape ebenso. */
   document.addEventListener('click', (e) => { if (!e.target.closest('.menue')) schliesse(); });

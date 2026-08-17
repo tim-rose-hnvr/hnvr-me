@@ -776,7 +776,19 @@ Länge der Kurzdomain bestimmt die Größe jedes gedruckten Codes.
 
 - **Der Zielrechner.** Nichts davon läuft irgendwo. Welche Maschine es
   wird und ob `pnkt.me` selbst darauf zeigen soll, ist eine Entscheidung
-  über Geld und Verantwortung und keine technische.
+  über Geld und Verantwortung und keine technische. `pnkt.me` löst
+  derzeit in keinem DNS auf.
+- **Impressum und Datenschutzerklärung.** Beide liegen als Gerüst unter
+  `website/src/pages/`, mit sichtbaren Lücken und einem Hinweiskasten
+  oben. Der technische Teil des Datenschutzes ist ausgeschrieben — was
+  gezählt wird und was nicht entsteht, steht im Code und ist dort
+  nachlesbar. Was fehlt, ist alles, was kein Programm wissen kann:
+  Anbieter, Anschrift, Hoster, Fristen, Rechtsgrundlagen. Ohne das darf
+  nichts online gehen.
+- **Die native App.** Der Entwurf zeigt vier Telefonbildschirme: Start
+  mit Live-Kachel, den eigenen Code scannen, Codedetail mit
+  Zielumhängung, Benachrichtigungen. Alles davon geht heute im Browser;
+  eine App lohnt erst, wenn Kamera und Push gebraucht werden.
 - **Mehrstufige Strecken.** Gebaut ist die zweistufige: Scan → Knopf auf
   der Landeseite, mit gemessener Rate. Was fehlt, sind weitere Stufen —
   und die sind nur messbar, solange der Weg im System bleibt. Sobald

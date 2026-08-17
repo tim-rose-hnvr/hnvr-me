@@ -316,8 +316,66 @@ func (d *dienst) schluesselAnlegen(w http.ResponseWriter, r *http.Request) {
 // listeCodesFuer zeigt die Codes der Organisation. Mitarbeitende sehen
 // dieselben Codes wie der Inhaber — sonst waere gemeinsame Arbeit an
 // einer Kampagne nicht moeglich.
-func (d *dienst) listeCodesFuer(w http.ResponseWriter, sch *speicher.Schluessel) {
-	d.jsonAus(w, http.StatusOK, d.ablage.Liste(d.ablage.OrgVon(sch)))
+//
+//	?suche=…    in Name, Kuerzel, Ziel, GTIN und Ordner
+//	?ordner=…   genau dieser Ordner, "-" heisst: ohne Ordner
+func (d *dienst) listeCodesFuer(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	f := r.URL.Query()
+	d.jsonAus(w, http.StatusOK, d.ablage.Suche(d.ablage.OrgVon(sch), speicher.Filter{
+		Text:   f.Get("suche"),
+		Ordner: f.Get("ordner"),
+	}))
+}
+
+// ordnerListe nennt die Ordner samt Anzahl. Eine Agentur mit
+// vierhundert Codes braucht keine Liste, sondern eine Gliederung.
+func (d *dienst) ordnerListe(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	d.jsonAus(w, http.StatusOK, d.ablage.Ordner(d.ablage.OrgVon(sch)))
+}
+
+// eigenerCode holt den Code und stellt sicher, dass er der Organisation
+// des Schluessels gehoert. Ohne diese Pruefung koennte jeder gueltige
+// Schluessel jeden fremden Code aendern, sobald er dessen Kennung kennt.
+func (d *dienst) eigenerCode(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) (*speicher.Code, bool) {
+	c, da := d.ablage.NachID(r.PathValue("id"))
+	if !da || c.KontoID != d.ablage.OrgVon(sch) {
+		// Dieselbe Antwort fuer „gibt es nicht" und „gehoert einem
+		// anderen": sonst liesse sich durch Probieren herausfinden,
+		// welche Kennungen es gibt.
+		d.jsonAus(w, http.StatusNotFound, map[string]string{"fehler": "unbekannter Code"})
+		return nil, false
+	}
+	return c, true
+}
+
+// loescheCode nimmt einen Code aus der Liste. Das Kuerzel bleibt auf
+// Dauer reserviert — es steht auf Papier. Loeschen darf nur der Inhaber:
+// es ist der einzige Vorgang, den eine gedruckte Auflage nicht ueberlebt.
+func (d *dienst) loescheCode(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	if !speicher.DarfVerwalten(d.ablage.RolleVon(sch)) {
+		d.jsonAus(w, http.StatusForbidden, map[string]string{
+			"fehler": "einen gedruckten Code loescht der Inhaber"})
+		return
+	}
+	alt, gut := d.eigenerCode(w, r, sch)
+	if !gut {
+		return
+	}
+	altesZiel := alt.Ziel
+
+	neu, err := d.ablage.Loesche(alt.ID)
+	if err != nil {
+		d.jsonAus(w, http.StatusConflict, map[string]string{"fehler": err.Error()})
+		return
+	}
+	_ = d.ablage.Protokolliere(speicher.Ereignis{
+		KontoID: neu.KontoID, Wer: "schnittstelle", Was: "code.geloescht",
+		Gegenstand: neu.ID, Alt: altesZiel,
+	})
+	d.jsonAus(w, http.StatusOK, map[string]string{
+		"zustand": "geloescht", "kuerzel": neu.Kuerzel,
+		"hinweis": "Das Kuerzel bleibt dauerhaft reserviert und wird nie erneut vergeben.",
+	})
 }
 
 // legeCodeAnFuer bindet den neuen Code an das Konto des Schluessels —

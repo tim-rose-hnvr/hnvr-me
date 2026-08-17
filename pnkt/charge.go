@@ -85,6 +85,7 @@ func (d *dienst) charge(w http.ResponseWriter, r *http.Request) {
 		name := feld(zeile, "name")
 		ziel := feld(zeile, "ziel")
 		gtinRoh := feld(zeile, "gtin")
+		ordner := feld(zeile, "ordner")
 
 		if ziel == "" && gtinRoh == "" {
 			_ = schreiber.Write([]string{fmt.Sprint(nr + 2), name, "", "", "", "", "", "F", "nein",
@@ -107,10 +108,27 @@ func (d *dienst) charge(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// Eine Zeile mit GTIN bekommt keinen Kurzweg — gedruckt wird der
+		// Digital Link. Angelegt wird sie trotzdem, sonst faende
+		// GET /01/{gtin} spaeter kein Ziel und der Code liefe ins Leere.
+		if anlegen && gtinRoh != "" && ziel != "" && gs1Fehler == "" {
+			code := &speicher.Code{
+				Kuerzel: d.ablage.FreiesKuerzel(), KontoID: kontoID,
+				Name: name, Ordner: ordner, Ziel: ziel, GTIN: gtinRoh,
+				Aktiv: true, Herkunft: "charge",
+			}
+			if err := d.ablage.LegeAn(code); err == nil {
+				_ = d.ablage.Protokolliere(speicher.Ereignis{
+					KontoID: kontoID, Wer: "charge", Was: "code.angelegt",
+					Gegenstand: code.ID, Neu: ziel,
+				})
+			}
+		}
+
 		if anlegen && gtinRoh == "" {
 			code := &speicher.Code{
 				Kuerzel: d.ablage.FreiesKuerzel(), KontoID: kontoID,
-				Name: name, Ziel: ziel, Aktiv: true, Herkunft: "charge",
+				Name: name, Ordner: ordner, Ziel: ziel, Aktiv: true, Herkunft: "charge",
 			}
 			if err := d.ablage.LegeAn(code); err != nil {
 				_ = schreiber.Write([]string{fmt.Sprint(nr + 2), name, "", ziel, "", "", "", "F", "nein",

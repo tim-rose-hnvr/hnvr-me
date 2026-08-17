@@ -222,6 +222,13 @@ func modulform(form string, x, y, m float64, farbe string) Form {
 			punkte = append(punkte, [2]float64{mx + r*math.Sin(w), my - r*math.Cos(w)})
 		}
 		return Form{Art: ArtPolygon, Farbe: farbe, Punkte: punkte}
+	case "tropfen":
+		// Drei Ecken voll gerundet, die vierte spitz. Die Spitze zeigt
+		// immer nach links oben: eine je Modul wechselnde Richtung sieht
+		// im Raster nach Fehler aus, nicht nach Gestaltung.
+		r := m * 0.5
+		return Form{Art: ArtRundRechteck, X: x, Y: y, B: m, H: m,
+			Ecken: [4]float64{0, r, r, r}, Farbe: farbe}
 	case "mosaik":
 		e := m * 0.08
 		return Form{Art: ArtRechteck, X: x + e, Y: y + e, B: m - 2*e, H: m - 2*e, Farbe: farbe}

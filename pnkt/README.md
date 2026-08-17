@@ -34,7 +34,7 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 | Paket | Aufgabe |
 |---|---|
 | `qr` | QR-Encoder nach ISO/IEC 18004 — Versionen 1 bis 40, Stufen L/M/Q/H, Ziffern-, Alphanumerik- und Bytebetrieb, Reed-Solomon in GF(256), Maskenwahl nach den vier Strafregeln |
-| `qr` (svg.go) | Vektorausgabe in Millimetern: sechs Modulformen, eigene Augenformen, Ruhezone, Logoaussparung. Kein eingebettetes Rasterbild |
+| `qr` (svg.go) | Vektorausgabe in Millimetern: zwölf Modulformen, eigene Augenformen, Ruhezone, Logoaussparung. Kein eingebettetes Rasterbild |
 | `druck` | Druckurteil nach den **veröffentlichten Grenzwerten** von pnkt.me: 0,20 mm Bildschirm, 0,40 mm Laser und Tinte, 0,50 mm Offset, 0,75 mm Großformat, 1,00 mm Gravur; Kontrast ab 4:1, Ruhezone 4 Module, Warnung ab 60 % verbrauchter Reserve |
 | `farbe` | Drei Farbwelten: Bildschirm, CMYK und Sonderfarbe mit Ersatzrezept |
 | `regel` | Wohin ein Scan führt: Liste statt Zuordnung, mit Zeitzone; UTM mit Platzhaltern |
@@ -42,7 +42,7 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 | `inhalt` | GiroCode nach EPC069-12 mit IBAN-Prüfung (ISO 13616, Modulo 97, Längentabelle je Land), vCard 3.0, WLAN |
 | `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler |
 | `ausgabe` | PDF und EPS von Hand geschrieben — echter Vektor in Punkt, ohne fremdes Paket. Verläufe als Schattierung (PDF Typ 2 und 3, PostScript `shfill`), Beschriftung in Helvetica |
-| `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio |
+| `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio, Zentrale |
 
 ### Die Ablage
 
@@ -79,8 +79,10 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `GET /api/v1/vorlage.csv` | Beispieltabelle für die Massenanlage | offen |
 | `GET /api/v1/druckpruefung` | Druckurteil ohne etwas anzulegen | offen |
 | `POST /api/v1/konten`, `/anmelden`, `/schluessel` | Konto und Schlüssel | offen |
-| `GET/POST /api/v1/codes` | Codes lesen und anlegen | Schlüssel |
-| `PATCH /api/v1/codes/{id}` | Ziel ändern — neue Fassung, Protokolleintrag | Schlüssel |
+| `GET/POST /api/v1/codes` | Codes lesen und anlegen; `?suche=…&ordner=…` | Schlüssel |
+| `GET /api/v1/ordner` | Ordner der Organisation samt Anzahl | Schlüssel |
+| `PATCH /api/v1/codes/{id}` | Ziel, Name, Ordner ändern — neue Fassung, Protokolleintrag | Schlüssel |
+| `DELETE /api/v1/codes/{id}` | Code löschen, Kürzel bleibt reserviert | Inhaber |
 | `GET /api/v1/codes/{id}/statistik`, `/protokoll` | Auswertung, Änderungsgeschichte | Schlüssel |
 | `POST /api/v1/massenanlage` | CSV hinein, ZIP heraus | Schlüssel |
 | `GET /api/v1/marke` | Erscheinungsbild des aufgerufenen Hostnamens | offen |
@@ -89,6 +91,7 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `GET /qr.svg\|pdf\|eps?inhalt=…` | derselbe Vektor über die Adresszeile | offen |
 | `POST /api/v1/inhalt` | Felder zu Nutzlast: vCard, WLAN, GiroCode, GS1 | offen |
 | `GET /` | Studio | offen |
+| `GET /zentrale` | Zentrale: suchen, ordnen, löschen | offen |
 
 `POST /api/v1/rendern` trägt das Urteil im Antwortkopf `x-punkt-pruefung`
 (`gut`, `achtung`, `kritisch`) — auch beim Binärabruf. Wer eine Datei
@@ -96,7 +99,7 @@ bekommt, soll nicht raten müssen, ob sie druckreif ist.
 
 ### Zugang
 
-Wie in der Zentrale festgelegt: Passwörter als PBKDF2-Abdruck mit
+Wie auf pnkt.me festgelegt: Passwörter als PBKDF2-Abdruck mit
 **210 000 Runden**, Schlüssel nur als **SHA-256-Abdruck**. Ein Schlüssel
 wird genau einmal im Klartext zurückgegeben und danach nie wieder — er
 lässt sich nicht anzeigen, nur ersetzen. Nach fünf Fehlversuchen ist ein
@@ -182,6 +185,21 @@ als ein Prüfdecoder, und die Entscheidung gehört dem Gestalter.
 Dieselbe Messung hat einen zu klein geratenen Punktkern aufgedeckt
 (Radius 0,38 statt 0,44 der Kernbreite) — behoben, danach 40 von 40.
 
+Die zwölfte Modulform, **`tropfen`** — drei Ecken voll gerundet, die
+vierte spitz —, ist auf demselben Weg nachgeprüft: 32 Kombinationen aus
+zwei Augenrahmen, vier Kernformen und allen vier Fehlerkorrekturstufen,
+über die eigene PDF-Ausgabe, mit Ghostscript gerastert, mit OpenCV
+gelesen. **32 von 32** — und ebenso die Gegenprobe mit `quadrat` auf
+derselben Nutzlast.
+
+Die Gegenprobe ist hier der eigentliche Punkt. Beim ersten Lauf, mit nur
+einer Auflösung, las der Decoder 29 von 32 Tropfen — aber nur 25 von 32
+Quadraten. Die bekannt gutmütige Form schnitt schlechter ab als die neue;
+gescheitert war also der Prüfstand, nicht die Form. Erst über mehrere
+Auflösungen lesen beide alles. Ohne Gegenprobe hätte diese Messung eine
+Form beschuldigt, die nichts getan hat. Der Prüfstand steht in
+`cmd/probe5`.
+
 Die Prüfwerkzeuge liegen bewusst **nicht** im Programm — jsQR und OpenCV
 sind Testzubehör, kein Bestandteil. Das Binär bleibt abhängigkeitsfrei.
 
@@ -189,7 +207,7 @@ sind Testzubehör, kein Bestandteil. Das Binär bleibt abhängigkeitsfrei.
 
 ## Gestaltung
 
-Elf der zwölf Modulformen, vier Rahmen- und vier Kernformen, dazu:
+Alle zwölf Modulformen, vier Rahmen- und vier Kernformen, dazu:
 
 - **Verläufe** linear und radial, in **allen drei** Ausgabeformaten — im
   PDF als Schattierung vom Typ 2 und 3, in EPS über `shfill`. Der Verlauf
@@ -243,7 +261,7 @@ mehr.
 
 - Sechs Inhaltstypen; IBAN und GTIN werden **auf dem Server** geprüft,
   bevor überhaupt ein Code entsteht.
-- Elf Modulformen, vier Rahmen- und vier Kernformen, mit der Messung
+- Zwölf Modulformen, vier Rahmen- und vier Kernformen, mit der Messung
   daneben: quadratische und leicht gerundete Augen 40 von 40, Blatt und
   Rund kein einziges Mal.
 - Vier Farbwelten: Hexfarbe, CMYK, Sonderfarbe, Verlauf.
@@ -287,7 +305,7 @@ nach dem dritten Kunden drei Programme.
 
 ## Mitarbeitende
 
-Drei Rollen, wie in der Zentrale festgelegt:
+Drei Rollen, wie auf pnkt.me festgelegt:
 
 | Rolle | lesen | schreiben | verwalten |
 |---|---|---|---|
@@ -328,17 +346,50 @@ sie niemand an. Fehlerhafte Zeilen brechen den Lauf nicht ab, sie stehen
 mit Grund im Bericht: falsche Prüfziffer, fehlendes Ziel, zu kleine
 Module für das gewählte Verfahren.
 
+## Zentrale
+
+Das Studio baut Codes, die Zentrale führt sie. Unter `/zentrale`: Suche
+über Name, Kürzel, Ziel, GTIN und Ordner, Ordner als Reiter mit Anzahl,
+Ordner setzen und leeren, Löschen. Eine Agentur legt selten einen Code an,
+sondern vierhundert — und findet ihn ein halbes Jahr später wieder.
+
+Der Schlüssel bleibt im Tab und wird beim Schließen vergessen. Gespeichert
+wird er nirgends; auf dem Server liegt ohnehin nur sein SHA-256-Abdruck.
+
+### Löschen ist kein Vergessen
+
+Ein Kürzel wird **einmal vergeben und nie wieder** — auch nicht, wenn der
+Code gelöscht ist. Das Kürzel steht auf Papier, und Papier lässt sich
+nicht löschen. Würde es wieder frei, zeigte ein gedrucktes Plakat eines
+Tages auf das Ziel eines Fremden. Aus demselben Grund bleibt auch ein
+umbenanntes Kürzel gültig und führt weiter zum selben Code.
+
+Gelöscht heißt deshalb: aus der Liste heraus, Ziel weg, Kürzel gesperrt.
+Ein Scan bekommt danach **410 Gone** mit einer lesbaren Seite — nicht
+„unbekannt", denn diesen Code gab es, und wer ihn scannt, hält etwas
+Gedrucktes in der Hand.
+
+Löschen darf nur der Inhaber. Es ist der einzige Vorgang, den eine
+gedruckte Auflage nicht überlebt; ein Redakteur darf ändern, nicht
+vernichten. Zum Bestätigen tippt man in der Zentrale das Kürzel ab.
+
+### Ein Code gehört seiner Organisation
+
+Jeder Zugriff auf einen einzelnen Code — ändern, löschen, Statistik,
+Protokoll — prüft, ob er zur Organisation des Schlüssels gehört. „Gibt es
+nicht" und „gehört einem anderen" bekommen dieselbe Antwort: sonst ließe
+sich durch Probieren herausfinden, welche Kennungen es gibt.
+
 ## Was noch fehlt
 
 Gemessen am veröffentlichten Stand von pnkt.me fehlt dieser Fassung:
 
-- **Ordner, Suche und Löschen** in der Zentrale.
-- **Übernahme aus Wix** — Feldabbildung steht, ein Trockenlauf fehlt.
 - **Produktpass.** Die gehostete Seite hinter dem Code ist die
   eigentliche Anforderung der ESPR.
 - **Übernahme aus Wix.** `PK_Codes` lässt sich zeilenweise in
   `codes.jsonl` überführen; die Feldnamen stimmen bis auf `regelnJson`,
-  das hier bereits als Struktur statt als Text liegt.
+  das hier bereits als Struktur statt als Text liegt. Die Abbildung steht,
+  ein Trockenlauf fehlt.
 
 ---
 

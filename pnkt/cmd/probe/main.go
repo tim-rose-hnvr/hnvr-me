@@ -20,7 +20,7 @@ type fall struct {
 
 func main() {
 	formen := []string{"quadrat", "punkt", "rund", "weich", "mosaik", "raute",
-		"kreuz", "stern", "querstriche", "laengsstriche"}
+		"kreuz", "stern", "querstriche", "laengsstriche", "tropfen"}
 	rahmen := []string{"quadrat", "rund", "blatt", "kissen"}
 	kerne := []string{"quadrat", "rund", "punkt", "weich"}
 

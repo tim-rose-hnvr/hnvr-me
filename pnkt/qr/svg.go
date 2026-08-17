@@ -11,7 +11,8 @@ import (
 type Gestalt struct {
 	BreiteMm    float64 // Kantenlaenge des Symbols ohne Ruhezone
 	RuhezoneMod int     // in Modulen, Norm ist 4
-	Modulform   string  // quadrat, punkt, rund, mosaik, raute, kreuz
+	Modulform   string  // quadrat, punkt, rund, weich, mosaik, raute, kreuz,
+	//                     stern, querstriche, laengsstriche, fliessend, tropfen
 	Augenrahmen string  // quadrat, rund, blatt
 	Augenkern   string  // quadrat, rund, punkt
 	Vordergrund string  // Hexfarbe

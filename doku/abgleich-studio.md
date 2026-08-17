@@ -62,10 +62,16 @@ Dazu drei Dinge, die keine Codefrage sind:
 
 ---
 
-## Was `pnkt/` fehlt
+## Was `pnkt/` fehlte
 
-- **`tropfen`** als Modulform — die einzige der zwölf, die dort ist und
-  hier nicht (`fliessend` und die übrigen stehen inzwischen).
+- **`tropfen`** als Modulform war die einzige der zwölf, die dort stand
+  und hier nicht. Sie steht jetzt, gegengeprüft über die eigene
+  PDF-Ausgabe mit Ghostscript und OpenCV: 32 von 32, mit `quadrat` als
+  Gegenprobe auf derselben Nutzlast.
+
+Damit ist die Gestaltungsseite gleichauf. Was `pnkt/` darüber hinaus hat
+— Sonderfarben, GS1, Mitarbeitende, Ordner, Suche, Löschen mit dauerhaft
+gesperrtem Kürzel, und den Serverteil — steht unten.
 
 ---
 

@@ -49,6 +49,7 @@ body{margin:0;background:var(--grund);color:var(--tinte);
 .spur{max-width:1240px;margin:0 auto;padding:clamp(1rem,3vw,2rem)}
 h1{font-size:1.35rem;margin:0;letter-spacing:-.02em}
 .anriss{color:var(--leise);font-size:.92rem;margin:.2rem 0 1.4rem}
+.anriss a{color:inherit}
 .raster{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:1.1rem;align-items:start}
 @media(max-width:940px){.raster{grid-template-columns:1fr}}
 .feld{background:var(--flaeche);border:1px solid var(--linie);border-radius:12px;overflow:hidden}
@@ -103,7 +104,8 @@ a.knopf.stark{border-color:var(--primaer);color:var(--primaer)}
 
 <div class="spur">
   <h1>Studio</h1>
-  <p class="anriss">Vor dem Druck wissen, ob er scannt. Alles rechnet dieser Server — %s</p>
+  <p class="anriss">Vor dem Druck wissen, ob er scannt. Alles rechnet dieser Server — %s.
+    Angelegte Codes stehen in der <a href="/zentrale">Zentrale</a>.</p>
 
   <div class="raster">
     <div>
@@ -261,7 +263,7 @@ a.knopf.stark{border-color:var(--primaer);color:var(--primaer)}
 <script>
 const e = (id) => document.getElementById(id);
 const FORMEN = ["quadrat","punkt","rund","weich","mosaik","raute","kreuz","stern",
-                "querstriche","laengsstriche","fliessend"];
+                "querstriche","laengsstriche","fliessend","tropfen"];
 let modulform = "quadrat";
 let inhaltText = "https://pnkt.me";
 

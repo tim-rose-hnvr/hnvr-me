@@ -55,56 +55,9 @@ func main() {
 
 	d := &dienst{ablage: ablage, host: *host}
 
-	weg := http.NewServeMux()
-	weg.HandleFunc("GET /gesundheit", d.gesundheit)
-
-	// Offen — kein Schluessel noetig. Codes erzeugen und Ziele ansehen
-	// geht ohne Konto, so wie es die Schnittstellenseite zusagt.
-	weg.HandleFunc("GET /api/v1/typen", d.typen)
-	weg.HandleFunc("POST /api/v1/rendern", d.rendern)
-	weg.HandleFunc("GET /api/v1/vorlage.csv", d.vorlageCSV)
-	weg.HandleFunc("POST /api/v1/inhalt", d.inhaltBauen)
-	weg.HandleFunc("GET /api/v1/druckpruefung", d.druckpruefung)
-	weg.HandleFunc("GET /api/v1/gs1", d.gs1Bauen)
-	weg.HandleFunc("POST /api/v1/konten", d.kontoAnlegen)
-	weg.HandleFunc("POST /api/v1/anmelden", d.anmelden)
-	weg.HandleFunc("POST /api/v1/schluessel", d.schluesselAnlegen)
-	weg.HandleFunc("GET /api/v1/marke", d.markeLesen)
-	weg.HandleFunc("PUT /api/v1/marke", d.mitSchluessel(true, d.markeSetzen))
-	weg.HandleFunc("GET /api/v1/mitarbeitende", d.mitSchluessel(false, d.mitarbeitendeListe))
-	weg.HandleFunc("POST /api/v1/mitarbeitende", d.mitSchluessel(true, d.mitarbeitendeAufnehmen))
-	weg.HandleFunc("DELETE /api/v1/mitarbeitende/{id}", d.mitSchluessel(true, d.mitarbeitendeEntlassen))
-
-	// Mit Schluessel im Kopf x-punkt-schluessel.
-	weg.HandleFunc("GET /api/v1/codes", d.mitSchluessel(false,
-		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.listeCodesFuer(w, s) }))
-	weg.HandleFunc("POST /api/v1/codes", d.mitSchluessel(true,
-		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.legeCodeAnFuer(w, r, s) }))
-	weg.HandleFunc("PATCH /api/v1/codes/{id}", d.mitSchluessel(true,
-		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.aendereCode(w, r) }))
-	weg.HandleFunc("GET /api/v1/codes/{id}/statistik", d.mitSchluessel(false,
-		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.statistik(w, r) }))
-	weg.HandleFunc("GET /api/v1/codes/{id}/protokoll", d.mitSchluessel(false,
-		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.protokoll(w, r) }))
-	weg.HandleFunc("POST /api/v1/massenanlage", d.mitSchluessel(true,
-		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.charge(w, r) }))
-
-	// Weiterleitung. /r/ ist der veroeffentlichte Weg, die Wurzel der
-	// kurze — auf einer eigenen Kurzdomain zaehlt jedes Zeichen.
-	weg.HandleFunc("GET /r/{kuerzel}", d.weiterleiten)
-	weg.HandleFunc("GET /r/{kuerzel}/vorschau", d.vorschau)
-	weg.HandleFunc("GET /01/{gtin}/", d.digitalLink)
-	weg.HandleFunc("GET /01/{gtin}", d.digitalLink)
-
-	weg.HandleFunc("GET /qr.svg", d.qrSVG)
-	weg.HandleFunc("GET /qr.pdf", d.qrPDF)
-	weg.HandleFunc("GET /qr.eps", d.qrEPS)
-	weg.HandleFunc("GET /{$}", d.studio)
-	weg.HandleFunc("GET /{kuerzel}", d.weiterleiten)
-
 	server := &http.Server{
 		Addr:              *adresse,
-		Handler:           weg,
+		Handler:           wege(d),
 		ReadHeaderTimeout: 5 * time.Second,
 		WriteTimeout:      20 * time.Second,
 		IdleTimeout:       60 * time.Second,
@@ -127,6 +80,58 @@ func main() {
 	log.Println("angehalten")
 }
 
+// wege haengt alle Pfade an einen Verteiler. Getrennt von main, damit
+// ein Test denselben Verteiler benutzen kann wie der Betrieb — sonst
+// prueft der Test etwas anderes als das, was laeuft.
+func wege(d *dienst) *http.ServeMux {
+	weg := http.NewServeMux()
+	weg.HandleFunc("GET /gesundheit", d.gesundheit)
+
+	// Offen — kein Schluessel noetig. Codes erzeugen und Ziele ansehen
+	// geht ohne Konto, so wie es die Schnittstellenseite zusagt.
+	weg.HandleFunc("GET /api/v1/typen", d.typen)
+	weg.HandleFunc("POST /api/v1/rendern", d.rendern)
+	weg.HandleFunc("GET /api/v1/vorlage.csv", d.vorlageCSV)
+	weg.HandleFunc("POST /api/v1/inhalt", d.inhaltBauen)
+	weg.HandleFunc("GET /api/v1/druckpruefung", d.druckpruefung)
+	weg.HandleFunc("GET /api/v1/gs1", d.gs1Bauen)
+	weg.HandleFunc("POST /api/v1/konten", d.kontoAnlegen)
+	weg.HandleFunc("POST /api/v1/anmelden", d.anmelden)
+	weg.HandleFunc("POST /api/v1/schluessel", d.schluesselAnlegen)
+	weg.HandleFunc("GET /api/v1/marke", d.markeLesen)
+	weg.HandleFunc("PUT /api/v1/marke", d.mitSchluessel(true, d.markeSetzen))
+	weg.HandleFunc("GET /api/v1/mitarbeitende", d.mitSchluessel(false, d.mitarbeitendeListe))
+	weg.HandleFunc("POST /api/v1/mitarbeitende", d.mitSchluessel(true, d.mitarbeitendeAufnehmen))
+	weg.HandleFunc("DELETE /api/v1/mitarbeitende/{id}", d.mitSchluessel(true, d.mitarbeitendeEntlassen))
+
+	// Mit Schluessel im Kopf x-punkt-schluessel.
+	weg.HandleFunc("GET /api/v1/codes", d.mitSchluessel(false, d.listeCodesFuer))
+	weg.HandleFunc("GET /api/v1/ordner", d.mitSchluessel(false, d.ordnerListe))
+	weg.HandleFunc("POST /api/v1/codes", d.mitSchluessel(true, d.legeCodeAnFuer))
+	weg.HandleFunc("PATCH /api/v1/codes/{id}", d.mitSchluessel(true, d.aendereCode))
+	weg.HandleFunc("DELETE /api/v1/codes/{id}", d.mitSchluessel(true, d.loescheCode))
+	weg.HandleFunc("GET /api/v1/codes/{id}/statistik", d.mitSchluessel(false, d.statistik))
+	weg.HandleFunc("GET /api/v1/codes/{id}/protokoll", d.mitSchluessel(false, d.protokoll))
+	weg.HandleFunc("POST /api/v1/massenanlage", d.mitSchluessel(true,
+		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.charge(w, r) }))
+	weg.HandleFunc("GET /zentrale", d.zentrale)
+
+	// Weiterleitung. /r/ ist der veroeffentlichte Weg, die Wurzel der
+	// kurze — auf einer eigenen Kurzdomain zaehlt jedes Zeichen.
+	weg.HandleFunc("GET /r/{kuerzel}", d.weiterleiten)
+	weg.HandleFunc("GET /r/{kuerzel}/vorschau", d.vorschau)
+	weg.HandleFunc("GET /01/{gtin}/", d.digitalLink)
+	weg.HandleFunc("GET /01/{gtin}", d.digitalLink)
+
+	weg.HandleFunc("GET /qr.svg", d.qrSVG)
+	weg.HandleFunc("GET /qr.pdf", d.qrPDF)
+	weg.HandleFunc("GET /qr.eps", d.qrEPS)
+	weg.HandleFunc("GET /{$}", d.studio)
+	weg.HandleFunc("GET /{kuerzel}", d.weiterleiten)
+
+	return weg
+}
+
 // --- Weiterleitung: der heisseste Pfad ------------------------------------
 
 func (d *dienst) weiterleiten(w http.ResponseWriter, r *http.Request) {
@@ -140,6 +145,14 @@ func (d *dienst) weiterleiten(w http.ResponseWriter, r *http.Request) {
 	if !da {
 		d.hinweisMitMarke(w, r, http.StatusNotFound, "Unbekannter Code",
 			"Diese Kurzadresse gibt es nicht. Vertippt beim Abschreiben?")
+		return
+	}
+	if code.Geloescht {
+		// Nicht „unbekannt": diesen Code gab es, und sein Kuerzel bleibt
+		// belegt. Wer ihn scannt, hat etwas Gedrucktes in der Hand und
+		// soll das erfahren, statt an einen Tippfehler zu glauben.
+		d.hinweisMitMarke(w, r, http.StatusGone, "Geloescht",
+			"Dieser Code wurde geloescht. Ein Ziel gibt es nicht mehr.")
 		return
 	}
 	if code.Gesperrt != "" {
@@ -353,26 +366,42 @@ func (d *dienst) legeCodeAn(w http.ResponseWriter, r *http.Request) {
 	d.jsonAus(w, http.StatusCreated, c)
 }
 
-func (d *dienst) aendereCode(w http.ResponseWriter, r *http.Request) {
-	var wunsch speicher.Code
+func (d *dienst) aendereCode(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	// Ordner kommt als Zeiger herein, damit er sich auch leeren laesst.
+	// Bei den uebrigen Feldern heisst „leer" weiterhin „nicht
+	// mitgeschickt" — sonst loeschte ein knapper Aufruf versehentlich das
+	// Ziel eines gedruckten Codes.
+	var wunsch struct {
+		Name     string         `json:"name"`
+		Ziel     string         `json:"ziel"`
+		Ordner   *string        `json:"ordner"`
+		Regeln   map[string]any `json:"regeln"`
+		Gesperrt string         `json:"gesperrt"`
+	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&wunsch); err != nil {
 		d.jsonAus(w, http.StatusBadRequest, map[string]string{"fehler": err.Error()})
 		return
 	}
-	id := r.PathValue("id")
-	alt, da := d.ablage.NachID(id)
-	if !da {
-		d.jsonAus(w, http.StatusNotFound, map[string]string{"fehler": "unbekannter Code"})
+	alt, gut := d.eigenerCode(w, r, sch)
+	if !gut {
+		return
+	}
+	if alt.Geloescht {
+		d.jsonAus(w, http.StatusGone, map[string]string{
+			"fehler": "dieser Code ist geloescht und wird nicht wieder in Betrieb genommen"})
 		return
 	}
 	altesZiel := alt.Ziel
 
-	neu, err := d.ablage.Aendere(id, func(c *speicher.Code) error {
+	neu, err := d.ablage.Aendere(alt.ID, func(c *speicher.Code) error {
 		if wunsch.Ziel != "" {
 			c.Ziel = wunsch.Ziel
 		}
 		if wunsch.Name != "" {
 			c.Name = wunsch.Name
+		}
+		if wunsch.Ordner != nil {
+			c.Ordner = strings.TrimSpace(*wunsch.Ordner)
 		}
 		if wunsch.Regeln != nil {
 			c.Regeln = wunsch.Regeln
@@ -396,12 +425,20 @@ func (d *dienst) aendereCode(w http.ResponseWriter, r *http.Request) {
 	d.jsonAus(w, http.StatusOK, neu)
 }
 
-func (d *dienst) statistik(w http.ResponseWriter, r *http.Request) {
-	d.jsonAus(w, http.StatusOK, d.ablage.Zaehlerstand(r.PathValue("id")))
+func (d *dienst) statistik(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	c, gut := d.eigenerCode(w, r, sch)
+	if !gut {
+		return
+	}
+	d.jsonAus(w, http.StatusOK, d.ablage.Zaehlerstand(c.ID))
 }
 
-func (d *dienst) protokoll(w http.ResponseWriter, r *http.Request) {
-	eintraege, err := d.ablage.Protokoll(r.PathValue("id"))
+func (d *dienst) protokoll(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	c, gut := d.eigenerCode(w, r, sch)
+	if !gut {
+		return
+	}
+	eintraege, err := d.ablage.Protokoll(c.ID)
 	if err != nil {
 		d.jsonAus(w, http.StatusInternalServerError, map[string]string{"fehler": err.Error()})
 		return

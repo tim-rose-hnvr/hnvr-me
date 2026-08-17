@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -29,6 +30,7 @@ type Code struct {
 	Kuerzel    string            `json:"kuerzel"`
 	KontoID    string            `json:"kontoId"`
 	Name       string            `json:"name"`
+	Ordner     string            `json:"ordner,omitempty"`
 	Ziel       string            `json:"ziel"`
 	Regeln     map[string]any    `json:"regeln,omitempty"`
 	UTM        map[string]string `json:"utm,omitempty"`
@@ -191,16 +193,17 @@ func (s *Speicher) lade(name string, je func([]byte) error) error {
 	return leser.Err()
 }
 
+// merke traegt eine Fassung ins Verzeichnis ein. Ein geloeschter Code
+// bleibt darin stehen — mit seinem Kuerzel. Das ist Absicht: das Kuerzel
+// steht auf Papier, und Papier laesst sich nicht loeschen. Wuerde es
+// wieder frei, zeigte ein gedrucktes Plakat eines Tages auf das Ziel
+// eines Fremden. Ein Kuerzel wird deshalb einmal vergeben und nie wieder.
 func (s *Speicher) merke(c *Code) {
-	if c.Geloescht {
-		if alt, da := s.codes[c.ID]; da {
-			delete(s.nachKurz, strings.ToLower(alt.Kuerzel))
-			delete(s.codes, c.ID)
-		}
-		return
-	}
 	if alt, da := s.codes[c.ID]; da && !strings.EqualFold(alt.Kuerzel, c.Kuerzel) {
-		delete(s.nachKurz, strings.ToLower(alt.Kuerzel))
+		// Aus demselben Grund bleibt auch ein umbenanntes Kuerzel gueltig
+		// und zeigt weiter auf denselben Code. Wer schon gedruckt hat,
+		// verliert durch eine Umbenennung nicht die Auflage.
+		s.nachKurz[strings.ToLower(alt.Kuerzel)] = c
 	}
 	s.codes[c.ID] = c
 	s.nachKurz[strings.ToLower(c.Kuerzel)] = c
@@ -287,24 +290,121 @@ func (s *Speicher) NachID(id string) (*Code, bool) {
 	return c, da
 }
 
-// Liste gibt die Codes eines Kontos, neueste zuerst.
+// Liste gibt die Codes eines Kontos, neueste zuerst. Geloeschte sind
+// nicht dabei.
 func (s *Speicher) Liste(kontoID string) []*Code {
+	return s.Suche(kontoID, Filter{})
+}
+
+// Filter schraenkt die Liste ein. Ein leerer Filter laesst alles durch.
+type Filter struct {
+	Text         string // in Name, Kuerzel, Ziel, GTIN und Ordner
+	Ordner       string // genau dieser Ordner; "-" heisst: ohne Ordner
+	MitGeloescht bool
+}
+
+// Suche liefert die Codes einer Organisation, gefiltert und neueste
+// zuerst. Die Suche laeuft ueber das Verzeichnis im Arbeitsspeicher —
+// bei den Groessenordnungen einer Agentur ist das schneller als jeder
+// Index, den man dafuer pflegen muesste.
+func (s *Speicher) Suche(kontoID string, f Filter) []*Code {
+	text := strings.ToLower(strings.TrimSpace(f.Text))
+	ordner := strings.TrimSpace(f.Ordner)
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+
 	var aus []*Code
 	for _, c := range s.codes {
-		if kontoID == "" || c.KontoID == kontoID {
-			aus = append(aus, c)
+		if kontoID != "" && c.KontoID != kontoID {
+			continue
 		}
-	}
-	for i := 0; i < len(aus); i++ {
-		for j := i + 1; j < len(aus); j++ {
-			if aus[j].Erstellt.After(aus[i].Erstellt) {
-				aus[i], aus[j] = aus[j], aus[i]
+		if c.Geloescht && !f.MitGeloescht {
+			continue
+		}
+		switch {
+		case ordner == "":
+		case ordner == "-":
+			if c.Ordner != "" {
+				continue
 			}
+		case !strings.EqualFold(c.Ordner, ordner):
+			continue
+		}
+		if text != "" && !passt(c, text) {
+			continue
+		}
+		aus = append(aus, c)
+	}
+	// Bei gleicher Zeit entscheidet die Kennung. Ohne diesen zweiten
+	// Schluessel waere die Reihenfolge bei Codes aus derselben Massenanlage
+	// zufaellig, und die Liste spraenge bei jedem Aufruf.
+	sort.Slice(aus, func(i, j int) bool {
+		if !aus[i].Erstellt.Equal(aus[j].Erstellt) {
+			return aus[i].Erstellt.After(aus[j].Erstellt)
+		}
+		return aus[i].ID > aus[j].ID
+	})
+	return aus
+}
+
+func passt(c *Code, text string) bool {
+	for _, feld := range []string{c.Name, c.Kuerzel, c.Ziel, c.GTIN, c.Ordner} {
+		if strings.Contains(strings.ToLower(feld), text) {
+			return true
 		}
 	}
+	return false
+}
+
+// Ordnerstand ist ein Ordner mit der Zahl seiner Codes.
+type Ordnerstand struct {
+	Name   string `json:"name"`
+	Anzahl int    `json:"anzahl"`
+}
+
+// Ordner zaehlt die Ordner einer Organisation auf, alphabetisch. Codes
+// ohne Ordner stehen unter dem leeren Namen — sie sind kein Fehler,
+// sondern der Normalfall am Anfang.
+func (s *Speicher) Ordner(kontoID string) []Ordnerstand {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	zaehler := map[string]int{}
+	for _, c := range s.codes {
+		if c.Geloescht || (kontoID != "" && c.KontoID != kontoID) {
+			continue
+		}
+		zaehler[c.Ordner]++
+	}
+	aus := make([]Ordnerstand, 0, len(zaehler))
+	for name, anzahl := range zaehler {
+		aus = append(aus, Ordnerstand{Name: name, Anzahl: anzahl})
+	}
+	sort.Slice(aus, func(i, j int) bool {
+		if (aus[i].Name == "") != (aus[j].Name == "") {
+			return aus[i].Name == "" // "ohne Ordner" zuerst
+		}
+		return strings.ToLower(aus[i].Name) < strings.ToLower(aus[j].Name)
+	})
 	return aus
+}
+
+// Loesche nimmt einen Code aus der Liste und wirft sein Ziel weg. Was
+// bleibt, ist das Kuerzel — reserviert auf Dauer — und die Geschichte in
+// der Datei. Ein Scan laeuft danach nicht ins Leere und nicht auf ein
+// fremdes Ziel, sondern auf eine lesbare Seite.
+func (s *Speicher) Loesche(id string) (*Code, error) {
+	return s.Aendere(id, func(c *Code) error {
+		if c.Geloescht {
+			return errors.New("dieser Code ist bereits geloescht")
+		}
+		c.Geloescht = true
+		c.Aktiv = false
+		c.Ziel = ""
+		c.Regeln = nil
+		return nil
+	})
 }
 
 // FreiesKuerzel sucht ein unbenutztes Kuerzel.

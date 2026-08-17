@@ -1,0 +1,314 @@
+{{define "planer.html"}}<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kanalwerk — {{.Kunde.Name}}</title>
+<link rel="stylesheet" href="/schriften.css">
+<style>
+:root{
+  --lime:#9BBE00; --lime-ink:#5D7203; --red:#D8063A; --red-ink:#B3123A;
+  --ink:#000; --paper:#fff; --sand:#F3EFE6; --sand-2:#EFECE3;
+  --gray:#67665F; --gray-2:#8F8B84; --line:#D9D9D9; --line-strong:#B9B9B3;
+  --lime-wash:#F0F6D8; --red-wash:#FCE4EA; --amber:#8A6008; --amber-wash:#FBF0D8;
+  --grad-warm:linear-gradient(115deg,#FFE9A0 0%,#FFD9AE 46%,#F2EFD4 78%,#E7EDCF 100%);
+  --display:'Anton',Impact,'Arial Black',sans-serif;
+  --sub:'Bricolage Grotesque','Hanken Grotesk',system-ui,sans-serif;
+  --body:'Hanken Grotesk',system-ui,sans-serif;
+  --ease-out:cubic-bezier(.22,.9,.24,1);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --lime:#C9F73C; --lime-ink:#C9F73C; --red:#FF2E63; --red-ink:#FF6B8F;
+  --ink:#F5F5F2; --paper:#0A0A0B; --sand:#141416; --sand-2:#111114;
+  --gray:#9A9A97; --gray-2:#8B8B85; --line:#26262A; --line-strong:#3A3A3E;
+  --lime-wash:#1C2408; --red-wash:#2E0F19; --amber:#E2B368; --amber-wash:#2A2110;
+}}
+:root[data-theme="dark"]{
+  --lime:#C9F73C; --lime-ink:#C9F73C; --red:#FF2E63; --red-ink:#FF6B8F;
+  --ink:#F5F5F2; --paper:#0A0A0B; --sand:#141416; --sand-2:#111114;
+  --gray:#9A9A97; --gray-2:#8B8B85; --line:#26262A; --line-strong:#3A3A3E;
+  --lime-wash:#1C2408; --red-wash:#2E0F19; --amber:#E2B368; --amber-wash:#2A2110;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sand);color:var(--ink);font-family:var(--body);
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  padding:clamp(12px,2.5vw,30px)}
+.app{max-width:1120px;margin:0 auto;background:var(--paper);
+  border:1px solid var(--line-strong);border-radius:14px;overflow:hidden;
+  box-shadow:0 18px 50px -18px rgba(0,0,0,.28)}
+.chrome{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;
+  padding:11px 18px;background:var(--ink);color:var(--paper)}
+.crumb{font-family:var(--sub);font-size:.72rem;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;opacity:.72;display:flex;gap:8px}
+.crumb .here{color:var(--lime);opacity:1}
+.chrome .stand{margin-left:auto;font-family:var(--sub);font-size:.68rem;opacity:.6}
+main{padding:26px clamp(16px,3vw,32px) 34px;display:flex;flex-direction:column;gap:28px}
+.disp{font-family:var(--display);text-transform:uppercase;line-height:.98;font-weight:400}
+.disp em{font-style:normal;color:var(--lime-ink)}
+.kopf h1{margin:0;font-size:clamp(2rem,4.4vw,3rem)}
+.kopf h1::after{content:'';display:block;width:64px;height:6px;background:var(--red);
+  margin:16px 0 0;border-radius:2px}
+.kopf .when{margin:10px 0 0;font-family:var(--sub);font-size:.76rem;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--gray)}
+.q-reihe{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.q{border:2px solid var(--ink);border-radius:12px;padding:16px 18px;
+  display:flex;flex-direction:column;gap:10px}
+.q.warm{background:var(--grad-warm)}
+.q.warm .q-l,.q.warm .q-f{color:#3A3222}.q.warm .q-n{color:#121110}
+.q-l{font-family:var(--sub);font-size:.68rem;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gray)}
+.q-n{font-family:var(--display);font-size:2.5rem;line-height:.9;display:flex;
+  align-items:baseline;gap:8px}
+.q-n small{font-family:var(--sub);font-size:.8rem;font-weight:600;color:var(--gray)}
+.bar{height:7px;background:var(--line);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--lime)}
+.q-f{font-size:.78rem;color:var(--gray)}
+.meldungen{display:flex;flex-direction:column;gap:10px}
+.m{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+  padding:14px 18px;border-radius:12px;border:2px solid;font-size:.9rem}
+.m.stop{border-color:var(--red);background:var(--red-wash)}
+.m.warn{border-color:var(--amber);background:var(--amber-wash)}
+.m .tag{font-family:var(--sub);font-size:.6rem;font-weight:800;letter-spacing:.12em;
+  text-transform:uppercase;padding:4px 9px;border-radius:999px;color:#fff;white-space:nowrap}
+.m.stop .tag{background:var(--red)}.m.warn .tag{background:var(--amber)}
+.m b{display:block}
+.m .txt{color:var(--ink)}
+.knopf{font-family:var(--sub);font-size:.7rem;font-weight:600;letter-spacing:.05em;
+  text-transform:uppercase;padding:9px 16px;border-radius:999px;border:2px solid var(--ink);
+  background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap;
+  transition:transform .2s var(--ease-out)}
+.knopf:hover{transform:translateY(-2px)}
+.knopf:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.knopf.rot{background:var(--red);border-color:var(--red);color:#fff}
+h2.disp{margin:0 0 12px;font-size:clamp(1.3rem,2.6vw,1.8rem)}
+.kanal-reihe{display:flex;flex-wrap:wrap;gap:8px}
+.kanal{display:inline-flex;align-items:center;gap:8px;font-family:var(--sub);
+  font-size:.76rem;font-weight:600;padding:8px 14px;border-radius:999px;
+  border:2px solid var(--line-strong);color:var(--gray)}
+.kanal .p{width:9px;height:9px;border-radius:50%;background:var(--line-strong)}
+.kanal.verbunden{border-color:var(--ink);background:var(--lime-wash);color:var(--ink)}
+.kanal.verbunden .p{background:var(--lime)}
+.kanal.ungueltig{border-color:var(--red);background:var(--red-wash);color:var(--red-ink)}
+.kanal.ungueltig .p{background:var(--red)}
+.woche{display:flex;flex-direction:column;gap:12px}
+.zeile{display:grid;grid-template-columns:104px 1fr;gap:18px;border:2px solid var(--line);
+  border-radius:12px;padding:16px 18px;align-items:start}
+.zeile.bad{border-color:var(--red)}.zeile.hold{border-color:var(--amber)}
+.tag-sp{font-family:var(--display);text-transform:uppercase;line-height:.95}
+.tag-sp b{display:block;font-size:1.5rem;font-weight:400}
+.tag-sp span{font-family:var(--sub);font-size:.72rem;font-weight:600;color:var(--gray)}
+.eintrag{display:flex;flex-direction:column;gap:9px;min-width:0}
+.eintrag .ttl{font-family:var(--display);font-size:1.15rem;text-transform:uppercase;
+  line-height:1;font-weight:400}
+.eintrag .via{font-family:var(--sub);font-size:.72rem;font-weight:600;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--gray)}
+.eintrag .via em{font-style:normal;color:var(--lime-ink)}
+.marken{display:flex;flex-wrap:wrap;gap:7px}
+.marke{display:inline-flex;align-items:center;gap:6px;font-family:var(--sub);font-size:.63rem;
+  font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:5px 11px;
+  border-radius:999px;border:2px solid var(--line-strong);color:var(--gray)}
+.marke .d{width:7px;height:7px;border-radius:50%;background:currentColor}
+.marke.zugestellt{color:var(--lime-ink);border-color:var(--lime);background:var(--lime-wash)}
+.marke.fehlgeschlagen{color:var(--red-ink);border-color:var(--red);background:var(--red-wash)}
+.hinweis{font-size:.88rem}
+.hinweis.bad{color:var(--red-ink)}.hinweis.hold{color:var(--amber)}
+.tun{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:2px}
+.tun input[type=datetime-local]{font-family:var(--sub);font-size:.78rem;padding:7px 10px;
+  border:2px solid var(--line-strong);border-radius:8px;background:var(--paper);color:var(--ink)}
+form{display:inline-flex;gap:8px;align-items:center;margin:0}
+footer{border-top:2px solid var(--line);padding:18px;background:var(--sand-2);
+  font-family:var(--sub);font-size:.72rem;color:var(--gray);line-height:1.7}
+.leer{padding:28px;text-align:center;color:var(--gray);border:2px dashed var(--line-strong);
+  border-radius:12px}
+.anlegen{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  border:2px solid var(--ink);border-radius:12px;padding:18px}
+.anlegen .feld{display:flex;flex-direction:column;gap:6px}
+.anlegen .feld.breit{grid-column:1/-1}
+.lbl{font-family:var(--sub);font-size:.68rem;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gray)}
+.anlegen input[type=text],.anlegen input[type=url],.anlegen textarea,.anlegen select{
+  font-family:var(--body);font-size:.92rem;padding:10px 12px;border:2px solid var(--line-strong);
+  border-radius:8px;background:var(--paper);color:var(--ink);width:100%}
+.anlegen textarea{resize:vertical}
+.anlegen input:focus-visible,.anlegen textarea:focus-visible,.anlegen select:focus-visible{
+  outline:2px solid var(--red);outline-offset:1px}
+.hilf{font-size:.76rem;color:var(--gray)}
+.kanal-wahl{display:flex;flex-wrap:wrap;gap:8px}
+.wahl{display:inline-flex;align-items:center;gap:8px;font-family:var(--sub);font-size:.78rem;
+  font-weight:600;padding:8px 14px;border-radius:999px;border:2px solid var(--line-strong);
+  cursor:pointer}
+.wahl:has(input:checked){border-color:var(--ink);background:var(--lime-wash)}
+.wahl.aus{opacity:.45;cursor:not-allowed;border-style:dashed}
+@media (max-width:680px){.zeile{grid-template-columns:1fr;gap:10px}
+  .m{grid-template-columns:auto 1fr}.m .knopf{grid-column:1/-1;justify-self:start}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="chrome">
+    <div class="crumb"><span>Kanalwerk</span><span>›</span><span class="here">{{.Kunde.Name}}</span></div>
+    <div class="stand">Stand {{.Stand.Format "02.01.2006 15:04"}}</div>
+  </div>
+
+  <main>
+
+    <div class="kopf">
+      <h1 class="disp">Der <em>Planer</em></h1>
+      <p class="when">{{.Kunde.Name}} · Site {{.Kunde.WixSiteID}}</p>
+    </div>
+
+    <div class="q-reihe">
+      <div class="q">
+        <span class="q-l">Beiträge auf Kanälen</span>
+        <span class="q-n">{{.Kontingent.Verbraucht}}<small>von {{.Kontingent.Grenze}} im Monat</small></span>
+        <span class="bar"><i style="width:{{prozent .Kontingent.Verbraucht .Kontingent.Grenze}}%"></i></span>
+        <span class="q-f">{{if .Kontingent.Erlaubt}}Veröffentlichen erlaubt{{else}}Veröffentlichen gesperrt{{end}}</span>
+      </div>
+      <div class="q {{if not .Planbar}}warm{{end}}">
+        <span class="q-l">Terminierung bei Wix</span>
+        <span class="q-n">{{if .Planbar}}An{{else}}Aus{{end}}</span>
+        <span class="q-f">{{if .Planbar}}Wix hält die Uhr{{else}}Kanalwerk hält die Uhr selbst{{end}}</span>
+      </div>
+      <div class="q">
+        <span class="q-l">Verbundene Kanäle</span>
+        <span class="q-n">{{len .Kanaele}}</span>
+        <span class="q-f">
+          <form method="post" action="/kunde/{{.Kunde.ID}}/abgleichen">
+            <button class="knopf" type="submit">Abgleichen</button>
+          </form>
+        </span>
+      </div>
+    </div>
+
+    {{if .Meldungen}}
+    <div class="meldungen">
+      {{range .Meldungen}}
+      <div class="m {{.Art}}">
+        <span class="tag">{{if eq .Art "stop"}}Sperrt{{else}}Achtung{{end}}</span>
+        <span class="txt"><b>{{.Titel}}</b>{{.Text}}</span>
+        {{if .Knopf}}<form method="post" action="{{.Ziel}}"><button class="knopf" type="submit">{{.Knopf}}</button></form>{{else}}<span></span>{{end}}
+      </div>
+      {{end}}
+    </div>
+    {{end}}
+
+    <div>
+      <h2 class="disp">Ihre <em>Kanäle</em></h2>
+      {{if .Kanaele}}
+      <div class="kanal-reihe">
+        {{range .Kanaele}}
+        <span class="kanal {{.Zustand}}"><span class="p"></span>{{.Plattform}}{{if .Anzeigename}} · {{.Anzeigename}}{{end}} — {{.Beschriftung}}</span>
+        {{end}}
+      </div>
+      {{else}}
+      <div class="leer">Noch keine Kanäle bekannt. Über „Abgleichen“ von Wix holen.</div>
+      {{end}}
+    </div>
+
+    <div>
+      <h2 class="disp">Neuer <em>Beitrag</em></h2>
+      {{if .Kanaele}}
+      <form class="anlegen" method="post" action="/kunde/{{.Kunde.ID}}/beitrag">
+        <div class="feld">
+          <label class="lbl" for="vorlage">Vorlage</label>
+          <select id="vorlage" name="vorlage">
+            <option value="">— ohne Vorlage —</option>
+            {{range .Vorlagen}}<option value="{{.ID}}">{{.Name}} ({{.Format}})</option>{{end}}
+          </select>
+        </div>
+        <div class="feld">
+          <label class="lbl" for="kick">Zeile oben</label>
+          <input id="kick" name="kick" type="text" placeholder="Kursstart">
+        </div>
+        <div class="feld breit">
+          <label class="lbl" for="text">Text</label>
+          <textarea id="text" name="text" rows="3" required
+            placeholder="Herbstkurs — Anmeldung offen. Ab 8. September, dienstags 19:30."></textarea>
+        </div>
+        <div class="feld breit">
+          <label class="lbl" for="bild">Bild (Adresse)</label>
+          <input id="bild" name="bild" type="url" placeholder="https://…/saal-abendlicht.jpg">
+          <span class="hilf">Instagram nimmt nur Beiträge mit Bild.</span>
+        </div>
+        <div class="feld breit">
+          <span class="lbl">Rausgeben an</span>
+          <div class="kanal-wahl">
+            {{range .Kanaele}}
+            <label class="wahl {{if ne .Zustand "verbunden"}}aus{{end}}">
+              <input type="checkbox" name="kanal" value="{{.ID}}"
+                {{if ne .Zustand "verbunden"}}disabled{{end}}>
+              {{.Plattform}}{{if .Anzeigename}} · {{.Anzeigename}}{{end}}
+            </label>
+            {{end}}
+          </div>
+        </div>
+        <div class="feld breit">
+          <button class="knopf rot" type="submit">Anlegen</button>
+          <span class="hilf">Schrift, Farbe, Raster und Logo kommen aus der Vorlage
+            und lassen sich hier nicht ändern.</span>
+        </div>
+      </form>
+      {{else}}
+      <div class="leer">Erst einen Kanal verbinden, dann lassen sich Beiträge anlegen.</div>
+      {{end}}
+    </div>
+
+    <div>
+      <h2 class="disp">Die <em>Beiträge</em></h2>
+      {{if .Beitraege}}
+      <div class="woche">
+        {{range .Beitraege}}
+        <div class="zeile {{.HinweisArt}}">
+          <div class="tag-sp">
+            {{if .GeplantFuer.IsZero}}<b>—</b><span>ohne Termin</span>
+            {{else}}<b>{{tag .GeplantFuer}} {{datum .GeplantFuer}}</b><span>{{uhr .GeplantFuer}}</span>{{end}}
+          </div>
+          <div class="eintrag">
+            <span class="ttl">{{.Text}}</span>
+            <span class="via">
+              {{if .Vorlagename}}aus Vorlage <em>{{.Vorlagename}}</em> · {{end}}Zustand: {{.Zustand}}
+            </span>
+            {{if .Zeilen}}
+            <div class="marken">
+              {{range .Zeilen}}
+              <span class="marke {{.Zustand}}"><span class="d"></span>{{.Plattform}}{{if .Kanalname}} · {{.Kanalname}}{{end}}</span>
+              {{end}}
+            </div>
+            {{end}}
+            {{if .Hinweis}}<div class="hinweis {{.HinweisArt}}">{{.Hinweis}}</div>{{end}}
+            <div class="tun">
+              {{if eq .Zustand "entwurf"}}
+                <form method="post" action="/beitrag/{{.ID}}/freigeben">
+                  <input type="hidden" name="person" value="{{$.Kunde.Name}}">
+                  <button class="knopf rot" type="submit">Freigeben</button>
+                </form>
+              {{else if eq .Zustand "freigegeben"}}
+                <form method="post" action="/beitrag/{{.ID}}/planen">
+                  <input type="datetime-local" name="termin" required>
+                  <button class="knopf rot" type="submit">In die Warteschlange</button>
+                </form>
+              {{end}}
+            </div>
+          </div>
+        </div>
+        {{end}}
+      </div>
+      {{else}}
+      <div class="leer">Noch keine Beiträge angelegt.</div>
+      {{end}}
+    </div>
+
+  </main>
+
+  <footer>
+    Kontingent und Kanalzustand werden bei jedem Aufruf live von Wix gelesen.
+    Terminierte Beiträge hält Kanalwerk selbst in der Warteschlange und gibt sie
+    zum Termin heraus — Wix' eigene Terminierung wird nicht gebraucht.
+  </footer>
+
+</div>
+</body>
+</html>
+{{end}}

@@ -28,17 +28,17 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           Konto, ohne dass eine Datei das Gerät verlässt.
         </p>
         <div class="knopf-reihe">
-          <a class="knopf-voll" href="/werkbank/index.html">Werkbank öffnen</a>
+          <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html">Kostenlos anmelden und öffnen</a>
           <a class="knopf-rand" href="#unterschied-lokal">Was sie anders macht</a>
         </div>
         <p class="klein leise" style="margin-top:.8rem">
-          Die Anwendung liegt unter <code>/werkbank/index.html</code> auf derselben Seite und
-          startet im Browserfenster. Ihre Datei wird dabei nicht hochgeladen —
-          auch nicht auf diese Seite.
+          Die Anwendung liegt auf derselben Seite und startet im Browserfenster.
+          Die Anmeldung ist kostenlos und sagt uns nur, dass Sie da sind: Ihre
+          Datei wird auch danach nicht hochgeladen, weder zu uns noch sonstwohin.
         </p>
         <div class="stempel">
-          Ohne Abo
-          <span>läuft auch offline</span>
+          Kostenlos
+          <span>nur eine Anmeldung</span>
         </div>
       </div>
 
@@ -321,6 +321,33 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
     </div>
   </section>
 
+  <section class="spur" id="preis">
+    <span class="marke">Preis</span>
+    <h2 class="lauf">Kostenlos. Wir wollen nur wissen, wer sie benutzt.</h2>
+    <div class="lauf">
+      <p>
+        Kein Abo, keine Stufen, keine Zahlungsdaten. Eine Anmeldung genügt —
+        aus einem Grund, der sich schlecht anders lösen lässt: ohne sie wüssten
+        wir nicht, ob die Werkbank jemandem hilft und woran sie klemmt.
+      </p>
+      <p>
+        Was die Anmeldung <strong>nicht</strong> bedeutet: dass Ihre Dateien zu
+        uns kommen. Sie tun es nicht, weder vorher noch nachher. Die Werkbank
+        arbeitet weiter ausschließlich in Ihrem Browser; ziehen Sie das
+        Netzwerkkabel, während Sie arbeiten, und Sie merken keinen Unterschied.
+        Die Anmeldung sagt uns, dass Sie da sind, nicht, was Sie tun.
+      </p>
+      <p class="klein leise">
+        Konten und Kennwörter liegen bei Wix, nicht in einer selbstgebauten
+        Benutzerverwaltung. Und offen gesagt, weil es sonst jemand später für
+        ein Sicherheitsversprechen hält: die Anmeldung ist eine Schranke, keine
+        Zugriffssperre — die Dateien der Anwendung liegen öffentlich, wie bei
+        jeder Web-Anwendung. Sie schützt keine Inhalte, denn es liegen keine
+        bei uns.
+      </p>
+    </div>
+  </section>
+
   <section class="spur" id="pruefstand">
     <div class="pruefstand">
       <span class="marke">Prüfstand</span>
@@ -340,7 +367,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <div class="zeile"><i>✓</i> alle sechs Formularfeldarten stehen im gesicherten PDF <em>Datei geprüft</em></div>
         <div class="zeile"><i>✓</i> openssl bestätigt die Unterschrift; ein geändertes Byte bricht sie <em>Datei geprüft</em></div>
         <div class="zeile"><i>✓</i> jedes Werkzeug, jeder Dialog, Tastatur und Zwischenablage <em>Bedienung geprüft</em></div>
-        <div class="zeile"><i>✓</i> 187 Prüfungen, keine offen <em>Stand heute</em></div>
+        <div class="zeile"><i>✓</i> 198 Prüfungen, keine offen <em>Stand heute</em></div>
       </div>
     </div>
   </section>
@@ -356,7 +383,8 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         stimmt: Netzwerk trennen und weiterarbeiten.
       </p>
       <div class="knopf-reihe" style="margin-top:1.5rem">
-        <a class="knopf-voll" href="/werkbank/index.html">Werkbank öffnen</a>
+        <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html">Kostenlos anmelden und öffnen</a>
+        <a class="knopf-rand" href="/werkbank/index.html">Schon angemeldet? Direkt öffnen</a>
       </div>
     </div>
 
@@ -367,11 +395,11 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       </div>
       <div>
         <h3>Preis</h3>
-        <p class="leise">Steht noch nicht fest. Die Werkbank wird derzeit gebaut und geprüft; verkauft wird sie noch nicht.</p>
+        <p class="leise">Keiner. Die Werkbank ist kostenlos — es braucht nur eine Anmeldung, damit wir wissen, wer sie benutzt. Keine Zahlungsdaten, kein Abo, keine Stufen.</p>
       </div>
       <div>
         <h3>Stand</h3>
-        <p class="leise">187 Prüfungen, alle bestanden. Änderungen laufen offen im Repository.</p>
+        <p class="leise">198 Prüfungen, alle bestanden. Änderungen laufen offen im Repository.</p>
       </div>
     </div>
   </section>

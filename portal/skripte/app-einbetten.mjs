@@ -16,7 +16,7 @@
      node skripte/app-einbetten.mjs --schlank  ohne CJK-Zeichentabellen und
                                                ohne englische Sprachdaten */
 
-import { cp, rm, mkdir, stat, readdir } from 'node:fs/promises';
+import { cp, rm, mkdir, stat, readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve, extname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -68,6 +68,24 @@ await cp(QUELLE, ZIEL, {
   recursive: true,
   filter: (pfad) => !AUSSEN.has(pfad.split('/').pop()),
 });
+
+/* Die Anmeldeschranke wird hier eingesetzt, nicht in der Werkbank selbst.
+
+   Die Werkbank im Repository bleibt eigenständig: wer sie auf einen eigenen
+   Server legt, bekommt sie ohne Anmeldung, und die Prüfläufe fahren gegen die
+   ungeschrankte Fassung. Erst die Arbeitskopie, die auf dieser Seite landet,
+   bekommt die Zeile — dort gibt es eine Mitgliederverwaltung, die sie
+   beantworten kann. */
+const AUSKUNFT = '/api/mitglied.json';
+{
+  const weg = join(ZIEL, 'index.html');
+  const html = await readFile(weg, 'utf8');
+  if (!html.includes('werkbank-anmeldung')) {
+    await writeFile(weg, html.replace('<link rel="stylesheet" href="app/stil.css">',
+      `<meta name="werkbank-anmeldung" content="${AUSKUNFT}">\n<link rel="stylesheet" href="app/stil.css">`));
+    console.log(`  Anmeldeschranke eingesetzt: fragt ${AUSKUNFT}`);
+  }
+}
 
 if (SCHLANK) {
   for (const { pfad, folge } of SCHLANK_WEG) {

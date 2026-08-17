@@ -911,3 +911,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .einst-kategorie.ist-aktiv { border-left: 0; border-bottom-color: var(--tally); }
   .einst-inhalt { padding: 0; }
 }
+
+/* ---------- Anmeldeschranke --------------------------------------------- */
+.anmeldeschranke {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: rgba(18,24,28,.72);
+  backdrop-filter: blur(3px);
+}
+.anmeldekarte {
+  background: var(--flaeche); border: 1px solid var(--linie-stark);
+  box-shadow: var(--schatten-dialog);
+  padding: 32px; max-width: 30rem; text-align: left;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.anmeldekarte h1 { font-family: var(--serif); font-size: 24px; font-weight: 600; margin: 4px 0 0; }
+.anmeldekarte p { margin: 0; line-height: 1.6; }
+.anmeldekarte .knopf { align-self: flex-start; margin-top: 8px; }
+.anmeldekarte .knopf-voll { background: var(--tally); border-color: var(--tally); color: #fff; }
+.anmeldekarte .knopf-voll:hover { background: var(--tally-hover); border-color: var(--tally-hover); }
+.anmeldekarte .wortmarke-zeichen { width: 23px; height: 28px; }

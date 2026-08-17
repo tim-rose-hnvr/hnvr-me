@@ -39,15 +39,19 @@ allein ergäbe 404. Dafür stehen in `astro.config.mjs` zwei Umleitungen auf
 `/werkbank/index.html`, damit auch eine von Hand eingegebene Adresse ankommt.
 
 **Nachgemessen an der veröffentlichten Seite** mit
-`node ../werkbank/werkzeuge/live-pruefen.mjs` (19 Prüfungen): alle 235 Dateien
-erreichbar und Byte für Byte gleich der gebauten Fassung (11,82 MB verglichen),
+`node ../werkbank/werkzeuge/live-pruefen.mjs` (29 Prüfungen): alle 236 Dateien
+erreichbar und Byte für Byte gleich der gebauten Fassung (11,84 MB verglichen),
 `.wasm` als `application/wasm`, die Sprachdaten als `application/gzip`, alle
 drei Wege in die Anwendung offen. Dazu wird ins verlinkte Stilblatt gesehen:
 IBM Plex ist eingebunden, ein Verweis auf Google Fonts steht nirgends, der
 Akzent `#0f766e` ist gesetzt, und die Schnitte kommen als `font/woff2` von
-derselben Seite. Damit läuft dort dieselbe Anwendung, die `pruefen.mjs` und
-`vollpruefung.mjs` im Browser durchgemessen haben — 96 + 83 Prüfungen,
-darunter Texterkennung, qpdf-Verschlüsselung und die digitale Unterschrift.
+derselben Seite. Geprüft wird auch die Anmeldung: die Auskunft antwortet, sie
+nennt einen Abrufer ohne Sitzung ausdrücklich nicht angemeldet, die
+ausgelieferte Anwendung trägt die Schranken-Zeile, und `/api/auth/login` leitet
+auf die Anmeldung von Wix und von dort zurück auf diese Seite. Damit läuft dort
+dieselbe Anwendung, die `pruefen.mjs` und `vollpruefung.mjs` im Browser
+durchgemessen haben — 96 + 87 Prüfungen, darunter Texterkennung,
+qpdf-Verschlüsselung und die digitale Unterschrift.
 
 ## Örtlich ansehen
 
@@ -126,11 +130,36 @@ Seite sonst als serverseitig ansieht — ohne Adapter bricht der Bau dann ab.
   diese tragen (Mitdenken, keine Installation, Word/Excel, Barrierefreiheit)
   und sagt im selben Atemzug, was die anderen können und die Werkbank nicht.
 - **Kontakt**: hnvr.me digital.
-- **Preis**: steht ausdrücklich noch nicht fest — die Seite verspricht keinen.
-- **Ausprobieren**: der Knopf führt in die laufende Anwendung unter
-  `/werkbank/`. Das ist die stärkste Stelle der Seite: das Versprechen lässt
-  sich sofort nachprüfen, mit einer eigenen Datei und notfalls mit
-  getrenntem Netz.
+- **Preis**: keiner. Die Werkbank kostet nichts, es braucht nur eine
+  Anmeldung — das steht so auf der Seite und am Knopf.
+- **Ausprobieren**: der Knopf führt über `/api/auth/login` in die laufende
+  Anwendung unter `/werkbank/`. Das ist die stärkste Stelle der Seite: das
+  Versprechen lässt sich sofort nachprüfen, mit einer eigenen Datei und
+  notfalls mit getrenntem Netz.
+
+## Die Anmeldeschranke
+
+Kostenlos, aber nicht anonym: die Werkbank fragt beim Start `/api/mitglied.json`
+(`src/pages/api/mitglied.json.js`, liest `members.getCurrentMember()`) und legt
+eine Schranke über sich, wenn niemand angemeldet ist. Eingeschaltet wird sie
+durch eine Zeile im Kopf der Anwendung, die `skripte/app-einbetten.mjs` **nur in
+die ausgelieferte Kopie** schreibt:
+
+```html
+<meta name="werkbank-anmeldung" content="/api/mitglied.json">
+```
+
+Ohne diese Zeile — also überall dort, wo die Werkbank ohne dieses Portal läuft —
+gibt es keine Schranke. Ebenso, wenn die Auskunft nicht antwortet: dann läuft
+die Anwendung. Das ist Leitprinzip 2, nicht Nachlässigkeit.
+
+Unmissverständlich: **das ist eine Anmeldeschranke, keine Zugriffssperre.** Die
+Dateien liegen offen; wer ihre Adressen kennt, kann sie laden. Wer echten
+Zugriffsschutz braucht, legt ihn vor die Dateien, nicht in die Oberfläche.
+
+Nach der Anmeldung bringt Wix den Menschen zurück: `returnToUrl` wandert in ein
+Sitzungs-Plätzchen und wird vom Rückweg `/api/auth/callback` angesteuert. Nur
+seitenrelative Adressen sind erlaubt — `/werkbank/index.html` ist eine.
 
 Eine E-Mail-Adresse steht bewusst nicht darauf — sie ist nicht abgestimmt.
 Sie gehört in `src/pages/index.astro` in den Abschnitt „Kontakt", sobald klar

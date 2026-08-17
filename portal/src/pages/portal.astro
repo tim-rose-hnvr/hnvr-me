@@ -1,56 +1,88 @@
 ---
-/* Kundenbereich — Schritt zwei.
+/* Kundenbereich — jetzt mit echter Anmeldung.
 
-   Die Anmeldung übernimmt Wix' Astro-Integration: sie stellt nach dem
-   Anhängen /api/auth/login und /api/auth/logout bereit und verwaltet die
-   Sitzung. Erst danach lässt sich hier der angemeldete Mensch auslesen —
-   die dafür nötigen drei Zeilen stehen in der README dieses Ordners.
-   (Sie stehen dort und nicht hier, weil Astro schon beim Bauen nach dem
-   Wort im Quelltext sucht und die Seite sonst als serverseitig ansieht.)
+   `prerender = false` heißt: die Seite wird bei jedem Aufruf gerechnet. Nur so
+   kennt sie den angemeldeten Menschen; als vorgebackene Datei wäre sie für
+   alle dieselbe. Die Anmeldung selbst übernimmt die Wix-Astro-Integration mit
+   /api/auth/login und /api/auth/logout — Konten und Kennwörter liegen dort,
+   nicht in einer selbstgebauten Benutzerverwaltung. */
+export const prerender = false;
 
-   Solange das Projekt nicht angehängt ist, gäbe es keine Sitzung — deshalb
-   steht hier vorerst der abgemeldete Zustand mit dem Weg hinein. */
 import Grundgeruest from '../layouts/Grundgeruest.astro';
+import { members } from '@wix/members';
+
+let mitglied = null;
+let fehler = null;
+try {
+  const ergebnis = await members.getCurrentMember();
+  mitglied = ergebnis?.member ?? null;
+} catch (e) {
+  /* Noch nicht eingerichtet oder keine Sitzung — beides heißt: abgemeldet. */
+  fehler = e?.message ?? String(e);
+}
+
+const name = mitglied?.profile?.nickname
+  || [mitglied?.contact?.firstName, mitglied?.contact?.lastName].filter(Boolean).join(' ')
+  || mitglied?.loginEmail
+  || null;
 ---
 <Grundgeruest titel="Kundenbereich — Werkbank" anmeldenZeigen={false}>
   <main>
     <section class="spur">
       <span class="marke">Kundenbereich</span>
-      <h2 class="lauf">Anmelden</h2>
-      <div class="portal-karte">
-        <h2>In Vorbereitung</h2>
-        <p class="leise">
-          Hier entsteht der Bereich für Kundinnen und Kunden: Bezug der
-          Anwendung, Lizenzen im Team, Rechnungen. Die Anmeldung läuft über
-          Wix — Konten, Kennwörter und Sitzungen liegen dort, nicht in einer
-          selbstgebauten Benutzerverwaltung.
-        </p>
-        <a class="knopf-voll" href="/api/auth/login">Mit Wix anmelden</a>
-        <p class="klein leise" style="margin-top:1rem">
-          Der Weg <code>/api/auth/login</code> entsteht, sobald das Projekt an
-          Wix angehängt ist.
-        </p>
-      </div>
 
-      <h2 class="lauf" style="margin-top:3rem">Was hier als Nächstes hineinkommt</h2>
-      <div class="schritte lauf">
-        <div class="schritt">
-          <span class="nr">1</span>
-          <div><b>Anmeldung</b><p>Mitgliederkonten über Wix, ohne eigene Kennwortverwaltung.</p></div>
-        </div>
-        <div class="schritt">
-          <span class="nr">2</span>
-          <div><b>Bezug der Anwendung</b><p>Die Werkbank zum Selbstbetrieb im eigenen Netz, mit Fassung und Änderungsliste.</p></div>
-        </div>
-        <div class="schritt">
-          <span class="nr">3</span>
-          <div><b>Lizenzen und Rechnungen</b><p>Plätze im Team verwalten, Belege abrufen.</p></div>
-        </div>
-        <div class="schritt">
-          <span class="nr">4</span>
-          <div><b>Die Anwendung selbst</b><p>Bleibt, was sie ist: sie läuft auf dem Gerät. Der Kundenbereich verwaltet den Zugang, nicht die Dokumente.</p></div>
-        </div>
-      </div>
+      {mitglied ? (
+        <>
+          <h2 class="lauf">Angemeldet{name ? ` als ${name}` : ''}</h2>
+          <div class="portal-karte">
+            <h2>Die Werkbank steht bereit</h2>
+            <p class="leise">
+              Kostenlos, ohne Stufen, ohne Zahlungsdaten. Alles, was sie kann,
+              ist jetzt offen — und Ihre Dateien bleiben dabei auf Ihrem Gerät.
+            </p>
+            <div class="knopf-reihe" style="margin-top:1rem">
+              <a class="knopf-voll" href="/werkbank/index.html">Werkbank öffnen</a>
+              <form method="post" action="/api/auth/logout?returnToUrl=%2F" style="display:inline">
+                <button class="knopf-rand" type="submit">Abmelden</button>
+              </form>
+            </div>
+          </div>
+
+          <h2 class="lauf" style="margin-top:3rem">Was Ihre Anmeldung bedeutet</h2>
+          <div class="raster raster-zwei">
+            <div class="eintrag">
+              <h3>Sie kostet nichts</h3>
+              <p>Kein Abo, keine Stufen, keine Zahlungsdaten. Es gibt keine
+              Funktion, die hinter einer Bezahlschranke liegt.</p>
+            </div>
+            <div class="eintrag">
+              <h3>Ihre Dateien bleiben, wo sie sind</h3>
+              <p>Auch angemeldet lädt die Werkbank nichts hoch. Texterkennung,
+              Verschlüsselung und Unterschrift laufen in Ihrem Browser.</p>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <h2 class="lauf">Anmelden</h2>
+          <div class="portal-karte">
+            <h2>Kostenlos — mit Anmeldung</h2>
+            <p class="leise">
+              Die Werkbank kostet nichts. Wir möchten nur wissen, wer sie
+              benutzt: ein Konto, keine Zahlungsdaten. Ihre Dateien werden auch
+              danach nicht hochgeladen.
+            </p>
+            <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fportal">Anmelden oder Konto anlegen</a>
+            {fehler && (
+              <p class="klein leise" style="margin-top:1rem">
+                Die Mitgliederverwaltung antwortet gerade nicht
+                (<code>{fehler.slice(0, 90)}</code>). Die Werkbank selbst läuft
+                davon unabhängig.
+              </p>
+            )}
+          </div>
+        </>
+      )}
     </section>
   </main>
 </Grundgeruest>

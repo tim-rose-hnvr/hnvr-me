@@ -51,18 +51,28 @@ function pruefe(bedingung, name, zusatz = '') {
 /* curl statt fetch: der Weg nach draußen führt hier über einen Proxy, und curl
    ist das einzige Werkzeug in dieser Umgebung, das ihn zuverlässig nimmt. */
 let zaehler = 0;
-async function hole(weg) {
+async function hole(weg, { folgen = true } = {}) {
   /* Der Körper geht in eine Datei, der Zustand über die Standardausgabe: so
-     kann kein Trennzeichen im Inhalt die Auswertung verwirren. */
+     kann kein Trennzeichen im Inhalt die Auswertung verwirren.
+
+     `folgen: false` ist für Wege gedacht, deren Antwort die Umleitung selbst
+     ist — der Anmeldeweg etwa endet in einer Anmeldemaske, die ohne Browser
+     nichts Sinnvolles zurückgibt. Geprüft wird dann, wohin er zeigt. */
   const ablage = join(tmpdir(), `live-pruefen-${process.pid}-${zaehler++}`);
   try {
     const { stdout } = await lauf('curl', [
-      '-sS', '--compressed', '-L', '-o', ablage,
-      '-w', '%{http_code} %{content_type}',
+      '-sS', '--compressed', ...(folgen ? ['-L'] : []), '-o', ablage,
+      '-w', '%{http_code} %{content_type}\n%{redirect_url}',
       `${BASIS}${weg}`,
     ], { maxBuffer: 1024 * 1024 });
-    const [code, ...rest] = stdout.trim().split(' ');
-    return { code: Number(code), typ: rest.join(' ').trim(), koerper: await readFile(ablage) };
+    const [kopfzeile, ziel = ''] = stdout.split('\n');
+    const [code, ...rest] = kopfzeile.trim().split(' ');
+    return {
+      code: Number(code),
+      typ: rest.join(' ').trim(),
+      ziel: ziel.trim(),
+      koerper: await readFile(ablage),
+    };
   } finally {
     await rm(ablage, { force: true });
   }
@@ -87,10 +97,18 @@ const startText = start.koerper.toString('utf8');
 pruefe(start.code === 200, 'Startseite antwortet', `HTTP ${start.code}`);
 pruefe(/<title>[^<]+<\/title>/.test(startText), 'Startseite hat einen Titel',
   startText.match(/<title>([^<]+)<\/title>/)?.[1]);
-pruefe(startText.includes('Werkbank öffnen'), 'Knopf „Werkbank öffnen" steht auf der Seite');
-pruefe(/href="\/werkbank\/index\.html"/.test(startText), 'der Knopf zeigt auf die Anwendung');
+/* Der Aufmacher führt seit der Schranke über die Anmeldung, nicht mehr geradewegs
+   in die Anwendung. Geprüft wird beides: der Weg über die Anmeldung und der
+   kurze Weg daneben für den, der schon angemeldet ist. */
+pruefe(/href="\/api\/auth\/login\?returnToUrl=%2Fwerkbank%2Findex\.html"/.test(startText),
+  'der Aufmacher führt über die Anmeldung in die Anwendung');
+pruefe(/[Kk]ostenlos anmelden/.test(startText), 'und sagt am Knopf, dass das nichts kostet');
+pruefe(/href="\/werkbank\/index\.html"/.test(startText),
+  'daneben steht der kurze Weg für Angemeldete');
 pruefe(/hnvr\.me/i.test(startText), 'Kontakt hnvr.me digital steht auf der Seite');
 pruefe(!/\d+\s*(€|EUR|Euro)\s*(\/|pro)/i.test(startText), 'kein Preis versprochen');
+pruefe(/[Kk]ostenlos/.test(startText), 'die Seite sagt, dass es nichts kostet');
+pruefe(/[Aa]nmeldung/.test(startText), 'und dass es eine Anmeldung braucht');
 
 console.log('\n== Gestaltung und Schriften ==');
 /* Die Schriftangaben stehen nicht im HTML, sondern im daraus verlinkten
@@ -112,6 +130,35 @@ for (const schnitt of ['plex-sans-400', 'plex-serif-600', 'plex-mono-400']) {
   const antwort = await hole(`/schrift/${schnitt}.woff2`);
   pruefe(antwort.code === 200 && /font|octet-stream/.test(antwort.typ),
     `${schnitt}.woff2 kommt von dieser Seite`, `HTTP ${antwort.code} ${antwort.typ}`);
+}
+
+console.log('\n== Anmeldung ==');
+{
+  const auskunft = await hole('/api/mitglied.json');
+  pruefe(auskunft.code === 200 && /json/.test(auskunft.typ),
+    'die Auskunft zur Anmeldung antwortet', `HTTP ${auskunft.code} ${auskunft.typ}`);
+  let daten = null;
+  try { daten = JSON.parse(auskunft.koerper.toString('utf8')); } catch { /* gleich gemeldet */ }
+  pruefe(daten && typeof daten.angemeldet === 'boolean',
+    'sie sagt, ob jemand angemeldet ist', JSON.stringify(daten));
+  /* Ein Abrufer ohne Sitzung ist niemand — sonst wäre die Schranke wirkungslos. */
+  pruefe(daten?.angemeldet === false,
+    'ohne Sitzung gilt: nicht angemeldet');
+
+  const anwendung = await hole('/werkbank/index.html');
+  pruefe(/name="werkbank-anmeldung"/.test(anwendung.koerper.toString('utf8')),
+    'die ausgelieferte Anwendung trägt die Schranken-Zeile');
+
+  /* Ohne `-L`: der Anmeldeweg *ist* die Umleitung. Wer ihr folgt, landet in
+     der Anmeldemaske, und die antwortet einem Abrufer ohne Browser mit 400 —
+     das wäre kein Fehler der Seite, sondern einer der Prüfung. */
+  const anmelden = await hole('/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html',
+    { folgen: false });
+  pruefe(anmelden.code === 302, 'der Weg zur Anmeldung ist da', `HTTP ${anmelden.code}`);
+  pruefe(/oauth2\/authorize/.test(anmelden.ziel),
+    'er führt zur Anmeldung von Wix', anmelden.ziel.split('?')[0]);
+  pruefe(/redirectUri=[^&]*%2Fapi%2Fauth%2Fcallback/.test(anmelden.ziel),
+    'und kommt danach auf diese Seite zurück');
 }
 
 console.log('\n== Wege in die Anwendung ==');

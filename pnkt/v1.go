@@ -147,7 +147,7 @@ func (d *dienst) rendern(w http.ResponseWriter, r *http.Request) {
 		BreiteMm: breite, ModuleJeKante: s.Kante, Fehlerkorrektur: stufe.String(),
 		Verfahren: oder(wunsch.Verfahren, "offset"), RuhezoneModule: ruhezone,
 		Vordergrund: g.Vordergrund, Hintergrund: g.Hintergrund,
-		Modulform: g.Modulform,
+		Modulform: g.Modulform, Augenrahmen: g.Augenrahmen, Augenkern: g.Augenkern,
 	})
 
 	// Drei Worte statt einer Note, wie in der veroeffentlichten Schnittstelle.

@@ -37,6 +37,7 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 | `qr` (svg.go) | Vektorausgabe in Millimetern: sechs Modulformen, eigene Augenformen, Ruhezone, Logoaussparung. Kein eingebettetes Rasterbild |
 | `druck` | Druckurteil nach den **veröffentlichten Grenzwerten** von pnkt.me: 0,20 mm Bildschirm, 0,40 mm Laser und Tinte, 0,50 mm Offset, 0,75 mm Großformat, 1,00 mm Gravur; Kontrast ab 4:1, Ruhezone 4 Module, Warnung ab 60 % verbrauchter Reserve |
 | `gs1` | GTIN-Prüfziffer nach Modulo 10, Digital Link bauen und zurücklesen |
+| `inhalt` | GiroCode nach EPC069-12 mit IBAN-Prüfung (ISO 13616, Modulo 97, Längentabelle je Land), vCard 3.0, WLAN |
 | `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler |
 | `ausgabe` | PDF und EPS von Hand geschrieben — echter Vektor in Punkt, ohne fremdes Paket |
 | `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio |
@@ -145,6 +146,25 @@ Die Geometrie liegt an einer Stelle: SVG, PDF und EPS lesen dieselben
 Grundformen. Sonst zeigt die Vorschau etwas anderes als die Druckdatei,
 und das merkt niemand, bevor die Auflage liegt.
 
+**Die Augenformen sind vermessen, nicht geschätzt.** 160 Kombinationen aus
+zehn Modul-, vier Rahmen- und vier Kernformen, gegengelesen mit OpenCV:
+
+| Augenrahmen | gelesen |
+|---|---|
+| `quadrat` | 40 von 40 |
+| `kissen` (Radius 1 Modul) | 40 von 40 |
+| `blatt` (Radius 2 Module) | 0 von 40 |
+| `rund` (Vollkreis) | 0 von 40 |
+
+Das ist keine Abstufung, sondern eine Kante — und sie bestätigt, was auf
+`pnkt.me/lesbarkeit` unter „Formwahl" steht: gesucht wird das Verhältnis
+1:1:3:1:1 in den Positionsmarken. Die Druckprüfung nennt jetzt diese
+Zahlen im Befund. Verboten wird nichts: Telefonkameras sind nachsichtiger
+als ein Prüfdecoder, und die Entscheidung gehört dem Gestalter.
+
+Dieselbe Messung hat einen zu klein geratenen Punktkern aufgedeckt
+(Radius 0,38 statt 0,44 der Kernbreite) — behoben, danach 40 von 40.
+
 Die Prüfwerkzeuge liegen bewusst **nicht** im Programm — jsQR und OpenCV
 sind Testzubehör, kein Bestandteil. Das Binär bleibt abhängigkeitsfrei.
 
@@ -175,11 +195,10 @@ Module für das gewählte Verfahren.
 
 Gemessen am veröffentlichten Stand von pnkt.me fehlt dieser Fassung:
 
-- **Sechs der zwölf Modulformen** (Weich, Stern, Blatt, Querstriche,
-  Längsstriche, Fließend) und die sieben Ecken- und Kernformen.
+- **Fließend** als Modulform — sie verbindet benachbarte Module und
+  braucht dafür Nachbarschaftswissen, das die Geometrie noch nicht hat.
+  Zehn der zwölf Formen stehen, ebenso vier Rahmen- und vier Kernformen.
 - **Verläufe** in allen drei Ausgabeformaten.
-- **GiroCode nach EPC069-12** mit IBAN-Prüfung, vCard, WLAN — die
-  Inhaltstypen sind in `/api/v1/typen` beschrieben, aber noch nicht gebaut.
 - **Rahmen mit Beschriftung** („JETZT SCANNEN").
 - **Ordner, Suche, Löschen, Mitarbeitende** in der Zentrale.
 - **Regeln als Liste** mit Zeitzone, wie die Schnittstellenseite sie zeigt

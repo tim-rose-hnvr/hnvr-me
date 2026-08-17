@@ -72,6 +72,8 @@ type Vorgabe struct {
 	Vordergrund     string
 	Hintergrund     string
 	Modulform       string  // fuer den Hinweis auf teilgefuellte Formen
+	Augenrahmen     string  // quadrat, rund, blatt, kissen
+	Augenkern       string  // quadrat, rund, punkt, weich
 	LogoAnteil      float64 // Kantenanteil des Logos, 0 bis 1
 	FuerKasse       bool    // soll nach GS1 an der Kasse gelesen werden
 }
@@ -221,7 +223,7 @@ func Pruefe(v Vorgabe) Urteil {
 	// weniger Kontrastflaeche. Auf Papier meist unkritisch, im Grossformat
 	// und bei Gegenlicht nicht. Ein Hinweis, kein Verbot.
 	switch v.Modulform {
-	case "raute", "stern", "kreuz":
+	case "raute", "stern", "kreuz", "querstriche", "laengsstriche":
 		schwere := "warnung"
 		if verfahren.MinModulMm < 0.75 {
 			schwere = "hinweis"
@@ -230,6 +232,26 @@ func Pruefe(v Vorgabe) Urteil {
 			fmt.Sprintf("Die Form %q fuellt weniger als ein volles Modul.", v.Modulform),
 			"Der Scanner sieht weniger Kontrastflaeche. Bei Grossformat und Gegenlicht "+
 				"eine volle Form waehlen.")
+	}
+
+	// Die Positionsmarken sind das, woran ein Scanner den Code ueberhaupt
+	// findet: gesucht wird das Verhaeltnis 1:1:3:1:1. Wie stark eine runde
+	// Ecke schadet, ist gemessen und nicht geschaetzt — 160 Kombinationen
+	// aus Modul-, Rahmen- und Kernform, gegengelesen mit OpenCV:
+	//
+	//	quadrat  40 von 40      kissen  40 von 40
+	//	blatt     0 von 40      rund     0 von 40
+	//
+	// Das ist keine Abstufung, das ist eine Kante. Verboten wird es
+	// trotzdem nicht — Telefonkameras sind nachsichtiger als ein
+	// Pruefdecoder, und die Entscheidung gehoert dem Gestalter.
+	switch v.Augenrahmen {
+	case "rund", "blatt":
+		melde("warnung",
+			fmt.Sprintf("Der Augenrahmen %q wurde in unserer Messung von einem verbreiteten "+
+				"Decoder in keinem einzigen von 40 Faellen gelesen.", v.Augenrahmen),
+			"Quadratische oder nur leicht gerundete Positionsmarken (kissen) waehlen — "+
+				"die lasen sich in derselben Messung durchgehend.")
 	}
 
 	if strings.EqualFold(v.Fehlerkorrektur, "L") && !v.FuerKasse {

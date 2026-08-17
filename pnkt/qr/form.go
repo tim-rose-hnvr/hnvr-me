@@ -1,5 +1,7 @@
 package qr
 
+import "math"
+
 // Die Geometrie liegt an einer Stelle, nicht in jedem Ausgabeformat neu.
 // Sonst zeigt die Vorschau etwas anderes als die Druckdatei — und das
 // merkt niemand, bevor die Auflage liegt.
@@ -80,8 +82,30 @@ func modulform(form string, x, y, m float64, farbe string) Form {
 	case "punkt":
 		r := m * 0.42
 		return Form{Art: ArtKreis, X: x + m/2, Y: y + m/2, R: r, Farbe: farbe}
-	case "rund":
+	case "rund", "abgerundet":
 		return Form{Art: ArtRundRechteck, X: x, Y: y, B: m, H: m, R: m * 0.28, Farbe: farbe}
+	case "weich":
+		return Form{Art: ArtRundRechteck, X: x, Y: y, B: m, H: m, R: m * 0.45, Farbe: farbe}
+	case "querstriche":
+		h := m * 0.62
+		return Form{Art: ArtRechteck, X: x, Y: y + (m-h)/2, B: m, H: h, Farbe: farbe}
+	case "laengsstriche":
+		b := m * 0.62
+		return Form{Art: ArtRechteck, X: x + (m-b)/2, Y: y, B: b, H: m, Farbe: farbe}
+	case "stern":
+		// Acht Zacken, abwechselnd aussen und innen.
+		mx, my := x+m/2, y+m/2
+		aussen, innen := m*0.5, m*0.22
+		var punkte [][2]float64
+		for i := 0; i < 8; i++ {
+			r := aussen
+			if i%2 == 1 {
+				r = innen
+			}
+			w := float64(i) * math.Pi / 4
+			punkte = append(punkte, [2]float64{mx + r*math.Sin(w), my - r*math.Cos(w)})
+		}
+		return Form{Art: ArtPolygon, Farbe: farbe, Punkte: punkte}
 	case "mosaik":
 		e := m * 0.08
 		return Form{Art: ArtRechteck, X: x + e, Y: y + e, B: m - 2*e, H: m - 2*e, Farbe: farbe}
@@ -111,9 +135,14 @@ func augenformen(x, y, m float64, rahmen, kern, farbe string) []Form {
 	case "rund":
 		aussen = Form{Art: ArtKreis, X: x + sieben/2, Y: y + sieben/2, R: sieben / 2, Farbe: farbe}
 		innen = Form{Art: ArtKreis, X: x + sieben/2, Y: y + sieben/2, R: sieben/2 - m}
-	case "blatt":
-		aussen = Form{Art: ArtRundRechteck, X: x, Y: y, B: sieben, H: sieben, R: 2 * m, Farbe: farbe}
-		innen = Form{Art: ArtRechteck, X: x + m, Y: y + m, B: sieben - 2*m, H: sieben - 2*m}
+	case "blatt", "kissen":
+		ecke := 2 * m
+		if rahmen == "kissen" {
+			ecke = m
+		}
+		aussen = Form{Art: ArtRundRechteck, X: x, Y: y, B: sieben, H: sieben, R: ecke, Farbe: farbe}
+		innen = Form{Art: ArtRundRechteck, X: x + m, Y: y + m, B: sieben - 2*m, H: sieben - 2*m,
+			R: ecke * 0.6}
 	default:
 		aussen = Form{Art: ArtRechteck, X: x, Y: y, B: sieben, H: sieben, Farbe: farbe}
 		innen = Form{Art: ArtRechteck, X: x + m, Y: y + m, B: sieben - 2*m, H: sieben - 2*m}
@@ -126,7 +155,9 @@ func augenformen(x, y, m float64, rahmen, kern, farbe string) []Form {
 	case "rund":
 		mitte = Form{Art: ArtKreis, X: kx + drei/2, Y: ky + drei/2, R: drei / 2, Farbe: farbe}
 	case "punkt":
-		mitte = Form{Art: ArtKreis, X: kx + drei/2, Y: ky + drei/2, R: drei * 0.38, Farbe: farbe}
+		mitte = Form{Art: ArtKreis, X: kx + drei/2, Y: ky + drei/2, R: drei * 0.44, Farbe: farbe}
+	case "weich", "kissen":
+		mitte = Form{Art: ArtRundRechteck, X: kx, Y: ky, B: drei, H: drei, R: drei * 0.3, Farbe: farbe}
 	default:
 		mitte = Form{Art: ArtRechteck, X: kx, Y: ky, B: drei, H: drei, Farbe: farbe}
 	}

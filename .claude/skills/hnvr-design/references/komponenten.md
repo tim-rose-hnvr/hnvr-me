@@ -296,6 +296,39 @@ Auf Creme-Abschnitten stellt sich die Farbe des Einwilligungstextes von allein u
 
 ---
 
+## Blog, Shop, FAQ, Team
+
+Diese vier stehen mit vollständigem Markup in `seitentypen.md`, weil dort auch der Seitenaufbau drumherum beschrieben ist. Kurz die Klassen:
+
+| Baustein | Klassen | Achtung |
+|---|---|---|
+| Beitragskachel | `.beitrag` mit `.bild`, `.kopfzeile`, `h2`, `p` | Abstand 79px, Bild 830×453 |
+| Blätterung | `.blaettern` mit `.aktuell` | Kreise 52px |
+| Produktkachel | `.produkt` mit `.bild`, `.merken`, `.preis` | Bild 767×879 hochkant |
+| Ziehharmonika | `.zieh` > `details.zeile` > `summary.frage` + `.antwort` | `details`/`summary`, kein JavaScript |
+| Team | `.team` > `.person` | Bilder grau, färben beim Überfahren |
+| Icon-Kasten | `.ikon-box` mit `.ikon` | |
+| Schiene | `.schiene` mit `.punkte` | ersetzt den Slider, `scroll-snap` |
+
+**Blog und Shop laufen auf der Theme-Typografie** — `h2` ist dort 35px, nicht 80. Keine `.disp-*`-Klassen verwenden.
+
+---
+
+## Sprunglink
+
+Erstes Element im Körper, sichtbar erst beim Tabben. Ohne ihn tabbt sich jede Tastaturbedienung auf jeder Seite zuerst durch die komplette Navigation.
+
+```html
+<body>
+  <a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+  <header class="site">…</header>
+  <main id="inhalt">…</main>
+```
+
+Der Prüflauf meldet, wenn er fehlt.
+
+---
+
 ## Kopf und Fuß
 
 Stehen komplett in `assets/vorlage.html`. Beides unverändert übernehmen —

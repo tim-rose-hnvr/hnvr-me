@@ -18,6 +18,17 @@ Diese fünf kommen wörtlich aus dem Block `pxl-style-inline-css` der Seite. Nam
 | `--four-color` | `#FFF` | Überschriften und starker Text |
 | `--link-color` | `#FFF` | Links, auch im Hover |
 
+### Zwei Textrollen — das Wichtigste an diesem System
+
+| Variable | Standard | im Creme-Abschnitt |
+|---|---|---|
+| `--text-strong` | `--four-color` (`#FFF`) | `--ink` (`#0C0C0C`) |
+| `--text-body` | `--third-color` (`#C2C2C2`) | `--muted-cream` (`#5C5E5C`) |
+
+Bausteine setzen **niemals** `--four-color` oder `--third-color` direkt als Textfarbe, sondern immer diese beiden. Grund: `section.cream` kippt genau diese Token (plus `--line` und `--link-color`), womit jeder Baustein automatisch folgt.
+
+Vorher stand dort eine Liste von Klassen. Die wuchs mit jedem neuen Baustein und wurde zweimal vergessen — beim großen Schriftzug und später bei Blog, Shop und Team. Siehe `fallstricke.md`, Befund 10.
+
 Zusätzlich liegen `--primary-color-rgb`, `--secondary-color-rgb` usw. bereit, weil das Theme sie für `rgba()`-Berechnungen braucht.
 
 ### Ergänzungen aus den Elementor-Seiten
@@ -37,7 +48,10 @@ Diese stehen nicht im Theme, sondern in den Seiteneinstellungen — sie tragen d
 
 ### Was hier zählt
 
-`#C2C2C2` auf `#030303` ergibt 11.6:1 — der Fließtext der Seite ist bewusst hell. Auf Creme wären es 1.9:1, deshalb kippt `section.cream` alle Textklassen auf `--ink` und `--muted-cream`. Wer eine eigene Textklasse baut, muss sie dort mit eintragen.
+`#C2C2C2` auf `#030303` ergibt 11.6:1 — der Fließtext der Seite ist bewusst hell. Auf Creme wären es 1.9:1; deshalb die Token-Umschaltung oben. Zwei Dinge folgen ihr **nicht** von allein und stehen darum ausdrücklich in `hnvr.css`:
+
+- Links in Überschriften brauchen `color: inherit`, sonst steht der weiße Linkton auf Creme.
+- Elemente, die immer auf einem Bild liegen (Merken-Knopf), bekommen feste helle Farben.
 
 `--accent` gehört auf: Punkte, Ziffern, Haken, Unterstreichungen, ein hervorgehobenes Wort, Hover-Flächen. Nicht auf: ganze Textblöcke, mehrere Elemente in einer Reihe, Fließtext.
 Gerechnet:
@@ -116,9 +130,9 @@ Die Regel dahinter: **je größer, desto enger.** Displaygrade bekommen negative
 | Klasse | Größe | Farbe |
 |---|---|---|
 | `.philo` | `clamp(26px, 3.3vw, 64px)` | weiß, ein Wort im Akzent |
-| `.lede` | `clamp(18px, 1.25vw, 24px)` | `--third-color`, `52ch` |
-| `.copy` | `clamp(16px, 1.04vw, 20px)` | `--third-color`, `44ch` |
-| `.ey` | `14px`, `letter-spacing: 1.4px` | `--third-color`, Schrägstriche im Akzent |
+| `.lede` | `clamp(18px, 1.25vw, 24px)` | `--text-body`, `52ch` |
+| `.copy` | `clamp(16px, 1.04vw, 20px)` | `--text-body`, `44ch` |
+| `.ey` | `14px`, `letter-spacing: 1.4px` | `--text-body`, Schrägstriche im Akzent |
 | `.pill` | `11px`, `letter-spacing: 1.4px` | geerbt |
 
 ### Zeilenlänge
@@ -159,19 +173,28 @@ Karten-Innenabstand: `clamp(28px, 3vw, 48px)`.
 
 ## Bewegung
 
-Eine Kurve: `--ease: cubic-bezier(.645, .045, .355, 1)` — die des Themes.
+Drei Kurven, jede mit einem Zweck:
 
-| Vorgang | Dauer |
-|---|---|
-| Einblenden beim Scrollen | `.95s`, Versatz 34px |
-| Hover auf Button/Karte | `.4s` |
-| Hover auf Linie/Farbe | `.3s` – `.35s` |
-| Vollbild-Navigation | `.6s` mit `cubic-bezier(.76, 0, .24, 1)` |
-| Laufband | 30s linear, endlos |
+| Variable | Wert | Wofür |
+|---|---|---|
+| `--ease` | `cubic-bezier(.645,.045,.355,1)` | Hover, Zustandswechsel — die Kurve des Themes |
+| `--ease-out` | `cubic-bezier(.215,.61,.355,1)` | Einblenden — entspricht GSAP `power3.out` |
+| `--ease-out-stark` | `cubic-bezier(.165,.84,.44,1)` | Aufsteigende Zeilen — `power4.out` |
 
-Gestaffelte Einblendungen über `.d1 .d2 .d3` (80/160/240ms). Mehr als drei Stufen wirken zäh.
+| Vorgang | Wert | Herkunft |
+|---|---|---|
+| Einblenden (`.rv`) | `.8s`, Versatz 34px | GSAP-Aufbau der Seite |
+| Staffelung `.d1 .d2 .d3` | 50 / 100 / 150 ms | `stagger: 0.05` |
+| Auslöser | Oberkante bei 86 % Fensterhöhe, **einmalig** | `start: "top 86%"`, `once: true` |
+| Zeilen (`.rv-zeile`) | `1.2s`, `yPercent: 100` | SplitText-Variante der Seite |
+| Bild (`.rv-bild`) | `1s` linear, `clip-path` | Bildenthüllung der Seite |
+| Hover Button/Karte | `.4s` | Theme |
+| Vollbild-Navigation | `.6s` mit `cubic-bezier(.76,0,.24,1)` | Theme |
+| Laufband | 30s linear, endlos | Theme |
 
-`prefers-reduced-motion` ist in `hnvr.css` behandelt: Animationen aus **und** `.rv` wird sichtbar gesetzt. Wer Einblendungen per Inline-Style oder eigenem JS baut, muss den zweiten Teil selbst mitdenken — sonst bleibt die Seite für Betroffene leer.
+Vollständig samt der Bewegungen, die der Skill bewusst **nicht** nachbaut: `bewegung.md`.
+
+`prefers-reduced-motion` ist in `hnvr.css` behandelt — Animationen aus **und** die Startzustände hart zurückgestellt. Wer eigene Bewegung ergänzt, muss den zweiten Teil mitdenken, sonst bleibt die Seite für Betroffene leer.
 
 ---
 

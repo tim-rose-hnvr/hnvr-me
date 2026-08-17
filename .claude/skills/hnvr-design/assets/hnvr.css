@@ -218,6 +218,12 @@ section.cream .btn:hover .ic{ background: var(--accent); color: #000; }
   padding-bottom: clamp(40px, 5vw, 70px);
 }
 
+/* Trennstrich (pxl_divider auf der Seite). Fährt beim Einblenden von
+   links auf, wenn er zusammen mit .rv steht. */
+.rule { border: 0; border-top: 1px solid var(--line); margin: 0; }
+.rule.wachsend { width: 0; transition: width .8s var(--ease-out); }
+.rule.wachsend.in, .in > .rule.wachsend { width: 100%; }
+
 /* Überlaufschutz auf schmalen Fenstern.
    Gemessen auf der Seite: ein Inhalt sprengte die Spalte von innen,
    scrollWidth blieb aber bei 390 — die Seite ließ sich also nicht

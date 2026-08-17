@@ -45,14 +45,6 @@ jobs:
       - name: Abhängigkeiten
         run: npm ci
 
-      # Erst prüfen, dann ausliefern. Ein Deploy, der die Regeln bricht, ist
-      # schlimmer als keiner — die Seite hängt an einem gedruckten QR-Code.
-      - name: Tests
-        run: npm test
-
-      - name: Typen prüfen
-        run: npm run pruefen
-
       # `wix login --api-key` nimmt den Schlüssel entgegen, fällt in einer
       # Umgebung ohne Terminal aber trotzdem auf die Anmeldung per Gerätecode
       # zurück und wartet dort bis zum Zeitablauf (CLI 1.1.237). Deshalb wird
@@ -89,6 +81,22 @@ jobs:
             );
           '
           npx wix whoami
+
+      # Die Anbindung von Wix liest beim Start `WIX_CLIENT_ID` und weitere
+      # Projektwerte. Lokal stehen sie in `.env.local`, das zu Recht nicht im
+      # Repository liegt — es enthält ein Client-Geheimnis. Hier werden sie nach
+      # der Anmeldung von Wix geholt. Deshalb steht die Prüfung erst danach:
+      # `astro check` startet dieselbe Anbindung und scheitert ohne die Werte.
+      - name: Projektwerte holen
+        run: npx wix env pull
+
+      # Erst prüfen, dann ausliefern. Ein Deploy, der die Regeln bricht, ist
+      # schlimmer als keiner — die Seite hängt an einem gedruckten QR-Code.
+      - name: Tests
+        run: npm test
+
+      - name: Typen prüfen
+        run: npm run pruefen
 
       - name: Bauen
         run: npm run build

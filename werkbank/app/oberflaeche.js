@@ -22,6 +22,8 @@ import {
   aendere, waehleAn, uebernehmeAuswahl, bezeichne, hatUnterschrift,
 } from './anmerkungen.js';
 import { starteSeiten, drehe, loesche, verdopple, gewaehlteOderAktuelle } from './seiten.js';
+import { starteOrdnen, umschalteOrdnen, schliesseOrdnen } from './ordnen.js';
+import { starteMenue } from './menue.js';
 import { starteSuche, suche, trefferListe, weiter, zurueck, leere as leereSuche, markiereAlle, suchbegriff, textAusgeben } from './suche.js';
 import { formularTafel, zumNaechstenFeld, hatFormular, offeneFelder } from './formulare.js';
 import { zeigeUnterschriftDialog } from './unterschrift.js';
@@ -166,6 +168,8 @@ function baueBefehle() {
   });
   befehl('suche:treffer-hervorheben', 'Alle Suchtreffer hervorheben', 'Werkzeuge', hebeTrefferHervor);
 
+  befehl('seiten:ordnen', 'Seiten ordnen, sortieren, löschen …', 'Seiten', umschalteOrdnen, 'Strg+Umschalt+O');
+  befehl('seiten:nurAuswahl', 'Nur gewählte Seiten zeigen', 'Seiten', () => setzeFokus(!zustand.nurAuswahl));
   befehl('seiten:drehenLinks', 'Seiten links drehen', 'Seiten', () => drehe(-90), 'Strg+Umschalt+←');
   befehl('seiten:drehenRechts', 'Seiten rechts drehen', 'Seiten', () => drehe(90), 'Strg+Umschalt+→');
   befehl('seiten:loeschen', 'Seiten löschen', 'Seiten', loesche);
@@ -1176,6 +1180,8 @@ export function starteOberflaeche() {
   baueBefehle();
   starteAnsicht();
   starteSeiten();
+  starteOrdnen();
+  starteMenue();
   starteSuche();
   starteMitdenken();
   setzeSichtHoler((seitenId) => blattVon(seitenId)?.sicht || null);
@@ -1188,6 +1194,9 @@ export function starteOberflaeche() {
   $('#knopf-seitenleiste').addEventListener('click', () => fuehreAus('leiste:umschalten'));
   $('#knopf-befehle').addEventListener('click', zeigePalette);
   $('#knopf-sichern').addEventListener('click', () => fuehreAus('sichern'));
+  $('#knopf-rueckgaengig').addEventListener('click', () => fuehreAus('rueckgaengig'));
+  $('#knopf-wiederholen').addEventListener('click', () => fuehreAus('wiederholen'));
+  $('#knopf-fokus-aus').addEventListener('click', () => setzeFokus(false));
   $('#knopf-zurueck').addEventListener('click', () => zeigeSeite(zustand.aktuelleSeite - 1));
   $('#knopf-vor').addEventListener('click', () => zeigeSeite(zustand.aktuelleSeite + 1));
   $('#knopf-kleiner').addEventListener('click', () => zoomeSchritt(-1));
@@ -1262,6 +1271,13 @@ export function starteOberflaeche() {
     zeichneRechteTafel();
   });
   hoer('seite:gewechselt', aktualisiereFuss);
+  hoer('historie:geaendert', aktualisiereRueckgaengig);
+  hoer('auswahl:geaendert', aktualisiereFuss);
+  hoer('ordnen:auszug', async () => {
+    const ids = gewaehlteOderAktuelle();
+    schliesseOrdnen();
+    await mitLader('Seiten werden ausgegeben …', () => seitenAusgeben(ids, vorschlagsname('-auszug')));
+  });
   hoer('zoom:geaendert', aktualisiereZoomAnzeige);
   hoer('ansicht:neu', aktualisiereZoomAnzeige);
   hoer('seiten:geaendert', () => { aktualisiereFuss(); zeichneRechteTafel(); });
@@ -1348,6 +1364,50 @@ function aktualisiereFuss() {
   if (zustand.anmerkungen.length) teile.push(`${zustand.anmerkungen.length} Anmerkungen`);
   if (befunde.gescannt) teile.push('Scan ohne Textebene');
   melder.textContent = teile.join(' · ');
+  aktualisiereRueckgaengig();
+  aktualisiereFokusanzeige();
+}
+
+/* Zwei Knöpfe, die vorher nur als Tastenkombination existierten. Ein Mensch,
+   der einen Fehler gemacht hat, sucht einen Knopf, keine Kombination. */
+function aktualisiereRueckgaengig() {
+  const zurueck = $('#knopf-rueckgaengig');
+  const vor = $('#knopf-wiederholen');
+  if (!zurueck || !vor) return;
+  const naechsterZurueck = zustand.historie[zustand.historieZeiger];
+  const naechsterVor = zustand.historie[zustand.historieZeiger + 1];
+  zurueck.disabled = zustand.historieZeiger < 0;
+  vor.disabled = zustand.historieZeiger >= zustand.historie.length - 1;
+  zurueck.title = naechsterZurueck ? `Rückgängig: ${naechsterZurueck.beschreibung} (Strg+Z)` : 'Rückgängig (Strg+Z)';
+  vor.title = naechsterVor ? `Wiederholen: ${naechsterVor.beschreibung} (Strg+Umschalt+Z)` : 'Wiederholen (Strg+Umschalt+Z)';
+}
+
+/* ---------- Nur gewählte Seiten zeigen -------------------------------------- */
+
+/* „Fokussieren" heißt: die übrigen Seiten treten zurück, bleiben aber im
+   Dokument. Deshalb wird nichts gelöscht und nichts umsortiert — die Ansicht
+   blendet aus. Damit niemand vergisst, dass er nur einen Ausschnitt sieht,
+   steht es im Fuß, mit dem Weg zurück daneben. */
+export function setzeFokus(an) {
+  if (an && !zustand.gewaehlteSeiten.size) {
+    sage('Erst Seiten wählen — in der Seitenleiste oder unter „Seiten ordnen"', { art: 'warn' });
+    return;
+  }
+  zustand.nurAuswahl = !!an;
+  melde('fokus:geaendert');
+  baueNeu({ haltePosition: true });
+  aktualisiereFokusanzeige();
+  sage(an
+    ? `Nur ${zustand.gewaehlteSeiten.size} von ${zustand.folge.length} Seiten sichtbar`
+    : 'Wieder alle Seiten sichtbar');
+}
+
+function aktualisiereFokusanzeige() {
+  const kasten = $('#fuss-fokus');
+  if (!kasten) return;
+  const an = !!zustand.nurAuswahl && zustand.gewaehlteSeiten.size > 0;
+  kasten.hidden = !an;
+  if (an) $('#fokus-text').textContent = `Nur ${zustand.gewaehlteSeiten.size} von ${zustand.folge.length} Seiten`;
 }
 
 /* ---------- Thema ------------------------------------------------------------- */

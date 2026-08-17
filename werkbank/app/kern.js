@@ -33,6 +33,8 @@ export const zustand = {
   ansichtDrehung: 0,
   aktuelleSeite: 1,
   gewaehlteSeiten: new Set(),
+  /** Fokus: nur die gewählten Seiten anzeigen. Ändert das Dokument nicht. */
+  nurAuswahl: false,
   gewaehlteAnmerkung: null,
   geaendert: false,
   gliederung: null,

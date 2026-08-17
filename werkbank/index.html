@@ -24,6 +24,13 @@
     <div class="kopf-mitte" id="werkzeugleiste" role="toolbar" aria-label="Werkzeuge"></div>
 
     <div class="kopf-rechts">
+      <button class="knopf knopf-still" id="knopf-rueckgaengig" title="Rückgängig (Strg+Z)" aria-label="Rückgängig" disabled>
+        <svg viewBox="0 0 24 24" class="sinnbild"><path d="M9 14L4 9l5-5"/><path d="M4 9h9a6 6 0 0 1 0 12H8"/></svg>
+      </button>
+      <button class="knopf knopf-still" id="knopf-wiederholen" title="Wiederholen (Strg+Umschalt+Z)" aria-label="Wiederholen" disabled>
+        <svg viewBox="0 0 24 24" class="sinnbild"><path d="M15 14l5-5-5-5"/><path d="M20 9h-9a6 6 0 0 0 0 12h5"/></svg>
+      </button>
+      <span class="werkzeug-trenner"></span>
       <button class="knopf knopf-still" id="knopf-befehle" title="Befehle (Strg+K)">
         <svg viewBox="0 0 24 24" class="sinnbild"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg>
         <span class="nur-breit">Befehle</span>
@@ -34,6 +41,8 @@
       </button>
     </div>
   </header>
+
+  <nav class="menueleiste" id="menueleiste" aria-label="Menü"></nav>
 
   <div class="rumpf">
 
@@ -68,6 +77,10 @@
       <button class="knopf knopf-klein knopf-still" id="knopf-vor" title="Nächste Seite">▸</button>
     </div>
     <div class="fuss-gruppe" id="fuss-melder"></div>
+    <div class="fuss-gruppe fuss-fokus" id="fuss-fokus" hidden>
+      <span class="fokus-marke" id="fokus-text"></span>
+      <button class="knopf knopf-klein" id="knopf-fokus-aus">Alle Seiten zeigen</button>
+    </div>
     <div class="fuss-gruppe">
       <button class="knopf knopf-klein knopf-still" id="knopf-kleiner" title="Kleiner (Strg+−)">−</button>
       <select class="feld" id="feld-zoom" aria-label="Vergrößerung">
@@ -111,6 +124,8 @@
 <input type="file" id="dateiwahl-anhang" accept="application/pdf,.pdf" hidden>
 <input type="file" id="dateiwahl-vergleich" accept="application/pdf,.pdf" hidden>
 <input type="file" id="dateiwahl-bilder" accept="image/png,image/jpeg" multiple hidden>
+
+<div id="ordnen" class="ordnen" role="dialog" aria-label="Seiten ordnen" hidden></div>
 
 <div id="schirm" class="schirm" hidden></div>
 <div id="meldungen" class="meldungen" aria-live="polite"></div>

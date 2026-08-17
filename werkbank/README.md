@@ -31,6 +31,28 @@ mehrzeiligem Feld, Ankreuzfeld, Auswahlliste, Optionsfeld und einem echten
 Unterschriftsfeld. Damit lässt sich jede Fähigkeit der Werkbank ausprobieren,
 ohne eine eigene Datei zu suchen.
 
+## Wo alles steht
+
+Ein Befehl, den niemand findet, gibt es nicht. Deshalb hat jeder der 72
+Befehle einen Weg mit der Maus:
+
+- **Menüleiste** unter dem Kopf — Datei, Bearbeiten, Seiten, Ansicht,
+  Werkzeuge, Gehe zu, Schutz, Hilfe. Sie wird aus dem Befehlsregister gebaut,
+  nicht daneben gepflegt; was nirgends einsortiert ist, landet sichtbar unter
+  „Weiteres". Der Prüflauf lässt keinen Befehl ohne Menüweg durch.
+- **Werkzeugleiste** im Kopf — die fünfzehn Werkzeuge zum Zeigen und Zeichnen.
+- **Rückgängig und Wiederholen** als Knöpfe im Kopf, mit dem Namen des
+  Schritts im Tooltip („Rückgängig: 3 Seiten gelöscht").
+- **Seiten ordnen** (`Strg+Umschalt+O`, Knopf über den Miniaturen) — alle
+  Seiten groß nebeneinander: ziehen sortiert um, Umschalt und Strg wählen
+  mehrere, dann drehen, verdoppeln, löschen, als eigene Datei sichern oder
+  weitere Seiten einfügen. Doppelklick springt zur Seite.
+- **Nur gewählte Seiten zeigen** — Seiten auswählen, dann „Seiten → Nur
+  gewählte Seiten zeigen". Die übrigen treten zurück, ohne dass am Dokument
+  etwas geändert wird; die Seitennummern bleiben die des Dokuments. Im Fuß
+  steht, dass ein Ausschnitt sichtbar ist, mit dem Weg zurück daneben.
+- **Befehlspalette** (`Strg+K`) für alle, die lieber tippen.
+
 ## Was mitdenkt
 
 Nach dem Laden liest die Werkbank bis zu 60 Seiten und zieht daraus Schlüsse.
@@ -76,7 +98,7 @@ Sichern wandert er als unsichtbarer Text (Textmodus 3, waagerecht auf die
 Wortbreite gestaucht) hinter das Bild: das Ergebnis ist ein durchsuchbares
 PDF, das in jedem Betrachter gleich aussieht.
 
-**Text ersetzen** — auf ein Textstück klicken, neuen Text schreiben. Lage,
+**Text bearbeiten** — auf ein Textstück klicken, neuen Text schreiben. Lage,
 Größe, Grund- und Schriftfarbe werden aus der gezeichneten Seite abgegriffen.
 Auf Wunsch wird der alte Text wirklich entfernt (die Seite wird dabei zum
 Bild) statt nur überdeckt — beides steht im Dialog.
@@ -97,7 +119,11 @@ Rückgängig und Wiederholen. Anmerkungsliste mit Sprung zur Stelle und
 Textbericht.
 
 **Seiten** — umsortieren (ziehen), drehen, löschen, verdoppeln, auszugsweise
-ausgeben, weitere Dateien anhängen, in gleich große Teile zerlegen.
+ausgeben, weitere Dateien anhängen, in gleich große Teile zerlegen. Dafür gibt
+es neben den Miniaturen die Ansicht **Seiten ordnen** (`Strg+Umschalt+O`): alle
+Seiten groß nebeneinander, Mehrfachauswahl, Ziehen zum Sortieren. Und
+**Nur gewählte Seiten zeigen**, wenn man sich auf wenige Seiten beschränken
+will, ohne die übrigen zu löschen.
 
 **Formulare** — vorhandene AcroForm-Felder werden erkannt und direkt auf der
 Seite ausgefüllt (Text, mehrzeilig, Ankreuzfeld, Auswahlliste, Optionsfeld).
@@ -148,7 +174,7 @@ Werkzeug für Werkzeug, in der Reihenfolge, in der Acrobat sie anbietet.
 | PDF exportieren | **ja** | PDF, Word (.docx), Text, PNG |
 | Diese PDF stilisieren | nein | Gestaltung durch ein Sprachmodell — braucht einen Dienst |
 | Ausfüllen und Signieren | **ja** | Formularfelder und sichtbare Unterschrift |
-| PDF bearbeiten | **teilweise** | Text ersetzen ja; Bilder und Objekte im PDF nein |
+| PDF bearbeiten | **teilweise** | Text bearbeiten ja; Bilder und Objekte im PDF nein |
 | E-Signaturen anfordern | nein | Unterschriftslauf über mehrere Personen braucht einen Server |
 | Diese PDF-Datei übersetzen | nein | Übersetzungsdienst |
 | PDF erstellen | **teilweise** | aus Bildern ja; aus Word oder Excel nein |
@@ -273,7 +299,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 58 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 55 Prüfungen — die Bedienung
+node werkzeuge/vollpruefung.mjs   # 65 Prüfungen — die Bedienung
 node werkzeuge/live-pruefen.mjs   # 12 Prüfungen — was der Hoster ausliefert
 ```
 
@@ -293,7 +319,11 @@ Blättern, Tastatur, Tafeln, jedes Werkzeug, Anmerkung wählen, verschieben,
 löschen, zurücknehmen, Miniaturen ziehen, Suche mit Optionen, jeder Dialog,
 Befehlspalette, Teilen, Reparieren, Linearisieren, Verkleinern, Vergleich,
 Unterschrift in allen drei Wegen, Drucken, Word-Ausgabe, Text kopieren,
-Bereich ablichten, Stempel, PDF aus Bildern.
+Bereich ablichten, Stempel, PDF aus Bildern. Dazu die Wege selbst: dass die
+Menüleiste jeden Befehl trägt, dass ein Menü sichtbar aufklappt und nicht von
+der Leiste beschnitten wird, dass die Ordnen-Ansicht per Ziehen sortiert und
+Löschen zurücknehmbar bleibt, und dass der Fokus die richtigen Seiten mit den
+richtigen Nummern zeigt.
 
 **`live-pruefen.mjs`** fragt: Kommt draußen an, was hier gebaut wurde? Beim
 Hoster entscheiden Dinge, die örtlich nie auffallen — MIME-Typen,

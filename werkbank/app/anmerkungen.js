@@ -19,7 +19,7 @@ export const WERKZEUGE = [
   { id: 'rechteck',     name: 'Rechteck',      kuerzel: 'R', zeichen: 'M4 5h16v14H4z' },
   { id: 'ellipse',      name: 'Ellipse',       kuerzel: 'E', zeichen: 'M12 5c4.4 0 8 3.1 8 7s-3.6 7-8 7-8-3.1-8-7 3.6-7 8-7z' },
   { id: 'pfeil',        name: 'Pfeil',         kuerzel: 'P', zeichen: 'M4 20L20 4M20 4h-7M20 4v7' },
-  { id: 'ersetzen',     name: 'Text ersetzen', kuerzel: 'B', zeichen: 'M4 20h7M14 4l6 6-9 9H5v-6z' },
+  { id: 'ersetzen',     name: 'Text bearbeiten', kuerzel: 'B', zeichen: 'M4 20h7M14 4l6 6-9 9H5v-6z' },
   { id: 'schwaerzen',   name: 'Schwärzen',     kuerzel: 'S', zeichen: 'M4 8h16v8H4zM4 4h16' },
   { id: 'unterschrift', name: 'Unterschrift',  kuerzel: 'G', zeichen: 'M3 18c3 0 5-12 8-12s2 9 4 9 2-3 6-3' },
   { id: 'stempel',      name: 'Stempel',       kuerzel: 'Z', zeichen: 'M5 20h14M7 16h10V9l-3-5H10L7 9z' },

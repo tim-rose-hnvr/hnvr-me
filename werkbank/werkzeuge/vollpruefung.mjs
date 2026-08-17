@@ -802,6 +802,135 @@ await pruefe('PDF aus Bildern erstellen', async () => {
   return 'zwei Bilder, zwei Seiten';
 });
 
+console.log('\n== Menue, Ordnen, Fokus ==');
+
+await ladeBeispiel();
+
+await pruefe('Menueleiste traegt alle acht Menues', async () => {
+  const titel = await seite.$$eval('#menueleiste .menue-knopf', (ks) => ks.map((k) => k.textContent));
+  const erwartet = ['Datei', 'Bearbeiten', 'Seiten', 'Ansicht', 'Werkzeuge', 'Gehe zu', 'Schutz', 'Hilfe'];
+  if (titel.join('|') !== erwartet.join('|')) throw new Error(titel.join('|'));
+  return titel.join(', ');
+});
+
+await pruefe('jeder Befehl ist mit der Maus erreichbar', async () => {
+  /* Der eigentliche Punkt der Menueleiste. Ein Befehl, der in keinem Menue
+     steht, ist nur ueber Strg+K da — und damit fuer die meisten gar nicht. */
+  const offen = await seite.evaluate(async () => (await import('./app/menue.js')).unsortierteBefehle());
+  if (offen.length) throw new Error(`ohne Menueweg: ${offen.join(', ')}`);
+  const anzahl = await seite.$$eval('#menueleiste .menue-eintrag', (ks) => ks.length);
+  const befehle = await seite.evaluate(() => window.werkbank.befehle.length);
+  return `${befehle} Befehle, ${anzahl} Menueeintraege`;
+});
+
+await pruefe('Menue klappt sichtbar auf und wird nicht beschnitten', async () => {
+  await seite.click('#menueleiste .menue-knopf >> nth=2');
+  const lage = await seite.evaluate(() => {
+    const liste = document.querySelector('.menue.ist-offen .menue-liste');
+    if (!liste || liste.hidden) return null;
+    const kasten = liste.getBoundingClientRect();
+    /* Nicht nur "im DOM": an einem Punkt der Liste muss die Liste auch das
+       oberste Element sein. Frueher schnitt die Leiste sie auf 2rem ab. */
+    const oben = document.elementFromPoint(kasten.x + 20, kasten.y + 12);
+    return { hoehe: Math.round(kasten.height), traegt: !!oben?.closest('.menue-liste') };
+  });
+  if (!lage) throw new Error('Liste bleibt zu');
+  if (!lage.traegt) throw new Error('Liste ist verdeckt oder beschnitten');
+  if (lage.hoehe < 100) throw new Error(`nur ${lage.hoehe} px hoch`);
+  await seite.keyboard.press('Escape');
+  return `${lage.hoehe} px hoch, oben auf`;
+});
+
+await pruefe('Rueckgaengig-Knopf im Kopf folgt der Historie', async () => {
+  if (!await seite.evaluate(() => document.querySelector('#knopf-rueckgaengig').disabled)) throw new Error('am Anfang nicht gesperrt');
+  await seite.evaluate(() => window.werkbank.fuehreAus('seiten:drehenRechts'));
+  await seite.waitForTimeout(500);
+  if (await seite.evaluate(() => document.querySelector('#knopf-rueckgaengig').disabled)) throw new Error('nach einer Aenderung noch gesperrt');
+  const beschriftung = await seite.$eval('#knopf-rueckgaengig', (k) => k.title);
+  await seite.click('#knopf-rueckgaengig');
+  await seite.waitForTimeout(400);
+  if (!await seite.evaluate(() => document.querySelector('#knopf-wiederholen').disabled === false)) throw new Error('Wiederholen bleibt gesperrt');
+  return beschriftung;
+});
+
+await pruefe('Seiten ordnen zeigt jede Seite gross', async () => {
+  await seite.evaluate(() => window.werkbank.fuehreAus('seiten:ordnen'));
+  await seite.waitForSelector('.ordnen-karte');
+  await seite.waitForTimeout(1200);
+  const karten = await seite.$$eval('.ordnen-karte', (ks) => ks.length);
+  const seitenzahl = await seite.evaluate(() => window.werkbank.zustand.folge.length);
+  if (karten !== seitenzahl) throw new Error(`${karten} Karten fuer ${seitenzahl} Seiten`);
+  const gemalt = await seite.$$eval('.ordnen-karte canvas', (ks) => ks.filter((c) => c.width > 100).length);
+  if (!gemalt) throw new Error('keine Seite gezeichnet');
+  return `${karten} Karten, ${gemalt} gezeichnet`;
+});
+
+await pruefe('Ordnen sortiert per Ziehen um', async () => {
+  const vorher = await seite.evaluate(() => window.werkbank.zustand.folge.map((e) => e.id));
+  const von = await seite.$('.ordnen-karte >> nth=0');
+  const nach = await seite.$('.ordnen-karte >> nth=2');
+  const a = await von.boundingBox(), b = await nach.boundingBox();
+  await seite.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+  await seite.mouse.down();
+  await seite.mouse.move(b.x + b.width * 0.9, b.y + b.height / 2, { steps: 12 });
+  await seite.mouse.up();
+  await seite.waitForTimeout(700);
+  const nachher = await seite.evaluate(() => window.werkbank.zustand.folge.map((e) => e.id));
+  if (vorher.join() === nachher.join()) throw new Error('Reihenfolge unveraendert');
+  if (nachher[0] === vorher[0]) throw new Error('erste Seite blieb vorn');
+  await seite.evaluate(() => window.werkbank.fuehreAus('rueckgaengig'));
+  await seite.waitForTimeout(500);
+  return `Seite 1 steht jetzt an Stelle ${nachher.indexOf(vorher[0]) + 1}`;
+});
+
+await pruefe('Ordnen loescht die gewaehlten Seiten', async () => {
+  const vorher = await seite.evaluate(() => window.werkbank.zustand.folge.length);
+  await seite.click('.ordnen-karte >> nth=1');
+  await seite.waitForTimeout(200);
+  await seite.click('.ordnen-werkzeuge .knopf-gefahr');
+  await seite.waitForTimeout(600);
+  const nachher = await seite.evaluate(() => window.werkbank.zustand.folge.length);
+  if (nachher !== vorher - 1) throw new Error(`${vorher} → ${nachher}`);
+  await seite.evaluate(() => window.werkbank.fuehreAus('rueckgaengig'));
+  await seite.waitForTimeout(600);
+  if (await seite.evaluate(() => window.werkbank.zustand.folge.length) !== vorher) throw new Error('Rueckgaengig hat nicht zurueckgeholt');
+  return `${vorher} → ${nachher} → ${vorher}`;
+});
+
+await pruefe('Escape schliesst die Ordnen-Ansicht', async () => {
+  await seite.keyboard.press('Escape');
+  await seite.waitForTimeout(300);
+  if (!await seite.evaluate(() => document.querySelector('#ordnen').hidden)) throw new Error('bleibt offen');
+  return 'zu';
+});
+
+await pruefe('Fokus zeigt nur die gewaehlten Seiten', async () => {
+  await seite.evaluate(() => {
+    const z = window.werkbank.zustand;
+    z.gewaehlteSeiten.clear();
+    z.gewaehlteSeiten.add(z.folge[2].id);
+    z.gewaehlteSeiten.add(z.folge[4].id);
+  });
+  await seite.evaluate(() => window.werkbank.fuehreAus('seiten:nurAuswahl'));
+  await seite.waitForTimeout(1200);
+  const sichtbar = await seite.$$eval('.blatt:not(.ist-verborgen)', (b) => b.length);
+  if (sichtbar !== 2) throw new Error(`${sichtbar} Blaetter sichtbar`);
+  const nummern = await seite.$$eval('.blatt:not(.ist-verborgen) .blatt-nummer', (ks) => ks.map((k) => k.textContent));
+  if (nummern.join() !== '3,5') throw new Error(`Nummern ${nummern.join()} statt 3,5`);
+  if (await seite.evaluate(() => document.querySelector('#fuss-fokus').hidden)) throw new Error('Fuss meldet den Ausschnitt nicht');
+  return `sichtbar: Seiten ${nummern.join(' und ')}`;
+});
+
+await pruefe('der Weg zurueck aus dem Fokus steht im Fuss', async () => {
+  await seite.click('#knopf-fokus-aus');
+  await seite.waitForTimeout(900);
+  const sichtbar = await seite.$$eval('.blatt:not(.ist-verborgen)', (b) => b.length);
+  const alle = await seite.evaluate(() => window.werkbank.zustand.folge.length);
+  if (sichtbar !== alle) throw new Error(`${sichtbar} von ${alle}`);
+  if (!await seite.evaluate(() => document.querySelector('#fuss-fokus').hidden)) throw new Error('Anzeige bleibt stehen');
+  return `wieder ${alle} Seiten`;
+});
+
 console.log('\n== Zusammenfassung ==');
 const fehlgeschlagen = ergebnisse.filter((e) => !e.ok);
 console.log(`${ergebnisse.length - fehlgeschlagen.length} von ${ergebnisse.length} in Ordnung`);

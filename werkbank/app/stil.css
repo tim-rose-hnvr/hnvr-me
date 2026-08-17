@@ -25,6 +25,7 @@
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
   --kopfhoehe: 3.25rem;
+  --menuehoehe: 2rem;
   --fusshoehe: 2.5rem;
   --leiste-links: 15rem;
   --leiste-rechts: 19rem;
@@ -87,7 +88,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- Grundgerüst ------------------------------------------------ */
 .huelle {
   display: grid;
-  grid-template-rows: var(--kopfhoehe) 1fr var(--fusshoehe);
+  grid-template-rows: var(--kopfhoehe) var(--menuehoehe) 1fr var(--fusshoehe);
   height: 100dvh;
 }
 .rumpf {
@@ -374,3 +375,107 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .nur-breit { display: none; }
 }
 @media print { .kopf, .fuss, .leiste, .meldungen { display: none !important; } }
+
+/* ---------- Menüleiste --------------------------------------------------- */
+/* Der Weg mit der Maus zu jedem Befehl. Bewusst eine eigene Zeile und nicht
+   im Kopf: dort stehen die Werkzeuge, und beides zusammen wird eng. */
+.menueleiste {
+  display: flex; align-items: stretch; gap: 0;
+  padding: 0 .5rem;
+  background: var(--flaeche);
+  border-bottom: 1px solid var(--linie);
+  /* Kein overflow hier: eine Leiste, die ihren Inhalt beschneidet, beschneidet
+     auch die aufgeklappte Liste — das Menue oeffnet dann unsichtbar. */
+  overflow: visible;
+}
+.menue { position: relative; display: flex; }
+.menue-knopf {
+  border: 0; background: none; color: var(--tinte);
+  font: inherit; font-size: .8125rem; padding: 0 .625rem;
+  cursor: pointer; white-space: nowrap; border-radius: 0;
+}
+.menue-knopf:hover { background: var(--flaeche-tief); }
+.menue.ist-offen .menue-knopf { background: var(--flaeche-tief); font-weight: 600; }
+.menue-liste {
+  position: absolute; top: 100%; left: 0; z-index: 60;
+  min-width: 21rem; max-height: 70vh; overflow-y: auto;
+  padding: .25rem;
+  background: var(--flaeche); border: 1px solid var(--linie); border-radius: .5rem;
+  box-shadow: var(--schatten);
+}
+.menue-eintrag {
+  display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+  width: 100%; padding: .3125rem .5rem;
+  border: 0; border-radius: .3125rem; background: none; color: var(--tinte);
+  font: inherit; font-size: .8125rem; text-align: left; cursor: pointer;
+}
+.menue-eintrag:hover:not(:disabled) { background: var(--flaeche-tief); }
+.menue-eintrag:disabled { color: var(--tinte-leise); opacity: .5; cursor: default; }
+.menue-eintrag.ist-an .menue-name::before { content: '✓ '; }
+.menue-name { white-space: nowrap; }
+.menue-kuerzel { color: var(--tinte-leise); font-size: .75rem; white-space: nowrap; }
+.menue-trenner { margin: .25rem .5rem; border: 0; border-top: 1px solid var(--linie); }
+
+/* ---------- Seiten ordnen ------------------------------------------------ */
+/* Vollbild, weil Ordnen heißt: alle Seiten gleichzeitig sehen. */
+.ordnen {
+  position: fixed; inset: 0; z-index: 80;
+  display: grid; grid-template-rows: auto 1fr auto;
+  background: var(--grund);
+}
+.ordnen[hidden] { display: none; }
+.ordnen-kopf {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: .625rem 1rem;
+  background: var(--flaeche); border-bottom: 1px solid var(--linie);
+}
+.ordnen-titel { display: flex; align-items: baseline; gap: .625rem; }
+.ordnen-werkzeuge { display: flex; align-items: center; gap: .375rem; flex-wrap: wrap; flex: 1 1 auto; }
+.ordnen-trenner { width: 1px; height: 1.25rem; background: var(--linie); margin: 0 .25rem; }
+.ordnen-fertig { flex: 0 0 auto; }
+.ordnen-gitter {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 1rem; padding: 1rem; overflow-y: auto; align-content: start;
+}
+.ordnen-karte {
+  display: flex; flex-direction: column; align-items: center; gap: .375rem;
+  padding: .5rem; border: 2px solid transparent; border-radius: .5rem;
+  cursor: pointer; position: relative;
+}
+.ordnen-karte:hover { background: var(--flaeche-hoch); }
+.ordnen-karte.ist-gewaehlt { border-color: var(--tally); background: var(--tally-grund); }
+.ordnen-karte.wird-gezogen { opacity: .4; }
+.ordnen-karte.ziel-vor::before,
+.ordnen-karte.ziel-nach::before {
+  content: ''; position: absolute; top: .25rem; bottom: .25rem; width: 3px;
+  background: var(--tally); border-radius: 2px;
+}
+.ordnen-karte.ziel-vor::before  { left: -.5rem; }
+.ordnen-karte.ziel-nach::before { right: -.5rem; }
+.ordnen-blatt {
+  /* Feste Hoehe, Inhalt zentriert: sonst stehen Quer- und Hochformat auf
+     verschiedenen Grundlinien und das Gitter franst aus. */
+  height: 14rem; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+.ordnen-blatt canvas {
+  display: block; max-width: 100%; max-height: 100%; width: auto; height: auto;
+  background: #fff; box-shadow: var(--schatten); border-radius: .125rem;
+}
+.ordnen-fuss { display: flex; align-items: center; gap: .375rem; font-size: .8125rem; }
+.ordnen-nummer { color: var(--tinte-leise); font-variant-numeric: tabular-nums; }
+.ordnen-haken { color: var(--tally); font-weight: 700; visibility: hidden; }
+.ordnen-karte.ist-gewaehlt .ordnen-haken { visibility: visible; }
+.ordnen-hinweis { margin: 0; padding: .5rem 1rem; border-top: 1px solid var(--linie); background: var(--flaeche); }
+
+/* ---------- Fokus: nur gewählte Seiten ----------------------------------- */
+.blatt.ist-verborgen { display: none; }
+.fuss-fokus { gap: .5rem; }
+/* .fuss-gruppe setzt display:flex und wuerde [hidden] sonst uebergehen. */
+.fuss-fokus[hidden] { display: none; }
+.fokus-marke {
+  padding: .0625rem .375rem; border-radius: .25rem;
+  background: var(--tally-grund); color: var(--tally); font-weight: 600;
+}
+
+.seiten-ordnen-knopf { width: 100%; justify-content: center; margin-bottom: .5rem; font-weight: 600; }

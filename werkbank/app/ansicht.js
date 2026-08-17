@@ -74,11 +74,17 @@ export async function baueNeu({ haltePosition = false } = {}) {
   spur.innerHTML = '';
   setzeWerkzeugKlasse();
 
+  /* Fokus („nur gewählte Seiten"): die übrigen Blätter werden ausgeblendet,
+     nicht entfernt. Die Seitennummern bleiben deshalb die des Dokuments —
+     wer Seite 7 und 9 betrachtet, sieht „7" und „9" und nicht „1" und „2". */
+  const fokus = zustand.nurAuswahl && zustand.gewaehlteSeiten.size > 0;
+
   for (const eintrag of zustand.folge) {
     const { sicht } = await seitenMasse(eintrag, zustand.ansichtDrehung);
     const skala = maszstab(sicht.width, sicht.height);
+    const verborgen = fokus && !zustand.gewaehlteSeiten.has(eintrag.id);
     const knoten = el('div', {
-      klasse: 'blatt',
+      klasse: `blatt${verborgen ? ' ist-verborgen' : ''}`,
       daten: { seite: eintrag.id },
       stil: { width: `${Math.round(sicht.width * skala)}px`, height: `${Math.round(sicht.height * skala)}px` },
       beiClick: (ereignis) => {
@@ -94,8 +100,8 @@ export async function baueNeu({ haltePosition = false } = {}) {
       el('div', { klasse: 'blatt-nummer', text: String(zustand.folge.indexOf(eintrag) + 1) }));
 
     spur.append(knoten);
-    blaetter.set(eintrag.id, { knoten, eintrag, skala, gerendert: false, aufgabe: null });
-    beobachter.observe(knoten);
+    blaetter.set(eintrag.id, { knoten, eintrag, skala, gerendert: false, aufgabe: null, verborgen });
+    if (!verborgen) beobachter.observe(knoten);
   }
 
   // Der Maszstab der aktuellen Seite ist der, den der Mensch sieht. Frueher
@@ -227,7 +233,7 @@ function verfolgeSeite() {
   for (const eintrag of zustand.folge) {
     i++;
     const blatt = blaetter.get(eintrag.id);
-    if (!blatt) continue;
+    if (!blatt || blatt.verborgen) continue;
     const oben = blatt.knoten.offsetTop;
     const abstand = Math.abs(oben + blatt.knoten.offsetHeight / 2 - mitte);
     if (abstand < kleinsterAbstand) { kleinsterAbstand = abstand; beste = i; }
@@ -243,6 +249,9 @@ export function zeigeSeite(nummer, { sanft = true } = {}) {
   if (!eintrag) return;
   const blatt = blaetter.get(eintrag.id);
   if (!blatt) return;
+  /* Im Fokus liegt die gesuchte Seite womöglich hinter dem Vorhang. Dann wird
+     nicht stillschweigend irgendwohin gesprungen, sondern gar nicht. */
+  if (blatt.verborgen) return;
   buehne.scrollTo({ top: blatt.knoten.offsetTop - 12, behavior: sanft ? 'smooth' : 'auto' });
   zustand.aktuelleSeite = nummer;
   melde('seite:gewechselt');

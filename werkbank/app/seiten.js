@@ -31,6 +31,14 @@ export function baueMiniaturen() {
   miniaturen.clear();
   beobachter?.disconnect();
 
+  /* Der Weg in die große Ansicht steht hier, nicht nur im Menü: wer Seiten
+     sortieren will, sucht bei den Seiten. */
+  behaelter.append(el('button', {
+    klasse: 'knopf seiten-ordnen-knopf', text: 'Seiten ordnen …',
+    title: 'Alle Seiten groß nebeneinander — sortieren, löschen, drehen (Strg+Umschalt+O)',
+    beiClick: () => melde('befehl', 'seiten:ordnen'),
+  }));
+
   const kopf = el('div', { klasse: 'seiten-kopf' },
     el('button', { klasse: 'knopf knopf-klein', text: 'Alle', beiClick: () => { zustand.folge.forEach((e) => zustand.gewaehlteSeiten.add(e.id)); melde('auswahl:geaendert'); } }),
     el('button', { klasse: 'knopf knopf-klein', text: 'Keine', beiClick: () => { zustand.gewaehlteSeiten.clear(); melde('auswahl:geaendert'); } }),

@@ -7,10 +7,22 @@
    Blatt beschreibt nur die Form, nie die Farbe. Wer eine Vorlage ändert,
    fasst hier nichts an.
 
-   Die Seite kommt fertig vom Server. Ohne JavaScript fehlen genau zwei
-   Bequemlichkeiten — Teilen über das Betriebssystem und das Kopieren der
-   Adresse. Alles andere, einschließlich QR-Code und Visitenkarte, funktioniert
-   auch dann, wenn Skripte blockiert sind.
+   Drei Entscheidungen, die den Unterschied zum Vorbild ausmachen:
+
+   1. **Linksbündig statt mittig.** Mittige Sätze lesen sich langsamer, und
+      große Schrift braucht eine Kante. Alle Link-in-Bio-Dienste zentrieren —
+      genau deshalb sehen sie alle gleich aus.
+   2. **Drei Ränge statt einer Knopfreihe.** Eine gefüllte Hauptaktion, ein
+      Gitter für die kurzen Wege, ruhige Zeilen für alles zum Lesen. Der
+      häufigste Vorwurf an Linktree ist, dass vierzehn gleich aussehende
+      Knöpfe niemandem sagen, welchen er drücken soll.
+   3. **Farbe ist ein Werkzeug, kein Schmuck.** Der Akzent gehört der
+      Hauptaktion und dem Erreichbarkeitspunkt. Sonst nichts.
+
+   Die Seite kommt fertig vom Server. Ohne JavaScript fehlt genau eine
+   Bequemlichkeit — das Teilen über das Betriebssystem. Alles andere,
+   einschließlich QR-Code und Visitenkarte, funktioniert auch dann, wenn
+   Skripte blockiert sind.
    ============================================================ */
 
 *,
@@ -43,38 +55,44 @@ body {
 }
 
 .blatt {
-  width: min(560px, 100%);
+  width: min(540px, 100%);
   min-height: 100dvh;
-  padding: 0 20px calc(40px + env(safe-area-inset-bottom));
+  padding: 0 22px calc(44px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  gap: 26px;
 }
 
 /* --- Kopf ------------------------------------------------- */
 
-.kopf {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-}
-
 .titelbild {
-  width: calc(100% + 40px);
-  margin: 0 -20px;
+  width: calc(100% + 44px);
+  margin: 0 -22px;
   aspect-ratio: 16 / 7;
   object-fit: cover;
   display: block;
 }
 
+.kopf {
+  padding: 46px 0 30px;
+}
+
+.kopf--mitTitelbild {
+  padding-top: 0;
+}
+
 .bild {
-  width: 104px;
-  height: 104px;
+  width: 88px;
+  height: 88px;
   object-fit: cover;
-  border: 2px solid var(--linie);
+  display: block;
   background: var(--kachel);
+  margin-bottom: 20px;
+}
+
+.kopf--mitTitelbild .bild {
+  margin-top: -44px;
+  position: relative;
+  outline: 3px solid var(--grund-fest);
 }
 
 .bild--rund {
@@ -85,37 +103,30 @@ body {
   border-radius: var(--radius);
 }
 
-/* Liegt ein Titelbild darüber, rückt das Profilbild darauf. */
-.kopf--mitTitelbild .bild {
-  margin-top: -60px;
-  position: relative;
-}
-
-.kopf:not(.kopf--mitTitelbild) {
-  padding-top: 44px;
-}
-
+/* Der Name trägt die Seite. Große Anzeigeschrift, enger Satz, harte Kante
+   links — das ist der Punkt, an dem die Seite aufhört, nach Baukasten
+   auszusehen. */
 .name {
   font-family: var(--anzeige);
   font-weight: 600;
-  font-size: clamp(30px, 8vw, 40px);
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  margin: 6px 0 0;
+  font-size: clamp(38px, 12vw, 54px);
+  line-height: 0.96;
+  letter-spacing: -0.025em;
+  margin: 0;
   text-wrap: balance;
 }
 
 .rolle {
-  margin: 0;
+  margin: 10px 0 0;
   color: var(--vg-neben);
   font-size: 15px;
 }
 
 .beschreibung {
-  margin: 4px 0 0;
+  margin: 16px 0 0;
   color: var(--vg-neben);
-  font-size: 15px;
-  max-width: 42ch;
+  font-size: 15.5px;
+  max-width: 36ch;
   white-space: pre-line;
   text-wrap: pretty;
 }
@@ -126,11 +137,10 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
-  padding: 6px 13px 6px 10px;
+  margin: 16px 0 0;
+  padding: 6px 13px 6px 11px;
   border: 1px solid var(--linie);
   border-radius: 999px;
-  background: var(--kachel);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
   color: var(--vg-neben);
@@ -156,19 +166,260 @@ body {
   flex: none;
 }
 
+/* --- Rang 1: die Entscheidung ----------------------------- */
+
+.entscheidung {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.aktion--haupt,
+.visitenkarte {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 19px 18px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.12s ease, background-color 0.15s;
+}
+
+.aktion--haupt {
+  border: 1px solid transparent;
+  background: var(--akzent);
+  color: var(--akzent-text);
+}
+
+.aktion--haupt > .zeichen:first-child {
+  width: 23px;
+  height: 23px;
+  flex: none;
+}
+
+.aktion--haupt .aktion__beschriftung {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.aktion--haupt .aktion__unterzeile,
+.aktion--haupt .aktion__pfeil {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.visitenkarte {
+  border: 1px solid var(--linie);
+  background: var(--kachel);
+}
+
+.visitenkarte__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.visitenkarte__titel {
+  display: block;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.visitenkarte__zusatz {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--vg-neben);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visitenkarte > .zeichen:first-child {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--akzent);
+}
+
+.visitenkarte__pfeil {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--vg-leise);
+}
+
+/* --- Rang 2: das Gitter der kurzen Wege ------------------- */
+
+/* Spaltenzahl nach Anzahl, damit keine einzelne Kachel als Waise in der
+   letzten Reihe hängt: 2 → 2, 3 → 3, 4 → 2 (zwei volle Reihen), ab 5 → 3. */
+.gitter {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.gitter[data-anzahl='2'],
+.gitter[data-anzahl='4'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 359px) {
+  .gitter {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.kachel {
+  min-height: 76px;
+  padding: 12px 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-klein);
+  background: var(--kachel);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.kachel .zeichen {
+  width: 21px;
+  height: 21px;
+  flex: none;
+  color: var(--vg-neben);
+}
+
+.kachel__text {
+  font-size: 13.5px;
+  line-height: 1.2;
+  font-weight: 500;
+  hyphens: auto;
+}
+
+.kachel--betont {
+  border-color: var(--akzent);
+}
+
+.kachel--betont .zeichen {
+  color: var(--akzent);
+}
+
+/* --- Rang 3: ruhige Zeilen -------------------------------- */
+
+/* Kein Kasten, keine Füllung — nur eine Haarlinie. So liest sich der Abschnitt
+   wie ein Inhaltsverzeichnis und konkurriert nicht mit der Hauptaktion. */
+.aktion:not(.aktion--haupt) {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 2px;
+  border: 0;
+  border-top: 1px solid var(--linie);
+  color: inherit;
+  text-decoration: none;
+  transition: padding-left 0.14s ease;
+}
+
+.aktion:not(.aktion--haupt) > .zeichen:first-child {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  color: var(--vg-leise);
+}
+
+.aktion__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.aktion__beschriftung {
+  display: block;
+  font-weight: 600;
+  font-size: 15.5px;
+  line-height: 1.25;
+}
+
+.aktion__unterzeile {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--vg-neben);
+}
+
+.aktion__pfeil {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  color: var(--vg-leise);
+}
+
+.aktion--betont:not(.aktion--haupt) .aktion__beschriftung {
+  color: var(--akzent);
+}
+
+/* Stilvarianten aus der Gestaltung */
+.blatt[data-schaltflaeche='kontur'] .kachel,
+.blatt[data-schaltflaeche='kontur'] .visitenkarte {
+  background: transparent;
+}
+
+.blatt[data-schaltflaeche='glas'] .kachel,
+.blatt[data-schaltflaeche='glas'] .visitenkarte {
+  backdrop-filter: blur(9px);
+}
+
+/* --- Abschnittsmarken ------------------------------------- */
+
+/* Die Schreibweise stammt aus dem hnvr.me-Auftritt: zwei Schrägstriche,
+   danach kleingesetzt und weit gesperrt. */
+.marke {
+  margin: 34px 0 4px;
+  font-family: var(--anzeige);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: lowercase;
+  color: var(--vg-leise);
+}
+
+.marke::before {
+  content: '// ';
+  color: var(--akzent);
+}
+
+.textblock {
+  margin: 14px 0 0;
+  color: var(--vg-neben);
+  font-size: 15px;
+  white-space: pre-line;
+}
+
+.trenner {
+  border: 0;
+  border-top: 1px solid var(--linie);
+  margin: 22px 0;
+}
+
 /* --- Kanalreihe ------------------------------------------- */
 
 .kanaele {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 4px;
+  margin: 30px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--linie);
 }
 
 .kanal {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -181,216 +432,87 @@ body {
   height: 21px;
 }
 
-/* --- Blöcke ----------------------------------------------- */
+/* --- Code und Teilen -------------------------------------- */
 
-.haupt {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.aktion {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 15px 16px;
-  border-radius: var(--radius);
-  border: 1px solid var(--linie);
-  background: var(--kachel);
-  color: inherit;
-  text-decoration: none;
-  transition: transform 0.12s ease, background-color 0.15s;
-}
-
-.aktion__text {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.aktion__beschriftung {
-  display: block;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 1.25;
-}
-
-.aktion__unterzeile {
-  display: block;
-  margin-top: 2px;
-  font-size: 13px;
-  color: var(--vg-neben);
-}
-
-.aktion .zeichen {
-  width: 22px;
-  height: 22px;
-  flex: none;
-}
-
-.aktion__pfeil {
-  width: 18px;
-  height: 18px;
-  flex: none;
-  color: var(--vg-leise);
-}
-
-/* Genau eine Hauptaktion. Sie ist größer, gefüllt und trägt die Akzentfarbe —
-   damit im Zweifel klar ist, was zu tun ist. */
-.aktion--haupt {
-  padding: 19px 18px;
-  border-color: transparent;
-  background: var(--akzent);
-  color: var(--akzent-text);
-}
-
-.aktion--haupt .aktion__beschriftung {
-  font-size: 18px;
-}
-
-.aktion--haupt .aktion__unterzeile,
-.aktion--haupt .aktion__pfeil {
-  color: inherit;
-  opacity: 0.72;
-}
-
-.aktion--betont {
-  border-color: var(--akzent);
-  background: var(--akzent-schleier);
-}
-
-/* Stilvarianten aus der Gestaltung */
-.blatt[data-schaltflaeche='kontur'] .aktion:not(.aktion--haupt) {
-  background: transparent;
-  border-color: var(--linie);
-}
-
-.blatt[data-schaltflaeche='glas'] .aktion:not(.aktion--haupt) {
-  background: var(--kachel);
-  backdrop-filter: blur(9px);
-}
-
-.ueberschrift {
-  margin: 16px 0 0;
-  font-family: var(--anzeige);
-  font-weight: 500;
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--vg-leise);
-}
-
-.textblock {
-  margin: 0;
-  color: var(--vg-neben);
-  font-size: 15px;
-  white-space: pre-line;
-}
-
-.trenner {
-  border: 0;
-  border-top: 1px solid var(--linie);
-  margin: 10px 0;
-  width: 100%;
-}
-
-/* --- Kontaktkarte ----------------------------------------- */
-
-.karte {
+.code {
+  margin-top: 22px;
   border: 1px solid var(--linie);
   border-radius: var(--radius);
-  background: var(--kachel);
   overflow: hidden;
 }
 
-/* Alle Zeilen der Karte sehen gleich aus, egal ob Link, Aufklapper oder
-   Schaltfläche — der Unterschied liegt in dem, was passiert, nicht im Aussehen. */
-.karte__zeile {
+.code__zeile {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 13px;
   padding: 14px 16px;
   background: none;
   border: 0;
   border-top: 1px solid var(--linie);
   font: inherit;
+  font-size: 14.5px;
   color: inherit;
   text-align: left;
-  text-decoration: none;
   cursor: pointer;
 }
 
-.karte > :first-child,
-.karte > .karte__falte:first-child .karte__zeile {
+.code > :first-child,
+.code > .code__falte:first-child .code__zeile {
   border-top: 0;
 }
 
-.karte__zeile .zeichen {
-  width: 21px;
-  height: 21px;
+.code__falte .code__zeile {
+  border-top: 0;
+}
+
+.code__falte {
+  border-top: 1px solid var(--linie);
+}
+
+.code > .code__falte:first-child {
+  border-top: 0;
+}
+
+.code__zeile .zeichen {
+  width: 20px;
+  height: 20px;
   flex: none;
   color: var(--vg-neben);
 }
 
-.karte__zeile--gross {
-  padding: 16px;
-}
-
-.karte__zeile--gross .zeichen:first-child {
-  color: var(--akzent);
-}
-
-.karte__titel {
-  display: block;
+.code__beschriftung {
   font-weight: 600;
-  font-size: 15px;
 }
 
-.karte__hinweis {
-  display: block;
-  margin-top: 2px;
+.code__adresse {
+  margin-left: auto;
   font-size: 13px;
-  color: var(--vg-neben);
+  color: var(--vg-leise);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Der Aufklapper trägt seinen Rand an der Zeile, nicht am Rahmen. */
-.karte__falte {
-  border-top: 1px solid var(--linie);
-}
-
-.karte__falte .karte__zeile {
-  border-top: 0;
-}
-
-/* Der QR-Code steckt in <details> und braucht deshalb kein Skript. */
 .qr {
-  padding: 0 16px 18px;
+  padding: 4px 16px 20px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  justify-content: center;
 }
 
 .qr__bild {
-  width: min(220px, 60vw);
+  width: min(200px, 58vw);
   aspect-ratio: 1;
-  padding: 12px;
+  display: block;
   border-radius: var(--radius-klein);
-  /* Ein QR-Code braucht dunkle Module auf hellem Grund und einen Rand,
-     sonst scheitert die Erkennung bei ungünstigem Licht. */
+  /* Ein QR-Code braucht dunkle Module auf hellem Grund. Die Ruhezone von vier
+     Modulen bringt das SVG selbst mit — ohne sie finden viele Scanner das
+     Muster nicht, sobald es auf farbigem Grund sitzt. */
   background: #ffffff;
-}
-
-.qr__adresse {
-  font-size: 13px;
-  color: var(--vg-neben);
-  word-break: break-all;
-  text-align: center;
 }
 
 summary {
   list-style: none;
-  cursor: pointer;
 }
 
 summary::-webkit-details-marker {
@@ -401,31 +523,38 @@ summary::-webkit-details-marker {
 
 .fuss {
   margin-top: auto;
-  padding-top: 26px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  padding-top: 34px;
   font-size: 12px;
   color: var(--vg-leise);
-  text-align: center;
+}
+
+.fuss p {
+  margin: 0 0 6px;
 }
 
 .fuss a {
   color: inherit;
 }
 
-.fuss__signet {
-  width: 15px;
-  height: 15px;
-  opacity: 0.75;
+.fuss__still {
+  color: var(--vg-leise);
 }
 
 .fuss__absender {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  margin-top: 8px;
   text-decoration: none;
+  letter-spacing: 0.18em;
+  text-transform: lowercase;
+  font-size: 10.5px;
+}
+
+.fuss__signet {
+  width: 13px;
+  height: 13px;
+  opacity: 0.7;
 }
 
 /* --- Zustände --------------------------------------------- */
@@ -439,13 +568,22 @@ summary:focus-visible {
 }
 
 @media (hover: hover) {
-  .aktion:hover {
-    background: var(--kachel-aktiv);
+  .aktion--haupt:hover {
+    transform: translateY(-1px);
   }
 
-  .aktion--haupt:hover {
-    background: var(--akzent);
-    transform: translateY(-1px);
+  .visitenkarte:hover,
+  .kachel:hover {
+    background: var(--kachel-aktiv);
+    border-color: var(--vg-leise);
+  }
+
+  .aktion:not(.aktion--haupt):hover {
+    padding-left: 6px;
+  }
+
+  .aktion:not(.aktion--haupt):hover .aktion__pfeil {
+    color: var(--akzent);
   }
 
   .kanal:hover {
@@ -453,12 +591,14 @@ summary:focus-visible {
     color: var(--vg);
   }
 
-  .karte__zeile:hover {
-    background: var(--kachel-aktiv);
+  .code__zeile:hover {
+    background: var(--kachel);
   }
 }
 
-.aktion:active {
+.aktion--haupt:active,
+.kachel:active,
+.visitenkarte:active {
   transform: scale(0.99);
 }
 
@@ -468,21 +608,23 @@ summary:focus-visible {
     animation: none !important;
   }
 
-  .aktion:active,
-  .aktion--haupt:hover {
+  .aktion--haupt:hover,
+  .aktion--haupt:active,
+  .kachel:active,
+  .visitenkarte:active {
     transform: none;
   }
 }
 
-@media (min-width: 620px) {
+@media (min-width: 600px) {
   .blatt {
-    box-shadow: 0 0 90px -30px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 0 100px -34px rgba(0, 0, 0, 0.9);
   }
 }
 
 /* --- Druck ------------------------------------------------
-   Ein Ausdruck dieser Seite soll etwas taugen: Name, QR-Code und
-   Kontaktdaten auf Papier, ohne Schaltflächen, die niemand drücken kann. */
+   Ein Ausdruck dieser Seite soll etwas taugen: Name, Kontaktwege und
+   QR-Code auf Papier, ohne Schaltflächen, die niemand drücken kann. */
 
 @media print {
   .buehne,
@@ -493,12 +635,11 @@ summary:focus-visible {
 
   .kanaele,
   .aktion__pfeil,
-  .titelbild {
+  .visitenkarte__pfeil,
+  .titelbild,
+  .fuss__still,
+  [data-teilen] {
     display: none;
-  }
-
-  .karte__zeile {
-    color: #000;
   }
 
   .blatt {
@@ -506,15 +647,13 @@ summary:focus-visible {
     max-width: 100%;
   }
 
-  .aktion {
+  .aktion--haupt,
+  .visitenkarte,
+  .kachel {
     border: 1px solid #999;
     background: none;
     color: #000;
     break-inside: avoid;
-  }
-
-  .qr {
-    display: flex !important;
   }
 
   details {
@@ -523,5 +662,9 @@ summary:focus-visible {
 
   details > summary {
     display: none;
+  }
+
+  .qr {
+    display: flex !important;
   }
 }

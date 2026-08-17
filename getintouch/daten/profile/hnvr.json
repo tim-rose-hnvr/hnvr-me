@@ -1,37 +1,74 @@
 {
   "slug": "hnvr",
-
   "kopf": {
     "name": "hnvr.me",
     "rolle": "Digitalagentur & Eventtechnik · Hannover",
     "beschreibung": "Websites, Shops und Marketing.\nDazu Technik, die auf der Veranstaltung wirklich läuft.",
     "bild": "/bilder/signet-hnvr.png"
   },
-
   "erreichbarkeit": {
     "zeitzone": "Europe/Berlin",
     "fenster": [
-      { "tag": 1, "von": "09:00", "bis": "18:00" },
-      { "tag": 2, "von": "09:00", "bis": "18:00" },
-      { "tag": 3, "von": "09:00", "bis": "18:00" },
-      { "tag": 4, "von": "09:00", "bis": "18:00" },
-      { "tag": 5, "von": "09:00", "bis": "16:00" }
+      {
+        "tag": 1,
+        "von": "09:00",
+        "bis": "18:00"
+      },
+      {
+        "tag": 2,
+        "von": "09:00",
+        "bis": "18:00"
+      },
+      {
+        "tag": 3,
+        "von": "09:00",
+        "bis": "18:00"
+      },
+      {
+        "tag": 4,
+        "von": "09:00",
+        "bis": "18:00"
+      },
+      {
+        "tag": 5,
+        "von": "09:00",
+        "bis": "16:00"
+      }
     ],
     "ausnahmen": [
-      { "datum": "2026-12-24", "grund": "Heiligabend" },
-      { "datum": "2026-12-25", "grund": "Weihnachten" },
-      { "datum": "2026-12-26", "grund": "Weihnachten" },
-      { "datum": "2026-12-31", "grund": "Silvester", "zeiten": [{ "von": "09:00", "bis": "12:00" }] },
-      { "datum": "2027-01-01", "grund": "Neujahr" }
+      {
+        "datum": "2026-12-24",
+        "grund": "Heiligabend"
+      },
+      {
+        "datum": "2026-12-25",
+        "grund": "Weihnachten"
+      },
+      {
+        "datum": "2026-12-26",
+        "grund": "Weihnachten"
+      },
+      {
+        "datum": "2026-12-31",
+        "grund": "Silvester",
+        "zeiten": [
+          {
+            "von": "09:00",
+            "bis": "12:00"
+          }
+        ]
+      },
+      {
+        "datum": "2027-01-01",
+        "grund": "Neujahr"
+      }
     ],
     "zusage": "Antwort am nächsten Werktag"
   },
-
   "hauptaktion": {
     "offen": "anruf",
     "zu": "whatsapp"
   },
-
   "bloecke": [
     {
       "id": "anruf",
@@ -69,9 +106,21 @@
       "ziel": "hallo@hnvr.me",
       "aktiv": true
     },
-
-    { "id": "kopf-leistungen", "art": "ueberschrift", "beschriftung": "Was wir machen", "aktiv": true },
-
+    {
+      "id": "route",
+      "art": "aktion",
+      "kanal": "route",
+      "beschriftung": "Anfahrt",
+      "unterzeile": "Am Bahnhof 8, 30926 Seelze",
+      "ziel": "Am Bahnhof 8, 30926 Seelze",
+      "aktiv": true
+    },
+    {
+      "id": "kopf-leistungen",
+      "art": "ueberschrift",
+      "beschriftung": "Was wir machen",
+      "aktiv": true
+    },
     {
       "id": "web",
       "art": "aktion",
@@ -98,28 +147,26 @@
       "unterzeile": "QR-Codes, Domain-Prüfung, SEO-Check",
       "ziel": "https://hnvr.me/tools",
       "aktiv": true
-    },
-
-    { "id": "kopf-hier", "art": "ueberschrift", "beschriftung": "Vorbeikommen", "aktiv": true },
-
-    {
-      "id": "route",
-      "art": "aktion",
-      "kanal": "route",
-      "beschriftung": "Anfahrt",
-      "unterzeile": "Am Bahnhof 8, 30926 Seelze",
-      "ziel": "Am Bahnhof 8, 30926 Seelze",
-      "aktiv": true
     }
   ],
-
   "kanaele": [
-    { "netzwerk": "instagram", "ziel": "hnvr.me" },
-    { "netzwerk": "linkedin", "ziel": "https://linkedin.com/company/hnvr" },
-    { "netzwerk": "tiktok", "ziel": "hnvr.me" },
-    { "netzwerk": "website", "ziel": "https://hnvr.me" }
+    {
+      "netzwerk": "instagram",
+      "ziel": "hnvr.me"
+    },
+    {
+      "netzwerk": "linkedin",
+      "ziel": "https://linkedin.com/company/hnvr"
+    },
+    {
+      "netzwerk": "tiktok",
+      "ziel": "hnvr.me"
+    },
+    {
+      "netzwerk": "website",
+      "ziel": "https://hnvr.me"
+    }
   ],
-
   "visitenkarte": {
     "vorname": "Tim",
     "nachname": "Rose",
@@ -135,11 +182,9 @@
     "land": "Deutschland",
     "notiz": "Digitalagentur und Eventtechnik aus Hannover."
   },
-
   "gestaltung": {
     "vorlage": "hnvr"
   },
-
   "rechtliches": {
     "impressum": "https://hnvr.me/impressum",
     "datenschutz": "https://hnvr.me/datenschutz"

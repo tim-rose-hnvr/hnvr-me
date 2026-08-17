@@ -7,17 +7,32 @@
  * fremde Besucher „noch frei", Vorschaukarten in WhatsApp und LinkedIn blieben
  * leer, und ohne JavaScript stand gar nichts da. Eine Seite, deren einziger
  * Zweck das Geteiltwerden ist, muss ohne Skript vollständig sein.
+ *
+ * Der Aufbau folgt der Dringlichkeit, nicht der Reihenfolge einer Liste:
+ *
+ *   1. Wer ist das, und ist da gerade jemand?
+ *   2. Die eine Aktion, die jetzt trägt — und die Karte fürs Adressbuch.
+ *   3. Die übrigen direkten Wege, als Gitter statt als Balkenreihe.
+ *   4. Was es sonst zu lesen gibt, ruhig.
+ *   5. Kanäle, Code, Absender.
+ *
+ * Beim Vorbild sind Punkt 2 und 4 dieselbe Sorte Schaltfläche, und die Karte
+ * steht ganz unten. Das ist die Ursache für den bekanntesten Vorwurf an
+ * Link-in-Bio-Seiten: vierzehn gleich aussehende Knöpfe, und niemand weiß,
+ * welchen er drücken soll.
  */
 import Profilblatt from '../../layouts/Profilblatt.astro';
 import Statuszeile from '../../komponenten/Statuszeile.astro';
 import Aktionsknopf from '../../komponenten/Aktionsknopf.astro';
+import Aktionskachel from '../../komponenten/Aktionskachel.astro';
+import Visitenkartenknopf from '../../komponenten/Visitenkartenknopf.astro';
 import Kanalreihe from '../../komponenten/Kanalreihe.astro';
-import Kontaktkarte from '../../komponenten/Kontaktkarte.astro';
+import Codebereich from '../../komponenten/Codebereich.astro';
 import Fussbereich from '../../komponenten/Fussbereich.astro';
 
 import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
 import { vorlage } from '../../kern/gestaltung.ts';
-import { hauptaktionFuer, type Block } from '../../kern/profil.ts';
+import { darstellungFuer, hauptaktionFuer, type Aktionsblock, type Block } from '../../kern/profil.ts';
 import { ablage } from '../../kern/speicher/index.ts';
 import { adresseFuer } from '../../kern/ziele.ts';
 
@@ -40,7 +55,7 @@ if (!profil) {
  * In der Entwicklung lässt sich die Uhr stellen: `?jetzt=2026-01-14T08:00:00Z`
  * zeigt die Seite so, wie sie zu diesem Zeitpunkt aussieht. Damit ist der
  * Wechsel der Hauptaktion prüfbar, ohne bis zum Feierabend zu warten.
- * In der gebauten Fassung ist der Schalter wirkungslos.
+ * In der gebauten Fassung sind beide Schalter wirkungslos.
  */
 function jetzt(): Date {
   if (import.meta.env.DEV) {
@@ -53,12 +68,6 @@ function jetzt(): Date {
   return new Date();
 }
 
-/**
- * Ebenfalls nur in der Entwicklung: `?vorlage=creme` zeigt dieselbe Seite in
- * einer anderen Gestaltung. Damit lässt sich jede Vorlage an echtem Inhalt
- * beurteilen statt an einer Farbkachel — und die spätere Vorschau im Editor
- * baut auf demselben Weg auf.
- */
 const gestaltung =
   import.meta.env.DEV && Astro.url.searchParams.has('vorlage')
     ? vorlage(Astro.url.searchParams.get('vorlage')!)
@@ -66,15 +75,64 @@ const gestaltung =
 
 const lage = profil.erreichbarkeit ? bewerteErreichbarkeit(profil.erreichbarkeit, jetzt()) : null;
 const haupt = hauptaktionFuer(profil, lage?.offen ?? true);
-
-/** Blöcke mit fertiger Adresse. Was kein gültiges Ziel hat, fällt raus. */
-type Aufbereitet = { block: Block; adresse?: string };
-const bloecke: Aufbereitet[] = profil.bloecke
-  .filter((b) => b.aktiv && b.id !== haupt?.id)
-  .map((block) => (block.art === 'aktion' ? { block, adresse: adresseFuer(block.kanal, block.ziel) ?? undefined } : { block }))
-  .filter((e) => e.block.art !== 'aktion' || e.adresse !== undefined);
-
 const hauptAdresse = haupt ? adresseFuer(haupt.kanal, haupt.ziel) : null;
+
+/* ------------------------------------------------------------------ *
+ * Blöcke ordnen
+ * ------------------------------------------------------------------ */
+
+type Fertig =
+  | { was: 'gitter'; bloecke: { block: Aktionsblock; adresse: string }[] }
+  | { was: 'zeile'; block: Aktionsblock; adresse: string }
+  | { was: 'sonst'; block: Block };
+
+/**
+ * Aufeinanderfolgende Kachelblöcke werden zu einem Gitter zusammengefasst.
+ * Die gepflegte Reihenfolge bleibt dabei erhalten — eine Überschrift trennt
+ * also weiterhin, was der Besitzer getrennt haben wollte.
+ *
+ * Eine einzelne Kachel wird zur Zeile: ein Gitter aus einem Element ist kein
+ * Gitter, sondern ein verlorener Knopf am linken Rand.
+ */
+function ordne(bloecke: Block[]): Fertig[] {
+  const fertig: Fertig[] = [];
+  let stapel: { block: Aktionsblock; adresse: string }[] = [];
+
+  const abladen = () => {
+    if (stapel.length >= 2) fertig.push({ was: 'gitter', bloecke: stapel });
+    else for (const e of stapel) fertig.push({ was: 'zeile', block: e.block, adresse: e.adresse });
+    stapel = [];
+  };
+
+  for (const block of bloecke) {
+    if (block.art !== 'aktion') {
+      abladen();
+      fertig.push({ was: 'sonst', block });
+      continue;
+    }
+
+    const adresse = adresseFuer(block.kanal, block.ziel);
+    // Ohne gültiges Ziel keine Schaltfläche — lieber ein Eintrag weniger als
+    // einer, der ins Leere führt.
+    if (!adresse) continue;
+
+    if (darstellungFuer(block) === 'kachel') {
+      stapel.push({ block, adresse });
+    } else {
+      abladen();
+      fertig.push({ was: 'zeile', block, adresse });
+    }
+  }
+
+  abladen();
+  return fertig;
+}
+
+const geordnet = ordne(profil.bloecke.filter((b) => b.aktiv && b.id !== haupt?.id));
+
+/* ------------------------------------------------------------------ *
+ * Kopfdaten
+ * ------------------------------------------------------------------ */
 
 const adresse = new URL(`/t/${profil.slug}`, Astro.site ?? Astro.url).toString();
 const adresseKurz = adresse.replace(/^https?:\/\/(www\.)?/, '');
@@ -97,16 +155,17 @@ Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=60, sta
   bild={profil.kopf.bild}
 >
   <div class="blatt" data-schaltflaeche={gestaltung.schaltflaeche}>
+    {profil.kopf.titelbild && <img class="titelbild" src={profil.kopf.titelbild} alt="" />}
+
     <header class:list={['kopf', profil.kopf.titelbild && 'kopf--mitTitelbild']}>
-      {profil.kopf.titelbild && <img class="titelbild" src={profil.kopf.titelbild} alt="" />}
       {
         profil.kopf.bild && (
           <img
             class:list={['bild', `bild--${gestaltung.bildform}`]}
             src={profil.kopf.bild}
-            width="104"
-            height="104"
-            alt={profil.kopf.name}
+            width="88"
+            height="88"
+            alt=""
           />
         )
       }
@@ -115,25 +174,40 @@ Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=60, sta
       {profil.kopf.rolle && <p class="rolle">{profil.kopf.rolle}</p>}
       {lage && <Statuszeile lage={lage} zusage={profil.erreichbarkeit?.zusage} />}
       {profil.kopf.beschreibung && <p class="beschreibung">{profil.kopf.beschreibung}</p>}
-
-      <Kanalreihe kanaele={profil.kanaele} />
     </header>
 
-    <main class="haupt">
-      {haupt && hauptAdresse && <Aktionsknopf block={haupt} adresse={hauptAdresse} haupt />}
+    <main>
+      {/* Die Entscheidung: jetzt erreichen — oder für später behalten. */}
+      <section class="entscheidung" aria-label="Kontakt aufnehmen">
+        {haupt && hauptAdresse && <Aktionsknopf block={haupt} adresse={hauptAdresse} haupt />}
+        {profil.visitenkarte && <Visitenkartenknopf karte={profil.visitenkarte} slug={profil.slug} />}
+      </section>
 
       {
-        bloecke.map(({ block, adresse: ziel }) => {
-          if (block.art === 'aktion' && ziel) return <Aktionsknopf block={block} adresse={ziel} />;
-          if (block.art === 'ueberschrift') return <h2 class="ueberschrift">{block.beschriftung}</h2>;
+        geordnet.map((eintrag) => {
+          if (eintrag.was === 'gitter') {
+            return (
+              <div class="gitter" data-anzahl={eintrag.bloecke.length}>
+                {eintrag.bloecke.map(({ block, adresse: ziel }) => (
+                  <Aktionskachel block={block} adresse={ziel} />
+                ))}
+              </div>
+            );
+          }
+          if (eintrag.was === 'zeile') {
+            return <Aktionsknopf block={eintrag.block} adresse={eintrag.adresse} />;
+          }
+          const { block } = eintrag;
+          if (block.art === 'ueberschrift') return <h2 class="marke">{block.beschriftung}</h2>;
           if (block.art === 'text') return <p class="textblock">{block.beschriftung}</p>;
-          if (block.art === 'trenner') return <hr class="trenner" />;
-          return null;
+          return <hr class="trenner" />;
         })
       }
     </main>
 
-    <Kontaktkarte karte={profil.visitenkarte} slug={profil.slug} adresse={adresse} adresseKurz={adresseKurz} />
+    <Kanalreihe kanaele={profil.kanaele} />
+
+    <Codebereich slug={profil.slug} adresse={adresse} adresseKurz={adresseKurz} />
 
     <Fussbereich rechtliches={profil.rechtliches} />
   </div>

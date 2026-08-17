@@ -2,12 +2,15 @@
 /**
  * Der Seitenfuß.
  *
- * Eine Zeile Absender, mehr nicht — keine Werbebanner, keine fremden Angebote,
- * keine Aufforderung, sich selbst eine Seite anzulegen. Wer den QR-Code eines
- * Handwerkers scannt, soll den Handwerker sehen und nicht dessen Dienstleister.
+ * Der schärfste Unterschied zur Konkurrenz steht hier — und zwar dadurch, was
+ * fehlt. Auf einer Linktree-Seite hängen unter dem Profil sechzig Links auf
+ * fremde Profile, ein Karussell „Explore other Linktrees", die Preisliste des
+ * Anbieters und Affiliate-Verweise auf Werbekunden. Wer den QR-Code eines
+ * Handwerkers scannt, bekommt dessen Wettbewerb gleich mitgeliefert.
  *
- * Impressum und Datenschutz stehen nur da, wenn sie gepflegt sind. Ein Link auf
- * eine leere Impressumsseite ist schlechter als keiner.
+ * Hier steht eine Zeile Absender und sonst nichts. Der Hinweis auf die Technik
+ * ist keine Werbung, sondern eine Behauptung, die auf dieser Seite nachprüfbar
+ * ist: sie lädt nichts von fremden Servern und setzt kein Cookie.
  */
 import { SIGNET } from '../kern/zeichen.ts';
 
@@ -25,10 +28,10 @@ const eintraege = [
 <footer class="fuss">
   {
     eintraege.length > 0 && (
-      <p>
+      <p class="fuss__recht">
         {eintraege.map((e, i) => (
           <>
-            {i > 0 && ' · '}
+            {i > 0 && <span aria-hidden="true"> · </span>}
             <a href={e.ziel} target="_blank" rel="noopener noreferrer">
               {e.name}
             </a>
@@ -37,8 +40,11 @@ const eintraege = [
       </p>
     )
   }
+
+  <p class="fuss__still">Keine Cookies · kein Tracking · keine fremde Werbung</p>
+
   <a class="fuss__absender" href="https://hnvr.me/get-in-touch" target="_blank" rel="noopener noreferrer">
     <Fragment set:html={SIGNET.replace('<svg', '<svg class="fuss__signet"')} />
-    <span>Get in Touch von hnvr.me</span>
+    <span>get in touch</span>
   </a>
 </footer>

@@ -47,6 +47,15 @@ export const NETZWERKE = [
 ] as const;
 export type Netzwerk = (typeof NETZWERKE)[number];
 
+/**
+ * Wie ein Block dargestellt wird.
+ *
+ * `kachel` ist klein und steht zu mehreren nebeneinander, `zeile` nimmt die
+ * volle Breite. Ohne Angabe entscheidet der Kanal (siehe `darstellungFuer`) —
+ * wer sein Profil pflegt, soll über Inhalt nachdenken, nicht über Layout.
+ */
+export type Darstellung = 'kachel' | 'zeile';
+
 export interface Aktionsblock {
   id: string;
   art: 'aktion';
@@ -58,6 +67,8 @@ export interface Aktionsblock {
   aktiv: boolean;
   /** Optisch hervorgehoben, unabhängig von der Hauptaktion. */
   betont?: boolean;
+  /** Übersteuert die aus dem Kanal abgeleitete Darstellung. */
+  form?: Darstellung;
 }
 
 export interface Textblock {
@@ -341,6 +352,12 @@ function lieseBloecke(roh: unknown, fehler: Lesefehler[]): Block[] {
       return;
     }
 
+    const form = text(eintrag.form);
+    if (form && form !== 'kachel' && form !== 'zeile') {
+      fehler.push({ stelle: `${wo}.form`, meldung: `Unbekannte Darstellung „${form}". Erlaubt: kachel, zeile.` });
+      return;
+    }
+
     bloecke.push({
       id,
       art: 'aktion',
@@ -350,6 +367,7 @@ function lieseBloecke(roh: unknown, fehler: Lesefehler[]): Block[] {
       ziel,
       aktiv,
       betont: eintrag.betont === true,
+      form: form as Darstellung | undefined,
     });
   });
 
@@ -474,6 +492,27 @@ export function lieseProfil(roh: unknown): Leseergebnis {
       },
     },
   };
+}
+
+/**
+ * Kanäle, die den Browser sofort verlassen: Anruf, Nachricht, Route, Termin.
+ * Sie sind kurz, sie sind dringend, und sie werden gesucht — deshalb stehen sie
+ * als Kachelgitter beieinander statt als lange Knopfreihe.
+ *
+ * Alles andere führt auf eine Seite, die gelesen werden will, und bekommt eine
+ * ruhige Zeile mit Platz für die Unterzeile.
+ */
+const DIREKTE_KANAELE: ReadonlySet<KanalArt> = new Set<KanalArt>([
+  'telefon',
+  'mobil',
+  'whatsapp',
+  'mail',
+  'route',
+  'termin',
+]);
+
+export function darstellungFuer(block: Aktionsblock): Darstellung {
+  return block.form ?? (DIREKTE_KANAELE.has(block.kanal) ? 'kachel' : 'zeile');
 }
 
 /**

@@ -41,6 +41,73 @@ mehr geht, und der Test lässt keine unlesbare Vorlage durch.
 Vierzehn gleich aussehende Schaltflächen sind keine Antwort auf die Frage
 „Wie erreiche ich die?".
 
+## Was die Konkurrenz macht — und was daraus folgt
+
+Gemessen an der ausgelieferten Seite von `linktr.ee/linktree` (abgerufen
+August 2026), nicht an Werbeversprechen:
+
+| | Linktree | Get in Touch |
+|---|---:|---:|
+| HTML einer Profilseite | 190 KB | 20 KB |
+| Skripte | 52 | 1 |
+| Nachgeladen von fremden Hosts | 3 | 0 |
+| Links auf **fremde** Profile | 60 | 0 |
+| Cookie-Einwilligung nötig | ja | nein |
+| Eigene Links im Beispielprofil | 1 | — |
+
+Die 60 Fremdlinks sind kein Schreibfehler: unter dem Profil hängen ein
+Karussell „Explore other Linktrees", ein Raster „Discover more" mit weiteren
+Konten, die Preisliste des Anbieters und Affiliate-Verweise auf Werbekunden.
+Wer den QR-Code eines Handwerkers scannt, bekommt dessen Wettbewerb
+mitgeliefert. Nachgeladen wird unter anderem von `fonts.googleapis.com` und
+einem Einwilligungsdienst — beides Dinge, die eine deutsche Datenschutz­erklärung
+erklären muss.
+
+Aus der Sparte digitale Visitenkarten (Blinq, HiHello, Popl) kommt der zweite
+Befund: dort steht die Karte im Mittelpunkt und die Linkliste am Rand — das ist
+die richtige Gewichtung. Verschickt werden dafür auf den Gratis-Tarifen
+teilweise Werbemails an jeden, der die Karte ansieht.
+
+**Was daraus folgt, steht auf jeder Seite:**
+
+- Kein fremdes Profil, keine Werbung, kein Karussell. Ein Absender im Fuß.
+- Die Karte gehört nach oben, gleich neben die Hauptaktion.
+- Wer die Karte ansieht, wird nicht erfasst. Sie ist eine Datei, kein Formular.
+- Die Fußzeile behauptet „Keine Cookies · kein Tracking · keine fremde Werbung"
+  — und das ist an der ausgelieferten Seite nachprüfbar.
+
+## Der Aufbau: drei Ränge statt einer Knopfreihe
+
+Der meistgenannte Vorwurf an Link-in-Bio-Seiten ist, dass vierzehn gleich
+aussehende Knöpfe niemandem sagen, welchen er drücken soll. Deshalb ordnet
+diese Seite nach Dringlichkeit statt nach Listenposition:
+
+```
+   Wer ist das, und ist da gerade jemand?      Name groß, linksbündig, Statuszeile
+ ┌──────────────────────────────────────┐
+ │ Rang 1   Jetzt anrufen               │      gefüllt, Akzentfarbe
+ │          Kontakt speichern           │      gleichrangig daneben
+ ├──────────────────────────────────────┤
+ │ Rang 2   [WhatsApp] [Termin]         │      Kachelgitter, kurze Wege
+ │          [E-Mail]   [Anfahrt]        │
+ ├──────────────────────────────────────┤
+ │ Rang 3   // was wir machen           │      ruhige Zeilen mit Haarlinie
+ │          hnvr.me — Digitalagentur  → │
+ │          Technik mieten            → │
+ └──────────────────────────────────────┘
+   Kanäle · QR-Code · Absender
+```
+
+Welchen Rang ein Block bekommt, folgt aus seinem Kanal: Anruf, Nachricht,
+Route und Termin verlassen den Browser sofort und werden Kacheln; alles, was
+auf eine Seite zum Lesen führt, wird eine Zeile. Übersteuern geht mit
+`"form": "kachel"` oder `"zeile"`. Aufeinanderfolgende Kacheln bilden ein
+Gitter, eine einzelne wird wieder zur Zeile — ein Gitter aus einem Element ist
+ein verlorener Knopf am linken Rand.
+
+Linksbündig statt mittig ist Absicht: mittige Sätze lesen sich langsamer, große
+Schrift braucht eine Kante, und **alle** Wettbewerber zentrieren.
+
 ### Die neue Idee: die Seite kennt die Uhrzeit
 
 Wer sonntags um 23 Uhr den QR-Code am Fahrzeug scannt und auf „Jetzt anrufen"
@@ -78,7 +145,7 @@ src/kern/                Die Fachlogik, ohne Astro und ohne Browser
 src/komponenten/         Astro-Bausteine der Seite
 src/pages/t/[slug].astro Die öffentliche Seite
 src/pages/t/[slug]/      karte.vcf und qr.svg
-test/                    55 Tests auf die Regeln oben
+test/                    59 Tests auf die Regeln oben
 ```
 
 Der Kern kennt weder Astro noch das DOM. Der Editor aus Stufe 2 benutzt
@@ -92,7 +159,7 @@ aussieht, sondern dieselbe Rechnung anstellt.
 ```bash
 npm install
 npm run dev        # http://localhost:4321 — listet die vorhandenen Profile
-npm test           # 55 Tests, ohne zusätzliche Abhängigkeiten
+npm test           # 59 Tests, ohne zusätzliche Abhängigkeiten
 npm run pruefen    # astro check
 npm run build
 ```
@@ -144,6 +211,7 @@ Das Wesentliche:
 Kanäle: `link`, `telefon`, `mobil`, `whatsapp`, `mail`, `termin`, `route`,
 `shop`, `datei`, `video`.
 Blockarten: `aktion`, `ueberschrift`, `text`, `trenner`.
+Darstellung: `form` mit `kachel` oder `zeile` — ohne Angabe entscheidet der Kanal.
 Vorlagen: `hnvr`, `creme`, `tinte`, `ozean`, `wald`, `papier`, `sand`, `abend`,
 `stein`.
 
@@ -155,29 +223,35 @@ bleibt eine Pause.
 
 ## Mit Wix verbinden
 
-Das Projekt läuft heute ohne Wix-Konto. Zum Verbinden einmalig im
-Projektverzeichnis:
+**Im Wix-Account steht schon:**
+
+| | |
+|---|---|
+| Headless-Projekt | `Get in Touch` |
+| Dashboard | https://manage.wix.com/dashboard/ed8e16cf-182d-4cbb-8b7d-1f97fe28d62b |
+| metaSiteId | `ed8e16cf-182d-4cbb-8b7d-1f97fe28d62b` |
+| siteId | `5022c686-884e-4ca2-ad10-55e97ec56b56` |
+| Collection | `GetInTouchProfile` — `slug` (Text), `daten` (Objekt), `veroeffentlicht` (Ja/Nein), Leserecht `ANYONE` |
+| Inhalt | Profil `hnvr`, veröffentlicht |
+
+**Was noch fehlt: das Frontend hochladen.** Dafür braucht die Wix-CLI eine
+Anmeldung, und die geht nur im Browser oder mit einem API-Schlüssel. Im
+Projektverzeichnis, einmalig:
 
 ```bash
-npm create @wix/new@latest headless link
+npx wix login                       # oder: npx wix login --api-key <TOKEN>
+npm create @wix/new@latest -- headless link --business-name "Get in Touch"
 ```
 
-Das legt eine Wix-Business und eine Site an, trägt die Wix-Anbindung in
-`astro.config.mjs` ein und übernimmt Adapter und Authentifizierung. Danach:
+Beim Verbinden das oben genannte Projekt wählen, statt ein neues anzulegen.
+Der Befehl trägt die Wix-Anbindung in `astro.config.mjs` ein und übernimmt
+Adapter und Authentifizierung. Danach:
 
 1. Den Node-Adapter aus `astro.config.mjs` entfernen — Wix bringt seinen
    eigenen mit.
-2. Im Wix-CMS eine Collection anlegen:
-
-   | Feld | Typ | Zweck |
-   |---|---|---|
-   | `slug` | Text, eindeutig | die Adresse unter `/t/` |
-   | `daten` | Objekt | das Profil, Aufbau wie oben |
-   | `veroeffentlicht` | Ja/Nein | Entwürfe bleiben unsichtbar |
-
-3. `GETINTOUCH_WIX_COLLECTION` auf den Namen der Collection setzen und
-   `npm i @wix/data`. Danach kann `src/typen/wix-data.d.ts` weg.
-4. Bauen und veröffentlichen: `npm run build && npx wix release`.
+2. `npm i @wix/data` und `GETINTOUCH_WIX_COLLECTION=GetInTouchProfile` setzen.
+   Danach kann `src/typen/wix-data.d.ts` weg.
+3. Bauen und veröffentlichen: `npm run build && npx wix release`.
 
 Solange `GETINTOUCH_WIX_COLLECTION` fehlt, bleibt die Wix-Quelle stumm und es
 gelten allein die Dateien. Beide Quellen liegen übereinander — Wix wird zuerst

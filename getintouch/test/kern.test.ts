@@ -10,8 +10,8 @@ import { adresseFuer, adresseFuerNetzwerk, istSichereAdresse, normalisiereNummer
 import { baueVcard, vcardDateiname } from '../src/kern/vcard.ts';
 import { alsDatenadresse } from '../src/kern/bild.ts';
 import { kontrast, pruefeLesbarkeit, vorlage, VORLAGEN } from '../src/kern/gestaltung.ts';
-import { hauptaktionFuer, lieseProfil, pruefeSlug } from '../src/kern/profil.ts';
-import type { Visitenkarte } from '../src/kern/profil.ts';
+import { darstellungFuer, hauptaktionFuer, lieseProfil, pruefeSlug } from '../src/kern/profil.ts';
+import type { Aktionsblock, Visitenkarte } from '../src/kern/profil.ts';
 
 describe('Adressen', () => {
   it('macht aus einer Nummer eine wählbare Adresse', () => {
@@ -307,5 +307,44 @@ describe('Bilder für die Visitenkarte', () => {
   it('nimmt nichts, wo nichts ist', async () => {
     strictEqual(await alsDatenadresse(undefined, basis), undefined);
     strictEqual(await alsDatenadresse('nicht mal eine Adresse ::', basis), undefined);
+  });
+});
+
+describe('Darstellung', () => {
+  const block = (kanal: string, form?: string) => {
+    const ergebnis = lieseProfil({
+      slug: 'muster',
+      kopf: { name: 'Muster' },
+      bloecke: [{ id: 'a', art: 'aktion', kanal, beschriftung: 'X', ziel: 'https://hnvr.me', form }],
+    });
+    ok(ergebnis.ok, 'Profil sollte lesbar sein');
+    return ergebnis.profil.bloecke[0] as Aktionsblock;
+  };
+
+  it('macht aus kurzen, dringenden Wegen Kacheln', () => {
+    for (const kanal of ['telefon', 'mobil', 'whatsapp', 'mail', 'route', 'termin']) {
+      strictEqual(darstellungFuer(block(kanal)), 'kachel', kanal);
+    }
+  });
+
+  it('macht aus allem zum Lesen ruhige Zeilen', () => {
+    for (const kanal of ['link', 'shop', 'datei', 'video']) {
+      strictEqual(darstellungFuer(block(kanal)), 'zeile', kanal);
+    }
+  });
+
+  it('lässt sich übersteuern', () => {
+    strictEqual(darstellungFuer(block('telefon', 'zeile')), 'zeile');
+    strictEqual(darstellungFuer(block('link', 'kachel')), 'kachel');
+  });
+
+  it('weist eine unbekannte Darstellung ab', () => {
+    const ergebnis = lieseProfil({
+      slug: 'muster',
+      kopf: { name: 'Muster' },
+      bloecke: [{ id: 'a', art: 'aktion', kanal: 'link', beschriftung: 'X', ziel: 'https://hnvr.me', form: 'kreis' }],
+    });
+    ok(!ergebnis.ok);
+    ok(ergebnis.fehler.some((f) => f.stelle === 'bloecke[0].form'));
   });
 });

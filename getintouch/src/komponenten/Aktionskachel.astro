@@ -1,0 +1,36 @@
+---
+/**
+ * Eine Kachel im Gitter der direkten Wege.
+ *
+ * Der Bruch mit dem Linktree-Muster: Anruf, Nachricht, Route und Termin sind
+ * kurz, dringend und werden gesucht — sie brauchen keine volle Bildschirmbreite
+ * und keine Unterzeile, sondern müssen nebeneinander stehen und mit einem Blick
+ * erfassbar sein. Drei Kacheln in einer Reihe sparen zwei Bildschirmhöhen
+ * Gescrolle gegenüber vier gleich aussehenden Balken.
+ *
+ * Die Berührfläche bleibt trotzdem über 56 px hoch — das ist die Untergrenze,
+ * unterhalb derer Daumen danebentreffen.
+ */
+import type { Aktionsblock } from '../kern/profil.ts';
+import { zeichen } from '../kern/zeichen.ts';
+import { bleibtImGeraet, zeichenFuerKanal } from '../kern/ziele.ts';
+
+interface Props {
+  block: Aktionsblock;
+  adresse: string;
+}
+
+const { block, adresse } = Astro.props;
+const imGeraet = bleibtImGeraet(block.kanal);
+---
+
+<a
+  class:list={['kachel', block.betont && 'kachel--betont']}
+  href={adresse}
+  target={imGeraet ? undefined : '_blank'}
+  rel={imGeraet ? undefined : 'noopener noreferrer'}
+  title={block.unterzeile}
+>
+  <Fragment set:html={zeichen(zeichenFuerKanal(block.kanal))} />
+  <span class="kachel__text">{block.beschriftung}</span>
+</a>

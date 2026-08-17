@@ -132,6 +132,8 @@ func wege(d *dienst) *http.ServeMux {
 	weg.HandleFunc("POST /api/v1/serie", d.mitSchluessel(true, d.serienPaket))
 	weg.HandleFunc("GET /zentrale", d.zentrale)
 	weg.HandleFunc("GET /serie", d.serienseite)
+	weg.HandleFunc("GET /api/v1/zahlen", d.mitSchluessel(false, d.zahlenDaten))
+	weg.HandleFunc("GET /zahlen", d.zahlenseite)
 
 	// Produktpass. Die oeffentliche Seite ist die Anforderung der ESPR;
 	// der Code davor ist nur der Datentraeger.

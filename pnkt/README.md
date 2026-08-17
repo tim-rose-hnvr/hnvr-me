@@ -43,8 +43,11 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 | `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler, Produktpässe |
 | `pass` | Prüfung eines Produktpasses auf Vollständigkeit — Identität, Verantwortlicher, Stoffe, Nutzung und Ende |
 | `uebernahme` | Bestand aus dem Wix-Datenspeicher holen. Trockenlauf zuerst, immer |
+| `serie` | Aus einer Tabelle Ziele machen: Muster mit `{Spalte}`, geprüft gegen die Kopfzeile, bevor eine Zeile umgesetzt wird |
+| `bogen` | Ausschießen: viele Stücke auf ein Blatt, mit Anschnitt und Schnittmarken in der Passerfarbe |
+| `gestalt` | Das Erscheinungsbild im Binär: Tokenschicht des Organic-Systems, Caprasimo und Figtree als eingebettete woff2, vierzehn Zeichen, Marke |
 | `ausgabe` | PDF und EPS von Hand geschrieben — echter Vektor in Punkt, ohne fremdes Paket. Verläufe als Schattierung (PDF Typ 2 und 3, PostScript `shfill`), Beschriftung in Helvetica |
-| `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio, Zentrale, Produktpass |
+| `main.go` | Weiterleitung, Schnittstelle, Massenanlage, Studio, Zentrale, Serie, Zahlen, Produktpass |
 
 ### Die Ablage
 
@@ -89,6 +92,9 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `DELETE /api/v1/codes/{id}` | Code löschen, Kürzel bleibt reserviert | Inhaber |
 | `GET /api/v1/codes/{id}/statistik`, `/protokoll` | Auswertung, Änderungsgeschichte | Schlüssel |
 | `POST /api/v1/massenanlage` | CSV hinein, ZIP heraus | Schlüssel |
+| `POST /api/v1/serie/vorschau` | Serie durchrechnen, ohne etwas anzulegen | Schlüssel |
+| `POST /api/v1/serie` | Serie anlegen, Druckbogen und Einzeldateien als ZIP | Schlüssel |
+| `GET /api/v1/zahlen?tage=…` | Übersicht der Organisation: Verlauf, Klassen, Codes, Aussage | Schlüssel |
 | `GET /api/v1/marke` | Erscheinungsbild des aufgerufenen Hostnamens | offen |
 | `PUT /api/v1/marke` | Marke setzen | Inhaber |
 | `GET/POST /api/v1/mitarbeitende`, `DELETE …/{id}` | Personen der Organisation | Schlüssel / Inhaber |
@@ -96,6 +102,10 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `POST /api/v1/inhalt` | Felder zu Nutzlast: vCard, WLAN, GiroCode, GS1 | offen |
 | `GET /` | Studio | offen |
 | `GET /zentrale` | Zentrale: suchen, ordnen, löschen | offen |
+| `GET /serie` | Serien-Assistent: Tabelle, Muster, Vorschau, Bogen | offen |
+| `GET /zahlen` | Zahlen: ein Satz, dann die Diagramme | offen |
+| `GET /gestalt/organic.css`, `/gestalt/schrift/{datei}` | Tokenschicht und Schriften aus dem Binär | offen |
+| `GET /marke.svg` | Zeichen der Marke, dient als Favicon | offen |
 | `GET /p/{gtin}`, `/p/{gtin}/{charge}` | Produktpass als Seite oder JSON | offen |
 | `POST /api/v1/pass/pruefen` | Pass messen, ohne ihn zu veröffentlichen | offen |
 | `GET/PUT /api/v1/pass` | Pässe lesen und setzen | Schlüssel |
@@ -260,6 +270,38 @@ einzeln schreibt):
 
 Alle sechs Dateien bleiben lesbar.
 
+## Erscheinungsbild
+
+Das Organic-System liegt im Binär, nicht neben ihm: die Tokenschicht
+unter `/gestalt/organic.css`, Caprasimo und Figtree als eingebettete
+woff2 unter `/gestalt/schrift/`, vierzehn Zeichen und die Marke als
+`/marke.svg`.
+
+Nichts wird von außen geholt. Das ist keine Sparsamkeit: eine Seite, die
+ihre Schriften von einem fremden Server holt, funktioniert nicht mehr,
+sobald jemand anderes einen Fehler hat — und sie schickt die Adresse
+jedes Besuchers dorthin. Wer im Fuß „EU-Hosting, keine Tracking-Cookies"
+schreibt und die Schriften bei Google lädt, hat eine der beiden Aussagen
+falsch; das Landgericht München I hat dafür im Januar 2022 Schadenersatz
+zugesprochen (3 O 17493/20). Caprasimo und Figtree stehen unter der SIL
+Open Font License, das Mitliefern ist ausdrücklich erlaubt, die Lizenz
+liegt daneben.
+
+Farben: Creme `#f5ead8` als Grund, `#ebddc5` als Fläche, Ink `#201e1d`
+als Schrift, Terrakotta `#c67139` als Akzent, Salbei `#7a8a5e` daneben.
+**Fließtext in Akzentfarbe steht in `#8c491a`**, nicht in der
+Grundstufe — die kommt auf Creme nur auf 3:1.
+
+Der Dateiname einer Schrift geht nie ungeprüft in einen Dateizugriff:
+erlaubt sind Kleinbuchstaben, Ziffern und Bindestrich, dann genau
+`.woff2`. Kein Punkt, kein Schrägstrich, kein Rückwärts. Festgehalten in
+`gestalt/gestalt_test.go`.
+
+Ein Fehler dieser Art ist **lautlos**: fehlt in der CSP `style-src
+'self'`, kommt die Seite mit HTTP 200 und ohne Gestaltung. Deshalb prüft
+`serie_test.go` bei jeder Seite die CSP und den Kopf, und der Selbsttest
+der Baustrecke ruft die Gestaltdateien ab.
+
 ## Studio
 
 Alles an einem Ort, in der Reihenfolge des Ablaufs statt der Technik:
@@ -353,6 +395,92 @@ Liste müsste jemand vierhundert Dateien einzeln ansehen — und dann sieht
 sie niemand an. Fehlerhafte Zeilen brechen den Lauf nicht ab, sie stehen
 mit Grund im Bericht: falsche Prüfziffer, fehlendes Ziel, zu kleine
 Module für das gewählte Verfahren.
+
+## Serie und Druckbogen
+
+Der Schritt, den die Werkzeuge des Marktes auslassen. Sie liefern
+einzelne Dateien und überlassen das Ausschießen der Druckerei — und dort
+entstehen die Fehler, die später die Auflage kosten.
+
+Unter `/serie`: Tabelle einlesen, Spalten zuordnen, Ziel als **Muster**
+schreiben, Vorschau rechnen, erzeugen.
+
+```
+POST /api/v1/serie/vorschau?muster=nordwerk.de/t{Tisch}   rechnet, schreibt nichts
+POST /api/v1/serie?anlegen=1&…                            legt an, liefert das ZIP
+```
+
+Das Muster `nordwerk.de/t{Tisch}` wird **gegen die Kopfzeile geprüft,
+bevor eine einzige Zeile umgesetzt wird**. Ein vertipptes `{Tsich}` darf
+keine vierhundert toten Kürzel kosten — und die bleiben belegt, weil ein
+Kürzel nie wieder frei wird. Die Fehlermeldung nennt den falschen Namen
+**und** die vorhandenen Spalten; „unbekannte Spalte" allein zwingt zum
+Raten.
+
+Komma und Semikolon werden beide erkannt, die Byte-Order-Mark aus Excel
+fällt weg, Umlaute werden vereinfacht statt prozentkodiert: „Terrasse
+Süd" wird `terrasse-sued` und nicht `Terrasse%20S%C3%BCd`. Wer eine
+gedruckte Adresse abtippen muss, ist dafür dankbar. Bleibt nach dem
+Säubern nichts übrig — etwa bei `!!!` —, ist das ein Fehler und kein
+kürzeres Ziel: sonst zeigten zwei solche Zeilen auf dieselbe Seite.
+
+**Doppelte Ziele** werden gemeldet, in der Vorschau und im Bericht. Zwei
+Tische mit demselben Code sind nicht auseinanderzuhalten, sobald die
+Zahlen eintreffen — und das fällt erst auf, wenn die Aufsteller stehen.
+
+Im ZIP: `bogen-01.pdf` und folgende, `einzeln/` mit SVG und PDF je Stück,
+`bericht.csv` mit Note, Modulgröße und Befunden je Zeile, `LIESMICH.txt`.
+
+### Zwei Regeln des Bogens
+
+**Ein Stück wird nie verkleinert, damit mehr daraufpasst.** Die
+Kantenlänge kommt aus Leseabstand und Verfahren; sie ist eine
+Druckentscheidung und keine Layoutfrage. Passen 24 Stück nicht auf ein
+Blatt, werden es zwei Blätter. Passt ein einzelnes Stück gar nicht, sagt
+die Meldung beide Maße — damit sichtbar ist, ob der Rand oder das Stück
+zu groß ist.
+
+**Schnittmarken liegen außerhalb des Anschnitts** und stehen in der
+Passerfarbe `All` — einer Separation, die auf jeder Druckplatte
+erscheint. Eine Marke im Anschnitt wird mitgedruckt und steht danach auf
+dem fertigen Etikett. Schwarz allein wäre falsch: es läge nur im
+K-Auszug.
+
+Die Vorschau rechnet mit demselben Fach wie das Erzeugen und mit einem
+Kürzel in Höchstlänge. Beides ist nicht selbstverständlich: rechnete sie
+anders, verspräche sie zwölf Stück je Bogen und lieferte neun — und der
+Unterschied fiele erst auf, wenn das PDF da ist.
+
+Nachgewiesen: 24 Tischcodes auf drei A4-Bogen, jeder Bogen mit
+Ghostscript gerastert und mit OpenCV gelesen — 24 von 24, bei 300 und
+600 dpi.
+
+## Zahlen
+
+Unter `/zahlen`: ein Satz, dann die Diagramme. Die Reihenfolge ist keine
+Geschmacksfrage — wer eine Zahlenwand aufschlägt, sucht zuerst, was sie
+bedeutet. Steht der Satz nicht da, denkt sich jeder seinen eigenen aus.
+
+```
+GET /api/v1/zahlen?tage=30
+```
+
+Der Satz wird im Speicher geschrieben, nicht in der Seite: dieselbe
+Aussage kommt aus der Schnittstelle wie aus dem Browser. Zwei Fassungen
+laufen auseinander.
+
+**Unter 60 Scans wird keine beste Zeit genannt.** Bei 60 Scans auf sieben
+Wochentage und 24 Stunden liegt der häufigste Kasten im Mittel bei etwa
+0,4 — jede Spitze darin ist Zufall, und Zufall sieht genauso aus wie ein
+Ergebnis. Nach dem Satz „Samstagmittag ist deine beste Zeit" wird ein
+Werbebudget verschoben. Warum kein Zeitsatz dasteht, steht daneben.
+
+Die Zeitreihe trägt **jeden** Tag, auch die leeren. Eine Reihe nur aus den
+Tagen mit Scans zeigt einen Verlauf, den es nie gab.
+
+Gerechnet wird nur, was ohnehin schon dasteht: die Tageszähler halten
+Klassen, nie einzelne Scans. Es entsteht keine Sitzung und kein Merkmal
+je Person. Was nicht entsteht, kann später niemand verlangen.
 
 ## Zentrale
 
@@ -499,6 +627,16 @@ Länge der Kurzdomain bestimmt die Größe jedes gedruckten Codes.
 - **Der Zielrechner.** Nichts davon läuft irgendwo. Welche Maschine es
   wird und ob `pnkt.me` selbst darauf zeigen soll, ist eine Entscheidung
   über Geld und Verantwortung und keine technische.
+- **Varianten und Versionen im Studio.** Der Entwurf zeigt einen
+  Variantenstreifen mit eigener Scanrate je Variante und eine
+  Versionsliste zum Zurückholen. Beides setzt voraus, dass das Studio an
+  einem gespeicherten Code arbeitet — heute rechnet es zustandslos. Die
+  Ablage kann Fassungen bereits, die Oberfläche noch nicht.
+- **Strecken.** Mehrstufige Wege mit Messung je Übergang. Das Datenmodell
+  dafür gibt es noch nicht, und es ist die größte offene Ecke des
+  Entwurfs.
+- **Aufsteller A6 und Vorlagen.** Der Bogen kann jedes Format; was fehlt,
+  sind die fertigen Aufbauten mit Text und Rahmen darum.
 
 ---
 

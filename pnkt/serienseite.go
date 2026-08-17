@@ -126,6 +126,7 @@ tr.krumm td{background:color-mix(in srgb,#a82e23 8%%,transparent)}
       <a class="werkweg" href="/">Studio</a>
       <a class="werkweg" href="/zentrale">Zentrale</a>
       <a class="werkweg werkweg-aktiv" href="/serie" aria-current="page">Serie</a>
+      <a class="werkweg" href="/zahlen">Zahlen</a>
     </nav>
   </div>
 </header>

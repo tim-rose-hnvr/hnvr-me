@@ -99,6 +99,15 @@ jobs:
           curl -fsS -o /dev/null http://127.0.0.1:8099/
           curl -fsS -o /dev/null "http://127.0.0.1:8099/qr.svg?inhalt=https://pnkt.me/test&form=tropfen"
           curl -fsS -o /dev/null http://127.0.0.1:8099/zentrale
+          curl -fsS -o /dev/null http://127.0.0.1:8099/serie
+          curl -fsS -o /dev/null http://127.0.0.1:8099/zahlen
+          # Die Gestaltdateien liegen im Binaer. Fehlen sie dort, faellt
+          # es sonst erst im Browser auf — und zwar lautlos: die Seite
+          # kommt mit 200 und ohne Gestalt.
+          curl -fsS -o /dev/null http://127.0.0.1:8099/gestalt/organic.css
+          curl -fsS -o /dev/null http://127.0.0.1:8099/gestalt/schrift/caprasimo-400-latin.woff2
+          curl -fsS -o /dev/null http://127.0.0.1:8099/gestalt/schrift/figtree-400-latin.woff2
+          curl -fsS -o /dev/null http://127.0.0.1:8099/marke.svg
           kill "$dienst"
           echo "Selbsttest bestanden"
 

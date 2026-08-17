@@ -27,7 +27,32 @@ Anordnungen. 96 Tests.
 
 ---
 
-## 1. Der Eingang
+## 1. Der Eingang — gebaut, noch nicht scharf
+
+**Der Code steht** (`/eingang/<schluessel>`, `kern/eingang.ts`,
+`kern/speicher/eingang.ts`, 5 Tests). Er fällt zu, nicht auf: ohne passenden
+Schlüssel gibt es 404 — und zwar dieselbe 404 für „gibt es nicht" wie für
+„falsch", denn schon die Unterscheidung wäre eine Auskunft.
+
+**Was fehlt, braucht CMS-Zugang** und damit einen gültigen API-Schlüssel:
+
+1. In der Collection `GetInTouchProfile` ein Textfeld **`eingangSchluessel`**
+   anlegen.
+2. Für ein Profil einen Wert eintragen — 32 Zeichen aus `[A-Za-z0-9]`. Erzeugen
+   lässt er sich mit `neuerSchluessel()` aus `kern/eingang.ts` oder im Browser
+   mit:
+   `Array.from(crypto.getRandomValues(new Uint8Array(32)), b => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[b % 62]).join('')`
+3. Aufrufen: `https://<adresse>/eingang/<dieser-wert>`
+
+**Nicht geprüft gegen die echte Datenbank.** Die Schlüssellogik ist es
+(gleichbleibende Zeit, Formprüfung, fällt zu) — die Abfrage selbst nicht, weil
+beim Bauen kein CMS-Zugang mehr bestand. Vor dem ersten echten Einsatz einmal
+mit einem Wegwerf-Profil durchspielen.
+
+**Was noch fehlt:** „erledigt"-Schalter (Feld ist da, Bedienung fehlt) und die
+Antwort im Produkt statt per `mailto:`.
+
+## 1b. Was vom Eingang noch aussteht
 
 **Warum zuerst.** Nachrichten landen heute in der Collection
 `GetInTouchNachricht` und werden im Wix-Dashboard gelesen. Das trägt für die

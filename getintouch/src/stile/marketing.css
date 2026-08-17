@@ -813,3 +813,75 @@ summary:focus-visible {
   color: var(--vg-neben);
   max-width: 54ch;
 }
+
+/* --- Eingang ---------------------------------------------- */
+
+.anfragen {
+  display: grid;
+  gap: 11px;
+  margin-top: 26px;
+}
+
+.anfrage {
+  padding: 18px 20px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  background: var(--kachel);
+}
+
+.anfrage--erledigt {
+  opacity: 0.55;
+}
+
+.anfrage__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.anfrage__absicht {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--akzent);
+  color: var(--akzent-text);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.anfrage__zeit {
+  font-size: 12.5px;
+  color: var(--vg-leise);
+  font-variant-numeric: tabular-nums;
+}
+
+.anfrage__text {
+  margin: 13px 0 0;
+  font-size: 15.5px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.anfrage__fuss {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--linie);
+  font-size: 14px;
+  color: var(--vg-neben);
+}
+
+.anfrage__fuss .knopf {
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+.anfrage__hinweis {
+  font-size: 13px;
+  color: var(--vg-leise);
+}

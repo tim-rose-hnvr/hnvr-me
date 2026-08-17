@@ -569,3 +569,121 @@ summary:focus-visible {
     transition: none !important;
   }
 }
+
+/* --- Pläne ------------------------------------------------ */
+
+.plaene {
+  display: grid;
+  gap: 14px;
+  margin-top: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  align-items: start;
+}
+
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 26px 22px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  background: var(--kachel);
+}
+
+/* Der empfohlene Plan trägt die Signalfarbe und den Standfuß — im Handoff ist
+   Rot die Handlung, und hier ist die Handlung: diesen nehmen. */
+.plan--hervor {
+  border: 2px solid var(--akzent);
+  box-shadow: 0 6px 0 0 var(--akzent);
+}
+
+.plan__band {
+  position: absolute;
+  top: -13px;
+  right: 18px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--akzent);
+  color: var(--akzent-text);
+  font-family: var(--anzeige);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.plan__name {
+  margin: 0;
+  font-family: var(--anzeige);
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.plan__preis {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--anzeige);
+  font-weight: 800;
+  font-size: 38px;
+  letter-spacing: -0.03em;
+}
+
+.plan__preis span {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--vg-neben);
+}
+
+.plan__satz {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--vg-neben);
+}
+
+.plan__liste {
+  list-style: none;
+  margin: 6px 0 auto;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+  font-size: 14.5px;
+}
+
+.plan__liste li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.plan__liste .zeichen {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  margin-top: 2px;
+  color: var(--akzent);
+}
+
+/* Was noch nicht da ist, sieht auch nicht so aus, als wäre es da. */
+.plan__spaeter {
+  color: var(--vg-leise);
+}
+
+.plan__spaeter .zeichen {
+  color: var(--vg-leise);
+}
+
+.plan__spaeter b {
+  font-weight: 500;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.plan .knopf {
+  margin-top: 18px;
+  justify-content: center;
+}

@@ -26,6 +26,7 @@ import (
 	"pnkt.me/pnkt/ausgabe"
 	"pnkt.me/pnkt/druck"
 	"pnkt.me/pnkt/farbe"
+	"pnkt.me/pnkt/gestalt"
 	"pnkt.me/pnkt/gs1"
 	"pnkt.me/pnkt/qr"
 	"pnkt.me/pnkt/regel"
@@ -95,6 +96,10 @@ func main() {
 func wege(d *dienst) *http.ServeMux {
 	weg := http.NewServeMux()
 	weg.HandleFunc("GET /gesundheit", d.gesundheit)
+
+	// Erscheinungsbild: Tokenschicht und Schriften kommen aus dem Binaer.
+	gestalt.Wege(weg)
+	weg.HandleFunc("GET /marke.svg", d.markeZeichen)
 
 	// Offen — kein Schluessel noetig. Codes erzeugen und Ziele ansehen
 	// geht ohne Konto, so wie es die Schnittstellenseite zusagt.
@@ -343,6 +348,14 @@ func (d *dienst) digitalLink(w http.ResponseWriter, r *http.Request) {
 	}
 	d.hinweisMitMarke(w, r, http.StatusNotFound, "Artikel unbekannt",
 		"Zu dieser GTIN ist hier kein Ziel hinterlegt.")
+}
+
+// markeZeichen liefert das Favicon in den Farben der Marke des Hosts.
+func (d *dienst) markeZeichen(w http.ResponseWriter, r *http.Request) {
+	m := d.ablage.MarkeNachHost(r.Host)
+	w.Header().Set("Content-Type", "image/svg+xml")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	_, _ = w.Write([]byte(gestalt.MarkeSVG(m.Primaer, m.Grund)))
 }
 
 // --- Schnittstelle --------------------------------------------------------
@@ -598,10 +611,6 @@ func (d *dienst) hinweisMitMarke(w http.ResponseWriter, r *http.Request, lage in
 	if r != nil {
 		m = d.ablage.MarkeNachHost(r.Host)
 	}
-	logo := ""
-	if m.LogoSVG != "" {
-		logo = `<div class="logo">` + m.LogoSVG + `</div>`
-	}
 	fuss := ""
 	if m.Impressum != "" || m.Datenschutz != "" {
 		fuss = `<p class="fuss">`
@@ -614,20 +623,43 @@ func (d *dienst) hinweisMitMarke(w http.ResponseWriter, r *http.Request, lage in
 		fuss += `</p>`
 	}
 
+	// Das Zeichen der Marke steht ueber dem Namen. Bei der Hausmarke ist
+	// das der Terrakotta-Punkt aus dem Designsystem; ein Kunde mit
+	// eigenem Logo bekommt seines.
+	zeichen := gestalt.MarkeLockup(m.Name, "", false)
+	if m.LogoSVG != "" {
+		zeichen = `<div class="logo">` + m.LogoSVG + `</div>`
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	// 'self' muss mit dabei stehen: die Tokenschicht kommt als eigene
+	// Datei, und 'unsafe-inline' allein erlaubt nur den Stil im Dokument.
+	// Ohne das bleibt die Seite unformatiert — lautlos, mit 200 im Log.
+	w.Header().Set("Content-Security-Policy",
+		"default-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:")
 	w.WriteHeader(lage)
-	fmt.Fprintf(w, `<!doctype html><meta charset="utf-8">
+	fmt.Fprintf(w, `<!doctype html><html lang="de"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>%s · %s</title>
-<style>body{margin:0;display:grid;place-items:center;min-height:100vh;
-font:17px/1.5 ui-sans-serif,system-ui,sans-serif;background:%s;color:%s}
-main{max-width:26rem;padding:2rem}h1{font-size:1.4rem;margin:0 0 .6rem}
-p{margin:0;opacity:.75}.logo{margin-bottom:1.2rem;max-width:9rem}
-.logo svg{width:100%%;height:auto}.marke{font-size:.72rem;font-weight:700;
-letter-spacing:.12em;text-transform:uppercase;color:%s;margin-bottom:.5rem}
-.fuss{margin-top:1.5rem;font-size:.8rem}.fuss a{color:inherit}</style>
-<main>%s<div class="marke">%s</div><h1>%s</h1><p>%s</p>%s</main>`,
-		titel, m.Name, m.Grund, m.Tinte, m.Primaer, logo, m.Name, titel, text, fuss)
+%s
+<style>
+:root{--color-bg:%s;--color-text:%s;--color-accent:%s}
+body{display:grid;place-items:center;min-height:100vh;padding:1.5rem;
+ background:var(--color-bg);color:var(--color-text);
+ font-family:var(--font-body);font-size:17px;line-height:1.55}
+main{max-width:30rem}
+.zeichen{margin-bottom:1.4rem}
+.logo{margin-bottom:1.4rem;max-width:9rem}.logo svg{width:100%%;height:auto}
+h1{font-family:var(--font-heading);font-size:2rem;line-height:1.1;
+ letter-spacing:-.02em;margin:0 0 .6rem}
+p{margin:0;color:color-mix(in srgb,var(--color-text) 72%%,transparent)}
+.fuss{margin-top:2rem;font-size:.82rem;
+ color:color-mix(in srgb,var(--color-text) 55%%,transparent)}
+.fuss a{color:inherit}
+</style>
+<main><div class="zeichen">%s</div><h1>%s</h1><p>%s</p>%s</main></html>`,
+		titel, m.Name, gestalt.Kopf(), m.Grund, m.Tinte, m.Primaer,
+		zeichen, titel, text, fuss)
 }
 
 func str(v any) string {

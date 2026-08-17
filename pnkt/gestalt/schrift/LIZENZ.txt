@@ -1,0 +1,5 @@
+Caprasimo und Figtree stehen unter der SIL Open Font License 1.1.
+Volltext: https://openfontlicense.org/
+
+Die Lizenz erlaubt das Mitliefern der Schriftdateien mit dieser Seite.
+Geholt mit skripte/schriften-holen.mjs.

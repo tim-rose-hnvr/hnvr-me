@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"pnkt.me/pnkt/gestalt"
 	"pnkt.me/pnkt/gs1"
 	"pnkt.me/pnkt/pass"
 	"pnkt.me/pnkt/speicher"
@@ -57,7 +58,8 @@ func (d *dienst) passseite(w http.ResponseWriter, r *http.Request) {
 
 	m := d.ablage.MarkeNachHost(r.Host)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'")
+	w.Header().Set("Content-Security-Policy",
+		"default-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'")
 	w.Header().Set("Cache-Control", "public, max-age=300")
 	_, _ = w.Write([]byte(passHTML(sichtbar, p, m, vollstaendig)))
 }
@@ -176,53 +178,57 @@ func passHTML(zeig, ganz *speicher.Produktpass, m *speicher.Marke, vollstaendig 
 	e := html.EscapeString
 	var s strings.Builder
 
-	logo := ""
+	// Das Zeichen der Marke ueber dem Artikel. Hat der Kunde ein eigenes
+	// Logo, gilt seines; sonst das Haus-Lockup aus dem Designsystem.
+	zeichen := gestalt.MarkeLockup(m.Name, "", false)
 	if m.LogoSVG != "" {
-		logo = `<div class="logo">` + m.LogoSVG + `</div>`
+		zeichen = `<div class="logo">` + m.LogoSVG + `</div>`
 	}
 
 	fmt.Fprintf(&s, `<!doctype html>
 <html lang="%s"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>%s · Produktpass</title>
+%s
 <style>
-:root{--grund:%s;--tinte:%s;--primaer:%s;--flaeche:#fff;--linie:#dcdee3;--leise:#5b6070}
-@media(prefers-color-scheme:dark){:root{--flaeche:#191a1f;--linie:#2f3138;--leise:#9aa0ae}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--grund);color:var(--tinte);
- font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:44rem;margin:0 auto;padding:clamp(1rem,4vw,2.5rem)}
-.logo{max-width:8rem;margin-bottom:1rem}.logo svg{width:100%%;height:auto}
-.marke{font-size:.7rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--primaer)}
-h1{font-size:1.6rem;margin:.3rem 0 .2rem;letter-spacing:-.02em}
-.unter{color:var(--leise);margin:0 0 .3rem}
-.stand{color:var(--leise);font-size:.8rem;margin:0 0 1.6rem}
-section{background:var(--flaeche);border:1px solid var(--linie);border-radius:12px;
- padding:1rem 1.1rem;margin-bottom:.9rem}
-h2{font-size:.7rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
- color:var(--leise);margin:0 0 .7rem}
-dl{margin:0;display:grid;grid-template-columns:minmax(8rem,auto) 1fr;gap:.35rem .9rem}
-dt{color:var(--leise);font-size:.85rem}
+:root{--color-bg:%s;--color-text:%s;--color-accent:%s}
+body{background:var(--color-bg);color:var(--color-text);
+ font-family:var(--font-body);font-size:16px;line-height:1.55}
+main{max-width:46rem;margin:0 auto;padding:clamp(1rem,4vw,2.5rem)}
+.zeichen{margin-bottom:1.1rem}
+.logo{max-width:8rem;margin-bottom:1.1rem}.logo svg{width:100%%;height:auto}
+h1{font-family:var(--font-heading);font-size:1.75rem;line-height:1.1;
+ letter-spacing:-.02em;margin:.2rem 0 .2rem}
+.unter{color:color-mix(in srgb,var(--color-text) 62%%,transparent);margin:0 0 .3rem}
+.stand{color:color-mix(in srgb,var(--color-text) 62%%,transparent);
+ font-size:.8rem;margin:0 0 1.7rem}
+section{background:var(--color-surface);border-radius:calc(var(--radius-lg) * 1.15);
+ padding:1.1rem 1.2rem;margin-bottom:.9rem}
+h2{font-family:var(--font-body);font-size:.7rem;font-weight:600;letter-spacing:.1em;
+ text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 62%%,transparent);
+ margin:0 0 .8rem}
+dl{margin:0;display:grid;grid-template-columns:minmax(8rem,auto) 1fr;gap:.4rem .9rem}
+dt{color:color-mix(in srgb,var(--color-text) 62%%,transparent);font-size:.85rem}
 dd{margin:0;overflow-wrap:anywhere}
 p.text{margin:0;white-space:pre-line}
 table{width:100%%;border-collapse:collapse;font-size:.9rem}
 th{text-align:left;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;
- color:var(--leise);font-weight:700;padding:.3rem .5rem .3rem 0}
-td{padding:.3rem .5rem .3rem 0;border-top:1px solid var(--linie)}
+ color:color-mix(in srgb,var(--color-text) 62%%,transparent);font-weight:700;
+ padding:.3rem .5rem .3rem 0}
+td{padding:.35rem .5rem .35rem 0;
+ border-top:1px solid color-mix(in srgb,var(--color-text) 12%%,transparent)}
 td.zahl{text-align:right;font-variant-numeric:tabular-nums}
 .svhc{color:#a82e23;font-weight:600}
-ul{margin:0;padding-left:1.1rem}li{margin:.15rem 0}
-a{color:var(--primaer)}
-.zurueck{background:#f7e7e5;color:#a82e23;border:1px solid #a82e23;padding:.7rem .9rem;
- border-radius:10px;margin-bottom:1rem;font-size:.9rem}
-@media(prefers-color-scheme:dark){.zurueck{background:#33201d;color:#f0705c}}
-footer{color:var(--leise);font-size:.78rem;margin-top:1.4rem}
+ul{margin:0;padding-left:1.1rem}li{margin:.2rem 0}
+a{color:var(--color-accent-700)}
+footer{color:color-mix(in srgb,var(--color-text) 58%%,transparent);
+ font-size:.78rem;margin-top:1.5rem}
 footer a{color:inherit}
 </style>
-<main>%s<div class="marke">%s</div>
+<main><div class="zeichen">%s</div>
 <h1>%s</h1>`,
-		e(oder(zeig.Sprache, "de")), e(zeig.Bezeichnung), m.Grund, m.Tinte, m.Primaer,
-		logo, e(m.Name), e(zeig.Bezeichnung))
+		e(oder(zeig.Sprache, "de")), e(zeig.Bezeichnung), gestalt.Kopf(),
+		m.Grund, m.Tinte, m.Primaer, zeichen, e(zeig.Bezeichnung))
 
 	if zeig.Modell != "" {
 		fmt.Fprintf(&s, `<p class="unter">%s</p>`, e(zeig.Modell))

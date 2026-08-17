@@ -30,10 +30,17 @@ type Marke struct {
 	Geloescht   bool      `json:"geloescht,omitempty"`
 }
 
-// StandardMarke gilt, solange keine eigene hinterlegt ist.
+// StandardMarke gilt, solange keine eigene hinterlegt ist. Die Werte
+// kommen aus dem Organic-Designsystem: Creme als Grund, Terrakotta als
+// Akzent, Ink als Schrift.
+//
+// Der Akzent steht hier in der Grundstufe, weil er als Flaeche benutzt
+// wird — als Punkt hinter dem Zeichen, als Knopffuellung. Fuer Text auf
+// Creme reicht er nicht: dort gilt accent-700 (#8c491a), sonst bleibt
+// der Kontrast bei 3:1 stehen.
 func StandardMarke() *Marke {
 	return &Marke{
-		Name: "pnkt", Primaer: "#d1006f", Grund: "#EBEEEE", Tinte: "#141018",
+		Name: "pnkt", Primaer: "#c67139", Grund: "#f5ead8", Tinte: "#201e1d",
 	}
 }
 

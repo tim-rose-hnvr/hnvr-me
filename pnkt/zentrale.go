@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"pnkt.me/pnkt/gestalt"
 )
 
 // zentrale ist die Verwaltung: suchen, ordnen, loeschen. Das Studio baut
@@ -15,82 +17,79 @@ func (d *dienst) zentrale(w http.ResponseWriter, r *http.Request) {
 	m := d.ablage.MarkeNachHost(r.Host)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Content-Security-Policy",
-		"default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; "+
-			"img-src 'self' data:")
-	fmt.Fprintf(w, zentraleSeite, m.Name, m.Grund, m.Tinte, m.Primaer, m.Name)
+		"default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'unsafe-inline'; "+
+			"font-src 'self'; img-src 'self' data:")
+	fmt.Fprintf(w, zentraleSeite, m.Name, gestalt.Kopf(),
+		m.Grund, m.Tinte, m.Primaer, gestalt.MarkeLockup(m.Name, "/", false), m.Name)
 }
 
 const zentraleSeite = `<!doctype html>
+<html lang="de">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Zentrale · %s</title>
+%s
 <style>
-:root{
-  --grund:%s; --tinte:%s; --primaer:%s;
-  --flaeche:#fff; --tief:#f1f2f4; --linie:#dcdee3; --stark:#a9adb8; --leise:#5b6070;
-  --schlecht:#a82e23; --schlechtgrund:#f7e7e5;
-}
-@media(prefers-color-scheme:dark){:root{
-  --flaeche:#191a1f; --tief:#212228; --linie:#2f3138; --stark:#4c505c; --leise:#9aa0ae;
-  --schlecht:#f0705c; --schlechtgrund:#33201d;
-}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--grund);color:var(--tinte);
-  font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  -webkit-font-smoothing:antialiased}
-.spur{max-width:1240px;margin:0 auto;padding:clamp(1rem,3vw,2rem)}
-h1{font-size:1.35rem;margin:0;letter-spacing:-.02em}
-.anriss{color:var(--leise);font-size:.92rem;margin:.2rem 0 1.4rem}
-.anriss a{color:inherit}
-.feld{background:var(--flaeche);border:1px solid var(--linie);border-radius:12px;overflow:hidden;
-  margin-bottom:1.1rem}
-.kopf{padding:.65rem .95rem;border-bottom:1px solid var(--linie);background:var(--tief);
-  font-size:.68rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--leise);
-  display:flex;justify-content:space-between;align-items:baseline;gap:.75rem}
-.koerper{padding:1rem;display:flex;flex-direction:column;gap:.8rem}
-label{display:flex;flex-direction:column;gap:.25rem;font-size:.78rem;color:var(--leise)}
-input{font:inherit;font-size:.9rem;padding:.5rem .6rem;border:1px solid var(--stark);
-  border-radius:7px;background:var(--flaeche);color:var(--tinte);width:100%%;min-width:0}
-.reihe{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin:0}
+:root{--color-bg:%s;--color-text:%s;--color-accent:%s}
+body{background:var(--color-bg);color:var(--color-text);
+ font-family:var(--font-body);font-size:15px;line-height:1.55}
+h1{font-family:var(--font-heading);font-size:1.5rem;letter-spacing:-.02em;margin:0}
+.anriss{color:color-mix(in srgb,var(--color-text) 62%%,transparent);
+ font-size:.92rem;margin:.25rem 0 1.5rem}
+.anriss a{color:var(--color-accent-700)}
+.reihe{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:0}
 @media(max-width:640px){.reihe{grid-template-columns:1fr}}
-.ordner{display:flex;flex-wrap:wrap;gap:.3rem;padding:.55rem .6rem;border-bottom:1px solid var(--linie);
-  background:var(--tief)}
-.ordner button{font:inherit;font-size:.8rem;font-weight:600;background:none;
-  border:1px solid transparent;color:var(--leise);border-radius:6px;padding:.32rem .62rem;cursor:pointer}
-.ordner button[aria-pressed=true]{background:var(--flaeche);border-color:var(--linie);color:var(--tinte)}
-.ordner .zahl{opacity:.6;font-weight:400;margin-left:.3rem}
-table{width:100%%;border-collapse:collapse;font-size:.88rem}
-th{text-align:left;font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;color:var(--leise);
-  font-weight:700;padding:.5rem .8rem;border-bottom:1px solid var(--linie)}
-td{padding:.55rem .8rem;border-bottom:1px solid var(--linie);vertical-align:top}
-tr:last-child td{border-bottom:none}
-.kuerzel{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem}
-.ziel{color:var(--leise);overflow-wrap:anywhere;max-width:26rem;display:block}
-.tun{display:flex;gap:.35rem;justify-content:flex-end}
-.tun button{font:inherit;font-size:.78rem;background:var(--tief);border:1px solid var(--linie);
-  color:var(--tinte);border-radius:6px;padding:.28rem .55rem;cursor:pointer}
-.tun button.weg{color:var(--schlecht);border-color:var(--schlecht)}
-.tun .knopf{font-size:.78rem;background:var(--tief);border:1px solid var(--linie);
-  color:var(--tinte);border-radius:6px;padding:.28rem .55rem;text-decoration:none}
-.zahl{color:var(--leise);font-size:.85rem}
-.leer{padding:2.2rem 1rem;text-align:center;color:var(--leise);font-size:.9rem}
-.meldung{padding:.7rem .95rem;font-size:.85rem;background:var(--schlechtgrund);color:var(--schlecht)}
-.hinweis{font-size:.78rem;color:var(--leise);margin:0}
+.ordner{display:flex;flex-wrap:wrap;gap:.35rem;padding:.6rem .7rem;
+ border-bottom:1px solid color-mix(in srgb,var(--color-text) 10%%,transparent)}
+.ordner button{font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;
+ background:none;border:1px solid transparent;border-radius:999px;padding:.35rem .7rem;
+ color:color-mix(in srgb,var(--color-text) 68%%,transparent)}
+.ordner button[aria-pressed=true]{background:var(--color-accent);color:var(--color-bg)}
+.ordner button:hover{color:var(--color-text)}
+.ordner button[aria-pressed=true]:hover{color:var(--color-bg)}
+.ordner .zahl{opacity:.65;font-weight:400;margin-left:.35rem}
+/* Auf dem aktiven Reiter steht die Zahl auf Terrakotta. Mit .65 Deckung
+   verschwindet sie dort fast — auf hellem Grund reicht sie, hier nicht. */
+.ordner button[aria-pressed=true] .zahl{opacity:.9;color:var(--color-bg)}
+.ziel{color:color-mix(in srgb,var(--color-text) 62%%,transparent);
+ overflow-wrap:anywhere;max-width:26rem;display:block}
+.tun{display:flex;gap:.4rem;justify-content:flex-end}
+.tun button,.tun .knopf{font:inherit;font-size:.8rem;cursor:pointer;text-decoration:none;
+ background:var(--color-bg);border:1px solid color-mix(in srgb,var(--color-text) 14%%,transparent);
+ color:var(--color-text);border-radius:999px;padding:.35rem .75rem}
+.tun button:hover,.tun .knopf:hover{border-color:var(--color-accent)}
+.tun button.weg{color:#a82e23;border-color:color-mix(in srgb,#a82e23 45%%,transparent)}
+.tun button.weg:hover{background:#a82e23;color:var(--color-bg)}
+.zahl{color:color-mix(in srgb,var(--color-text) 62%%,transparent);font-size:.85rem}
+.hinweis{font-size:.78rem;color:color-mix(in srgb,var(--color-text) 58%%,transparent);margin:0}
 </style>
 
-<div class="spur">
+<a href="#inhalt" class="ueberspringen">Zum Inhalt</a>
+<header class="werkkopf">
+  <div class="werkkopf-innen">
+    %s
+    <nav class="werkwege" aria-label="Bereiche">
+      <a class="werkweg" href="/">Studio</a>
+      <a class="werkweg werkweg-aktiv" href="/zentrale" aria-current="page">Zentrale</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="spur">
   <h1>Zentrale · %s</h1>
   <p class="anriss">Suchen, ordnen, löschen. Zum Bauen geht es ins <a href="/">Studio</a>.</p>
 
-  <div class="feld">
-    <div class="kopf"><span>Zugang</span><span id="stand"></span></div>
-    <div class="koerper">
+  <div class="tafel">
+    <div class="tafel-kopf"><span>Zugang</span><span id="stand"></span></div>
+    <div class="tafel-koerper">
       <form class="reihe" onsubmit="return false">
-        <label>Schlüssel
-          <input id="schluessel" type="password" placeholder="x-punkt-schluessel" autocomplete="off">
+        <label class="feld">Schlüssel
+          <input class="eingabe" id="schluessel" type="password"
+                 placeholder="x-punkt-schluessel" autocomplete="off">
         </label>
-        <label>Suche
-          <input id="suche" type="search" placeholder="Name, Kürzel, Ziel, GTIN, Ordner">
+        <label class="feld">Suche
+          <input class="eingabe" id="suche" type="search"
+                 placeholder="Name, Kürzel, Ziel, GTIN, Ordner">
         </label>
       </form>
       <p class="hinweis">Der Schlüssel bleibt im Tab und wird beim Schließen vergessen.
@@ -98,17 +97,17 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
 
-  <div class="feld">
+  <div class="tafel" style="margin-top:1.1rem">
     <div id="ordner" class="ordner"></div>
     <div id="meldung"></div>
     <div id="liste"></div>
   </div>
 
-  <div class="feld" id="passfeld" hidden>
-    <div class="kopf"><span>Produktpässe</span><span id="passstand"></span></div>
+  <div class="tafel" id="passfeld" style="margin-top:1.1rem" hidden>
+    <div class="tafel-kopf"><span>Produktpässe</span><span id="passstand"></span></div>
     <div id="passliste"></div>
   </div>
-</div>
+</main>
 
 <script>
 const e = (id) => document.getElementById(id);
@@ -199,12 +198,12 @@ function zeigeListe(codes){
     e("liste").innerHTML = '<div class="leer">Nichts gefunden.</div>';
     return;
   }
-  let html = '<table><thead><tr><th>Name</th><th>Kürzel</th><th>Ordner</th>' +
+  let html = '<table class="liste"><thead><tr><th>Name</th><th>Kürzel</th><th>Ordner</th>' +
              '<th>Ziel</th><th></th></tr></thead><tbody>';
   for (const c of codes){
     html += '<tr>' +
       '<td>' + sicher(c.name || "ohne Namen") + '</td>' +
-      '<td class="kuerzel">' + sicher(c.kuerzel) + '</td>' +
+      '<td class="einsilbig">' + sicher(c.kuerzel) + '</td>' +
       '<td>' + sicher(c.ordner || "—") + '</td>' +
       '<td><span class="ziel">' + sicher(c.gtin ? ("GTIN " + c.gtin + " → " + (c.ziel||"")) : c.ziel) + '</span></td>' +
       '<td><div class="tun">' +
@@ -232,11 +231,11 @@ async function ladePaesse(){
 }
 
 function passTabelle(paesse){
-  let html = '<table><thead><tr><th>GTIN</th><th>Artikel</th><th>Charge</th>' +
+  let html = '<table class="liste"><thead><tr><th>GTIN</th><th>Artikel</th><th>Charge</th>' +
              '<th>Fassung</th><th></th></tr></thead><tbody>';
   for (const p of paesse){
     html += '<tr>' +
-      '<td class="kuerzel">' + sicher(p.gtin) + '</td>' +
+      '<td class="einsilbig">' + sicher(p.gtin) + '</td>' +
       '<td>' + sicher(p.bezeichnung) + (p.modell ? ' <span class="zahl">' + sicher(p.modell) + '</span>' : '') + '</td>' +
       '<td>' + sicher(p.charge || "—") + '</td>' +
       '<td>' + p.fassung + '</td>' +

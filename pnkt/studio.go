@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"pnkt.me/pnkt/gestalt"
 )
 
 // studio ist die Bedienoberflaeche. Sie liegt als Text im Binaer, damit
@@ -21,98 +23,117 @@ func (d *dienst) studio(w http.ResponseWriter, r *http.Request) {
 		// blob: braucht die Vorschau: das SVG kommt als Blob aus der
 		// Schnittstelle und wird nicht nachgeladen. Ohne diese Angabe
 		// bleibt die Vorschau leer — und zwar lautlos.
-		"default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; "+
-			"img-src 'self' data: blob:")
-	fmt.Fprintf(w, studioSeite, m.Name, m.Grund, m.Tinte, m.Primaer, m.Name)
+		"default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'unsafe-inline'; "+
+			"font-src 'self'; img-src 'self' data: blob:")
+	fmt.Fprintf(w, studioSeite, m.Name, gestalt.Kopf(),
+		m.Grund, m.Tinte, m.Primaer, gestalt.MarkeLockup(m.Name, "/", false), m.Name)
 }
 
 const studioSeite = `<!doctype html>
+<html lang="de">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Studio · %s</title>
+%s
 <style>
-:root{
-  --grund:%s; --tinte:%s; --primaer:%s;
-  --flaeche:#fff; --tief:#f1f2f4; --linie:#dcdee3; --stark:#a9adb8; --leise:#5b6070;
-  --gut:#0d5a4d; --gutgrund:#dfedea; --warn:#7e5300; --warngrund:#f6ecda;
-  --schlecht:#a82e23; --schlechtgrund:#f7e7e5;
-}
-@media(prefers-color-scheme:dark){:root{
-  --flaeche:#191a1f; --tief:#212228; --linie:#2f3138; --stark:#4c505c; --leise:#9aa0ae;
-  --gut:#45b49c; --gutgrund:#152c28; --warn:#e0a63f; --warngrund:#2e2513;
-  --schlecht:#f0705c; --schlechtgrund:#33201d;
-}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--grund);color:var(--tinte);
-  font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  -webkit-font-smoothing:antialiased}
-.spur{max-width:1240px;margin:0 auto;padding:clamp(1rem,3vw,2rem)}
-h1{font-size:1.35rem;margin:0;letter-spacing:-.02em}
-.anriss{color:var(--leise);font-size:.92rem;margin:.2rem 0 1.4rem}
-.anriss a{color:inherit}
-.raster{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:1.1rem;align-items:start}
+:root{--color-bg:%s;--color-text:%s;--color-accent:%s;
+ --gut:var(--color-accent-2-700);--gutgrund:var(--color-accent-2-100);
+ --warn:var(--color-accent-700);--warngrund:var(--color-accent-100);
+ --schlecht:#a82e23;--schlechtgrund:#f7e7e5;
+ --leise:color-mix(in srgb,var(--color-text) 62%%,transparent);
+ --linie:color-mix(in srgb,var(--color-text) 12%%,transparent)}
+body{background:var(--color-bg);color:var(--color-text);
+ font-family:var(--font-body);font-size:15px;line-height:1.55}
+h1{font-family:var(--font-heading);font-size:1.5rem;letter-spacing:-.02em;margin:0}
+.anriss{color:var(--leise);font-size:.92rem;margin:.25rem 0 1.5rem}
+.anriss a{color:var(--color-accent-700)}
+.raster{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:1.1rem;align-items:start}
 @media(max-width:940px){.raster{grid-template-columns:1fr}}
-.feld{background:var(--flaeche);border:1px solid var(--linie);border-radius:12px;overflow:hidden}
-.kopf{padding:.65rem .95rem;border-bottom:1px solid var(--linie);background:var(--tief);
-  font-size:.68rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--leise);
-  display:flex;justify-content:space-between;align-items:baseline;gap:.75rem}
-.koerper{padding:1rem;display:flex;flex-direction:column;gap:.8rem}
-label{display:flex;flex-direction:column;gap:.25rem;font-size:.78rem;color:var(--leise)}
-input,select,textarea{font:inherit;font-size:.9rem;padding:.5rem .6rem;border:1px solid var(--stark);
-  border-radius:7px;background:var(--flaeche);color:var(--tinte);width:100%%;min-width:0}
-input[type=color]{padding:.2rem;height:2.4rem;cursor:pointer}
-input[type=range]{padding:0;accent-color:var(--primaer)}
+label{display:flex;flex-direction:column;gap:.3rem;font-size:.72rem;font-weight:600;
+ letter-spacing:.04em;text-transform:uppercase;color:var(--leise)}
+input,select,textarea{font:inherit;font-size:.9rem;padding:.55rem .7rem;
+ border:1px solid color-mix(in srgb,var(--color-text) 22%%,transparent);
+ border-radius:var(--radius-md);background:var(--color-bg);color:var(--color-text);
+ width:100%%;min-width:0;text-transform:none;letter-spacing:normal;font-weight:400}
+input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var(--color-accent)}
+input[type=color]{padding:.2rem;height:2.5rem;cursor:pointer}
+input[type=range]{padding:0;accent-color:var(--color-accent);border:none;background:none}
 textarea{resize:vertical;min-height:4.5rem}
 .reihe{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
 .reihe3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.55rem}
-.reiter{display:flex;flex-wrap:wrap;gap:.3rem;padding:.55rem .6rem;border-bottom:1px solid var(--linie);
-  background:var(--tief)}
-.reiter button{font:inherit;font-size:.8rem;font-weight:600;background:none;border:1px solid transparent;
-  color:var(--leise);border-radius:6px;padding:.32rem .62rem;cursor:pointer}
-.reiter button[aria-selected=true]{background:var(--flaeche);border-color:var(--linie);color:var(--tinte)}
-.vorschau{display:grid;place-items:center;padding:1.6rem;background:
-  repeating-conic-gradient(var(--tief) 0 25%%,transparent 0 50%%) 0 0/18px 18px;min-height:340px}
+.reiter{display:flex;flex-wrap:wrap;gap:.3rem;padding:.6rem .7rem;
+ border-bottom:1px solid var(--linie)}
+.reiter button{font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;
+ background:none;border:1px solid transparent;border-radius:999px;padding:.35rem .75rem;
+ color:var(--leise)}
+.reiter button[aria-selected=true]{background:var(--color-accent);color:var(--color-bg)}
+.reiter button:hover{color:var(--color-text)}
+.reiter button[aria-selected=true]:hover{color:var(--color-bg)}
+.vorschau{display:grid;place-items:center;padding:1.8rem;min-height:360px;
+ background:var(--color-bg)}
 /* Die Vorschau fuellt die Flaeche. Das SVG traegt sein Millimetermass
    in sich; wer es hier klein anzeigt, weil 40 mm nun einmal klein sind,
    kann nichts beurteilen. Das wahre Mass steht in der Kopfzeile. */
-.vorschau img{width:min(100%%,380px);height:auto;filter:drop-shadow(0 2px 12px rgba(0,0,0,.14))}
-.urteil{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-size:.8rem;font-weight:700;
-  letter-spacing:.07em;text-transform:uppercase;padding:.3rem .65rem;border-radius:5px;width:fit-content}
+.vorschau img{width:min(100%%,400px);height:auto;
+ filter:drop-shadow(0 12px 32px color-mix(in srgb,#2e2b25 22%%,transparent))}
+.urteil{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-size:.72rem;
+ font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+ padding:.4rem .8rem;border-radius:999px;width:fit-content}
 .u-gut{color:var(--gut);background:var(--gutgrund)}
 .u-achtung{color:var(--warn);background:var(--warngrund)}
 .u-kritisch{color:var(--schlecht);background:var(--schlechtgrund)}
-.befund{font-size:.85rem;padding-left:.8rem;border-left:2px solid var(--stark);color:var(--leise)}
-.befund b{color:var(--tinte);font-weight:600;display:block}
+.befund{font-size:.85rem;padding-left:.85rem;
+ border-left:2px solid var(--color-accent-2);color:var(--leise)}
+.befund b{color:var(--color-text);font-weight:600;display:block}
 .befund.fehler{border-color:var(--schlecht)}
-.befund.warnung{border-color:var(--warn)}
+.befund.warnung{border-color:var(--color-accent-500)}
 .zahlen{display:flex;flex-wrap:wrap;gap:.3rem 1.1rem;font-size:.78rem;color:var(--leise)}
-.zahlen b{color:var(--tinte);font-variant-numeric:tabular-nums}
+.zahlen b{color:var(--color-text);font-variant-numeric:tabular-nums}
 .knoepfe{display:flex;flex-wrap:wrap;gap:.45rem}
-a.knopf,button.knopf{display:inline-block;font:inherit;font-size:.85rem;font-weight:650;
-  text-decoration:none;padding:.5rem .8rem;border:1px solid var(--stark);border-radius:7px;
-  color:var(--tinte);background:var(--flaeche);cursor:pointer}
-a.knopf.stark{border-color:var(--primaer);color:var(--primaer)}
-.hinweis{font-size:.8rem;color:var(--leise);border-left:2px solid var(--linie);padding-left:.8rem}
-.messwert{font-size:.78rem;color:var(--leise);background:var(--tief);border-radius:7px;padding:.55rem .7rem}
-.messwert b{color:var(--tinte)}
+a.knopf,button.knopf{display:inline-flex;align-items:center;gap:.45rem;font:inherit;
+ font-size:.85rem;font-weight:600;text-decoration:none;padding:.55rem .95rem;
+ border:1px solid color-mix(in srgb,var(--color-text) 14%%,transparent);
+ border-radius:999px;color:var(--color-text);background:var(--color-bg);cursor:pointer}
+a.knopf:hover,button.knopf:hover{border-color:var(--color-accent)}
+a.knopf.stark,button.knopf.stark{background:var(--color-accent);color:var(--color-bg);
+ border-color:var(--color-accent)}
+a.knopf.stark:hover{background:var(--color-accent-600);border-color:var(--color-accent-600)}
+.hinweis{font-size:.8rem;color:var(--leise);border-left:2px solid var(--linie);padding-left:.85rem}
+.messwert{font-size:.78rem;color:var(--leise);background:var(--color-bg);
+ border-radius:var(--radius-md);padding:.6rem .8rem}
+.messwert b{color:var(--color-text)}
 [hidden]{display:none!important}
-.formen{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:.35rem}
-.formen button{font:inherit;font-size:.72rem;padding:.4rem .2rem;border:1px solid var(--linie);
-  border-radius:6px;background:var(--flaeche);color:var(--leise);cursor:pointer}
-.formen button[aria-pressed=true]{border-color:var(--primaer);color:var(--primaer);font-weight:650}
+.formen{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:.35rem}
+.formen button{font:inherit;font-size:.74rem;padding:.45rem .25rem;cursor:pointer;
+ border:1px solid transparent;border-radius:999px;
+ background:var(--color-bg);color:var(--leise)}
+.formen button:hover{color:var(--color-text)}
+.formen button[aria-pressed=true]{background:var(--color-accent);color:var(--color-bg);
+ font-weight:600}
 </style>
 
-<div class="spur">
+<a href="#inhalt" class="ueberspringen">Zum Inhalt</a>
+<header class="werkkopf">
+  <div class="werkkopf-innen">
+    %s
+    <nav class="werkwege" aria-label="Bereiche">
+      <a class="werkweg werkweg-aktiv" href="/" aria-current="page">Studio</a>
+      <a class="werkweg" href="/zentrale">Zentrale</a>
+    </nav>
+  </div>
+</header>
+
+<main id="inhalt" class="spur">
   <h1>Studio</h1>
   <p class="anriss">Vor dem Druck wissen, ob er scannt. Alles rechnet dieser Server — %s.
     Angelegte Codes stehen in der <a href="/zentrale">Zentrale</a>.</p>
 
   <div class="raster">
     <div>
-      <div class="feld">
-        <div class="kopf"><span>Vorschau</span><span id="masse"></span></div>
+      <div class="tafel">
+        <div class="tafel-kopf"><span>Vorschau</span><span id="masse"></span></div>
         <div class="vorschau"><img id="bild" alt="Vorschau des Codes"></div>
-        <div class="koerper">
+        <div class="tafel-koerper">
           <div id="urteil"></div>
           <div id="befunde" style="display:flex;flex-direction:column;gap:.5rem"></div>
           <div class="zahlen" id="zahlen"></div>
@@ -128,7 +149,7 @@ a.knopf.stark{border-color:var(--primaer);color:var(--primaer)}
       </div>
     </div>
 
-    <div class="feld">
+    <div class="tafel">
       <div class="reiter" role="tablist">
         <button role="tab" data-blatt="inhalt" aria-selected="true">Inhalt</button>
         <button role="tab" data-blatt="form" aria-selected="false">Form</button>
@@ -137,7 +158,7 @@ a.knopf.stark{border-color:var(--primaer);color:var(--primaer)}
         <button role="tab" data-blatt="druck" aria-selected="false">Druck</button>
       </div>
 
-      <div class="koerper" data-blatt="inhalt">
+      <div class="tafel-koerper" data-blatt="inhalt">
         <label>Was soll der Code enthalten?
           <select id="typ">
             <option value="url">Adresse</option>
@@ -152,7 +173,7 @@ a.knopf.stark{border-color:var(--primaer);color:var(--primaer)}
         <p class="hinweis" id="inhalt-hinweis"></p>
       </div>
 
-      <div class="koerper" data-blatt="form" hidden>
+      <div class="tafel-koerper" data-blatt="form" hidden>
         <label>Modulform</label>
         <div class="formen" id="modulformen"></div>
         <div class="reihe">
@@ -179,7 +200,7 @@ a.knopf.stark{border-color:var(--primaer);color:var(--primaer)}
           kein einziges Mal. Der Scanner sucht in den Ecken das Verhältnis 1:1:3:1:1.</p>
       </div>
 
-      <div class="koerper" data-blatt="farbe" hidden>
+      <div class="tafel-koerper" data-blatt="farbe" hidden>
         <label>Farbwelt<select id="farbwelt">
           <option value="rgb">Bildschirm — Hexfarbe</option>
           <option value="cmyk">CMYK — vier Kanäle</option>
@@ -227,7 +248,7 @@ a.knopf.stark{border-color:var(--primaer);color:var(--primaer)}
         </div>
       </div>
 
-      <div class="koerper" data-blatt="rahmen" hidden>
+      <div class="tafel-koerper" data-blatt="rahmen" hidden>
         <label>Rahmen<select id="rahmenart">
           <option value="keiner">keiner</option>
           <option value="balken">Balken unten</option>
@@ -242,7 +263,7 @@ a.knopf.stark{border-color:var(--primaer);color:var(--primaer)}
            Druckentscheidung und darf nicht sinken, weil jemand eine Beschriftung dazunimmt.</p>
       </div>
 
-      <div class="koerper" data-blatt="druck" hidden>
+      <div class="tafel-koerper" data-blatt="druck" hidden>
         <label>Breite in Millimetern<input id="breite" type="number" value="40" min="5" max="1000"></label>
         <label>Druckverfahren<select id="verfahren">
           <option value="bildschirm">Nur Bildschirm — ab 0,20 mm</option>
@@ -258,7 +279,7 @@ a.knopf.stark{border-color:var(--primaer);color:var(--primaer)}
       </div>
     </div>
   </div>
-</div>
+</main>
 
 <script>
 const e = (id) => document.getElementById(id);

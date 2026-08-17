@@ -83,7 +83,42 @@ Eine gemeinsame Site für alle Kunden scheidet damit aus: gemeinsames Kontingent
 Anmeldung, Abo und Planer; je Mandant wird eine Site bereitgestellt, die seine Kanäle hält.
 
 Der Preis dafür ist ein Wix-Plan je Kunde. **Der muss in die Preisgestaltung**, nicht in die
-Marge.
+Marge. Siehe den folgenden Abschnitt.
+
+---
+
+## Kontingent und Kostenuntergrenze
+
+Veröffentlichen und Planen hängen am Social-Media-Marketing-Plan der jeweiligen Site.
+
+| Plan | Beiträge je Monat | Verbundene Konten | Planung möglich |
+|---|---|---|---|
+| Frei | 10 | 1 | **nein** |
+| Essentials | 50 | 2 | ja |
+| Pro | 250 | 8 | ja |
+
+**Der freie Plan scheidet aus.** Er kann nicht terminieren, und ein Publisher ohne
+Terminierung ist keiner. Jeder Kunde braucht mindestens Essentials.
+
+**Mengenrechnung.** Die Publisher API nimmt **ein Item je Kanal**. Ein Beitrag, der auf fünf
+Kanälen erscheinen soll, verbraucht fünf Einheiten. Bei der angenommenen Frequenz von einer
+Veröffentlichung alle zwei Tage, also rund 15 im Monat:
+
+| Kanäle je Kunde | Zustellungen je Monat | Nötiger Plan |
+|---|---|---|
+| 1 | 15 | Essentials |
+| 3 | 45 | Essentials, ohne Reserve |
+| 5 | 75 | Pro |
+| 8 | 120 | Pro, mit Reserve |
+
+Das Kontingent ist damit **nicht** die Grenze. Die Grenze ist die Kostenuntergrenze je
+Kunde: Site-Plan plus Social-Plan fallen an, bevor der erste Euro verdient ist. Zwei Konten
+reichen für kaum einen Kunden, also ist Pro der Regelfall.
+
+> **Widerspruch in den Quellen.** Der Wix-Supportartikel nennt 250 Beiträge für Pro, die
+> Wix-Produktseite wirbt bei bezahlten Plänen mit „unlimited posts". Vor der Preisgestaltung
+> im echten Checkout klären. Die Zahlen oben stammen aus dem Supportartikel, weil er
+> konkreter ist.
 
 ---
 
@@ -187,10 +222,10 @@ anfangen, wenn Stufe 1 Geld verdient.
 
 Der erste Punkt entscheidet, ob das ein Produkt wird.
 
-1. **Wie hoch ist das Veröffentlichungskontingent je Site**, im Freikontingent und in den
-   bezahlten Stufen, und was kostet die jeweilige Stufe? Davon hängen Preisgestaltung und
-   Tragfähigkeit ab. Steht in den Wix-Supportartikeln zum Social-Media-Marketing-Plan, nicht
-   in der API-Doku.
+1. **Was kosten Essentials und Pro?** Die Mengen stehen fest (siehe oben), die Preise nicht —
+   der Supportartikel nennt keine. Zusammen mit dem Site-Plan ergibt das die
+   Kostenuntergrenze je Kunde, und damit den Boden, über dem unser Preis liegen muss.
+   Im echten Checkout nachsehen, dabei den Widerspruch 250 gegen „unlimited" mitklären.
 2. Ist das Kontingent tatsächlich **je Site** bemessen und nicht kontoweit? Die Aufteilung
    in eine Site je Kunde steht und fällt damit.
 3. Lässt sich eine Kundensite **programmgesteuert bereitstellen**, samt Plan-Zuweisung, oder

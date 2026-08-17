@@ -83,13 +83,27 @@ gilt: `prerender = true` nur auf der Startseite.
 
 ---
 
-## Noch von Hand im Dashboard
+## Noch von Hand im Dashboard: Sprache, Währung, Zeitzone
 
-Das Projekt steht auf den Wix-Vorgaben: Englisch, USD, `America/New_York`. Für
-einen Betrieb in Hannover gehört das auf Deutsch, EUR und `Europe/Berlin`. Auf
-die Seiten wirkt sich das nicht aus — die Erreichbarkeit rechnet mit der
-Zeitzone aus dem Profil —, wohl aber auf Rechnungen und andere Wix-Funktionen.
-Einen dokumentierten Schreib-Endpunkt dafür gibt es nicht.
+Das Projekt steht auf den Wix-Vorgaben — `en` / `US`, `USD`, `America/Chicago`.
+Für einen Betrieb in Hannover gehört das auf Deutsch, EUR und `Europe/Berlin`:
+
+**https://manage.wix.com/dashboard/880ffa0c-0877-46e5-ba41-e1ba1e072338/settings/business-info**
+→ Regionale Einstellungen
+
+**Über die API geht es nicht.** Nachgesehen, nicht vermutet:
+
+| Weg | Ergebnis |
+|---|---|
+| `site-properties/v4` | Die Ressource hat genau fünf Methoden: lesen, Profil, Kontakt, Öffnungszeiten, Einwilligung. Für Sprache, Währung und Zeitzone gibt es keine. |
+| `POST /locales/v2/locale/change-primary` | Antwortet `200` und meldet `FINISH_SUCCESSFUL` — ändert aber nichts. Danach ist die primäre Sprache weiter `en`, und `GET /locales/v2/locale/de` sagt `NOT_FOUND`. Die Locales-API setzt laut Doku die installierte App „Wix Multilingual" voraus; ohne sie läuft der Aufruf ins Leere, ohne das zu sagen. |
+| Region-Code mitgeben | `400 PrimaryLocaleMustNotHaveRegionRule` — eine primäre Sprache darf keinen Region-Code tragen. `de-DE` ist also auch dort nicht vorgesehen. |
+
+**Auf die ausgelieferte Seite wirkt sich das nicht aus.** Sie ist vollständig
+deutsch: `<html lang="de">`, kein englisches Wort im Text, und die
+Erreichbarkeit rechnet mit der Zeitzone aus dem Profil (`Europe/Berlin`), nicht
+mit der des Wix-Projekts. Betroffen sind Wix' eigene Oberfläche und alles, was
+später über Wix abgerechnet würde.
 
 Ebenfalls offen: eine eigene Domain vor `get-in-tou-35a520f5-hnvrme.wix-site-host.com`.
 Solange die fehlt, zeigt `Astro.site` (`https://hnvr.me`) in Canonical-Angaben

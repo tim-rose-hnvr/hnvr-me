@@ -35,6 +35,9 @@ jobs:
           cache: pnpm
           cache-dependency-path: design-studio/pnpm-lock.yaml
 
+      - name: Schriften für den Druck-Spike
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-dejavu-core
+
       - name: Abhängigkeiten installieren
         run: pnpm install --frozen-lockfile
 
@@ -45,6 +48,8 @@ jobs:
         run: pnpm run typecheck
 
       - name: Tests mit Abdeckung
+        env:
+          CHROMIUM_PFAD: /usr/bin/google-chrome
         run: pnpm run test:coverage
 
       # Der Spike ist ein Messwerkzeug — hier wird geprüft, dass er überhaupt
@@ -54,6 +59,17 @@ jobs:
         env:
           CHROMIUM_PFAD: /usr/bin/google-chrome
         run: pnpm run spike
+
+      - name: Druck-Spike sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: druckspike
+          path: |
+            design-studio/apps/spike-druck/ausgabe/spike.pdf
+            design-studio/apps/spike-druck/ausgabe/abzug.png
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Abdeckungsbericht sichern
         if: always()

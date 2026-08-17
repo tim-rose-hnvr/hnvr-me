@@ -17,30 +17,51 @@ fremde Projekte.
 | `packages/editor-core` | steht, 117 Tests, 91 % Abdeckung |
 | `packages/wix-adapter` | steht, 31 Tests, 92 % Abdeckung |
 | `apps/spike-pdf` | messbereit, mit eigenem Selbsttest (5 Tests) |
-| `packages/editor-ui` | **wartet auf die Lizenzklärung** |
-| `packages/export` | offen |
+| `apps/spike-druck` | **Kette bewiesen**, 33 Tests |
+| `packages/editor-ui` | offen — der Lizenzweg ist nicht mehr zwingend, siehe unten |
+| `packages/export` | offen, Bauplan steht in `apps/spike-druck` |
 | `packages/embed` | offen |
 | `apps/studio` | offen |
 
-## Was zuerst passieren muss
+## Der Druckweg ist lizenzfrei — bewiesen
 
-Zwei Dinge blockieren alles Weitere, beide unabhängig voneinander:
+`apps/spike-druck` zeigt die vollständige Kette:
 
-1. **Polotno-Lizenz für Mehrfach-Domain-Einbau klären.** Die Self-Serve-Lizenz deckt
-   laut Preisseite nur *a single domain under one brand family*. Der geplante Einbau in
-   mehrere Kundenprojekte fällt vermutlich unter Enterprise. Fällt der Preis zu hoch
-   aus, kommen Konva plus HarfBuzz plus eigener PDF-Pfad zurück ins Rennen — rund sechs
-   Monate mehr. Deshalb ist `editor-core` bewusst SDK-frei: die Klärung blockiert die
-   Arbeit am Kern nicht.
-2. **CSP-Spike laufen lassen.** Siehe `apps/spike-pdf/README.md`. Entscheidet, ob der
-   Druckexport im Browser bleiben kann oder ein Renderserver nötig wird.
+```
+Entwurf-JSON → HTML → Chromium setzt → Glyphen ablesen → pdf-lib → PDF/X-4 CMYK
+```
+
+Alles unter **MIT**. Kein Render-SDK, kein Ghostscript (AGPL), keine
+Domain-Klausel. Am Prüfentwurf: 0 RGB-Operatoren, Schwarz als K-only, TrimBox
+exakt auf 3 mm Anschnitt, Schrift eingebettet.
+
+Damit ist die Polotno-Lizenzfrage **entschärft**, nicht mehr blockierend. Sie
+lohnt trotzdem eine Anfrage — ein gekaufter Editor spart Monate an der
+Oberfläche. Aber der Druckpfad, also der Teil mit dem Lizenzrisiko, ist eigen.
+
+Nebeneffekt: weil der Satz serverseitig läuft, braucht der Druckexport **kein
+WASM im Browser**. Der CSP-Spike (`apps/spike-pdf`) entscheidet damit nur noch
+über clientseitige Vorschauen, nicht mehr über die Machbarkeit.
+
+## Was als Nächstes ansteht
+
+1. **Silbentrennung.** `hyphens: auto` wirkt in headless Chromium nicht — die
+   Trennmuster fehlen. Weiche Trennstriche vorab einzusetzen funktioniert
+   (geprüft), es braucht also eine Trennbibliothek vor dem HTML-Aufbau.
+2. **ICC-Profil einbetten.** Bisher steht nur die registrierte Druckbedingung im
+   OutputIntent. Für strenge Abnehmer muss ein CMYK-Profil hinein; die
+   Lizenzlage der ECI-Profile ist vorher zu klären.
+3. **Preflight gegenlesen lassen.** veraPDF prüft kein PDF/X (die eingebauten
+   Profile enden bei PDF/A-4). Einmalige Abnahme durch ein Preflight-Werkzeug
+   oder die Druckerei, bevor der erste echte Auftrag rausgeht.
 
 ## Loslegen
 
 ```bash
 pnpm install
-pnpm run check     # Linter, Typen, Tests mit Abdeckung
-pnpm run spike     # Selbsttest des CSP-Spikes (braucht Chromium)
+pnpm run check         # Linter, Typen, Tests mit Abdeckung
+pnpm run spike         # Selbsttest des CSP-Spikes
+pnpm run spike:druck   # die Druckkette bis zum PDF/X-4
 ```
 
 `pnpm run check` ist das Tor: dasselbe läuft in der CI
@@ -83,8 +104,8 @@ Serverfunktion, die `apps/studio` braucht.**
 
 ## Was beim Härten gefunden wurde
 
-Drei echte Fehler, alle inzwischen durch Tests abgesichert — die Regeln dahinter
-stehen in `CLAUDE.md`:
+Sechs echte Fehler, alle inzwischen durch Tests abgesichert — die Regeln
+dahinter stehen in `CLAUDE.md`:
 
 1. Rückgängig nahm von zehn Ziehschritten nur einen zurück, weil die Umkehrung
    von `ElementVerschieben` relativ statt absolut war.
@@ -92,3 +113,13 @@ stehen in `CLAUDE.md`:
    Millimeter gerechnet wurden.
 3. Ausgelagerte Entwürfe wären beim Kunden nie ladbar gewesen: der Adapter las
    private Dateien über ihre dauerhafte URL, die immer 403 liefert.
+4. Schriften über `file://` laden in einer per `setContent` gesetzten Seite
+   nicht — der Browser setzte lautlos in einer Ersatzschrift.
+5. Der Test dagegen prüfte den *angeforderten* statt den *benutzten* Font und
+   war grün, während der Abzug Serifen zeigte.
+6. `JSON.stringify` in einem `style`-Attribut beendet dieses vorzeitig — wieder
+   stille Ersatzschrift.
+
+Vier bis sechs haben dasselbe Muster: **der Fehlerfall ist nicht der Absturz,
+sondern das falsche, plausibel aussehende Ergebnis.** Deshalb legt der
+Druck-Spike neben jedem PDF einen PNG-Abzug ab.

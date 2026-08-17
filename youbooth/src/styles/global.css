@@ -183,6 +183,30 @@ p {
   color: var(--text-hell-leise);
 }
 
+/* Bildplatzhalter auf dunklem Grund: helle Schraffur statt dunkler. */
+.abschnitt--dunkel .platz.leer,
+.abschnitt--tief .platz.leer,
+.karte--dunkel .platz.leer {
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(244, 242, 238, 0.07) 0 10px,
+    rgba(244, 242, 238, 0.03) 10px 20px
+  );
+  border-color: var(--linie-dunkel);
+}
+
+.abschnitt--dunkel .platz.leer .motiv,
+.abschnitt--tief .platz.leer .motiv,
+.karte--dunkel .platz.leer .motiv {
+  color: var(--text-hell-still);
+}
+
+.abschnitt--dunkel .platz.leer .mono,
+.abschnitt--tief .platz.leer .mono,
+.karte--dunkel .platz.leer .mono {
+  color: var(--text-hell-fein);
+}
+
 /* --- Karten ------------------------------------------------------------- */
 
 .karte {

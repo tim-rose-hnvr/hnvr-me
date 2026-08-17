@@ -1,0 +1,377 @@
+---
+import Marketing from '../../layouts/Marketing.astro';
+import Bildplatz from '../../components/Bildplatz.astro';
+import Icon from '../../components/Icon.astro';
+import ModulSzene from '../../components/ModulSzene.astro';
+import { alleModule } from '../../daten/module';
+import { modulseiten } from '../../daten/modulseiten';
+
+/**
+ * Eine Vorlage fuer alle 14 Modulseiten. Preis und Icon kommen aus module.ts,
+ * die Inhalte aus modulseiten.ts.
+ */
+export function getStaticPaths() {
+  return modulseiten.map((seite) => {
+    const modul = alleModule.find((m) => m.id === seite.id)!;
+    return { params: { modul: seite.id }, props: { seite, modul } };
+  });
+}
+
+const { seite, modul } = Astro.props;
+
+const weitere = alleModule.filter((m) => m.id !== modul.id).slice(0, 4);
+---
+
+<Marketing titel={modul.titel} beschreibung={seite.sub}>
+  <section class="hero">
+    <div class="hero__text">
+      <span class="kicker">
+        <Icon name={modul.icon} groesse={17} />
+        Modul · ab {modul.preis} €/Mon.
+      </span>
+      <h1>{seite.h1}</h1>
+      <p class="fliess">{seite.sub}</p>
+      <div class="reihe knopfreihe">
+        {
+          seite.knoepfe.map((k, i) => (
+            <a
+              class:list={['knopf', 'knopf--mittel', i === 0 ? 'knopf--amber' : 'knopf--rahmen-hell']}
+              href={k.ziel}
+            >
+              {k.text}
+            </a>
+          ))
+        }
+      </div>
+      <div class="merkmale">
+        {seite.merkmale.map((m) => <span class="mono mono--hell">{m}</span>)}
+      </div>
+    </div>
+
+    <ModulSzene art={seite.szene} titel={modul.titel} />
+  </section>
+
+  {
+    seite.screenshot && (
+      <section class="abschnitt abschnitt--eng schuss">
+        <span class="mono">Screenshot aus der Software</span>
+        <div class="schuss__rahmen">
+          <Bildplatz
+            motiv={`Screenshot: ${modul.titel}`}
+            src={seite.screenshot}
+            alt={`Screenshot: ${modul.titel}`}
+            format="16 / 9"
+            radius={14}
+          />
+        </div>
+      </section>
+    )
+  }
+
+  {
+    seite.ablauf.length > 0 && (
+      <section class="abschnitt">
+        <h2>{seite.ablaufTitel}</h2>
+        <div class="raster raster--3">
+          {seite.ablauf.map((s, i) => (
+            <article class="karte" style={`--verzug:${(i * 0.1).toFixed(2)}s`}>
+              <span class="mono">Schritt {i + 1}</span>
+              <span class="display display--klein">{s.titel}</span>
+              <span class="karte__text">{s.text}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="abschnitt abschnitt--dunkel vertiefung">
+    <div class="vertiefung__text">
+      <h2>{seite.vertiefungTitel}</h2>
+      {seite.vertiefungText && <p class="fliess">{seite.vertiefungText}</p>}
+      <ul class="punkte">
+        {seite.punkte.map((p) => <li>{p}</li>)}
+      </ul>
+    </div>
+    <div class="vertiefung__bild">
+      <Bildplatz motiv={`Foto: ${modul.titel} im Einsatz`} format="4 / 3" radius={16} />
+    </div>
+  </section>
+
+  {
+    seite.wissen.length > 0 && (
+      <section class="abschnitt">
+        <h2>Gut zu wissen</h2>
+        <div class="raster raster--breit">
+          {seite.wissen.map((w) => (
+            <article class="karte">
+              <span class="display display--klein">{w.titel}</span>
+              <span class="karte__text">{w.text}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="abschnitt abschnitt--eng">
+    <div class="reihe">
+      {
+        seite.faelle.map((f) => (
+          <article class="fall">
+            <span class="mono mono--hell">{f.kennung}</span>
+            <span class="display display--klein">{f.titel}</span>
+            <span class="fall__text">{f.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <div class="abschnitt-kopf">
+      <h2>Passt dazu</h2>
+      <a class="pfeil" href="/module">Alle Module ansehen →</a>
+    </div>
+    <div class="raster raster--4">
+      {
+        weitere.map((m) => (
+          <a class="karte weiter" href={m.pfad}>
+            <span class="weiter__titel">
+              <Icon name={m.icon} groesse={19} />
+              {m.titel}
+            </span>
+            <span class="karte__text">{m.kurz}</span>
+            <span class="weiter__preis">ab {m.preis} €</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display">{seite.schluss}</span>
+      <span class="beiwort">{seite.schlussZeile}</span>
+    </div>
+    <div class="reihe knopfreihe">
+      {
+        seite.schlussKnoepfe.map((k, i) => (
+          <a
+            class:list={['knopf', 'knopf--mittel', i === 0 ? 'knopf--amber' : 'knopf--rahmen-hell']}
+            href={k.ziel}
+          >
+            {k.text}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 60px var(--rand) 68px;
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .hero__text {
+    flex: 1 1 460px;
+    min-width: min(430px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+
+  .kicker :global(.icon) {
+    opacity: 1;
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 4.2vw, 58px);
+  }
+
+  .hero .fliess {
+    font-size: 16.5px;
+    color: var(--text-hell-leise);
+    max-width: 560px;
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+
+  .merkmale {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .merkmale .mono {
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    color: rgba(244, 242, 238, 0.45);
+  }
+
+  /* Screenshot */
+  .schuss {
+    gap: 14px;
+    padding-block: 44px 0;
+  }
+
+  .schuss__rahmen {
+    max-width: 1000px;
+    border-radius: var(--r-karte);
+    overflow: hidden;
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.16);
+  }
+
+  /* Ablauf */
+  .raster--3 .karte {
+    animation: einblenden 0.7s ease-out both var(--verzug);
+  }
+
+  @keyframes einblenden {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .raster--3 .karte {
+      animation: none;
+    }
+  }
+
+  /* Vertiefung */
+  .vertiefung {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 44px;
+    align-items: center;
+  }
+
+  .vertiefung__text {
+    flex: 1 1 440px;
+    min-width: min(420px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .vertiefung__bild {
+    flex: 1 1 380px;
+    min-width: min(360px, 100%);
+  }
+
+  .vertiefung .fliess {
+    font-size: 15.5px;
+  }
+
+  /* Gut zu wissen */
+  .raster--breit {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  /* Anwendungsfälle */
+  .fall {
+    flex: 1 1 300px;
+    background: var(--ink);
+    color: var(--text-hell);
+    border-radius: 16px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fall .display {
+    color: var(--text-hell);
+  }
+
+  .fall .mono--hell {
+    color: rgba(244, 242, 238, 0.45);
+  }
+
+  .fall__text {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-hell-leise);
+  }
+
+  /* Weitere Module */
+  .weiter {
+    gap: 9px;
+    text-decoration: none;
+    transition: border-color var(--t-farbe), transform var(--t-transform);
+  }
+
+  .weiter:hover {
+    border-color: var(--amber);
+    transform: translateY(-2px);
+  }
+
+  .weiter__titel {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  .weiter__preis {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    margin-top: auto;
+  }
+
+  /* Schluss */
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding-block: 52px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .schluss .display {
+    font-size: clamp(26px, 2.8vw, 34px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15px;
+    color: var(--text-hell-leise);
+  }
+</style>

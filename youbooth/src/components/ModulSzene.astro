@@ -1,0 +1,569 @@
+---
+/**
+ * Hero-Darstellung der Modulseiten: eine schematische Bildschirmansicht,
+ * die zeigt, was das Modul tut. Reine CSS-Zeichnung, kein Bild.
+ *
+ * Die Entwuerfe haben je Modul eine eigene, aufwendigere Animation; hier
+ * stehen elf Grundformen, die alle Module abdecken.
+ */
+interface Props {
+  art: string;
+  titel: string;
+}
+
+const { art, titel } = Astro.props;
+
+const kacheln = Array.from({ length: 12 }, (_, i) => i);
+const balken = Array.from({ length: 22 }, (_, i) => i);
+---
+
+<div class:list={['szene', `szene--${art}`]} role="img" aria-label={`Schematische Ansicht: ${titel}`}>
+  {
+    art === 'raster' && (
+      <div class="flaeche">
+        <div class="kachelraster">
+          {kacheln.map((i) => (
+            <span style={`--verzug:${(i * 0.09).toFixed(2)}s`} />
+          ))}
+        </div>
+        <div class="seitenfeld">
+          <span class="qr">QR</span>
+          <span class="mono">Scannen · 30 min gültig</span>
+        </div>
+      </div>
+    )
+  }
+
+  {
+    art === 'booth' && (
+      <div class="flaeche flaeche--mittig">
+        <span class="ring">
+          <span class="ziffer">3</span>
+        </span>
+        <span class="mono mono--amber">Bitte lächeln</span>
+        <span class="blitzflaeche" />
+      </div>
+    )
+  }
+
+  {
+    art === 'rundum' && (
+      <div class="flaeche flaeche--mittig">
+        <span class="plattform" />
+        <span class="arm" />
+        <span class="mono">360° · 6 Sekunden</span>
+      </div>
+    )
+  }
+
+  {
+    art === 'browser' && (
+      <div class="flaeche flaeche--browser">
+        <span class="leiste">
+          <i /><i /><i />
+          <span class="adresse">youbooth.me/event</span>
+        </span>
+        <span class="inhaltsflaeche" />
+      </div>
+    )
+  }
+
+  {
+    art === 'film' && (
+      <div class="flaeche flaeche--mittig">
+        <span class="perforation" />
+        <span class="zaehlwerk">24</span>
+        <span class="mono">Aufnahmen übrig</span>
+        <span class="perforation" />
+      </div>
+    )
+  }
+
+  {
+    art === 'welle' && (
+      <div class="flaeche flaeche--mittig">
+        <span class="welle">
+          {balken.map((i) => (
+            <i style={`--verzug:${(i * 0.06).toFixed(2)}s;--hoehe:${20 + ((i * 37) % 70)}%`} />
+          ))}
+        </span>
+        <span class="mono">Aufnahme läuft · 00:24</span>
+      </div>
+    )
+  }
+
+  {
+    art === 'zettel' && (
+      <div class="flaeche">
+        <div class="zettelwand">
+          {kacheln.slice(0, 6).map((i) => (
+            <span style={`--verzug:${(i * 0.12).toFixed(2)}s`} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  {
+    art === 'buehne' && (
+      <div class="flaeche flaeche--mittig">
+        <span class="vollbild" />
+        <span class="mono">Vollbild · Beamer</span>
+      </div>
+    )
+  }
+
+  {
+    art === 'kacheln' && (
+      <div class="flaeche">
+        <div class="stilraster">
+          {kacheln.slice(0, 6).map((i) => (
+            <span style={`--verzug:${(i * 0.1).toFixed(2)}s`} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  {
+    art === 'suche' && (
+      <div class="flaeche flaeche--mittig">
+        <span class="gesicht">
+          <i class="scan" />
+        </span>
+        <span class="mono">Selfie · 12 Treffer</span>
+      </div>
+    )
+  }
+
+  {
+    art === 'kalender' && (
+      <div class="flaeche">
+        <div class="kalenderraster">
+          {
+            Array.from({ length: 21 }, (_, i) => (
+              <span class:list={{ belegt: [3, 4, 10, 16, 17].includes(i) }} />
+            ))
+          }
+        </div>
+        <div class="seitenfeld">
+          <span class="mono">3 Anfragen</span>
+          <span class="mono">1 Vertrag offen</span>
+        </div>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .szene {
+    flex: 1 1 480px;
+    min-width: min(460px, 100%);
+    aspect-ratio: 16 / 10;
+    background: #111116;
+    border-radius: var(--r-karte);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .flaeche {
+    position: absolute;
+    inset: 0;
+    background: #0d0d11;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+  }
+
+  .flaeche--mittig {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .mono {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-hell-still);
+  }
+
+  .mono--amber {
+    color: var(--amber);
+  }
+
+  /* raster: Galerie und Foto-Wall */
+  .kachelraster {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 6px;
+  }
+
+  .kachelraster span {
+    background: #22222a;
+    border-radius: 4px;
+    display: block;
+    animation: auftauchen 0.8s ease-out both var(--verzug);
+  }
+
+  .kachelraster span:nth-child(3n) {
+    background: #2b2b35;
+  }
+
+  .seitenfeld {
+    width: 34%;
+    background: var(--ink-soft);
+    border-radius: var(--r-chip);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .qr {
+    width: 72%;
+    aspect-ratio: 1;
+    background: var(--text-hell);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 8px;
+    color: rgba(0, 0, 0, 0.45);
+    animation: atmen 3s ease-in-out infinite;
+  }
+
+  /* booth */
+  .ring {
+    width: 34%;
+    aspect-ratio: 1;
+    border-radius: var(--r-kreis);
+    border: 5px solid rgba(242, 178, 62, 0.25);
+    border-top-color: var(--amber);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: drehen 2.4s linear infinite;
+  }
+
+  .ziffer {
+    font-weight: 800;
+    font-size: 34px;
+    letter-spacing: -0.025em;
+    color: var(--text-hell);
+    animation: gegendrehen 2.4s linear infinite;
+  }
+
+  .blitzflaeche {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    animation: blitzen 5s linear infinite;
+    pointer-events: none;
+  }
+
+  /* rundum */
+  .plattform {
+    width: 46%;
+    height: 12px;
+    border-radius: var(--r-kreis);
+    background: linear-gradient(90deg, #2b2b35, #3b3b46, #2b2b35);
+  }
+
+  .arm {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40%;
+    height: 3px;
+    background: var(--amber);
+    transform-origin: left center;
+    animation: kreisen 3.6s linear infinite;
+  }
+
+  /* browser */
+  .flaeche--browser {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .leiste {
+    height: 26px;
+    border-radius: 6px;
+    background: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+  }
+
+  .leiste i {
+    width: 7px;
+    height: 7px;
+    border-radius: var(--r-kreis);
+    background: #3b3b46;
+    display: block;
+  }
+
+  .adresse {
+    margin-left: 8px;
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    color: var(--text-hell-still);
+  }
+
+  .inhaltsflaeche {
+    flex: 1;
+    border-radius: 8px;
+    background: repeating-linear-gradient(135deg, #1b1b20 0 12px, #16161b 12px 24px);
+  }
+
+  /* film */
+  .perforation {
+    width: 70%;
+    height: 8px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(244, 242, 238, 0.4) 0 8px,
+      transparent 8px 18px
+    );
+  }
+
+  .zaehlwerk {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 42px;
+    letter-spacing: 0.05em;
+    color: var(--amber);
+  }
+
+  /* welle */
+  .welle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 40%;
+    width: 70%;
+    justify-content: center;
+  }
+
+  .welle i {
+    flex: 1;
+    height: var(--hoehe);
+    background: var(--amber);
+    border-radius: 2px;
+    display: block;
+    animation: pumpen 1.4s ease-in-out infinite var(--verzug);
+  }
+
+  /* zettel */
+  .zettelwand {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .zettelwand span {
+    background: #f4f2ee;
+    border-radius: 3px;
+    display: block;
+    transform: rotate(-2deg);
+    animation: auftauchen 0.7s ease-out both var(--verzug);
+  }
+
+  .zettelwand span:nth-child(2n) {
+    transform: rotate(2.5deg);
+    background: #e9e5dd;
+  }
+
+  /* buehne */
+  .vollbild {
+    width: 78%;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    background: repeating-linear-gradient(135deg, #22222a 0 14px, #1a1a21 14px 28px);
+    animation: langsamZoomen 8s ease-in-out infinite alternate;
+  }
+
+  /* kacheln (Effekt-Studio) */
+  .stilraster {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .stilraster span {
+    border-radius: 5px;
+    display: block;
+    animation: auftauchen 0.7s ease-out both var(--verzug);
+  }
+
+  .stilraster span:nth-child(1) {
+    background: linear-gradient(135deg, #6b4a86, #c147e9);
+  }
+  .stilraster span:nth-child(2) {
+    background: linear-gradient(135deg, #3c5240, #17b187);
+  }
+  .stilraster span:nth-child(3) {
+    background: linear-gradient(135deg, #8e2b26, #e0483c);
+  }
+  .stilraster span:nth-child(4) {
+    background: linear-gradient(135deg, #22222a, #3b3b46);
+  }
+  .stilraster span:nth-child(5) {
+    background: linear-gradient(135deg, #b99b58, #f2b23e);
+  }
+  .stilraster span:nth-child(6) {
+    background: linear-gradient(135deg, #5d7b8a, #a7bfcb);
+  }
+
+  /* suche */
+  .gesicht {
+    width: 30%;
+    aspect-ratio: 3 / 4;
+    border-radius: 44% 44% 40% 40%;
+    border: 2px solid rgba(244, 242, 238, 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scan {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    height: 3px;
+    background: var(--amber);
+    box-shadow: 0 0 16px 3px rgba(242, 178, 62, 0.6);
+    animation: scannen 2.6s ease-in-out infinite;
+  }
+
+  /* kalender */
+  .kalenderraster {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 5px;
+  }
+
+  .kalenderraster span {
+    background: #1e1e26;
+    border-radius: 3px;
+    display: block;
+  }
+
+  .kalenderraster .belegt {
+    background: var(--amber);
+  }
+
+  @keyframes auftauchen {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes atmen {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(0.95);
+    }
+  }
+
+  @keyframes drehen {
+    from {
+      transform: rotate(0);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes gegendrehen {
+    from {
+      transform: rotate(0);
+    }
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+
+  @keyframes blitzen {
+    0%,
+    92% {
+      opacity: 0;
+    }
+    95% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes kreisen {
+    from {
+      transform: rotate(0) translateY(-50%);
+    }
+    to {
+      transform: rotate(360deg) translateY(-50%);
+    }
+  }
+
+  @keyframes pumpen {
+    0%,
+    100% {
+      transform: scaleY(0.5);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
+
+  @keyframes langsamZoomen {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.06);
+    }
+  }
+
+  @keyframes scannen {
+    0%,
+    100% {
+      top: 10%;
+    }
+    50% {
+      top: 82%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .szene * {
+      animation: none !important;
+    }
+    .blitzflaeche {
+      opacity: 0;
+    }
+  }
+</style>

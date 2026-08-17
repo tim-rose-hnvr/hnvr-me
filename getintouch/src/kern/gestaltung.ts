@@ -146,7 +146,7 @@ function g(werte: Partial<Gestaltung> & Pick<Gestaltung, 'vorlage' | 'grund' | '
 }
 
 /**
- * Dreizehn Vorlagen. Die erste ist die des Produkts und bleibt die Vorgabe —
+ * Elf Vorlagen. Die erste ist die des Produkts und bleibt die Vorgabe —
  * eine neue Seite sieht sofort nach etwas aus.
  *
  * Sie hieß einmal `hnvr` und trug das Hausorange des Herstellers. Für ein
@@ -160,38 +160,39 @@ function g(werte: Partial<Gestaltung> & Pick<Gestaltung, 'vorlage' | 'grund' | '
  */
 export const VORLAGEN: Gestaltung[] = [
   g({ vorlage: 'signal', ...MARKENFARBEN, radius: 22, schrift: 'archivo', anzeige: 'archivo' }),
+
+  /* Die neun aus dem Design-Handoff. Jede hat dort einen Charakter und eine
+     Formensprache — „warm, rund, freundlich" ist keine Farbangabe, sondern eine
+     Anweisung an Radius, Schriftmischung und Anordnung zugleich. Deshalb
+     unterscheiden sie sich in allen dreien und nicht bloß im Farbton. */
+  g({ vorlage: 'kirsche', grund: '#FFF2EF', grund2: '#FFE0D9', vordergrund: '#201E1D', akzent: '#EC3013', akzentText: '#FFFFFF', radius: 26, schrift: 'archivo', anzeige: 'archivo' }),
+  g({ vorlage: 'nachtschicht', aufbau: 'bento', grund: '#201E1D', grund2: '#2D2B2B', vordergrund: '#F3F2F2', akzent: '#FF563C', akzentText: '#201E1D', radius: 8, schrift: 'inter', anzeige: 'anton' }),
+  g({ vorlage: 'beton', grund: '#EAE9E9', vordergrund: '#201E1D', akzent: '#201E1D', akzentText: '#F3F2F2', radius: 0, schaltflaeche: 'kontur', bildform: 'karte', schrift: 'space', anzeige: 'space' }),
+  g({ vorlage: 'sticker', aufbau: 'bento', grund: '#EC3013', grund2: '#FF563C', vordergrund: '#FFF2EF', akzent: '#FFF2EF', akzentText: '#7C1405', radius: 999, schrift: 'dm', anzeige: 'clash' }),
+  g({ vorlage: 'papier', aufbau: 'held', grund: '#F8F4F4', grund2: '#FFFFFF', vordergrund: '#2B2118', akzent: '#AE1800', akzentText: '#FFFFFF', radius: 14, schaltflaeche: 'kontur', bildform: 'karte', schrift: 'fraunces', anzeige: 'fraunces' }),
+  g({ vorlage: 'tresen', grund: '#FFFFFF', grund2: '#F3F2F2', vordergrund: '#201E1D', akzent: '#EC3013', akzentText: '#FFFFFF', radius: 18, schrift: 'poppins', anzeige: 'poppins' }),
+  g({ vorlage: 'werkbank', aufbau: 'bento', grund: '#2D2B2B', grund2: '#444141', vordergrund: '#F3F2F2', akzent: '#EC3013', akzentText: '#FFFFFF', radius: 0, schrift: 'inter', anzeige: 'bebas' }),
+  g({ vorlage: 'sprechstunde', grund: '#F8F4F4', grund2: '#FFFFFF', vordergrund: '#2D2B2B', akzent: '#AE1800', akzentText: '#FFFFFF', radius: 10, schrift: 'dm', anzeige: 'dm' }),
+  g({ vorlage: 'riso', aufbau: 'held', grund: '#AE1800', grund2: '#7C1405', vordergrund: '#FFF2EF', akzent: '#FFE0D9', akzentText: '#4D170E', radius: 4, schaltflaeche: 'kontur', schrift: 'syne', anzeige: 'syne' }),
+
+  /* Das Hausdesign des Herstellers — kein Angebot an Kunden, aber hnvr.me
+     selbst läuft damit. */
   g({ vorlage: 'feuer', grund: '#0F0F0F', grund2: '#1B1B1B', vordergrund: '#F1EFEB', akzent: '#FF7120', akzentText: '#141410' }),
-  // Weiße Schrift auf diesem Orange kommt nur auf 2,8:1 — deshalb steht hier
-  // dunkle Schrift auf der Hauptschaltfläche, nicht helle.
-  g({ vorlage: 'creme', aufbau: 'bento', grund: '#F1EFEB', grund2: '#FFFFFF', vordergrund: '#141410', akzent: '#FF7120', akzentText: '#141410' }),
-  g({ vorlage: 'tinte', grund: '#F7F7F5', vordergrund: '#111111', akzent: '#1D4ED8', akzentText: '#FFFFFF', radius: 6, schaltflaeche: 'kontur', schrift: 'space', anzeige: 'space' }),
-  g({ vorlage: 'ozean', aufbau: 'held', grund: '#04121E', grund2: '#0B3C5C', vordergrund: '#EAF6FF', akzent: '#35C7F2', akzentText: '#04121E', schrift: 'inter', anzeige: 'inter' }),
-  g({ vorlage: 'wald', aufbau: 'bento', grund: '#08150F', grund2: '#12402A', vordergrund: '#E9F5EE', akzent: '#4ADE80', akzentText: '#062712', schrift: 'inter', anzeige: 'space' }),
-  g({ vorlage: 'papier', aufbau: 'held', grund: '#EFE7DA', grund2: '#FBF7F0', vordergrund: '#2B2118', akzent: '#B23A0C', akzentText: '#FFFFFF', radius: 10, bildform: 'karte', schrift: 'fraunces', anzeige: 'fraunces' }),
-  g({ vorlage: 'sand', aufbau: 'bento', grund: '#1C1A17', grund2: '#2A251E', vordergrund: '#F3EADB', akzent: '#E0B77A', akzentText: '#231D14', radius: 22, schrift: 'inter', anzeige: 'bebas' }),
-  // Rosé statt Rot: #F43F5E trägt weiße Schrift nur mit 3,7:1, #E11D48 mit 4,7:1.
-  g({ vorlage: 'abend', aufbau: 'held', grund: '#150406', grund2: '#4A0D16', vordergrund: '#FFE9EC', akzent: '#E11D48', akzentText: '#FFFFFF', radius: 999, schaltflaeche: 'glas', schrift: 'poppins', anzeige: 'poppins' }),
-  g({ vorlage: 'stein', grund: '#FFFFFF', vordergrund: '#000000', akzent: '#000000', akzentText: '#FFFFFF', radius: 0, schaltflaeche: 'kontur', schrift: 'mono', anzeige: 'mono' }),
-  g({ vorlage: 'salon', aufbau: 'held', grund: '#FDF2F4', grund2: '#FFFFFF', vordergrund: '#3B1F27', akzent: '#A81A52', akzentText: '#FFFFFF', radius: 20, bildform: 'karte', schrift: 'dm', anzeige: 'playfair' }),
-  g({ vorlage: 'nacht', aufbau: 'bento', grund: '#111111', grund2: '#171719', vordergrund: '#E9E9F1', akzent: '#CEC4EF', akzentText: '#121319', radius: 32, bildform: 'karte', schrift: 'syne', anzeige: 'syne' }),
-  g({ vorlage: 'plakat', grund: '#0B0B0B', grund2: '#141414', vordergrund: '#F2F2F2', akzent: '#C6F24E', akzentText: '#101401', radius: 4, schrift: 'space', anzeige: 'anton' }),
 ];
 
 /** Namen für die Anzeige. Die Kennung bleibt technisch, der Name darf schön sein. */
 const VORLAGENNAMEN: Record<string, string> = {
   signal: 'Signal',
-  feuer: 'Feuer',
-  creme: 'Creme',
-  tinte: 'Tinte',
-  ozean: 'Ozean',
-  wald: 'Wald',
+  kirsche: 'Kirsche',
+  nachtschicht: 'Nachtschicht',
+  beton: 'Beton',
+  sticker: 'Sticker',
   papier: 'Papier',
-  sand: 'Sand',
-  abend: 'Abend',
-  stein: 'Stein',
-  salon: 'Salon',
-  nacht: 'Nacht',
-  plakat: 'Plakat',
+  tresen: 'Tresen',
+  werkbank: 'Werkbank',
+  sprechstunde: 'Sprechstunde',
+  riso: 'Riso',
+  feuer: 'Feuer',
 };
 
 export function vorlagenName(id: string): string {

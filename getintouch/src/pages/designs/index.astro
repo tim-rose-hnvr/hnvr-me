@@ -23,7 +23,7 @@ import '../../stile/galerie.css';
  * Eine vorgebaute Unterseite landet als `designs/index.html` im Bündel, und die
  * Auslieferung von Wix beantwortet `/designs` dann mit 404 — nur die
  * Startseite bekommt diese Behandlung geschenkt. Der Aufbau kostet hier
- * nichts: die Galerie liest dreizehn Vorlagen aus dem Kern, keine Datenbank.
+ * nichts: die Galerie liest elf Vorlagen aus dem Kern, keine Datenbank.
  * Gegen die Last hilft der Zwischenspeicher weiter unten.
  */
 export const prerender = false;
@@ -37,9 +37,9 @@ const rahmenStil = Object.entries(cssVariablen(rahmen))
   .map(([name, wert]) => `${name}:${wert}`)
   .join(';');
 
-const titel = `Dreizehn Designs — ${MARKE.name}`;
+const titel = `Elf Designs — ${MARKE.name}`;
 const beschreibung =
-  'Drei echte Anordnungen — Liste, Bento-Gitter, Titelbild — in dreizehn Vorlagen, jede mit eigenem Schriftpaar ' +
+  'Drei echte Anordnungen — Liste, Bento-Gitter, Titelbild — in elf Vorlagen, jede mit eigenem Schriftpaar ' +
   'und geprüftem Kontrast. Dazu freie Farben, Eckenradius, Stil der Schaltflächen und ein Hintergrundbild.';
 
 const stellschrauben = [
@@ -83,9 +83,9 @@ const stellschrauben = [
 
         <section class="kopf">
           <p class="marke">gestaltung</p>
-          <h1>Dreizehn Designs,<br />kein einziges geraten.</h1>
+          <h1>Elf Designs,<br />kein einziges geraten.</h1>
           <p class="fuehrung">
-            Drei Anordnungen, nicht dreizehn Anstriche derselben: eine ruhige Liste, ein Gitter aus Karten und ein
+            Drei Anordnungen, nicht elf Anstriche derselben: eine ruhige Liste, ein Gitter aus Karten und ein
             Titelbild, auf dem der Name liegt. Dazu je ein eigenes Schriftpaar. Und jede ist gegen WCAG
             durchgerechnet — was nicht lesbar wäre, steht hier nicht zur Wahl.
           </p>

@@ -369,7 +369,8 @@ describe('Darstellung', () => {
 
 describe('Hintergrundbild', () => {
   it('bleibt ohne Bild eine reine Farbe oder ein Verlauf', () => {
-    strictEqual(hintergrund({ ...vorlage('stein') }), '#FFFFFF');
+    // „Beton" hat nur eine Grundfarbe, „Feuer" zwei — der eine Fall ohne Verlauf, der andere mit.
+    strictEqual(hintergrund({ ...vorlage('beton') }), '#EAE9E9');
     ok(hintergrund({ ...vorlage('feuer') }).startsWith('linear-gradient(160deg,'));
   });
 
@@ -422,9 +423,9 @@ describe('Schriftangebot', () => {
 });
 
 describe('Vorlagen', () => {
-  it('sind dreizehn und haben eindeutige Kennungen', () => {
-    strictEqual(VORLAGEN.length, 13, 'die Zahl steht auch auf der Verkaufsseite');
-    strictEqual(new Set(VORLAGEN.map((v) => v.vorlage)).size, 13);
+  it('sind elf und haben eindeutige Kennungen', () => {
+    strictEqual(VORLAGEN.length, 11, 'die Zahl steht auch auf der Verkaufsseite');
+    strictEqual(new Set(VORLAGEN.map((v) => v.vorlage)).size, 11);
   });
 
   /* Die erste Vorlage ist die Vorgabe. Sie trägt die Farben des Produkts und
@@ -439,7 +440,7 @@ describe('Vorlagen', () => {
   /* Der eigentliche Vorwurf an die Konkurrenz — „n Designs, die alle gleich
      aufgebaut sind" — muss auch für die eigenen Vorlagen widerlegbar sein.
      Farbe und Schrift allein reichen dafür nicht. */
-  it('benutzen mehr als eine Anordnung — sonst wäre es ein Layout mit dreizehn Anstrichen', () => {
+  it('benutzen mehr als eine Anordnung — sonst wäre es ein Layout mit elf Anstrichen', () => {
     const anordnungen = new Set(VORLAGEN.map((v) => v.aufbau));
     strictEqual(anordnungen.size, AUFBAUTEN.length, `nur ${anordnungen.size} von ${AUFBAUTEN.length} Anordnungen`);
     for (const a of AUFBAUTEN) {
@@ -464,11 +465,11 @@ describe('Vorlagen', () => {
 
 describe('Abweichung von der Vorlage', () => {
   it('behält nur, was wirklich anders ist', () => {
-    const unveraendert = abweichung(vorlage('nacht'));
-    deepStrictEqual(unveraendert, { vorlage: 'nacht' }, 'ohne Änderung bleibt nur die Kennung');
+    const unveraendert = abweichung(vorlage('nachtschicht'));
+    deepStrictEqual(unveraendert, { vorlage: 'nachtschicht' }, 'ohne Änderung bleibt nur die Kennung');
 
-    const eigen = abweichung({ ...vorlage('nacht'), akzent: '#FF7120', radius: 8 });
-    deepStrictEqual(eigen, { vorlage: 'nacht', akzent: '#FF7120', radius: 8 });
+    const eigen = abweichung({ ...vorlage('nachtschicht'), akzent: '#FF7120', radius: 30 });
+    deepStrictEqual(eigen, { vorlage: 'nachtschicht', akzent: '#FF7120', radius: 30 });
   });
 
   it('ist umkehrbar — was herauskommt, ergibt wieder dasselbe Design', () => {

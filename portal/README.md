@@ -18,7 +18,8 @@ haben, ein anderes Haus zu betreten.
 src/pages/index.astro       Marketingseite
 src/pages/portal.astro      Kundenbereich (Schritt zwei)
 src/layouts/Grundgeruest.astro
-src/styles/werkbank.css     Farben und Schriften aus werkbank/app/stil.css
+src/styles/werkbank.css     Farben und Schriften wie werkbank/app/stil.css
+public/schrift/             IBM Plex, acht Schnitte (kein Google Fonts)
 skripte/app-einbetten.mjs   legt ../werkbank nach public/werkbank
 ```
 
@@ -26,7 +27,7 @@ skripte/app-einbetten.mjs   legt ../werkbank nach public/werkbank
 
 `npm run build` kopiert vorher `../werkbank` nach `public/werkbank` — damit
 wird die Anwendung mit ausgeliefert und läuft unter `/werkbank/` auf demselben
-Wix-Hosting wie die Marketingseite. **11,3 MB in 220 Dateien**, keine davon
+Wix-Hosting wie die Marketingseite. **11,8 MB in 235 Dateien**, keine davon
 über 3 MB. Mit `node skripte/app-einbetten.mjs --schlank` sind es 8,3 MB —
 dann ohne CJK-Zeichentabellen und ohne englische Texterkennung.
 
@@ -38,12 +39,15 @@ allein ergäbe 404. Dafür stehen in `astro.config.mjs` zwei Umleitungen auf
 `/werkbank/index.html`, damit auch eine von Hand eingegebene Adresse ankommt.
 
 **Nachgemessen an der veröffentlichten Seite** mit
-`node ../werkbank/werkzeuge/live-pruefen.mjs`: alle 220 Dateien erreichbar und
-Byte für Byte gleich der gebauten Fassung (11,27 MB verglichen), `.wasm` als
-`application/wasm`, die Sprachdaten als `application/gzip`, alle drei Wege in
-die Anwendung offen. Damit läuft dort dieselbe Anwendung, die `pruefen.mjs`
-und `vollpruefung.mjs` im Browser durchgemessen haben — 58 + 55 Prüfungen,
-darunter Texterkennung und qpdf-Verschlüsselung.
+`node ../werkbank/werkzeuge/live-pruefen.mjs` (19 Prüfungen): alle 235 Dateien
+erreichbar und Byte für Byte gleich der gebauten Fassung (11,82 MB verglichen),
+`.wasm` als `application/wasm`, die Sprachdaten als `application/gzip`, alle
+drei Wege in die Anwendung offen. Dazu wird ins verlinkte Stilblatt gesehen:
+IBM Plex ist eingebunden, ein Verweis auf Google Fonts steht nirgends, der
+Akzent `#0f766e` ist gesetzt, und die Schnitte kommen als `font/woff2` von
+derselben Seite. Damit läuft dort dieselbe Anwendung, die `pruefen.mjs` und
+`vollpruefung.mjs` im Browser durchgemessen haben — 96 + 79 Prüfungen,
+darunter Texterkennung, qpdf-Verschlüsselung und die digitale Unterschrift.
 
 ## Örtlich ansehen
 
@@ -138,8 +142,11 @@ Trotzdem ist die Last jetzt kleiner und aufgeräumt:
 
 | | vorher | jetzt | schlank |
 |---|---|---|---|
-| gesamt | 13,6 MB | **11,3 MB** | **8,3 MB** |
+| gesamt | 13,6 MB | **11,8 MB** | **8,8 MB** |
 | größte Datei | 3,95 MB | **2,74 MB** | 2,74 MB |
+
+Dazwischen sind node-forge (284 kB, für die Unterschrift) und acht
+Schriftschnitte (176 kB) dazugekommen.
 
 Erreicht durch schnellere Sprachdaten (gleiche Genauigkeit, ein Drittel
 schneller) und einen getrennten statt eingebetteten Texterkennungs-Kern.

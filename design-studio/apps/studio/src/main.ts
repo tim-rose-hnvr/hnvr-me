@@ -384,13 +384,25 @@ class Anwendung {
   }
 }
 
+/*
+ * Die Neutralen sind bewusst leicht ins Blau gezogen, damit sie zum Markenblau
+ * des Kits gehören statt daneben zu stehen. Ampelfarben stehen getrennt vom
+ * Akzent — sie bedeuten etwas und dürfen nicht wie Gestaltung aussehen.
+ *
+ * Drei Themenzustände, nicht zwei: die Systemvorgabe setzt gar keine Marke am
+ * Wurzelelement, dort entscheidet allein `prefers-color-scheme`. Eine
+ * ausdrückliche Wahl setzt `data-theme` und muss beide Richtungen schlagen.
+ */
 const ANWENDUNGS_STIL = `
-:root{color-scheme:light dark;--grund:#f4f5f8;--karte:#fff;--text:#16181d;--gedaempft:#5a6070;
-  --linie:#dde1e8;--blau:#0a5c8a;--rot:#b3261e;--gelb:#8a6d00;--gruen:#0f7a3d}
-@media (prefers-color-scheme:dark){:root{--grund:#14161c;--karte:#1c1f27;--text:#e8eaf0;
-  --gedaempft:#9aa1b1;--linie:#2b303b;--blau:#5aa9d8;--rot:#ff8a80;--gelb:#e0c36a;--gruen:#4ec27d}}
+:root{color-scheme:light dark;--grund:#eef0f4;--karte:#fff;--text:#151920;--gedaempft:#586074;
+  --linie:#dbe0e9;--blau:#0a5c8a;--rot:#b3261e;--gelb:#7d6200;--gruen:#0f7a3d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--grund:#131620;--karte:#1b1f2a;
+  --text:#e7eaf2;--gedaempft:#98a0b3;--linie:#2a3040;--blau:#5aa9d8;--rot:#ff8a80;--gelb:#e0c36a;
+  --gruen:#4ec27d}}
+:root[data-theme="dark"]{--grund:#131620;--karte:#1b1f2a;--text:#e7eaf2;--gedaempft:#98a0b3;
+  --linie:#2a3040;--blau:#5aa9d8;--rot:#ff8a80;--gelb:#e0c36a;--gruen:#4ec27d}
 *{box-sizing:border-box}
-body{margin:0;background:var(--grund);color:var(--text);
+body{margin:0;background:var(--grund);color:var(--text);min-height:100vh;
   font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .kopf{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
   padding:.7rem 1rem;background:var(--karte);border-bottom:1px solid var(--linie)}
@@ -400,6 +412,8 @@ body{margin:0;background:var(--grund);color:var(--text);
 button{font:inherit;padding:.4rem .7rem;border-radius:6px;border:1px solid var(--linie);
   background:var(--karte);color:var(--text);cursor:pointer}
 button:hover{border-color:var(--blau)}
+button:focus-visible{outline:2px solid var(--blau);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.meldung{transition:none}}
 .raster{display:grid;grid-template-columns:250px 1fr 300px;gap:0;height:calc(100vh - 56px)}
 @media (max-width:900px){.raster{grid-template-columns:1fr;height:auto}}
 .feld{padding:1rem;overflow-y:auto;background:var(--karte);border-right:1px solid var(--linie)}
@@ -408,7 +422,7 @@ button:hover{border-color:var(--blau)}
   margin:1.2rem 0 .5rem;font-weight:600}
 .feld h2:first-child{margin-top:0}
 .buehne{position:relative;min-height:60vh}
-.leinwand{position:absolute;inset:0}
+.leinwand{position:absolute;inset:0;--studio-grund:var(--grund)}
 @media (max-width:900px){.buehne{min-height:70vh}.leinwand{position:relative;height:70vh}}
 .vorlage{display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;width:100%;
   text-align:left;margin-bottom:.5rem;padding:.6rem .7rem}

@@ -43,3 +43,11 @@ const html = `<!doctype html>
 const ziel = join(ausgabe, 'probemodell.html');
 writeFileSync(ziel, html);
 console.log(`${(html.length / 1024 / 1024).toFixed(2)} MB -> ${ziel}`);
+
+// Zweite Fassung ohne Dokumenthülle: Einbettungen wie ein Wix Custom Element
+// oder eine Artefaktseite setzen head und body selbst; eine zweite Hülle würde
+// dort verworfen oder verschachtelt.
+const fragment = `<title>Design Studio</title>\n<div id="app"></div>\n<script>${skript}</script>`;
+const zielFragment = join(ausgabe, 'probemodell-fragment.html');
+writeFileSync(zielFragment, fragment);
+console.log(`${(fragment.length / 1024 / 1024).toFixed(2)} MB -> ${zielFragment}`);

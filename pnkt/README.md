@@ -91,6 +91,8 @@ erfindet. Der Schlüssel steht im Kopf `x-punkt-schluessel`.
 | `PATCH /api/v1/codes/{id}` | Ziel, Name, Ordner ändern — neue Fassung, Protokolleintrag | Schlüssel |
 | `DELETE /api/v1/codes/{id}` | Code löschen, Kürzel bleibt reserviert | Inhaber |
 | `GET /api/v1/codes/{id}/statistik`, `/protokoll` | Auswertung, Änderungsgeschichte | Schlüssel |
+| `GET /api/v1/codes/{id}/fassungen` | alle Stände des Codes, älteste zuerst | Schlüssel |
+| `POST /api/v1/codes/{id}/fassungen/{nr}` | einen früheren Stand zurückholen | Schlüssel |
 | `POST /api/v1/massenanlage` | CSV hinein, ZIP heraus | Schlüssel |
 | `POST /api/v1/serie/vorschau` | Serie durchrechnen, ohne etwas anzulegen | Schlüssel |
 | `POST /api/v1/serie` | Serie anlegen, Druckbogen und Einzeldateien als ZIP | Schlüssel |
@@ -509,6 +511,33 @@ Löschen darf nur der Inhaber. Es ist der einzige Vorgang, den eine
 gedruckte Auflage nicht überlebt; ein Redakteur darf ändern, nicht
 vernichten. Zum Bestätigen tippt man in der Zentrale das Kürzel ab.
 
+### Verlauf und Zurückholen
+
+Die Ablage hängt nur an: jede Änderung ist ein neuer Satz mit derselben
+Kennung. Damit steht die Geschichte eines gedruckten Codes ohnehin auf
+der Platte — sie war bloß nicht abrufbar. In der Zentrale liegt sie
+hinter **Verlauf**: jede Fassung mit Zeit, Ziel und Namen, die geltende
+oben.
+
+Zurückholen schreibt eine **neue** Fassung mit dem alten Inhalt. Es wird
+nichts überschrieben und der Zähler läuft nicht zurück; sonst bekäme die
+Geschichte ein Loch, und die Frage „wohin zeigte der Code im März" wäre
+nicht mehr zu beantworten.
+
+Drei Dinge holt es nicht zurück:
+
+- **Das Kürzel** — es steht auf Papier.
+- **Den Zustand „abgeschaltet"** — wer einen Code stillgelegt hat, will
+  ihn nicht durch ein Zurückholen wieder anschalten.
+- **Eine Löschung.** Löschen ist der einzige Vorgang, den eine gedruckte
+  Auflage nicht überlebt; er wird durch Abtippen des Kürzels bestätigt
+  und darf nicht nebenbei rückgängig gemacht werden.
+
+Eine Fassung, die bereits gilt, ergibt **409** und schreibt nichts — ein
+Leerlauf ist weder ein Bedienfehler noch ein Serverfehler. In der Liste
+trägt eine ältere Fassung mit demselben Stand statt eines Knopfes den
+Vermerk „gleicher Stand": ein Knopf, der nur 409 ergibt, ist eine Falle.
+
 ### Ein Code gehört seiner Organisation
 
 Jeder Zugriff auf einen einzelnen Code — ändern, löschen, Statistik,
@@ -627,11 +656,15 @@ Länge der Kurzdomain bestimmt die Größe jedes gedruckten Codes.
 - **Der Zielrechner.** Nichts davon läuft irgendwo. Welche Maschine es
   wird und ob `pnkt.me` selbst darauf zeigen soll, ist eine Entscheidung
   über Geld und Verantwortung und keine technische.
-- **Varianten und Versionen im Studio.** Der Entwurf zeigt einen
-  Variantenstreifen mit eigener Scanrate je Variante und eine
-  Versionsliste zum Zurückholen. Beides setzt voraus, dass das Studio an
-  einem gespeicherten Code arbeitet — heute rechnet es zustandslos. Die
-  Ablage kann Fassungen bereits, die Oberfläche noch nicht.
+- **Varianten im Studio.** Der Entwurf zeigt einen Variantenstreifen mit
+  **eigener Scanrate je Variante**. Die Scanrate ist der Haken: gemessen
+  wird über das Kürzel, und Gestaltungsvarianten desselben Codes tragen
+  dasselbe Kürzel. Eine Scanrate je Variante gibt es nur, wenn jede
+  Variante ein eigener Code mit eigenem Kürzel ist — dann ist es keine
+  Variante mehr, sondern eine Serie. Was hier gebaut werden kann, ohne zu
+  lügen: mehrere Entwürfe zu einem Code speichern und vergleichen, ohne
+  Zahl darunter. Der Versionsteil ist gebaut, siehe „Verlauf und
+  Zurückholen".
 - **Strecken.** Mehrstufige Wege mit Messung je Übergang. Das Datenmodell
   dafür gibt es noch nicht, und es ist die größte offene Ecke des
   Entwurfs.

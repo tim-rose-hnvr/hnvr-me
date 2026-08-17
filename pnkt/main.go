@@ -126,6 +126,9 @@ func wege(d *dienst) *http.ServeMux {
 	weg.HandleFunc("DELETE /api/v1/codes/{id}", d.mitSchluessel(true, d.loescheCode))
 	weg.HandleFunc("GET /api/v1/codes/{id}/statistik", d.mitSchluessel(false, d.statistik))
 	weg.HandleFunc("GET /api/v1/codes/{id}/protokoll", d.mitSchluessel(false, d.protokoll))
+	weg.HandleFunc("GET /api/v1/codes/{id}/fassungen", d.mitSchluessel(false, d.fassungen))
+	weg.HandleFunc("POST /api/v1/codes/{id}/fassungen/{fassung}",
+		d.mitSchluessel(true, d.zurueckholen))
 	weg.HandleFunc("POST /api/v1/massenanlage", d.mitSchluessel(true,
 		func(w http.ResponseWriter, r *http.Request, s *speicher.Schluessel) { d.charge(w, r) }))
 	weg.HandleFunc("POST /api/v1/serie/vorschau", d.mitSchluessel(false, d.serienVorschau))
@@ -484,6 +487,52 @@ func (d *dienst) protokoll(w http.ResponseWriter, r *http.Request, sch *speicher
 		return
 	}
 	d.jsonAus(w, http.StatusOK, eintraege)
+}
+
+// fassungen zeigt die Geschichte eines Codes, aelteste zuerst.
+func (d *dienst) fassungen(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	c, gut := d.eigenerCode(w, r, sch)
+	if !gut {
+		return
+	}
+	liste, err := d.ablage.Fassungen(c.ID)
+	if err != nil {
+		d.jsonAus(w, http.StatusInternalServerError, map[string]string{"fehler": err.Error()})
+		return
+	}
+	d.jsonAus(w, http.StatusOK, liste)
+}
+
+// zurueckholen setzt einen frueheren Stand wieder ein — als neue
+// Fassung, nicht durch Ueberschreiben.
+func (d *dienst) zurueckholen(w http.ResponseWriter, r *http.Request, sch *speicher.Schluessel) {
+	c, gut := d.eigenerCode(w, r, sch)
+	if !gut {
+		return
+	}
+	nummer, err := strconv.Atoi(r.PathValue("fassung"))
+	if err != nil {
+		d.jsonAus(w, http.StatusBadRequest, map[string]string{
+			"fehler": "die Fassung ist eine Zahl"})
+		return
+	}
+	neu, err := d.ablage.Hole(c.ID, nummer, kennungKurz(sch))
+	if err != nil {
+		// Dass eine Fassung schon gilt, ist kein Serverfehler und kein
+		// Bedienfehler — es ist ein Leerlauf. 409 sagt genau das.
+		lage := http.StatusBadRequest
+		if errors.Is(err, speicher.ErrSchonAktuell) {
+			lage = http.StatusConflict
+		}
+		d.jsonAus(w, lage, map[string]string{"fehler": err.Error()})
+		return
+	}
+	d.jsonAus(w, http.StatusOK, neu)
+}
+
+// kennungKurz nennt den Schluessel im Protokoll, ohne ihn zu verraten.
+func kennungKurz(sch *speicher.Schluessel) string {
+	return "schluessel:" + sch.Name
 }
 
 func (d *dienst) druckpruefung(w http.ResponseWriter, r *http.Request) {

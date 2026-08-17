@@ -62,6 +62,8 @@ h1{font-family:var(--font-heading);font-size:1.5rem;letter-spacing:-.02em;margin
 .tun button.weg:hover{background:#a82e23;color:var(--color-bg)}
 .zahl{color:color-mix(in srgb,var(--color-text) 62%%,transparent);font-size:.85rem}
 .hinweis{font-size:.78rem;color:color-mix(in srgb,var(--color-text) 58%%,transparent);margin:0}
+.zumachen{font:inherit;font-size:.78rem;cursor:pointer;background:none;border:none;
+ color:var(--color-accent-700);text-decoration:underline;margin-left:.7rem;padding:0}
 </style>
 
 <a href="#inhalt" class="ueberspringen">Zum Inhalt</a>
@@ -103,6 +105,15 @@ h1{font-family:var(--font-heading);font-size:1.5rem;letter-spacing:-.02em;margin
     <div id="ordner" class="ordner"></div>
     <div id="meldung"></div>
     <div id="liste"></div>
+  </div>
+
+  <div class="tafel" id="verlauffeld" style="margin-top:1.1rem" hidden>
+    <div class="tafel-kopf">
+      <span>Verlauf · <b id="verlaufname"></b></span>
+      <span><span id="verlaufstand"></span>
+        <button type="button" id="verlaufzu" class="zumachen">schließen</button></span>
+    </div>
+    <div id="verlaufliste"></div>
   </div>
 
   <div class="tafel" id="passfeld" style="margin-top:1.1rem" hidden>
@@ -211,6 +222,8 @@ function zeigeListe(codes){
       '<td><div class="tun">' +
         '<button type="button" data-tun="ordner" data-id="' + sicher(c.id) + '" ' +
           'data-wert="' + sicher(c.ordner || "") + '">Ordner</button>' +
+        '<button type="button" data-tun="fassungen" data-id="' + sicher(c.id) + '" ' +
+          'data-name="' + sicher(c.name || c.kuerzel) + '">Verlauf</button>' +
         '<button type="button" class="weg" data-tun="loeschen" data-id="' + sicher(c.id) + '" ' +
           'data-kuerzel="' + sicher(c.kuerzel) + '">Löschen</button>' +
       '</div></td></tr>';
@@ -278,6 +291,10 @@ e("liste").addEventListener("click", async (ev) => {
       if (name === null) return;
       await ruf("/api/v1/codes/" + encodeURIComponent(b.dataset.id), "PATCH", {ordner: name});
     }
+    if (b.dataset.tun === "fassungen"){
+      await zeigeFassungen(b.dataset.id, b.dataset.name);
+      return;
+    }
     if (b.dataset.tun === "loeschen"){
       const sicherheit = prompt(
         "Löschen entfernt das Ziel. Das Kürzel " + b.dataset.kuerzel +
@@ -295,6 +312,76 @@ e("liste").addEventListener("click", async (ev) => {
   } catch (fehler) {
     melde(fehler.message);
   }
+});
+
+// --- Verlauf eines Codes -------------------------------------------------
+//
+// Die Ablage haengt nur an: jede Aenderung ist ein neuer Satz. Die
+// Geschichte eines gedruckten Codes steht damit ohnehin auf der Platte
+// — sie war bloss nicht sichtbar. Genau die braucht man, wenn jemand
+// fragt, wohin ein Code im Maerz gezeigt hat.
+let verlaufCode = "";
+
+async function zeigeFassungen(id, name){
+  verlaufCode = id;
+  e("verlauffeld").hidden = false;
+  e("verlaufname").textContent = name;
+  e("verlaufliste").innerHTML = '<div class="leer">wird geholt …</div>';
+  try {
+    const fassungen = await ruf("/api/v1/codes/" + encodeURIComponent(id) + "/fassungen") || [];
+    // Neueste oben: danach sucht man zuerst.
+    const umgekehrt = fassungen.slice().reverse();
+    const jetzt = umgekehrt.length ? umgekehrt[0].fassung : 0;
+    let html = '<table class="liste"><thead><tr><th>Fassung</th><th>Wann</th>' +
+               '<th>Ziel</th><th>Name</th><th></th></tr></thead><tbody>';
+    const stand = (f) => JSON.stringify([f.ziel, f.name || "", f.ordner || ""]);
+    const gilt_stand = umgekehrt.length ? stand(umgekehrt[0]) : "";
+    for (const f of umgekehrt){
+      const gilt = f.fassung === jetzt;
+      // Eine aeltere Fassung kann denselben Stand tragen wie die
+      // geltende — etwa direkt nach einem Zurueckholen. Dann gibt es
+      // nichts zu holen, und ein Knopf, der nur 409 ergibt, ist eine
+      // Falle. Der Server lehnt es ohnehin ab; hier steht der Grund.
+      const gleich = !gilt && stand(f) === gilt_stand;
+      html += '<tr>' +
+        '<td class="einsilbig">' + f.fassung +
+          (gilt ? ' <span class="zahl">gilt</span>' : '') + '</td>' +
+        '<td>' + sicher(String(f.geaendert || f.erstellt).slice(0, 16).replace("T", " ")) + '</td>' +
+        '<td><span class="ziel">' + sicher(f.ziel) + '</span></td>' +
+        '<td>' + sicher(f.name || "—") + '</td>' +
+        '<td><div class="tun">' + (gilt ? '' : (gleich
+          ? '<span class="zahl">gleicher Stand</span>'
+          : '<button type="button" data-tun="holen" data-fassung="' + f.fassung + '" ' +
+            'data-ziel="' + sicher(f.ziel) + '">Zurückholen</button>')) +
+        '</div></td></tr>';
+    }
+    e("verlaufliste").innerHTML = html + '</tbody></table>';
+    e("verlaufstand").textContent = fassungen.length +
+      (fassungen.length === 1 ? " Fassung" : " Fassungen");
+  } catch (fehler) {
+    e("verlaufliste").innerHTML = "";
+    melde(fehler.message);
+  }
+}
+
+e("verlaufliste").addEventListener("click", async (ev) => {
+  const b = ev.target.closest("button");
+  if (!b || b.dataset.tun !== "holen" || !verlaufCode) return;
+  if (!confirm("Fassung " + b.dataset.fassung + " zurückholen?\n\n" +
+               "Das Ziel wird wieder " + b.dataset.ziel + ".\n" +
+               "Überschrieben wird nichts: es entsteht eine neue Fassung, " +
+               "und der bisherige Stand bleibt im Verlauf stehen.")) return;
+  try {
+    await ruf("/api/v1/codes/" + encodeURIComponent(verlaufCode) +
+              "/fassungen/" + encodeURIComponent(b.dataset.fassung), "POST");
+    await zeigeFassungen(verlaufCode, e("verlaufname").textContent);
+    laden();
+  } catch (fehler) { melde(fehler.message); }
+});
+
+e("verlaufzu").addEventListener("click", () => {
+  e("verlauffeld").hidden = true;
+  verlaufCode = "";
 });
 
 // Tippen loest nicht bei jedem Anschlag eine Anfrage aus.

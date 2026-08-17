@@ -1,0 +1,227 @@
+---
+/*
+ * Der digitale Produktpass — die Seite hinter dem Code.
+ *
+ * Das Feld `passJson` gibt es im laufenden Projekt, die Schnittstelle
+ * `/api/v1/pass` auch. Was fehlt, ist die öffentliche Seite: `/p/{gtin}`
+ * antwortet mit 404. Die ESPR verlangt aber genau diese Seite — der
+ * QR-Code davor ist nur der Datenträger.
+ *
+ * Zwei Dinge bestimmen die Bauart:
+ *
+ * Sie wird von jemandem gelesen, der im Laden steht oder das Gerät in der
+ * Hand hält. Also: kein Nachladen, keine fremde Schrift, kein Skript.
+ * Alles steht im ersten Byte.
+ *
+ * Und sie ist ein Rechtsdokument mit Fassung und Datum. Deshalb steht der
+ * Stand oben, nicht im Kleingedruckten.
+ *
+ * Ablage: src/pages/p/[gtin].astro
+ */
+import { pruefeGTIN, waehlePass, oeffentlicherPass } from '../../lib/punkt-digitallink.js';
+import { paesseNachGTIN, markeNachHost } from '../_punkt-daten.js';
+
+const geprueft = pruefeGTIN(Astro.params.gtin);
+const charge = Astro.url.searchParams.get('charge') ?? '';
+const serie = Astro.url.searchParams.get('serie') ?? '';
+
+let pass = null;
+let zurueckgehalten = 0;
+let fehler = geprueft.gueltig ? null : geprueft.grund;
+
+if (geprueft.gueltig) {
+  const gewaehlt = waehlePass(
+    await paesseNachGTIN(geprueft.gtin14),
+    { gtin14: geprueft.gtin14, charge, serie });
+
+  if (gewaehlt) {
+    ({ pass, zurueckgehalten } = oeffentlicherPass(gewaehlt));
+  } else {
+    fehler = 'Zu diesem Artikel ist hier kein Produktpass hinterlegt.';
+  }
+}
+
+const marke = await markeNachHost(Astro.request.headers.get('host'));
+Astro.response.status = pass ? 200 : geprueft.gueltig ? 404 : 400;
+// Fünf Minuten Zwischenspeicher: ein Pass ändert sich selten, aber wenn
+// er sich ändert, ist es meist ein Rückruf — und der muss ankommen.
+if (pass) Astro.response.headers.set('Cache-Control', 'public, max-age=300');
+
+const stand = pass?.geaendert ? new Date(pass.geaendert) : null;
+const prozent = (w) => (w > 0 ? `${String(w).replace('.', ',')} %` : '—');
+---
+
+<html lang={pass?.sprache ?? 'de'}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{pass ? pass.bezeichnung : 'Kein Produktpass'} · {marke.name}</title>
+  </head>
+  <body>
+    <main>
+      <div class="marke">{marke.name}</div>
+
+      {!pass && (
+        <>
+          <h1>Kein Produktpass</h1>
+          <p class="unter">{fehler}</p>
+        </>
+      )}
+
+      {pass && (
+        <>
+          <h1>{pass.bezeichnung}</h1>
+          {pass.modell && <p class="unter">{pass.modell}</p>}
+          <p class="stand">
+            Produktpass · Fassung {pass.fassung ?? 1}
+            {stand && ` · Stand ${stand.toLocaleDateString('de-DE')}`}
+          </p>
+
+          {pass.beschreibung && (
+            <section><h2>Was das ist</h2><p class="fliess">{pass.beschreibung}</p></section>
+          )}
+
+          <section>
+            <h2>Artikel</h2>
+            <dl>
+              <dt>GTIN</dt><dd>{geprueft.gtin14}</dd>
+              {pass.charge && <><dt>Charge</dt><dd>{pass.charge}</dd></>}
+              {pass.serie && <><dt>Seriennummer</dt><dd>{pass.serie}</dd></>}
+              {pass.herstelldatum && <><dt>Herstelldatum</dt><dd>{pass.herstelldatum}</dd></>}
+              {pass.ursprungsland && <><dt>Ursprungsland</dt><dd>{pass.ursprungsland}</dd></>}
+            </dl>
+          </section>
+
+          {(pass.hersteller || pass.herstellerAnschrift) && (
+            <section>
+              <h2>Verantwortlich</h2>
+              <dl>
+                {pass.hersteller && <><dt>Hersteller</dt><dd>{pass.hersteller}</dd></>}
+                {pass.herstellerAnschrift && <><dt>Anschrift</dt><dd>{pass.herstellerAnschrift}</dd></>}
+                {pass.herstellerKennung && <><dt>Kennung</dt><dd>{pass.herstellerKennung}</dd></>}
+              </dl>
+            </section>
+          )}
+
+          {pass.stoffe?.length > 0 && (
+            <section>
+              <h2>Woraus es besteht</h2>
+              <table>
+                <thead><tr><th>Stoff</th><th>Anteil</th><th>davon Rezyklat</th></tr></thead>
+                <tbody>
+                  {pass.stoffe.map((s) => (
+                    <tr>
+                      <td>
+                        {s.name}
+                        {s.besorgniserregend && <span class="svhc"> besorgniserregend</span>}
+                        {s.besorgniserregend && s.casNummer && <span class="svhc"> CAS {s.casNummer}</span>}
+                      </td>
+                      <td class="zahl">{prozent(s.anteilProzent)}</td>
+                      <td class="zahl">{prozent(s.rezykliertProzent)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
+
+          {pass.angaben?.length > 0 && (
+            <section>
+              <h2>Weitere Angaben</h2>
+              <dl>
+                {pass.angaben.map((a) => (
+                  <><dt>{a.feld}</dt><dd>{a.wert}{a.einheit ? ` ${a.einheit}` : ''}</dd></>
+                ))}
+              </dl>
+            </section>
+          )}
+
+          {(pass.pflege || pass.reparatur || pass.ersatzteile) && (
+            <section>
+              <h2>Gebrauch und Reparatur</h2>
+              <dl>
+                {pass.pflege && <><dt>Pflege</dt><dd>{pass.pflege}</dd></>}
+                {pass.reparatur && <><dt>Reparatur</dt><dd>{pass.reparatur}</dd></>}
+                {pass.ersatzteile && <><dt>Ersatzteile</dt><dd>{pass.ersatzteile}</dd></>}
+              </dl>
+            </section>
+          )}
+
+          {(pass.ruecknahme || pass.entsorgung) && (
+            <section>
+              <h2>Wenn es zu Ende ist</h2>
+              <dl>
+                {pass.ruecknahme && <><dt>Rücknahme</dt><dd>{pass.ruecknahme}</dd></>}
+                {pass.entsorgung && <><dt>Entsorgung</dt><dd>{pass.entsorgung}</dd></>}
+              </dl>
+            </section>
+          )}
+
+          {pass.belege?.length > 0 && (
+            <section>
+              <h2>Belege</h2>
+              <ul>
+                {pass.belege.map((b) => (
+                  <li><a href={b.url} rel="noopener noreferrer">{b.titel || b.url}</a></li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* Dass etwas zurückgehalten wird, ist selbst keine Geheimsache.
+              Wer es braucht, weiß dann, dass es sich zu fragen lohnt. */}
+          {zurueckgehalten > 0 && (
+            <footer>
+              {zurueckgehalten} weitere Angaben sind Marktaufsicht,
+              Reparaturbetrieben und Verwertern vorbehalten und hier nicht zu sehen.
+            </footer>
+          )}
+        </>
+      )}
+    </main>
+  </body>
+</html>
+
+<style define:vars={{ grund: marke.grund, tinte: marke.tinte, primaer: marke.primaer }}>
+  :root { --flaeche: #fff; --linie: #dcdee3; --leise: #5b6070; }
+  @media (prefers-color-scheme: dark) {
+    :root { --flaeche: #191a1f; --linie: #2f3138; --leise: #9aa0ae; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--grund); color: var(--tinte);
+    font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 44rem; margin: 0 auto; padding: clamp(1rem, 4vw, 2.5rem); }
+  .marke {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--primaer);
+  }
+  h1 { font-size: 1.6rem; margin: 0.3rem 0 0.2rem; letter-spacing: -0.02em; }
+  .unter { color: var(--leise); margin: 0 0 0.3rem; }
+  .stand { color: var(--leise); font-size: 0.8rem; margin: 0 0 1.6rem; }
+  section {
+    background: var(--flaeche); border: 1px solid var(--linie);
+    border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 0.9rem;
+  }
+  h2 {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.11em;
+    text-transform: uppercase; color: var(--leise); margin: 0 0 0.7rem;
+  }
+  dl { margin: 0; display: grid; grid-template-columns: minmax(8rem, auto) 1fr; gap: 0.35rem 0.9rem; }
+  dt { color: var(--leise); font-size: 0.85rem; }
+  dd { margin: 0; overflow-wrap: anywhere; }
+  .fliess { margin: 0; white-space: pre-line; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th {
+    text-align: left; font-size: 0.7rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--leise); font-weight: 700;
+    padding: 0.3rem 0.5rem 0.3rem 0;
+  }
+  td { padding: 0.3rem 0.5rem 0.3rem 0; border-top: 1px solid var(--linie); }
+  td.zahl { text-align: right; font-variant-numeric: tabular-nums; }
+  .svhc { color: #a82e23; font-weight: 600; }
+  ul { margin: 0; padding-left: 1.1rem; }
+  a { color: var(--primaer); }
+  footer { color: var(--leise); font-size: 0.78rem; margin-top: 1.4rem; }
+</style>

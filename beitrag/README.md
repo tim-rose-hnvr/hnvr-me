@@ -1,14 +1,69 @@
 # Beitrag für PUNKT
 
-Zwei Dateien, reine Funktionen, keine Abhängigkeiten, deutsche Bezeichner
-wie im übrigen Code. Sie decken das ab, was dem ausgelieferten Stand von
-`punkt-954d3e9b-hnvrme.wix-site-host.com` belegbar fehlt — siehe
-`doku/abgleich-studio.md`.
+Einbaufertige Ergänzungen für das laufende Projekt. Reine Funktionen und
+neue Seiten — nichts davon überschreibt eine bestehende Datei. Deutsche
+Bezeichner wie im übrigen Code.
 
 | Datei | Inhalt | Prüfen |
 |---|---|---|
 | `punkt-erweiterungen.js` | Sonderfarben, GS1 Digital Link, Augenformen | `node punkt-erweiterungen.js` — 19 Prüfungen |
 | `punkt-zentrale.js` | Ordner, Suche, Löschen ohne Kürzelfreigabe | `node punkt-zentrale.js` — 25 Prüfungen |
+| `punkt-digitallink.js` | Digital Link zerlegen, Pass wählen, beschränkte Angaben trennen | `node punkt-digitallink.js` — 28 Prüfungen |
+| `seiten/01/[...pfad].astro` | der GS1-Weg, der heute 404 liefert | im Browser gefahren, siehe unten |
+| `seiten/p/[gtin].astro` | der Produktpass, der heute 404 liefert | im Browser gefahren, siehe unten |
+| `seiten/_punkt-daten.js` | der einzige Ort mit Datenzugriff | — |
+
+## Die zwei Wege, die heute ins Leere führen
+
+Am laufenden Stand nachgemessen:
+
+| Weg | heute |
+|---|---|
+| `/api/v1/gs1` | **401** — gibt es, braucht einen Schlüssel |
+| `/api/v1/pass` | **401** — gibt es |
+| Feld `gtin`, `gs1Json`, `passJson` | **da** |
+| `/01/{gtin}` | **404** |
+| `/p/{gtin}` | **404** |
+
+Die Angaben lassen sich also hinterlegen — aber die Adresse, die auf dem
+Etikett steht, führt nirgendwohin. Ein GS1-Code auf einer Verpackung
+enthält nichts als `https://pnkt.me/01/04006381333931`.
+
+Die drei Dateien unter `seiten/` füllen genau das. Ablage:
+
+```
+src/lib/punkt-digitallink.js          ← punkt-digitallink.js
+src/pages/_punkt-daten.js             ← seiten/_punkt-daten.js
+src/pages/01/[...pfad].astro          ← seiten/01/[...pfad].astro
+src/pages/p/[gtin].astro              ← seiten/p/[gtin].astro
+```
+
+`_punkt-daten.js` ist der **einzige** Ort, der eure Datenhaltung anfasst —
+geschrieben gegen `@wix/data`. Weicht euer Studio davon ab, ist es je
+Funktion eine Zeile; die Seiten selbst bleiben unberührt.
+
+### Gefahren, nicht behauptet
+
+Beide Seiten liefen in einem Astro-5-Server mit nachgebauter Datenschicht:
+
+| Aufruf | Antwort |
+|---|---|
+| `/01/04006381333931` (Pass, kein Ziel) | 302 → `/p/04006381333931` |
+| `/01/4260000000004` (Ziel hinterlegt) | 302 → das Ziel |
+| `/01/04006381333931/10/L11` | 302 → `/p/…?charge=L11` |
+| `/01/09999999999994` (gültig, unbekannt) | 404 |
+| `/01/4006381333930` (falsche Prüfziffer) | 400 |
+| `/01/10/A77` (ohne GTIN) | 400 |
+| `/p/4006381333931` | 200, Pass gerendert |
+| `/p/4260000000004` | 404 |
+
+**Ein hinterlegtes Ziel gewinnt immer.** Sonst hätten Etiketten, die heute
+funktionieren, ab morgen ein anderes Verhalten.
+
+Der Lauf hat sich gelohnt: Astro verbraucht das führende `01/` als
+Verzeichnisnamen, es kommt also gar nicht im Pfad an. Der Zerleger hielt
+die GTIN daraufhin für einen Bezeichner und wies **jede gültige Nummer**
+ab — alle sechs Aufrufe 400. Auf dem Papier war die Datei richtig.
 
 ## Zuerst: ein Befund aus den laufenden Daten
 

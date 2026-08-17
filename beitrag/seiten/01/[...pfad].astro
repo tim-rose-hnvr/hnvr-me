@@ -1,0 +1,103 @@
+---
+/*
+ * GS1 Digital Link — der Weg, den ein gedruckter Warencode wirklich nimmt.
+ *
+ * Heute antwortet `/01/{gtin}` mit 404. Das ist die eine Adresse, die auf
+ * dem Etikett steht: ein GS1-Code auf einer Verpackung enthält nichts als
+ * `https://pnkt.me/01/04006381333931`. Das Feld `gtin` und die
+ * Schnittstelle `/api/v1/gs1` sind da — nur der Weg zurück fehlt.
+ *
+ * Diese Datei füllt ihn. Sie ist neu und überschreibt nichts.
+ *
+ * Ablauf, von genau nach allgemein:
+ *   1. Ist ein Ziel hinterlegt? Dann dorthin. Das ist das bisherige
+ *      Verhalten von Kurzcodes und muss auch hier gelten.
+ *   2. Sonst: Gibt es einen Produktpass? Dann dorthin.
+ *   3. Sonst: eine lesbare Seite. Ein gedruckter Code darf nie in einem
+ *      Serverfehler enden — dahinter steht ein Mensch im Laden.
+ *
+ * Ablage: src/pages/01/[...pfad].astro
+ */
+import { zerlegeDigitalLink } from '../../lib/punkt-digitallink.js';
+import { codeNachGTIN, paesseNachGTIN, markeNachHost } from '../_punkt-daten.js';
+
+// Das führende `01/` steckt im Verzeichnisnamen dieser Datei und kommt
+// deshalb nicht in `pfad` an. Es muss wieder davor, sonst hält der
+// Zerleger die GTIN für einen Bezeichner und weist jede gültige Nummer ab.
+const { pfad } = Astro.params;
+const gelesen = zerlegeDigitalLink(`01/${pfad ?? ''}`, Astro.url.searchParams);
+
+let titel = 'Keine gültige Warennummer';
+let text = gelesen.grund ?? '';
+let lage = 400;
+
+if (gelesen.gueltig) {
+  const code = await codeNachGTIN(gelesen.gtin14);
+
+  // 1 · Ein hinterlegtes Ziel gewinnt. Sonst hätten Etiketten, die heute
+  //     funktionieren, ab morgen ein anderes Verhalten.
+  if (code?.aktiv && code?.ziel) {
+    return Astro.redirect(code.ziel, 302);
+  }
+
+  // 2 · Sonst der Produktpass, mit Charge und Serie so genau wie möglich.
+  const paesse = await paesseNachGTIN(gelesen.gtin14);
+  if (paesse.length) {
+    const weg = new URL(`/p/${gelesen.gtin14}`, Astro.url);
+    if (gelesen.charge) weg.searchParams.set('charge', gelesen.charge);
+    if (gelesen.serie) weg.searchParams.set('serie', gelesen.serie);
+    return Astro.redirect(weg.pathname + weg.search, 302);
+  }
+
+  // 3 · Es gibt den Artikel, aber nichts dahinter.
+  lage = 404;
+  titel = 'Zu diesem Artikel ist nichts hinterlegt';
+  text = code
+    ? 'Der Artikel ist bekannt, aber es ist weder ein Ziel noch ein Produktpass eingetragen.'
+    : 'Diese Warennummer führt hier zu keinem Eintrag.';
+}
+
+const marke = await markeNachHost(Astro.request.headers.get('host'));
+Astro.response.status = lage;
+---
+
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{titel} · {marke.name}</title>
+  </head>
+  <body>
+    <main>
+      <div class="marke">{marke.name}</div>
+      <h1>{titel}</h1>
+      <p class="unter">{text}</p>
+      {gelesen.gueltig && <p class="nummer">GTIN {gelesen.gtin14}</p>}
+    </main>
+  </body>
+</html>
+
+<style define:vars={{ grund: marke.grund, tinte: marke.tinte, primaer: marke.primaer }}>
+  /* Selbsttragend: Diese Seite sieht ein Mensch vor einem Regal, mit
+     schlechtem Netz. Nichts wird nachgeladen. */
+  body {
+    margin: 0;
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    background: var(--grund);
+    color: var(--tinte);
+    font: 17px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 28rem; padding: 2rem; }
+  .marke {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--primaer); margin-bottom: 0.5rem;
+  }
+  h1 { font-size: 1.45rem; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+  .unter { margin: 0; opacity: 0.75; }
+  .nummer {
+    margin: 1.2rem 0 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85rem; opacity: 0.55;
+  }
+</style>

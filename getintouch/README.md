@@ -6,9 +6,17 @@ Visitenkarte und ein QR-Code unter einer kurzen Adresse — `hnvr.me/t/<name>`.
 Wix-Headless-Projekt auf Basis von Astro 5. Wix hostet, liefert später die
 Daten (CMS) und die Anmeldung (Members).
 
-**Stand:** Stufe 1 ist fertig — die öffentliche Profilseite samt Kern
-(Datenmodell, Gestaltung, Erreichbarkeit, vCard, QR). Stufe 2, der Editor für
-Besucher, kommt darauf.
+**Stand:** Stufe 1 ist fertig — Verkaufsseite und öffentliche Profilseite samt
+Kern (Datenmodell, Gestaltung, Erreichbarkeit, vCard, QR). Das Wix-Projekt ist
+angelegt und die Collection gefüllt; hochgeladen ist das Frontend noch nicht.
+Stufe 2, der Editor für Besucher, kommt darauf.
+
+| Adresse | Was |
+|---|---|
+| `/` | Verkaufsseite (statisch vorgebaut) |
+| `/t/<name>` | die öffentliche Profilseite |
+| `/t/<name>/karte.vcf` | die Visitenkarte als Datei |
+| `/t/<name>/qr.svg` | der QR-Code |
 
 ---
 
@@ -143,6 +151,7 @@ src/kern/                Die Fachlogik, ohne Astro und ohne Browser
   bild.ts                Foto für die Visitenkarte einbetten
   speicher/              Ablage: Wix-CMS mit Rückfall auf die Dateien
 src/komponenten/         Astro-Bausteine der Seite
+src/pages/index.astro    Die Verkaufsseite
 src/pages/t/[slug].astro Die öffentliche Seite
 src/pages/t/[slug]/      karte.vcf und qr.svg
 test/                    59 Tests auf die Regeln oben
@@ -158,7 +167,7 @@ aussieht, sondern dieselbe Rechnung anstellt.
 
 ```bash
 npm install
-npm run dev        # http://localhost:4321 — listet die vorhandenen Profile
+npm run dev        # http://localhost:4321 — Verkaufsseite, Profile unter /t/<name>
 npm test           # 59 Tests, ohne zusätzliche Abhängigkeiten
 npm run pruefen    # astro check
 npm run build
@@ -252,6 +261,14 @@ Adapter und Authentifizierung. Danach:
 2. `npm i @wix/data` und `GETINTOUCH_WIX_COLLECTION=GetInTouchProfile` setzen.
    Danach kann `src/typen/wix-data.d.ts` weg.
 3. Bauen und veröffentlichen: `npm run build && npx wix release`.
+
+**Noch von Hand zu erledigen:** das Projekt wurde mit den Wix-Vorgaben angelegt
+und steht auf Englisch, USD und `America/New_York`. Für einen Betrieb in
+Hannover gehört das im Dashboard auf Deutsch, EUR und `Europe/Berlin` gestellt.
+Auf die Seiten selbst wirkt sich das nicht aus — die Erreichbarkeit rechnet mit
+der Zeitzone aus dem Profil, nicht mit der des Wix-Projekts —, wohl aber auf
+Rechnungen und andere Wix-Funktionen. Einen dokumentierten Schreib-Endpunkt
+dafür gibt es nicht.
 
 Solange `GETINTOUCH_WIX_COLLECTION` fehlt, bleibt die Wix-Quelle stumm und es
 gelten allein die Dateien. Beide Quellen liegen übereinander — Wix wird zuerst

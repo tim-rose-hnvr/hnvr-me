@@ -1,21 +1,130 @@
 ---
 /**
- * Die Wurzel gehört nicht diesem Projekt.
+ * Die Verkaufsseite.
  *
- * „Get in Touch" hängt unter `/t/…` an der bestehenden Seite. Wer hier landet,
- * gehört auf die Verkaufsseite. In der Entwicklung ist das unpraktisch,
- * deshalb steht dort stattdessen eine Liste der vorhandenen Profile.
+ * Sie hält sich an dieselbe Regel wie das Produkt: nichts behaupten, was die
+ * Seite nicht selbst einlöst.
+ *
+ *  - Der Vergleich mit der Konkurrenz steht in Zahlen, die an der
+ *    ausgelieferten Seite gemessen wurden, mit Datum und Methode dabei.
+ *  - Es gibt einen Abschnitt „Was heute fehlt". Auf einer Verkaufsseite ist das
+ *    unüblich; hier ist es der einzige Weg, die übrigen Aussagen glaubwürdig zu
+ *    halten — und es verhindert, dass jemand einen Editor erwartet, den es noch
+ *    nicht gibt.
+ *  - Der Hauptknopf führt auf eine echte Seite, nicht auf ein Bild davon.
+ *
+ * Statisch vorgebaut: hier ändert sich nichts je Aufruf.
  */
-import { ablage } from '../kern/speicher/index.ts';
+import { cssVariablen, vorlage } from '../kern/gestaltung.ts';
+import { SIGNET, zeichen } from '../kern/zeichen.ts';
+import '../stile/marketing.css';
 
-export const prerender = false;
+export const prerender = true;
 
-if (!import.meta.env.DEV) {
-  return Astro.redirect('https://hnvr.me/get-in-touch', 302);
-}
+const gestaltung = vorlage('hnvr');
+const stil = Object.entries(cssVariablen(gestaltung))
+  .map(([name, wert]) => `${name}:${wert}`)
+  .join(';');
 
-const quelle = ablage();
-const slugs = await quelle.liste();
+const titel = 'Get in Touch — die Kontaktseite, die weiß, wann du da bist';
+const beschreibung =
+  'Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code auf einer Seite. ' +
+  'Sie stellt nach vorn, was gerade wirklich trägt — im Betrieb den Anruf, danach den schriftlichen Weg.';
+
+const merkmale = [
+  {
+    zeichen: 'uhr',
+    titel: 'Kennt die Öffnungszeiten',
+    text: 'Im Betrieb steht der Anruf oben, danach der schriftliche Weg — mit ehrlicher Ansage, wann geantwortet wird. Gerechnet in deiner Zeitzone, nicht in der des Besuchers.',
+  },
+  {
+    zeichen: 'visitenkarte',
+    titel: 'Digitale Visitenkarte',
+    text: 'Ein Tipp, und du stehst mit Foto im Adressbuch. vCard 3.0 — das Format, das iPhone, Android und Outlook seit Jahren lesen. Eine Datei, kein Formular.',
+  },
+  {
+    zeichen: 'qr',
+    titel: 'QR-Code, der gültig bleibt',
+    text: 'Als SVG vom Server, scharf in jeder Druckgröße. Er zeigt auf die Seite, nicht auf die Daten — Nummer und Anschrift kannst du ändern, ohne neu zu drucken.',
+  },
+  {
+    zeichen: 'haken',
+    titel: 'Neun geprüfte Designs',
+    text: 'Nicht achtzehn ungeprüfte. Ein Kontrastwächter nach WCAG rechnet jede freie Farbwahl nach und sagt in Worten, was nicht mehr lesbar ist.',
+  },
+  {
+    zeichen: 'laden',
+    titel: 'Läuft ohne JavaScript',
+    text: 'Die Seite kommt fertig vom Server. Auch mit blockierten Skripten sind Kontaktwege, Visitenkarte und QR-Code vollständig da — und die Vorschau in WhatsApp stimmt.',
+  },
+  {
+    zeichen: 'schloss',
+    titel: 'Keine Cookies, kein Tracking',
+    text: 'Schriften und Bilder liegen auf demselben Server. Es wird nichts von Dritten nachgeladen, nichts gespeichert und niemand angeschrieben, der deine Karte ansieht.',
+  },
+];
+
+/** Gemessen am ausgelieferten HTML von linktr.ee/linktree. */
+const vergleich = {
+  stand: 'August 2026',
+  zeilen: [
+    { was: 'HTML einer Profilseite', andere: '190 KB', wir: '20 KB' },
+    { was: 'Skripte', andere: '52', wir: '1' },
+    { was: 'Nachgeladen von fremden Hosts', andere: '3', wir: '0' },
+    { was: 'Links auf fremde Profile', andere: '60', wir: '0' },
+    { was: 'Cookie-Einwilligung nötig', andere: 'ja', wir: 'nein' },
+    { was: 'Werbung auf deiner Seite', andere: 'Affiliate-Verweise', wir: 'keine' },
+  ],
+};
+
+const offen = [
+  {
+    marke: 'in Arbeit',
+    titel: 'Selbstbedienung',
+    text: 'Einen Editor zum Selberbauen gibt es noch nicht. Wir legen deine Seite an, du sagst, was drauf soll.',
+  },
+  {
+    marke: 'in Arbeit',
+    titel: 'Zahlen',
+    text: 'Aufrufe und Klicks je Block werden noch nicht gezählt. Kommt zusammen mit dem Konto-Bereich.',
+  },
+  {
+    marke: 'auf Anfrage',
+    titel: 'Eigene Domain',
+    text: 'Heute läuft jede Seite unter hnvr.me. Eine eigene Adresse ist machbar, aber Handarbeit.',
+  },
+];
+
+const fragen = [
+  {
+    frage: 'Was kostet das?',
+    antwort:
+      'Die Seite mit Kontaktwegen, Visitenkarte und QR-Code kostet nichts. Wer eine eigene Domain, mehrere Profile fürs Team oder eine Anbindung an bestehende Systeme braucht, spricht uns an.',
+  },
+  {
+    frage: 'Funktioniert „Kontakt speichern" auf jedem Handy?',
+    antwort:
+      'Ja. Die Datei ist eine vCard 3.0 — bewusst nicht die neuere Fassung 4.0, denn die wird auf genau den Geräten unzuverlässig gelesen, auf denen die Karte am häufigsten landet. Am Rechner öffnet sie Outlook oder das Adressbuch.',
+  },
+  {
+    frage: 'Woher weiß die Seite, ob ich erreichbar bin?',
+    antwort:
+      'Aus den Öffnungszeiten, die im Profil stehen — samt Feiertagen und Sonderzeiten. Sind keine gepflegt, steht auch keine Statuszeile da. Eine erfundene Verfügbarkeit wäre schlimmer als gar keine Angabe.',
+  },
+  {
+    frage: 'Kann ich die Adresse später ändern?',
+    antwort:
+      'Ja. Aber gedruckte QR-Codes und geteilte Links zeigen danach ins Leere — drucke also erst, wenn der Name steht.',
+  },
+  {
+    // Bewusst ohne Angabe eines Speicherorts: die Wix-Infrastruktur macht dazu
+    // keine Zusage, die wir hier guten Gewissens wiederholen könnten. Was diese
+    // Seite selbst tut, ist dagegen nachprüfbar — und genau das steht da.
+    frage: 'Wo liegen die Daten?',
+    antwort:
+      'Die Profile liegen auf der Wix-Infrastruktur, die hnvr.me auch für seine übrigen Projekte nutzt; Einzelheiten stehen in der Datenschutzerklärung. Die Profilseite selbst lädt nichts von Dritten nach, setzt kein Cookie und meldet niemandem, wer sie geöffnet hat.',
+  },
+];
 ---
 
 <!doctype html>
@@ -23,65 +132,202 @@ const slugs = await quelle.liste();
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex" />
-    <title>Get in Touch — Entwicklung</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 48px 24px;
-        background: #0f0f0f;
-        color: #f1efeb;
-        font: 16px/1.6 system-ui, sans-serif;
-      }
-      main {
-        max-width: 34rem;
-        margin: 0 auto;
-      }
-      h1 {
-        font-size: 22px;
-        margin: 0 0 4px;
-      }
-      p {
-        color: #9c968d;
-        margin: 0 0 28px;
-      }
-      ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: grid;
-        gap: 8px;
-      }
-      a {
-        display: block;
-        padding: 14px 16px;
-        border: 1px solid rgba(241, 239, 235, 0.14);
-        border-radius: 14px;
-        color: inherit;
-        text-decoration: none;
-      }
-      a:hover {
-        border-color: #ff7120;
-      }
-      code {
-        color: #ff7120;
-      }
-    </style>
+    <title>{titel}</title>
+    <meta name="description" content={beschreibung} />
+    <meta name="theme-color" content={gestaltung.grund} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={titel} />
+    <meta property="og:description" content={beschreibung} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="/schriften/schriften.css" />
   </head>
-  <body>
-    <main>
-      <h1>Get in Touch</h1>
-      <p>Nur in der Entwicklung sichtbar. Quelle: <code>{quelle.name}</code></p>
-      <ul>
-        {
-          slugs.map((slug) => (
-            <li>
-              <a href={`/t/${slug}`}>/t/{slug}</a>
-            </li>
-          ))
-        }
-      </ul>
-      {slugs.length === 0 && <p>Noch kein Profil in <code>daten/profile</code>.</p>}
-    </main>
+
+  <body style={stil}>
+    <div class="seite">
+      <div class="bahn">
+        <header class="kopfzeile">
+          <a class="wortmarke" href="/">
+            <Fragment set:html={SIGNET} />
+            <span>Get in Touch</span>
+          </a>
+          <a class="leise" href="https://hnvr.me" target="_blank" rel="noopener noreferrer">von hnvr.me ↗</a>
+        </header>
+
+        <!-- Kopf -->
+        <section class="kopf">
+          <p class="marke">kontaktseite</p>
+          <h1>Die Seite weiß,<br />wann du da bist.</h1>
+          <p class="fuehrung">
+            Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code unter einer kurzen Adresse. Nach vorn stellt
+            sie, was gerade wirklich trägt: im Betrieb den Anruf, danach den schriftlichen Weg.
+          </p>
+          <div class="knopfreihe">
+            <a class="knopf knopf--voll" href="/t/hnvr">
+              Echte Seite ansehen
+              <Fragment set:html={zeichen('pfeil')} />
+            </a>
+            <a class="knopf" href="mailto:hallo@hnvr.me?subject=Get%20in%20Touch%20%E2%80%94%20Seite%20anlegen">
+              <Fragment set:html={zeichen('mail')} />
+              Seite anfragen
+            </a>
+          </div>
+        </section>
+
+        <!-- Die Uhr -->
+        <section>
+          <p class="marke">der unterschied</p>
+          <h2>Ein Knopf, der die Uhrzeit kennt.</h2>
+          <p class="fuehrung" style="margin-top:18px">
+            Wer sonntags um 23 Uhr den Code am Fahrzeug scannt und auf „Jetzt anrufen“ tippt, landet im Nichts und ist
+            weg. Dieselbe Seite, zwei Zeitpunkte:
+          </p>
+
+          <div class="lagen">
+            <div class="lage">
+              <p class="lage__zeit">Mittwoch, 14:00</p>
+              <p class="lage__status lage__status--offen">
+                <span class="lage__punkt" aria-hidden="true"></span>
+                Jetzt erreichbar · bis 18:00
+              </p>
+              <div class="lage__knopf">
+                <Fragment set:html={zeichen('telefon')} />
+                Jetzt anrufen
+              </div>
+              <p class="lage__nach">Darunter: WhatsApp, Termin, E-Mail, Anfahrt.</p>
+            </div>
+
+            <div class="lage">
+              <p class="lage__zeit">Samstag, 23:00</p>
+              <p class="lage__status">
+                <Fragment set:html={zeichen('uhr')} />
+                Gerade geschlossen · Montag ab 9:00
+              </p>
+              <div class="lage__knopf">
+                <Fragment set:html={zeichen('whatsapp')} />
+                WhatsApp schreiben
+              </div>
+              <p class="lage__nach">Der Anruf rutscht nach unten. Niemand wird enttäuscht.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Merkmale -->
+        <section>
+          <p class="marke">was drin ist</p>
+          <h2>Mehr als eine Linkliste.</h2>
+          <div class="merkmale">
+            {
+              merkmale.map((m) => (
+                <div class="merkmal">
+                  <Fragment set:html={zeichen(m.zeichen)} />
+                  <h3>{m.titel}</h3>
+                  <p>{m.text}</p>
+                </div>
+              ))
+            }
+          </div>
+        </section>
+
+        <!-- Vergleich -->
+        <section>
+          <p class="marke">ehrlich verglichen</p>
+          <h2>Was auf der Seite eines<br />Handwerkers nichts zu suchen hat.</h2>
+          <p class="fuehrung" style="margin-top:18px">
+            Der bekannteste Anbieter hängt unter jedes Profil ein Karussell mit fremden Konten, die eigene Preisliste
+            und Affiliate-Verweise auf Werbekunden. Wer deinen QR-Code scannt, bekommt deinen Wettbewerb mitgeliefert.
+          </p>
+
+          <div class="tabellenrahmen">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Gemessen an einer Profilseite</th>
+                  <th scope="col">Üblicher Anbieter</th>
+                  <th scope="col">Get in Touch</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  vergleich.zeilen.map((z) => (
+                    <tr>
+                      <th scope="row">{z.was}</th>
+                      <td data-spalte="Üblicher Anbieter">{z.andere}</td>
+                      <td class="wert--wir" data-spalte="Get in Touch">
+                        {z.wir}
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <p class="quelle">
+            Erhoben {vergleich.stand} am ausgelieferten HTML einer öffentlichen Profilseite von linktr.ee — nicht an
+            Werbeaussagen. „Nachgeladen von fremden Hosts“ zählt Skripte, Schriften und Bilder, die der Browser beim
+            Öffnen von dritten Servern holt.
+          </p>
+        </section>
+
+        <!-- Was fehlt -->
+        <section>
+          <p class="marke">was heute fehlt</p>
+          <h2>Damit du es nicht selbst<br />herausfinden musst.</h2>
+          <ul class="offen">
+            {
+              offen.map((o) => (
+                <li>
+                  <span class="offen__marke">{o.marke}</span>
+                  <span>
+                    <b>{o.titel}</b> — {o.text}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <!-- Fragen -->
+        <section>
+          <p class="marke">häufige fragen</p>
+          <h2>Kurz beantwortet.</h2>
+          <div class="fragen">
+            {
+              fragen.map((f) => (
+                <details class="frage">
+                  <summary>{f.frage}</summary>
+                  <p>{f.antwort}</p>
+                </details>
+              ))
+            }
+          </div>
+        </section>
+
+        <!-- Schluss -->
+        <section class="schluss">
+          <p class="marke">bereit?</p>
+          <h2>Ein Link, und sie erreichen dich.</h2>
+          <div class="knopfreihe">
+            <a class="knopf knopf--voll" href="mailto:hallo@hnvr.me?subject=Get%20in%20Touch%20%E2%80%94%20Seite%20anlegen">
+              Seite anfragen
+              <Fragment set:html={zeichen('pfeil')} />
+            </a>
+            <a class="knopf" href="tel:+4951112282286">
+              <Fragment set:html={zeichen('telefon')} />
+              +49 511 12282286
+            </a>
+          </div>
+        </section>
+
+        <footer class="fuss">
+          <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
+          <span>
+            <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
+            ·
+            <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
+          </span>
+        </footer>
+      </div>
+    </div>
   </body>
 </html>

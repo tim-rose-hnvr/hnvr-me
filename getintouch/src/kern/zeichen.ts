@@ -33,6 +33,7 @@ const ZEICHEN: Record<string, string> = {
   laden: '<path d="M12 3.8v11M7.6 10.4 12 14.8l4.4-4.4M4.4 19.2h15.2"/>',
   qr: '<rect x="3.4" y="3.4" width="7" height="7" rx="1.4"/><rect x="13.6" y="3.4" width="7" height="7" rx="1.4"/><rect x="3.4" y="13.6" width="7" height="7" rx="1.4"/><path d="M13.6 13.6h3v3h-3zM20.6 13.6h-1M20.6 20.6h-4v-1"/>',
   uhr: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.2V12l3.2 2"/>',
+  schloss: '<rect x="4.4" y="10.4" width="15.2" height="10.2" rx="2.4"/><path d="M8 10.4V7.8a4 4 0 0 1 8 0v2.6"/>',
   haken: '<path d="m4.8 12.6 4.8 4.8L19.2 7.8"/>',
   teilen:
     '<circle cx="17.6" cy="5.6" r="2.4"/><circle cx="6.4" cy="12" r="2.4"/><circle cx="17.6" cy="18.4" r="2.4"/><path d="m8.6 10.8 6.8-4M8.6 13.2l6.8 4"/>',

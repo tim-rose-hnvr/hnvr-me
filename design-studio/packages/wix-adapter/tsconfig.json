@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Kein rootDir: der Typecheck folgt `@studio/editor-core` bis in dessen
+    // Quellen, die außerhalb dieses Pakets liegen. Emittiert wird hier nichts.
+    "noEmit": true,
+    "types": ["vitest/globals"],
+    "paths": {
+      "@studio/editor-core": ["../editor-core/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

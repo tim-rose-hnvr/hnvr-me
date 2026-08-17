@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSP-Spike — Druckexport unter Wix</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --grund: #ffffff; --text: #16181d; --gedaempft: #5a6070;
+    --linie: #dfe2e8; --karte: #f6f7f9;
+    --gut: #0f7a3d; --schlecht: #b3261e; --egal: #8a6d00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --grund: #12141a; --text: #e8eaf0; --gedaempft: #9aa1b1;
+      --linie: #2a2e39; --karte: #1a1d25;
+      --gut: #4ec27d; --schlecht: #ff8a80; --egal: #e0c36a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1.25rem; background: var(--grund); color: var(--text);
+    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 60rem; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 .35rem; letter-spacing: -.01em; }
+  .unterzeile { color: var(--gedaempft); margin: 0 0 1.5rem; }
+  .umgebung {
+    background: var(--karte); border: 1px solid var(--linie); border-radius: 8px;
+    padding: .85rem 1rem; margin-bottom: 1.5rem;
+    font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .huelle { overflow-x: auto; border: 1px solid var(--linie); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 44rem; }
+  th, td { text-align: left; padding: .6rem .85rem; border-bottom: 1px solid var(--linie); vertical-align: top; }
+  th { background: var(--karte); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--gedaempft); }
+  tbody tr:last-child td { border-bottom: none; }
+  .urteil { font-weight: 600; white-space: nowrap; }
+  .ja { color: var(--gut); } .nein { color: var(--schlecht); } .egal { color: var(--egal); }
+  .notiz { color: var(--gedaempft); font-size: .85rem; }
+  .kritisch::after { content: " ⬥"; color: var(--schlecht); }
+  button {
+    font: inherit; padding: .5rem 1rem; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--linie); background: var(--karte); color: var(--text);
+  }
+  .leiste { display: flex; gap: .6rem; align-items: center; margin: 1.25rem 0; flex-wrap: wrap; }
+  #fazit { font-weight: 600; }
+  pre#roh {
+    background: var(--karte); border: 1px solid var(--linie); border-radius: 8px;
+    padding: 1rem; overflow-x: auto; font-size: 12px; margin-top: 1rem; display: none;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>CSP-Spike: läuft der Druckexport unter Wix?</h1>
+  <p class="unterzeile">
+    Misst die Browser-Fähigkeiten, auf denen clientseitiger PDF/X-Export aufsetzt —
+    WASM-Ausführung, <code>OffscreenCanvas</code> und Schrifteinbettung.
+    Mit ⬥ markierte Zeilen sind Ausschlusskriterien: fällt eine davon aus, ist der
+    Export in dieser Umgebung nicht möglich.
+  </p>
+
+  <div class="umgebung" id="umgebung">Umgebung wird ermittelt …</div>
+
+  <div class="huelle">
+    <table>
+      <thead>
+        <tr><th>Prüfung</th><th>Ergebnis</th><th>Bedeutung</th></tr>
+      </thead>
+      <tbody id="ergebnisse"></tbody>
+    </table>
+  </div>
+
+  <div class="leiste">
+    <button id="erneut">Erneut messen</button>
+    <button id="zeigeRoh">Rohdaten anzeigen</button>
+    <span id="fazit"></span>
+  </div>
+
+  <pre id="roh"></pre>
+</main>
+
+<script type="module">
+/*
+ * Bewusst ohne Build und ohne Abhängigkeit: dieser Spike soll sich in eine
+ * Wix-Seite, in ein Custom Element und in eine leere Datei kopieren lassen,
+ * ohne dass irgendwo eine Toolchain danebensteht. Verglichen wird immer
+ * dieselbe Datei in zwei Umgebungen — nur so ist das Ergebnis aussagekräftig.
+ */
+
+/** Kleinstes gültiges WASM-Modul: nur der 8-Byte-Kopf. Reicht, um CSP zu reizen. */
+const WASM_KOPF = new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]);
+
+/** A4 bei 300 dpi — die Zielgröße einer echten Druckseite. */
+const A4_300 = { breite: 2480, hoehe: 3508 };
+
+const pruefungen = [
+  {
+    name: 'WebAssembly.compile',
+    kritisch: true,
+    bedeutung: 'CMYK-Konvertierung läuft in WASM. Blockiert die CSP das, gibt es keine Druckfarben.',
+    async lauf() {
+      await WebAssembly.compile(WASM_KOPF);
+      return 'kompiliert';
+    },
+  },
+  {
+    name: 'WebAssembly.instantiate',
+    kritisch: true,
+    bedeutung: 'Manche CSP-Fassungen erlauben compile, aber keine Instanziierung.',
+    async lauf() {
+      const { instance } = await WebAssembly.instantiate(WASM_KOPF, {});
+      return instance ? 'instanziiert' : 'keine Instanz';
+    },
+  },
+  {
+    name: 'OffscreenCanvas',
+    kritisch: true,
+    bedeutung: 'PDF/X-1a muss Transparenzen flachrechnen. Ohne OffscreenCanvas geht das nicht.',
+    async lauf() {
+      if (typeof OffscreenCanvas === 'undefined') throw new Error('nicht vorhanden');
+      const leinwand = new OffscreenCanvas(64, 64);
+      const stift = leinwand.getContext('2d');
+      if (!stift) throw new Error('kein 2d-Kontext');
+      stift.fillRect(0, 0, 64, 64);
+      const blob = await leinwand.convertToBlob({ type: 'image/png' });
+      return `${blob.size} Byte PNG`;
+    },
+  },
+  {
+    name: 'Canvas in Druckgröße',
+    kritisch: true,
+    bedeutung: `A4 bei 300 dpi sind ${A4_300.breite}×${A4_300.hoehe} px. Manche Umgebungen deckeln das still.`,
+    async lauf() {
+      const leinwand = document.createElement('canvas');
+      leinwand.width = A4_300.breite;
+      leinwand.height = A4_300.hoehe;
+      const stift = leinwand.getContext('2d');
+      if (!stift) throw new Error('kein 2d-Kontext');
+      stift.fillStyle = '#0a4';
+      stift.fillRect(0, 0, 400, 400);
+      const punkt = stift.getImageData(10, 10, 1, 1).data;
+      if (punkt[3] === 0) throw new Error('Zeichnung kam nicht an — Größe vermutlich gedeckelt');
+      return `${leinwand.width}×${leinwand.height} beschreibbar`;
+    },
+  },
+  {
+    name: 'Schrift aus data:-URI',
+    kritisch: true,
+    bedeutung: 'Schriften werden für die Einbettung als Binärdaten geladen, nicht über eine URL.',
+    async lauf() {
+      if (typeof FontFace === 'undefined') throw new Error('FontFace nicht vorhanden');
+      // Absichtlich ungültige Schriftdaten: geprüft wird, ob die CSP den
+      // data:-Zugriff überhaupt zulässt, nicht ob die Datei brauchbar ist.
+      const schrift = new FontFace('SpikeProbe', 'url(data:font/woff2;base64,d09GMgABAAAAAAAM)');
+      try {
+        await schrift.load();
+        return 'geladen';
+      } catch (fehler) {
+        const meldung = String(fehler && fehler.message ? fehler.message : fehler);
+        if (/csp|content security|violat|refus|block/i.test(meldung)) throw fehler;
+        // Ein reiner Parserfehler ist der erwartete Ausgang und beweist,
+        // dass die Daten gelesen werden durften.
+        return 'data:-URI erreichbar (Parserfehler erwartet)';
+      }
+    },
+  },
+  {
+    name: 'Worker aus Blob-URL',
+    kritisch: false,
+    bedeutung: 'Beschleunigt den Export. Fällt er aus, wird der Hauptthread blockiert — unschön, nicht tödlich.',
+    async lauf() {
+      const quelle = URL.createObjectURL(
+        new Blob(['self.onmessage=()=>self.postMessage("da")'], { type: 'text/javascript' }),
+      );
+      try {
+        const arbeiter = new Worker(quelle);
+        const antwort = await new Promise((loese, brich) => {
+          const uhr = setTimeout(() => brich(new Error('Zeitüberschreitung')), 3000);
+          arbeiter.onmessage = (e) => { clearTimeout(uhr); loese(e.data); };
+          arbeiter.onerror = (e) => { clearTimeout(uhr); brich(new Error(e.message || 'Worker-Fehler')); };
+          arbeiter.postMessage('los');
+        });
+        arbeiter.terminate();
+        return String(antwort);
+      } finally {
+        URL.revokeObjectURL(quelle);
+      }
+    },
+  },
+  {
+    name: 'new Function (unsafe-eval)',
+    kritisch: false,
+    bedeutung: 'Nur zur Einordnung der CSP-Strenge. Der Exportpfad braucht es nicht.',
+    async lauf() {
+      return String(new Function('return 21*2')());
+    },
+  },
+  {
+    name: 'SharedArrayBuffer',
+    kritisch: false,
+    bedeutung: 'Nur für WASM mit Threads nötig. Braucht cross-origin isolation, die Wix nicht setzt.',
+    async lauf() {
+      if (typeof SharedArrayBuffer === 'undefined') throw new Error('nicht vorhanden');
+      return `vorhanden, crossOriginIsolated=${globalThis.crossOriginIsolated === true}`;
+    },
+  },
+  {
+    name: 'createImageBitmap',
+    kritisch: false,
+    bedeutung: 'Bildplatzierung ohne Umweg über <img>. Beschleunigt große Entwürfe.',
+    async lauf() {
+      if (typeof createImageBitmap === 'undefined') throw new Error('nicht vorhanden');
+      const leinwand = document.createElement('canvas');
+      leinwand.width = 8; leinwand.height = 8;
+      const bild = await createImageBitmap(leinwand);
+      return `${bild.width}×${bild.height}`;
+    },
+  },
+];
+
+function umgebungsbericht() {
+  const meta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+  return {
+    adresse: location.href,
+    herkunft: location.origin,
+    imRahmen: window.self !== window.top,
+    cspAusMetaTag: meta ? meta.getAttribute('content') : null,
+    crossOriginIsolated: globalThis.crossOriginIsolated === true,
+    sichererKontext: window.isSecureContext,
+    browser: navigator.userAgent,
+    geraetespeicherGb: navigator.deviceMemory ?? null,
+    gemessenAm: new Date().toISOString(),
+  };
+}
+
+async function messe() {
+  const koerper = document.getElementById('ergebnisse');
+  koerper.textContent = '';
+  const bericht = [];
+
+  for (const pruefung of pruefungen) {
+    let ergebnis;
+    try {
+      ergebnis = { bestanden: true, ausgabe: await pruefung.lauf() };
+    } catch (fehler) {
+      ergebnis = { bestanden: false, ausgabe: String(fehler && fehler.message ? fehler.message : fehler) };
+    }
+
+    bericht.push({ name: pruefung.name, kritisch: pruefung.kritisch, ...ergebnis });
+
+    const zeile = document.createElement('tr');
+    const stil = ergebnis.bestanden ? 'ja' : pruefung.kritisch ? 'nein' : 'egal';
+    const zeichen = ergebnis.bestanden ? 'geht' : pruefung.kritisch ? 'FEHLT' : 'fehlt';
+
+    const nameZelle = document.createElement('td');
+    nameZelle.textContent = pruefung.name;
+    if (pruefung.kritisch) nameZelle.className = 'kritisch';
+
+    const urteilZelle = document.createElement('td');
+    urteilZelle.className = `urteil ${stil}`;
+    urteilZelle.textContent = zeichen;
+
+    const notizZelle = document.createElement('td');
+    notizZelle.innerHTML = '';
+    const ausgabe = document.createElement('div');
+    ausgabe.textContent = ergebnis.ausgabe;
+    const bedeutung = document.createElement('div');
+    bedeutung.className = 'notiz';
+    bedeutung.textContent = pruefung.bedeutung;
+    notizZelle.append(ausgabe, bedeutung);
+
+    zeile.append(nameZelle, urteilZelle, notizZelle);
+    koerper.append(zeile);
+  }
+
+  const gescheitert = bericht.filter((b) => b.kritisch && !b.bestanden);
+  const fazit = document.getElementById('fazit');
+  if (gescheitert.length === 0) {
+    fazit.className = 'ja';
+    fazit.textContent = 'Druckexport ist in dieser Umgebung möglich.';
+  } else {
+    fazit.className = 'nein';
+    fazit.textContent = `Druckexport hier NICHT möglich — es fehlt: ${gescheitert.map((b) => b.name).join(', ')}.`;
+  }
+
+  const gesamt = { umgebung: umgebungsbericht(), pruefungen: bericht };
+  document.getElementById('umgebung').textContent = JSON.stringify(gesamt.umgebung, null, 2);
+  document.getElementById('roh').textContent = JSON.stringify(gesamt, null, 2);
+  globalThis.spikeErgebnis = gesamt;
+  return gesamt;
+}
+
+document.getElementById('erneut').addEventListener('click', () => { void messe(); });
+document.getElementById('zeigeRoh').addEventListener('click', () => {
+  const roh = document.getElementById('roh');
+  roh.style.display = roh.style.display === 'block' ? 'none' : 'block';
+});
+
+void messe();
+</script>
+</body>
+</html>

@@ -9,7 +9,7 @@
    2. beim Sichern als unsichtbarer Text hinter dem Bild (Textmodus 3) —
       das ergibt ein durchsuchbares PDF, das überall gleich aussieht. */
 
-import { zustand, melde, sage, kennung, el, zeigeDialog, merkeSchritt, $ } from './kern.js';
+import { zustand, melde, sage, kennung, el, zeigeDialog, merkeSchritt, $, fremdWeg } from './kern.js';
 import { holeSeite, nummerVon, seitenText } from './dokument.js';
 
 export const SPRACHEN = [
@@ -40,18 +40,23 @@ export function brichAb() { abbruch = true; }
 
 async function holeArbeiter(sprache, beiFortschritt) {
   if (!tesseract) {
-    const bezogen = await import('../fremd/tesseract.mjs');
+    const bezogen = await import(fremdWeg('tesseract.mjs'));
     // Der ausgelieferte Build stellt alles unter default bereit.
     tesseract = bezogen.createWorker ? bezogen : bezogen.default;
   }
   if (arbeiter && laufendeSprache === sprache) return arbeiter;
   if (arbeiter) { await arbeiter.terminate(); arbeiter = null; }
 
-  const wurzel = new URL('../fremd/', import.meta.url).toString();
   arbeiter = await tesseract.createWorker(sprache, 1, {
-    workerPath: `${wurzel}tesseract-arbeiter.js`,
-    corePath: `${wurzel}tesseract-kern.js`,
-    langPath: `${wurzel}sprachen`,
+    workerPath: fremdWeg('tesseract-arbeiter.js'),
+    // Auf die Datei zeigen, nicht auf den Ordner: dann laedt tesseract genau
+    // diesen Kern und sucht sich nicht selbst eine Fassung aus.
+    corePath: fremdWeg('tesseract-core-simd-lstm.js'),
+    langPath: fremdWeg('sprachen'),
+    /* Der Arbeiter muss von seiner echten Adresse laufen, nicht aus einem
+       Blob: der Kern holt seine WebAssembly-Datei mit einem relativen Pfad,
+       und relativ zu einer blob:-Adresse gibt es nichts. */
+    workerBlobURL: false,
     gzip: true,
     cacheMethod: 'none',        // nichts im Browserspeicher ablegen
     logger: (nachricht) => {

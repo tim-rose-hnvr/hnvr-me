@@ -18,6 +18,7 @@ const ARTEN = {
   '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript',
   '.css': 'text/css', '.pdf': 'application/pdf', '.json': 'application/json',
   '.pfb': 'application/octet-stream', '.bcmap': 'application/octet-stream',
+  '.wasm': 'application/wasm', '.gz': 'application/gzip',
 };
 
 let bestanden = 0, gescheitert = 0;

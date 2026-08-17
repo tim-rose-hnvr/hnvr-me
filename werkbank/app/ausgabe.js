@@ -11,12 +11,12 @@
    Schwärzung rastert die betroffene Seite. Das entfernt den darunter
    liegenden Text wirklich — anders als ein schwarzes Rechteck darüber. */
 
-import { zustand, farbeZuAnteilen, sage, sichereBytes } from './kern.js';
+import { zustand, farbeZuAnteilen, sage, sichereBytes, fremdWeg } from './kern.js';
 import { quelleVon, holeSeite } from './dokument.js';
 
 let pdflib = null;
 export async function starteSchreiber() {
-  if (!pdflib) pdflib = await import('../fremd/pdf-lib.mjs');
+  if (!pdflib) pdflib = await import(fremdWeg('pdf-lib.mjs'));
   return pdflib;
 }
 

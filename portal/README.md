@@ -16,8 +16,9 @@ skripte/app-einbetten.mjs   legt ../werkbank nach public/werkbank
 
 `npm run build` kopiert vorher `../werkbank` nach `public/werkbank` — damit
 wird die Anwendung mit ausgeliefert und läuft unter `/werkbank/` auf demselben
-Wix-Hosting wie die Marketingseite. Rund 13,6 MB, davon der größte Teil
-WebAssembly und Sprachdaten für die Texterkennung.
+Wix-Hosting wie die Marketingseite. **11,3 MB in 220 Dateien**, keine davon
+über 3 MB. Mit `node skripte/app-einbetten.mjs --schlank` sind es 8,3 MB —
+dann ohne CJK-Zeichentabellen und ohne englische Texterkennung.
 
 `public/werkbank` steht in `.gitignore`: die Anwendung hat genau eine Quelle,
 das Verzeichnis daneben. Wer die Werkbank ändert, baut das Portal neu.
@@ -93,9 +94,30 @@ Eine E-Mail-Adresse steht bewusst nicht darauf — sie ist nicht abgestimmt.
 Sie gehört in `src/pages/index.astro` in den Abschnitt „Kontakt", sobald klar
 ist, welche es sein soll.
 
-## Grenze, die erst beim Veröffentlichen sichtbar wird
+## Die Größenfrage, geklärt
 
-Ob Wix' Headless-Hosting die 13,6 MB im `public`-Ordner ohne Murren annimmt,
-zeigt sich erst bei `wix release`. Örtlich baut und läuft alles. Falls dort
-eine Obergrenze greift, bleibt die Anwendung an einem eigenen statischen Ort
-und die Seite verlinkt dorthin — die Marketingseite ändert sich dadurch nicht.
+Wix nennt Grenzen nur für den **Upload-Weg** (Dateien in den Browser ziehen):
+3 MB je Datei, 20 MB gesamt, und WebAssembly wird dort abgelehnt. Für den
+**Terminalweg**, den wir gehen, steht in derselben Dokumentation ausdrücklich
+„any build output" — keine Größen- oder Typgrenze.
+
+Trotzdem ist die Last jetzt kleiner und aufgeräumt:
+
+| | vorher | jetzt | schlank |
+|---|---|---|---|
+| gesamt | 13,6 MB | **11,3 MB** | **8,3 MB** |
+| größte Datei | 3,95 MB | **2,74 MB** | 2,74 MB |
+
+Erreicht durch schnellere Sprachdaten (gleiche Genauigkeit, ein Drittel
+schneller) und einen getrennten statt eingebetteten Texterkennungs-Kern.
+`skripte/app-einbetten.mjs` zählt bei jedem Bau nach und meldet, was dem
+Upload-Weg auffallen würde.
+
+Und falls ein Hoster doch einmal `.wasm` verweigert: die schweren Teile lassen
+sich verlegen, ohne die Anwendung anzufassen. Im `index.html` der Werkbank:
+
+```html
+<meta name="werkbank-fremd" content="https://anderer-ort.example/fremd/">
+```
+
+Der Server dort muss `.wasm` als `application/wasm` ausliefern.

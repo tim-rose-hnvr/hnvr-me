@@ -246,6 +246,33 @@ export function schrittVor() {
   melde('dokument:geaendert');
 }
 
+/* ---------- Wo die fremden Bestandteile liegen ----------------------------- */
+
+/* Voreinstellung: neben der Anwendung, in fremd/. Wer sie woanders ablegen
+   muss — etwa weil ein Hoster keine WebAssembly-Dateien annimmt — trägt im
+   HTML eine andere Wurzel ein:
+
+     <meta name="werkbank-fremd" content="https://beispiel.example/fremd/">
+
+   Alles Schwere (PDF-Motor, Texterkennung, qpdf, Sprachdaten) wird von dort
+   geholt. Der Rest der Anwendung bleibt unverändert. */
+let fremdBasis = null;
+
+export function fremdWurzel() {
+  if (!fremdBasis) {
+    const eigene = document.querySelector('meta[name="werkbank-fremd"]')?.content?.trim();
+    const gewaehlt = eigene
+      ? new URL(eigene, document.baseURI)
+      : new URL('../fremd/', import.meta.url);
+    fremdBasis = gewaehlt.href.endsWith('/') ? gewaehlt.href : `${gewaehlt.href}/`;
+  }
+  return fremdBasis;
+}
+
+export function fremdWeg(datei) {
+  return new URL(datei, fremdWurzel()).href;
+}
+
 /* ---------- Sonstiges ----------------------------------------------------- */
 export function drossel(fn, ms = 120) {
   let zeit = 0, kennungTimer = null, letzteArgs = null;

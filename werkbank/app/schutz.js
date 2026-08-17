@@ -13,17 +13,16 @@
 
    Was das nicht kann: ein unbekanntes Kennwort erraten. */
 
-import { sage } from './kern.js';
+import { sage, fremdWeg } from './kern.js';
 
 let bauen = null;
 
 async function neuesModul() {
-  if (!bauen) bauen = (await import('../fremd/qpdf.mjs')).default;
-  const wurzel = new URL('../fremd/', import.meta.url).toString();
+  if (!bauen) bauen = (await import(fremdWeg('qpdf.mjs'))).default;
   const ausgaben = [];
   const modul = await bauen({
     noInitialRun: true,
-    locateFile: (datei) => `${wurzel}${datei}`,
+    locateFile: (datei) => fremdWeg(datei),
     print: (zeile) => ausgaben.push(zeile),
     printErr: (zeile) => ausgaben.push(zeile),
   });

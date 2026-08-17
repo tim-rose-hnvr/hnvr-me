@@ -13,9 +13,10 @@ Nachladen zur Laufzeit (Leitprinzip 2 der Projektanweisung).
 | `pdf-lib.mjs` | `pdf-lib/dist/pdf-lib.esm.min.js` | 1.17.1 | MIT |
 | `tesseract.mjs` | `tesseract.js/dist/tesseract.esm.min.js` | 7.0.0 | Apache-2.0 |
 | `tesseract-arbeiter.js` | `tesseract.js/dist/worker.min.js` | 7.0.0 | Apache-2.0 |
-| `tesseract-kern.js` | `tesseract.js-core/tesseract-core-simd-lstm.wasm.js` | 6.1.2 | Apache-2.0 |
-| `sprachen/deu.traineddata.gz` | `@tesseract.js-data/deu` (4.0.0_best_int) | 1.0.0 | Apache-2.0 |
-| `sprachen/eng.traineddata.gz` | `@tesseract.js-data/eng` (4.0.0_best_int) | 1.0.0 | Apache-2.0 |
+| `tesseract-core-simd-lstm.js` | `tesseract.js-core` (Glue-Code) | 6.1.2 | Apache-2.0 |
+| `tesseract-core-simd-lstm.wasm` | `tesseract.js-core` (Programm) | 6.1.2 | Apache-2.0 |
+| `sprachen/deu.traineddata.gz` | `tessdata_fast` (deu) | 4.0.0 | Apache-2.0 |
+| `sprachen/eng.traineddata.gz` | `tessdata_fast` (eng) | 4.0.0 | Apache-2.0 |
 | `qpdf.wasm`, `qpdf.js`, `qpdf.mjs`, `browser.js` | `@jspawn/qpdf-wasm` | 0.0.2 | Apache-2.0 |
 
 Arbeitsteilung: `pdf.js` liest und zeichnet, `pdf-lib` schreibt, `tesseract.js`
@@ -31,6 +32,24 @@ Jahre kann SIMD. Weitere Sprachen sind nachrüstbar: die passende
 `<sprache>.traineddata.gz` nach `fremd/sprachen/` legen und in
 `app/texterkennung.js` in `SPRACHEN` eintragen.
 
+## Zwei Entscheidungen, die Messungen zugrunde liegen
+
+**Sprachdaten: `tessdata_fast` statt `best_int`.** Am gerasterten Beispiel
+gemessen (200 dpi, deutsche Seite): gleiche Wortgenauigkeit (94 %), einen
+Punkt höhere Sicherheit, ein Drittel schneller (1,9 s statt 2,9 s) — bei
+853 kB statt 1333 kB. Eine Messung an einem Dokument, kein Allgemeinurteil;
+wer sehr schlechte Vorlagen hat, kann `best_int` zurücklegen.
+
+**Tesseract-Kern getrennt statt eingebettet.** Die Fassung `…wasm.js` trägt
+das Programm als Text in sich (3,95 MB). Getrennt sind es 124 kB Glue-Code
+und 2,74 MB WebAssembly — knapp 1 MB weniger, und der Browser kann die
+WebAssembly-Datei richtig zwischenspeichern. Dafür ist eine Kleinigkeit
+nötig: der Kern holt seine `.wasm` mit einem **relativen** Pfad, und ein aus
+einem Blob gestarteter Arbeiter hat keinen Bezugspunkt dafür. Deshalb steht
+in `app/texterkennung.js` `workerBlobURL: false` — der Arbeiter läuft von
+seiner echten Adresse. Der Server muss `.wasm` außerdem als
+`application/wasm` ausliefern.
+
 ## Auffrischen
 
 ```sh
@@ -42,9 +61,10 @@ cp -r node_modules/pdfjs-dist/cmaps                  werkbank/fremd/cmaps
 cp node_modules/pdf-lib/dist/pdf-lib.esm.min.js      werkbank/fremd/pdf-lib.mjs
 cp node_modules/tesseract.js/dist/tesseract.esm.min.js   werkbank/fremd/tesseract.mjs
 cp node_modules/tesseract.js/dist/worker.min.js          werkbank/fremd/tesseract-arbeiter.js
-cp node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js werkbank/fremd/tesseract-kern.js
-cp node_modules/@tesseract.js-data/deu/4.0.0_best_int/deu.traineddata.gz werkbank/fremd/sprachen/
-cp node_modules/@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz werkbank/fremd/sprachen/
+cp node_modules/tesseract.js-core/tesseract-core-simd-lstm.{js,wasm}  werkbank/fremd/
+# Sprachdaten aus tessdata_fast, gepackt:
+#   gzip -9 -c deu.traineddata > werkbank/fremd/sprachen/deu.traineddata.gz
+#   gzip -9 -c eng.traineddata > werkbank/fremd/sprachen/eng.traineddata.gz
 cp node_modules/@jspawn/qpdf-wasm/{qpdf.wasm,qpdf.js,qpdf.mjs,browser.js} werkbank/fremd/
 node werkbank/werkzeuge/pruefen.mjs                  # danach den Prüflauf fahren
 ```

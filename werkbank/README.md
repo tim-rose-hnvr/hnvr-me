@@ -251,6 +251,21 @@ Die Werkbank wählt selbst und sagt im Sicherungsdialog, welcher Weg gilt:
    die Feldstruktur beim Seitenkopieren nicht mitwandert; Lesezeichen gehen
    verloren.
 
+## Wo die schweren Bestandteile liegen
+
+Voreingestellt neben der Anwendung, in `fremd/` — rund 11 MB, das meiste
+WebAssembly und Sprachdaten. Wer sie woanders ablegen muss, etwa weil ein
+Hoster keine `.wasm`-Dateien annimmt, trägt im `index.html` eine andere
+Wurzel ein:
+
+```html
+<meta name="werkbank-fremd" content="https://beispiel.example/werkbank-fremd/">
+```
+
+Von dort holt die Anwendung dann PDF-Motor, Texterkennung, qpdf, Schriften
+und Sprachdaten. Am Rest ändert sich nichts. Der Server muss `.wasm` als
+`application/wasm` ausliefern, sonst startet die Texterkennung nicht.
+
 ## Prüfen
 
 Zwei Läufe, beide in einem echten Chromium, beide ohne Netz:

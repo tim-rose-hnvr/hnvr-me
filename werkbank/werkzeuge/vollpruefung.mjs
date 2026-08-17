@@ -19,6 +19,8 @@ const ARTEN = {
   '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript',
   '.css': 'text/css', '.pdf': 'application/pdf', '.json': 'application/json',
   '.png': 'image/png', '.txt': 'text/plain',
+  '.wasm': 'application/wasm', '.gz': 'application/gzip',
+  '.pfb': 'application/octet-stream', '.bcmap': 'application/octet-stream',
 };
 
 async function ladePlaywright() {

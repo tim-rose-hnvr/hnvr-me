@@ -7,18 +7,18 @@
    Damit sind Zusammenführen, Einfügen, Umsortieren, Löschen und Ausgeben
    ein und derselbe Mechanismus. */
 
-import { zustand, kennung, melde, sage, ladeDatei } from './kern.js';
+import { zustand, kennung, melde, sage, ladeDatei, fremdWurzel, fremdWeg } from './kern.js';
 
 export let pdfjs = null;
 
 export async function starteMotor() {
   if (pdfjs) return pdfjs;
-  pdfjs = await import('../fremd/pdf.mjs');
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL('../fremd/pdf.worker.mjs', import.meta.url).toString();
+  pdfjs = await import(fremdWeg('pdf.mjs'));
+  pdfjs.GlobalWorkerOptions.workerSrc = fremdWeg('pdf.worker.mjs');
   return pdfjs;
 }
 
-const WURZEL = new URL('../fremd/', import.meta.url).toString();
+
 
 /* Fragt nach dem Kennwort. Wird von der Oberflaeche gesetzt, damit dieses
    Modul keinen Dialog kennen muss. */
@@ -32,9 +32,9 @@ export async function ladeQuelle(bytes, name, { kennwort = null, tiefe = 0 } = {
   const eigen = bytes.slice(0);
   const aufgabe = pdfjs.getDocument({
     data: bytes,
-    cMapUrl: `${WURZEL}cmaps/`,
+    cMapUrl: fremdWeg('cmaps/'),
     cMapPacked: true,
-    standardFontDataUrl: `${WURZEL}schriften/`,
+    standardFontDataUrl: fremdWeg('schriften/'),
     isEvalSupported: false,
   });
   let pdf;

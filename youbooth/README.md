@@ -5,16 +5,29 @@ Website und Oberflächen der Fotobox-Software **youbooth** — Umsetzung der Ent
 
 ## Stand
 
+**Die Hauptnavigation ist vollständig umgesetzt.**
+
 | Bereich | Stand |
 |---|---|
 | Fundament (Tokens, Layout, Kopfleiste, Fußzeile, Bildplatz, Icons) | fertig |
 | `/` Startseite | fertig |
 | `/system` | fertig |
 | `/module` (Übersicht) | fertig |
-| `/preise` (Konfigurator, interaktiv) | fertig |
+| `/anlaesse` + sechs Landingpages | fertig |
+| `/vorlagen` (Galerie, interaktiv) | fertig |
+| `/vergleich` (Tabelle, interaktiv) | fertig |
 | `/rechner` (Verdienstrechner, interaktiv) | fertig |
+| `/preise` (Konfigurator, interaktiv) | fertig |
+| `/hilfe` (Suche + Akkordeon, interaktiv) | fertig |
+| `/team` | fertig |
+| `/download` | fertig, Dateipfade fehlen |
 | `/kontakt` (Formular, interaktiv) | fertig, Versand-Endpunkt fehlt |
-| alle übrigen Routen | Platzhalterseite, siehe unten |
+| 13 Modulseiten `/module/*` | offen |
+| `/support`, `/referenzen`, `/fuer-vermieter`, `/partner`, `/ratgeber`, `/anmelden`, `/vorlagen/system`, `/design-system` | offen |
+| App-Oberflächen `/oberflaechen/*` (Booth-Flow, Cockpit, Editor, Galerie, Mosaik-Wand, Onboarding, iPhone-Apps) | offen |
+| Rechtstexte (Impressum, Datenschutz, AGB) | offen, kein Entwurf vorhanden |
+
+Offene Routen sind erreichbar und zeigen eine „In Arbeit"-Seite mit Verweis auf die Entwurfsdatei.
 
 Jede im Entwurf vorgesehene Route ist erreichbar: Was noch nicht umgesetzt ist, rendert
 `src/pages/[...pfad].astro` als „In Arbeit"-Seite mit Verweis auf die zugehörige Entwurfsdatei.

@@ -1,0 +1,99 @@
+# Get in Touch veröffentlichen
+#
+# Läuft nur auf Knopfdruck (workflow_dispatch), nie von allein — ein Deploy soll
+# eine Entscheidung sein, kein Nebeneffekt eines Commits.
+#
+# Voraussetzungen, beide einmalig:
+#
+#   1. Das Projekt muss mit Wix verbunden sein. Das geht nur einmal von Hand,
+#      weil die Verknüpfung ein bestehendes Projekt auswählen lässt:
+#
+#         cd getintouch
+#         npx wix login
+#         npm create @wix/new@latest -- headless link --business-name "Get in Touch"
+#
+#      Dabei das vorhandene Projekt wählen (metaSiteId
+#      ed8e16cf-182d-4cbb-8b7d-1f97fe28d62b), nicht ein neues anlegen.
+#      Die dabei entstehende Konfiguration einchecken.
+#
+#   2. Ein API-Schlüssel als Repository-Geheimnis `WIX_API_KEY`:
+#      Wix-Dashboard → Einstellungen → API-Schlüssel (nur Kontoinhaber),
+#      danach GitHub → Settings → Secrets and variables → Actions.
+#
+#      Der Schlüssel liegt damit bei GitHub und nicht in einem Chatverlauf.
+#      Widerrufen geht jederzeit im selben Wix-Dialog.
+
+name: Get in Touch veröffentlichen
+
+on:
+  workflow_dispatch:
+    inputs:
+      grund:
+        description: Warum wird veröffentlicht?
+        required: false
+        default: Neuer Stand
+
+permissions:
+  contents: read
+
+jobs:
+  veroeffentlichen:
+    name: Bauen und ausliefern
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: getintouch
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: getintouch/package-lock.json
+
+      - name: Abhängigkeiten
+        run: npm ci
+
+      # Erst prüfen, dann ausliefern. Ein Deploy, der die Regeln bricht, ist
+      # schlimmer als keiner — die Seite hängt an einem gedruckten QR-Code.
+      - name: Tests
+        run: npm test
+
+      - name: Typen prüfen
+        run: npm run pruefen
+
+      - name: Verknüpfung prüfen
+        run: |
+          if [ ! -e .wix ] && [ ! -e wix.config.json ]; then
+            echo "::error::Das Projekt ist nicht mit Wix verbunden."
+            echo "Einmalig lokal ausführen und das Ergebnis einchecken:"
+            echo "  cd getintouch"
+            echo "  npx wix login"
+            echo "  npm create @wix/new@latest -- headless link --business-name \"Get in Touch\""
+            echo "Dabei das vorhandene Projekt ed8e16cf-182d-4cbb-8b7d-1f97fe28d62b wählen."
+            exit 1
+          fi
+
+      - name: Anmelden
+        run: npx wix login --api-key "$WIX_API_KEY"
+        env:
+          WIX_API_KEY: ${{ secrets.WIX_API_KEY }}
+
+      - name: Bauen
+        run: npx wix build
+        env:
+          GETINTOUCH_WIX_COLLECTION: GetInTouchProfile
+
+      - name: Ausliefern
+        run: npx wix release
+        env:
+          GETINTOUCH_WIX_COLLECTION: GetInTouchProfile
+
+      - name: Erreichbarkeit nachsehen
+        run: |
+          for pfad in "" "/t/hnvr" "/designs" "/werkstatt"; do
+            code=$(curl -sSL -o /dev/null -w '%{http_code}' "https://hnvrme.wixstudio.com/get-in-touch$pfad" || echo 000)
+            echo "$code  /get-in-touch$pfad"
+          done

@@ -332,24 +332,11 @@ bleibt eine Pause.
 | Collection | `GetInTouchProfile` — `slug` (Text), `daten` (Objekt), `veroeffentlicht` (Ja/Nein), Leserecht `ANYONE` |
 | Inhalt | Profil `hnvr`, veröffentlicht |
 
-**Was noch fehlt: das Frontend hochladen.** Dafür braucht die Wix-CLI eine
-Anmeldung, und die geht nur im Browser oder mit einem API-Schlüssel. Im
-Projektverzeichnis, einmalig:
-
-```bash
-npx wix login                       # oder: npx wix login --api-key <TOKEN>
-npm create @wix/new@latest -- headless link --business-name "Get in Touch"
-```
-
-Beim Verbinden das oben genannte Projekt wählen, statt ein neues anzulegen.
-Der Befehl trägt die Wix-Anbindung in `astro.config.mjs` ein und übernimmt
-Adapter und Authentifizierung. Danach:
-
-1. Den Node-Adapter aus `astro.config.mjs` entfernen — Wix bringt seinen
-   eigenen mit.
-2. `npm i @wix/data` und `GETINTOUCH_WIX_COLLECTION=GetInTouchProfile` setzen.
-   Danach kann `src/typen/wix-data.d.ts` weg.
-3. Bauen und veröffentlichen: `npm run build && npx wix release`.
+**Was noch fehlt: das Frontend hochladen.** Das geht nur über die Wix-CLI, und
+die braucht eine eigene Anmeldung. Der Ablauf steht in
+[VEROEFFENTLICHEN.md](VEROEFFENTLICHEN.md) — ein einmaliger Schritt von Hand,
+danach erledigt `.github/workflows/getintouch-veroeffentlichen.yml` den Rest
+auf Knopfdruck.
 
 **Noch von Hand zu erledigen:** das Projekt wurde mit den Wix-Vorgaben angelegt
 und steht auf Englisch, USD und `America/New_York`. Für einen Betrieb in

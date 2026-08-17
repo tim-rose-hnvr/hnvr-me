@@ -1,0 +1,538 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Icon from '../components/Icon.astro';
+
+/**
+ * Download-Portal. Die Ladeknoepfe zeigen auf noch nicht existierende
+ * Dateien — Pfade eintragen, sobald die Pakete gebaut sind (siehe README).
+ */
+
+const version = '4.3.0';
+const veroeffentlicht = '12.08.2026';
+
+const plattformen = [
+  {
+    name: 'Windows',
+    marke: 'Empfohlen',
+    hervor: true,
+    text: 'Windows 11, 8 GB RAM, SSD. Vollständige Kamera- und Druckerunterstützung, inklusive Hotfolder.',
+    zeilen: [`V${version} · 214 MB · EXE`, 'DSLR-Tethering · Systemdruck · 360-Steuerung'],
+    knopf: 'Für Windows laden',
+  },
+  {
+    name: 'macOS',
+    marke: 'Apple Silicon',
+    text: 'macOS 14 oder neuer. Signiert und notarisiert, Kamera per Tethering oder Hotfolder.',
+    zeilen: [`V${version} · 186 MB · DMG`, 'Universal · AirDrop-Ausgabe'],
+    knopf: 'Für macOS laden',
+  },
+  {
+    name: 'iPad',
+    marke: 'App Store',
+    text: 'iPadOS 17. Booth im geführten Zugriff, Ausgabe per QR, AirDrop und Mail — Druck über AirPrint.',
+    zeilen: [`V${version} · 96 MB`, 'Ohne DSLR · mit Front- und Rückkamera'],
+    knopf: 'Im App Store öffnen',
+  },
+  {
+    name: 'Web-Kamera',
+    marke: 'Ohne Installation',
+    text: 'Direkt im Browser starten, für Testphasen und verteilte Standorte. Gleiche Vorlagen, keine Hardware.',
+    zeilen: ['Immer aktuell', 'Chrome · Safari · Edge'],
+    knopf: 'Im Browser starten',
+    ziel: '/module/web-kamera',
+  },
+];
+
+const neuerungen = [
+  'Freistellung ohne Greenscreen deutlich schneller, saubere Haarkanten',
+  'Editor: Animationen pro Event zuweisbar, mit Vorschau am Screen',
+  'Mosaik-Wand kann auf Booth-Aufnahmen begrenzt werden, ohne Gäste-Uploads',
+  'Fernbedienung mit Hardware-Taster koppelbar (USB oder Bluetooth)',
+];
+
+const aeltere = [
+  ['V4.2.1', 'Druck-Queue behält Aufträge nach Papierwechsel'],
+  ['V4.2.0', 'Audio-Gästebuch, Transkript optional'],
+  ['V4.1.7', 'Kiosk-PIN, HTTPS-Schalter'],
+];
+
+const boxen = [
+  { name: 'Box #2', stand: version, zustand: 'ok' },
+  { name: 'Box #5', stand: 'wartet auf Puls', zustand: 'warten' },
+  { name: 'Box #7', stand: 'offline', zustand: 'weg' },
+];
+
+const dateien = [
+  {
+    kennung: 'Vorlagenpaket',
+    titel: '240 Layouts',
+    text: 'Alle Formate, als Booth-Datei und PSD. Ins Konto einspielen oder auf die Box übertragen.',
+    knopf: 'Paket laden · 1,2 GB',
+    ziel: '/vorlagen',
+  },
+  {
+    kennung: 'Screen-Sets',
+    titel: 'Animationen',
+    text: 'Wartebildschirme, Countdowns und Cheese-Momente je Anlass, pro Event zuweisbar.',
+    knopf: 'Sets ansehen',
+    ziel: '/oberflaechen/booth-animationen',
+  },
+  {
+    kennung: 'Marke',
+    titel: 'Logo & Icons',
+    text: 'Signet, Wortmarke, 26 Icons und Favicons als SVG und PNG.',
+    knopf: 'Design-System',
+    ziel: '/design-system',
+  },
+  {
+    kennung: 'Papier',
+    titel: 'Checklisten',
+    text: 'Aufbau, Übergabe und Packliste als PDF, zum Ausdrucken für Aushilfen.',
+    knopf: 'PDF laden · 2 Seiten',
+    ziel: '/support',
+  },
+];
+---
+
+<Marketing
+  titel="Download"
+  beschreibung={`youbooth ${version} für Windows, macOS und iPad — dazu die Web-Kamera direkt im Browser.`}
+>
+  <section class="hero">
+    <div class="hero__text">
+      <span class="mono mono--amber">Download-Portal · v{version}</span>
+      <h1>Eine Software, vier Wege sie zu starten</h1>
+      <p class="fliess">
+        Windows und macOS als Installation, iPad als App, dazu die Web-Kamera direkt im Browser.
+        Gleiche Lizenz, gleiche Vorlagen, gleiches Cockpit — ihr entscheidet pro Box.
+      </p>
+      <div class="zahlenzeile">
+        <span class="mono mono--hell">Veröffentlicht {veroeffentlicht}</span>
+        <span class="mono mono--hell">SHA-256 geprüft</span>
+        <span class="mono mono--hell">Automatisches Update über die Leitung</span>
+      </div>
+    </div>
+
+    <form class="lizenz">
+      <span class="mono mono--hell">Lizenz eingeben</span>
+      <label class="nur-vorlese" for="lizenz">Lizenzschlüssel</label>
+      <input class="lizenz__feld" id="lizenz" name="lizenz" placeholder="YB-••••-••••" />
+      <button class="knopf knopf--amber knopf--flach" type="submit">Freischalten</button>
+      <span class="lizenz__hinweis">
+        Ohne Lizenz läuft alles 14 Tage vollständig, danach nur die Web-Kamera.
+      </span>
+    </form>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Plattformen</h2>
+    <div class="raster raster--breit">
+      {
+        plattformen.map((p) => (
+          <article class:list={['karte', 'plattform', { hervor: p.hervor }]}>
+            <div class="plattform__kopf">
+              <span class:list={['plattform__zeichen', { dunkel: p.hervor }]}>
+                <Icon name="box" groesse={24} />
+              </span>
+              <span class="mono">{p.marke}</span>
+            </div>
+            <span class="display display--klein">{p.name}</span>
+            <span class="karte__text">{p.text}</span>
+            <div class="plattform__daten">
+              {p.zeilen.map((z) => (
+                <span class="mono">{z}</span>
+              ))}
+            </div>
+            <a class="knopf knopf--dunkel knopf--flach plattform__knopf" href={p.ziel ?? '/kontakt'}>
+              {p.knopf}
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt zweispalter">
+    <div class="spalte">
+      <h2>Was neu ist</h2>
+      <article class="karte">
+        <div class="versionskopf">
+          <span class="mono">V{version} · {veroeffentlicht}</span>
+          <span class="marke marke--aktuell">Aktuell</span>
+        </div>
+        <ul class="punkte">
+          {neuerungen.map((n) => <li>{n}</li>)}
+        </ul>
+      </article>
+
+      <div class="aeltere">
+        {
+          aeltere.map(([v, text]) => (
+            <span class="aeltere__zeile">
+              <b>{v}</b> · {text}
+            </span>
+          ))
+        }
+      </div>
+      <span class="mono">Ältere Versionen auf Anfrage · Support 24 Monate</span>
+    </div>
+
+    <div class="spalte spalte--schmal">
+      <h2>Update lieber aus der Ferne</h2>
+      <article class="karte">
+        <span class="mono">Rollout aus dem Cockpit</span>
+        <span class="display display--klein">3 Boxen · 1 Klick</span>
+        <div class="boxen">
+          {
+            boxen.map((b) => (
+              <span class="boxzeile">
+                <span class={`lampe lampe--${b.zustand}`} aria-hidden="true" />
+                <span class="boxzeile__name">{b.name}</span>
+                <span class="boxzeile__stand">{b.stand}</span>
+              </span>
+            ))
+          }
+        </div>
+        <span class="karte__text">
+          Updates werden von euch angestoßen und nie mitten in einem Event eingespielt.
+        </span>
+        <a class="pfeil pfeil--klein" href="/hilfe">Update-Ablauf nachlesen →</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Dazugehörige Dateien</h2>
+    <div class="raster raster--breit">
+      {
+        dateien.map((d) => (
+          <article class="karte">
+            <span class="mono">{d.kennung}</span>
+            <span class="display display--klein">{d.titel}</span>
+            <span class="karte__text">{d.text}</span>
+            <a class="pfeil pfeil--klein" href={d.ziel}>
+              {d.knopf} →
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display">Erst installieren, dann einrichten</span>
+      <span class="beiwort">
+        Das Installations-Zentrum führt danach in sechs Schritten durch Kamera, Drucker und Module.
+      </span>
+    </div>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--mittel" href="/oberflaechen/onboarding">
+        Installation ansehen
+      </a>
+      <a class="knopf knopf--rahmen-hell knopf--mittel" href="/kontakt">Hilfe anfragen</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand) 60px;
+    display: flex;
+    gap: 44px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .hero__text {
+    flex: 1 1 460px;
+    min-width: min(430px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .hero h1 {
+    font-size: clamp(34px, 4vw, 56px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 560px;
+  }
+
+  .zahlenzeile {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .zahlenzeile .mono {
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    color: rgba(244, 242, 238, 0.45);
+  }
+
+  .lizenz {
+    flex: 1 1 320px;
+    min-width: min(300px, 100%);
+    background: var(--ink-soft);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .lizenz .mono--hell {
+    color: var(--text-hell-still);
+  }
+
+  .lizenz__feld {
+    height: 48px;
+    border-radius: var(--r-knopf);
+    border: 1px solid rgba(244, 242, 238, 0.18);
+    background: transparent;
+    padding: 0 14px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.22em;
+    color: var(--text-hell);
+    width: 100%;
+  }
+
+  .lizenz__feld::placeholder {
+    color: rgba(244, 242, 238, 0.4);
+  }
+
+  .lizenz__feld:focus {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.2);
+  }
+
+  .knopf--flach {
+    height: 46px;
+    font-size: 14px;
+    width: 100%;
+  }
+
+  .lizenz__hinweis {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-hell-still);
+  }
+
+  /* Plattformen */
+  .raster--breit {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+  }
+
+  .plattform {
+    gap: 12px;
+  }
+
+  .plattform.hervor {
+    border-color: var(--ink-soft);
+    border-width: 2px;
+  }
+
+  .plattform__kopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .plattform__zeichen {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--r-knopf);
+    background: #f2efe9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+  }
+
+  .plattform__zeichen.dunkel {
+    background: var(--ink-soft);
+    color: var(--text-hell);
+    animation: atmen 4s ease-in-out infinite;
+  }
+
+  .plattform__daten {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .plattform__daten .mono {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  .plattform__knopf {
+    margin-top: auto;
+  }
+
+  @keyframes atmen {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.06);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .plattform__zeichen.dunkel {
+      animation: none;
+    }
+  }
+
+  /* Versionen */
+  .zweispalter {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 26px;
+    align-items: flex-start;
+  }
+
+  .spalte {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .spalte--schmal {
+    flex: 1 1 320px;
+    min-width: min(300px, 100%);
+  }
+
+  .versionskopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .marke--aktuell {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: var(--amber);
+    color: var(--amber-ink);
+    padding: 4px 9px;
+    border-radius: 5px;
+  }
+
+  .aeltere {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .aeltere__zeile {
+    font-size: 13.5px;
+    color: var(--text-leise);
+  }
+
+  .aeltere__zeile b {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  /* Boxenliste */
+  .boxen {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .boxzeile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .lampe {
+    width: 9px;
+    height: 9px;
+    border-radius: var(--r-kreis);
+    flex: none;
+    display: block;
+  }
+
+  .lampe--ok {
+    background: var(--ok);
+  }
+
+  .lampe--warten {
+    background: var(--amber);
+  }
+
+  .lampe--weg {
+    background: var(--warn);
+  }
+
+  .boxzeile__name {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .boxzeile__stand {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--text-still);
+  }
+
+  /* Schluss */
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding-block: 52px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 640px;
+  }
+
+  .schluss .display {
+    font-size: clamp(26px, 2.6vw, 32px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15px;
+    color: var(--text-hell-leise);
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+
+  .pfeil--klein {
+    font-size: 13px;
+  }
+</style>

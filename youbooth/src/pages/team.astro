@@ -1,0 +1,565 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Bildplatz from '../components/Bildplatz.astro';
+
+/**
+ * Über uns. Das Balkendiagramm waechst beim Laden hoch, die Standortzeile
+ * tippt sich, die Rollenkarten klappen fuer den langen Text auf — als
+ * <details>, damit es ohne JavaScript funktioniert.
+ */
+
+const jahre = [
+  { jahr: 2019, hoehe: 8 },
+  { jahr: 2020, hoehe: 12 },
+  { jahr: 2021, hoehe: 19 },
+  { jahr: 2022, hoehe: 34 },
+  { jahr: 2023, hoehe: 48 },
+  { jahr: 2024, hoehe: 68 },
+  { jahr: 2025, hoehe: 86 },
+  { jahr: 2026, hoehe: 100 },
+];
+
+const grundsaetze = [
+  {
+    titel: 'Offline zuerst',
+    text: 'Was im Saal passiert, muss ohne Internet funktionieren. Cloud ist Komfort, keine Voraussetzung.',
+  },
+  {
+    titel: 'Keine Bezahlschranke für Grundlagen',
+    text: 'Vorlagen, Screen-Sets und Overlays gehören zur Lizenz — nicht in einen Store.',
+  },
+  {
+    titel: 'Updates, wenn ihr wollt',
+    text: 'Nie automatisch mitten im Event. Ihr entscheidet, wann eine Box neu startet.',
+  },
+  {
+    titel: 'Daten sind geliehen',
+    text: 'Löschfristen sind eingebaut, Selfie-Suchbilder werden verworfen, Einwilligungen protokolliert.',
+  },
+];
+
+const zahlen = [
+  { wert: '154', text: 'Boxen im Einsatz' },
+  { wert: '48', text: 'Betreiber' },
+  { wert: '2019', text: 'Gegründet' },
+  { wert: '6', text: 'Leute im Team' },
+  { wert: '4,4 M', text: 'Aufnahmen gesamt' },
+  { wert: '99,4 %', text: 'Laufzeit 2026' },
+];
+
+const rollen = [
+  {
+    rolle: 'Gründung & Vermietung',
+    seit: 'Seit 2019',
+    kurz: 'Kennt jeden Saal, in dem das WLAN aussteigt.',
+    lang: 'Steht an rund 30 Wochenenden im Jahr selbst hinter der Box. Jede Funktion muss vorher einen Abend im Saal überlebt haben, sonst kommt sie nicht ins Release.',
+  },
+  {
+    rolle: 'Software',
+    seit: 'Seit 2020',
+    kurz: 'Baut Booth, Cockpit und Editor.',
+    lang: 'Schreibt die Booth-Oberfläche, den Druckweg und das Cockpit. Grundsatz: kein Klick mehr als nötig, keine Funktion, die Netz voraussetzt.',
+  },
+  {
+    rolle: 'Hardware & Werkstatt',
+    seit: 'Seit 2021',
+    kurz: 'Konfiguriert Boxen, prüft Drucker.',
+    lang: 'Nimmt Boxen vor der Auslieferung in Betrieb, testet Drucker mit 200 Abzügen und legt Ersatzteile für die gängigen Modelle bereit.',
+  },
+  {
+    rolle: 'Support',
+    seit: 'Seit 2022',
+    kurz: 'Antwortet werktags in vier Stunden.',
+    lang: 'Tickets kommen mit Protokoll aus der Software an, deshalb entfällt die Rückfragerunde. Am Wochenende läuft eine Notfallnummer für laufende Events.',
+  },
+  {
+    rolle: 'Vorlagen & Design',
+    seit: 'Seit 2022',
+    kurz: 'Zeichnet die 240 Layouts.',
+    lang: 'Baut jeden Monat neue Designs und setzt Kundenlayouts ohne Aufpreis um — meist innerhalb von zwei Werktagen inklusive Testdruck.',
+  },
+  {
+    rolle: 'Buchhaltung',
+    seit: 'Seit 2023',
+    kurz: 'Rechnungen, Verträge, Mietkauf.',
+    lang: 'Kümmert sich um Lizenzabrechnung, Verträge für Firmenkunden und die Auszahlung der Partner-Gutschriften.',
+  },
+];
+
+const standortzeile = 'Werkstatt in Herne, Server in Frankfurt';
+---
+
+<Marketing
+  titel="Über uns"
+  beschreibung="youbooth entsteht bei Leuten, die selbst vermieten: 48 Betreiber, 154 Boxen, entwickelt in Herne."
+>
+  <section class="hero">
+    <div class="hero__text">
+      <span class="mono mono--amber">Über uns</span>
+      <h1>Wir vermieten selbst — deshalb gibt es youbooth</h1>
+      <p class="fliess">
+        Angefangen mit zwei Boxen an Wochenenden, gescheitert an Software, die im Saal ohne WLAN
+        aufgab. Heute läuft youbooth bei 48 Betreibern auf 154 Boxen. Entwickelt in Herne, betrieben
+        auf Servern in Frankfurt.
+      </p>
+    </div>
+
+    <figure class="diagramm">
+      <figcaption class="mono mono--hell">Boxen pro Jahr</figcaption>
+      <div class="balken">
+        {
+          jahre.map((j, i) => (
+            <span
+              class:list={['balken__stab', { letzter: i === jahre.length - 1 }]}
+              style={`--hoehe:${j.hoehe}%;--verzug:${(i * 0.09).toFixed(2)}s`}
+              title={`${j.jahr}`}
+            />
+          ))
+        }
+      </div>
+      <div class="balken__achse">
+        <span class="mono mono--hell">{jahre[0].jahr}</span>
+        <span class="mono mono--hell">{jahre[jahre.length - 1].jahr}</span>
+      </div>
+
+      <span class="strich" aria-hidden="true"></span>
+
+      <div class="standort">
+        <span class="puls" aria-hidden="true"><span></span><span></span></span>
+        <span class="tippen">{standortzeile}</span>
+        <span class="cursor" aria-hidden="true"></span>
+      </div>
+    </figure>
+  </section>
+
+  <section class="abschnitt zweispalter">
+    <div class="spalte">
+      <h2>Woran wir uns halten</h2>
+      {
+        grundsaetze.map((g, i) => (
+          <article class="karte" style={`--verzug:${(i * 0.07).toFixed(2)}s`}>
+            <span class="display display--klein">{g.titel}</span>
+            <span class="karte__text">{g.text}</span>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="spalte spalte--schmal">
+      <h2>Zahlen</h2>
+      <div class="zahlenraster">
+        {
+          zahlen.map((z) => (
+            <article class="karte zahlkarte">
+              <b>{z.wert}</b>
+              <span class="mono">{z.text}</span>
+            </article>
+          ))
+        }
+      </div>
+      <article class="karte">
+        <span class="mono">Standort</span>
+        <span class="display display--klein">Herne, Nordrhein-Westfalen</span>
+        <span class="karte__text">
+          Werkstatt für Hardware, Support am Telefon, Server in Frankfurt. Besuch nach Absprache
+          möglich.
+        </span>
+      </article>
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Die Leute dahinter</h2>
+    <div class="raster raster--rollen">
+      {
+        rollen.map((r, i) => (
+          <details class="rolle" style={`--verzug:${(i * 0.05).toFixed(2)}s`}>
+            <summary>
+              <span class="portraet">
+                <Bildplatz motiv="Porträt" format="1 / 1" radius={999} fit="cover" />
+              </span>
+              <span class="rolle__kopf">
+                <span class="rolle__name">{r.rolle}</span>
+                <span class="mono">{r.seit}</span>
+                <span class="rolle__kurz">{r.kurz}</span>
+                <span class="rolle__mehr">Was dahinter steckt →</span>
+              </span>
+            </summary>
+            <span class="rolle__lang">{r.lang}</span>
+          </details>
+        ))
+      }
+    </div>
+    <span class="mono">Porträts einsetzen: Foto auf den Kreis ziehen</span>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display">Lieber einmal telefonieren?</span>
+      <span class="beiwort">
+        Mo–Fr 9–18 Uhr · <a href="tel:+49234555018">+49 234 555 018</a> ·
+        <a href="mailto:hallo@youbooth.me">hallo@youbooth.me</a>
+      </span>
+    </div>
+    <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Kontakt</a>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 44px;
+    align-items: center;
+  }
+
+  .hero__text {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4vw, 54px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+  }
+
+  /* Balkendiagramm */
+  .diagramm {
+    flex: 1 1 320px;
+    min-width: min(300px, 100%);
+    background: var(--ink-soft);
+    border: 1px solid var(--linie-dunkel);
+    border-radius: 16px;
+    padding: 22px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .diagramm .mono--hell {
+    font-size: 9.5px;
+    color: var(--text-hell-still);
+  }
+
+  .balken {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 120px;
+  }
+
+  .balken__stab {
+    flex: 1;
+    height: var(--hoehe);
+    background: rgba(244, 242, 238, 0.25);
+    border-radius: 3px 3px 0 0;
+    transform-origin: bottom;
+    display: block;
+    animation: wachsen 0.9s cubic-bezier(0.3, 1.2, 0.5, 1) both var(--verzug);
+  }
+
+  .balken__stab.letzter {
+    background: var(--amber);
+  }
+
+  .balken__achse {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .balken__achse .mono--hell {
+    font-size: 8.5px;
+    letter-spacing: 0.1em;
+  }
+
+  .strich {
+    height: 1px;
+    background: rgba(244, 242, 238, 0.12);
+    display: block;
+  }
+
+  .standort {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .puls {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    flex: none;
+  }
+
+  .puls span {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--r-kreis);
+    background: var(--ok);
+    display: block;
+  }
+
+  .puls span:last-child {
+    animation: pulsen 2.6s ease-out infinite;
+  }
+
+  .tippen {
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 15px;
+    color: rgba(244, 242, 238, 0.75);
+    animation: tippen 7s steps(38, end) infinite;
+  }
+
+  .cursor {
+    width: 7px;
+    height: 14px;
+    background: var(--amber);
+    display: block;
+    animation: blinken 1s step-end infinite;
+  }
+
+  @keyframes wachsen {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  @keyframes pulsen {
+    0% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(2.6);
+      opacity: 0;
+    }
+  }
+
+  @keyframes tippen {
+    0% {
+      width: 0;
+    }
+    45%,
+    100% {
+      width: 24ch;
+    }
+  }
+
+  @keyframes blinken {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .balken__stab,
+    .puls span:last-child,
+    .tippen,
+    .cursor {
+      animation: none;
+    }
+    .tippen {
+      width: auto;
+    }
+  }
+
+  /* Grundsätze und Zahlen */
+  .zweispalter {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 26px;
+    padding-block: 44px 0;
+    align-items: flex-start;
+  }
+
+  .spalte {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .spalte--schmal {
+    flex: 1 1 340px;
+    min-width: min(320px, 100%);
+  }
+
+  .spalte .karte {
+    animation: einblenden 0.6s ease-out both var(--verzug, 0s);
+  }
+
+  .zahlenraster {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .zahlkarte {
+    gap: 5px;
+  }
+
+  .zahlkarte b {
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  @keyframes einblenden {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spalte .karte,
+    .rolle {
+      animation: none;
+    }
+  }
+
+  /* Rollenkarten */
+  .raster--rollen {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .rolle {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte);
+    padding: 20px;
+    animation: einblenden 0.6s ease-out both var(--verzug);
+  }
+
+  .rolle[open] {
+    border-color: rgba(242, 178, 62, 0.55);
+  }
+
+  .rolle summary {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .rolle summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .portraet {
+    width: 64px;
+    height: 64px;
+    flex: none;
+    border-radius: var(--r-kreis);
+    overflow: hidden;
+    background: #eceae5;
+    display: block;
+  }
+
+  .rolle__kopf {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .rolle__name {
+    font-weight: 600;
+    font-size: 15.5px;
+    color: var(--text);
+  }
+
+  .rolle__kurz {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-leise);
+    margin-top: 6px;
+  }
+
+  .rolle__mehr {
+    font-weight: 600;
+    font-size: 11.5px;
+    color: var(--link);
+    margin-top: 6px;
+  }
+
+  .rolle[open] .rolle__mehr {
+    color: var(--text-still);
+  }
+
+  .rolle[open] .rolle__mehr::after {
+    content: ' — weniger anzeigen';
+  }
+
+  .rolle__lang {
+    display: block;
+    margin-top: 12px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: rgba(0, 0, 0, 0.72);
+    border-left: 3px solid var(--amber);
+    padding-left: 12px;
+  }
+
+  /* Schluss */
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding-block: 52px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .schluss .display {
+    font-size: clamp(26px, 2.6vw, 32px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15px;
+    color: var(--text-hell-leise);
+  }
+
+  .beiwort a {
+    color: var(--text-hell-leise);
+  }
+
+  .beiwort a:hover {
+    color: var(--amber);
+  }
+
+  @media (max-width: 640px) {
+    .zahlenraster {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

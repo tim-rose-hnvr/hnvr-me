@@ -10,9 +10,14 @@
  *
  * Hier steht eine Zeile Absender und sonst nichts. Der Hinweis auf die Technik
  * ist keine Werbung, sondern eine Behauptung, die auf dieser Seite nachprüfbar
- * ist: sie lädt nichts von fremden Servern und setzt kein Cookie.
+ * sein muss — und deshalb hat sie sich geändert: „Keine Cookies" stand hier
+ * einmal, bis die Auslieferung von Wix anfing, eine Cookie-Richtlinie und eine
+ * Besucherzählung in jede Seite zu spritzen. Eine Zusage, die der eigene Server
+ * unterläuft, ist keine. Was übrig blieb, stimmt.
  */
 import { SIGNET } from '../kern/zeichen.ts';
+
+const STILL = 'Kein eigenes Tracking · keine fremde Werbung';
 
 interface Props {
   rechtliches?: { impressum?: string | undefined; datenschutz?: string | undefined } | undefined;
@@ -41,7 +46,7 @@ const eintraege = [
     )
   }
 
-  <p class="fuss__still">Keine Cookies · kein Tracking · keine fremde Werbung</p>
+  <p class="fuss__still">{STILL}</p>
 
   <a class="fuss__absender" href="https://hnvr.me/get-in-touch" target="_blank" rel="noopener noreferrer">
     <Fragment set:html={SIGNET.replace('<svg', '<svg class="fuss__signet"')} />

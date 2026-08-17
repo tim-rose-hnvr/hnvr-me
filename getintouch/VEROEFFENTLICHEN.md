@@ -1,92 +1,96 @@
 # Veröffentlichen
 
-Kurzfassung: **ein einmaliger Schritt von Hand, danach auf Knopfdruck.**
-
----
-
-## Warum ich das nicht selbst erledigen kann
-
-Ich rufe die ganze Zeit Wix-APIs auf — das Headless-Projekt, die Collection und
-das Profil `hnvr` sind darüber angelegt worden. Der Zugang läuft aber über den
-Wix-Connector: ich kann damit *Anfragen stellen*, ich habe den Schlüssel nicht
-*in der Hand*. Er liegt im Connector, nicht in dieser Umgebung.
-
-Das Ausliefern des Frontends geht nur über die Wix-CLI auf diesem Rechner
-(`wix build`, dann `wix release`), und die will eine eigene Anmeldung:
-Browser-Login oder `wix login --api-key <token>` — also einen Schlüssel als
-Zeichenkette in einer Konsole.
-
-Geprüft, bevor ich das behaupte:
-
-| Weg | Ergebnis |
-|---|---|
-| Schlüssel per REST anlegen | Kein Endpunkt. Laut Doku nur im API-Schlüssel-Manager, und nur Kontoinhaber. |
-| Frontend per REST ausliefern | Kein Endpunkt. Die Spezifikation hat 29 Treffer auf „publish/release", alle aus Fachdomänen (Blogbeiträge, Bestellungen). |
-| `Site Actions`-API | Gilt laut Doku ausdrücklich „not to Headless backends or apps". |
-| Gespeicherte CLI-Sitzung | Keine — weder `~/.wix` noch `.wix` im Projekt, keine `WIX_*`-Variable. |
-
----
-
-## Schritt 1 — einmalig, von Hand
-
-Die Verknüpfung geht nur interaktiv, weil dabei ein **bestehendes** Projekt
-ausgewählt wird statt ein neues angelegt:
-
-```bash
-cd getintouch
-npx wix login
-npm create @wix/new@latest -- headless link --business-name "Get in Touch"
-```
-
-Dabei das vorhandene Projekt wählen:
+Die Seite ist online:
+**https://get-in-tou-35a520f5-hnvrme.wix-site-host.com**
 
 | | |
 |---|---|
-| Name | `Get in Touch` |
-| metaSiteId | `ed8e16cf-182d-4cbb-8b7d-1f97fe28d62b` |
-| Dashboard | https://manage.wix.com/dashboard/ed8e16cf-182d-4cbb-8b7d-1f97fe28d62b |
+| Projekt | `Get in Touch` |
+| siteId | `880ffa0c-0877-46e5-ba41-e1ba1e072338` |
+| appId | `af0cc4c8-dd9a-4fae-a9cc-7265992abc43` |
+| Collection | `GetInTouchProfile` |
+| Dashboard | https://manage.wix.com/dashboard/880ffa0c-0877-46e5-ba41-e1ba1e072338 |
 
-Danach:
-
-1. Den Node-Adapter aus `astro.config.mjs` entfernen — Wix bringt seinen eigenen
-   mit. (Er steht nur da, damit `npm run build` ohne Wix-Konto funktioniert.)
-2. `npm i @wix/data`, danach kann `src/typen/wix-data.d.ts` weg.
-3. Die entstandene Verknüpfungsdatei einchecken.
-
-Prüfen und ausliefern:
-
-```bash
-npm run build && npx wix release
-```
+Verknüpfung und Anmeldedaten stehen in `wix.config.json`; die Datei gehört ins
+Repository, sie enthält keine Geheimnisse.
 
 ---
 
-## Schritt 2 — ab dann auf Knopfdruck
+## Ausliefern
 
-`.github/workflows/getintouch-veroeffentlichen.yml` erledigt den Rest: Tests,
-Typprüfung, Bauen, Ausliefern, danach ein Blick auf die vier wichtigsten
-Adressen.
+```bash
+cd getintouch
+npm run build && npm run release
+```
 
-Dafür einmal ein Repository-Geheimnis anlegen:
+Oder auf Knopfdruck: GitHub → Actions → *Get in Touch veröffentlichen* → *Run
+workflow*. Der Ablauf prüft erst (Tests, Typen), baut, liefert aus und sieht
+danach nach, ob die vier wichtigsten Adressen antworten. Absichtlich kein
+Automatismus bei jedem Commit — ein Deploy soll eine Entscheidung sein.
 
-1. Wix-Dashboard → Einstellungen → **API-Schlüssel** → neuer Schlüssel mit
-   Admin-Rolle, beschränkt auf dieses Projekt.
-2. GitHub → Settings → Secrets and variables → Actions → **`WIX_API_KEY`**.
+Dafür braucht es das Repository-Geheimnis **`WIX_API_KEY`**:
+Wix-Dashboard → Einstellungen → API-Schlüssel (nur Kontoinhaber), danach
+GitHub → Settings → Secrets and variables → Actions.
 
-Der Schlüssel liegt damit bei GitHub und nicht in einem Chatverlauf. Widerrufen
-geht jederzeit im selben Wix-Dialog.
+---
 
-Ausgelöst wird der Ablauf von Hand (Actions → *Get in Touch veröffentlichen* →
-*Run workflow*). Absichtlich kein Automatismus bei jedem Commit: ein Deploy
-soll eine Entscheidung sein, kein Nebeneffekt.
+## Zwei Fallen, die Zeit gekostet haben
+
+**`wix login --api-key` läuft ohne Terminal nicht durch.** Das CLI nimmt den
+Schlüssel entgegen, fällt dann aber trotzdem auf die Anmeldung per Gerätecode
+zurück und wartet bis zum Zeitablauf (Stand CLI 1.1.237). Wer ohne Terminal
+anmelden muss, schreibt die Datei, die das CLI nach erfolgreicher Anmeldung
+selbst anlegt:
+
+```
+~/.wix/auth/api-key.json
+{ "token": "<Schlüssel>",
+  "accountId": "<accountId>",
+  "userInfo": { "userId": "<accountOwner>", "email": "<slug>" } }
+```
+
+Die drei Werte liefert `GET https://www.wixapis.com/accounts/v1/accounts/my_account`
+mit dem Schlüssel im `Authorization`-Kopf. Genau das macht der Workflow.
+
+**Umgebungsvariablen aus dem Bau überleben nicht.** `import.meta.env.X` wird zu
+`process.env.X` übersetzt und erst auf dem Server ausgewertet — dort ist die
+Variable nicht gesetzt. Der Name der Collection stand einmal in
+`GETINTOUCH_WIX_COLLECTION`; die CMS-Quelle war deshalb beim ersten Ausliefern
+lautlos abgeschaltet, und die Seite zeigte nur die Profile aus den Dateien. Er
+steht jetzt als Konstante im Code. Wer wirklich eine Variable braucht, setzt sie
+mit `wix env set --key … --value …` auf den Servern von Wix, nicht in der Shell
+des Bauvorgangs.
+
+---
+
+## Was auf diesem Host nicht uns gehört
+
+`/robots.txt` und `/sitemap.xml` beantwortet Wix an der Kante, bevor unsere
+Routen drankommen — `robots.txt.ts` und `sitemap.xml.ts` laufen dort nie. Beide
+bleiben trotzdem im Projekt: auf einer eigenen Domain ohne Wix davor stimmen
+sie, und lokal prüfen sie sich mit. Auf diesem Host gilt:
+
+- Wix' robots.txt erlaubt alles. Dass die Werkstatt und die Galerie-Vorschauen
+  nicht in den Index gehören, steht deshalb als `noindex` in den Seiten selbst —
+  wo es ohnehin verbindlicher ist.
+- Die Sitemap, die Wix in seiner robots.txt nennt, gibt es nicht (404). Wer sie
+  braucht, trägt sie in den SEO-Werkzeugen des Dashboards nach.
+
+Eine vorgebaute **Unterseite** wird als `…/index.html` abgelegt und unter ihrer
+Adresse ohne Schrägstrich mit 404 beantwortet — nur die Startseite bekommt diese
+Behandlung geschenkt. `/designs` ist deshalb servergerendert. Für neue Seiten
+gilt: `prerender = true` nur auf der Startseite.
 
 ---
 
 ## Noch von Hand im Dashboard
 
-Das Projekt wurde mit den Wix-Vorgaben angelegt und steht auf Englisch, USD und
-`America/New_York`. Für einen Betrieb in Hannover gehört das auf Deutsch, EUR
-und `Europe/Berlin`. Auf die Seiten wirkt sich das nicht aus — die
-Erreichbarkeit rechnet mit der Zeitzone aus dem Profil —, wohl aber auf
-Rechnungen und andere Wix-Funktionen. Einen dokumentierten Schreib-Endpunkt
-dafür gibt es nicht.
+Das Projekt steht auf den Wix-Vorgaben: Englisch, USD, `America/New_York`. Für
+einen Betrieb in Hannover gehört das auf Deutsch, EUR und `Europe/Berlin`. Auf
+die Seiten wirkt sich das nicht aus — die Erreichbarkeit rechnet mit der
+Zeitzone aus dem Profil —, wohl aber auf Rechnungen und andere Wix-Funktionen.
+Einen dokumentierten Schreib-Endpunkt dafür gibt es nicht.
+
+Ebenfalls offen: eine eigene Domain vor `get-in-tou-35a520f5-hnvrme.wix-site-host.com`.
+Solange die fehlt, zeigt `Astro.site` (`https://hnvr.me`) in Canonical-Angaben
+und im QR-Code auf eine Adresse, die es noch nicht gibt.

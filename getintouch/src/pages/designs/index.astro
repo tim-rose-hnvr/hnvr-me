@@ -16,7 +16,18 @@ import { SIGNET, zeichen } from '../../kern/zeichen.ts';
 import '../../stile/marketing.css';
 import '../../stile/galerie.css';
 
-export const prerender = true;
+/**
+ * Vom Server, nicht vorgebaut.
+ *
+ * Eine vorgebaute Unterseite landet als `designs/index.html` im Bündel, und die
+ * Auslieferung von Wix beantwortet `/designs` dann mit 404 — nur die
+ * Startseite bekommt diese Behandlung geschenkt. Der Aufbau kostet hier
+ * nichts: die Galerie liest zwölf Vorlagen aus dem Kern, keine Datenbank.
+ * Gegen die Last hilft der Zwischenspeicher weiter unten.
+ */
+export const prerender = false;
+
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
 
 const rahmen = vorlage('hnvr');
 const rahmenStil = Object.entries(cssVariablen(rahmen))

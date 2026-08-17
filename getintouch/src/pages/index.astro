@@ -59,20 +59,28 @@ const merkmale = [
   },
   {
     zeichen: 'schloss',
-    titel: 'Keine Cookies, kein Tracking',
-    text: 'Schriften und Bilder liegen auf demselben Server. Es wird nichts von Dritten nachgeladen, nichts gespeichert und niemand angeschrieben, der deine Karte ansieht.',
+    titel: 'Kein Tracking von uns',
+    text: 'Schriften und Bilder liegen auf demselben Server. Die Seite selbst lädt nichts von Dritten nach und schreibt niemanden an, der sie ansieht. Was das Hosting darüber hinaus mitgibt, steht weiter unten.',
   },
 ];
 
-/** Gemessen am ausgelieferten HTML von linktr.ee/linktree. */
+/**
+ * Gemessen am ausgelieferten HTML von linktr.ee/linktree — und am eigenen.
+ *
+ * Die eigenen Zahlen stehen doppelt: was das Programm erzeugt, und was beim
+ * Besucher ankommt. Der Unterschied sind vier Skripte, die die Auslieferung von
+ * Wix in jede Seite spritzt (Cookie-Richtlinie, Telemetrie, Analytics). Sie
+ * stammen nicht aus diesem Code und lassen sich aus ihm nicht entfernen.
+ * Die Zahl kleinzurechnen, indem man nur die eigene Hälfte zeigt, wäre genau
+ * die Sorte Werbeaussage, gegen die diese Tabelle steht.
+ */
 const vergleich = {
   stand: 'August 2026',
   zeilen: [
-    { was: 'HTML einer Profilseite', andere: '190 KB', wir: '20 KB' },
-    { was: 'Skripte', andere: '52', wir: '1' },
-    { was: 'Nachgeladen von fremden Hosts', andere: '3', wir: '0' },
+    { was: 'HTML einer Profilseite', andere: '190 KB', wir: '25 KB' },
+    { was: 'Skripte', andere: '52', wir: '1 eigenes, 4 vom Hosting' },
+    { was: 'Nachgeladen von fremden Hosts', andere: '3', wir: '1 (Wix)' },
     { was: 'Links auf fremde Profile', andere: '60', wir: '0' },
-    { was: 'Cookie-Einwilligung nötig', andere: 'ja', wir: 'nein' },
     { was: 'Werbung auf deiner Seite', andere: 'Affiliate-Verweise', wir: 'keine' },
   ],
 };
@@ -122,7 +130,7 @@ const fragen = [
     // Seite selbst tut, ist dagegen nachprüfbar — und genau das steht da.
     frage: 'Wo liegen die Daten?',
     antwort:
-      'Die Profile liegen auf der Wix-Infrastruktur, die hnvr.me auch für seine übrigen Projekte nutzt; Einzelheiten stehen in der Datenschutzerklärung. Die Profilseite selbst lädt nichts von Dritten nach, setzt kein Cookie und meldet niemandem, wer sie geöffnet hat.',
+      'Die Profile liegen auf der Wix-Infrastruktur, die hnvr.me auch für seine übrigen Projekte nutzt; Einzelheiten stehen in der Datenschutzerklärung. Die Seite selbst lädt nichts von Dritten nach und meldet niemandem, wer sie geöffnet hat. Wix legt allerdings vier eigene Skripte in jede ausgelieferte Seite — Cookie-Richtlinie, Telemetrie und Besucherzählung. Die kommen nicht aus diesem Programm und lassen sich aus ihm auch nicht entfernen.',
   },
 ];
 ---
@@ -269,9 +277,10 @@ const fragen = [
           </div>
 
           <p class="quelle">
-            Erhoben {vergleich.stand} am ausgelieferten HTML einer öffentlichen Profilseite von linktr.ee — nicht an
-            Werbeaussagen. „Nachgeladen von fremden Hosts“ zählt Skripte, Schriften und Bilder, die der Browser beim
-            Öffnen von dritten Servern holt.
+            Erhoben {vergleich.stand} an beiden ausgelieferten Seiten — nicht an Werbeaussagen. „Nachgeladen von fremden
+            Hosts“ zählt Skripte, Schriften und Bilder, die der Browser beim Öffnen von dritten Servern holt. Die vier
+            Skripte auf unserer Seite stammen aus der Auslieferung von Wix und nicht aus diesem Programm; auf einem
+            eigenen Server bleibt es beim einen.
           </p>
         </section>
 

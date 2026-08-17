@@ -14,6 +14,39 @@ import type { Profil } from './profil.ts';
 import { baueVcard, vcardDateiname } from './vcard.ts';
 
 /**
+ * Eigene Profilbilder, schon beim Bauen eingebettet.
+ *
+ * Auf der Auslieferung von Wix scheitert es, wenn die Server-Funktion die
+ * eigene Adresse aufruft, um sich ein Bild zu holen — das Foto fehlte dadurch
+ * lautlos in jeder Visitenkarte, obwohl dieselbe Datei im Browser einwandfrei
+ * lud. Ein Bild, das ohnehin mit ausgeliefert wird, muss auch nicht übers Netz
+ * geholt werden.
+ *
+ * Fremde Bilder (Wix-Medien, eigene Domain) bleiben beim Holen zur Laufzeit —
+ * dort ist der Aufruf normaler ausgehender Verkehr und funktioniert.
+ *
+ * Der Aufruf steht in einem `try`, weil `import.meta.glob` eine Erfindung des
+ * Bündlers ist: im Bau wird er durch die fertige Liste ersetzt, unter blankem
+ * Node (die Tests) gibt es ihn nicht.
+ */
+let eingebauteBilder: Record<string, string> = {};
+try {
+  eingebauteBilder = import.meta.glob('/public/bilder/*.{png,jpg,jpeg,gif,webp}', {
+    query: '?inline',
+    import: 'default',
+    eager: true,
+  }) as Record<string, string>;
+} catch {
+  /* Außerhalb des Bündlers bleibt die Liste leer, und es gilt der Netzweg. */
+}
+
+/** Gibt die Datenadresse zu `/bilder/…` zurück, sofern die Datei mitgebaut wurde. */
+function ausDemBau(quelle: string | undefined): string | undefined {
+  if (!quelle?.startsWith('/bilder/')) return undefined;
+  return eingebauteBilder[`/public${quelle}`];
+}
+
+/**
  * Die eigene Herkunft, verlässlich. `Astro.url` taugt dafür nicht (siehe
  * `Umgebung.hier`), der `Host`-Kopf schon — er trägt Name und Port so, wie der
  * Aufruf tatsächlich hereinkam.
@@ -60,8 +93,9 @@ export interface Umgebung {
 export async function vcardAntwort(profil: Profil, umgebung: Umgebung): Promise<Response> {
   if (!profil.visitenkarte) return fehlt('Für diese Seite gibt es keine Visitenkarte.');
 
-  // Das Foto wird eingebettet, nicht verlinkt — siehe `bild.ts`.
-  const bild = await alsDatenadresse(profil.kopf.bild, umgebung.hier);
+  // Das Foto wird eingebettet, nicht verlinkt — siehe `bild.ts`. Was schon im
+  // Bau liegt, kommt von dort; alles andere wird geholt.
+  const bild = await alsDatenadresse(ausDemBau(profil.kopf.bild) ?? profil.kopf.bild, umgebung.hier);
 
   const vcard = baueVcard(profil.visitenkarte, { bild, seite: umgebung.seite, stand: new Date() });
 

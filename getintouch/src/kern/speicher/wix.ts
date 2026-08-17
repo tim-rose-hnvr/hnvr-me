@@ -13,9 +13,14 @@
  *   daten           Objekt               — das Profil, Aufbau siehe `profil.ts`
  *   veroeffentlicht Ja/Nein              — Entwürfe bleiben unsichtbar
  *
- * Der Name der Collection steht in `GETINTOUCH_WIX_COLLECTION`. Fehlt die
- * Variable, bleibt diese Quelle stumm und es gelten allein die Dateien. So
- * läuft das Projekt vor dem Verbinden mit Wix genauso wie danach.
+ * Der Name der Collection ist eine Konstante des Programms, keine Einstellung.
+ * Er stand einmal in `GETINTOUCH_WIX_COLLECTION` — und genau daran ist die
+ * Quelle beim ersten Ausliefern gescheitert: die Variable wird zur Laufzeit aus
+ * `process.env` gelesen, auf den Servern von Wix ist sie nicht gesetzt, und die
+ * Seite fiel lautlos auf die Dateien zurück. Ein Ausfall, den niemand sieht,
+ * ist schlimmer als einer, der kracht. Die Variable übersteuert weiterhin —
+ * für Tests gegen eine zweite Collection —, aber sie entscheidet nicht mehr,
+ * ob es das CMS überhaupt gibt.
  *
  * Die Anmeldung übernimmt die Astro-Anbindung von Wix: sie hinterlegt die
  * Zugangsdaten des Projekts, deshalb wird hier kein Client gebaut und kein
@@ -26,13 +31,15 @@
 import { lieseProfil, type Profil } from '../profil.ts';
 import type { Ablage } from './index.ts';
 
-function collectionName(): string | undefined {
+const VORGABE = 'GetInTouchProfile';
+
+function collectionName(): string {
   const wert = import.meta.env.GETINTOUCH_WIX_COLLECTION;
-  return typeof wert === 'string' && wert.trim() ? wert.trim() : undefined;
+  return typeof wert === 'string' && wert.trim() ? wert.trim() : VORGABE;
 }
 
 export function wixIstEingerichtet(): boolean {
-  return collectionName() !== undefined;
+  return true;
 }
 
 /**
@@ -49,10 +56,21 @@ interface WixItems {
   query(collection: string): WixAbfrage;
 }
 
-/** Erst zur Laufzeit geladen — `@vite-ignore`, damit der Bündler nicht auflöst. */
-async function datenmodul(): Promise<WixItems> {
-  const modul = (await import(/* @vite-ignore */ '@wix/data')) as { items: WixItems };
-  return modul.items;
+/**
+ * Erst zur Laufzeit geladen und genau einmal: fehlt das Paket — etwa in einer
+ * Prüfumgebung ohne Wix —, soll das einmal im Log stehen und nicht bei jedem
+ * Seitenaufruf. Danach gelten allein die Dateien.
+ */
+let modul: Promise<WixItems | null> | null = null;
+
+function datenmodul(): Promise<WixItems | null> {
+  modul ??= import('@wix/data')
+    .then((m) => (m as { items: WixItems }).items)
+    .catch((fehler) => {
+      console.error('[getintouch] „@wix/data" nicht ladbar — es gelten die Dateien:', fehler);
+      return null;
+    });
+  return modul;
 }
 
 function alsProfil(eintrag: Record<string, unknown>, slug: string): Profil | null {
@@ -79,13 +97,15 @@ function alsProfil(eintrag: Record<string, unknown>, slug: string): Profil | nul
 }
 
 export function ausWix(): Ablage {
-  const collection = collectionName()!;
+  const collection = collectionName();
 
   return {
     name: `wix:${collection}`,
 
     async hole(slug) {
       const items = await datenmodul();
+      if (!items) return null;
+
       const treffer = await items
         .query(collection)
         .eq('slug', slug.toLowerCase())
@@ -99,6 +119,8 @@ export function ausWix(): Ablage {
 
     async liste() {
       const items = await datenmodul();
+      if (!items) return [];
+
       const treffer = await items.query(collection).eq('veroeffentlicht', true).limit(1000).find();
       return treffer.items
         .map((e) => (e as Record<string, unknown>).slug)

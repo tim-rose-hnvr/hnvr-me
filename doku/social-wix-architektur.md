@@ -201,13 +201,56 @@ Mehr Arbeit, aber kein anderer Entwurf.
 
 ---
 
+## Bestandsaufnahme vom 17.08.2026
+
+Gemessen über `GET /social-publisher/v1/accounts` und
+`GET /social-publisher/v1/features/{type}`, je Site über den `wix-site-id`-Kopf.
+Zwölf Sites auf Facebook, Instagram und LinkedIn geprüft, sechs davon zusätzlich auf
+Kontingent.
+
+**Die Publisher API antwortet.** Der Aufbau ist damit grundsätzlich tragfähig — mit einer
+Einschränkung, siehe unten.
+
+**Kanäle.** Genau eine Site hat einen lebenden Kanal: `hnvr.me mit Erlebniss` mit drei
+LinkedIn-Konten (Tim Rose als Person, LeineBiz UG, hnvr.me als Standard). Facebook,
+Instagram und Google Business Profile sind dort **erloschen**. Alle übrigen Sites haben nie
+einen Kanal verbunden.
+
+**Kontingent — der blockierende Befund.** Auf allen sechs geprüften Sites:
+
+- `PUBLISH_POST`: aktiv, Grenze **10 je Monat**, verbraucht 0
+- `SCHEDULE_POST`: **abgeschaltet**
+- `AI_TOOLS`: abgeschaltet
+- `monetizationEnabled`: true
+
+Alle Sites laufen also auf dem freien Plan. **Terminieren ist nirgends möglich**, und die
+Grenze von 10 liegt unter dem angenommenen Bedarf von 15. Der Upgrade je Kundensite ist
+damit keine Option, sondern die Voraussetzung — vor der ersten Zeile Code.
+
+**Die Zustandskette ist bestätigt.** Die API unterscheidet genau die drei Fälle, die das
+Datenmodell vorsieht:
+
+| API-Antwort | Zustand im Modell |
+|---|---|
+| `HTTP 200` mit `accounts[]` | `verbunden` |
+| `USER_IS_DISCONNECTED` | `ungueltig` |
+| `USER_NOT_EXIST_FOR_CHANNEL` | nie verbunden |
+
+Die Unterscheidung zwischen „erloschen" und „nie eingerichtet" muss in der Oberfläche
+sichtbar bleiben — sonst sucht man einen Fehler, wo nur nichts eingerichtet ist.
+
+---
+
 ## Zu prüfen
 
-1. **Nimmt die Publisher API einen Account-API-Schlüssel an?** Trägt den ganzen Aufbau.
-   Schritt 0.
+1. **Nimmt die Publisher API einen Account-API-Schlüssel an?** Die Bestandsaufnahme lief
+   über die Kontoanmeldung, **nicht** über einen API-Schlüssel. Dass die Schnittstelle je
+   Site erreichbar ist, ist damit belegt; dass sie eine Schlüssel-Identität annimmt, noch
+   nicht. Bleibt Schritt 0.
 2. Preise von Essentials und Pro, und der Widerspruch 250 gegen „unlimited".
 3. Verhalten bei ungültigem Token: Was geschieht mit bereits geplanten Items?
-4. Welche der Bestandssites haben bereits einen Social-Plan?
+4. ~~Welche der Bestandssites haben bereits einen Social-Plan?~~ **Beantwortet:** keine,
+   alle sechs geprüften laufen frei. Sechs weitere Sites noch ungemessen.
 
 ---
 

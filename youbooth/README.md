@@ -107,9 +107,10 @@ per JavaScript erzeugt zu werden.
   Angaben sind das Shooting-Briefing.
 - **Produkt-Screenshots** in `public/assets/shot-*.png` stammen aus den Prototypen und sind nach
   der Umsetzung durch echte Aufnahmen zu ersetzen.
-- **Widerspruch im Bündel, ungeklärt:** Der Handoff sagt „youbooth verkauft keine Hardware",
-  Startseite und Kontaktseite der Entwürfe sagen „auf Wunsch die fertige Fotobox dazu"
-  beziehungsweise „Wir verkaufen keine Hardware". Umgesetzt ist der Wortlaut der Entwürfe;
-  die Aussage muss noch vereinheitlicht werden.
+- **Hardware-Aussage geklärt:** youbooth verkauft ausschließlich Software. Die Entwürfe
+  widersprachen sich hier (Startseite: „auf Wunsch die fertige Fotobox dazu", Kontaktseite:
+  „Wir verkaufen keine Hardware"). Die Verkaufsaussagen sind entfernt — Hero, Abschnittsbeiwort
+  auf der Startseite und die Hardware-Frage im Preis-FAQ formulieren jetzt durchgängig:
+  unsere Software, eure Box.
 - **Rechtstexte** (Impressum, Datenschutz, AGB) sind in den Entwürfen nur als Fußzeilenlinks
   vorhanden.

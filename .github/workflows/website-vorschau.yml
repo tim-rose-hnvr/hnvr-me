@@ -12,6 +12,17 @@
 #
 # Läuft auf Knopfdruck und bei Änderungen an website/ — eine Vorschau
 # soll dem Stand folgen, ohne dass jemand daran denken muss.
+#
+# EINMALIG NÖTIG, bevor der erste Lauf durchgeht:
+#
+#   GitHub → Settings → Pages → Build and deployment → Source:
+#   „GitHub Actions"
+#
+# Der Actions-Token darf Pages NICHT selbst einschalten. `enablement:
+# true` unten versucht es und scheitert mit „Resource not accessible by
+# integration" — das ist keine Fehlkonfiguration dieser Datei, sondern
+# eine Grenze des Tokens. Nach dem einen Klick findet configure-pages
+# die Seite vor und der Schritt ist ein Nulldurchgang.
 
 name: Website-Vorschau
 

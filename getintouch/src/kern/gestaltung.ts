@@ -14,6 +14,8 @@
  * was nicht mehr lesbar ist, statt es hinzunehmen.
  */
 
+import { MARKENFARBEN } from './marke.ts';
+
 export type Schaltflaechenstil = 'gefuellt' | 'kontur' | 'glas';
 export type Bildform = 'rund' | 'karte';
 
@@ -115,16 +117,22 @@ function g(werte: Partial<Gestaltung> & Pick<Gestaltung, 'vorlage' | 'grund' | '
 }
 
 /**
- * Zwölf Vorlagen. Die erste ist das Hausdesign von hnvr.me und bleibt die
- * Vorgabe — eine neue Seite sieht sofort nach etwas aus.
+ * Dreizehn Vorlagen. Die erste ist die des Produkts und bleibt die Vorgabe —
+ * eine neue Seite sieht sofort nach etwas aus.
+ *
+ * Sie hieß einmal `hnvr` und trug das Hausorange des Herstellers. Für ein
+ * Produkt, das verkauft werden soll, ist das die falsche Vorgabe: wer es
+ * kauft, bekommt sonst eine Seite, die nach jemand anderem aussieht. Das alte
+ * Hausdesign steht deshalb weiter zur Wahl, aber als `feuer` unter seinesgleichen.
  *
  * Jede Vorlage bringt ein eigenes Schriftpaar mit, nicht bloß andere Farben.
  * Genau daran scheitern die Baukästen: zwanzig „Designs", die sich nur im
  * Farbton unterscheiden, sind ein Design mit zwanzig Anstrichen.
  */
 export const VORLAGEN: Gestaltung[] = [
-  g({ vorlage: 'hnvr', grund: '#0F0F0F', grund2: '#1B1B1B', vordergrund: '#F1EFEB', akzent: '#FF7120', akzentText: '#141410' }),
-  // Weiße Schrift auf dem Hausorange kommt nur auf 2,8:1 — deshalb steht hier
+  g({ vorlage: 'signal', ...MARKENFARBEN }),
+  g({ vorlage: 'feuer', grund: '#0F0F0F', grund2: '#1B1B1B', vordergrund: '#F1EFEB', akzent: '#FF7120', akzentText: '#141410' }),
+  // Weiße Schrift auf diesem Orange kommt nur auf 2,8:1 — deshalb steht hier
   // dunkle Schrift auf der Hauptschaltfläche, nicht helle.
   g({ vorlage: 'creme', grund: '#F1EFEB', grund2: '#FFFFFF', vordergrund: '#141410', akzent: '#FF7120', akzentText: '#141410' }),
   g({ vorlage: 'tinte', grund: '#F7F7F5', vordergrund: '#111111', akzent: '#1D4ED8', akzentText: '#FFFFFF', radius: 6, schaltflaeche: 'kontur', schrift: 'space', anzeige: 'space' }),
@@ -142,7 +150,8 @@ export const VORLAGEN: Gestaltung[] = [
 
 /** Namen für die Anzeige. Die Kennung bleibt technisch, der Name darf schön sein. */
 const VORLAGENNAMEN: Record<string, string> = {
-  hnvr: 'hnvr',
+  signal: 'Signal',
+  feuer: 'Feuer',
   creme: 'Creme',
   tinte: 'Tinte',
   ozean: 'Ozean',

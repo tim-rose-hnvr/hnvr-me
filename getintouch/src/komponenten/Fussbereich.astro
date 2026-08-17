@@ -15,7 +15,7 @@
  * Besucherzählung in jede Seite zu spritzen. Eine Zusage, die der eigene Server
  * unterläuft, ist keine. Was übrig blieb, stimmt.
  */
-import { SIGNET } from '../kern/zeichen.ts';
+import { MARKE, SIGNET } from '../kern/marke.ts';
 
 const STILL = 'Kein eigenes Tracking · keine fremde Werbung';
 
@@ -24,6 +24,7 @@ interface Props {
 }
 
 const { rechtliches } = Astro.props;
+const produktseite = new URL('/', Astro.site ?? Astro.url).toString();
 const eintraege = [
   rechtliches?.impressum ? { name: 'Impressum', ziel: rechtliches.impressum } : null,
   rechtliches?.datenschutz ? { name: 'Datenschutz', ziel: rechtliches.datenschutz } : null,
@@ -48,8 +49,11 @@ const eintraege = [
 
   <p class="fuss__still">{STILL}</p>
 
-  <a class="fuss__absender" href="https://hnvr.me/get-in-touch" target="_blank" rel="noopener noreferrer">
+  <!-- Das Abzeichen auf einer fremden Seite führt zum Produkt, nicht zu seinem
+       Hersteller. Über `Astro.site` und nicht als „/", damit es auch dann
+       stimmt, wenn eine Seite später unter einer eigenen Domain läuft. -->
+  <a class="fuss__absender" href={produktseite} target="_blank" rel="noopener noreferrer">
     <Fragment set:html={SIGNET.replace('<svg', '<svg class="fuss__signet"')} />
-    <span>get in touch</span>
+    <span>{MARKE.name.toLowerCase()}</span>
   </a>
 </footer>

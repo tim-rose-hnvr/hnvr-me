@@ -10,9 +10,11 @@ import { adresseFuer, adresseFuerNetzwerk, istSichereAdresse, normalisiereNummer
 import { baueVcard, vcardDateiname } from '../src/kern/vcard.ts';
 import { alsDatenadresse } from '../src/kern/bild.ts';
 import { herkunft } from '../src/kern/ausgabe.ts';
+import { MARKENFARBEN } from '../src/kern/marke.ts';
 import {
   abweichung,
   FLIESSTEXTSCHRIFTEN,
+  GESTALTUNG_VORGABE,
   hintergrund,
   kontrast,
   lieseGestaltung,
@@ -164,14 +166,14 @@ describe('Kontrast', () => {
   });
 
   it('erkennt eine unlesbare freie Farbwahl', () => {
-    const grau = { ...vorlage('hnvr'), grund: '#7a7a7a', grund2: '', vordergrund: '#8a8a8a' };
+    const grau = { ...vorlage('feuer'), grund: '#7a7a7a', grund2: '', vordergrund: '#8a8a8a' };
     const befunde = pruefeLesbarkeit(grau);
     ok(befunde.some((b) => b.schwere === 'fehler'));
     match(befunde[0]!.meldung, /Fließtext/);
   });
 
   it('warnt vor blasser Schrift auf der Hauptschaltfläche', () => {
-    const blass = { ...vorlage('hnvr'), akzent: '#FFD166', akzentText: '#FFFFFF' };
+    const blass = { ...vorlage('feuer'), akzent: '#FFD166', akzentText: '#FFFFFF' };
     ok(pruefeLesbarkeit(blass).some((b) => /Hauptschaltfläche/.test(b.meldung)));
   });
 });
@@ -212,7 +214,10 @@ describe('Profil einlesen', () => {
     ok(ergebnis.ok);
     strictEqual(ergebnis.profil.slug, 'muster');
     strictEqual(ergebnis.profil.bloecke.length, 2);
-    strictEqual(ergebnis.profil.gestaltung.vorlage, 'hnvr', 'ohne Angabe gilt das Hausdesign');
+    // Bewusst gegen die Vorgabe geprüft und nicht gegen einen Namen: welche
+    // Vorlage die Vorgabe ist, darf sich mit der Marke ändern, dass es eine
+    // gibt, nicht.
+    strictEqual(ergebnis.profil.gestaltung.vorlage, GESTALTUNG_VORGABE.vorlage, 'ohne Angabe gilt die Vorgabe');
   });
 
   it('sammelt alle Fehler auf einmal, statt beim ersten abzubrechen', () => {
@@ -364,11 +369,11 @@ describe('Darstellung', () => {
 describe('Hintergrundbild', () => {
   it('bleibt ohne Bild eine reine Farbe oder ein Verlauf', () => {
     strictEqual(hintergrund({ ...vorlage('stein') }), '#FFFFFF');
-    ok(hintergrund({ ...vorlage('hnvr') }).startsWith('linear-gradient(160deg,'));
+    ok(hintergrund({ ...vorlage('feuer') }).startsWith('linear-gradient(160deg,'));
   });
 
   it('legt den Schleier über das Bild, nicht darunter', () => {
-    const mitBild = { ...vorlage('hnvr'), bild: '/bilder/halle.jpg', schleier: 0.6 };
+    const mitBild = { ...vorlage('feuer'), bild: '/bilder/halle.jpg', schleier: 0.6 };
     const wert = hintergrund(mitBild);
     // Der Belag steht zuerst — in CSS liegt die erste Schicht oben.
     ok(wert.startsWith('linear-gradient(rgba(15,15,15,0.6), rgba(15,15,15,0.6))'), wert);
@@ -378,19 +383,19 @@ describe('Hintergrundbild', () => {
   });
 
   it('warnt, wenn der Schleier zu dünn für ein Foto ist', () => {
-    const duenn = { ...vorlage('hnvr'), bild: '/bilder/halle.jpg', schleier: 0.2 };
+    const duenn = { ...vorlage('feuer'), bild: '/bilder/halle.jpg', schleier: 0.2 };
     const befunde = pruefeLesbarkeit(duenn);
     ok(befunde.some((b) => b.schwere === 'fehler' && /Schleier/.test(b.meldung)));
 
-    const dicht = { ...vorlage('hnvr'), bild: '/bilder/halle.jpg', schleier: 0.7 };
+    const dicht = { ...vorlage('feuer'), bild: '/bilder/halle.jpg', schleier: 0.7 };
     deepStrictEqual(pruefeLesbarkeit(dicht), []);
   });
 
   it('lässt kein fremdes Schema als Hintergrundbild durch', () => {
-    const gut = lieseGestaltung({ vorlage: 'hnvr', bild: '/bilder/halle.jpg' });
+    const gut = lieseGestaltung({ vorlage: 'feuer', bild: '/bilder/halle.jpg' });
     strictEqual(gut.gestaltung?.bild, '/bilder/halle.jpg');
 
-    const schlecht = lieseGestaltung({ vorlage: 'hnvr', bild: 'http://fremd.example/verfolger.gif' });
+    const schlecht = lieseGestaltung({ vorlage: 'feuer', bild: 'http://fremd.example/verfolger.gif' });
     ok(schlecht.fehler.length > 0);
     strictEqual(schlecht.gestaltung?.bild, '');
   });
@@ -416,9 +421,18 @@ describe('Schriftangebot', () => {
 });
 
 describe('Vorlagen', () => {
-  it('sind zwölf und haben eindeutige Kennungen', () => {
-    strictEqual(VORLAGEN.length, 12);
-    strictEqual(new Set(VORLAGEN.map((v) => v.vorlage)).size, 12);
+  it('sind dreizehn und haben eindeutige Kennungen', () => {
+    strictEqual(VORLAGEN.length, 13, 'die Zahl steht auch auf der Verkaufsseite');
+    strictEqual(new Set(VORLAGEN.map((v) => v.vorlage)).size, 13);
+  });
+
+  /* Die erste Vorlage ist die Vorgabe. Sie trägt die Farben des Produkts und
+     nicht die seines Herstellers — daran hing der ganze Umbau zur eigenen
+     Marke, und es soll nicht unbemerkt zurückfallen. */
+  it('beginnt mit der Marke des Produkts', () => {
+    strictEqual(VORLAGEN[0]!.vorlage, GESTALTUNG_VORGABE.vorlage);
+    strictEqual(GESTALTUNG_VORGABE.akzent, MARKENFARBEN.akzent);
+    strictEqual(GESTALTUNG_VORGABE.grund, MARKENFARBEN.grund);
   });
 
   it('benutzen mehr als eine Schriftmischung — sonst wäre es ein Design mit zwölf Anstrichen', () => {
@@ -428,7 +442,7 @@ describe('Vorlagen', () => {
 
   it('haben für jede Kennung einen Anzeigenamen', () => {
     for (const v of VORLAGEN) {
-      ok(vorlagenName(v.vorlage) !== v.vorlage || v.vorlage === 'hnvr', `„${v.vorlage}" ohne Namen`);
+      ok(vorlagenName(v.vorlage) !== v.vorlage, `„${v.vorlage}" ohne Namen`);
     }
   });
 });

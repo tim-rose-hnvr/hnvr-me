@@ -13,6 +13,7 @@
 import Profilblatt from '../../layouts/Profilblatt.astro';
 import Profilansicht from '../../komponenten/Profilansicht.astro';
 import { zeichen } from '../../kern/zeichen.ts';
+import { MARKE } from '../../kern/marke.ts';
 
 import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
 import { schrift, vorlage, vorlagenName, VORLAGEN } from '../../kern/gestaltung.ts';
@@ -53,7 +54,7 @@ const paar = `${schrift(gestaltung.anzeige).name} + ${schrift(gestaltung.schrift
 ---
 
 <Profilblatt
-  titel={`Vorlage ${vorlagenName(kennung)} — Get in Touch`}
+  titel={`Vorlage ${vorlagenName(kennung)} — ${MARKE.name}`}
   beschreibung={`Die Vorlage ${vorlagenName(kennung)} an einem vollständigen Profil.`}
   gestaltung={gestaltung}
   adresse={new URL(`/designs/${kennung}`, Astro.site ?? Astro.url).toString()}

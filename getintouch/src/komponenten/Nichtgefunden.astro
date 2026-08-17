@@ -12,7 +12,8 @@
  * Besucher, der einen Handwerker sucht und keine Anmeldung will. Und sie macht
  * die Seite zu einem Verzeichnis, in dem sich freie Namen abfragen lassen.
  */
-import { SIGNET, zeichen } from '../kern/zeichen.ts';
+import { zeichen } from '../kern/zeichen.ts';
+import { MARKE, SIGNET } from '../kern/marke.ts';
 
 interface Props {
   /** Die Adresse, die nicht aufging — nur zur Anzeige, nie als Angebot. */
@@ -45,7 +46,7 @@ const { gesucht } = Astro.props;
       <a class="aktion aktion--haupt" href="/">
         <Fragment set:html={zeichen('globus')} />
         <span class="aktion__text">
-          <span class="aktion__beschriftung">Was ist Get in Touch?</span>
+          <span class="aktion__beschriftung">Was ist {MARKE.name}?</span>
           <span class="aktion__unterzeile">Eine Seite, die Menschen erreichbar macht</span>
         </span>
         <Fragment set:html={zeichen('pfeil', 'zeichen aktion__pfeil')} />
@@ -63,9 +64,9 @@ const { gesucht } = Astro.props;
   </div>
 
   <footer class="fuss">
-    <a class="fuss__absender" href="https://hnvr.me" target="_blank" rel="noopener noreferrer">
+    <a class="fuss__absender" href="/">
       <Fragment set:html={SIGNET.replace('<svg', '<svg class="fuss__signet"')} />
-      <span>hnvr.me</span>
+      <span>{MARKE.name.toLowerCase()}</span>
     </a>
   </footer>
 </div>

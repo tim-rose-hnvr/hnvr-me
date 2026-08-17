@@ -66,15 +66,20 @@ des Bauvorgangs.
 ## Was auf diesem Host nicht uns gehört
 
 `/robots.txt` und `/sitemap.xml` beantwortet Wix an der Kante, bevor unsere
-Routen drankommen — `robots.txt.ts` und `sitemap.xml.ts` laufen dort nie. Beide
-bleiben trotzdem im Projekt: auf einer eigenen Domain ohne Wix davor stimmen
-sie, und lokal prüfen sie sich mit. Auf diesem Host gilt:
+Routen drankommen.
 
-- Wix' robots.txt erlaubt alles. Dass die Werkstatt und die Galerie-Vorschauen
-  nicht in den Index gehören, steht deshalb als `noindex` in den Seiten selbst —
-  wo es ohnehin verbindlicher ist.
-- Die Sitemap, die Wix in seiner robots.txt nennt, gibt es nicht (404). Wer sie
-  braucht, trägt sie in den SEO-Werkzeugen des Dashboards nach.
+Bei `robots.txt` ist es kein Zufall, sondern eine echte Kollision: `@wix/astro`
+bringt eine eigene Route unter demselben Pfad mit, und Astro warnt beim Bauen,
+dass zwei Routen auf einem Pfad künftig ein harter Fehler werden. Unsere Fassung
+hätte dort nie gewonnen — sie ist deshalb gelöscht. Dass die Werkstatt und die
+Galerie-Vorschauen nicht in den Index gehören, steht als `noindex` in den Seiten
+selbst, wo es ohnehin verbindlicher ist als eine Bitte in einer Textdatei.
+
+`sitemap.xml.ts` bleibt: dort gibt es keine Kollision, die Route wird nur an der
+Kante abgefangen. Auf einer eigenen Domain ohne Wix davor stimmt sie, und lokal
+prüft sie sich mit. Die Sitemap, die Wix in seiner robots.txt nennt, gibt es
+nicht (404) — wer sie braucht, trägt sie in den SEO-Werkzeugen des Dashboards
+nach.
 
 Eine vorgebaute **Unterseite** wird als `…/index.html` abgelegt und unter ihrer
 Adresse ohne Schrägstrich mit 404 beantwortet — nur die Startseite bekommt diese

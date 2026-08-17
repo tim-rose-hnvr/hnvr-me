@@ -12,7 +12,8 @@
  * vollständigen Profil läuft.
  */
 import { cssVariablen, schrift, vorlage, vorlagenName, VORLAGEN } from '../../kern/gestaltung.ts';
-import { SIGNET, zeichen } from '../../kern/zeichen.ts';
+import { zeichen } from '../../kern/zeichen.ts';
+import { MARKE, SIGNET } from '../../kern/marke.ts';
 import '../../stile/marketing.css';
 import '../../stile/galerie.css';
 
@@ -22,21 +23,21 @@ import '../../stile/galerie.css';
  * Eine vorgebaute Unterseite landet als `designs/index.html` im Bündel, und die
  * Auslieferung von Wix beantwortet `/designs` dann mit 404 — nur die
  * Startseite bekommt diese Behandlung geschenkt. Der Aufbau kostet hier
- * nichts: die Galerie liest zwölf Vorlagen aus dem Kern, keine Datenbank.
+ * nichts: die Galerie liest dreizehn Vorlagen aus dem Kern, keine Datenbank.
  * Gegen die Last hilft der Zwischenspeicher weiter unten.
  */
 export const prerender = false;
 
 Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
 
-const rahmen = vorlage('hnvr');
+const rahmen = vorlage('signal');
 const rahmenStil = Object.entries(cssVariablen(rahmen))
   .map(([name, wert]) => `${name}:${wert}`)
   .join(';');
 
-const titel = 'Zwölf Designs — Get in Touch';
+const titel = `Dreizehn Designs — ${MARKE.name}`;
 const beschreibung =
-  'Zwölf Vorlagen, jede mit eigenem Schriftpaar und geprüftem Kontrast. Dazu freie Farben, Eckenradius, ' +
+  'Dreizehn Vorlagen, jede mit eigenem Schriftpaar und geprüftem Kontrast. Dazu freie Farben, Eckenradius, ' +
   'Stil der Schaltflächen und ein Hintergrundbild mit Schleier.';
 
 const stellschrauben = [
@@ -69,7 +70,7 @@ const stellschrauben = [
         <header class="kopfzeile">
           <a class="wortmarke" href="/">
             <Fragment set:html={SIGNET} />
-            <span>Get in Touch</span>
+            <span>{MARKE.name}</span>
           </a>
           <nav class="kopfnavi">
             <a href="/werkstatt">Werkstatt</a>
@@ -79,7 +80,7 @@ const stellschrauben = [
 
         <section class="kopf">
           <p class="marke">gestaltung</p>
-          <h1>Zwölf Designs,<br />kein einziges geraten.</h1>
+          <h1>Dreizehn Designs,<br />kein einziges geraten.</h1>
           <p class="fuehrung">
             Jede Vorlage bringt ein eigenes Schriftpaar mit, nicht bloß einen anderen Farbton. Und jede ist gegen
             WCAG durchgerechnet — was nicht lesbar wäre, steht hier nicht zur Wahl.

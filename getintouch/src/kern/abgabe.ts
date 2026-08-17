@@ -12,9 +12,10 @@
  * prüfen, ohne einen Browser zu starten.
  */
 
+import { MARKE } from './marke.ts';
 import type { Profil } from './profil.ts';
 
-export const POSTFACH = 'hallo@hnvr.me';
+export const POSTFACH = MARKE.postfach;
 
 /**
  * Jenseits davon kürzen Mailprogramme die Adresse — Outlook und der
@@ -32,7 +33,7 @@ export const MAILTO_GRENZE = 1900;
 export type Beilage = 'link' | 'ablage' | 'datei';
 
 export function abgabeBetreff(profil: Profil): string {
-  return `Get in Touch — Entwurf ${profil.slug}`;
+  return `${MARKE.name} — Entwurf ${profil.slug}`;
 }
 
 export function abgabeRumpf(profil: Profil, weg: Beilage, link: string): string {

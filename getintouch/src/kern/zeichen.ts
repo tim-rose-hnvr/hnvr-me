@@ -60,9 +60,9 @@ const ZEICHEN: Record<string, string> = {
     '<path d="M9.2 20.2v-2.6c-3 .6-3.7-1.3-3.7-1.3-.5-1.2-1.2-1.6-1.2-1.6-1-.7.1-.7.1-.7 1.1.1 1.7 1.2 1.7 1.2 1 1.7 2.6 1.2 3.2.9.1-.7.4-1.2.7-1.5-2.4-.3-5-1.3-5-5.5 0-1.2.4-2.2 1.1-3-.1-.3-.5-1.4.1-2.9 0 0 .9-.3 3 1.1a10 10 0 0 1 5.4 0c2.1-1.4 3-1.1 3-1.1.6 1.5.2 2.6.1 2.9.7.8 1.1 1.8 1.1 3 0 4.2-2.6 5.2-5 5.5.4.4.8 1.1.8 2.2v3.4"/>',
 };
 
-/** Der Asterisk aus dem hnvr.me-Zeichen. Steht als Absender am Seitenfuß. */
-export const SIGNET =
-  '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path fill="currentColor" d="M50 4c3 0 5.4 2.4 5.4 5.4v25l17.7-17.7a5.4 5.4 0 1 1 7.6 7.6L63 42h25a5.4 5.4 0 1 1 0 10.8H63l17.7 17.7a5.4 5.4 0 1 1-7.6 7.6L55.4 60.4v25a5.4 5.4 0 1 1-10.8 0v-25L26.9 78.1a5.4 5.4 0 1 1-7.6-7.6L37 52.8H12a5.4 5.4 0 1 1 0-10.8h25L19.3 24.3a5.4 5.4 0 1 1 7.6-7.6l17.7 17.7v-25C44.6 6.4 47 4 50 4z"/></svg>';
+/* Das Produktzeichen und der Asterisk des Herstellers stehen nicht hier,
+   sondern in `marke.ts`. Hier liegt das Alphabet, dort die Identität — sonst
+   lässt sich das eine nicht ohne das andere ändern. */
 
 export function hatZeichen(name: string): boolean {
   return name in ZEICHEN;

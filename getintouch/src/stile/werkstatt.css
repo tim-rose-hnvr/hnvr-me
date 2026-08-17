@@ -11,14 +11,17 @@
    Rahmen.
    ============================================================ */
 
+/* Die Farben des Produkts, nicht die seines Herstellers. Die Quelle steht in
+   `kern/marke.ts`; hier sind sie ausgeschrieben, weil eine CSS-Datei nichts
+   importieren kann. Ändert sich die Marke, ändern sich diese sechs Zeilen mit. */
 :root {
-  --w-grund: #0b0b0b;
-  --w-flaeche: #141414;
-  --w-linie: rgba(241, 239, 235, 0.13);
-  --w-vg: #f1efeb;
-  --w-neben: rgba(241, 239, 235, 0.6);
-  --w-leise: rgba(241, 239, 235, 0.4);
-  --w-akzent: #ff7120;
+  --w-grund: #0b0f10;
+  --w-flaeche: #141a1b;
+  --w-linie: rgba(244, 241, 236, 0.14);
+  --w-vg: #f4f1ec;
+  --w-neben: rgba(244, 241, 236, 0.6);
+  --w-leise: rgba(244, 241, 236, 0.4);
+  --w-akzent: #00c2a8;
 }
 
 *,
@@ -371,7 +374,7 @@ input[type='range'] {
 .wknopf--voll {
   background: var(--w-akzent);
   border-color: transparent;
-  color: #141410;
+  color: #04211c;
 }
 
 /* Der Hauptweg bekommt eine eigene Zeile. Was darunter steht, sind die

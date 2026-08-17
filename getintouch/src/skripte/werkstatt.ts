@@ -281,7 +281,10 @@ function zeichneInhalt() {
     el('div', { class: 'feldgruppe' }, [
       el('h2', { class: 'wmarke2', text: 'Adresse' }),
       el('label', { class: 'feld' }, [
-        el('span', { class: 'feld__name', text: 'hnvr.me/t/…' }),
+        // Die eigene Adresse, nicht die des Herstellers — und nicht fest
+        // eingetragen, sondern aus dem Browser: unter welcher Domain der
+        // Dienst läuft, weiß er selbst am besten.
+        el('span', { class: 'feld__name', text: `${location.host}/t/…` }),
         adresse,
       ]),
       hinweis,

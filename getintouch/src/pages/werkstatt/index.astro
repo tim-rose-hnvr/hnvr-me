@@ -15,7 +15,8 @@
  * Reihenfolge, die zählt: das Werkzeug darf Voraussetzungen haben, das
  * Ergebnis nicht.
  */
-import { SIGNET, zeichen } from '../../kern/zeichen.ts';
+import { zeichen } from '../../kern/zeichen.ts';
+import { MARKE, MARKENFARBEN, SIGNET } from '../../kern/marke.ts';
 import '../../stile/werkstatt.css';
 
 export const prerender = false;
@@ -36,8 +37,8 @@ const reiter = [
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
-    <title>Werkstatt — Get in Touch</title>
-    <meta name="theme-color" content="#0B0B0B" />
+    <title>Werkstatt — {MARKE.name}</title>
+    <meta name="theme-color" content={MARKENFARBEN.grund} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="stylesheet" href="/schriften/schriften.css" />
@@ -47,7 +48,7 @@ const reiter = [
     <header class="wkopf">
       <a class="wmarke" href="/">
         <Fragment set:html={SIGNET} />
-        <span>Get in Touch</span>
+        <span>{MARKE.name}</span>
       </a>
       <nav class="wnavi">
         <a href="/designs">Galerie</a>

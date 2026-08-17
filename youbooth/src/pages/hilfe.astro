@@ -1,0 +1,434 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Icon from '../components/Icon.astro';
+import { kategorien, artikelZahl } from '../daten/hilfe';
+
+/**
+ * Hilfe-Center. Alle Artikel stehen im Markup — die Suche blendet aus, was
+ * nicht passt, und zaehlt mit. Aufklappen uebernimmt <details name>, damit
+ * immer nur ein Artikel offen ist, auch ohne JavaScript.
+ */
+
+const geprueft = '08/2026';
+---
+
+<Marketing
+  titel="Hilfe-Center"
+  beschreibung="24 Artikel in sechs Kategorien: Einrichtung, Aufnahme, Druck, Teilen, Betrieb und Vermietung."
+>
+  <section class="hero">
+    <span class="mono mono--amber">Hilfe-Center</span>
+    <h1>Antworten, bevor das Event beginnt</h1>
+    <p class="fliess">
+      Frage eintippen oder Kategorie wählen — jeder Artikel klappt auf und nennt zuerst die Lösung,
+      dann den Hintergrund.
+    </p>
+    <div class="suchzeile">
+      <label class="nur-vorlese" for="suche">Hilfe durchsuchen</label>
+      <input
+        class="suche"
+        id="suche"
+        type="search"
+        placeholder="Suchen: Drucker, QR, Tinte, Kopplung, Löschfrist …"
+        autocomplete="off"
+      />
+      <button class="knopf knopf--rahmen-hell zuruecksetzen" type="button" data-feld="zuruecksetzen" hidden>
+        Zurücksetzen
+      </button>
+    </div>
+    <span class="mono mono--hell" data-feld="treffer" role="status">
+      {artikelZahl} Artikel in {kategorien.length} Kategorien · Antwort werktags in 4 Stunden
+    </span>
+  </section>
+
+  <div class="hilfe">
+    <div class="chips">
+      <button class="chip on" type="button" data-kategorie="alle" aria-pressed="true">
+        Alle · {artikelZahl}
+      </button>
+      {
+        kategorien.map((k) => (
+          <button class="chip" type="button" data-kategorie={k.name} aria-pressed="false">
+            {k.name}
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="reihe hinweise">
+      <article class="notfall">
+        <span class="mono mono--warn">Läuft gerade ein Event?</span>
+        <h2 class="klein">Notfall-Reihenfolge</h2>
+        <span class="notfall__text">
+          1. Screen sperren · 2. Queue leeren · 3. Software neu starten · 4. Notfallnummer aus dem
+          Cockpit. Aufnahmen liegen lokal und gehen dabei nicht verloren.
+        </span>
+      </article>
+
+      <article class="karte hinweis">
+        <span class="mono">Einrichtung</span>
+        <h2 class="klein">Sechs Schritte</h2>
+        <span class="karte__text">
+          Die Tour im Cockpit markiert, wo der nächste Schritt sitzt — Fortschritt bleibt
+          gespeichert.
+        </span>
+        <a class="pfeil pfeil--klein" href="/oberflaechen/onboarding">Tour ansehen →</a>
+      </article>
+
+      <article class="karte hinweis">
+        <span class="mono">Ticket aus der Software</span>
+        <h2 class="klein">Protokoll dabei</h2>
+        <span class="karte__text">
+          Version, Geräteliste und Protokoll gehen automatisch mit — keine Screenshots nötig.
+        </span>
+        <a class="pfeil pfeil--klein" href="/kontakt">Support kontaktieren →</a>
+      </article>
+    </div>
+
+    <div class="artikel">
+      <article class="karte leerkarte" data-feld="leer" hidden>
+        <span class="mono">Kein Treffer</span>
+        <h2 class="klein">Nichts gefunden zu „<span data-feld="suchwort"></span>"</h2>
+        <span class="karte__text">
+          Schick uns die Frage — wir antworten werktags in vier Stunden und schreiben daraus einen
+          Artikel.
+        </span>
+        <a class="pfeil pfeil--klein" href="/kontakt">Frage stellen →</a>
+      </article>
+
+      {
+        kategorien.map((k) => (
+          <section class="gruppe" data-gruppe={k.name}>
+            <div class="gruppe__kopf">
+              <Icon name={k.icon} groesse={20} />
+              <h2 class="klein">{k.name}</h2>
+              <span class="mono" data-zahl={k.name}>
+                {k.artikel.length} Artikel
+              </span>
+            </div>
+
+            {k.artikel.map((a) => (
+              <details
+                class="eintrag"
+                name="hilfe"
+                data-artikel
+                data-text={`${a.frage} ${a.antwort}`.toLowerCase()}
+              >
+                <summary>
+                  {a.frage}
+                  <span class="zeichen" aria-hidden="true" />
+                </summary>
+                <div class="eintrag__inhalt">
+                  <span class="eintrag__text">{a.antwort}</span>
+                  <span class="mono">
+                    Kategorie {k.name} · zuletzt geprüft {geprueft}
+                  </span>
+                </div>
+              </details>
+            ))}
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .hero h1 {
+    font-size: clamp(30px, 4vw, 52px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 640px;
+  }
+
+  .suchzeile {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    max-width: 740px;
+  }
+
+  .suche {
+    height: 56px;
+    flex: 1 1 320px;
+    border-radius: 11px;
+    border: 1px solid rgba(244, 242, 238, 0.2);
+    background: rgba(244, 242, 238, 0.06);
+    color: var(--text-hell);
+    padding: 0 18px;
+    font-family: var(--schrift);
+    font-size: 15.5px;
+  }
+
+  .suche::placeholder {
+    color: rgba(244, 242, 238, 0.42);
+  }
+
+  .suche:focus {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.2);
+  }
+
+  .zuruecksetzen {
+    height: 56px;
+  }
+
+  .hilfe {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chips {
+    padding: 32px var(--rand) 18px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .chip {
+    padding: 9px 14px;
+    border-radius: 20px;
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 12.5px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: var(--weiss);
+    color: var(--text-leise);
+    transition: background var(--t-farbe), color var(--t-farbe), border-color var(--t-farbe);
+  }
+
+  .chip:hover {
+    border-color: rgba(0, 0, 0, 0.3);
+  }
+
+  .chip.on {
+    background: var(--ink-soft);
+    color: var(--weiss);
+    border-color: var(--ink-soft);
+  }
+
+  .hinweise {
+    padding: 26px var(--rand) 16px;
+    gap: 16px;
+  }
+
+  .notfall {
+    flex: 1 1 320px;
+    background: #fff5e0;
+    border: 1px solid var(--amber);
+    border-radius: var(--r-karte);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .mono--warn {
+    color: #8a6512;
+  }
+
+  .notfall__text {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  .hinweis {
+    flex: 1 1 300px;
+    padding: 20px;
+    gap: 10px;
+  }
+
+  .klein {
+    font-size: 20px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .artikel {
+    padding: 20px var(--rand) 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .leerkarte {
+    align-items: flex-start;
+  }
+
+  .leerkarte .klein {
+    font-size: 22px;
+  }
+
+  .gruppe {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .gruppe__kopf {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .gruppe__kopf .klein {
+    font-size: 22px;
+  }
+
+  .gruppe__kopf :global(.icon) {
+    align-self: center;
+    opacity: 0.7;
+  }
+
+  .eintrag {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-chip);
+    overflow: hidden;
+  }
+
+  .eintrag summary {
+    padding: 16px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14.5px;
+    color: var(--text);
+    list-style: none;
+  }
+
+  .eintrag summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .eintrag summary:hover {
+    background: #faf8f5;
+  }
+
+  .zeichen::after {
+    content: '+';
+    font-size: 20px;
+    color: var(--amber);
+    flex: none;
+  }
+
+  .eintrag[open] .zeichen::after {
+    content: '−';
+  }
+
+  .eintrag__inhalt {
+    padding: 0 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .eintrag__text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(0, 0, 0, 0.66);
+  }
+
+  .eintrag__inhalt .mono {
+    letter-spacing: 0.1em;
+  }
+</style>
+
+<script>
+  const hilfe = document.querySelector<HTMLElement>('.hilfe');
+  const suche = document.querySelector<HTMLInputElement>('#suche');
+  const trefferfeld = document.querySelector<HTMLElement>('[data-feld="treffer"]');
+  const zuruecksetzen = document.querySelector<HTMLButtonElement>('[data-feld="zuruecksetzen"]');
+
+  if (hilfe && suche && trefferfeld && zuruecksetzen) {
+    const zustand = { suche: '', kategorie: 'alle' };
+    const gesamt = hilfe.querySelectorAll('[data-artikel]').length;
+    const kategorienZahl = hilfe.querySelectorAll('.gruppe').length;
+
+    function zeichne() {
+      const q = zustand.suche.trim().toLowerCase();
+      let treffer = 0;
+
+      hilfe!.querySelectorAll<HTMLElement>('.gruppe').forEach((gruppe) => {
+        const name = gruppe.dataset.gruppe!;
+        const kategoriePasst = zustand.kategorie === 'alle' || zustand.kategorie === name;
+        let sichtbar = 0;
+
+        gruppe.querySelectorAll<HTMLDetailsElement>('[data-artikel]').forEach((eintrag) => {
+          const passt = kategoriePasst && (!q || eintrag.dataset.text!.includes(q));
+          eintrag.hidden = !passt;
+          if (!passt) eintrag.open = false;
+          if (passt) sichtbar++;
+        });
+
+        gruppe.hidden = sichtbar === 0;
+        treffer += sichtbar;
+
+        const zahl = gruppe.querySelector<HTMLElement>(`[data-zahl]`);
+        if (zahl) zahl.textContent = `${sichtbar} Artikel`;
+      });
+
+      const leer = hilfe!.querySelector<HTMLElement>('[data-feld="leer"]');
+      if (leer) leer.hidden = treffer > 0;
+      const suchwort = hilfe!.querySelector<HTMLElement>('[data-feld="suchwort"]');
+      if (suchwort) suchwort.textContent = zustand.suche.trim();
+
+      trefferfeld!.textContent =
+        q || zustand.kategorie !== 'alle'
+          ? `${treffer} ${treffer === 1 ? 'Artikel passt' : 'Artikel passen'}` +
+            (q ? ` zu „${zustand.suche.trim()}"` : ` in ${zustand.kategorie}`)
+          : `${gesamt} Artikel in ${kategorienZahl} Kategorien · Antwort werktags in 4 Stunden`;
+
+      zuruecksetzen!.hidden = q.length === 0 && zustand.kategorie === 'alle';
+
+      hilfe!.querySelectorAll<HTMLButtonElement>('[data-kategorie]').forEach((b) => {
+        const an = b.dataset.kategorie === zustand.kategorie;
+        b.classList.toggle('on', an);
+        b.setAttribute('aria-pressed', String(an));
+      });
+    }
+
+    suche.addEventListener('input', () => {
+      zustand.suche = suche.value;
+      zeichne();
+    });
+
+    hilfe.addEventListener('click', (e) => {
+      const knopf = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-kategorie]');
+      if (!knopf) return;
+      zustand.kategorie = knopf.dataset.kategorie!;
+      zeichne();
+    });
+
+    zuruecksetzen.addEventListener('click', () => {
+      zustand.suche = '';
+      zustand.kategorie = 'alle';
+      suche.value = '';
+      zeichne();
+      suche.focus();
+    });
+
+    zeichne();
+  }
+</script>

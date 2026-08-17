@@ -1,0 +1,633 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+
+/**
+ * Vergleich gegen Kauf-Software und Cloud-Anbieter.
+ * Als Tabelle umgesetzt — die Begruendung je Kriterium klappt darunter auf.
+ * Filter und Trefferzahl laufen im Browser; ohne JavaScript stehen alle elf
+ * Kriterien und beide Vergleichsspalten da.
+ */
+
+const themen = [
+  { id: 'alle', text: 'Alle' },
+  { id: 'kosten', text: 'Kosten' },
+  { id: 'technik', text: 'Technik' },
+  { id: 'betrieb', text: 'Betrieb' },
+  { id: 'vertrauen', text: 'Vertrauen' },
+];
+
+const kandidaten = [
+  { id: 'beide', text: 'Beide' },
+  { id: 'kauf', text: 'Kauf-Software' },
+  { id: 'cloud', text: 'Cloud-Anbieter' },
+];
+
+type Zeile = {
+  thema: string;
+  kriterium: string;
+  uns: string;
+  kauf: string;
+  cloud: string;
+  detail: string;
+};
+
+const zeilen: Zeile[] = [
+  {
+    thema: 'kosten',
+    kriterium: 'Lizenzmodell',
+    uns: 'Monatlich je Box, Module kontoweit',
+    kauf: 'Einmalkauf pro Rechner, Updates extra',
+    cloud: 'Abo pro Standort, Module im Paket',
+    detail:
+      'Monatlich heißt: in der Nebensaison abschalten, im Sommer zwei Boxen dazu. Module gelten fürs ganze Konto, nicht je Rechner.',
+  },
+  {
+    thema: 'technik',
+    kriterium: 'Offline-Betrieb',
+    uns: 'Vollständig, QR über eigenen Hotspot',
+    kauf: 'Aufnahme ja, Download nein',
+    cloud: 'Nur mit Cloud-Verbindung',
+    detail:
+      'Im Gewölbekeller ohne Netz laufen Aufnahme, Druck und QR-Download weiter — die Box spannt ihr eigenes WLAN auf und synchronisiert später.',
+  },
+  {
+    thema: 'technik',
+    kriterium: 'Aufnahmearten',
+    uns: 'Foto, Streifen, Boomerang, GIF, Video',
+    kauf: 'Foto, GIF, Video',
+    cloud: 'Foto, Streifen, GIF',
+    detail:
+      'Fünf Arten am selben Screen umschaltbar, alle mit denselben Vorlagen und Ausgabewegen.',
+  },
+  {
+    thema: 'technik',
+    kriterium: 'Freistellung ohne Greenscreen',
+    uns: 'Enthalten, lokal gerechnet',
+    kauf: 'Nur mit Greenscreen',
+    cloud: 'Zusatzmodul, Cloud',
+    detail:
+      'Kein Tuch, kein Aufbau, keine Upload-Wartezeit: die Freistellung rechnet auf dem Box-Rechner, auch offline.',
+  },
+  {
+    thema: 'kosten',
+    kriterium: 'Vorlagen',
+    uns: '240 Designs, 4 Formate, ohne Aufpreis',
+    kauf: 'Einzelkauf ab 15 $ je Design',
+    cloud: '80 Designs im Abo',
+    detail:
+      'Designs kosten nichts extra, und eigene Layouts bauen wir auf Wunsch mit — das ersetzt den Designer für jedes zweite Event.',
+  },
+  {
+    thema: 'betrieb',
+    kriterium: 'Vermietung & Buchung',
+    uns: 'Buchungsseite, Kalender, Vertrag inklusive',
+    kauf: 'Nicht vorhanden',
+    cloud: 'Externes Tool nötig',
+    detail:
+      'Anfrage, Angebot, Vertrag, Rechnung und Boxen-Zuordnung liegen im selben Konto wie die Events — keine Doppelpflege.',
+  },
+  {
+    thema: 'betrieb',
+    kriterium: 'Fernsteuerung',
+    uns: 'Handy plus Hardware-Taster',
+    kauf: 'Nur Tastatur an der Box',
+    cloud: 'App, ohne Taster',
+    detail:
+      'Vom Handy Vorlage wechseln oder Druck freigeben, ohne durch die Tanzfläche zu laufen. Der Taster hilft, wenn Gäste allein bedienen.',
+  },
+  {
+    thema: 'betrieb',
+    kriterium: 'Mehrere Boxen',
+    uns: 'Ein Cockpit, Puls je Box',
+    kauf: 'Je Rechner einzeln',
+    cloud: 'Ja, mit Aufpreis',
+    detail:
+      'Alle Boxen mit Status, Papierstand und Fehlern in einer Liste — bei drei parallelen Events der Unterschied zwischen Ruhe und Telefonieren.',
+  },
+  {
+    thema: 'betrieb',
+    kriterium: 'White-Label',
+    uns: 'Booth, Galerie, Microsite, Mails',
+    kauf: 'Nur Druck-Layout',
+    cloud: 'Logo-Tausch',
+    detail:
+      'Euer Name überall, wo Gäste hinschauen — inklusive Absender der Mails und der Galerie-Adresse.',
+  },
+  {
+    thema: 'vertrauen',
+    kriterium: 'Datenschutz',
+    uns: 'Löschfrist, Einwilligung, Unterschrift',
+    kauf: 'Manuell',
+    cloud: 'Löschfrist',
+    detail:
+      'Einwilligung am Screen, Unterschrift für Firmenkunden, automatische Löschfrist je Event — dokumentiert, nicht versprochen.',
+  },
+  {
+    thema: 'vertrauen',
+    kriterium: 'Support',
+    uns: 'Ticket aus der Software mit Protokoll',
+    kauf: 'Forum und Mail',
+    cloud: 'Chat zu Bürozeiten',
+    detail:
+      'Das Ticket nimmt das Fehlerprotokoll gleich mit, deshalb entfällt die Rückfragerunde. Am Wochenende ist eine Notfallnummer aktiv.',
+  },
+];
+
+const einordnung = [
+  {
+    kennung: 'Wann wir nicht passen',
+    titel: 'Einmal zahlen und nie wieder',
+    text: 'Wer eine Box im Jahr aufstellt und keine Updates braucht, fährt mit Kaufsoftware günstiger. Wir rechnen sich ab etwa vier Events im Jahr.',
+  },
+  {
+    kennung: 'Wann wir nicht passen',
+    titel: 'Reine Handy-Aktion',
+    text: 'Wer nur einen Upload-Link für Gästefotos will, braucht keinen Booth — dafür reicht unsere Web-Kamera oder ein einfacher Cloud-Dienst.',
+  },
+  {
+    kennung: 'Wann wir passen',
+    titel: 'Mehrere Boxen, viele Wochenenden',
+    text: 'Ab zwei Boxen zählt, dass Module kontoweit gelten, Buchungen im selben Konto liegen und ein Fernauftrag die Anfahrt spart.',
+  },
+];
+
+const stand = 'Stand August 2026';
+---
+
+<Marketing
+  titel="Vergleich"
+  beschreibung="Elf Kriterien gegen Kauf-Software und Cloud-Anbieter — mit Begründung je Zeile."
+>
+  <section class="hero">
+    <span class="mono mono--amber">Vergleich · ohne Schönfärben</span>
+    <h1>Wo wir besser sind — und wo nicht</h1>
+    <p class="fliess">
+      Elf Kriterien gegen Kauf-Software und Cloud-Anbieter. Filtere nach Thema, wähle deinen
+      Vergleichskandidaten, klick eine Zeile für die Begründung.
+    </p>
+  </section>
+
+  <div class="vergleich">
+    <div class="filter">
+      <div class="filter__gruppe">
+        <span class="mono">Thema</span>
+        <div class="chips">
+          {
+            themen.map((t) => (
+              <button
+                class:list={['chip', { on: t.id === 'alle' }]}
+                type="button"
+                data-thema={t.id}
+                aria-pressed={t.id === 'alle' ? 'true' : 'false'}
+              >
+                {t.text}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="filter__gruppe">
+        <span class="mono">Vergleichen mit</span>
+        <div class="chips">
+          {
+            kandidaten.map((k) => (
+              <button
+                class:list={['chip', { on: k.id === 'beide' }]}
+                type="button"
+                data-kandidat={k.id}
+                aria-pressed={k.id === 'beide' ? 'true' : 'false'}
+              >
+                {k.text}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="tabellenrahmen">
+      <div class="scroller">
+        <table class="tabelle">
+          <caption class="nur-vorlese">
+            Vergleich von youbooth mit Kauf-Software und Cloud-Anbietern, elf Kriterien
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Kriterium</th>
+              <th scope="col" class="uns">youbooth</th>
+              <th scope="col" data-spalte="kauf">Kauf-Software</th>
+              <th scope="col" data-spalte="cloud">Cloud-Anbieter</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              zeilen.map((z, i) => (
+                <>
+                  <tr class="zeile" data-thema-zeile={z.thema} style={`--verzug:${i * 0.035}s`}>
+                    <th scope="row">
+                      <button type="button" data-auf={z.kriterium} aria-expanded="false">
+                        <span class="pfeilchen" aria-hidden="true">
+                          ›
+                        </span>
+                        {z.kriterium}
+                      </button>
+                    </th>
+                    <td class="uns">{z.uns}</td>
+                    <td data-spalte="kauf">{z.kauf}</td>
+                    <td data-spalte="cloud">{z.cloud}</td>
+                  </tr>
+                  <tr class="detailzeile" data-detail={z.kriterium} data-thema-zeile={z.thema} hidden>
+                    <td colspan="4">
+                      <span class="detail">
+                        <span class="detail__strich" aria-hidden="true" />
+                        {z.detail}
+                      </span>
+                    </td>
+                  </tr>
+                </>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <p class="leer" data-feld="leer" hidden>Kein Kriterium in diesem Thema.</p>
+
+      <div class="tabellenfuss">
+        <span class="mono" data-feld="treffer">{zeilen.length} Kriterien · {stand}</span>
+        <span class="mono mono--zart">Zeile anklicken für Begründung</span>
+      </div>
+    </div>
+
+    <span class="mono">{stand} · eigene Recherche, keine Gewähr für fremde Produkte</span>
+  </div>
+
+  <section class="abschnitt abschnitt--eng">
+    <div class="raster raster--breit">
+      {
+        einordnung.map((e) => (
+          <article class="karte">
+            <span class="mono">{e.kennung}</span>
+            <span class="display display--klein">{e.titel}</span>
+            <span class="karte__text">{e.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display">Selbst nachrechnen statt vergleichen</span>
+      <span class="beiwort">
+        Der Rechner zeigt, was pro Event übrig bleibt — mit euren Zahlen, nicht mit unseren.
+      </span>
+    </div>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--mittel" href="/rechner">Zum Rechner</a>
+      <a class="knopf knopf--rahmen-hell knopf--mittel" href="/kontakt">14 Tage testen</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 52px var(--rand) 58px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .hero h1 {
+    font-size: clamp(34px, 4vw, 56px);
+    max-width: 820px;
+  }
+
+  .hero .fliess {
+    font-size: 16.5px;
+    color: var(--text-hell-leise);
+    max-width: 620px;
+  }
+
+  .vergleich {
+    padding: 44px var(--rand) 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .filter__gruppe {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .chips {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    height: 34px;
+    padding: 0 15px;
+    border-radius: var(--r-kreis);
+    cursor: pointer;
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 12.5px;
+    border: 1px solid rgba(0, 0, 0, 0.16);
+    background: var(--weiss);
+    color: var(--text-leise);
+    transition: background var(--t-farbe), color var(--t-farbe), border-color var(--t-farbe);
+  }
+
+  .chip:hover {
+    border-color: rgba(0, 0, 0, 0.35);
+  }
+
+  .chip.on {
+    background: var(--ink-soft);
+    border-color: var(--ink-soft);
+    color: var(--text-hell);
+  }
+
+  .tabellenrahmen {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte);
+    overflow: hidden;
+  }
+
+  .scroller {
+    overflow-x: auto;
+  }
+
+  .tabelle {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .tabelle thead tr {
+    background: var(--ink);
+    color: var(--text-hell);
+  }
+
+  .tabelle th[scope='col'] {
+    padding: 16px 22px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .tabelle th[scope='col'].uns {
+    color: var(--amber);
+  }
+
+  .zeile > * {
+    padding: 15px 22px;
+    vertical-align: top;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-leise);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    animation: einlaufen 0.5s ease-out both var(--verzug);
+  }
+
+  .zeile th[scope='row'] {
+    padding: 0;
+  }
+
+  .zeile th[scope='row'] button {
+    width: 100%;
+    height: 100%;
+    padding: 15px 22px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .pfeilchen {
+    display: inline-block;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--amber);
+    transition: transform 0.18s ease;
+  }
+
+  .zeile th[scope='row'] button[aria-expanded='true'] .pfeilchen {
+    transform: rotate(90deg);
+  }
+
+  .zeile.offen > * {
+    background: rgba(242, 178, 62, 0.07);
+  }
+
+  .zeile td.uns {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .detailzeile td {
+    padding: 0 22px 16px;
+    background: rgba(242, 178, 62, 0.07);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .detail {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    max-width: 820px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: rgba(0, 0, 0, 0.62);
+  }
+
+  .detail__strich {
+    width: 3px;
+    background: var(--amber);
+    border-radius: 2px;
+    flex: none;
+  }
+
+  .leer {
+    padding: 34px 22px;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  .tabellenfuss {
+    padding: 14px 22px;
+    background: #faf8f5;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .mono--zart {
+    color: rgba(0, 0, 0, 0.35);
+  }
+
+  .raster--breit {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+  }
+
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding-block: 52px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .schluss .display {
+    font-size: clamp(26px, 2.6vw, 32px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15px;
+    color: var(--text-hell-leise);
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+
+  @keyframes einlaufen {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .zeile > * {
+      animation: none;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .tabelle {
+      min-width: 720px;
+    }
+  }
+</style>
+
+<script>
+  const wurzel = document.querySelector<HTMLElement>('.vergleich');
+
+  if (wurzel) {
+    const zustand = { thema: 'alle', kandidat: 'beide', offen: '' };
+    const stand = 'Stand August 2026';
+
+    function zeichne() {
+      const zeilen = wurzel!.querySelectorAll<HTMLElement>('.zeile');
+      let treffer = 0;
+
+      zeilen.forEach((zeile) => {
+        const passt = zustand.thema === 'alle' || zeile.dataset.themaZeile === zustand.thema;
+        zeile.hidden = !passt;
+        if (passt) treffer++;
+
+        const kriterium = zeile.querySelector<HTMLButtonElement>('[data-auf]')?.dataset.auf ?? '';
+        const auf = passt && zustand.offen === kriterium;
+        zeile.classList.toggle('offen', auf);
+        zeile.querySelector('[data-auf]')?.setAttribute('aria-expanded', String(auf));
+
+        const detail = wurzel!.querySelector<HTMLElement>(`[data-detail="${CSS.escape(kriterium)}"]`);
+        if (detail) detail.hidden = !auf;
+      });
+
+      // Spalten je nach Vergleichskandidat
+      ['kauf', 'cloud'].forEach((spalte) => {
+        const zeigen = zustand.kandidat === 'beide' || zustand.kandidat === spalte;
+        wurzel!
+          .querySelectorAll<HTMLElement>(`[data-spalte="${spalte}"]`)
+          .forEach((zelle) => (zelle.hidden = !zeigen));
+      });
+
+      const spalten = zustand.kandidat === 'beide' ? 4 : 3;
+      wurzel!
+        .querySelectorAll<HTMLTableCellElement>('.detailzeile td')
+        .forEach((td) => (td.colSpan = spalten));
+
+      const leer = wurzel!.querySelector<HTMLElement>('[data-feld="leer"]');
+      if (leer) leer.hidden = treffer > 0;
+
+      const trefferfeld = wurzel!.querySelector<HTMLElement>('[data-feld="treffer"]');
+      if (trefferfeld) {
+        trefferfeld.textContent = `${treffer} ${treffer === 1 ? 'Kriterium' : 'Kriterien'} · ${stand}`;
+      }
+
+      wurzel!.querySelectorAll<HTMLButtonElement>('[data-thema]').forEach((b) => {
+        const an = b.dataset.thema === zustand.thema;
+        b.classList.toggle('on', an);
+        b.setAttribute('aria-pressed', String(an));
+      });
+
+      wurzel!.querySelectorAll<HTMLButtonElement>('[data-kandidat]').forEach((b) => {
+        const an = b.dataset.kandidat === zustand.kandidat;
+        b.classList.toggle('on', an);
+        b.setAttribute('aria-pressed', String(an));
+      });
+    }
+
+    wurzel.addEventListener('click', (e) => {
+      const knopf = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
+      if (!knopf) return;
+
+      if (knopf.dataset.thema) {
+        zustand.thema = knopf.dataset.thema;
+        zustand.offen = '';
+      } else if (knopf.dataset.kandidat) {
+        zustand.kandidat = knopf.dataset.kandidat;
+      } else if (knopf.dataset.auf) {
+        zustand.offen = zustand.offen === knopf.dataset.auf ? '' : knopf.dataset.auf;
+      } else return;
+
+      zeichne();
+    });
+
+    zeichne();
+  }
+</script>

@@ -2,13 +2,29 @@
 import Seite from '../layouts/Seite.astro';
 import Icon from '../components/Icon.astro';
 
+// Hier stand „4,1× mehr Bestellungen je Scan". Die Zahl war nie
+// gemessen — sie stand als Beispielwert im Layout. Eine Werbeaussage
+// mit einer erfundenen Zahl ist nach § 5 UWG irrefuehrend, und sie
+// setzt einem Kunden eine Erwartung, fuer die niemand geradesteht.
+//
+// Was jetzt dasteht, ist nachpruefbar: es folgt aus dem Programm und
+// nicht aus einer Hoffnung.
 const kennzahlen = [
-  { wert: '4,1×', text: 'mehr Bestellungen je Scan' },
-  { wert: '3 Min.', text: 'vom Konto zum ersten Code' },
-  { wert: 'DSGVO', text: 'EU-Hosting, cookiefrei' },
+  { wert: '0', text: 'Anfragen an fremde Server' },
+  { wert: '1 Datei', text: 'Binär plus Verzeichnis, das ist alles' },
+  { wert: 'ohne Cookies', text: 'Landeseiten brauchen kein Banner' },
 ];
 
-const kunden = ['Nordwerk', 'Halle 7', 'Kontor', 'Messe Ost', 'Bäckerei Rau', 'Rösterei Süd'];
+// Hier stand ein Band „Schon dabei" mit sechs Namen. Die Namen waren
+// erfunden — Fuellwerte aus dem Layout. Eine erfundene Referenz ist
+// schwerer als eine erfundene Zahl: sie behauptet, jemand stehe dahinter.
+//
+// An ihrer Stelle steht, wofuer das System gebaut ist. Sobald es echte
+// Kunden gibt, koennen sie hierher — mit ihrer Zustimmung.
+const einsatzorte = [
+  'Speisekarte am Tisch', 'Tischnummern in Serie', 'Produktpass am Etikett',
+  'Programm auf dem Fest', 'Wegweiser im Schaufenster', 'Plakat mit Kurzweg',
+];
 
 const kiesel = [
   {
@@ -131,9 +147,9 @@ const bluete = Array.from({ length: 36 }, (_, i) => {
   <!-- ── Kundenband ────────────────────────────────────────────────── -->
   <section class="band">
     <div class="band-innen">
-      <span class="band-titel">Schon dabei</span>
+      <span class="band-titel">Wofür es gebaut ist</span>
       <div class="band-namen">
-        {kunden.map((k) => <div class="band-pille">{k}</div>)}
+        {einsatzorte.map((k) => <div class="band-pille">{k}</div>)}
       </div>
     </div>
   </section>

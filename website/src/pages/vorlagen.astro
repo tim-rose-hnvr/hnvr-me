@@ -4,42 +4,69 @@ import Icon from '../components/Icon.astro';
 
 const faecher = ['Alle', 'Gastro', 'Handel', 'Events', 'Verpackung'];
 
+// Die Zahlen aus dem Entwurf („31 % bestellen") stehen hier nicht.
+// Sie waren nie gemessen — sie standen als Beispielwerte im Layout, und
+// eine Werbeaussage mit einer erfundenen Zahl ist nach § 5 UWG
+// irrefuehrend, ganz abgesehen davon, dass sie einem Kunden eine
+// Erwartung setzt, fuer die niemand geradesteht.
+//
+// Stattdessen steht da, was die Vorlage enthaelt und ob es sie gibt.
+// „stand: 'gebaut'" heisst: im System vorhanden. Alles andere ist als
+// solches gekennzeichnet — eine Vorlagenseite, die sechs Vorlagen
+// verspricht und drei liefert, ist derselbe Fehler noch einmal.
 const vorlagen = [
   {
-    name: 'Karte kompakt', fach: 'Gastro', ton: 'terra',
-    text: 'Speisekarte mit Bildern, Allergenen und Bestellknopf am Tisch.',
-    bild: 'Speisekarte mobil', zahl: '31% bestellen',
-    teile: ['Kategorien & Preise', 'Allergene ausklappbar', 'Bestellknopf oder Kellnerruf'],
+    name: 'Karte kompakt', fach: 'Gastro', ton: 'terra', stand: 'gebaut',
+    text: 'Speisekarte oder Preisliste: Abschnitte, Zeile und Preis, ein Knopf zur ganzen Karte.',
+    bild: 'Speisekarte mobil',
+    teile: ['Abschnitte mit Überschrift', 'Zeile, Preis und Anmerkung', 'Ein Knopf, gemessen'],
   },
   {
-    name: 'Angebot gegen E-Mail', fach: 'Alle', ton: 'salbei',
-    text: 'Ein Feld, ein Gutschein — der Klassiker für den ersten Kontakt.',
-    bild: 'Angebot mobil', zahl: '22% senden ab',
-    teile: ['Rabatt oder Treuepunkte', 'Ein Pflichtfeld', 'Doppel-Opt-in optional'],
+    name: 'Event-Programm', fach: 'Events', ton: 'terra', stand: 'gebaut',
+    text: 'Ablauf mit Uhrzeiten in fester Spalte, darunter ein Knopf zum Lageplan.',
+    bild: 'Programm mobil',
+    teile: ['Uhrzeit links, feste Breite', 'Anmerkung je Punkt', 'Ein Knopf, gemessen'],
   },
   {
-    name: 'Produktpass', fach: 'Verpackung', ton: 'salbei',
-    text: 'Herkunft, Röstdatum, Zubereitung und Nachkauf — direkt am Etikett.',
-    bild: 'Produktpass', zahl: '18% kaufen nach',
-    teile: ['Herkunft & Charge', 'Pflege / Zubereitung', 'Nachkauf-Knopf'],
+    name: 'Produktpass', fach: 'Verpackung', ton: 'salbei', stand: 'gebaut',
+    text: 'Herkunft, Charge, Stoffe, Nutzung und Ende — die Angaben, die die ESPR verlangt.',
+    bild: 'Produktpass',
+    teile: ['An der GTIN, nicht am Code', 'Öffentlich und beschränkt getrennt', 'Als Seite und als JSON'],
   },
   {
-    name: 'Event-Programm', fach: 'Events', ton: 'terra',
-    text: 'Zeitplan, Bühnen, Anmeldung und Lageplan für Messe und Fest.',
-    bild: 'Programm mobil', zahl: '29% melden sich an',
-    teile: ['Programm nach Zeit', 'Anmeldung mit Kontingent', 'Lageplan'],
+    name: 'Wegweiser', fach: 'Alle', ton: 'salbei', stand: 'gebaut',
+    text: 'Eine Liste von Zielen zur Auswahl: Karte, Reservierung, Anruf.',
+    bild: 'Wegweiser',
+    teile: ['Jede Zeile ein Weg', 'Auch mailto und tel', 'Kein fremdes Schema'],
   },
   {
-    name: 'Terminbuchung', fach: 'Handel', ton: 'salbei',
-    text: 'Freie Slots, zwei Tipps, Bestätigung per Mail — ohne Konto.',
-    bild: 'Terminbuchung', zahl: '24% buchen',
-    teile: ['Slots aus dem Kalender', 'Erinnerung 24 h vorher', 'Absage per Link'],
+    name: 'Kurz erklärt', fach: 'Alle', ton: 'salbei', stand: 'gebaut',
+    text: 'Ein paar Absätze und ein Knopf. Für alles, was eine Erklärung braucht und keine Liste.',
+    bild: 'Info mobil',
+    teile: ['Absätze statt Zeilen', 'Ein Knopf, gemessen', 'Nichts wird nachgeladen'],
   },
   {
-    name: 'Newsletter schlicht', fach: 'Alle', ton: 'terra',
-    text: 'Eine Seite, ein Versprechen, ein Feld. Für Plakat und Schaufenster.',
-    bild: 'Newsletter', zahl: '10% tragen sich ein',
-    teile: ['Versprechen in einem Satz', 'Ein Feld', 'Frequenz sichtbar'],
+    name: 'Angebot gegen E-Mail', fach: 'Alle', ton: 'terra', stand: 'geplant',
+    text: 'Ein Feld, ein Gutschein. Noch nicht gebaut — und der Grund steht daneben.',
+    bild: 'Angebot mobil',
+    teile: ['Braucht Doppelbestätigung', 'Die braucht eine E-Mail', 'pnkt verschickt bewusst keine'],
+  },
+];
+
+// Was nicht gebaut ist, steht als Frage und nicht als Versprechen.
+const offen = [
+  {
+    name: 'Angebot gegen E-Mail und Newsletter',
+    grund: 'Eine Anmeldung ohne Doppelbestätigung ist in Deutschland angreifbar, und ' +
+      'die Doppelbestätigung braucht eine E-Mail. pnkt verschickt keine — aus demselben ' +
+      'Grund gibt es keine Einladung per Post, sondern nur „die Person legt sich selbst ' +
+      'ein Konto an". Das zu ändern ist eine Grundentscheidung, keine Vorlage.',
+  },
+  {
+    name: 'Terminbuchung',
+    grund: 'Sie braucht einen Kalender mit freien Zeiten, Absagen und Erinnerungen. ' +
+      'Der gehört keinem QR-System, sondern dem, das die Termine führt. Was pnkt ' +
+      'dafür tun kann, ist der Wegweiser: ein Knopf, der dorthin führt — und gezählt wird.',
   },
 ];
 
@@ -66,8 +93,8 @@ const teamZahlen = [
       </span>
       <h1 class="titel-liste" style="margin:14px 0 14px">Fertige Ziele, die schon funktionieren</h1>
       <p class="fliess" style="font-size:17px">
-        Jede Vorlage ist eine kleine mobile Seite mit gemessener Wirkung. Nimm sie wie
-        sie ist oder bau sie um.
+        Jede Vorlage ist eine kleine mobile Seite, die aus dem Server kommt: nichts wird
+        nachgeladen, nichts zählt eine Person mit. Nimm sie wie sie ist oder bau sie um.
       </p>
     </div>
 
@@ -103,11 +130,32 @@ const teamZahlen = [
             ))}
           </ul>
           <div class="vorlage-fuss">
-            <a href="/preise" class="btn btn-primary">Verwenden</a>
-            <span class="vorlage-zahl">{v.zahl}</span>
+            {v.stand === 'gebaut'
+              ? <a href="/preise" class="btn btn-primary">Verwenden</a>
+              : <span class="btn btn-geist">noch nicht gebaut</span>}
+            <span class:list={['vorlage-stand', { 'stand-offen': v.stand !== 'gebaut' }]}>
+              {v.stand === 'gebaut' ? 'im System' : 'geplant'}
+            </span>
           </div>
         </article>
       ))}
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="offen-tafel">
+      <h2 class="titel-panel" style="color:var(--color-text)">Was nicht da ist, und warum</h2>
+      <p class="fliess" style="margin:8px 0 18px">
+        Zwei Vorlagen aus dem Entwurf fehlen. Sie fehlen nicht aus Zeitmangel.
+      </p>
+      <div class="offen-raster">
+        {offen.map((o) => (
+          <article class="offen-karte">
+            <div class="vorlage-titel" style="margin-top:0">{o.name}</div>
+            <p class="vorlage-text" style="margin-bottom:0">{o.grund}</p>
+          </article>
+        ))}
+      </div>
     </div>
   </section>
 
@@ -187,6 +235,13 @@ const teamZahlen = [
   .fach-salbei { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
 
   .vorlage-titel { font-family: var(--font-heading); font-size: 22px; margin: 10px 0 6px; }
+
+  .offen-tafel {
+    background: var(--color-surface); border-radius: 44px; padding: 34px 38px;
+  }
+  .offen-raster { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .offen-karte { background: var(--color-bg); border-radius: 28px; padding: 22px; }
+  @media (max-width: 720px) { .offen-raster { grid-template-columns: 1fr; } }
   .vorlage-text { font-size: 13px; line-height: 1.55; color: rgba(32, 30, 29, 0.7); margin: 0 0 14px; }
 
   .teile { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 7px; }
@@ -201,7 +256,12 @@ const teamZahlen = [
     margin-top: auto;
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
   }
-  .vorlage-zahl { font-size: 12.5px; color: rgba(32, 30, 29, 0.6); }
+  .vorlage-stand { font-size: 12.5px; color: rgba(32, 30, 29, 0.6); }
+  .stand-offen { color: var(--color-accent-800); }
+  .btn-geist {
+    background: transparent; color: rgba(32, 30, 29, 0.55);
+    border: 1px solid rgba(32, 30, 29, 0.18); cursor: default;
+  }
 
   .team { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
   .team-raster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }

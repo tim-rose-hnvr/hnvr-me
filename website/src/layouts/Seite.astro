@@ -18,6 +18,10 @@ const kanonisch = new URL(Astro.url.pathname, Astro.site ?? 'https://pnkt.me');
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{titel} · pnkt.me</title>
+    <!-- Ohne Favicon holt jeder Browser /favicon.ico, bekommt 404 und
+         schreibt es in die Konsole. Das ist harmlos, verdeckt aber
+         echte Fehler — und ein leerer Tab sieht nach Baustelle aus. -->
+    <link rel="icon" href="/marke.svg" type="image/svg+xml" />
     <meta name="description" content={beschreibung} />
     <link rel="canonical" href={kanonisch.href} />
 

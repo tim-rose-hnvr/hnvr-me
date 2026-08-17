@@ -2,22 +2,66 @@
 import Seite from '../layouts/Seite.astro';
 import Icon from '../components/Icon.astro';
 
+// Achtung, das Wichtigste an dieser Datei: die Zahlen unten sind ein
+// BEISPIEL und keine Messung. Im Entwurf standen sie als fertige
+// Werbeaussage — „A gewinnt mit 31 % gegen 19 %, Signifikanz 93 %" —
+// fuer eine Funktion, die es nicht gibt. Das waere gleich doppelt
+// falsch: eine erfundene Zahl (§ 5 UWG) fuer ein nicht vorhandenes
+// Merkmal.
+//
+// Was es gibt, sind zwei Stufen: der Scan und der Knopf auf der
+// Landeseite. Beide werden wirklich gezaehlt, und die Rate dazwischen
+// ist wirklich gemessen. Die Seite zeigt das — und sagt beim Rest, dass
+// er noch nicht da ist.
 const schritte = [
-  { nr: '1', titel: 'Scan am Tisch', meta: '24 Tischcodes · Flyer · Etikett', wert: '100%', ton: 'dunkel', rohr: 150, kante: '24% springen sofort ab', verzug: '0s' },
-  { nr: '2', titel: 'Speisekarte', meta: 'Ø 42 Sekunden auf der Seite', wert: '76%', ton: 'creme', rohr: 112, kante: '45% tippen auf das Angebot', verzug: '.3s' },
-  { nr: '3', titel: 'Angebot A · 10% Rabatt', meta: 'gegen E-Mail, kein Konto', wert: '31%', ton: 'salbei', rohr: 78, kante: '38% brechen im Formular ab', verzug: '.6s' },
-  { nr: '4', titel: 'Formular', meta: 'ein Feld, ein Knopf', wert: '25%', ton: 'creme', rohr: 52, kante: '25% kommen am Ziel an', verzug: '.9s' },
+  { nr: '1', titel: 'Scan am Tisch', meta: '24 Tischcodes · Flyer · Etikett',
+    wert: '100%', ton: 'dunkel', rohr: 150, kante: 'gezählt beim Aufruf des Codes',
+    verzug: '0s', stand: 'gebaut' },
+  { nr: '2', titel: 'Landeseite', meta: 'Karte, Programm, Wegweiser oder Info',
+    wert: '100%', ton: 'creme', rohr: 150, kante: 'kommt aus dem Server, lädt nichts nach',
+    verzug: '.3s', stand: 'gebaut' },
+  { nr: '3', titel: 'Knopf gedrückt', meta: 'weiter zum Ziel',
+    wert: '24%', ton: 'salbei', rohr: 60, kante: 'eigener Zähler, nicht als Scan',
+    verzug: '.6s', stand: 'gebaut' },
+  { nr: '4', titel: 'Was danach kommt', meta: 'Shop, Formular, Buchung',
+    wert: '—', ton: 'creme', rohr: 30, kante: 'auf einer fremden Seite endet die Messung',
+    verzug: '.9s', stand: 'geplant' },
 ];
 
+// Was es noch nicht gibt, steht als Liste mit Grund und nicht als
+// fertiges Bild mit Zahl darunter.
+const geplant = [
+  { titel: 'A/B-Test', text: 'Zwei Ziele hinter einem Kürzel, aufgeteilt und gemessen. ' +
+    'Messbar wäre das — es fehlt die Aufteilung und die Rechnung dahinter. Was es ' +
+    'heute gibt: Entwürfe nebeneinander legen, ohne Zahl darunter.' },
+  { titel: 'Formular und Gutschein', text: 'Beide sammeln personenbezogene Daten ein. ' +
+    'Ohne Doppelbestätigung ist das in Deutschland angreifbar, und die braucht eine ' +
+    'E-Mail — pnkt verschickt bewusst keine.' },
+  { titel: 'Weitere Stufen', text: 'Sobald jemand auf eine fremde Seite geht, hört die ' +
+    'Messung auf. Alles Weitere wäre geraten oder erforderte ein Zählpixel dort. Genau ' +
+    'das tut dieses System nicht.' },
+];
+
+// Die Bausteine: drei sind gebaut, drei sind Absicht. Der Stand steht
+// an jedem einzelnen — eine Liste, in der Vorhandenes und Geplantes
+// gleich aussehen, ist ein Versprechen ueber Dinge, die es nicht gibt.
 const bausteine = [
-  { titel: 'Seite', text: 'Eine mobile Vorlage als Ziel — Karte, Angebot, Event oder Produktpass.', ton: 'terra' },
-  { titel: 'A/B-Test', text: 'Zwei Varianten, automatische Aufteilung, Signifikanz statt Bauchgefühl.', ton: 'salbei' },
-  { titel: 'Formular', text: 'Ein Feld für den Gutschein. Jedes weitere Feld kostet dich messbar Abschlüsse.', ton: 'terra' },
-  { titel: 'Gutschein', text: 'Einlösbarer Code, einmalig oder pro Gerät, mit Ablaufdatum.', ton: 'terra' },
-  { titel: 'Weiterleitung', text: 'Direkt in den Shop, zur Bestellsoftware oder zur Terminbuchung.', ton: 'salbei' },
-  { titel: 'Bedingung', text: 'Uhrzeit, Sprache, Standort oder Wiederkehr entscheiden über den nächsten Schritt.', ton: 'salbei' },
+  { titel: 'Seite', stand: 'gebaut', ton: 'terra',
+    text: 'Eine mobile Vorlage als Ziel — Karte, Programm, Wegweiser, Info oder Produktpass.' },
+  { titel: 'Weiterleitung', stand: 'gebaut', ton: 'salbei',
+    text: 'Direkt in den Shop, zur Bestellsoftware oder zur Terminbuchung. Zählt beim Aufruf.' },
+  { titel: 'Bedingung', stand: 'gebaut', ton: 'salbei',
+    text: 'Uhrzeit, Sprache, Land oder Gerät entscheiden über das Ziel. Erste zutreffende Regel gewinnt.' },
+  { titel: 'A/B-Test', stand: 'geplant', ton: 'terra',
+    text: 'Zwei Ziele hinter einem Kürzel, aufgeteilt und gemessen.' },
+  { titel: 'Formular', stand: 'geplant', ton: 'terra',
+    text: 'Braucht Doppelbestätigung, die braucht eine E-Mail. pnkt verschickt keine.' },
+  { titel: 'Gutschein', stand: 'geplant', ton: 'terra',
+    text: 'Einlösbarer Code, einmalig oder je Gerät, mit Ablaufdatum.' },
 ];
 
+// Die Regeln gibt es: sie stehen im Paket regel und entscheiden, wohin
+// ein Scan fuehrt.
 const regeln = [
   { titel: 'Uhrzeit', text: 'Nach 17 Uhr zeigt dieselbe Strecke die Abendkarte — ohne dass jemand etwas umstellt.' },
   { titel: 'Sprache', text: 'Die Gerätesprache entscheidet: Deutsch, Englisch oder Türkisch.' },
@@ -49,7 +93,7 @@ const regeln = [
     <div class="panel trichter">
       <div class="trichter-kopf">
         <span class="trichter-titel">Sommer-Strecke</span>
-        <span class="trichter-meta">14.201 Scans · Test läuft</span>
+        <span class="trichter-meta">Beispiel, keine Messung</span>
       </div>
 
       {schritte.map((s, i) => (
@@ -74,37 +118,37 @@ const regeln = [
 
       <div class="ziel">
         <div>
-          <div class="ziel-titel">Bestellung abgeschlossen</div>
-          <div class="ziel-meta">Ø Warenkorb 24,80 €</div>
+          <div class="ziel-titel">Hier endet, was pnkt sieht</div>
+          <div class="ziel-meta">Was auf einer fremden Seite geschieht, wird nicht gezählt</div>
         </div>
-        <div class="ziel-zahl">3.542</div>
+        <div class="ziel-zahl" aria-hidden="true">·</div>
       </div>
     </div>
 
     <div class="nebenspalte">
       <div class="ergebnis">
-        <span class="ergebnis-zeichen"><Icon name="variante" groesse={20} /></span>
-        <div class="ergebnis-titel">A gewinnt mit 31% gegen 19%</div>
+        <span class="ergebnis-zeichen"><Icon name="geprueft" groesse={20} /></span>
+        <div class="ergebnis-titel">Zwei Stufen, eine echte Rate</div>
         <p class="ergebnis-text">
-          Signifikanz 93% nach elf Tagen. Beim Ausrollen sehen alle Gäste Variante A —
-          der gedruckte Code bleibt gleich.
+          Der Scan wird gezählt, der Knopf auf der Landeseite ein zweites Mal — und
+          zwar getrennt: wer den Knopf drückt, hat nicht zweimal gescannt. Unter
+          30 Scans steht keine Rate da, weil sie dann geraten wäre.
         </p>
         <div class="ergebnis-knoepfe">
-          <a href="/preise" class="btn btn-primary">A ausrollen</a>
-          <a href="/preise" class="btn btn-secondary">Weiter testen</a>
+          <a href="/vorlagen" class="btn btn-primary">Vorlagen ansehen</a>
         </div>
       </div>
 
       <div class="push-karte">
-        <div class="push" aria-hidden="true">
-          <span class="push-zeichen"><Icon name="glocke" groesse={17} /></span>
-          <span>
-            <span class="push-kopf">pnkt.me · jetzt</span>
-            <span class="push-titel">Variante A gewinnt mit 31%</span>
-            <span class="push-unter">Antippen, um sie auszurollen</span>
-          </span>
+        <div class="offen-liste">
+          {geplant.map((g) => (
+            <div class="offen-punkt">
+              <div class="offen-titel">{g.titel}</div>
+              <p class="offen-text">{g.text}</p>
+            </div>
+          ))}
         </div>
-        <p class="push-text">Entscheidungen kommen als Push — nicht jeder Scan.</p>
+        <p class="push-text">Was hier steht, ist noch nicht gebaut — mit Grund.</p>
       </div>
     </div>
   </section>
@@ -112,12 +156,21 @@ const regeln = [
   <!-- ── Bausteine ─────────────────────────────────────────────────── -->
   <section class="spur">
     <h2 class="titel-block" style="margin-bottom:10px">Bausteine für jede Strecke</h2>
-    <p class="fliess" style="margin:0 0 26px">Ziehen, verbinden, fertig. Jeder Baustein misst sich selbst.</p>
+    <p class="fliess" style="margin:0 0 26px">
+      Der Plan für die Strecke. Gebaut sind heute <b>Seite</b>, <b>Weiterleitung</b> und
+      <b>Bedingung</b> — die drei tragen den Weg vom Scan bis zum Knopf. Die anderen
+      stehen hier als Absicht, nicht als Angebot.
+    </p>
     <div class="baustein-raster">
       {bausteine.map((b) => (
-        <article class="baustein hebt">
+        <article class:list={['baustein', 'hebt', { 'baustein-geplant': b.stand !== 'gebaut' }]}>
           <span class:list={['baustein-punkt', b.ton === 'salbei' ? 'punkt-salbei' : 'punkt-terra']}></span>
-          <div class="baustein-titel">{b.titel}</div>
+          <div class="baustein-kopf">
+            <span class="baustein-titel">{b.titel}</span>
+            <span class:list={['baustein-stand', { 'stand-geplant': b.stand !== 'gebaut' }]}>
+              {b.stand}
+            </span>
+          </div>
           <p class="baustein-text">{b.text}</p>
         </article>
       ))}
@@ -180,6 +233,19 @@ const regeln = [
   .schritt-meta { display: block; font-size: 12.5px; color: rgba(32, 30, 29, 0.6); }
   .schritt-dunkel .schritt-meta { color: rgba(245, 234, 216, 0.6); }
   .schritt-wert { font-family: var(--font-heading); font-size: 20px; flex: none; }
+
+  .baustein-kopf { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .baustein-stand {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+    padding: 3px 9px; border-radius: 999px;
+    background: var(--color-accent-2-200); color: var(--color-accent-2-800);
+  }
+  .stand-geplant { background: rgba(32, 30, 29, 0.08); color: rgba(32, 30, 29, 0.6); }
+  .baustein-geplant { opacity: .72; }
+
+  .offen-liste { display: grid; gap: 14px; }
+  .offen-titel { font-family: var(--font-heading); font-size: 16px; margin-bottom: 4px; }
+  .offen-text { font-size: 13px; line-height: 1.55; color: rgba(32, 30, 29, 0.7); margin: 0; }
 
   /* Die Röhre wird nach unten dünner — ihre Breite ist die gemessene
      Durchlassquote, nicht Dekoration. */

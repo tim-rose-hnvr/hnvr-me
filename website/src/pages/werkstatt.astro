@@ -2,6 +2,10 @@
 import Seite from '../layouts/Seite.astro';
 import Icon from '../components/Icon.astro';
 
+// Die vier Zeilen sind ein Beispielbefund fuer den Code daneben — so
+// sieht die Pruefliste aus, wenn sie durchlaeuft. Die Grenzwerte darin
+// sind echt: 4:1 Kontrast, Ruhezone 4 Module, und die kleinste Breite
+// rechnet das Programm aus Version und Verfahren.
 const pruefungen = [
   { titel: 'Kontrast 7,9:1', unter: 'Deutlich über der Grenze von 4:1' },
   { titel: 'Logo bedeckt 18%', unter: 'Sicher bis 22% — noch Luft' },
@@ -23,7 +27,12 @@ const stile = [
 const merkmale = [
   {
     name: 'Varianten & Versionen', icon: 'variante' as const, ton: 'sand',
-    text: 'Fünf Entwürfe im Filmstreifen, jeder mit eigener Scanrate. Alles Ältere bleibt im Verlauf und lässt sich zurückholen.',
+    // Im Entwurf stand hier „jeder mit eigener Scanrate". Die gibt es
+    // nicht: gemessen wird ueber das Kuerzel, und zwei Gestaltungen
+    // desselben Codes tragen dasselbe. Der Satz ist deshalb weg.
+    text: 'Acht Entwürfe im Streifen, zum Vergleichen übereinandergelegt. Jede Änderung ' +
+      'am Ziel bleibt im Verlauf und lässt sich zurückholen — als neue Fassung, ' +
+      'nichts wird überschrieben.',
   },
   {
     name: 'Serien aus einer Tabelle', icon: 'bogen' as const, ton: 'sand',
@@ -31,7 +40,9 @@ const merkmale = [
   },
   {
     name: 'Druckfest ausgeben', icon: 'geprueft' as const, ton: 'salbei',
-    text: 'SVG, PDF/X, PNG 2000, Aufsteller-Vorlage oder Serie als ZIP. CMYK mit ISO Coated v2 auf Wunsch.',
+    text: 'SVG, PDF und EPS als echter Vektor in Millimetern, PNG aus demselben SVG, ' +
+      'Aufsteller in vier Formaten oder die ganze Serie als ZIP — mit CMYK und ' +
+      'Sonderfarbe samt eigenem Auszug.',
   },
 ];
 
@@ -74,7 +85,7 @@ const bogen = Array.from({ length: 12 }, (_, i) => `T${String(i + 1).padStart(2,
           <img src="/assets/o-qr-terra.png" alt="QR-Code in der Vorschau der Werkstatt" width="212" height="212" />
           <span class="sweep" aria-hidden="true"></span>
         </div>
-        <ul class="pruefliste">
+        <ul class="pruefliste" aria-describedby="pruef-hinweis">
           {pruefungen.map((p) => (
             <li>
               <span class="pruef-haken"><Icon name="geprueft" groesse={15} /></span>
@@ -86,6 +97,8 @@ const bogen = Array.from({ length: 12 }, (_, i) => `T${String(i + 1).padStart(2,
           ))}
         </ul>
       </div>
+      <p id="pruef-hinweis" class="beispielnote">Beispielbefund. Gerechnet wird er
+        für den Code, der gerade in der Werkstatt liegt.</p>
     </div>
   </section>
 
@@ -191,6 +204,10 @@ const bogen = Array.from({ length: 12 }, (_, i) => `T${String(i + 1).padStart(2,
     animation: sweep 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
+  .beispielnote {
+    font-size: 12px; color: rgba(32, 30, 29, 0.55);
+    margin: 12px 0 0; text-align: center;
+  }
   .pruefliste { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; width: 100%; }
   .pruefliste li { display: flex; gap: 11px; align-items: flex-start; }
   .pruef-haken {

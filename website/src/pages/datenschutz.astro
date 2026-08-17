@@ -1,0 +1,163 @@
+---
+import Seite from '../layouts/Seite.astro';
+
+// Diese Seite ist ein Entwurf und ersetzt keine Rechtsberatung.
+//
+// Der technische Teil ist trotzdem genau: was das System speichert und
+// was es nicht speichert, steht im Code und ist nachpruefbar. Genau
+// dieser Teil ist es, den eine Kanzlei sonst erfragen muss — er ist
+// hier ausgeschrieben, damit die Pruefung kurz wird.
+//
+// Was fehlt, sind die Angaben zum Verantwortlichen, zum Hoster und zu
+// den Aufbewahrungsfristen. Die kann kein Programm wissen.
+
+// Was wirklich entsteht, wenn jemand einen Code scannt. Die Liste
+// stammt aus klassen() in main.go und aus dem Tageszaehler — nicht aus
+// einer Vorlage.
+const gezaehlt = [
+  { was: 'Gerätegattung', wert: 'iphone, ipad, android oder rechner' },
+  { was: 'Betriebssystem', wert: 'apple, android, windows oder sonstige' },
+  { was: 'Sprache', wert: 'die ersten zwei Zeichen des Accept-Language-Kopfes' },
+  { was: 'Herkunft', wert: 'direkt oder verweis' },
+  { was: 'Stunde', wert: '00 bis 23, in UTC' },
+  { was: 'Schritt', wert: 'ob der Knopf auf der Landeseite gedrückt wurde' },
+];
+
+const nichtGespeichert = [
+  'keine IP-Adresse',
+  'kein Kennzeichen im Gerät — kein Cookie, kein localStorage, kein Fingerabdruck',
+  'keine Zeile je Scan, nur Summen je Code und Tag',
+  'kein vollständiger User-Agent',
+  'kein genauer Standort',
+  'keine Verbindung zwischen zwei Scans derselben Person',
+];
+
+const offen = [
+  'Verantwortlicher: Name, Anschrift, Kontakt (Art. 13 Abs. 1 lit. a DSGVO)',
+  'Datenschutzbeauftragter, falls benannt (lit. b)',
+  'Auftragsverarbeiter: wer betreibt den Server, wo steht er, liegt ein AVV vor',
+  'Aufbewahrungsdauer der Zähler und Protokolle (Art. 13 Abs. 2 lit. a)',
+  'Rechtsgrundlage je Zweck — berechtigtes Interesse oder Vertrag, mit Begründung',
+  'Prüfung durch eine Kanzlei, bevor das hier online geht',
+];
+---
+
+<Seite
+  titel="Datenschutz"
+  beschreibung="Was beim Scannen entsteht und was nicht. Entwurf, noch nicht geprüft."
+  aktiv=""
+>
+  <section class="spur schmal">
+    <h1 class="titel-liste">Datenschutz</h1>
+
+    <div class="warnung">
+      <b>Entwurf, noch nicht juristisch geprüft.</b> Der technische Teil ist genau —
+      er beschreibt, was das Programm tatsächlich tut. Die Angaben zum
+      Verantwortlichen, zum Hoster und zu den Fristen fehlen noch und stehen
+      unten als Liste.
+    </div>
+
+    <h2>Der kurze Teil</h2>
+    <p>
+      Wer einen pnkt-Code scannt, wird auf ein Ziel geleitet oder sieht eine kleine
+      Seite. Dabei wird <b>ein Zähler erhöht</b> — ein Zähler je Code und Tag, in
+      groben Klassen. Es entsteht kein Eintrag, der zu einer Person führt, und es
+      wird nichts auf dem Gerät abgelegt. Deshalb erscheint auch kein Banner: es
+      gibt keine Zustimmung einzuholen, weil nichts gespeichert oder ausgelesen
+      wird, was nach § 25 TDDDG zustimmungspflichtig wäre.
+    </p>
+
+    <h2>Was gezählt wird</h2>
+    <table class="tafel">
+      <thead><tr><th>Merkmal</th><th>Mögliche Werte</th></tr></thead>
+      <tbody>
+        {gezaehlt.map((g) => (
+          <tr><td>{g.was}</td><td>{g.wert}</td></tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="klein">
+      Gespeichert wird jeweils nur, <b>wie oft</b> ein Wert an einem Tag vorkam —
+      nicht, wann genau und von wem. Aus „android: 14" lässt sich keine Person
+      herauslesen.
+    </p>
+
+    <h2>Was nicht entsteht</h2>
+    <ul class="hakenliste">
+      {nichtGespeichert.map((n) => <li>{n}</li>)}
+    </ul>
+    <p class="klein">
+      Das ist keine Zusage über eine Einstellung, sondern über den Code: die
+      genannten Daten werden nirgends erhoben. Was nicht entsteht, kann später
+      auch niemand verlangen oder herausgeben müssen.
+    </p>
+
+    <h2>Landeseiten</h2>
+    <p>
+      Eine Landeseite hinter einem Code lädt nichts nach: keine Schriftart von
+      einem fremden Server, kein Skript, kein Bild von außerhalb. Die
+      Sicherheitsregel der Seite lautet <code>default-src 'none'</code> — der
+      Browser darf gar nichts anderes holen. Damit verlässt auch keine Adresse
+      eines Besuchers das System.
+    </p>
+
+    <h2>Wenn ein Ziel außerhalb liegt</h2>
+    <p>
+      Führt ein Code auf eine fremde Seite, endet unsere Verarbeitung mit der
+      Weiterleitung. Was dort geschieht, verantwortet der Betreiber jener Seite.
+      Beim Weiterleiten wird <code>Referrer-Policy: no-referrer</code> gesetzt:
+      die Zielseite erfährt nicht, von welchem Code jemand kam.
+    </p>
+
+    <h2>Konten und Schlüssel</h2>
+    <p>
+      Wer selbst Codes anlegt, hat ein Konto: E-Mail, Name, ein Passwortabdruck
+      (PBKDF2, 210 000 Runden) und Zugangsschlüssel, von denen nur der
+      SHA-256-Abdruck gespeichert wird. Das Passwort selbst und der Schlüssel
+      im Klartext liegen nirgends.
+    </p>
+
+    <h2>Ihre Rechte</h2>
+    <p>
+      Auskunft, Berichtigung, Löschung, Einschränkung, Widerspruch und
+      Datenübertragbarkeit nach Art. 15 bis 21 DSGVO sowie Beschwerde bei einer
+      Aufsichtsbehörde nach Art. 77. Zuständig ist die Behörde am Sitz des
+      Verantwortlichen. [Sitz und Behörde eintragen.]
+    </p>
+
+    <h2>Was noch fehlt</h2>
+    <ul class="lueckenliste">
+      {offen.map((o) => <li>{o}</li>)}
+    </ul>
+  </section>
+</Seite>
+
+<style>
+  .schmal { max-width: 44rem; }
+  .warnung {
+    background: var(--color-accent-100); color: var(--color-accent-800);
+    border-radius: 24px; padding: 18px 22px; margin: 18px 0 30px;
+    font-size: 15px; line-height: 1.6;
+  }
+  h2 {
+    font-family: var(--font-heading); font-size: 20px;
+    margin: 30px 0 8px; letter-spacing: -0.01em;
+  }
+  p { font-size: 15.5px; line-height: 1.7; margin: 0; }
+  .klein { font-size: 14px; color: rgba(32, 30, 29, 0.7); margin-top: 10px; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13.5px; background: var(--color-surface);
+    padding: 2px 6px; border-radius: 6px;
+  }
+  .tafel { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 10px; }
+  .tafel th {
+    text-align: left; font-size: 12px; text-transform: uppercase;
+    letter-spacing: .05em; color: rgba(32, 30, 29, 0.6);
+    padding: 8px 10px; border-bottom: 1px solid rgba(32, 30, 29, 0.12);
+  }
+  .tafel td { padding: 8px 10px; border-bottom: 1px solid rgba(32, 30, 29, 0.08); }
+  .hakenliste, .lueckenliste {
+    font-size: 15px; line-height: 1.8; padding-left: 1.2rem; margin: 8px 0 0;
+  }
+</style>

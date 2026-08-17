@@ -14,10 +14,10 @@ const spalten = [
   {
     titel: 'Für',
     verweise: [
-      { name: 'Gastro', weg: '/vorlagen?fach=gastro' },
-      { name: 'Handel', weg: '/vorlagen?fach=handel' },
-      { name: 'Events', weg: '/vorlagen?fach=events' },
-      { name: 'Verpackung', weg: '/vorlagen?fach=verpackung' },
+      { name: 'Gastro', weg: '/vorlagen#liste-gastro' },
+      { name: 'Handel', weg: '/vorlagen#liste-alle' },
+      { name: 'Events', weg: '/vorlagen#liste-events' },
+      { name: 'Verpackung', weg: '/vorlagen#liste-verpackung' },
     ],
   },
   {
@@ -42,7 +42,7 @@ const spalten = [
         </span>
         <p class="fuss-text">
           Codes, die aussehen wie deine Marke — und eine Strecke dahinter, die du
-          messen kannst. Gehostet in Frankfurt.
+          messen kannst. Ein Programm, ein Verzeichnis, nichts von außen.
         </p>
         <div class="fuss-zeichen">
           <span class="fuss-kreis"><Icon name="punkt" /></span>
@@ -62,10 +62,20 @@ const spalten = [
     </div>
 
     <div class="fuss-leiste">
-      <span>© 2026 pnkt.me GmbH · Hamburg</span>
+      {/* Hier standen Rechtsform und Sitz als Fuellwerte aus dem
+          Entwurf. Beides war nicht bekannt. Sobald es feststeht,
+          gehoert es hierher UND ins Impressum, und zwar gleichlautend.
+
+          Als Astro-Kommentar geschrieben und nicht als HTML-Kommentar:
+          ein HTML-Kommentar wird mit ausgeliefert, und dann steht die
+          erfundene Angabe weiter in der Seite — nur unsichtbar. */}
+      <span>© 2026 pnkt.me · [Anbieter und Sitz eintragen]</span>
       <span class="fuss-zusage">
         <Icon name="geprueft" groesse={16} />
-        EU-Hosting · keine Tracking-Cookies
+        {/* „EU-Hosting" ist eine Aussage ueber den Server, den es noch
+            nicht gibt — sie steht erst da, wenn er steht. Der zweite
+            Teil gilt schon heute und folgt aus dem Code. */}
+        keine Cookies, kein Tracking
       </span>
     </div>
   </div>

@@ -78,21 +78,58 @@ Aus dem Handoff selbst: „Photography and logos are placeholders."
 
 ## Was fehlt, bevor das öffentlich geht
 
-**Impressum und Datenschutzerklärung.** Der Fuß verweist auf
-`/impressum` und `/datenschutz` — beide Seiten gibt es nicht, die
-Verweise laufen ins Leere. Für ein deutsches Unternehmen ist das keine
-Feinheit: § 5 DDG verlangt Namen, Anschrift, Vertretungsberechtigte,
-Registergericht und Registernummer, Umsatzsteuer-Identifikationsnummer
-und eine Kontaktmöglichkeit.
+**Impressum und Datenschutzerklärung ausfüllen.** Beide Seiten gibt es
+inzwischen, beide sind Gerüst: die Pflichtfelder stehen als sichtbare
+Lücken in eckigen Klammern, und ganz oben steht ein Kasten, der sagt,
+dass der Text noch nicht vollständig ist. § 5 DDG verlangt Namen,
+Anschrift, Vertretungsberechtigte, Registergericht und Registernummer,
+Umsatzsteuer-Identifikationsnummer und eine Kontaktmöglichkeit — davon
+kenne ich nichts.
 
-Ich habe die beiden Seiten **nicht** angelegt. Ein Impressum mit
-erfundenen oder ausgedachten Angaben ist schlimmer als keines, und die
-Angaben kenne ich nicht. Sie kommen von euch, dann sind es zwei kleine
-Seiten.
+Was ich ausfüllen konnte, ist der technische Teil des Datenschutzes: was
+gezählt wird, was nicht entsteht, was die Landeseiten laden (nichts) und
+welche Kopfzeilen dabei gesetzt werden. Das steht dort ausgeschrieben,
+damit die juristische Prüfung kurz wird.
 
 **Die Domain.** `pnkt.me` löst derzeit in keinem DNS auf — weder A noch
 über `www`. Solange das so ist, ist diese Seite ein Ordner, keine
 Adresse.
+
+## Die Zahlen im Entwurf sind Fassaden
+
+Der Handoff ist ein Layout, kein Datenblatt. Er trägt Werte, die gut
+aussehen und nie gemessen wurden — und sie standen zunächst genauso in
+dieser Seite:
+
+| stand da | war | jetzt |
+|---|---|---|
+| „4,1× mehr Bestellungen je Scan" | erfunden | drei Angaben, die aus dem Programm folgen |
+| „31 % bestellen", „22 % senden ab", … | erfunden | was die Vorlage enthält, plus ihr Stand |
+| „A gewinnt mit 31 %, Signifikanz 93 %" | erfunden, für ein Merkmal, das es nicht gibt | die zwei Stufen, die wirklich gezählt werden |
+| „Schon dabei: Nordwerk, Halle 7, …" | erfundene Referenzen | wofür das System gebaut ist |
+| „© pnkt.me GmbH · Hamburg", „Frankfurt" | erfundene Firmenangaben | Lücke, sichtbar markiert |
+| „jeder Entwurf mit eigener Scanrate" | nicht messbar | der Satz ist weg, der Grund steht daneben |
+
+Eine Werbeaussage mit einer erfundenen Zahl ist nach § 5 UWG
+irreführend. Eine erfundene Referenz ist schwerer: sie behauptet, jemand
+stehe dahinter. Und eine Zahl unter einem Merkmal, das es nicht gibt,
+ist beides auf einmal.
+
+Wo im Layout ein Beispiel stehen muss, damit man die Anordnung sieht,
+steht jetzt dabei, dass es eines ist — „Beispiel, keine Messung",
+„Beispielbefund".
+
+## Impressum und Datenschutz
+
+Beide Seiten gibt es, beide sind unvollständig, und beide sagen das
+oben in einem Kasten. Der technische Teil der Datenschutzerklärung ist
+genau: er beschreibt, was das Programm tatsächlich zählt und was nicht
+entsteht — genau der Teil, den eine Kanzlei sonst erfragen muss. Was
+fehlt, steht am Ende jeder Seite als Liste: Anbieter, Anschrift, Hoster,
+Fristen, Rechtsgrundlagen.
+
+**Vor dem Onlinegehen muss beides ausgefüllt und geprüft werden.** Ein
+Impressum mit erfundener Adresse ist schlechter als keines.
 
 ## Was hier bewusst nicht gebaut ist
 

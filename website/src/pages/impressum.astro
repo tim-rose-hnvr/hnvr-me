@@ -1,0 +1,79 @@
+---
+import Seite from '../layouts/Seite.astro';
+
+// Das Impressum ist keine Gestaltungsfrage, sondern eine Pflicht: § 5
+// DDG verlangt Name, Anschrift, schnelle Kontaktaufnahme und, sofern
+// vorhanden, Register und Umsatzsteuer-Identifikationsnummer.
+//
+// Was hier in eckigen Klammern steht, kann kein Programm ausfuellen. Es
+// steht deshalb sichtbar als Luecke da und nicht als plausibler
+// Platzhalter — ein Impressum mit einer erfundenen Adresse ist
+// schlimmer als keines, weil es aussieht, als waere es geprueft.
+const luecken = [
+  'Name und Rechtsform des Anbieters',
+  'Ladungsfähige Anschrift — ein Postfach genügt nicht',
+  'E-Mail-Adresse und eine zweite Möglichkeit zur schnellen Kontaktaufnahme',
+  'Registergericht und Registernummer, falls eingetragen',
+  'Umsatzsteuer-Identifikationsnummer nach § 27 a UStG, falls vorhanden',
+  'Verantwortliche Person nach § 18 Abs. 2 MStV, falls journalistische Inhalte',
+];
+---
+
+<Seite titel="Impressum" beschreibung="Anbieterkennzeichnung nach § 5 DDG." aktiv="">
+  <section class="spur schmal">
+    <h1 class="titel-liste">Impressum</h1>
+
+    <div class="warnung">
+      <b>Dieser Text ist noch nicht vollständig.</b> Die eingeklammerten Stellen
+      müssen vor der Veröffentlichung ausgefüllt werden — ein Impressum mit
+      erfundenen Angaben ist schlechter als keines.
+    </div>
+
+    <h2>Angaben nach § 5 DDG</h2>
+    <p>
+      [Name / Firma]<br />
+      [Straße und Hausnummer]<br />
+      [Postleitzahl und Ort]<br />
+      [Land]
+    </p>
+
+    <h2 id="kontakt">Kontakt</h2>
+    <p>
+      E-Mail: [adresse@example.de]<br />
+      Telefon: [Nummer oder ein zweiter Weg zur schnellen Kontaktaufnahme]
+    </p>
+
+    <h2>Registereintrag</h2>
+    <p>[Registergericht und Registernummer — oder: entfällt]</p>
+
+    <h2>Umsatzsteuer</h2>
+    <p>[USt-IdNr. nach § 27 a UStG — oder: entfällt]</p>
+
+    <h2>Streitbeilegung</h2>
+    <p>
+      Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren
+      vor einer Verbraucherschlichtungsstelle teilzunehmen. [Prüfen: gilt diese
+      Aussage für den Anbieter?]
+    </p>
+
+    <h2>Was noch fehlt</h2>
+    <ul class="lueckenliste">
+      {luecken.map((l) => <li>{l}</li>)}
+    </ul>
+  </section>
+</Seite>
+
+<style>
+  .schmal { max-width: 44rem; }
+  .warnung {
+    background: var(--color-accent-100); color: var(--color-accent-800);
+    border-radius: 24px; padding: 18px 22px; margin: 18px 0 30px;
+    font-size: 15px; line-height: 1.6;
+  }
+  h2 {
+    font-family: var(--font-heading); font-size: 20px;
+    margin: 28px 0 8px; letter-spacing: -0.01em;
+  }
+  p { font-size: 15.5px; line-height: 1.7; margin: 0; }
+  .lueckenliste { font-size: 15px; line-height: 1.8; padding-left: 1.2rem; margin: 8px 0 0; }
+</style>

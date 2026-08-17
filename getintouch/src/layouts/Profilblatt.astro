@@ -1,0 +1,59 @@
+---
+/**
+ * Der Rahmen einer Profilseite.
+ *
+ * Die Gestaltung kommt als CSS-Variablen an das `body`-Element. Damit ist die
+ * Seite beim ersten Bild vollständig eingefärbt — kein Aufblitzen in
+ * Vorgabefarben, weil ein Skript erst noch laufen muss.
+ */
+import { cssVariablen, type Gestaltung } from '../kern/gestaltung.ts';
+import '../stile/profil.css';
+
+interface Props {
+  titel: string;
+  beschreibung: string;
+  gestaltung: Gestaltung;
+  /** Vollständige Adresse dieser Seite, für Canonical und die Vorschaukarte. */
+  adresse: string;
+  bild?: string | undefined;
+  /** Seiten ohne Inhalt gehören nicht in den Index. */
+  indexierbar?: boolean;
+}
+
+const { titel, beschreibung, gestaltung, adresse, bild, indexierbar = true } = Astro.props;
+
+const stil = Object.entries(cssVariablen(gestaltung))
+  .map(([name, wert]) => `${name}:${wert}`)
+  .join(';');
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{titel}</title>
+    <meta name="description" content={beschreibung} />
+    <link rel="canonical" href={adresse} />
+    <meta name="theme-color" content={gestaltung.grund} />
+    {!indexierbar && <meta name="robots" content="noindex" />}
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" content={titel} />
+    <meta property="og:description" content={beschreibung} />
+    <meta property="og:url" content={adresse} />
+    {bild && <meta property="og:image" content={bild} />}
+    <meta name="twitter:card" content={bild ? 'summary_large_image' : 'summary'} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <link rel="stylesheet" href="/schriften/schriften.css" />
+  </head>
+
+  <body style={stil}>
+    <div class="buehne">
+      <slot />
+    </div>
+  </body>
+</html>

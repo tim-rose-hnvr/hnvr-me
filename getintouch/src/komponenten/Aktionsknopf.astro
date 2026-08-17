@@ -1,0 +1,39 @@
+---
+/**
+ * Eine Schaltfläche.
+ *
+ * `haupt` markiert die eine Aktion, die gerade trägt — sie wird gefüllt und
+ * größer dargestellt. Alles andere ordnet sich unter, damit die Seite eine
+ * Antwort gibt statt einer Auswahl.
+ *
+ * Anruf, Mail und SMS öffnen ein Programm auf dem Gerät und bekommen deshalb
+ * kein neues Fenster: ein leerer Tab, der nach dem Auflegen zurückbleibt, ist
+ * nur Müll auf dem Bildschirm.
+ */
+import type { Aktionsblock } from '../kern/profil.ts';
+import { zeichen } from '../kern/zeichen.ts';
+import { bleibtImGeraet, zeichenFuerKanal } from '../kern/ziele.ts';
+
+interface Props {
+  block: Aktionsblock;
+  adresse: string;
+  haupt?: boolean;
+}
+
+const { block, adresse, haupt = false } = Astro.props;
+const imGeraet = bleibtImGeraet(block.kanal);
+---
+
+<a
+  class:list={['aktion', haupt && 'aktion--haupt', !haupt && block.betont && 'aktion--betont']}
+  href={adresse}
+  target={imGeraet ? undefined : '_blank'}
+  rel={imGeraet ? undefined : 'noopener noreferrer'}
+>
+  <Fragment set:html={zeichen(zeichenFuerKanal(block.kanal))} />
+  <span class="aktion__text">
+    <span class="aktion__beschriftung">{block.beschriftung}</span>
+    {block.unterzeile && <span class="aktion__unterzeile">{block.unterzeile}</span>}
+  </span>
+  <Fragment set:html={zeichen('pfeil', 'zeichen aktion__pfeil')} />
+</a>

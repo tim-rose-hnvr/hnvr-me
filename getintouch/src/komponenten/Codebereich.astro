@@ -1,0 +1,78 @@
+---
+/**
+ * QR-Code und Teilen — am Fuß, weil beides erst nach der Entscheidung kommt.
+ *
+ * Der Code steckt in einem `details`-Element und wird als SVG vom Server
+ * geliefert. Damit ist er ohne JavaScript da, druckt scharf in jeder Größe und
+ * lässt sich als Datei in eine Druckvorlage ziehen.
+ *
+ * Er zeigt auf die Seitenadresse, nicht auf die vCard. Das ist die wichtigere
+ * Entscheidung: gedruckte Codes bleiben gültig, auch wenn sich Nummer,
+ * Anschrift oder Foto später ändern.
+ */
+import { zeichen } from '../kern/zeichen.ts';
+
+interface Props {
+  /** Adresse, unter der das QR-Bild liegt. In der Vorschau eine andere als live. */
+  bildziel: string;
+  /** Vollständige, teilbare Adresse dieser Seite — das, was im Code steht. */
+  adresse: string;
+  /** Kurzform für die Anzeige, z. B. „hnvr.me/t/hnvr". */
+  adresseKurz: string;
+}
+
+const { bildziel, adresse, adresseKurz } = Astro.props;
+---
+
+<section class="code" aria-label="Code und Teilen">
+  <details class="code__falte">
+    <summary class="code__zeile">
+      <Fragment set:html={zeichen('qr')} />
+      <span class="code__beschriftung">QR-Code</span>
+      <span class="code__adresse">{adresseKurz}</span>
+    </summary>
+    <div class="qr">
+      <img class="qr__bild" src={bildziel} width="200" height="200" alt={`QR-Code für ${adresseKurz}`} />
+    </div>
+  </details>
+
+  <button class="code__zeile" type="button" data-teilen={adresse} hidden>
+    <Fragment set:html={zeichen('teilen')} />
+    <span class="code__beschriftung" data-teilen-text>Seite teilen</span>
+  </button>
+</section>
+
+<script>
+  /* Die einzige Stelle, an der die Seite JavaScript braucht. Die Schaltfläche
+     startet versteckt und taucht erst auf, wenn sie auch etwas kann — eine
+     tote Schaltfläche ist schlimmer als keine. */
+  const knopf = document.querySelector<HTMLButtonElement>('[data-teilen]');
+  if (knopf) {
+    const adresse = knopf.dataset.teilen!;
+    const beschriftung = knopf.querySelector<HTMLElement>('[data-teilen-text]')!;
+    const kannTeilen = typeof navigator.share === 'function';
+    const kannKopieren = typeof navigator.clipboard?.writeText === 'function';
+
+    if (kannTeilen || kannKopieren) {
+      knopf.hidden = false;
+      if (!kannTeilen) beschriftung.textContent = 'Adresse kopieren';
+
+      knopf.addEventListener('click', async () => {
+        try {
+          if (kannTeilen) {
+            await navigator.share({ url: adresse, title: document.title });
+            return;
+          }
+          await navigator.clipboard.writeText(adresse);
+          const vorher = beschriftung.textContent;
+          beschriftung.textContent = 'Kopiert';
+          setTimeout(() => {
+            beschriftung.textContent = vorher;
+          }, 1800);
+        } catch {
+          /* Abbruch durch den Benutzer ist kein Fehler. */
+        }
+      });
+    }
+  }
+</script>

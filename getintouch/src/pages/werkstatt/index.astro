@@ -1,0 +1,136 @@
+---
+/**
+ * Die Werkstatt — hier wird die Seite gebaut.
+ *
+ * Links die Regler, rechts die Seite. Die Vorschau steckt in einem Rahmen und
+ * zeigt `/werkstatt/vorschau`, also die echte Seite mit dem echten Renderer.
+ * Kein Abbild, keine Nachbildung: was hier steht, steht später genauso im Netz.
+ *
+ * Die Oberfläche wird von `skripte/werkstatt.ts` gefüllt. Das ist Absicht: die
+ * Formulare hängen an denselben Aufzählungen wie der Kern — Kanäle, Netzwerke,
+ * Schriften, Vorlagen. Wird dort etwas ergänzt, steht es hier ohne
+ * Zusatzarbeit zur Wahl, und es kann nicht auseinanderlaufen.
+ *
+ * Die Werkstatt braucht JavaScript. Die Profilseite nicht — und das ist die
+ * Reihenfolge, die zählt: das Werkzeug darf Voraussetzungen haben, das
+ * Ergebnis nicht.
+ */
+import { zeichen } from '../../kern/zeichen.ts';
+import { MARKE, MARKENFARBEN, SIGNET } from '../../kern/marke.ts';
+import '../../stile/werkstatt.css';
+
+export const prerender = false;
+
+const reiter = [
+  { kennung: 'inhalt', name: 'Inhalt' },
+  { kennung: 'bloecke', name: 'Blöcke' },
+  { kennung: 'kontakt', name: 'Kontakt' },
+  { kennung: 'zeiten', name: 'Zeiten' },
+  { kennung: 'design', name: 'Design' },
+  { kennung: 'fertig', name: 'Fertig' },
+];
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Werkstatt — {MARKE.name}</title>
+    <meta name="theme-color" content={MARKENFARBEN.grund} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/schriften/schriften.css" />
+  </head>
+
+  <body>
+    <header class="wkopf">
+      <a class="wmarke" href="/">
+        <Fragment set:html={SIGNET} />
+        <span>{MARKE.name}</span>
+      </a>
+      <nav class="wnavi">
+        <a href="/designs">Galerie</a>
+        <a href="/preise">Preise</a>
+      </nav>
+    </header>
+
+    <main class="werkstatt">
+      <section class="regler" aria-label="Seite bauen">
+        <div class="reiter" role="tablist" aria-label="Bereiche">
+          {
+            reiter.map((r, i) => (
+              <button
+                type="button"
+                role="tab"
+                data-reiter={r.kennung}
+                aria-selected={i === 0}
+                aria-controls={`tafel-${r.kennung}`}
+              >
+                {r.name}
+              </button>
+            ))
+          }
+        </div>
+
+        {
+          reiter
+            .filter((r) => r.kennung !== 'fertig')
+            .map((r, i) => <div class="tafel" id={`tafel-${r.kennung}`} role="tabpanel" hidden={i !== 0} />)
+        }
+
+        <div class="tafel" id="tafel-fertig" role="tabpanel" hidden>
+          <div class="feldgruppe">
+            <h2 class="wmarke2">Prüfung</h2>
+            <div class="befunde" id="befunde" aria-live="polite"></div>
+          </div>
+
+          <div class="feldgruppe">
+            <h2 class="wmarke2">Abgeben</h2>
+            <p class="whinweis">
+              „Entwurf abgeben" öffnet dein Mailprogramm mit dem fertigen Entwurf darin — wir legen die Seite an und
+              melden uns mit der Adresse. Einen Konto-Bereich zum Selbstveröffentlichen gibt es noch nicht.
+            </p>
+            <pre class="ausgabe" id="ausgabe"></pre>
+            <div class="wknopfreihe">
+              <button type="button" class="wknopf wknopf--voll" id="abgeben">
+                <Fragment set:html={zeichen('mail')} />
+                <span>Entwurf abgeben</span>
+              </button>
+              <button type="button" class="wknopf" id="linkkopieren">Vorschau-Link kopieren</button>
+              <button type="button" class="wknopf" id="herunterladen">Als Datei sichern</button>
+              <button type="button" class="wknopf" id="kopieren"><span>JSON kopieren</span></button>
+            </div>
+          </div>
+
+          <div class="feldgruppe">
+            <h2 class="wmarke2">Von vorn</h2>
+            <div class="wknopfreihe">
+              <label class="wknopf">
+                Datei einlesen
+                <input type="file" id="einlesen" accept="application/json,.json" hidden />
+              </label>
+              <button type="button" class="wknopf" id="neuanfangen">Neu anfangen</button>
+            </div>
+            <p class="whinweis">
+              Der Entwurf bleibt in diesem Browser, damit er ein Neuladen übersteht. Er geht an keinen Server —
+              veröffentlicht wird erst, was du abgibst.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="buehne2" aria-label="Vorschau">
+        <div class="geraet">
+          <iframe id="vorschaurahmen" class="geraet__schirm" title="Vorschau der Seite" loading="eager"></iframe>
+        </div>
+        <p class="whinweis whinweis--mitte">Die echte Seite, nicht ihr Abbild.</p>
+      </section>
+    </main>
+
+    <script>
+      import '../../skripte/werkstatt.ts';
+    </script>
+  </body>
+</html>

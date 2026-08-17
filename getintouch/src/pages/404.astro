@@ -1,0 +1,24 @@
+---
+/**
+ * Für alles, was gar keiner Route entspricht.
+ *
+ * Profile unter `/t/<name>` beantworten ihren eigenen Fehlfall selbst — sie
+ * kennen den gesuchten Namen und können ihn nennen. Hier landet, wer sich in
+ * der Adresse ganz vertan hat.
+ */
+import Profilblatt from '../layouts/Profilblatt.astro';
+import Nichtgefunden from '../komponenten/Nichtgefunden.astro';
+import { GESTALTUNG_VORGABE } from '../kern/gestaltung.ts';
+
+export const prerender = false;
+---
+
+<Profilblatt
+  titel="Hier ist niemand — Get in Touch"
+  beschreibung="Diese Adresse gibt es nicht."
+  gestaltung={GESTALTUNG_VORGABE}
+  adresse={new URL('/', Astro.site ?? Astro.url).toString()}
+  indexierbar={false}
+>
+  <Nichtgefunden />
+</Profilblatt>

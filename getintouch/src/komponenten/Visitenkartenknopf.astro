@@ -1,0 +1,35 @@
+---
+/**
+ * „Kontakt speichern" — gleichrangig mit der Hauptaktion, direkt darunter.
+ *
+ * Beim Vorbild steht die Visitenkarte ganz unten, hinter vierzehn Links. Das
+ * ist die falsche Reihenfolge: Wer eine Kontaktseite öffnet, will genau zwei
+ * Dinge — jetzt erreichen und für später behalten. Beides gehört nach oben,
+ * bevor irgendein Inhaltslink kommt.
+ *
+ * Die Anbieter digitaler Visitenkarten machen es richtig herum, verschicken
+ * dafür auf ihren Gratis-Tarifen Werbemails an jeden, der die Karte ansieht.
+ * Hier wird nichts erfasst: die Karte ist eine Datei, kein Formular.
+ */
+import type { Visitenkarte } from '../kern/profil.ts';
+import { zeichen } from '../kern/zeichen.ts';
+
+interface Props {
+  karte: Visitenkarte;
+  /** Adresse, unter der die vCard liegt. In der Vorschau eine andere als live. */
+  ziel: string;
+}
+
+const { karte, ziel } = Astro.props;
+const name = [karte.vorname, karte.nachname].filter(Boolean).join(' ');
+const zusatz = [name, karte.funktion, karte.firma].filter(Boolean).join(' · ');
+---
+
+<a class="visitenkarte" href={ziel} download>
+  <Fragment set:html={zeichen('visitenkarte')} />
+  <span class="visitenkarte__text">
+    <span class="visitenkarte__titel">Kontakt speichern</span>
+    <span class="visitenkarte__zusatz">{zusatz}</span>
+  </span>
+  <Fragment set:html={zeichen('laden', 'zeichen visitenkarte__pfeil')} />
+</a>

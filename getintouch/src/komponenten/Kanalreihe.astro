@@ -1,0 +1,54 @@
+---
+/**
+ * Die Reihe der Social-Kanäle.
+ *
+ * Nur Zeichen, kein Text: die Reihe soll auf einen Blick erfassbar sein und
+ * nicht mit den Schaltflächen darunter um Aufmerksamkeit ringen. Der Name des
+ * Netzwerks steckt im `aria-label`, damit Vorlesesoftware nicht „Link" sagt.
+ */
+import type { Kanal } from '../kern/profil.ts';
+import { zeichen } from '../kern/zeichen.ts';
+import { adresseFuerNetzwerk, zeichenFuerNetzwerk } from '../kern/ziele.ts';
+
+interface Props {
+  kanaele: Kanal[];
+}
+
+const NAMEN: Record<string, string> = {
+  instagram: 'Instagram',
+  linkedin: 'LinkedIn',
+  facebook: 'Facebook',
+  youtube: 'YouTube',
+  tiktok: 'TikTok',
+  x: 'X',
+  xing: 'Xing',
+  threads: 'Threads',
+  pinterest: 'Pinterest',
+  spotify: 'Spotify',
+  telegram: 'Telegram',
+  github: 'GitHub',
+  website: 'Website',
+};
+
+const eintraege = Astro.props.kanaele
+  .map((kanal) => ({ kanal, adresse: adresseFuerNetzwerk(kanal.netzwerk, kanal.ziel) }))
+  .filter((e): e is { kanal: Kanal; adresse: string } => e.adresse !== null);
+---
+
+{
+  eintraege.length > 0 && (
+    <nav class="kanaele" aria-label="Kanäle">
+      {eintraege.map(({ kanal, adresse }) => (
+        <a
+          class="kanal"
+          href={adresse}
+          target="_blank"
+          rel="noopener noreferrer me"
+          aria-label={NAMEN[kanal.netzwerk] ?? kanal.netzwerk}
+        >
+          <Fragment set:html={zeichen(zeichenFuerNetzwerk(kanal.netzwerk))} />
+        </a>
+      ))}
+    </nav>
+  )
+}

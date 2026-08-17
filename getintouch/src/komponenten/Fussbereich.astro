@@ -1,0 +1,59 @@
+---
+/**
+ * Der Seitenfuß.
+ *
+ * Der schärfste Unterschied zur Konkurrenz steht hier — und zwar dadurch, was
+ * fehlt. Auf einer Linktree-Seite hängen unter dem Profil sechzig Links auf
+ * fremde Profile, ein Karussell „Explore other Linktrees", die Preisliste des
+ * Anbieters und Affiliate-Verweise auf Werbekunden. Wer den QR-Code eines
+ * Handwerkers scannt, bekommt dessen Wettbewerb gleich mitgeliefert.
+ *
+ * Hier steht eine Zeile Absender und sonst nichts. Der Hinweis auf die Technik
+ * ist keine Werbung, sondern eine Behauptung, die auf dieser Seite nachprüfbar
+ * sein muss — und deshalb hat sie sich geändert: „Keine Cookies" stand hier
+ * einmal, bis die Auslieferung von Wix anfing, eine Cookie-Richtlinie und eine
+ * Besucherzählung in jede Seite zu spritzen. Eine Zusage, die der eigene Server
+ * unterläuft, ist keine. Was übrig blieb, stimmt.
+ */
+import { MARKE, SIGNET } from '../kern/marke.ts';
+
+const STILL = 'Kein eigenes Tracking · keine fremde Werbung';
+
+interface Props {
+  rechtliches?: { impressum?: string | undefined; datenschutz?: string | undefined } | undefined;
+}
+
+const { rechtliches } = Astro.props;
+const produktseite = new URL('/', Astro.site ?? Astro.url).toString();
+const eintraege = [
+  rechtliches?.impressum ? { name: 'Impressum', ziel: rechtliches.impressum } : null,
+  rechtliches?.datenschutz ? { name: 'Datenschutz', ziel: rechtliches.datenschutz } : null,
+].filter((e): e is { name: string; ziel: string } => e !== null);
+---
+
+<footer class="fuss">
+  {
+    eintraege.length > 0 && (
+      <p class="fuss__recht">
+        {eintraege.map((e, i) => (
+          <>
+            {i > 0 && <span aria-hidden="true"> · </span>}
+            <a href={e.ziel} target="_blank" rel="noopener noreferrer">
+              {e.name}
+            </a>
+          </>
+        ))}
+      </p>
+    )
+  }
+
+  <p class="fuss__still">{STILL}</p>
+
+  <!-- Das Abzeichen auf einer fremden Seite führt zum Produkt, nicht zu seinem
+       Hersteller. Über `Astro.site` und nicht als „/", damit es auch dann
+       stimmt, wenn eine Seite später unter einer eigenen Domain läuft. -->
+  <a class="fuss__absender" href={produktseite} target="_blank" rel="noopener noreferrer">
+    <Fragment set:html={SIGNET.replace('<svg', '<svg class="fuss__signet"')} />
+    <span>{MARKE.name.toLowerCase()}</span>
+  </a>
+</footer>

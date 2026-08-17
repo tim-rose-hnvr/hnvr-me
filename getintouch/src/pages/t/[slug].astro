@@ -1,0 +1,102 @@
+---
+/**
+ * Die öffentliche Profilseite.
+ *
+ * Sie kommt fertig vom Server. Das ist der Unterschied zum Vorgänger, der die
+ * Seite erst im Browser aus dem `localStorage` zusammensetzte: dort sah jeder
+ * fremde Besucher „noch frei", Vorschaukarten in WhatsApp und LinkedIn blieben
+ * leer, und ohne JavaScript stand gar nichts da. Eine Seite, deren einziger
+ * Zweck das Geteiltwerden ist, muss ohne Skript vollständig sein.
+ *
+ * Das Blatt selbst steckt in `Profilansicht` — dieselbe Komponente bedient die
+ * Design-Galerie, damit eine Vorschau nie bloß ähnlich aussieht.
+ */
+import Profilblatt from '../../layouts/Profilblatt.astro';
+import Profilansicht from '../../komponenten/Profilansicht.astro';
+import Nichtgefunden from '../../komponenten/Nichtgefunden.astro';
+
+import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
+import { GESTALTUNG_VORGABE, vorlage } from '../../kern/gestaltung.ts';
+import { ablage } from '../../kern/speicher/index.ts';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const profil = slug ? await ablage().hole(slug) : null;
+
+/* Ab hier gilt: ohne Profil wird die Seite „Hier ist niemand" ausgeliefert —
+   mit Status 404, damit Suchmaschinen sie nicht aufnehmen. */
+
+/**
+ * In der Entwicklung lässt sich die Uhr stellen: `?jetzt=2026-01-14T08:00:00Z`
+ * zeigt die Seite so, wie sie zu diesem Zeitpunkt aussieht. Damit ist der
+ * Wechsel der Hauptaktion prüfbar, ohne bis zum Feierabend zu warten.
+ * In der gebauten Fassung sind beide Schalter wirkungslos — eine Seite, auf der
+ * jeder den Erreichbarkeitsstatus fälschen kann, wäre wertlos.
+ */
+function jetzt(): Date {
+  if (import.meta.env.DEV) {
+    const gewuenscht = Astro.url.searchParams.get('jetzt');
+    if (gewuenscht) {
+      const d = new Date(gewuenscht);
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+  }
+  return new Date();
+}
+
+const gestaltung = !profil
+  ? GESTALTUNG_VORGABE
+  : import.meta.env.DEV && Astro.url.searchParams.has('vorlage')
+    ? vorlage(Astro.url.searchParams.get('vorlage')!)
+    : profil.gestaltung;
+
+const lage = profil?.erreichbarkeit ? bewerteErreichbarkeit(profil.erreichbarkeit, jetzt()) : null;
+
+/* Die Rückmeldung nach dem Absenden steht in der Adresse — so übersteht sie die
+   Umleitung nach dem POST, und ein Neuladen schickt nichts ein zweites Mal. */
+const nachrichtStand = Astro.url.searchParams.get('nachricht') ?? undefined;
+
+const adresse = new URL(`/t/${profil?.slug ?? slug ?? ''}`, Astro.site ?? Astro.url).toString();
+
+const titel = profil
+  ? [profil.kopf.name, profil.kopf.rolle].filter(Boolean).join(' · ')
+  : 'Hier ist niemand — Get in Touch';
+const beschreibung = profil
+  ? (profil.kopf.beschreibung?.replace(/\s+/g, ' ').slice(0, 200) ??
+    `Alle Kontaktwege von ${profil.kopf.name} auf einer Seite.`)
+  : 'Diese Adresse gibt es nicht.';
+
+if (profil) {
+  // Die Erreichbarkeit ändert sich mit der Uhr, das Profil selten. Eine Minute
+  // gemeinsamer Zwischenspeicher hält die Statuszeile ehrlich und die Seite schnell.
+  Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600');
+} else {
+  Astro.response.status = 404;
+  // Nicht zwischenspeichern: die Adresse kann morgen vergeben sein.
+  Astro.response.headers.set('cache-control', 'no-store');
+}
+---
+
+<Profilblatt
+  titel={titel}
+  beschreibung={beschreibung}
+  gestaltung={gestaltung}
+  adresse={adresse}
+  bild={profil?.kopf.bild}
+  indexierbar={profil !== null}
+>
+  {
+    profil ? (
+      <Profilansicht
+        profil={profil}
+        gestaltung={gestaltung}
+        lage={lage}
+        adresse={adresse}
+        nachrichtStand={nachrichtStand}
+      />
+    ) : (
+      <Nichtgefunden gesucht={slug} />
+    )
+  }
+</Profilblatt>

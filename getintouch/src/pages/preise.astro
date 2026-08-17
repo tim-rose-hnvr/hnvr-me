@@ -1,0 +1,282 @@
+---
+/**
+ * Preise — zurzeit keine.
+ *
+ * Das System ist jung, und solange es das ist, kostet alles nichts. Das ist
+ * keine Werbeaktion mit Ablaufdatum im Kleingedruckten, sondern die schlichte
+ * Lage: es fehlen noch zu viele Stücke, um dafür Geld zu nehmen.
+ *
+ * Diese Seite steht trotzdem, und sie nennt auch die Beträge, die später
+ * gelten sollen. Wer heute eine Seite baut und einen QR-Code darauf druckt,
+ * hat ein Recht darauf zu wissen, was in einem Jahr Geld kostet — die
+ * Alternative wäre, ihn später damit zu überraschen.
+ *
+ * Aufbau und Leistungsumfang stammen aus dem Design-Handoff, die Beträge sind
+ * von Franken auf Euro umgestellt. Nicht umgerechnet, sondern als Preispunkte
+ * übernommen: 9 CHF und 9 € sind beide „unter zehn", und 9,40 € verkauft sich
+ * schlechter als es einbringt.
+ */
+import { cssVariablen, vorlage } from '../kern/gestaltung.ts';
+import { zeichen } from '../kern/zeichen.ts';
+import { MARKE, SIGNET } from '../kern/marke.ts';
+import '../stile/marketing.css';
+
+export const prerender = false;
+
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+
+const gestaltung = vorlage('signal');
+const stil = Object.entries(cssVariablen(gestaltung))
+  .map(([name, wert]) => `${name}:${wert}`)
+  .join(';');
+
+const titel = `Preise — ${MARKE.name}`;
+const beschreibung =
+  'Zurzeit kostet alles nichts — das System ist jung. Was später Geld kosten soll, steht trotzdem schon hier, in Euro und ohne Kleingedrucktes.';
+
+/** `jetzt` heißt: heute im Produkt vorhanden. Alles andere steht als geplant da. */
+const plaene = [
+  {
+    kennung: 'frei',
+    name: 'Frei',
+    preis: '0 €',
+    takt: 'für immer',
+    hervor: true,
+    satz: 'Alles, was es heute gibt. Bleibt kostenlos, auch wenn später Pläne dazukommen.',
+    leistungen: [
+      { text: 'Unbegrenzte Links und Besuche', jetzt: true },
+      { text: 'Erreichbarkeit aus deinen Öffnungszeiten', jetzt: true },
+      { text: 'Digitale Visitenkarte und QR-Code', jetzt: true },
+      { text: 'Alle elf Vorlagen, Farben und Schrift frei', jetzt: true },
+      { text: 'Profil- und Titelbild', jetzt: true },
+    ],
+    knopf: { text: 'Seite bauen', ziel: '/werkstatt', voll: false },
+  },
+  {
+    kennung: 'pro',
+    name: 'Pro',
+    preis: '9 €',
+    takt: 'je Monat, später',
+    spaeter: true,
+    satz: 'Geplant, sobald die Stücke darin stehen. Heute ist alles davon offen.',
+    leistungen: [
+      { text: 'Alle elf Vorlagen und drei Anordnungen', jetzt: true },
+      { text: 'Nachricht direkt auf der Seite', jetzt: false },
+      { text: 'Eigene Domain', jetzt: false },
+      { text: 'Terminbuchung mit Kalender', jetzt: false },
+      { text: 'Bewertungen nach echter Buchung', jetzt: false },
+      { text: 'Zahlen zu Aufrufen und Klicks', jetzt: false },
+    ],
+    knopf: { text: 'Anfragen', ziel: `mailto:${MARKE.postfach}?subject=Get%20in%20Touch%20Pro`, voll: true },
+  },
+  {
+    kennung: 'studio',
+    name: 'Studio',
+    preis: '39 €',
+    takt: 'je Monat, später',
+    spaeter: true,
+    satz: 'Ein Auftritt fürs ganze Team, eure Marke davor. Ebenfalls geplant.',
+    leistungen: [
+      { text: 'Alles aus Pro, bis zwanzig Profile', jetzt: false },
+      { text: 'Eigenes Logo und eigene Domain', jetzt: false },
+      { text: 'Markenwerte fürs Team gesperrt', jetzt: false },
+      { text: 'Gemeinsamer Eingang und Rollen', jetzt: false },
+      { text: 'Import über CSV', jetzt: false },
+      { text: 'Rechnung statt Karte', jetzt: false },
+    ],
+    knopf: { text: 'Demo vereinbaren', ziel: `mailto:${MARKE.postfach}?subject=Get%20in%20Touch%20Studio`, voll: false },
+  },
+];
+
+const tabelle = [
+  { was: 'Kontaktwege, Visitenkarte, QR-Code', frei: true, pro: true, studio: true },
+  { was: 'Erreichbarkeit nach Öffnungszeiten', frei: true, pro: true, studio: true },
+  { was: 'Vorlagen', frei: 'alle elf', pro: 'alle elf', studio: 'alle elf' },
+  { was: 'Nachricht auf der Seite', frei: false, pro: 'geplant', studio: 'geplant' },
+  { was: 'Eigene Domain', frei: false, pro: 'geplant', studio: 'geplant' },
+  { was: 'Terminbuchung', frei: false, pro: 'geplant', studio: 'geplant' },
+  { was: 'Bewertungen', frei: false, pro: 'geplant', studio: 'geplant' },
+  { was: 'Zahlen', frei: false, pro: 'geplant', studio: 'geplant' },
+  { was: 'Profile', frei: 'eins', pro: 'eins', studio: 'bis zwanzig' },
+  { was: 'Werbung auf deiner Seite', frei: 'keine', pro: 'keine', studio: 'keine' },
+];
+
+const fragen = [
+  {
+    frage: 'Was heißt „zurzeit kostenlos" genau?',
+    antwort:
+      'Dass es heute keine Rechnung gibt und keine Zahlungsdaten abgefragt werden. Alles, was das System kann, ist offen. Pro und Studio sind geplant — wenn sie kommen, bleibt der Freiplan bestehen und behält, was er heute hat. Wer vorher gebaut hat, verliert nichts.',
+  },
+  {
+    frage: 'Warum steht bei so vielen Zeilen „geplant"?',
+    antwort:
+      'Weil es sie noch nicht gibt. Terminbuchung, Bewertungen, eigene Domain, Zahlen und die Nachricht auf der Seite sind entworfen und eingeplant, aber nicht gebaut. Sie hier als Häkchen zu zeigen wäre die teuerste Sorte Werbeaussage — auch dann, wenn gerade nichts dafür verlangt wird.',
+  },
+  {
+    frage: 'Werbung auf dem Freiplan?',
+    antwort:
+      'Nie. Am Fuß steht eine Zeile, dass die Seite mit Get in Touch gebaut ist, und sonst nichts. Keine Verweise auf fremde Profile, keine Affiliate-Links, keine Anzeigen.',
+  },
+  {
+    frage: 'Gehören mir meine Daten?',
+    antwort:
+      'Ja. Der Entwurf lässt sich jederzeit als Datei herunterladen, und die Seite meldet niemandem, wer sie geöffnet hat. Verkauft werden Daten nicht — weder deine noch die deiner Besucher.',
+  },
+];
+
+function zelle(wert: boolean | string) {
+  if (wert === true) return 'ja';
+  if (wert === false) return '—';
+  return wert;
+}
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titel}</title>
+    <meta name="description" content={beschreibung} />
+    <meta name="theme-color" content={gestaltung.grund} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={titel} />
+    <meta property="og:description" content={beschreibung} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/schriften/schriften.css" />
+  </head>
+
+  <body style={stil}>
+    <div class="seite">
+      <div class="bahn">
+        <header class="kopfzeile">
+          <a class="wortmarke" href="/">
+            <Fragment set:html={SIGNET} />
+            <span>{MARKE.name}</span>
+          </a>
+          <nav class="kopfnavi">
+            <a href="/designs">Designs</a>
+            <a href="/werkstatt">Werkstatt</a>
+            <a href="/preise">Preise</a>
+            <a href="/marke">Marke</a>
+          </nav>
+        </header>
+
+        <section class="kopf">
+          <p class="marke">preise</p>
+          <h1>Zurzeit kostet<br />alles nichts.</h1>
+          <p class="fuehrung">
+            Zurzeit kostet alles nichts — es fehlen noch zu viele Stücke, um dafür Geld zu nehmen. Was später Geld
+            kosten soll, steht trotzdem schon hier: wer heute einen QR-Code druckt, soll nicht in einem Jahr
+            überrascht werden. Beträge in Euro, inklusive Mehrwertsteuer.
+          </p>
+        </section>
+
+        <section>
+          <div class="plaene">
+            {
+              plaene.map((p) => (
+                <div class:list={['plan', p.hervor && 'plan--hervor', p.spaeter && 'plan--spaeter']}>
+                  {p.hervor && <span class="plan__band">zurzeit gratis</span>}
+                  {p.spaeter && <span class="plan__band plan__band--ruhig">geplant</span>}
+                  <h2 class="plan__name">{p.name}</h2>
+                  <p class="plan__preis">
+                    {p.preis}
+                    <span>{p.takt}</span>
+                  </p>
+                  <p class="plan__satz">{p.satz}</p>
+                  <ul class="plan__liste">
+                    {p.leistungen.map((l) => (
+                      <li class:list={[!l.jetzt && 'plan__spaeter']}>
+                        <Fragment set:html={zeichen(l.jetzt ? 'haken' : 'uhr')} />
+                        <span>
+                          {l.text}
+                          {!l.jetzt && <b> · geplant</b>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <a class:list={['knopf', p.knopf.voll && 'knopf--voll']} href={p.knopf.ziel}>
+                    {p.knopf.text}
+                  </a>
+                </div>
+              ))
+            }
+          </div>
+        </section>
+
+        <section>
+          <p class="marke">im einzelnen</p>
+          <h2>Was in welchem Plan steckt.</h2>
+          <div class="tabellenrahmen">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Leistung</th>
+                  <th scope="col">Frei</th>
+                  <th scope="col">Pro</th>
+                  <th scope="col">Studio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  tabelle.map((z) => (
+                    <tr>
+                      <td data-spalte="Leistung">{z.was}</td>
+                      <td data-spalte="Frei">{zelle(z.frei)}</td>
+                      <td data-spalte="Pro" class="wert--wir">
+                        {zelle(z.pro)}
+                      </td>
+                      <td data-spalte="Studio">{zelle(z.studio)}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="quelle">
+            „Geplant" heißt entworfen und eingeplant, aber nicht gebaut. Der Stand steht auf der <a href="/">
+              Startseite
+            </a> unter „was heute fehlt" und wird dort mitgepflegt.
+          </p>
+        </section>
+
+        <section>
+          <p class="marke">fragen</p>
+          <div class="fragen">
+            {
+              fragen.map((f) => (
+                <div class="frage">
+                  <h3>{f.frage}</h3>
+                  <p>{f.antwort}</p>
+                </div>
+              ))
+            }
+          </div>
+        </section>
+
+        <section class="schluss">
+          <p class="marke">loslegen</p>
+          <h2>Kostet nichts. Bau sie.</h2>
+          <div class="knopfreihe">
+            <a class="knopf knopf--voll" href="/werkstatt">
+              Seite bauen
+              <Fragment set:html={zeichen('pfeil')} />
+            </a>
+            <a class="knopf" href="/designs">Designs ansehen</a>
+          </div>
+        </section>
+
+        <footer class="fuss">
+          <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
+          <span>
+            <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
+            ·
+            <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
+          </span>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

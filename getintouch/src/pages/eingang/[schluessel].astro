@@ -1,0 +1,136 @@
+---
+/**
+ * Der Eingang — die Anfragen einer Seite, ohne Umweg über das Wix-Dashboard.
+ *
+ * Zugang über einen Geheimlink; die Regeln dazu stehen in `kern/eingang.ts`.
+ * Was hier zählt: die Seite gibt nichts preis, solange der Schlüssel nicht
+ * passt, und sie sagt auch nicht, woran es lag — 404 ist die einzige Antwort.
+ *
+ * Drei Kopfzeilen, die nicht fehlen dürfen:
+ *   noindex        — nichts davon gehört in eine Suchmaschine.
+ *   no-store       — kein Zwischenspeicher, auch nicht im Browser.
+ *   no-referrer    — sonst stünde der Schlüssel in der Adresse, die beim
+ *                    Klick auf einen Antwort-Link mitgeschickt wird. Ein
+ *                    Geheimlink, der weitergereicht wird, ist keiner mehr.
+ */
+import { antwortAdresse } from '../../kern/eingang.ts';
+import { nachrichtenFuer, profilNachSchluessel } from '../../kern/speicher/eingang.ts';
+import { cssVariablen, vorlage } from '../../kern/gestaltung.ts';
+import { zeichen } from '../../kern/zeichen.ts';
+import { MARKE, SIGNET } from '../../kern/marke.ts';
+import '../../stile/marketing.css';
+
+export const prerender = false;
+
+const schluessel = Astro.params.schluessel ?? '';
+const slug = await profilNachSchluessel(schluessel);
+
+Astro.response.headers.set('cache-control', 'no-store');
+Astro.response.headers.set('referrer-policy', 'no-referrer');
+Astro.response.headers.set('x-robots-tag', 'noindex, nofollow');
+
+/* Kein Schlüssel, kein Hinweis. */
+if (!slug) return new Response('Diese Seite gibt es nicht.', { status: 404, headers: { 'cache-control': 'no-store' } });
+
+const nachrichten = await nachrichtenFuer(slug);
+const offen = nachrichten.filter((n) => !n.erledigt).length;
+
+const gestaltung = vorlage('signal');
+const stil = Object.entries(cssVariablen(gestaltung))
+  .map(([name, wert]) => `${name}:${wert}`)
+  .join(';');
+
+const zeitpunkt = (d: Date | null) =>
+  d
+    ? new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Berlin' }).format(d)
+    : '';
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Eingang · {slug}</title>
+    <meta name="theme-color" content={gestaltung.grund} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/schriften/schriften.css" />
+  </head>
+
+  <body style={stil}>
+    <div class="seite">
+      <div class="bahn">
+        <header class="kopfzeile">
+          <span class="wortmarke">
+            <Fragment set:html={SIGNET} />
+            <span>{MARKE.name}</span>
+          </span>
+          <nav class="kopfnavi">
+            <a href={`/t/${slug}`}>deine Seite ↗</a>
+          </nav>
+        </header>
+
+        <section class="kopf">
+          <p class="marke">eingang · {slug}</p>
+          <h1>
+            {nachrichten.length === 0
+              ? 'Noch nichts da.'
+              : offen === 0
+                ? `${nachrichten.length} Anfragen, alle erledigt.`
+                : `${offen} von ${nachrichten.length} offen.`}
+          </h1>
+          <p class="fuehrung">
+            <b>Dieser Link ist ein Schlüssel.</b> Wer ihn hat, liest deine Anfragen. Nicht weiterschicken, nicht in
+            einen Gruppenchat, nicht in eine Signatur — wie ein Türschlüssel, nur leichter zu verlieren.
+          </p>
+        </section>
+
+        <section>
+          {
+            nachrichten.length === 0 ? (
+              <p class="quelle">
+                Sobald jemand das Formular auf <a href={`/t/${slug}`}>deiner Seite</a> ausfüllt, steht die Anfrage
+                hier. Prüf am besten einmal selbst, ob der Weg funktioniert.
+              </p>
+            ) : (
+              <div class="anfragen">
+                {nachrichten.map((n) => {
+                  const antwort = antwortAdresse(n, `${slug}`);
+                  return (
+                    <article class:list={['anfrage', n.erledigt && 'anfrage--erledigt']}>
+                      <div class="anfrage__kopf">
+                        <span class="anfrage__absicht">{n.absicht}</span>
+                        <span class="anfrage__zeit">{zeitpunkt(n.eingegangen)}</span>
+                      </div>
+                      <p class="anfrage__text">{n.text}</p>
+                      <div class="anfrage__fuss">
+                        <span>
+                          <b>{n.name}</b> · {n.antwortweg}
+                        </span>
+                        {antwort ? (
+                          <a class="knopf knopf--voll" href={antwort}>
+                            <Fragment set:html={zeichen('mail')} />
+                            Antworten
+                          </a>
+                        ) : (
+                          <span class="anfrage__hinweis">Antwort per Telefon</span>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )
+          }
+        </section>
+
+        <footer class="fuss">
+          <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
+          <span>Nicht indexiert, nicht zwischengespeichert.</span>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

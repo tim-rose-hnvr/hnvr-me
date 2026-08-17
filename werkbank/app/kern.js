@@ -25,6 +25,7 @@ export const zustand = {
     hervor: '#FFD400', unterstrich: '#A82E23', durchstrich: '#A82E23',
     notiz: '#FFD400', freihand: '#A82E23', text: '#111111',
     rechteck: '#A82E23', ellipse: '#A82E23', pfeil: '#A82E23',
+    messen: '#1B6AC9', flaeche: '#1B6AC9',
   },
   strichstaerke: 2,
   schriftgroesse: 12,
@@ -40,6 +41,8 @@ export const zustand = {
   gliederung: null,
   /** Barrierefreiheit: was beim naechsten Sichern gesetzt wird */
   zugang: null,
+  /** Maßstab fürs Messen: { mmJePunkt, einheit, benannt }. null = Papiermaß */
+  massstab: null,
   eigenschaften: null,
   /** Merkfähigkeit des Assistenten */
   gedaechtnis: {

@@ -1267,6 +1267,114 @@ await pruefe('Auch auf dem Telefon klappt jedes Menü sichtbar auf', async () =>
 });
 
 
+console.log('\n== Messen und Einlesen ==');
+
+await pruefe('Eine Strecke messen zeigt die Länge auf der Seite', async () => {
+  await ladeBeispiel();
+  await seite.evaluate(() => window.werkbank.fuehreAus('werkzeug:messen'));
+  const b = await blatt();
+  const s1 = b.bei(0.2, 0.45), s2 = b.bei(0.7, 0.45);
+  await seite.mouse.move(s1.x, s1.y);
+  await seite.mouse.down();
+  await seite.mouse.move(s2.x, s2.y, { steps: 8 });
+  await seite.mouse.up();
+  await seite.waitForTimeout(400);
+  const marke = await seite.evaluate(() => document.querySelector('.messmarke')?.textContent || '');
+  if (!/mm$/.test(marke)) throw new Error(`keine Maßzahl: „${marke}"`);
+  const anzahl = await seite.evaluate(() => window.werkbank.zustand.anmerkungen.filter((a) => a.art === 'messen').length);
+  if (anzahl !== 1) throw new Error(`${anzahl} Messungen statt einer`);
+  return marke;
+});
+
+await pruefe('Kalibrieren rechnet alle Messungen neu', async () => {
+  /* Der Punkt der Kalibrierung: sie wirkt rückwirkend. Wer den Maßstab erst
+     nach dem Messen setzt, will nicht noch einmal messen. */
+  const vorher = await seite.evaluate(() => document.querySelector('.messmarke')?.textContent || '');
+  const nachher = await seite.evaluate(async () => {
+    const m = await import('./app/messen.js');
+    const { melde, zustand } = await import('./app/kern.js');
+    const strecke = zustand.anmerkungen.find((a) => a.art === 'messen');
+    m.kalibriere(m.laengeInPunkten(strecke), 12, 'm');
+    melde('anmerkungen:geaendert');
+    await new Promise((l) => setTimeout(l, 400));
+    return document.querySelector('.messmarke')?.textContent || '';
+  });
+  if (!/12 m$/.test(nachher)) throw new Error(`steht „${nachher}" statt 12 m`);
+  if (vorher === nachher) throw new Error('die Marke hat sich nicht geändert');
+  return `${vorher} → ${nachher}`;
+});
+
+await pruefe('Die Fläche misst in derselben Einheit', async () => {
+  await seite.evaluate(() => window.werkbank.fuehreAus('werkzeug:flaeche'));
+  const b = await blatt();
+  const f1 = b.bei(0.25, 0.28), f2 = b.bei(0.6, 0.4);
+  await seite.mouse.move(f1.x, f1.y);
+  await seite.mouse.down();
+  await seite.mouse.move(f2.x, f2.y, { steps: 8 });
+  await seite.mouse.up();
+  await seite.waitForTimeout(400);
+  const marken = await seite.evaluate(() => [...document.querySelectorAll('.messmarke')].map((k) => k.textContent));
+  const flaeche = marken.find((t) => /m²/.test(t));
+  if (!flaeche) throw new Error(`keine Flächenangabe unter ${marken.join(' | ')}`);
+  return flaeche;
+});
+
+await pruefe('Der Messungs-Dialog listet beides mit Summen', async () => {
+  await seite.evaluate(() => window.werkbank.fuehreAus('messen:liste'));
+  await seite.waitForTimeout(300);
+  const text = await seite.evaluate(() => document.querySelector('#schirm .dialog')?.textContent || '');
+  if (!/Strecke/.test(text) || !/Fläche/.test(text)) throw new Error('Liste unvollständig');
+  if (!/Summen/.test(text)) throw new Error('keine Summen');
+  if (!/1:/.test(text)) throw new Error('kein Maßstab genannt');
+  await seite.keyboard.press('Escape');
+  await seite.waitForTimeout(200);
+  return text.replace(/\s+/g, ' ').slice(0, 80);
+});
+
+await pruefe('Eine Word-Datei wird geöffnet, nicht abgewiesen', async () => {
+  /* Der Weg, den ein Mensch geht: Datei fallen lassen. Früher kam dann
+     „Keine PDF-Datei dabei" — die Umwandlung war da, aber unerreichbar. */
+  await ladeBeispiel();
+  const stand = await seite.evaluate(async () => {
+    const { alsWord } = await import('./app/word.js');
+    const { bytes } = await alsWord({});
+    const datei = new File([bytes], 'vertrag.docx',
+      { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const traeger = new DataTransfer();
+    traeger.items.add(datei);
+    window.dispatchEvent(new DragEvent('drop', { dataTransfer: traeger, bubbles: true, cancelable: true }));
+    /* Setzen und Öffnen brauchen einen Augenblick. */
+    for (let i = 0; i < 60; i++) {
+      await new Promise((l) => setTimeout(l, 250));
+      if (window.werkbank.zustand.name.endsWith('.pdf') && window.werkbank.zustand.name.startsWith('vertrag')) break;
+    }
+    return { name: window.werkbank.zustand.name, seiten: window.werkbank.zustand.folge.length };
+  });
+  if (!/^vertrag\.pdf$/.test(stand.name)) throw new Error(`heißt „${stand.name}"`);
+  if (stand.seiten < 3) throw new Error(`nur ${stand.seiten} Seiten`);
+  return `${stand.name}, ${stand.seiten} Seiten`;
+});
+
+await pruefe('Der Stapel-Dialog fragt nur, was die Schritte brauchen', async () => {
+  await seite.evaluate(() => window.werkbank.fuehreAus('stapel'));
+  await seite.waitForTimeout(400);
+  const zuerst = await seite.evaluate(() =>
+    [...document.querySelectorAll('#schirm .zeile')].filter((z) => !z.hidden).length);
+  /* „Mit Kennwort schützen" anklicken — erst dann darf nach einem gefragt werden. */
+  const nachher = await seite.evaluate(async () => {
+    const kaesten = [...document.querySelectorAll('.stapel-schritt input')];
+    kaesten[kaesten.length - 1].click();
+    await new Promise((l) => setTimeout(l, 200));
+    return [...document.querySelectorAll('#schirm .zeile')]
+      .filter((z) => !z.hidden).map((z) => z.querySelector('label')?.textContent).join(', ');
+  });
+  if (!/Neues Kennwort/.test(nachher)) throw new Error(`fragt nicht nach dem Kennwort: ${nachher}`);
+  await seite.keyboard.press('Escape');
+  await seite.waitForTimeout(200);
+  return `vorher ${zuerst} Zeilen, danach: ${nachher}`;
+});
+
+
 console.log('\n== Anmeldeschranke ==');
 
 await pruefe('Ohne Auskunft läuft die Werkbank ohne Anmeldung', async () => {

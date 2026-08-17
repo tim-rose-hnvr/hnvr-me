@@ -17,12 +17,14 @@ const T = '-';   // Trennstrich
 
 const MENUES = [
   ['Datei', [
-    'datei:oeffnen', 'datei:anhaengen', 'bilder:zuPdf', T,
+    'datei:oeffnen', 'datei:anhaengen', T,
+    'einlesen', 'bilder:zuPdf', T,
     'sichern', 'sichern:als', 'sichern:einbrennen', T,
     'seiten:ausgeben', 'teilen', T,
     'word:ausgeben', 'excel:ausgeben', 'text:ausgeben', 'bild:ausgeben', T,
     'drucken', T,
     'verkleinern', 'reparieren', 'linearisieren', T,
+    'stapel', T,
     'vergleich', 'eigenschaften',
   ]],
   ['Bearbeiten', [
@@ -49,6 +51,7 @@ const MENUES = [
     'werkzeug:freihand', 'werkzeug:text', 'werkzeug:rechteck', 'werkzeug:ellipse', 'werkzeug:pfeil', T,
     'werkzeug:ersetzen', 'werkzeug:schwaerzen', 'werkzeug:feld', T,
     'werkzeug:unterschrift', 'unterschrift:anlegen', 'werkzeug:stempel', 'werkzeug:bereich', T,
+    'werkzeug:messen', 'werkzeug:flaeche', 'messen:massstab', 'messen:liste', T,
     'suche:treffer-hervorheben',
   ]],
   ['Gehe zu', [
@@ -71,7 +74,7 @@ const MENUES = [
    beim Auswerten schon auf `befehle` zugreift, bekommt es in der zeitlichen
    Totzone — die Anwendung startet dann gar nicht. */
 const OHNE_DOKUMENT = new Set([
-  'datei:oeffnen', 'bilder:zuPdf', 'palette', 'hilfe', 'ansicht:thema',
+  'datei:oeffnen', 'bilder:zuPdf', 'einlesen', 'stapel', 'palette', 'hilfe', 'ansicht:thema',
   'unterschrift:anlegen', 'einstellungen',
 ]);
 

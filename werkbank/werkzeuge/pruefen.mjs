@@ -705,6 +705,189 @@ try {
     }
   }
 
+  /* ---------- Einlesen: Word, Excel, Text werden zu PDF ------------------- */
+
+  console.log('\nEinlesen — aus Word, Excel, Text wird ein PDF');
+  {
+    await ladeBeispiel();
+    /* Der ehrlichste Prüfstein für das Einlesen ist die eigene Ausgabe: das
+       Beispiel nach Word geben, die .docx zurücklesen und nachsehen, ob
+       Gliederung und Text den Weg überstanden haben. */
+    const rund = await seite.evaluate(async () => {
+      const { alsWord } = await import('./app/word.js');
+      const { alsExcel } = await import('./app/excel.js');
+      const ein = await import('./app/einlesen.js');
+
+      const { bytes: docx } = await alsWord({});
+      const bloecke = await ein.liesBloecke(docx, 'beispiel.docx');
+      const pdf = await ein.setze(bloecke, { titel: 'Aus Word' });
+      globalThis.__ausWord = pdf;
+
+      const { bytes: xlsx } = await alsExcel({ nurTabellen: true });
+      const tabellen = await ein.liesBloecke(xlsx, 'beispiel.xlsx');
+
+      return {
+        arten: [...new Set(bloecke.map((b) => b.art))],
+        ueberschriften: bloecke.filter((b) => b.art === 'ueberschrift').length,
+        umbrueche: bloecke.filter((b) => b.art === 'seitenumbruch').length,
+        fett: bloecke.some((b) => (b.laeufe || []).some((l) => l.fett)),
+        pdfKopf: new TextDecoder().decode(pdf.slice(0, 8)),
+        tabellen: tabellen.filter((b) => b.art === 'tabelle').length,
+        ersteZeile: tabellen.find((b) => b.art === 'tabelle')?.zeilen?.[0] || [],
+        zeilenzahl: tabellen.find((b) => b.art === 'tabelle')?.zeilen?.length || 0,
+        markdown: ein.ausMarkdown('# Titel\n\nEin **fetter** Satz.\n\n- eins\n- zwei\n').map((b) => b.art),
+        csv: ein.ausCsv('a;b\n1;"zwei;drei"\n')[0].zeilen,
+        erkannt: ['x.docx', 'y.xlsx', 'z.md', 'a.csv', 'b.txt'].every((n) => ein.istEingangsformat(n))
+          && !ein.istEingangsformat('c.pdf'),
+      };
+    });
+    pruefe(rund.arten.includes('ueberschrift') && rund.arten.includes('absatz'),
+      'die Word-Datei wird in Überschriften und Absätze zerlegt', rund.arten.join(', '));
+    pruefe(rund.ueberschriften >= 3, `Überschriften erkannt (${rund.ueberschriften})`);
+    pruefe(rund.umbrueche >= 1, `Seitenumbrüche erkannt (${rund.umbrueche})`);
+    pruefe(rund.fett, 'fette Stellen kommen als fett an');
+    pruefe(rund.pdfKopf === '%PDF-1.7', 'aus den Blöcken wird ein gültiges PDF', rund.pdfKopf);
+    pruefe(rund.tabellen === 1 && rund.zeilenzahl >= 6,
+      'die Excel-Datei wird als Tabelle gelesen', `${rund.tabellen} Tabelle, ${rund.zeilenzahl} Zeilen`);
+    pruefe(rund.ersteZeile[0] === 'Platz' && rund.ersteZeile[3] === 'Kamerapreset',
+      'die Kopfzeile der Tabelle steht richtig', rund.ersteZeile.join(' | '));
+    pruefe(rund.markdown.join(',') === 'ueberschrift,absatz,punkt,punkt',
+      'Markdown wird in Überschrift, Absatz und Punkte zerlegt', rund.markdown.join(','));
+    pruefe(rund.csv[1][1] === 'zwei;drei',
+      'CSV achtet auf Anführungszeichen — ein Trenner darin trennt nicht', JSON.stringify(rund.csv[1]));
+    pruefe(rund.erkannt, 'die Eingangsformate werden am Namen erkannt, PDF nicht darunter');
+
+    /* Und jetzt das Entscheidende: das erzeugte PDF wieder aufmachen und
+       nachsehen, ob der Text lesbar drinsteht. */
+    const wieder = await seite.evaluate(async () => {
+      const { oeffneBytes, textDerSeite } = await import('./app/dokument.js');
+      const { zustand } = await import('./app/kern.js');
+      await oeffneBytes(globalThis.__ausWord, 'aus-word.pdf');
+      const stuecke = [];
+      for (const eintrag of zustand.folge) stuecke.push(await textDerSeite(eintrag));
+      return { seiten: zustand.folge.length, text: stuecke.join('\n') };
+    });
+    pruefe(wieder.seiten >= 3, `das erzeugte PDF hat Seiten (${wieder.seiten})`);
+    pruefe(/Konferenzanlage/.test(wieder.text) && /Kamerapreset/.test(wieder.text),
+      'Text vom Anfang und vom Ende steht im erzeugten PDF');
+    pruefe(/Hauptstra/.test(wieder.text), 'Umlaute überstehen den Weg durch WinAnsi');
+  }
+
+  /* ---------- Messen ------------------------------------------------------- */
+
+  console.log('\nMessen');
+  {
+    await ladeBeispiel();
+    const gemessen = await seite.evaluate(async () => {
+      const m = await import('./app/messen.js');
+      const { zustand } = await import('./app/kern.js');
+      const { fuegeAn } = await import('./app/anmerkungen.js');
+      const seiteId = zustand.folge[0].id;
+
+      /* Eine Strecke von genau 100 Punkten und eine Fläche von 100 × 50. */
+      fuegeAn({ art: 'messen', seiteId, x: 100, y: 100, x2: 200, y2: 100, farbe: '#1B6AC9', staerke: 1.5 });
+      fuegeAn({ art: 'flaeche', seiteId, x: 100, y: 300, x2: 200, y2: 350, farbe: '#1B6AC9', staerke: 1.5 });
+      const strecke = zustand.anmerkungen.find((a) => a.art === 'messen');
+      const flaeche = zustand.anmerkungen.find((a) => a.art === 'flaeche');
+
+      const papier = m.beschriftung(strecke);
+      /* 100 Punkte sollen 5 Meter sein — also ein Maßstab von 1:141,7. */
+      m.kalibriere(m.laengeInPunkten(strecke), 5, 'm');
+      return {
+        papier,
+        papierFlaeche: m.beschriftung(flaeche, m.standardMassstab()),
+        kalibriert: m.beschriftung(strecke),
+        flaeche: m.beschriftung(flaeche),
+        verhaeltnis: m.verhaeltnis(),
+        summeStrecken: m.summeStrecken(),
+        anzahl: m.messungen().length,
+      };
+    });
+    /* 100 pt × 25,4/72 = 35,28 mm. */
+    pruefe(gemessen.papier === '35,3 mm', 'ohne Maßstab gilt das Papiermaß', gemessen.papier);
+    /* 100 pt x 50 pt sind 35,28 mm x 17,64 mm — also 622,3 mm². */
+    pruefe(/^622,3 mm²/.test(gemessen.papierFlaeche), 'auch die Fläche stimmt in Papiermaß', gemessen.papierFlaeche);
+    pruefe(gemessen.kalibriert === '5 m', 'nach dem Kalibrieren misst dieselbe Strecke 5 m', gemessen.kalibriert);
+    pruefe(/^12,5 m²/.test(gemessen.flaeche), 'die Fläche rechnet im selben Maßstab mit', gemessen.flaeche);
+    pruefe(/^1:141/.test(gemessen.verhaeltnis), 'das Verhältnis wird benannt', gemessen.verhaeltnis);
+    pruefe(gemessen.summeStrecken === '5 m', 'die Summe der Strecken stimmt', gemessen.summeStrecken);
+
+    /* Und das Entscheidende: die Maßzahl muss in der gesicherten Datei stehen,
+       nicht nur auf dem Bildschirm. Gelesen wird sie wie jeder andere Text,
+       durch pdf.js — im Rohbyte-Strom stünde sie verdichtet. */
+    const inDatei = await seite.evaluate(async () => {
+      const { baueDokument } = await import('./app/ausgabe.js');
+      const { oeffneBytes, textDerSeite } = await import('./app/dokument.js');
+      const { zustand } = await import('./app/kern.js');
+      const bytes = await baueDokument({});
+      await oeffneBytes(bytes, 'gemessen.pdf');
+      return textDerSeite(zustand.folge[0]);
+    });
+    pruefe(/5 m/.test(inDatei), 'die Maßzahl der Strecke steht in der gesicherten Datei');
+    pruefe(/12,5 m²/.test(inDatei), 'und die der Fläche ebenso');
+  }
+
+  /* ---------- Stapel ------------------------------------------------------- */
+
+  console.log('\nStapel');
+  {
+    const stapel = await seite.evaluate(async () => {
+      const { laufeStapel, packe, ordne, benoetigt } = await import('./app/stapel.js');
+      const { baueDokument } = await import('./app/ausgabe.js');
+      const eine = await baueDokument({});
+
+      const dateien = [
+        { name: 'eins.pdf', bytes: eine },
+        { name: 'zwei.pdf', bytes: eine.slice(0) },
+        { name: 'kaputt.pdf', bytes: new Uint8Array([1, 2, 3, 4]) },
+      ];
+      const meldungen = [];
+      const ergebnisse = await laufeStapel(dateien, ['metadaten', 'drehen'], { winkel: 90 },
+        (stand) => meldungen.push(`${stand.nummer}/${stand.gesamt} ${stand.schritt}`));
+      const archiv = await packe(ergebnisse, ['metadaten', 'drehen']);
+      globalThis.__stapel = archiv;
+      return {
+        gelungen: ergebnisse.filter((e) => e.bytes).length,
+        gescheitert: ergebnisse.filter((e) => e.fehler).length,
+        fehlertext: ergebnisse.find((e) => e.fehler)?.fehler || '',
+        meldungen: meldungen.length,
+        /* Die Reihenfolge kommt aus SCHRITTE, nicht aus dem Anklicken. */
+        reihenfolge: ordne(['schuetzen', 'entschuetzen', 'reparieren']).map((s) => s.id),
+        braucht: benoetigt(['schuetzen', 'drehen']),
+      };
+    });
+    pruefe(stapel.gelungen === 2, 'zwei von drei Dateien laufen durch', String(stapel.gelungen));
+    pruefe(stapel.gescheitert === 1 && stapel.fehlertext.length > 0,
+      'die kaputte Datei scheitert mit Begründung, statt den Lauf zu beenden', stapel.fehlertext);
+    pruefe(stapel.meldungen >= 4, `der Fortschritt wird gemeldet (${stapel.meldungen} Meldungen)`);
+    pruefe(stapel.reihenfolge.join(',') === 'entschuetzen,reparieren,schuetzen',
+      'entschützen kommt zuerst, schützen zuletzt — egal wie angeklickt wurde', stapel.reihenfolge.join(','));
+    pruefe(stapel.braucht.join(',') === 'drehen,neuesKennwort' || stapel.braucht.includes('neuesKennwort'),
+      'die nötigen Zusatzangaben werden gemeldet', stapel.braucht.join(','));
+
+    const rohArchiv = await seite.evaluate(() => [...globalThis.__stapel]);
+    const archiv = Buffer.from(rohArchiv);
+    pruefe(archiv[0] === 0x50 && archiv[1] === 0x4b, 'das Ergebnis ist ein gültiges ZIP');
+    const { unzipRoh: entpacke } = await import('./zip-lesen.mjs');
+    const inhalt = entpacke(archiv);
+    pruefe(inhalt.has('eins.pdf') && inhalt.has('zwei.pdf'),
+      'beide gelungenen Dateien liegen im Archiv', [...inhalt.keys()].join(', '));
+    pruefe(!inhalt.has('kaputt.pdf'), 'die gescheiterte Datei liegt nicht darin');
+    const bericht = inhalt.get('bericht.txt') || '';
+    pruefe(/GESCHEITERT kaputt\.pdf/.test(bericht),
+      'der Bericht nennt die gescheiterte Datei beim Namen', bericht.split('\n').slice(-1)[0]);
+    pruefe(/gelungen: 2/.test(bericht), 'der Bericht zählt richtig');
+
+    /* Der ZIP-Leser der Werkbank muss dasselbe sehen wie der des Prüflaufs. */
+    const selbstGelesen = await seite.evaluate(async () => {
+      const { liesZip } = await import('./app/zip.js');
+      const dateien = await liesZip(globalThis.__stapel);
+      return [...dateien.keys()].sort();
+    });
+    pruefe(selbstGelesen.join(',') === 'bericht.txt,eins.pdf,zwei.pdf',
+      'der ZIP-Leser der Werkbank liest ihr eigenes Archiv', selbstGelesen.join(','));
+  }
+
   console.log(`\nKonsolenfehler: ${fehler.length}`);
   pruefe(fehler.length === 0, 'kein Fehler in der Browserkonsole', fehler.slice(0, 3).join(' | '));
 } finally {

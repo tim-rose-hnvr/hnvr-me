@@ -7,6 +7,7 @@
 
 import { zustand, kennung, melde, sage, el, svgEl, merkeSchritt } from './kern.js';
 import { nummerVon } from './dokument.js';
+import { beschriftung as messwert } from './messen.js';
 
 export const WERKZEUGE = [
   { id: 'auswahl',      name: 'Auswahl',       kuerzel: 'V', zeichen: 'M4 3l7 17 2-7 7-2z' },
@@ -25,6 +26,8 @@ export const WERKZEUGE = [
   { id: 'stempel',      name: 'Stempel',       kuerzel: 'Z', zeichen: 'M5 20h14M7 16h10V9l-3-5H10L7 9z' },
   { id: 'bereich',      name: 'Bereich kopieren', kuerzel: 'M', zeichen: 'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4' },
   { id: 'feld',         name: 'Formularfeld anlegen', kuerzel: 'K', zeichen: 'M3 7h18v10H3zM7 10h6' },
+  { id: 'messen',       name: 'Strecke messen',  kuerzel: 'L', zeichen: 'M3 16l18-8M4 13v6M20 5v6' },
+  { id: 'flaeche',      name: 'Fläche messen',   kuerzel: 'A', zeichen: 'M4 5h16v14H4zM4 12h16M12 5v14' },
 ];
 
 /* Die Feldarten, die pdf-lib schreiben kann. Ein Unterschriftsfeld wird
@@ -41,7 +44,10 @@ export const FELDARTEN = {
 export const FARBEN = ['#FFD400', '#67E667', '#7FD3FF', '#FF9BD2', '#FF6B4A', '#A82E23', '#1B6AC9', '#111111'];
 
 const TEXTWERKZEUGE = new Set(['hervor', 'unterstrich', 'durchstrich']);
-const ZIEHWERKZEUGE = new Set(['rechteck', 'ellipse', 'pfeil', 'schwaerzen', 'unterschrift', 'bereich', 'feld']);
+const ZIEHWERKZEUGE = new Set(['rechteck', 'ellipse', 'pfeil', 'schwaerzen', 'unterschrift', 'bereich', 'feld', 'messen', 'flaeche']);
+/* Messungen sind Anmerkungen wie alle anderen — sie liegen in denselben
+   PDF-Punkten und wandern beim Sichern mit in die Datei. */
+const MESSWERKZEUGE = new Set(['messen', 'flaeche']);
 
 let entwurf = null;   // laufende Zeichnung { art, seiteId, punkte/rechteck, knoten }
 let letzteUnterschrift = null;
@@ -246,6 +252,11 @@ export function zeichneAnmerkungen(ebene, eintrag, sicht) {
       continue;
     }
 
+    if (MESSWERKZEUGE.has(a.art)) {
+      zeichneMessung(svg, ebene, a, zuBild, sicht, gewaehlt);
+      continue;
+    }
+
     // Rechteck, Ellipse, Pfeil, Schwärzung
     const [x1, y1] = zuBild(a.x, a.y);
     const [x2, y2] = zuBild(a.x2, a.y2);
@@ -275,6 +286,61 @@ export function zeichneAnmerkungen(ebene, eintrag, sicht) {
     svg.append(form);
     if (gewaehlt) svg.append(rahmen({ links, oben, breite, hoehe }));
   }
+}
+
+/* Eine Messung besteht aus zwei Teilen: der Geometrie und der Zahl. Die Zahl
+   ist der Grund, warum gemessen wurde — sie steht deshalb immer dabei, auf
+   dem Bildschirm wie später in der Datei. Gerechnet wird in messen.js; hier
+   wird nur gezeichnet. */
+function zeichneMessung(svg, ebene, a, zuBild, sicht, gewaehlt) {
+  const [x1, y1] = zuBild(a.x, a.y);
+  const [x2, y2] = zuBild(a.x2, a.y2);
+  const staerke = (a.staerke || 1.5) * sicht.scale;
+  const farbe = a.farbe || '#1B6AC9';
+
+  let mitteX, mitteY;
+  if (a.art === 'messen') {
+    const gruppe = svgEl('g', {});
+    gruppe.append(svgEl('line', { x1, y1, x2, y2, stroke: farbe, 'stroke-width': staerke }));
+    /* Endstriche quer zur Strecke — wie auf einer Maßlinie in einer Zeichnung.
+       Ohne sie ist nicht zu sehen, wo genau gemessen wurde. */
+    const winkel = Math.atan2(y2 - y1, x2 - x1) + Math.PI / 2;
+    const arm = Math.max(4, staerke * 3);
+    for (const [px, py] of [[x1, y1], [x2, y2]]) {
+      gruppe.append(svgEl('line', {
+        x1: px - arm * Math.cos(winkel), y1: py - arm * Math.sin(winkel),
+        x2: px + arm * Math.cos(winkel), y2: py + arm * Math.sin(winkel),
+        stroke: farbe, 'stroke-width': staerke,
+      }));
+    }
+    gruppe.classList.add('anmerkung-griff');
+    gruppe.dataset.anmerkung = a.id;
+    svg.append(fangbahn(gruppe, a.id, Math.max(14, staerke * 3), gewaehlt), gruppe);
+    mitteX = (x1 + x2) / 2; mitteY = (y1 + y2) / 2;
+  } else {
+    const links = Math.min(x1, x2), oben = Math.min(y1, y2);
+    const breite = Math.abs(x2 - x1), hoehe = Math.abs(y2 - y1);
+    const form = svgEl('rect', {
+      x: links, y: oben, width: breite, height: hoehe,
+      fill: farbe, 'fill-opacity': 0.1, stroke: farbe, 'stroke-width': staerke,
+      'stroke-dasharray': '6 3',
+    });
+    form.classList.add('anmerkung-griff');
+    form.dataset.anmerkung = a.id;
+    svg.append(fangbahn(form, a.id, Math.max(14, staerke * 3), gewaehlt), form);
+    mitteX = links + breite / 2; mitteY = oben + hoehe / 2;
+  }
+
+  ebene.append(el('div', {
+    /* Die Zahl wird bei jedem Zeichnen neu gerechnet, nicht gespeichert:
+       wer den Maßstab nachträglich kalibriert, will alle Messungen
+       augenblicklich richtig sehen — nicht nur die nächste. */
+    klasse: 'messmarke', daten: { anmerkung: a.id }, text: messwert(a),
+    stil: {
+      left: `${mitteX}px`, top: `${mitteY}px`, borderColor: farbe, color: farbe,
+      outline: gewaehlt ? '2px solid var(--tally)' : '',
+    },
+  }));
 }
 
 /* Formen ohne Fuellung treffen nur auf ihrer Linie. Eine unsichtbare Bahn
@@ -384,6 +450,16 @@ export function starteWerkzeuge(spur, zuPdfPunkt) {
       return;
     }
     const breite = Math.abs(e.x2 - e.x), hoehe = Math.abs(e.y2 - e.y);
+    if (e.art === 'messen') {
+      /* Eine Strecke darf waagerecht sein — für sie zählt die Länge, nicht
+         die Höhe des umschriebenen Rechtecks. */
+      if (Math.hypot(breite, hoehe) < 4) { melde('anmerkungen:geaendert'); return; }
+      fuegeAn({
+        art: 'messen', seiteId: e.seiteId, x: e.x, y: e.y, x2: e.x2, y2: e.y2,
+        farbe: zustand.farbe, staerke: zustand.strichstaerke,
+      });
+      return;
+    }
     if (breite < 3 || hoehe < 3) { melde('anmerkungen:geaendert'); return; }
     if (e.art === 'bereich') {
       // Kein Eintrag im Dokument: der Bereich wird nur abgelichtet.
@@ -461,8 +537,18 @@ function zeichneEntwurf(sicht) {
     const breite = Math.abs(x2 - x1), hoehe = Math.abs(y2 - y1);
     if (entwurf.art === 'ellipse') {
       form = svgEl('ellipse', { cx: links + breite / 2, cy: oben + hoehe / 2, rx: breite / 2, ry: hoehe / 2, fill: 'none', stroke: zustand.farbe, 'stroke-width': zustand.strichstaerke * sicht.scale });
-    } else if (entwurf.art === 'pfeil') {
+    } else if (entwurf.art === 'pfeil' || entwurf.art === 'messen') {
       form = svgEl('line', { x1, y1, x2, y2, stroke: zustand.farbe, 'stroke-width': zustand.strichstaerke * sicht.scale });
+      /* Beim Messen steht die Zahl schon während des Ziehens da — sonst zieht
+         man blind und schaut erst hinterher nach, ob es gepasst hat. */
+      if (entwurf.art === 'messen') zeigeEntwurfsmass(ebene, (x1 + x2) / 2, (y1 + y2) / 2, messwert({ art: 'messen', ...entwurf }));
+    } else if (entwurf.art === 'flaeche') {
+      form = svgEl('rect', {
+        x: links, y: oben, width: breite, height: hoehe,
+        fill: zustand.farbe, 'fill-opacity': 0.1, stroke: zustand.farbe,
+        'stroke-width': zustand.strichstaerke * sicht.scale, 'stroke-dasharray': '6 3',
+      });
+      zeigeEntwurfsmass(ebene, links + breite / 2, oben + hoehe / 2, messwert({ art: 'flaeche', ...entwurf }));
     } else if (entwurf.art === 'bereich') {
       form = svgEl('rect', {
         x: links, y: oben, width: breite, height: hoehe,
@@ -478,6 +564,14 @@ function zeichneEntwurf(sicht) {
   }
   form.classList.add('ist-entwurf');
   svg.append(form);
+}
+
+function zeigeEntwurfsmass(ebene, x, y, text) {
+  ebene.querySelector('.messmarke.ist-entwurf')?.remove();
+  ebene.append(el('div', {
+    klasse: 'messmarke ist-entwurf', text,
+    stil: { left: `${x}px`, top: `${y}px`, borderColor: zustand.farbe, color: zustand.farbe },
+  }));
 }
 
 function entferneEntwurf() {

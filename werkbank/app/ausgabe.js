@@ -15,6 +15,7 @@ import { zustand, farbeZuAnteilen, sage, sichereBytes, fremdWeg } from './kern.j
 import { quelleVon, holeSeite } from './dokument.js';
 import { setzeZugaenglichkeit } from './barrierefrei.js';
 import { legePlatzhalterAn, fuelleSignatur } from './signieren.js';
+import { beschriftung as messwert } from './messen.js';
 
 let pdflib = null;
 export async function starteSchreiber() {
@@ -398,6 +399,44 @@ async function maleAnmerkungen(ziel, folge, versatzKarte) {
             thickness: a.staerke || 2, color: stiftFarbe, lineCap: pdflib.LineCapStyle?.Round,
           });
         }
+      } else if (a.art === 'messen' || a.art === 'flaeche') {
+        /* Eine Messung ohne ihre Zahl wäre ein Strich. Deshalb wandert die
+           Beschriftung mit in die Datei — dieselbe, die auf dem Bildschirm
+           steht, gerechnet von messen.js. */
+        const text = nurWinAnsi(messwert(a));
+        const groesse = 8;
+        let mx, my;
+        if (a.art === 'messen') {
+          seite.drawLine({
+            start: { x: a.x + vx, y: a.y + vy }, end: { x: a.x2 + vx, y: a.y2 + vy },
+            thickness: a.staerke || 1.5, color: stiftFarbe,
+          });
+          const winkel = Math.atan2(a.y2 - a.y, a.x2 - a.x) + Math.PI / 2;
+          const arm = Math.max(3, (a.staerke || 1.5) * 3);
+          for (const [px, py] of [[a.x, a.y], [a.x2, a.y2]]) {
+            seite.drawLine({
+              start: { x: px + vx - arm * Math.cos(winkel), y: py + vy - arm * Math.sin(winkel) },
+              end: { x: px + vx + arm * Math.cos(winkel), y: py + vy + arm * Math.sin(winkel) },
+              thickness: a.staerke || 1.5, color: stiftFarbe,
+            });
+          }
+          mx = (a.x + a.x2) / 2 + vx; my = (a.y + a.y2) / 2 + vy;
+        } else {
+          const x = Math.min(a.x, a.x2) + vx, y = Math.min(a.y, a.y2) + vy;
+          const b = Math.abs(a.x2 - a.x), h = Math.abs(a.y2 - a.y);
+          seite.drawRectangle({
+            x, y, width: b, height: h, borderColor: stiftFarbe,
+            borderWidth: a.staerke || 1.5, color: stiftFarbe, opacity: 0.1,
+          });
+          mx = x + b / 2; my = y + h / 2;
+        }
+        const textbreite = schrift.widthOfTextAtSize(text, groesse);
+        seite.drawRectangle({
+          x: mx - textbreite / 2 - 2, y: my - groesse * 0.35,
+          width: textbreite + 4, height: groesse * 1.35,
+          color: rgb(1, 1, 1), borderColor: stiftFarbe, borderWidth: 0.5,
+        });
+        seite.drawText(text, { x: mx - textbreite / 2, y: my, size: groesse, font: schrift, color: stiftFarbe });
       } else if (a.art === 'rechteck') {
         const x = Math.min(a.x, a.x2) + vx, y = Math.min(a.y, a.y2) + vy;
         seite.drawRectangle({ x, y, width: Math.abs(a.x2 - a.x), height: Math.abs(a.y2 - a.y), borderColor: stiftFarbe, borderWidth: a.staerke || 2, opacity: 0 });

@@ -492,6 +492,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
   white-space: nowrap; overflow: hidden;
 }
 
+/* Maßzahl an einer Messung. Sie sitzt mittig auf der Strecke beziehungsweise
+   in der Fläche und ist bewusst nicht durchsichtig: eine Zahl, die man gegen
+   den Seiteninhalt entziffern muss, ist keine Messung. */
+.messmarke {
+  position: absolute; transform: translate(-50%, -50%);
+  padding: .1rem .35rem; font-size: .72rem; font-variant-numeric: tabular-nums;
+  background: var(--papier); border: 1px solid currentColor;
+  white-space: nowrap; pointer-events: none; line-height: 1.35;
+}
+.messmarke.ist-entwurf { opacity: .9; }
+
 .feldebene { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .formularfeld {
   position: absolute; pointer-events: auto; border: 1px solid rgba(0,110,255,.55);
@@ -584,6 +595,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .dialog-kopf h2 { margin: 0; font-size: 1rem; }
 .dialog-rumpf { padding: 1rem; max-height: 70vh; overflow: auto; }
 .dialog-fuss { display: flex; justify-content: flex-end; gap: .5rem; padding: .75rem 1rem; border-top: 1px solid var(--linie); background: var(--flaeche-hoch); }
+/* Ein Schritt im Stapel: Kasten, Name, Begründung. Die Begründung steht
+   daneben und nicht in einem Hilfetext, weil sie beim Anklicken zählt. */
+.stapel-schritt {
+  display: flex; gap: .5rem; align-items: flex-start;
+  padding: .4rem .5rem; border-bottom: 1px solid var(--linie); cursor: pointer;
+}
+.stapel-schritt:hover { background: var(--flaeche-hoch); }
+.stapel-schritt input { margin-top: .2rem; }
+
+/* Eine schlichte Tabelle für Listen in Dialogen — Messungen, später mehr. */
+.liste-tafel { width: 100%; border-collapse: collapse; font-size: .8125rem; margin: .5rem 0; }
+.liste-tafel th, .liste-tafel td { text-align: left; padding: .3rem .5rem; border-bottom: 1px solid var(--linie); }
+.liste-tafel th { font-weight: 600; color: var(--tinte-leise); }
+.liste-tafel td:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.liste-tafel tr.anklickbar { cursor: pointer; }
+.liste-tafel tr.anklickbar:hover td { background: var(--flaeche-hoch); }
+
 .zeile { display: flex; gap: .5rem; align-items: center; margin-bottom: .625rem; flex-wrap: wrap; }
 .zeile label { min-width: 9rem; }
 .zeile .feld { flex: 1; }

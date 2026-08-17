@@ -1,12 +1,15 @@
-/* ZIP — so klein wie nötig, um ein .docx zu schreiben.
+/* ZIP — so klein wie nötig, um ein .docx zu schreiben und wieder zu lesen.
 
    Ein Word-Dokument ist ein ZIP-Archiv mit XML darin. Statt eine Bibliothek
    dafür mitzuschleppen, schreibt die Werkbank das Archiv selbst: Das Format
-   ist alt, gut dokumentiert und in achtzig Zeilen erledigt.
+   ist alt, gut dokumentiert und in achtzig Zeilen erledigt. Seit die Werkbank
+   auch Word- und Excel-Dateien *einliest*, steht der Weg zurück daneben.
 
-   Verdichtet wird mit CompressionStream('deflate-raw'), das jeder aktuelle
-   Browser mitbringt. Fehlt es, werden die Einträge ungepackt abgelegt — das
-   Ergebnis ist größer, aber genauso gültig. */
+   Verdichtet wird mit CompressionStream('deflate-raw'), gelesen mit
+   DecompressionStream('deflate-raw') — beides bringt jeder aktuelle Browser
+   mit. Fehlt das Verdichten, werden die Einträge ungepackt abgelegt; das
+   Ergebnis ist größer, aber genauso gültig. Fehlt das Entpacken, lässt sich
+   ein gepacktes Archiv nicht lesen, und das sagt die Werkbank dann auch. */
 
 const TEXT = new TextEncoder();
 
@@ -102,4 +105,70 @@ export async function schreibeZip(eintraege) {
   let stelle = 0;
   for (const teil of alle) { ergebnis.set(teil, stelle); stelle += teil.length; }
   return ergebnis;
+}
+
+/* ---------- Lesen ---------------------------------------------------------- */
+
+async function entpacke(daten) {
+  if (typeof DecompressionStream !== 'function') {
+    throw new Error('Dieser Browser kann gepackte Archive nicht entpacken.');
+  }
+  const strom = new Blob([daten]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(strom).arrayBuffer());
+}
+
+/**
+ * Liest ein ZIP-Archiv über sein Zentralverzeichnis.
+ *
+ * Gelesen wird von hinten: das Ende-Verzeichnis (Signatur PK\x05\x06) nennt,
+ * wo die Einträge stehen. Der Weg über die lokalen Köpfe wäre kürzer, aber
+ * unzuverlässig — bei gestreamt geschriebenen Archiven stehen dort Nullen und
+ * die wahren Längen erst hinter den Daten.
+ *
+ * @param {Uint8Array} bytes
+ * @returns {Promise<Map<string, Uint8Array>>} Pfad im Archiv → Inhalt
+ */
+export async function liesZip(bytes) {
+  const sicht = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let ende = -1;
+  for (let i = bytes.length - 22; i >= 0; i--) {
+    if (sicht.getUint32(i, true) === 0x06054B50) { ende = i; break; }
+  }
+  if (ende < 0) throw new Error('Das ist kein ZIP-Archiv — das Ende-Verzeichnis fehlt.');
+
+  const anzahl = sicht.getUint16(ende + 10, true);
+  let versatz = sicht.getUint32(ende + 16, true);
+  const dateien = new Map();
+
+  for (let n = 0; n < anzahl; n++) {
+    if (versatz + 46 > bytes.length || sicht.getUint32(versatz, true) !== 0x02014B50) {
+      throw new Error(`Eintrag ${n + 1} im Archiv ist beschädigt.`);
+    }
+    const verfahren = sicht.getUint16(versatz + 10, true);
+    const gepackteLaenge = sicht.getUint32(versatz + 20, true);
+    const namensLaenge = sicht.getUint16(versatz + 28, true);
+    const zusatzLaenge = sicht.getUint16(versatz + 30, true);
+    const kommentarLaenge = sicht.getUint16(versatz + 32, true);
+    const kopfVersatz = sicht.getUint32(versatz + 42, true);
+    const name = new TextDecoder().decode(bytes.subarray(versatz + 46, versatz + 46 + namensLaenge));
+
+    /* Im lokalen Kopf stehen die Feldlängen noch einmal — und sie dürfen von
+       denen im Zentralverzeichnis abweichen. */
+    const lokalName = sicht.getUint16(kopfVersatz + 26, true);
+    const lokalZusatz = sicht.getUint16(kopfVersatz + 28, true);
+    const start = kopfVersatz + 30 + lokalName + lokalZusatz;
+    const roh = bytes.subarray(start, start + gepackteLaenge);
+
+    if (!name.endsWith('/')) {
+      dateien.set(name, verfahren === 8 ? await entpacke(roh) : roh.slice(0));
+    }
+    versatz += 46 + namensLaenge + zusatzLaenge + kommentarLaenge;
+  }
+  return dateien;
+}
+
+/** Ein Eintrag als Text. Fehlt er, kommt eine leere Zeichenkette zurück. */
+export function alsText(dateien, name) {
+  const daten = dateien.get(name);
+  return daten ? new TextDecoder().decode(daten) : '';
 }

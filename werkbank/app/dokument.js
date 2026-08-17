@@ -87,6 +87,28 @@ export async function oeffneDateien(dateien, { anhaengen = false } = {}) {
   return zustand.folge.length;
 }
 
+/**
+ * Öffnet ein PDF, das die Werkbank selbst erzeugt hat — aus Bildern, aus einer
+ * Word- oder Excel-Datei. Es wird zum Arbeitsdokument, nicht zum Download:
+ * wer eine Datei umwandelt, will sie fast immer gleich ansehen und ändern.
+ * @param {Uint8Array} bytes
+ * @param {string} name
+ */
+export async function oeffneBytes(bytes, name) {
+  leereDokument();
+  const quelle = await ladeQuelle(bytes, name);
+  for (let i = 0; i < quelle.seitenzahl; i++) zustand.folge.push(seitenEintrag(quelle.id, i));
+  zustand.name = name;
+  /* Erzeugt, nicht geladen: es gibt noch keine Datei auf der Platte, also gilt
+     das Dokument als ungesichert. */
+  zustand.geaendert = true;
+  await ermittleMerkmale();
+  await ermittleFormularfelder();
+  melde('dokument:geladen');
+  melde('dokument:geaendert');
+  return quelle.seitenzahl;
+}
+
 export function leereDokument() {
   for (const quelle of zustand.quellen.values()) quelle.pdf.destroy?.();
   zustand.quellen.clear();
@@ -103,6 +125,7 @@ export function leereDokument() {
   zustand.geaendert = false;
   zustand.gliederung = null;
   zustand.eigenschaften = null;
+  zustand.massstab = null;
   zustand.name = 'Ohne Titel';
   zustand.aktuelleSeite = 1;
 }

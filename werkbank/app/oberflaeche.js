@@ -69,6 +69,8 @@ function baueBefehle() {
   befehl('word:ausgeben', 'Nach Word ausgeben (.docx) …', 'Datei', zeigeWordDialog);
   befehl('excel:ausgeben', 'Tabellen nach Excel ausgeben (.xlsx) …', 'Datei', zeigeExcelDialog);
   befehl('bilder:zuPdf', 'PDF aus Bildern erstellen …', 'Datei', () => $('#dateiwahl-bilder').click());
+  befehl('einlesen', 'PDF aus Word, Excel, Text erstellen …', 'Datei', zeigeEinlesenDialog);
+  befehl('stapel', 'Stapel: viele Dateien auf einmal …', 'Datei', zeigeStapelDialog);
   befehl('text:kopieren', 'Auswahl oder Seitentext kopieren', 'Text', async () => {
     const auswahl = String(window.getSelection() || '').trim();
     if (auswahl) {
@@ -175,6 +177,8 @@ function baueBefehle() {
     melde('anmerkungen:geaendert');
   });
   befehl('suche:treffer-hervorheben', 'Alle Suchtreffer hervorheben', 'Werkzeuge', hebeTrefferHervor);
+  befehl('messen:massstab', 'Maßstab festlegen (kalibrieren) …', 'Werkzeuge', zeigeMassstabDialog);
+  befehl('messen:liste', 'Messungen und Summen …', 'Werkzeuge', zeigeMessungen);
 
   befehl('seiten:ordnen', 'Seiten ordnen, sortieren, löschen …', 'Seiten', umschalteOrdnen, 'Strg+Umschalt+O');
   befehl('seiten:nurAuswahl', 'Nur gewählte Seiten zeigen', 'Seiten', () => setzeFokus(!zustand.nurAuswahl));
@@ -264,6 +268,7 @@ const WERKZEUGGRUPPEN = [
   [['freihand', false], ['rechteck', false], ['ellipse', false], ['pfeil', false]],
   [['ersetzen', true], ['schwaerzen', true]],
   [['feld', true], ['unterschrift', true], ['stempel', false], ['bereich', false]],
+  [['messen', true], ['flaeche', false]],
 ];
 
 /* Die Dokumentreiter in der Titelleiste. Sie sind die einzige Stelle, an der
@@ -881,6 +886,257 @@ function setzeStempel({ seiteId, x, y }) {
       },
     ],
   });
+}
+
+/* ---------- Stapel -------------------------------------------------------- */
+
+/* Der Stapel geht bewusst nicht über das offene Dokument, sondern über
+   gewählte Dateien: was hier läuft, braucht keinen Menschen, der hinsieht.
+   Alles, was eine Entscheidung braucht — schwärzen, anmerken, ausfüllen —
+   bleibt draußen. */
+async function zeigeStapelDialog() {
+  const { SCHRITTE, benoetigt, laufeStapel, packe } = await import('./stapel.js');
+
+  const kaesten = new Map();
+  const kennwort = el('input', { klasse: 'feld', type: 'password', placeholder: 'Kennwort der Dateien' });
+  const neuesKennwort = el('input', { klasse: 'feld', type: 'password', placeholder: 'Neues Kennwort' });
+  const winkel = el('select', { klasse: 'feld' },
+    el('option', { value: '90', text: 'nach rechts (90°)' }),
+    el('option', { value: '-90', text: 'nach links (−90°)' }),
+    el('option', { value: '180', text: 'auf den Kopf (180°)' }));
+  const zusatz = {
+    kennwort: el('div', { klasse: 'zeile', hidden: true }, el('label', { text: 'Kennwort' }), kennwort),
+    neuesKennwort: el('div', { klasse: 'zeile', hidden: true }, el('label', { text: 'Neues Kennwort' }), neuesKennwort),
+    winkel: el('div', { klasse: 'zeile', hidden: true }, el('label', { text: 'Drehen um' }), winkel),
+  };
+
+  const gewaehlte = () => [...kaesten.entries()].filter(([, k]) => k.checked).map(([id]) => id);
+  const frischeZusatz = () => {
+    const noetig = benoetigt(gewaehlte());
+    for (const [schluessel, knoten] of Object.entries(zusatz)) knoten.hidden = !noetig.includes(schluessel);
+  };
+
+  const auswahlListe = el('div', {}, ...SCHRITTE.map((schritt) => {
+    const kasten = el('input', { type: 'checkbox', beiChange: frischeZusatz });
+    kaesten.set(schritt.id, kasten);
+    return el('label', { klasse: 'stapel-schritt' },
+      kasten,
+      el('span', {}, el('strong', { text: schritt.name }),
+        el('span', { klasse: 'leise klein', text: ` — ${schritt.hinweis}` })));
+  }));
+
+  const dateiwahl = el('input', { type: 'file', accept: 'application/pdf,.pdf', multiple: true, klasse: 'feld' });
+  const stand = el('p', { klasse: 'hinweis', text: 'Noch nichts gewählt.' });
+  dateiwahl.addEventListener('change', () => {
+    const zahl = dateiwahl.files?.length || 0;
+    stand.textContent = zahl ? `${zahl} Datei${zahl === 1 ? '' : 'en'} gewählt.` : 'Noch nichts gewählt.';
+  });
+
+  zeigeDialog({
+    titel: 'Stapel — dieselbe Arbeit an vielen Dateien',
+    breit: true,
+    rumpf: el('div', {},
+      el('div', { klasse: 'zeile' }, el('label', { text: 'Dateien' }), dateiwahl),
+      stand,
+      el('p', { klasse: 'hinweis' }, el('strong', { text: 'Schritte' }),
+        ' — sie laufen immer in dieser Reihenfolge, nicht in der des Anklickens.'),
+      auswahlListe,
+      zusatz.kennwort, zusatz.neuesKennwort, zusatz.winkel,
+      el('p', { klasse: 'hinweis klein' },
+        'Das Ergebnis kommt als ZIP-Archiv, mit einem Bericht darin: welche Datei gelungen ist, ',
+        'welche nicht und warum. Eine gescheiterte Datei hält den Lauf nicht auf.')),
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Stapel starten',
+        betont: true,
+        tun: () => {
+          const dateien = [...(dateiwahl.files || [])];
+          const schritte = gewaehlte();
+          if (!dateien.length) { sage('Erst Dateien wählen', { art: 'warn' }); return false; }
+          if (!schritte.length) { sage('Erst mindestens einen Schritt wählen', { art: 'warn' }); return false; }
+          setTimeout(async () => {
+            const ergebnisse = await mitLader('Stapel läuft …', () => laufeStapel(
+              dateien, schritte,
+              { kennwort: kennwort.value, neuesKennwort: neuesKennwort.value, winkel: winkel.value },
+              ({ nummer, gesamt, datei, schritt }) => {
+                const anzeige = $('#lader-text');
+                if (anzeige) anzeige.textContent = `${nummer}/${gesamt} · ${datei} · ${schritt} …`;
+              }));
+            const gelungen = ergebnisse.filter((e) => e.bytes).length;
+            if (!gelungen) {
+              sage('Keine Datei ließ sich verarbeiten — der Bericht sagt, woran es lag.', { art: 'fehler', dauer: 8000 });
+            }
+            const archiv = await packe(ergebnisse, schritte);
+            sichereBytes(archiv, 'stapel.zip', 'application/zip');
+            sage(`${gelungen} von ${ergebnisse.length} Dateien verarbeitet — als stapel.zip gesichert`, { dauer: 7000 });
+          }, 0);
+        },
+      },
+    ],
+  });
+}
+
+/* ---------- Messen -------------------------------------------------------- */
+
+/* Kalibrieren heißt: eine Strecke ziehen, deren wahre Länge man kennt, und
+   sie eintragen. Ohne das misst die Werkbank in Papiermaß — auf einem
+   Grundriss 1:50 wären das die Millimeter auf dem Blatt, nicht die im Haus.
+   Der Dialog sagt das, statt es vorauszusetzen. */
+async function zeigeMassstabDialog() {
+  const m = await import('./messen.js');
+  const strecken = m.messungen().filter((a) => a.art === 'messen');
+  const jetzt = m.massstab();
+
+  const auswahl = el('select', { klasse: 'feld' },
+    ...strecken.map((a, i) => el('option', {
+      value: a.id,
+      selected: a.id === zustand.gewaehlteAnmerkung,
+      text: `Strecke ${i + 1} auf Seite ${nummerVon(a.seiteId)} — ${m.alsLaenge(m.laengeInPunkten(a), jetzt)}`,
+    })));
+  const laenge = el('input', { klasse: 'feld', type: 'number', step: 'any', min: '0', placeholder: 'z. B. 3,50' });
+  const einheit = el('select', { klasse: 'feld' },
+    ...Object.entries(m.EINHEITEN).map(([schluessel, wert]) => el('option', {
+      value: schluessel, selected: schluessel === jetzt.einheit, text: `${wert.name} (${schluessel})`,
+    })));
+
+  const rumpf = el('div', {},
+    el('p', { klasse: 'hinweis' },
+      'Zurzeit gilt: ', el('strong', { text: jetzt.benannt ? m.verhaeltnis(jetzt) : 'Papiermaß (1:1)' }),
+      jetzt.benannt ? '' : ' — gemessen wird, was auf dem Blatt steht.'),
+    strecken.length
+      ? el('div', {},
+        el('div', { klasse: 'zeile' }, el('label', { text: 'Welche Strecke?' }), auswahl),
+        el('div', { klasse: 'zeile' }, el('label', { text: 'Wie lang ist sie wirklich?' }), laenge),
+        el('div', { klasse: 'zeile' }, el('label', { text: 'Einheit' }), einheit))
+      : el('div', {},
+        el('p', { klasse: 'hinweis ist-warnung' },
+          'Zum Kalibrieren fehlt eine Strecke. Erst mit dem Werkzeug „Strecke messen" eine ',
+          'Länge ziehen, die Sie kennen — dann hier eintragen, wie lang sie wirklich ist.'),
+        el('div', { klasse: 'zeile' }, el('label', { text: 'Einheit' }), einheit)),
+    el('p', { klasse: 'hinweis klein' },
+      'Ein PDF-Punkt ist 1/72 Zoll. Auf dem Papier stimmt das Maß deshalb auch ohne ',
+      'Kalibrierung — sie wird erst gebraucht, wenn die Zeichnung selbst einen Maßstab hat.'));
+
+  zeigeDialog({
+    titel: 'Maßstab festlegen',
+    rumpf,
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Auf Papiermaß zurücksetzen',
+        tun: () => { zustand.massstab = null; melde('anmerkungen:geaendert'); sage('Maßstab zurückgesetzt — es gilt wieder das Papiermaß'); },
+      },
+      {
+        beschriftung: strecken.length ? 'Maßstab setzen' : 'Einheit übernehmen',
+        betont: true,
+        tun: () => {
+          if (!strecken.length) {
+            m.setzeEinheit(einheit.value);
+            melde('anmerkungen:geaendert');
+            sage(`Einheit: ${m.EINHEITEN[einheit.value].name}`);
+            return;
+          }
+          const strecke = strecken.find((a) => a.id === auswahl.value);
+          const wert = Number(String(laenge.value).replace(',', '.'));
+          try {
+            const gesetzt = m.kalibriere(m.laengeInPunkten(strecke), wert, einheit.value);
+            melde('anmerkungen:geaendert');
+            sage(`Maßstab ${m.verhaeltnis(gesetzt)} — alle Messungen sind neu gerechnet`, { dauer: 5000 });
+          } catch (fehler) {
+            sage(fehler.message, { art: 'fehler' });
+            return false;
+          }
+        },
+      },
+    ],
+  });
+}
+
+async function zeigeMessungen() {
+  const m = await import('./messen.js');
+  const liste = m.messungen();
+  const jetzt = m.massstab();
+
+  const rumpf = el('div', {},
+    el('p', { klasse: 'hinweis' },
+      'Maßstab: ', el('strong', { text: jetzt.benannt ? m.verhaeltnis(jetzt) : 'Papiermaß (1:1)' })),
+    liste.length
+      ? el('table', { klasse: 'liste-tafel' },
+        el('thead', {}, el('tr', {},
+          el('th', { text: 'Art' }), el('th', { text: 'Seite' }), el('th', { text: 'Maß' }))),
+        el('tbody', {}, ...liste.map((a) => el('tr', {
+          klasse: 'anklickbar',
+          beiClick: () => { schliesseDialog(); zeigeSeite(nummerVon(a.seiteId)); waehleAn(a.id); },
+        },
+          el('td', { text: a.art === 'messen' ? 'Strecke' : 'Fläche' }),
+          el('td', { text: String(nummerVon(a.seiteId)) }),
+          el('td', { text: m.beschriftung(a, jetzt) })))))
+      : el('p', { klasse: 'hinweis' }, 'Noch nichts gemessen. Werkzeug „Strecke messen" (L) oder „Fläche messen" (A).'),
+    liste.length
+      ? el('p', { klasse: 'hinweis' },
+        el('strong', { text: 'Summen: ' }),
+        `${m.summeStrecken(jetzt)} an Strecken, ${m.summeFlaechen(jetzt)} an Fläche.`)
+      : null);
+
+  zeigeDialog({
+    titel: 'Messungen',
+    rumpf,
+    knoepfe: [
+      { beschriftung: 'Maßstab festlegen …', tun: () => { setTimeout(zeigeMassstabDialog, 0); } },
+      { beschriftung: 'Schließen', betont: true },
+    ],
+  });
+}
+
+/* ---------- Aus anderen Formaten ein PDF ---------------------------------- */
+
+/* Der Dialog sagt vorher, was ankommt und was nicht. Das ist wichtiger als es
+   klingt: wer eine Word-Datei mit Kopfzeile, Logo und Fußnoten umwandelt und
+   das nicht wusste, hält die Werkbank für kaputt. Sie ist es nicht — sie
+   nimmt den Text und lässt das Layout. */
+function zeigeEinlesenDialog() {
+  const rumpf = el('div', {},
+    el('p', { klasse: 'hinweis' },
+      'Aus einer Word-, Excel-, Text-, Markdown- oder CSV-Datei wird ein PDF — im Browser, ',
+      'ohne dass die Datei das Gerät verlässt.'),
+    el('p', { klasse: 'hinweis' },
+      el('strong', { text: 'Was ankommt: ' }),
+      'Überschriften, Absätze, Aufzählungen, Tabellen, fett und kursiv. Bei Excel jedes ',
+      'Blatt als eigene Tabelle.'),
+    el('p', { klasse: 'hinweis' },
+      el('strong', { text: 'Was nicht: ' }),
+      'Bilder, Kopf- und Fußzeilen, Fußnoten, Spalten, Farben, Rahmen und die genaue ',
+      'Nummerierung. Die Werkbank setzt in Helvetica auf A4.'),
+    el('p', { klasse: 'hinweis' },
+      'Das Ergebnis wird gleich geöffnet — Sie können es also ansehen, ergänzen und dann sichern.'));
+
+  zeigeDialog({
+    titel: 'PDF aus Word, Excel oder Text',
+    rumpf,
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      { beschriftung: 'Datei wählen …', betont: true, tun: () => { $('#dateiwahl-einlesen').click(); } },
+    ],
+  });
+}
+
+async function einlesenZuPdf(dateien) {
+  const { ausDatei } = await import('./einlesen.js');
+  const { oeffneBytes } = await import('./dokument.js');
+  for (const datei of dateien) {
+    let ergebnis;
+    try {
+      ergebnis = await mitLader(`${datei.name} wird gesetzt …`, () => ausDatei(datei));
+    } catch { continue; }   // mitLader hat die Ursache schon gemeldet
+    if (hatDokument()) neueMappe();
+    await mitLader('Das Ergebnis wird geöffnet …', () => oeffneBytes(ergebnis.bytes, ergebnis.name));
+    untersuche();
+    sage(`${datei.name} umgewandelt — ${zustand.folge.length} Seiten`, {
+      dauer: 6000,
+      aktion: { beschriftung: 'gleich sichern', tun: () => sichereMit({ dateiname: ergebnis.name }) },
+    });
+  }
 }
 
 async function bilderZuPdf(dateien) {
@@ -1831,6 +2087,11 @@ export function starteOberflaeche() {
     e.target.value = '';
     if (dateien.length) await bilderZuPdf(dateien);
   });
+  $('#dateiwahl-einlesen').addEventListener('change', async (e) => {
+    const dateien = [...(e.target.files || [])];
+    e.target.value = '';
+    if (dateien.length) await einlesenZuPdf(dateien);
+  });
   $('#knopf-oeffnen').addEventListener('click', () => $('#dateiwahl').click());
   $('#knopf-beispiel').addEventListener('click', () => mitLader('Beispiel wird geladen …', ladeBeispiel));
 
@@ -1932,6 +2193,19 @@ export function starteOberflaeche() {
 }
 
 async function oeffne(dateien, anhaengen) {
+  /* Wer eine Word-Datei auf die Werkbank zieht, will sie sehen — nicht die
+     Meldung „Keine PDF-Datei dabei". Was sich einlesen lässt, wird eingelesen,
+     der Rest geht den gewohnten Weg. */
+  const { istEingangsformat } = await import('./einlesen.js');
+  const alle = [...dateien];
+  const fremde = alle.filter((d) => istEingangsformat(d.name));
+  const pdfs = alle.filter((d) => !fremde.includes(d));
+  if (fremde.length) {
+    await einlesenZuPdf(fremde);
+    if (!pdfs.length) return;
+  }
+  dateien = pdfs;
+
   /* „Datei oeffnen" ersetzt nicht mehr, was offen ist: es kommt ein Reiter
      dazu. Nur in eine leere Mappe wird direkt geladen. */
   if (!anhaengen && hatDokument()) neueMappe();

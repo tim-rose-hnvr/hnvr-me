@@ -1,0 +1,268 @@
+---
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+
+const schritte = [
+  { nr: '1', titel: 'Scan am Tisch', meta: '24 Tischcodes · Flyer · Etikett', wert: '100%', ton: 'dunkel', rohr: 150, kante: '24% springen sofort ab', verzug: '0s' },
+  { nr: '2', titel: 'Speisekarte', meta: 'Ø 42 Sekunden auf der Seite', wert: '76%', ton: 'creme', rohr: 112, kante: '45% tippen auf das Angebot', verzug: '.3s' },
+  { nr: '3', titel: 'Angebot A · 10% Rabatt', meta: 'gegen E-Mail, kein Konto', wert: '31%', ton: 'salbei', rohr: 78, kante: '38% brechen im Formular ab', verzug: '.6s' },
+  { nr: '4', titel: 'Formular', meta: 'ein Feld, ein Knopf', wert: '25%', ton: 'creme', rohr: 52, kante: '25% kommen am Ziel an', verzug: '.9s' },
+];
+
+const bausteine = [
+  { titel: 'Seite', text: 'Eine mobile Vorlage als Ziel — Karte, Angebot, Event oder Produktpass.', ton: 'terra' },
+  { titel: 'A/B-Test', text: 'Zwei Varianten, automatische Aufteilung, Signifikanz statt Bauchgefühl.', ton: 'salbei' },
+  { titel: 'Formular', text: 'Ein Feld für den Gutschein. Jedes weitere Feld kostet dich messbar Abschlüsse.', ton: 'terra' },
+  { titel: 'Gutschein', text: 'Einlösbarer Code, einmalig oder pro Gerät, mit Ablaufdatum.', ton: 'terra' },
+  { titel: 'Weiterleitung', text: 'Direkt in den Shop, zur Bestellsoftware oder zur Terminbuchung.', ton: 'salbei' },
+  { titel: 'Bedingung', text: 'Uhrzeit, Sprache, Standort oder Wiederkehr entscheiden über den nächsten Schritt.', ton: 'salbei' },
+];
+
+const regeln = [
+  { titel: 'Uhrzeit', text: 'Nach 17 Uhr zeigt dieselbe Strecke die Abendkarte — ohne dass jemand etwas umstellt.' },
+  { titel: 'Sprache', text: 'Die Gerätesprache entscheidet: Deutsch, Englisch oder Türkisch.' },
+  { titel: 'Wiederkehr', text: 'Der zweite Scan überspringt das Angebot und geht direkt zur Karte.' },
+];
+---
+
+<Seite
+  titel="Strecken & Tests"
+  beschreibung="Eine Strecke ist eine Kette aus Schritten. Die Röhren dazwischen werden dünner, wo Gäste abspringen — du siehst die Schwachstelle, bevor du sie suchst."
+  aktiv="strecken"
+>
+  <section class="spur">
+    <span class="tag tag-accent-2">
+      <Icon name="strecke" groesse={16} />
+      Strecken &amp; Tests
+    </span>
+    <h1 class="titel-seite" style="margin:14px 0 16px;max-width:760px">
+      Was nach dem Scan passiert, ist der eigentliche Job
+    </h1>
+    <p class="fliess" style="font-size:17.5px;max-width:560px">
+      Eine Strecke ist eine Kette aus Schritten. Die Röhren dazwischen werden dünner,
+      wo Gäste abspringen — du siehst die Schwachstelle, bevor du sie suchst.
+    </p>
+  </section>
+
+  <!-- ── Trichter ──────────────────────────────────────────────────── -->
+  <section class="spur trichter-raster">
+    <div class="panel trichter">
+      <div class="trichter-kopf">
+        <span class="trichter-titel">Sommer-Strecke</span>
+        <span class="trichter-meta">14.201 Scans · Test läuft</span>
+      </div>
+
+      {schritte.map((s, i) => (
+        <>
+          <div class:list={['schritt', `schritt-${s.ton}`]}>
+            <span class="schritt-nr">{s.nr}</span>
+            <span class="schritt-mitte">
+              <span class="schritt-titel">{s.titel}</span>
+              <span class="schritt-meta">{s.meta}</span>
+            </span>
+            <span class="schritt-wert">{s.wert}</span>
+          </div>
+
+          <div class="kante">
+            <span class="rohr" style={`width:${s.rohr}px`} aria-hidden="true">
+              <span class="rohr-punkt" style={`animation-delay:${s.verzug}`}></span>
+            </span>
+            <span class="kante-text">{s.kante}</span>
+          </div>
+        </>
+      ))}
+
+      <div class="ziel">
+        <div>
+          <div class="ziel-titel">Bestellung abgeschlossen</div>
+          <div class="ziel-meta">Ø Warenkorb 24,80 €</div>
+        </div>
+        <div class="ziel-zahl">3.542</div>
+      </div>
+    </div>
+
+    <div class="nebenspalte">
+      <div class="ergebnis">
+        <span class="ergebnis-zeichen"><Icon name="variante" groesse={20} /></span>
+        <div class="ergebnis-titel">A gewinnt mit 31% gegen 19%</div>
+        <p class="ergebnis-text">
+          Signifikanz 93% nach elf Tagen. Beim Ausrollen sehen alle Gäste Variante A —
+          der gedruckte Code bleibt gleich.
+        </p>
+        <div class="ergebnis-knoepfe">
+          <a href="/preise" class="btn btn-primary">A ausrollen</a>
+          <a href="/preise" class="btn btn-secondary">Weiter testen</a>
+        </div>
+      </div>
+
+      <div class="push-karte">
+        <div class="push" aria-hidden="true">
+          <span class="push-zeichen"><Icon name="glocke" groesse={17} /></span>
+          <span>
+            <span class="push-kopf">pnkt.me · jetzt</span>
+            <span class="push-titel">Variante A gewinnt mit 31%</span>
+            <span class="push-unter">Antippen, um sie auszurollen</span>
+          </span>
+        </div>
+        <p class="push-text">Entscheidungen kommen als Push — nicht jeder Scan.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Bausteine ─────────────────────────────────────────────────── -->
+  <section class="spur">
+    <h2 class="titel-block" style="margin-bottom:10px">Bausteine für jede Strecke</h2>
+    <p class="fliess" style="margin:0 0 26px">Ziehen, verbinden, fertig. Jeder Baustein misst sich selbst.</p>
+    <div class="baustein-raster">
+      {bausteine.map((b) => (
+        <article class="baustein hebt">
+          <span class:list={['baustein-punkt', b.ton === 'salbei' ? 'punkt-salbei' : 'punkt-terra']}></span>
+          <div class="baustein-titel">{b.titel}</div>
+          <p class="baustein-text">{b.text}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- ── Regeln ────────────────────────────────────────────────────── -->
+  <section class="spur">
+    <div class="panel">
+      <div class="kicker">Regeln, die von selbst greifen</div>
+      <div class="regel-raster">
+        {regeln.map((r) => (
+          <div class="regel">
+            <span class="regel-zeichen"><Icon name="zeitregel" groesse={19} /></span>
+            <div>
+              <div class="regel-titel">{r.titel}</div>
+              <p class="regel-text">{r.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div class="knopfreihe">
+        <a href="/vorlagen" class="btn btn-primary knopf-gross">
+          <Icon name="bogen" groesse={20} />
+          Vorlagen ansehen
+        </a>
+        <a href="/preise" class="btn btn-secondary knopf-gross">
+          <Icon name="zahlen" groesse={20} />
+          Preise
+        </a>
+      </div>
+    </div>
+  </section>
+</Seite>
+
+<style>
+  .trichter-raster { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; align-items: start; }
+  .trichter { padding: 30px 32px; }
+  .trichter-kopf { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .trichter-titel { font-family: var(--font-heading); font-size: 24px; }
+  .trichter-meta { font-size: 12.5px; color: rgba(32, 30, 29, 0.62); }
+
+  .schritt {
+    border-radius: 28px; padding: 16px 20px;
+    display: flex; gap: 14px; align-items: center;
+  }
+  .schritt-creme { background: var(--color-bg); }
+  .schritt-salbei { background: var(--color-accent-2-100); }
+  .schritt-dunkel { background: var(--color-text); color: var(--color-bg); }
+  .schritt-nr {
+    width: 38px; height: 38px; border-radius: 999px; flex: none;
+    display: grid; place-items: center;
+    font-family: var(--font-heading); font-size: 16px;
+    background: var(--color-accent); color: var(--color-bg);
+  }
+  .schritt-dunkel .schritt-nr { background: var(--color-accent-400); color: var(--color-text); }
+  .schritt-salbei .schritt-nr { background: var(--color-accent-2); }
+  .schritt-mitte { flex: 1; min-width: 0; }
+  .schritt-titel { display: block; font-size: 15px; font-weight: 600; }
+  .schritt-meta { display: block; font-size: 12.5px; color: rgba(32, 30, 29, 0.6); }
+  .schritt-dunkel .schritt-meta { color: rgba(245, 234, 216, 0.6); }
+  .schritt-wert { font-family: var(--font-heading); font-size: 20px; flex: none; }
+
+  /* Die Röhre wird nach unten dünner — ihre Breite ist die gemessene
+     Durchlassquote, nicht Dekoration. */
+  .kante { display: flex; align-items: center; gap: 14px; padding: 8px 0 8px 20px; }
+  .rohr {
+    position: relative; height: 16px; border-radius: 999px;
+    background: var(--color-accent-2-300); flex: none;
+  }
+  .rohr-punkt {
+    position: absolute; top: 3px; left: 0;
+    width: 10px; height: 10px; border-radius: 999px;
+    background: var(--color-accent-2);
+    animation: flow 2.6s linear infinite;
+  }
+  .kante-text { font-size: 12.5px; color: rgba(32, 30, 29, 0.6); }
+
+  .ziel {
+    margin-top: 8px;
+    background: var(--color-accent); color: var(--color-bg);
+    border-radius: 28px; padding: 20px 22px;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  }
+  .ziel-titel { font-family: var(--font-heading); font-size: 23px; }
+  .ziel-meta { font-size: 12.5px; opacity: 0.85; margin-top: 2px; }
+  .ziel-zahl { font-family: var(--font-heading); font-size: 42px; line-height: 1; }
+
+  .nebenspalte { display: grid; gap: 18px; }
+  .ergebnis { background: var(--color-accent-2-100); border-radius: 36px; padding: 24px; }
+  .ergebnis-zeichen {
+    width: 42px; height: 42px; border-radius: 999px; margin-bottom: 14px;
+    display: grid; place-items: center;
+    background: var(--color-accent-2); color: var(--color-bg);
+    animation: breathe 2.6s ease-in-out infinite;
+  }
+  .ergebnis-titel { font-family: var(--font-heading); font-size: 21px; margin-bottom: 8px; }
+  .ergebnis-text { font-size: 13.5px; line-height: 1.6; color: var(--color-accent-2-800); margin: 0 0 16px; }
+  .ergebnis-knoepfe { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .push-karte { background: var(--color-text); color: var(--color-bg); border-radius: 36px; padding: 24px; overflow: hidden; }
+  .push {
+    background: var(--color-accent); color: var(--color-bg);
+    border-radius: 22px; padding: 14px 16px;
+    display: flex; gap: 12px; align-items: center;
+    animation: pushin 3.6s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  }
+  .push-zeichen {
+    width: 34px; height: 34px; border-radius: 999px; flex: none;
+    display: grid; place-items: center;
+    background: rgba(245, 234, 216, 0.22);
+  }
+  .push-kopf { display: block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.8; }
+  .push-titel { display: block; font-size: 14px; font-weight: 700; }
+  .push-unter { display: block; font-size: 12px; opacity: 0.85; }
+  .push-text { font-size: 13px; line-height: 1.55; color: rgba(245, 234, 216, 0.72); margin: 16px 0 0; }
+
+  /* ── Bausteine ──────────────────────────────────────────────────── */
+  .baustein-raster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .baustein { background: var(--color-surface); border-radius: 32px; padding: 22px 24px; }
+  .baustein-punkt { display: block; width: 12px; height: 12px; border-radius: 999px; margin-bottom: 14px; }
+  .punkt-terra { background: var(--color-accent); }
+  .punkt-salbei { background: var(--color-accent-2); }
+  .baustein-titel { font-family: var(--font-heading); font-size: 20px; margin-bottom: 7px; }
+  .baustein-text { font-size: 13.5px; line-height: 1.55; color: rgba(32, 30, 29, 0.72); margin: 0; }
+
+  /* ── Regeln ─────────────────────────────────────────────────────── */
+  .regel-raster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 6px; }
+  .regel { display: flex; gap: 14px; align-items: flex-start; }
+  .regel-zeichen {
+    width: 40px; height: 40px; border-radius: 999px; flex: none;
+    display: grid; place-items: center;
+    background: var(--color-bg); color: var(--color-accent);
+  }
+  .regel-titel { font-family: var(--font-heading); font-size: 19px; margin-bottom: 5px; }
+  .regel-text { font-size: 13.5px; line-height: 1.55; color: rgba(32, 30, 29, 0.72); margin: 0; }
+
+  @media (max-width: 1000px) {
+    .trichter-raster { grid-template-columns: 1fr; }
+    .baustein-raster { grid-template-columns: repeat(2, 1fr); }
+    .regel-raster { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .baustein-raster { grid-template-columns: 1fr; }
+    .trichter { padding: 22px 18px; }
+    .ziel { flex-direction: column; align-items: flex-start; }
+  }
+</style>

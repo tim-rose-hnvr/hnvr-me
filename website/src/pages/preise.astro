@@ -1,0 +1,260 @@
+---
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+
+const tarife = [
+  {
+    name: 'Klein', preis: '0 €', dazu: '1 Code · 500 Scans im Monat',
+    marke: 'gratis', ton: 'creme', ruf: 'Anfangen', rufArt: 'btn-secondary',
+    merkmale: ['Änderbares Ziel', 'Standard-Vorlage', 'Basis-Zahlen', 'PNG-Export'],
+  },
+  {
+    name: 'Laden', preis: '29 €', dazu: 'je Monat · 25 Codes',
+    marke: 'beliebt', ton: 'terra', ruf: '14 Tage testen', rufArt: 'ruf-creme',
+    merkmale: ['Ganze Werkstatt, alle Stile', 'Alle Vorlagen', 'A/B-Tests', 'Druckdaten CMYK & PDF/X'],
+  },
+  {
+    name: 'Team', preis: '89 €', dazu: 'je Monat · 250 Codes',
+    marke: 'für Filialen', ton: 'creme', ruf: '14 Tage testen', rufArt: 'btn-secondary',
+    merkmale: ['Rollen & Workspaces', 'Verzweigte Strecken', 'Eigene Domain', 'SSO & Verlauf'],
+  },
+  {
+    name: 'Serie', preis: 'auf Anfrage', dazu: 'unbegrenzt · SLA',
+    marke: 'Industrie', ton: 'dunkel', ruf: 'Gespräch anfragen', rufArt: 'btn-primary',
+    merkmale: ['Serien-Codes im Batch', 'Produktpass / GS1', 'API & Webhooks', 'AVV, SLA, Support'],
+  },
+];
+
+const immer = [
+  { titel: 'Ziel jederzeit tauschen', text: 'Auch im Gratis-Tarif. Gedruckt bleibt gedruckt.' },
+  { titel: 'EU-Hosting', text: 'Frankfurt, keine Tracking-Cookies, kein Weiterverkauf.' },
+  { titel: 'Prüfliste vor dem Druck', text: 'Kontrast, Ruhezone, Mindestgröße — immer dabei.' },
+  { titel: 'Export ohne Wasserzeichen', text: 'Auch der kostenlose Code druckt sauber.' },
+];
+
+const fragen = [
+  {
+    frage: 'Was passiert, wenn ich kündige?',
+    antwort: 'Die Codes bleiben lesbar und leiten weiter auf die letzte veröffentlichte Seite. Bearbeiten und Auswerten geht dann nicht mehr.',
+  },
+  {
+    frage: 'Zählt jeder Scan?',
+    antwort: 'Gezählt werden Weiterleitungen. Mehrfach-Scans desselben Geräts innerhalb einer Stunde zählen einmal.',
+  },
+  {
+    frage: 'Kann ich meine eigene Domain nutzen?',
+    antwort: 'Ab Team: scan.deinname.de statt pnkt.me — bestehende Codes laufen parallel weiter.',
+  },
+  {
+    frage: 'Und Serien für Verpackungen?',
+    antwort: 'Ab Serie: Batch aus CSV oder API, mit GS1-konformen Zielen und Chargenmerkmal.',
+  },
+];
+---
+
+<Seite
+  titel="Preise"
+  beschreibung="Preise ohne Kleingedrucktes. Monatlich kündbar. Gedruckte Codes bleiben gültig, auch wenn du den Tarif wechselst oder pausierst."
+  aktiv="preise"
+>
+  <section class="spur kopfreihe">
+    <div>
+      <span class="tag tag-accent">
+        <Icon name="zahlen" groesse={16} />
+        Preise
+      </span>
+      <h1 class="titel-liste" style="margin:14px 0 14px">Preise ohne Kleingedrucktes</h1>
+      <p class="fliess" style="font-size:17px">
+        Monatlich kündbar. Gedruckte Codes bleiben gültig, auch wenn du den Tarif
+        wechselst oder pausierst.
+      </p>
+    </div>
+
+    <div class="takt" role="group" aria-label="Abrechnung">
+      <span class="takt-opt takt-aktiv">Monatlich</span>
+      <span class="takt-opt">Jährlich −2 Monate</span>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="tarif-raster">
+      {tarife.map((t) => (
+        <article class:list={['tarif', 'hebt', `tarif-${t.ton}`]}>
+          <div class="tarif-kopf">
+            <span class="tarif-name">{t.name}</span>
+            <span class="tarif-marke">{t.marke}</span>
+          </div>
+          <div class="tarif-preis">{t.preis}</div>
+          <div class="tarif-dazu">{t.dazu}</div>
+          <ul class="tarif-liste">
+            {t.merkmale.map((m) => (
+              <li>
+                <span class="tarif-haken"><Icon name="geprueft" groesse={11} /></span>
+                {m}
+              </li>
+            ))}
+          </ul>
+          <a href="/werkstatt" class:list={['btn', 'tarif-ruf', t.rufArt]}>{t.ruf}</a>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel">
+      <div class="kicker">In jedem Tarif</div>
+      <div class="immer-raster">
+        {immer.map((i) => (
+          <div class="immer">
+            <span class="immer-zeichen"><Icon name="geprueft" groesse={17} /></span>
+            <div class="immer-titel">{i.titel}</div>
+            <p class="immer-text">{i.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="spur schluss">
+    <div>
+      <h2 class="titel-block" style="font-size:34px;margin-bottom:18px">Häufige Fragen</h2>
+      <div class="fragen">
+        {fragen.map((f) => (
+          <div class="frage">
+            <h3 class="frage-titel">{f.frage}</h3>
+            <p>{f.antwort}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="panel-dunkel abschluss">
+      <span class="marke">
+        <span class="marke-zeichen"><span class="marke-punkt"></span></span>
+        <span class="marke-wort">pnkt<span class="marke-trenner">.</span>me</span>
+      </span>
+      <h2 style="font-size:32px;letter-spacing:-.02em;margin:18px 0 12px">Mit einem Code anfangen</h2>
+      <p style="font-size:14.5px;line-height:1.6;color:rgba(245,234,216,.75);margin:0 0 22px">
+        Konto in drei Minuten, erster Code kostenlos, keine Karte nötig. Wenn es nichts
+        für dich ist, bleibt der Code trotzdem gültig.
+      </p>
+      <a href="/werkstatt" class="btn btn-primary knopf-gross">
+        <Icon name="scannen" groesse={20} />
+        Kostenlos starten
+      </a>
+      <a href="/werkstatt" class="schluss-verweis">Erst die Werkstatt ansehen</a>
+    </div>
+  </section>
+</Seite>
+
+<style>
+  .kopfreihe { display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: end; }
+
+  .takt {
+    display: inline-flex;
+    background: var(--color-surface);
+    border-radius: 999px;
+    padding: 4px;
+  }
+  .takt-opt {
+    padding: 9px 18px; border-radius: 999px;
+    font-size: 13.5px; font-weight: 600;
+    color: rgba(32, 30, 29, 0.7);
+  }
+  .takt-aktiv { background: var(--color-accent); color: var(--color-bg); }
+
+  /* ── Tarife ─────────────────────────────────────────────────────── */
+  .tarif-raster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; align-items: stretch; }
+  .tarif {
+    border-radius: 36px; padding: 28px;
+    display: flex; flex-direction: column;
+  }
+  .tarif-creme { background: var(--color-bg); border: 1px solid var(--color-divider); }
+  .tarif-terra { background: var(--color-accent); color: var(--color-bg); }
+  .tarif-dunkel { background: var(--color-text); color: var(--color-bg); }
+
+  .tarif-kopf { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .tarif-name {
+    font-family: var(--font-body); font-weight: 600; font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .tarif-marke {
+    margin-left: auto;
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 999px;
+    background: var(--color-surface); color: rgba(32, 30, 29, 0.6);
+  }
+  .tarif-terra .tarif-marke { background: var(--color-bg); color: var(--color-accent-700); }
+  .tarif-dunkel .tarif-marke { background: rgba(246, 160, 107, 0.25); color: var(--color-accent-300); }
+
+  .tarif-preis { font-family: var(--font-heading); font-size: 44px; line-height: 1.05; }
+  .tarif-dazu { font-size: 12.5px; opacity: 0.72; margin: 4px 0 20px; }
+
+  .tarif-liste { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 10px; }
+  .tarif-liste li { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.4; }
+  .tarif-haken {
+    width: 19px; height: 19px; border-radius: 999px; flex: none; margin-top: 1px;
+    display: grid; place-items: center;
+    background: var(--color-surface); color: var(--color-accent-2);
+  }
+  .tarif-terra .tarif-haken { background: rgba(245, 234, 216, 0.2); color: var(--color-bg); }
+  .tarif-dunkel .tarif-haken { background: rgba(245, 234, 216, 0.14); color: var(--color-accent-400); }
+
+  .tarif-ruf { margin-top: auto; justify-content: center; text-decoration: none; padding: 13px 20px; }
+  .ruf-creme { background: var(--color-bg); color: var(--color-text); }
+  .ruf-creme:hover { background: #fff; }
+
+  /* ── In jedem Tarif ─────────────────────────────────────────────── */
+  .immer-raster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 6px; }
+  .immer-zeichen {
+    width: 38px; height: 38px; border-radius: 999px; margin-bottom: 12px;
+    display: grid; place-items: center;
+    background: var(--color-bg); color: var(--color-accent-2);
+  }
+  .immer-titel { font-family: var(--font-heading); font-size: 18px; margin-bottom: 6px; }
+  .immer-text { font-size: 13px; line-height: 1.55; color: rgba(32, 30, 29, 0.72); margin: 0; }
+
+  /* ── Fragen und Abschluss ───────────────────────────────────────── */
+  .schluss { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 26px; align-items: start; }
+  .fragen { display: grid; gap: 12px; }
+  /* Frage und Antwort stehen beide da — so zeigt es der Entwurf. Eine
+     Ziehharmonika waere hier nur Arbeit fuer den Leser: vier Fragen
+     passen auf den Schirm, und wer Preise vergleicht, will alles sehen. */
+  .frage {
+    background: var(--color-surface);
+    border-radius: 28px;
+    padding: 18px 22px;
+  }
+  .frage-titel {
+    font-family: var(--font-body);
+    font-size: 15px; font-weight: 600; line-height: 1.4;
+    margin: 0;
+  }
+  .frage p { font-size: 13.5px; line-height: 1.6; color: rgba(32, 30, 29, 0.72); margin: 8px 0 0; }
+
+  .abschluss { padding: 34px; }
+  .marke { display: flex; align-items: center; gap: 10px; }
+  .marke-zeichen {
+    width: 32px; height: 32px; border-radius: 999px; flex: none;
+    background: var(--color-accent); display: grid; place-items: center;
+  }
+  .marke-punkt { width: 10px; height: 10px; border-radius: 999px; background: var(--color-text); }
+  .marke-wort { font-family: var(--font-heading); font-size: 23px; }
+  .marke-trenner { color: var(--color-accent-400); }
+  .schluss-verweis {
+    display: inline-block; margin-left: 16px;
+    font-size: 14px; color: rgba(245, 234, 216, 0.75);
+  }
+
+  @media (max-width: 1000px) {
+    .tarif-raster { grid-template-columns: repeat(2, 1fr); }
+    .immer-raster { grid-template-columns: repeat(2, 1fr); }
+    .schluss { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 900px) { .kopfreihe { grid-template-columns: 1fr; align-items: start; gap: 20px; } }
+  @media (max-width: 600px) {
+    .tarif-raster { grid-template-columns: 1fr; }
+    .immer-raster { grid-template-columns: 1fr; }
+    .schluss-verweis { display: block; margin: 14px 0 0; }
+  }
+</style>

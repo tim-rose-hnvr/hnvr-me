@@ -1,0 +1,276 @@
+---
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+
+const pruefungen = [
+  { titel: 'Kontrast 7,9:1', unter: 'Deutlich über der Grenze von 4:1' },
+  { titel: 'Logo bedeckt 18%', unter: 'Sicher bis 22% — noch Luft' },
+  { titel: 'Ab 24 mm lesbar', unter: 'Auf dem Aufsteller stehen 40 mm' },
+  { titel: 'Ruhezone 4 Punkte', unter: 'Auch mit Rand eingehalten' },
+];
+
+const stile = [
+  { name: 'Verlauf', text: 'Terrakotta läuft nach Salbei — ein Code, beide Stimmen.', bild: '/assets/c-qr-verlauf.png', zweck: 'Web & Social', ton: 'sand' },
+  { name: 'Zwei Stimmen', text: 'Punkte wechseln im Schachbrett zwischen den Akzenten.', bild: '/assets/c-qr-zweistimmen.png', zweck: 'Verpackung', ton: 'salbei' },
+  { name: 'Blüte', text: 'Punkte werden nach außen kleiner — der Code atmet zur Mitte.', bild: '/assets/c-qr-bluete.png', zweck: 'Plakat', ton: 'sand' },
+  { name: 'Invers', text: 'Dunkler Grund, cremefarbene Punkte, orange Ecken.', bild: '/assets/c-qr-invers.png', zweck: 'Abendkarte', ton: 'dunkel' },
+  { name: 'Verbunden', text: 'Nachbarn wachsen zusammen — weiche Inseln statt Raster.', bild: '/assets/c-qr-verbunden.png', zweck: 'Stickerbogen', ton: 'salbei' },
+  { name: 'Mitte frei', text: 'Kissen in Terrakotta für Logo oder Kürzel, 18% Fläche.', bild: '/assets/c-qr-logomitte.png', zweck: 'Tischcode', ton: 'sand' },
+  { name: 'Im Kreis', text: 'Salbei-Ring als Fassung, Ruhezone wird zum Motiv.', bild: '/assets/c-qr-kreis.png', zweck: 'Button & Pin', ton: 'salbei' },
+  { name: 'Foto dahinter', text: 'Gewaschenes Bild als Grund, Punkte in Ink darüber.', bild: '/assets/c-qr-foto.png', zweck: 'Flyer', ton: 'sand' },
+];
+
+const merkmale = [
+  {
+    name: 'Varianten & Versionen', icon: 'variante' as const, ton: 'sand',
+    text: 'Fünf Entwürfe im Filmstreifen, jeder mit eigener Scanrate. Alles Ältere bleibt im Verlauf und lässt sich zurückholen.',
+  },
+  {
+    name: 'Serien aus einer Tabelle', icon: 'bogen' as const, ton: 'sand',
+    text: 'CSV rein, 24 Tischcodes raus — jeder mit eigenem Ziel, alle auf einem A4-Bogen mit Beschnitt und Schnittmarken.',
+  },
+  {
+    name: 'Druckfest ausgeben', icon: 'geprueft' as const, ton: 'salbei',
+    text: 'SVG, PDF/X, PNG 2000, Aufsteller-Vorlage oder Serie als ZIP. CMYK mit ISO Coated v2 auf Wunsch.',
+  },
+];
+
+const bogen = Array.from({ length: 12 }, (_, i) => `T${String(i + 1).padStart(2, '0')}`);
+---
+
+<Seite
+  titel="Werkstatt — gestalten, prüfen, drucken"
+  beschreibung="Punkte, Ecken, Mitte, Rand — und eine Prüfliste, die mitliest. Acht Stile, alle scanbar, alle druckfest auszugeben."
+  aktiv="werkstatt"
+>
+  <!-- ── Aufmacher ─────────────────────────────────────────────────── -->
+  <section class="spur aufmacher">
+    <div>
+      <span class="tag tag-accent">
+        <Icon name="code" groesse={16} />
+        Die Werkstatt
+      </span>
+      <h1 class="titel-seite">Gestalten,<br />prüfen, drucken</h1>
+      <p class="fliess" style="font-size:17.5px">
+        Punkte, Ecken, Mitte, Rand — und eine Prüfliste, die mitliest. Was hier grün
+        ist, funktioniert auch auf dem Aufsteller im Schräglicht.
+      </p>
+      <div class="knopfreihe">
+        <a href="/preise" class="btn btn-primary knopf-gross">
+          <Icon name="scannen" groesse={20} />
+          Kostenlos ausprobieren
+        </a>
+        <a href="/strecken" class="btn btn-secondary knopf-gross">
+          <Icon name="strecke" groesse={20} />
+          Strecken ansehen
+        </a>
+      </div>
+    </div>
+
+    <div class="pruefpanel">
+      <span class="kreis-deko" aria-hidden="true"></span>
+      <div class="pruef-innen">
+        <div class="qr-teller">
+          <img src="/assets/o-qr-terra.png" alt="QR-Code in der Vorschau der Werkstatt" width="212" height="212" />
+          <span class="sweep" aria-hidden="true"></span>
+        </div>
+        <ul class="pruefliste">
+          {pruefungen.map((p) => (
+            <li>
+              <span class="pruef-haken"><Icon name="geprueft" groesse={15} /></span>
+              <span>
+                <span class="pruef-titel">{p.titel}</span>
+                <span class="pruef-unter">{p.unter}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Acht Stile ────────────────────────────────────────────────── -->
+  <section class="spur">
+    <h2 class="titel-block" style="margin-bottom:10px">Acht Stile, alle scanbar</h2>
+    <p class="fliess" style="margin:0 0 26px">
+      Jeder Stil ist ein Startpunkt, keine Schablone — Farbe, Mitte und Rand bleiben frei.
+    </p>
+    <div class="stil-raster">
+      {stile.map((s) => (
+        <article class:list={['stil', 'hebt', `stil-${s.ton}`]}>
+          <img src={s.bild} alt={`QR-Stil ${s.name}`} width="240" height="240" loading="lazy" />
+          <div class="stil-name">{s.name}</div>
+          <p class="stil-text">{s.text}</p>
+          <span class="stil-zweck">{s.zweck}</span>
+        </article>
+      ))}
+    </div>
+
+    <!-- Die drei Regeln stehen im Handoff als „nicht verhandelbar". Dann
+         gehören sie auf die Seite und nicht nur ins Dokument. -->
+    <div class="regeln">
+      <div class="kicker">Drei Regeln, die kein Stil bricht</div>
+      <ol>
+        <li><b>Ecken bleiben Ecken.</b> Form und Rundung sind frei — aber alle drei Suchmarken sehen gleich aus und verschwinden nie im Motiv.</li>
+        <li><b>Vier Punkte Ruhezone</b> ringsum, auch wenn außen ein Ring oder Rahmen sitzt.</li>
+        <li><b>Kontrast vor Farbe.</b> Unter 4:1 warnt die Prüfliste und schlägt Ink vor. Auf Zeitungspapier immer Ink.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ── Drei Merkmale ─────────────────────────────────────────────── -->
+  <section class="spur">
+    <div class="merkmal-raster">
+      {merkmale.map((m) => (
+        <article class:list={['merkmal', m.ton === 'salbei' ? 'm-salbei' : 'm-sand']}>
+          <span class:list={['m-zeichen', m.ton === 'salbei' ? 'm-zeichen-salbei' : 'm-zeichen-sand']}>
+            <Icon name={m.icon} groesse={20} />
+          </span>
+          <div class="m-titel">{m.name}</div>
+          <p class="m-text">{m.text}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- ── Serie ─────────────────────────────────────────────────────── -->
+  <section class="spur" id="serie">
+    <div class="panel serie">
+      <div>
+        <div class="kicker">Serie im Lauf</div>
+        <h2 style="font-size:34px;letter-spacing:-.02em;margin:0 0 14px">24 Codes in elf Sekunden</h2>
+        <p class="fliess-klein" style="max-width:420px">
+          Jeder Code trägt seinen Tisch als Merkmal — später siehst du, welcher Platz
+          am meisten bestellt.
+        </p>
+        <div class="lauf">
+          <span class="ring" aria-hidden="true"></span>
+          <span class="lauf-text">Serie wird erzeugt · 14 von 24</span>
+        </div>
+      </div>
+      <div class="bogen-teller">
+        <div class="bogen">
+          {bogen.map((t) => <span class="bogen-chip">{t}</span>)}
+        </div>
+      </div>
+    </div>
+  </section>
+</Seite>
+
+<style>
+  .aufmacher { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; }
+  .aufmacher h1 { margin: 14px 0 16px; }
+
+  .pruefpanel {
+    position: relative;
+    background: var(--color-surface);
+    border-radius: 44px;
+    padding: 30px;
+    overflow: hidden;
+  }
+  .kreis-deko {
+    position: absolute;
+    width: 230px; height: 230px; border-radius: 999px;
+    background: var(--color-accent-2-200);
+    top: -60px; right: -50px;
+  }
+  .pruef-innen { position: relative; display: grid; gap: 20px; justify-items: center; }
+  .qr-teller {
+    position: relative;
+    background: var(--color-bg);
+    border-radius: 32px;
+    padding: 20px;
+    overflow: hidden;
+  }
+  .qr-teller img { display: block; width: 212px; height: 212px; }
+  .sweep {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 34px;
+    background: linear-gradient(180deg, transparent, rgba(122, 138, 94, 0.5), transparent);
+    animation: sweep 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  .pruefliste { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; width: 100%; }
+  .pruefliste li { display: flex; gap: 11px; align-items: flex-start; }
+  .pruef-haken {
+    width: 26px; height: 26px; border-radius: 999px; flex: none;
+    background: var(--color-accent-2); color: var(--color-bg);
+    display: grid; place-items: center;
+  }
+  .pruef-titel { display: block; font-size: 13.5px; font-weight: 700; }
+  .pruef-unter { display: block; font-size: 12.5px; color: rgba(32, 30, 29, 0.65); }
+
+  /* ── Stile ──────────────────────────────────────────────────────── */
+  .stil-raster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .stil {
+    border-radius: 32px; padding: 18px;
+    display: flex; flex-direction: column;
+  }
+  .stil-sand { background: var(--color-surface); }
+  .stil-salbei { background: var(--color-surface); }
+  .stil-dunkel { background: var(--color-text); color: var(--color-bg); }
+  .stil img { width: 100%; height: auto; border-radius: 20px; display: block; }
+  .stil-name { font-family: var(--font-heading); font-size: 18px; margin: 12px 0 6px; }
+  .stil-text { font-size: 12.5px; line-height: 1.5; color: rgba(32, 30, 29, 0.62); margin: 0 0 14px; }
+  .stil-dunkel .stil-text { color: rgba(245, 234, 216, 0.7); }
+  .stil-zweck {
+    margin-top: auto; align-self: flex-start;
+    font-size: 11.5px; font-weight: 600;
+    padding: 5px 11px; border-radius: 999px;
+    background: var(--color-accent-200); color: var(--color-accent-800);
+  }
+  .stil-salbei .stil-zweck { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
+  .stil-dunkel .stil-zweck { background: rgba(246, 160, 107, 0.25); color: var(--color-accent-300); }
+
+  .regeln {
+    margin-top: 26px;
+    background: var(--color-accent-2-100);
+    border-radius: 32px;
+    padding: 24px 26px;
+  }
+  .regeln ol { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .regeln li { font-size: 13.5px; line-height: 1.55; color: var(--color-accent-2-800); }
+
+  /* ── Merkmale ───────────────────────────────────────────────────── */
+  .merkmal-raster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .merkmal { border-radius: 32px; padding: 24px; }
+  .m-sand { background: var(--color-surface); }
+  .m-salbei { background: var(--color-accent-2-100); }
+  .m-zeichen {
+    width: 42px; height: 42px; border-radius: 999px;
+    display: grid; place-items: center; margin-bottom: 14px; color: var(--color-bg);
+  }
+  .m-zeichen-sand { background: var(--color-accent); }
+  .m-zeichen-salbei { background: var(--color-accent-2); }
+  .m-titel { font-family: var(--font-heading); font-size: 21px; margin-bottom: 8px; }
+  .m-text { font-size: 13.5px; line-height: 1.6; color: rgba(32, 30, 29, 0.72); margin: 0; }
+
+  /* ── Serie ──────────────────────────────────────────────────────── */
+  .serie { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 36px; align-items: center; }
+  .lauf { display: flex; align-items: center; gap: 14px; margin-top: 24px; }
+  .ring {
+    width: 58px; height: 58px; border-radius: 999px; flex: none;
+    border: 4px solid var(--color-bg);
+    border-top-color: var(--color-accent);
+    animation: spinslow 1.4s linear infinite;
+  }
+  .lauf-text { font-size: 13.5px; font-weight: 600; }
+  .bogen-teller { background: var(--color-bg); border-radius: 32px; padding: 18px; }
+  .bogen { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .bogen-chip {
+    display: grid; place-items: center;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    background: var(--color-surface);
+    font-size: 11.5px; font-weight: 600;
+    color: rgba(32, 30, 29, 0.7);
+  }
+
+  @media (max-width: 1000px) { .stil-raster { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 900px) {
+    .aufmacher, .serie { grid-template-columns: 1fr; gap: 28px; }
+    .merkmal-raster { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) { .stil-raster { grid-template-columns: 1fr; } }
+</style>

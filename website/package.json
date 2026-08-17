@@ -1,0 +1,12 @@
+{
+  "name": "pnkt-me-website",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "schriften": "node skripte/schriften-holen.mjs"
+  },
+  "dependencies": { "astro": "^5" }
+}

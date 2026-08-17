@@ -1,0 +1,221 @@
+---
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+
+const faecher = ['Alle', 'Gastro', 'Handel', 'Events', 'Verpackung'];
+
+const vorlagen = [
+  {
+    name: 'Karte kompakt', fach: 'Gastro', ton: 'terra',
+    text: 'Speisekarte mit Bildern, Allergenen und Bestellknopf am Tisch.',
+    bild: 'Speisekarte mobil', zahl: '31% bestellen',
+    teile: ['Kategorien & Preise', 'Allergene ausklappbar', 'Bestellknopf oder Kellnerruf'],
+  },
+  {
+    name: 'Angebot gegen E-Mail', fach: 'Alle', ton: 'salbei',
+    text: 'Ein Feld, ein Gutschein — der Klassiker für den ersten Kontakt.',
+    bild: 'Angebot mobil', zahl: '22% senden ab',
+    teile: ['Rabatt oder Treuepunkte', 'Ein Pflichtfeld', 'Doppel-Opt-in optional'],
+  },
+  {
+    name: 'Produktpass', fach: 'Verpackung', ton: 'salbei',
+    text: 'Herkunft, Röstdatum, Zubereitung und Nachkauf — direkt am Etikett.',
+    bild: 'Produktpass', zahl: '18% kaufen nach',
+    teile: ['Herkunft & Charge', 'Pflege / Zubereitung', 'Nachkauf-Knopf'],
+  },
+  {
+    name: 'Event-Programm', fach: 'Events', ton: 'terra',
+    text: 'Zeitplan, Bühnen, Anmeldung und Lageplan für Messe und Fest.',
+    bild: 'Programm mobil', zahl: '29% melden sich an',
+    teile: ['Programm nach Zeit', 'Anmeldung mit Kontingent', 'Lageplan'],
+  },
+  {
+    name: 'Terminbuchung', fach: 'Handel', ton: 'salbei',
+    text: 'Freie Slots, zwei Tipps, Bestätigung per Mail — ohne Konto.',
+    bild: 'Terminbuchung', zahl: '24% buchen',
+    teile: ['Slots aus dem Kalender', 'Erinnerung 24 h vorher', 'Absage per Link'],
+  },
+  {
+    name: 'Newsletter schlicht', fach: 'Alle', ton: 'terra',
+    text: 'Eine Seite, ein Versprechen, ein Feld. Für Plakat und Schaufenster.',
+    bild: 'Newsletter', zahl: '10% tragen sich ein',
+    teile: ['Versprechen in einem Satz', 'Ein Feld', 'Frequenz sichtbar'],
+  },
+];
+
+const teamZahlen = [
+  { wert: '12', text: 'Vorlagen im Haus' },
+  { wert: '6', text: 'Rollen & Rechte' },
+  { wert: '∞', text: 'Filialen je Vorlage' },
+  { wert: '2', text: 'gesperrte Bereiche' },
+  { wert: 'SSO', text: 'im Team-Tarif' },
+  { wert: 'API', text: 'für eigene Systeme' },
+];
+---
+
+<Seite
+  titel="Vorlagen"
+  beschreibung="Fertige Ziele, die schon funktionieren — Speisekarte, Angebot, Produktpass, Event-Programm, Terminbuchung, Newsletter."
+  aktiv="vorlagen"
+>
+  <section class="spur kopfreihe">
+    <div>
+      <span class="tag tag-accent">
+        <Icon name="bogen" groesse={16} />
+        Vorlagen
+      </span>
+      <h1 class="titel-liste" style="margin:14px 0 14px">Fertige Ziele, die schon funktionieren</h1>
+      <p class="fliess" style="font-size:17px">
+        Jede Vorlage ist eine kleine mobile Seite mit gemessener Wirkung. Nimm sie wie
+        sie ist oder bau sie um.
+      </p>
+    </div>
+
+    <!-- Die Filter sind auf der Marketingseite Anker, keine Schalter: sie
+         führen in die Liste. Was wirklich filtert, ist die Werkstatt. -->
+    <nav class="filter" aria-label="Nach Fach">
+      {faecher.map((f, i) => (
+        <a
+          href={i === 0 ? '#liste' : `#liste-${f.toLowerCase()}`}
+          class:list={['filter-pille', { 'filter-aktiv': i === 0 }]}
+        >{f}</a>
+      ))}
+    </nav>
+  </section>
+
+  <section class="spur" id="liste">
+    <div class="vorlagen-raster">
+      {vorlagen.map((v) => (
+        <article class="vorlage hebt" id={`liste-${v.fach.toLowerCase()}`}>
+          <div class="vorschau">
+            <span class="schirm" aria-hidden="true"></span>
+            <span class="vorschau-name">{v.bild}</span>
+          </div>
+          <span class:list={['fach', v.ton === 'salbei' ? 'fach-salbei' : 'fach-terra']}>{v.fach}</span>
+          <div class="vorlage-titel">{v.name}</div>
+          <p class="vorlage-text">{v.text}</p>
+          <ul class="teile">
+            {v.teile.map((t) => (
+              <li>
+                <span class="teil-haken"><Icon name="geprueft" groesse={11} /></span>
+                {t}
+              </li>
+            ))}
+          </ul>
+          <div class="vorlage-fuss">
+            <a href="/preise" class="btn btn-primary">Verwenden</a>
+            <span class="vorlage-zahl">{v.zahl}</span>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel-dunkel team">
+      <div>
+        <h2 class="titel-panel">Einmal bauen, im Team teilen</h2>
+        <p style="font-size:15.5px;line-height:1.6;color:rgba(245,234,216,.75);margin:0;max-width:420px">
+          Eine Vorlage im Haus, alle Filialen hängen daran. Wer was ändern darf,
+          steht in der Rolle — und im Verlauf steht, wer es getan hat.
+        </p>
+        <div class="knopfreihe">
+          <a href="/preise" class="btn btn-primary knopf-gross">
+            <Icon name="team" groesse={20} />
+            Team-Tarif ansehen
+          </a>
+        </div>
+      </div>
+      <div class="team-raster">
+        {teamZahlen.map((z) => (
+          <div class="team-kachel">
+            <div class="team-wert">{z.wert}</div>
+            <div class="team-text">{z.text}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Seite>
+
+<style>
+  .kopfreihe { display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: end; }
+
+  .filter { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-pille {
+    padding: 9px 17px; border-radius: 999px;
+    font-size: 13.5px; font-weight: 600; text-decoration: none;
+    background: var(--color-surface); color: rgba(32, 30, 29, 0.7);
+  }
+  .filter-pille:hover { background: var(--color-accent-200); color: var(--color-accent-800); }
+  .filter-aktiv { background: var(--color-accent); color: var(--color-bg); }
+  .filter-aktiv:hover { background: var(--color-accent-600); color: var(--color-bg); }
+
+  .vorlagen-raster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .vorlage {
+    background: var(--color-surface); border-radius: 36px; padding: 22px;
+    display: flex; flex-direction: column;
+    scroll-margin-top: 90px;
+  }
+
+  /* Platzhalter für die Bildschirmfotos, die noch fehlen. Gestreift und
+     beschriftet — damit niemand sie für das fertige Bild hält. */
+  .vorschau {
+    position: relative;
+    height: 120px; border-radius: 24px;
+    background: var(--color-bg);
+    display: grid; place-items: center;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .schirm {
+    width: 92px; height: 150px; border-radius: 14px;
+    background: repeating-linear-gradient(135deg,
+      var(--color-surface) 0 7px, rgba(32, 30, 29, 0.07) 7px 14px);
+  }
+  .vorschau-name {
+    position: absolute; bottom: 8px;
+    font-size: 11px; color: rgba(32, 30, 29, 0.45);
+  }
+
+  .fach {
+    align-self: flex-start;
+    font-size: 11.5px; font-weight: 600;
+    padding: 5px 11px; border-radius: 999px;
+  }
+  .fach-terra { background: var(--color-accent-200); color: var(--color-accent-800); }
+  .fach-salbei { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
+
+  .vorlage-titel { font-family: var(--font-heading); font-size: 22px; margin: 10px 0 6px; }
+  .vorlage-text { font-size: 13px; line-height: 1.55; color: rgba(32, 30, 29, 0.7); margin: 0 0 14px; }
+
+  .teile { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 7px; }
+  .teile li { display: flex; gap: 9px; align-items: center; font-size: 12.5px; }
+  .teil-haken {
+    width: 18px; height: 18px; border-radius: 999px; flex: none;
+    display: grid; place-items: center;
+    background: var(--color-bg); color: var(--color-accent-2);
+  }
+
+  .vorlage-fuss {
+    margin-top: auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .vorlage-zahl { font-size: 12.5px; color: rgba(32, 30, 29, 0.6); }
+
+  .team { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+  .team-raster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .team-kachel { background: rgba(245, 234, 216, 0.08); border-radius: 24px; padding: 18px 16px; }
+  .team-wert { font-family: var(--font-heading); font-size: 26px; }
+  .team-text { font-size: 12px; color: rgba(245, 234, 216, 0.7); margin-top: 3px; }
+
+  @media (max-width: 1000px) { .vorlagen-raster { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 900px) {
+    .kopfreihe { grid-template-columns: 1fr; align-items: start; gap: 20px; }
+    .team { grid-template-columns: 1fr; gap: 28px; }
+  }
+  @media (max-width: 620px) {
+    .vorlagen-raster { grid-template-columns: 1fr; }
+    .team-raster { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>

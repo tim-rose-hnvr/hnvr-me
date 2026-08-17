@@ -1,0 +1,411 @@
+---
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+
+const kennzahlen = [
+  { wert: '4,1×', text: 'mehr Bestellungen je Scan' },
+  { wert: '3 Min.', text: 'vom Konto zum ersten Code' },
+  { wert: 'DSGVO', text: 'EU-Hosting, cookiefrei' },
+];
+
+const kunden = ['Nordwerk', 'Halle 7', 'Kontor', 'Messe Ost', 'Bäckerei Rau', 'Rösterei Süd'];
+
+const kiesel = [
+  {
+    name: 'Drucken', icon: 'etikett' as const, art: 'sand',
+    text: 'Ein Code für Tisch, Flyer oder Etikett — als SVG, PDF oder ganze Serie.',
+  },
+  {
+    name: 'Landen', icon: 'bogen' as const, art: 'sand',
+    text: 'Statt nackter Adresse eine warme kleine Seite: Karte, Angebot, Event, Produktpass.',
+  },
+  {
+    name: 'Testen', icon: 'variante' as const, art: 'salbei',
+    text: 'Zwei Angebote gegeneinander. Der bessere gewinnt, dein Aufkleber bleibt.',
+  },
+  {
+    name: 'Sehen', icon: 'zahlen' as const, art: 'dunkel',
+    text: 'Wer, wann, wo — und was daraus wurde. In Sätzen, nicht nur in Zahlen.',
+  },
+];
+
+const stile = [
+  { name: 'Verlauf', bild: '/assets/c-qr-verlauf.png' },
+  { name: 'Zwei Stimmen', bild: '/assets/c-qr-zweistimmen.png' },
+  { name: 'Blüte', bild: '/assets/c-qr-bluete.png' },
+  { name: 'Verbunden', bild: '/assets/c-qr-verbunden.png' },
+  { name: 'Im Kreis', bild: '/assets/c-qr-kreis.png' },
+  { name: 'Foto dahinter', bild: '/assets/c-qr-foto.png' },
+];
+
+const versprechen = [
+  {
+    name: 'Geprüft, bevor es druckt', icon: 'geprueft' as const, art: 'salbei',
+    text: 'Kontrast, Ruhezone, Mindestgröße und Logofläche werden live geprüft — mit Vorschlag, nicht mit Fehlermeldung.',
+  },
+  {
+    name: 'Regeln statt Handarbeit', icon: 'zeitregel' as const, art: 'sand',
+    text: 'Nach 17 Uhr die Abendkarte, beim zweiten Scan kein Angebot mehr, auf Türkisch wenn das Gerät es will.',
+  },
+  {
+    name: 'Für Teams gebaut', icon: 'team' as const, art: 'sand',
+    text: 'Rollen, Workspaces, gemeinsame Vorlagen — und ein Verlauf, der zeigt, wer was umgehängt hat.',
+  },
+];
+
+// Das Blütenmuster aus dem Entwurf: welcher Punkt an ist und wann er
+// aufgeht, hängt an seiner Lage — die Diagonale läuft durch.
+const bluete = Array.from({ length: 36 }, (_, i) => {
+  const zeile = Math.floor(i / 6);
+  const spalte = i % 6;
+  const an = (zeile * 7 + spalte * 5) % 3 !== 0;
+  return {
+    farbe: an ? ((zeile + spalte) % 5 === 0 ? '#7a8a5e' : '#201e1d') : 'rgba(32,30,29,.13)',
+    verzug: `${((zeile + spalte) * 0.05).toFixed(2)}s`,
+  };
+});
+---
+
+<Seite
+  titel="Ein Code. Ein warmer Empfang"
+  beschreibung="pnkt.me macht aus dem QR-Code eine kleine Strecke: eine Seite, ein Angebot, ein Ergebnis. Gestaltet in Minuten, änderbar ohne Nachdruck."
+  aktiv="start"
+>
+  <!-- ── Aufmacher ─────────────────────────────────────────────────── -->
+  <section class="spur aufmacher">
+    <div>
+      <span class="tag tag-accent-2">
+        <Icon name="punkt" groesse={16} />
+        Für Gastro, Handel, Events &amp; Verpackung
+      </span>
+      <h1 class="titel-gross">Ein Code.<br />Ein warmer<br />Empfang.</h1>
+      <p class="fliess">
+        pnkt.me macht aus dem QR-Code eine kleine Strecke: eine Seite, ein Angebot,
+        ein Ergebnis. Gestaltet in Minuten, änderbar ohne Nachdruck.
+      </p>
+      <div class="knopfreihe">
+        <a href="/werkstatt" class="btn btn-primary knopf-gross">
+          <Icon name="code" groesse={20} />
+          Werkstatt ansehen
+        </a>
+        <a href="/strecken" class="btn btn-secondary knopf-gross">
+          <Icon name="strecke" groesse={20} />
+          Wie eine Strecke läuft
+        </a>
+      </div>
+      <div class="kennzahlen">
+        {kennzahlen.map((k) => (
+          <div class="kennzahl">
+            <div class="kennzahl-wert">{k.wert}</div>
+            <div class="kennzahl-text">{k.text}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="aufmacher-bild">
+      <span class="kreis kreis-salbei" aria-hidden="true"></span>
+      <span class="kreis kreis-pfirsich" aria-hidden="true"></span>
+      <img
+        class="washed foto"
+        src="/assets/photo-organic.jpg"
+        alt="Gast am Tisch, der einen Code auf der Karte scannt"
+        width="600" height="248" loading="eager"
+      />
+      <div class="karte-dunkel">
+        <div class="qr-teller">
+          <img src="/assets/c-qr-logomitte.png" alt="QR-Code mit pnkt-Zeichen in der Mitte" width="126" height="126" />
+          <span class="sweep" aria-hidden="true"></span>
+        </div>
+        <div>
+          <div class="kicker kicker-hell">Immer änderbar</div>
+          <div class="karte-titel">Einmal drucken,<br />oft umdenken</div>
+          <p class="karte-text">
+            Das Ziel hinter dem Code tauschst du jederzeit — der Aufkleber bleibt kleben.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Kundenband ────────────────────────────────────────────────── -->
+  <section class="band">
+    <div class="band-innen">
+      <span class="band-titel">Schon dabei</span>
+      <div class="band-namen">
+        {kunden.map((k) => <div class="band-pille">{k}</div>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Vier Kiesel ───────────────────────────────────────────────── -->
+  <section class="spur">
+    <h2 class="titel-block">Vier Kiesel, ein Weg</h2>
+    <p class="fliess" style="margin:-14px 0 26px">
+      Jeder Schritt ist eine Karte. Du verschiebst sie, testest sie, siehst sofort,
+      wo Gäste hängen bleiben.
+    </p>
+    <div class="kiesel-raster">
+      {kiesel.map((k) => (
+        <article class:list={['kiesel', 'hebt', `kiesel-${k.art}`]}>
+          <span class="kiesel-zeichen"><Icon name={k.icon} groesse={21} /></span>
+          <div class="kiesel-titel">{k.name}</div>
+          <p class="kiesel-text">{k.text}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- ── Werkstatt ─────────────────────────────────────────────────── -->
+  <section class="spur">
+    <div class="panel werkstatt">
+      <div>
+        <div class="kicker">Werkstatt</div>
+        <h2 class="titel-panel">Der Code darf aussehen wie die Marke</h2>
+        <p class="fliess-klein" style="max-width:460px">
+          Punkte, Farbe, Mitte und Rand sind frei. Was nie verhandelbar ist: die drei
+          Ecken, vier Punkte Ruhezone und Kontrast über 4:1 — die Prüfliste passt live auf.
+        </p>
+        <div class="knopfreihe">
+          <a href="/werkstatt" class="btn btn-primary knopf-gross">
+            <Icon name="weiter" groesse={20} />
+            Alle acht Stile
+          </a>
+        </div>
+      </div>
+      <div class="stil-raster">
+        {stile.map((s) => (
+          <figure class="stil">
+            <img src={s.bild} alt={`QR-Stil ${s.name}`} width="160" height="160" loading="lazy" />
+            <figcaption>{s.name}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Drei Versprechen ──────────────────────────────────────────── -->
+  <section class="spur">
+    <div class="versprechen-raster">
+      {versprechen.map((v) => (
+        <article class:list={['versprechen', v.art === 'salbei' ? 'v-salbei' : 'v-sand']}>
+          <span class:list={['v-zeichen', v.art === 'salbei' ? 'v-zeichen-salbei' : 'v-zeichen-sand']}>
+            <Icon name={v.icon} groesse={20} />
+          </span>
+          <div class="v-titel">{v.name}</div>
+          <p class="v-text">{v.text}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- ── Abschluss ─────────────────────────────────────────────────── -->
+  <section class="spur">
+    <div class="panel-dunkel abschluss">
+      <div>
+        <h2 class="titel-panel">Lieber erst scannen?</h2>
+        <p style="font-size:15.5px;line-height:1.6;color:rgba(245,234,216,.75);margin:0;max-width:430px">
+          Nimm eine fertige Vorlage, häng dein Ziel dahinter und drucke einen Aufsteller.
+          Umhängen kannst du später jederzeit.
+        </p>
+        <div class="knopfreihe">
+          <a href="/vorlagen" class="btn btn-primary knopf-gross">
+            <Icon name="scannen" groesse={20} />
+            Beispiel öffnen
+          </a>
+        </div>
+      </div>
+      <div class="bluete-teller" aria-hidden="true">
+        <div class="bluete">
+          {bluete.map((p) => (
+            <span class="bluete-punkt" style={`background:${p.farbe};animation-delay:${p.verzug}`}></span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+</Seite>
+
+<style>
+  /* ── Aufmacher ──────────────────────────────────────────────────── */
+  .aufmacher {
+    display: grid;
+    grid-template-columns: 1.06fr 0.94fr;
+    gap: 48px;
+    align-items: start;
+  }
+  .aufmacher h1 { margin: 14px 0 16px; }
+
+  .kennzahlen {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .kennzahl {
+    background: var(--color-surface);
+    border-radius: 28px;
+    padding: 20px 22px;
+  }
+  .kennzahl-wert { font-family: var(--font-heading); font-size: 30px; line-height: 1.1; }
+  .kennzahl-text { font-size: 12.5px; color: rgba(32, 30, 29, 0.7); margin-top: 4px; }
+
+  .aufmacher-bild { position: relative; }
+  .kreis { position: absolute; border-radius: 999px; z-index: 0; }
+  .kreis-salbei { width: 210px; height: 210px; background: var(--color-accent-2-300); top: -26px; right: -14px; }
+  .kreis-pfirsich { width: 110px; height: 110px; background: var(--color-accent-200); left: -28px; bottom: 88px; }
+
+  .foto {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 248px;
+    object-fit: cover;
+    border-radius: 36px;
+    box-shadow: 0 12px 32px rgba(46, 43, 37, 0.18);
+  }
+
+  .karte-dunkel {
+    position: relative;
+    z-index: 1;
+    margin-top: 18px;
+    background: var(--color-text);
+    color: var(--color-bg);
+    border-radius: 36px;
+    padding: 24px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  .qr-teller {
+    position: relative;
+    background: var(--color-bg);
+    border-radius: 24px;
+    padding: 12px;
+    flex: none;
+    overflow: hidden;
+  }
+  .qr-teller img { display: block; width: 126px; height: 126px; }
+  /* Der Suchbalken der Kamera: eine Bewegung, sonst nichts. */
+  .sweep {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 26px;
+    background: linear-gradient(180deg, transparent, rgba(122, 138, 94, 0.55), transparent);
+    animation: sweep 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .karte-titel { font-family: var(--font-heading); font-size: 24px; line-height: 1.12; }
+  .karte-text { font-size: 13px; line-height: 1.55; color: rgba(245, 234, 216, 0.72); margin: 8px 0 0; }
+
+  /* ── Kundenband ─────────────────────────────────────────────────── */
+  .band {
+    border-top: 1px solid var(--color-divider);
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .band-innen {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 22px 32px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .band-titel {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(32, 30, 29, 0.5);
+    flex: none;
+  }
+  .band-namen { display: flex; gap: 14px; flex-wrap: wrap; }
+  /* Platzhalter, bis die echten Zeichen da sind — gestreift, damit
+     niemand sie für fertige Logos hält. */
+  .band-pille {
+    height: 34px;
+    padding: 0 18px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(32, 30, 29, 0.55);
+    background: repeating-linear-gradient(135deg,
+      var(--color-surface) 0 6px, rgba(32, 30, 29, 0.06) 6px 12px);
+  }
+
+  /* ── Kiesel ─────────────────────────────────────────────────────── */
+  .kiesel-raster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .kiesel { border-radius: 32px; padding: 24px; }
+  .kiesel-sand { background: var(--color-surface); }
+  .kiesel-salbei { background: var(--color-accent-2-100); }
+  .kiesel-dunkel { background: var(--color-text); color: var(--color-bg); }
+  .kiesel-zeichen {
+    width: 44px; height: 44px; border-radius: 999px;
+    display: grid; place-items: center; margin-bottom: 14px;
+    background: var(--color-bg); color: var(--color-accent);
+  }
+  .kiesel-salbei .kiesel-zeichen { background: #fff; color: var(--color-accent-2); }
+  .kiesel-dunkel .kiesel-zeichen { background: var(--color-accent-400); color: var(--color-text); }
+  .kiesel-titel { font-family: var(--font-heading); font-size: 22px; margin-bottom: 8px; }
+  .kiesel-text { font-size: 13.5px; line-height: 1.55; color: rgba(32, 30, 29, 0.72); margin: 0; }
+  .kiesel-salbei .kiesel-text { color: var(--color-accent-2-800); }
+  .kiesel-dunkel .kiesel-text { color: rgba(245, 234, 216, 0.75); }
+
+  /* ── Werkstatt ──────────────────────────────────────────────────── */
+  .werkstatt { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+  .stil-raster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .stil { margin: 0; text-align: center; }
+  .stil img {
+    width: 100%; height: auto; display: block;
+    background: var(--color-bg); border-radius: 24px; padding: 10px;
+  }
+  .stil figcaption { font-size: 12px; margin-top: 7px; color: rgba(32, 30, 29, 0.7); }
+
+  /* ── Versprechen ────────────────────────────────────────────────── */
+  .versprechen-raster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .versprechen { border-radius: 32px; padding: 24px; }
+  .v-sand { background: var(--color-surface); }
+  .v-salbei { background: var(--color-accent-2-100); }
+  .v-zeichen {
+    width: 42px; height: 42px; border-radius: 999px;
+    display: grid; place-items: center; margin-bottom: 14px;
+    color: var(--color-bg);
+  }
+  .v-zeichen-sand { background: var(--color-accent); }
+  .v-zeichen-salbei { background: var(--color-accent-2); }
+  .v-titel { font-family: var(--font-heading); font-size: 21px; margin-bottom: 8px; }
+  .v-text { font-size: 13.5px; line-height: 1.6; color: rgba(32, 30, 29, 0.72); margin: 0; }
+
+  /* ── Abschluss ──────────────────────────────────────────────────── */
+  .abschluss { display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; }
+  .bluete-teller { background: var(--color-bg); border-radius: 28px; padding: 14px; }
+  .bluete {
+    display: grid;
+    grid-template-columns: repeat(6, 10px);
+    gap: 8px;
+  }
+  .bluete-punkt {
+    width: 10px; height: 10px; border-radius: 999px;
+    animation: bloom 2.8s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  }
+
+  /* ── Schmale Geräte ─────────────────────────────────────────────── */
+  @media (max-width: 1000px) {
+    .kiesel-raster { grid-template-columns: repeat(2, 1fr); }
+    .versprechen-raster { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 900px) {
+    .aufmacher { grid-template-columns: 1fr; gap: 36px; }
+    .werkstatt { grid-template-columns: 1fr; gap: 28px; }
+    .abschluss { grid-template-columns: 1fr; }
+    .band-innen { padding: 18px 20px; }
+  }
+  @media (max-width: 600px) {
+    .kiesel-raster { grid-template-columns: 1fr; }
+    .kennzahlen { grid-template-columns: 1fr; }
+    .karte-dunkel { flex-direction: column; align-items: flex-start; }
+  }
+</style>

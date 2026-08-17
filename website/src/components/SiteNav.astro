@@ -1,0 +1,156 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  aktiv?: 'start' | 'werkstatt' | 'strecken' | 'vorlagen' | 'preise';
+}
+const { aktiv = 'start' } = Astro.props;
+
+const wege = [
+  { id: 'werkstatt', weg: '/werkstatt', name: 'Werkstatt', icon: 'code' as const },
+  { id: 'strecken', weg: '/strecken', name: 'Strecken', icon: 'strecke' as const },
+  { id: 'vorlagen', weg: '/vorlagen', name: 'Vorlagen', icon: 'bogen' as const },
+  { id: 'preise', weg: '/preise', name: 'Preise', icon: 'zahlen' as const },
+];
+---
+
+<header class="kopf">
+  <div class="kopf-innen">
+    <a href="/" class="marke" aria-label="pnkt.me, zur Startseite">
+      <span class="marke-zeichen"><span class="marke-punkt"></span></span>
+      <span class="marke-wort">pnkt<span class="marke-trenner">.</span>me</span>
+    </a>
+
+    <nav class="wege" aria-label="Hauptnavigation">
+      {wege.map((w) => (
+        <a
+          href={w.weg}
+          class:list={['weg', { 'weg-aktiv': aktiv === w.id }]}
+          aria-current={aktiv === w.id ? 'page' : undefined}
+        >
+          <Icon name={w.icon} />
+          {w.name}
+        </a>
+      ))}
+    </nav>
+
+    <span class="kopf-rechts">
+      <a href="/preise" class="anmelden">Anmelden</a>
+      <a href="/preise" class="btn btn-primary kopf-knopf">
+        <Icon name="scannen" />
+        Kostenlos starten
+      </a>
+    </span>
+  </div>
+</header>
+
+<style>
+  .kopf {
+    background: var(--color-bg);
+    border-bottom: 1px solid rgba(32, 30, 29, 0.1);
+  }
+  .kopf-innen {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .marke {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--color-text);
+    margin-right: auto;
+  }
+  .marke-zeichen {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .marke-punkt {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--color-bg);
+  }
+  .marke-wort {
+    font-family: var(--font-heading);
+    font-size: 23px;
+    letter-spacing: -0.01em;
+  }
+  .marke-trenner { color: var(--color-accent); }
+
+  .wege {
+    display: flex;
+    gap: 22px;
+    align-items: center;
+  }
+  .weg {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    font-size: 14.5px;
+    font-weight: 500;
+    /* Der Körpertext im Akzent muss accent-700 sein: die Grundfarbe
+       schafft nur 3:1 gegen den Grund. Steht so im Handoff. */
+    color: rgba(32, 30, 29, 0.78);
+  }
+  .weg-aktiv {
+    color: var(--color-accent-700);
+    font-weight: 700;
+  }
+  .weg:hover { color: var(--color-text); }
+
+  .kopf-rechts {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .anmelden {
+    font-size: 14.5px;
+    text-decoration: none;
+    color: rgba(32, 30, 29, 0.7);
+  }
+  .anmelden:hover { color: var(--color-text); }
+  .kopf-knopf {
+    padding: 11px 20px;
+    text-decoration: none;
+    gap: 8px;
+  }
+
+  /* Auf schmalen Geräten fällt die Wegeleiste unter die Marke, statt sie
+     zu quetschen. Ein zusammengeschobenes Menü mit 11-px-Text liest
+     niemand — und die Marketingseite wird zur Hälfte am Telefon gelesen. */
+  @media (max-width: 900px) {
+    .kopf-innen {
+      flex-wrap: wrap;
+      gap: 14px 20px;
+      padding: 14px 20px;
+    }
+    .marke { margin-right: 0; }
+    .kopf-rechts { margin-left: auto; }
+    .wege {
+      order: 3;
+      width: 100%;
+      gap: 18px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .wege::-webkit-scrollbar { display: none; }
+    .weg { flex: none; }
+  }
+  @media (max-width: 560px) {
+    .anmelden { display: none; }
+    .kopf-knopf { padding: 10px 16px; font-size: 14px; }
+  }
+</style>

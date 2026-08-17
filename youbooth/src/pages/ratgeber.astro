@@ -1,0 +1,455 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import { artikel, rubriken } from '../daten/ratgeber';
+
+/**
+ * Ratgeber für Vermieter. Rubrikenfilter im Browser, Artikel klappen als
+ * <details> auf — immer nur einer, auch ohne JavaScript.
+ */
+
+const empfohlen = {
+  titel: 'Was eine Fotobox pro Abend einbringt',
+  teaser:
+    'Deckungsbeitrag, Materialkosten und der Punkt, an dem sich die zweite Box trägt — mit Beispielrechnung aus 62 % Auslastung.',
+  meta: 'Kalkulation · 8 Min',
+  rechnung: [
+    { text: 'Mietpreis', wert: '690 €' },
+    { text: 'Material', wert: '− 44 €' },
+    { text: 'Fahrt', wert: '− 28 €' },
+    { text: 'Betreuung', wert: '− 120 €' },
+    { text: 'Bleibt', wert: '498 €', hervor: true },
+  ],
+};
+---
+
+<Marketing
+  titel="Ratgeber"
+  beschreibung="Praxiswissen für Fotobox-Vermieter: Preise, Technik, Entscheidungen, Recht und die häufigsten Fehler."
+>
+  <section class="hero">
+    <div class="hero__text">
+      <span class="mono mono--amber">Empfohlen</span>
+      <h1>{empfohlen.titel}</h1>
+      <p class="fliess">{empfohlen.teaser}</p>
+      <span class="mono mono--hell">{empfohlen.meta}</span>
+      <a class="knopf knopf--amber knopf--mittel selbst" href="/rechner">Selbst durchrechnen</a>
+    </div>
+
+    <div class="rechnung">
+      {
+        empfohlen.rechnung.map((z) => (
+          <span class:list={['rechnung__zeile', { hervor: z.hervor }]}>
+            <span>{z.text}</span>
+            <b>{z.wert}</b>
+          </span>
+        ))
+      }
+    </div>
+  </section>
+
+  <div class="ratgeber">
+    <div class="filter">
+      {
+        rubriken.map((r) => (
+          <button
+            class:list={['chip', { on: r.id === 'alle' }]}
+            type="button"
+            data-rubrik={r.id}
+            aria-pressed={r.id === 'alle' ? 'true' : 'false'}
+          >
+            {r.text}
+          </button>
+        ))
+      }
+      <span class="mono" data-feld="treffer" role="status">{artikel.length} Artikel</span>
+    </div>
+
+    <div class="liste">
+      {
+        artikel.map((a, i) => (
+          <details
+            class="artikel"
+            name="ratgeber"
+            open={i === 0}
+            data-artikel
+            data-rubrik-wert={a.rubrik}
+            style={`--farbe:${a.farbe}`}
+          >
+            <summary>
+              <span class="nummer">{String(i + 1).padStart(2, '0')}</span>
+              <span class="kopf">
+                <span class="mono meta">{a.meta}</span>
+                <span class="titel">{a.titel}</span>
+                <span class="teaser">{a.teaser}</span>
+              </span>
+              <span class="zeichen" aria-hidden="true" />
+            </summary>
+
+            <div class="inhalt">
+              <p class="absatz">{a.absatz}</p>
+              <ul class="punkte">
+                {a.merkpunkte.map((p) => (
+                  <li>{p}</li>
+                ))}
+              </ul>
+              <p class="fazit">{a.fazit}</p>
+            </div>
+          </details>
+        ))
+      }
+
+      <p class="leer" data-feld="leer" hidden>
+        In dieser Rubrik steht noch nichts — <a href="/kontakt">sag uns, was fehlt</a>.
+      </p>
+    </div>
+  </div>
+
+  <section class="abschnitt abschnitt--eng">
+    <div class="reihe">
+      <article class="karte karte--gross zusatz">
+        <span class="mono">Newsletter</span>
+        <span class="display display--klein">Einmal im Monat, nur Praxis</span>
+        <span class="karte__text">
+          Ein Artikel, eine Zahl aus dem Betrieb, ein Hinweis auf neue Vorlagen. Abmeldung mit einem
+          Klick.
+        </span>
+        <form class="anmeldung" novalidate>
+          <label class="nur-vorlese" for="newsletter">E-Mail</label>
+          <input class="eingabe" id="newsletter" type="email" placeholder="E-Mail" required />
+          <button class="knopf knopf--dunkel knopf--flach" type="submit">Anmelden</button>
+        </form>
+        <span class="meldung" data-feld="meldung" role="status" hidden></span>
+      </article>
+
+      <article class="karte karte--gross zusatz">
+        <span class="mono">Themenwunsch</span>
+        <span class="display display--klein">Worüber sollen wir schreiben?</span>
+        <span class="karte__text">
+          Schickt uns die Frage, die euch beim letzten Event beschäftigt hat.
+        </span>
+        <a class="pfeil pfeil--klein" href="/kontakt">Thema vorschlagen →</a>
+      </article>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    gap: 44px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .hero__text {
+    flex: 1 1 460px;
+    min-width: min(440px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4vw, 52px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 560px;
+  }
+
+  .selbst {
+    align-self: flex-start;
+    margin-top: 6px;
+  }
+
+  .rechnung {
+    flex: 1 1 320px;
+    min-width: min(300px, 100%);
+    background: var(--ink-soft);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rechnung__zeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--text-hell-leise);
+  }
+
+  .rechnung__zeile b {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--text-hell);
+  }
+
+  .rechnung__zeile.hervor {
+    border-top: 1px solid var(--linie-dunkel);
+    padding-top: 12px;
+    color: var(--text-hell);
+    font-weight: 600;
+  }
+
+  .rechnung__zeile.hervor b {
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--amber);
+  }
+
+  /* Filter */
+  .filter {
+    padding: 28px var(--rand) 18px;
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .chip {
+    padding: 9px 14px;
+    border-radius: 20px;
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 12.5px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: var(--weiss);
+    color: var(--text-leise);
+    transition: background var(--t-farbe), color var(--t-farbe), border-color var(--t-farbe);
+  }
+
+  .chip:hover {
+    border-color: rgba(0, 0, 0, 0.3);
+  }
+
+  .chip.on {
+    background: var(--ink-soft);
+    color: var(--weiss);
+    border-color: var(--ink-soft);
+  }
+
+  .filter .mono {
+    margin-left: auto;
+  }
+
+  /* Artikel */
+  .liste {
+    padding: 24px var(--rand) 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .artikel {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-left: 4px solid var(--farbe);
+    border-radius: var(--r-karte);
+    overflow: hidden;
+  }
+
+  .artikel summary {
+    padding: 22px 24px;
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .artikel summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .artikel summary:hover {
+    background: #faf8f5;
+  }
+
+  .nummer {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--farbe);
+    flex: none;
+    padding-top: 3px;
+  }
+
+  .kopf {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .meta {
+    color: var(--text-still);
+  }
+
+  .titel {
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    font-size: clamp(19px, 2vw, 24px);
+    line-height: 1.15;
+    color: var(--text);
+  }
+
+  .teaser {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-leise);
+    max-width: 60ch;
+  }
+
+  .zeichen::after {
+    content: '+';
+    font-size: 22px;
+    color: var(--amber);
+    flex: none;
+  }
+
+  .artikel[open] .zeichen::after {
+    content: '−';
+  }
+
+  .inhalt {
+    padding: 0 24px 24px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 78ch;
+  }
+
+  .absatz {
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(0, 0, 0, 0.72);
+  }
+
+  .fazit {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    font-weight: 600;
+    border-left: 3px solid var(--amber);
+    padding-left: 14px;
+  }
+
+  .leer {
+    padding: 30px 24px;
+    font-size: 14px;
+    color: var(--text-still);
+  }
+
+  /* Newsletter */
+  .zusatz {
+    flex: 1 1 340px;
+    min-width: min(320px, 100%);
+  }
+
+  .anmeldung {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: auto;
+  }
+
+  .eingabe {
+    flex: 1 1 180px;
+    height: 46px;
+    border-radius: var(--r-knopf);
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    padding: 0 14px;
+    font-family: var(--schrift);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--weiss);
+  }
+
+  .eingabe:focus {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.18);
+  }
+
+  .knopf--flach {
+    height: 46px;
+    font-size: 13.5px;
+  }
+
+  .meldung {
+    font-size: 12.5px;
+    color: var(--ok);
+  }
+
+  @media (max-width: 640px) {
+    .inhalt {
+      padding-left: 24px;
+    }
+  }
+</style>
+
+<script>
+  const ratgeber = document.querySelector<HTMLElement>('.ratgeber');
+
+  if (ratgeber) {
+    let rubrik = 'alle';
+
+    function zeichne() {
+      let treffer = 0;
+
+      ratgeber!.querySelectorAll<HTMLDetailsElement>('[data-artikel]').forEach((a) => {
+        const passt = rubrik === 'alle' || a.dataset.rubrikWert === rubrik;
+        a.hidden = !passt;
+        if (!passt) a.open = false;
+        if (passt) treffer++;
+      });
+
+      const leer = ratgeber!.querySelector<HTMLElement>('[data-feld="leer"]');
+      if (leer) leer.hidden = treffer > 0;
+
+      const zaehler = ratgeber!.querySelector<HTMLElement>('[data-feld="treffer"]');
+      if (zaehler) zaehler.textContent = `${treffer} ${treffer === 1 ? 'Artikel' : 'Artikel'}`;
+
+      ratgeber!.querySelectorAll<HTMLButtonElement>('[data-rubrik]').forEach((b) => {
+        const an = b.dataset.rubrik === rubrik;
+        b.classList.toggle('on', an);
+        b.setAttribute('aria-pressed', String(an));
+      });
+    }
+
+    ratgeber.addEventListener('click', (e) => {
+      const knopf = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-rubrik]');
+      if (!knopf) return;
+      rubrik = knopf.dataset.rubrik!;
+      zeichne();
+    });
+
+    zeichne();
+  }
+
+  // Newsletter: bis der Dienst steht, wird das Absenden abgefangen.
+  const anmeldung = document.querySelector<HTMLFormElement>('.anmeldung');
+  anmeldung?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const feld = anmeldung.querySelector<HTMLInputElement>('#newsletter')!;
+    const meldung = document.querySelector<HTMLElement>('[data-feld="meldung"]')!;
+    const ok = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(feld.value.trim());
+    meldung.hidden = false;
+    meldung.textContent = ok
+      ? 'Notiert — der Versand startet, sobald der Newsletter steht.'
+      : 'Bitte eine vollständige E-Mail-Adresse angeben.';
+    meldung.style.color = ok ? 'var(--ok)' : '#a5291f';
+  });
+</script>

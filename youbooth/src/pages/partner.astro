@@ -1,0 +1,533 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+
+/**
+ * Partnerprogramm mit Empfehlungsrechner: Anzahl der Empfehlungen mal
+ * Lizenzhöhe, davon 20 % im ersten Jahr. Startwerte serverseitig gerechnet.
+ */
+
+const ANTEIL = 0.2;
+const startAnzahl = 8;
+const startTarif = 87;
+const tarife = [39, 59, 87, 120];
+
+const eur = (n: number) => `${Math.round(n).toLocaleString('de-DE')} €`;
+
+const monat = startAnzahl * startTarif;
+const jahr = monat * 12;
+const anteil = jahr * ANTEIL;
+
+const bahn = [
+  { kennung: 'Ihr', text: 'Link geteilt' },
+  { kennung: 'Kunde', text: 'testet 14 Tage' },
+  { kennung: 'Abschluss', text: 'Lizenz läuft' },
+  { kennung: 'Gutschrift', text: '20 % an euch' },
+];
+
+const schritte = [
+  {
+    titel: 'Link erhalten',
+    text: 'Nach der Anmeldung bekommt ihr einen Empfehlungslink und einen Gutscheincode.',
+  },
+  {
+    titel: 'Empfehlen',
+    text: 'Wer über euren Link testet, ist euch 90 Tage zugeordnet — auch wenn er später abschließt.',
+  },
+  {
+    titel: 'Abschluss',
+    text: 'Der Kunde erhält den ersten Monat geschenkt, ihr 20 % seiner Jahresgebühr.',
+  },
+  {
+    titel: 'Auszahlung',
+    text: 'Monatlich per Überweisung, Übersicht im Partner-Bereich, Gutschrift als PDF.',
+  },
+];
+
+const zielgruppen = [
+  {
+    kennung: 'Für Locations',
+    titel: 'Empfehlung mit Standvorteil',
+    text: 'Wer eine Box im Haus hat, bekommt zusätzlich eine Event-Seite mit eigener Adresse für Anfragen.',
+  },
+  {
+    kennung: 'Für Agenturen',
+    titel: 'White-Label statt Empfehlung',
+    text: 'Wer selbst abrechnen will, nutzt White-Label und tritt vollständig unter eigener Marke auf.',
+    verweis: { text: 'Für Vermieter', ziel: '/fuer-vermieter' },
+  },
+];
+
+const saeulen = Array.from({ length: 12 }, (_, i) => i);
+---
+
+<Marketing
+  titel="Partnerprogramm"
+  beschreibung="20 % der Lizenzgebühr des ersten Jahres für jede Empfehlung — ohne Staffelmodell und ohne Mindestumsatz."
+>
+  <section class="hero">
+    <span class="mono mono--amber">Partner & Empfehlung</span>
+    <h1>Weiterempfehlen und mitverdienen</h1>
+    <p class="fliess">
+      Wer youbooth empfiehlt, bekommt 20 % der Lizenzgebühr des ersten Jahres. Kein Staffelmodell,
+      keine Mindestumsätze, Auszahlung monatlich ab 50 €. Für Fotografen, Eventagenturen, DJs und
+      Locations.
+    </p>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Partner werden</a>
+      <a class="knopf knopf--rahmen-hell knopf--mittel" href="#rechner">Was das bringt</a>
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--eng">
+    <h2>Der Weg einer Empfehlung</h2>
+    <ol class="bahn">
+      {
+        bahn.map((b, i) => (
+          <li class="halt" style={`--verzug:${(i * 0.6).toFixed(1)}s`}>
+            <span class="mono">{b.kennung}</span>
+            <span class="halt__text">{b.text}</span>
+          </li>
+        ))
+      }
+      <span class="laeufer" aria-hidden="true"></span>
+    </ol>
+  </section>
+
+  <section class="abschnitt">
+    <h2>So läuft es ab</h2>
+    <div class="raster raster--4">
+      {
+        schritte.map((s, i) => (
+          <article class="karte">
+            <span class="mono">Schritt {i + 1}</span>
+            <span class="display display--klein">{s.titel}</span>
+            <span class="karte__text">{s.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--dunkel rechner" id="rechner" data-anteil={ANTEIL}>
+    <div class="rechner__eingabe">
+      <span class="mono mono--amber">Rechnet selbst</span>
+      <h2 data-feld="titel">{startAnzahl} Empfehlungen im Jahr</h2>
+
+      <div class="regler">
+        <span class="regler__marke">Empfehlungen im Jahr</span>
+        <div class="zaehler">
+          <button class="stufe" type="button" data-anzahl="minus" aria-label="Eine Empfehlung weniger">
+            −
+          </button>
+          <output class="zaehler__wert" data-feld="anzahl" aria-live="polite">{startAnzahl}</output>
+          <button class="stufe" type="button" data-anzahl="plus" aria-label="Eine Empfehlung mehr">
+            +
+          </button>
+        </div>
+      </div>
+
+      <div class="regler">
+        <span class="regler__marke">Lizenz je Kunde pro Monat</span>
+        <div class="tarife">
+          {
+            tarife.map((t) => (
+              <button
+                class:list={['tarif', { on: t === startTarif }]}
+                type="button"
+                data-tarif={t}
+                aria-pressed={t === startTarif ? 'true' : 'false'}
+              >
+                {t} €
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="saeulen" aria-hidden="true">
+        {saeulen.map((i) => <span data-saeule={i}></span>)}
+      </div>
+    </div>
+
+    <div class="rechner__ergebnis">
+      <span class="mono mono--hell">Gutschrift im ersten Jahr</span>
+      <b class="summe" data-feld="anteil">{eur(anteil)}</b>
+
+      <div class="posten">
+        <span class="posten__zeile">
+          <span data-feld="zeileKunden">{startAnzahl} Kunden × {startTarif} €/Monat</span>
+          <span class="hell" data-feld="monat">{eur(monat)}/Mon.</span>
+        </span>
+        <span class="posten__zeile">
+          <span>Jahresgebühr gesamt</span>
+          <span class="hell" data-feld="jahr">{eur(jahr)}</span>
+        </span>
+        <span class="posten__zeile">
+          <span>Euer Anteil 20 %</span>
+          <span class="amber" data-feld="anteil">{eur(anteil)}</span>
+        </span>
+        <span class="posten__zeile">
+          <span>Erste Auszahlung</span>
+          <span class="hell" data-feld="auszahlung">nach dem ersten Abschluss</span>
+        </span>
+      </div>
+
+      <span class="hinweis" data-feld="hinweis">
+        Einmalig auf die Jahresgebühr, nicht wiederkehrend — dafür ohne Aufwand nach der Empfehlung.
+      </span>
+
+      <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Partner werden</a>
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--eng">
+    <div class="reihe">
+      {
+        zielgruppen.map((z) => (
+          <article class="karte zielgruppe">
+            <span class="mono">{z.kennung}</span>
+            <span class="display display--klein">{z.titel}</span>
+            <span class="karte__text">{z.text}</span>
+            {z.verweis && (
+              <a class="pfeil pfeil--klein" href={z.verweis.ziel}>
+                {z.verweis.text} →
+              </a>
+            )}
+          </article>
+        ))
+      }
+      <article class="karte zielgruppe regeln">
+        <span class="mono">Spielregeln</span>
+        <span class="display display--klein">Was nicht geht</span>
+        <span class="karte__text">
+          Keine Gebote auf unseren Markennamen, keine Gutscheinportale, keine Eigenanmeldungen über
+          den eigenen Link.
+        </span>
+      </article>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4vw, 54px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 660px;
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+
+  /* Bahn */
+  .bahn {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    position: relative;
+  }
+
+  .halt {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+  }
+
+  .halt::after {
+    content: '';
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--r-kreis);
+    background: var(--amber);
+    transform: translateY(-50%);
+    opacity: 0;
+    animation: wandern 2.4s ease-in-out infinite var(--verzug);
+  }
+
+  .halt:last-of-type::after {
+    display: none;
+  }
+
+  .halt__text {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  @keyframes wandern {
+    0%,
+    100% {
+      opacity: 0;
+      transform: translate(-6px, -50%);
+    }
+    40%,
+    60% {
+      opacity: 1;
+      transform: translate(0, -50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .halt::after {
+      animation: none;
+      opacity: 0.6;
+    }
+  }
+
+  /* Rechner */
+  .rechner {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: stretch;
+  }
+
+  .rechner__eingabe {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .rechner__ergebnis {
+    flex: 1 1 340px;
+    min-width: min(320px, 100%);
+    background: var(--ink-soft);
+    border-radius: 16px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .regler {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .regler__marke {
+    font-weight: 500;
+    font-size: 13.5px;
+    color: var(--text-hell-leise);
+  }
+
+  .zaehler {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .zaehler__wert {
+    font-weight: 800;
+    font-size: 34px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    min-width: 54px;
+    text-align: center;
+  }
+
+  .stufe {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid rgba(244, 242, 238, 0.22);
+    background: transparent;
+    color: var(--text-hell);
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: border-color var(--t-farbe), background var(--t-farbe);
+  }
+
+  .stufe:hover {
+    border-color: var(--amber);
+  }
+
+  .tarife {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tarif {
+    height: 32px;
+    padding: 0 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--schrift);
+    font-weight: 600;
+    font-size: 12px;
+    border: 1px solid rgba(244, 242, 238, 0.2);
+    background: transparent;
+    color: rgba(244, 242, 238, 0.65);
+    transition: background var(--t-farbe), color var(--t-farbe), border-color var(--t-farbe);
+  }
+
+  .tarif.on {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--amber-ink);
+  }
+
+  .saeulen {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 80px;
+    margin-top: auto;
+  }
+
+  .saeulen span {
+    flex: 1;
+    display: block;
+    border-radius: 3px 3px 0 0;
+    background: rgba(242, 178, 62, 0.4);
+    height: 6px;
+    transition: height var(--t-transform);
+  }
+
+  .saeulen span:last-child {
+    background: var(--amber);
+  }
+
+  .summe {
+    font-weight: 800;
+    font-size: clamp(38px, 5vw, 54px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--amber);
+  }
+
+  .posten {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    font-weight: 500;
+    font-size: 13px;
+    color: rgba(244, 242, 238, 0.7);
+  }
+
+  .posten__zeile {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .hell {
+    color: var(--text-hell);
+  }
+
+  .amber {
+    color: var(--amber);
+  }
+
+  .hinweis {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text-hell-still);
+  }
+
+  .zielgruppe {
+    flex: 1 1 300px;
+    min-width: min(280px, 100%);
+  }
+
+  .regeln {
+    background: var(--paper);
+  }
+
+  .pfeil--klein {
+    font-size: 13px;
+  }
+</style>
+
+<script>
+  const rechner = document.querySelector<HTMLElement>('.rechner');
+
+  if (rechner) {
+    const ANTEIL = Number(rechner.dataset.anteil);
+    const zustand = { anzahl: 8, tarif: 87 };
+    const MAX = 25 * 120 * 12 * ANTEIL;
+
+    const eur = (n: number) => `${Math.round(n).toLocaleString('de-DE')} €`;
+    const setze = (name: string, text: string) =>
+      rechner.querySelectorAll<HTMLElement>(`[data-feld="${name}"]`).forEach((el) => {
+        el.textContent = text;
+      });
+
+    function zeichne() {
+      const monat = zustand.anzahl * zustand.tarif;
+      const jahr = monat * 12;
+      const anteil = jahr * ANTEIL;
+
+      setze('anzahl', String(zustand.anzahl));
+      setze(
+        'titel',
+        zustand.anzahl === 1 ? 'Eine Empfehlung' : `${zustand.anzahl} Empfehlungen im Jahr`
+      );
+      setze('zeileKunden', `${zustand.anzahl} Kunden × ${zustand.tarif} €/Monat`);
+      setze('monat', `${eur(monat)}/Mon.`);
+      setze('jahr', eur(jahr));
+      setze('anteil', eur(anteil));
+      setze('auszahlung', anteil >= 50 ? 'nach dem ersten Abschluss' : 'ab 50 € Guthaben');
+      setze(
+        'hinweis',
+        zustand.anzahl >= 15
+          ? 'Ab etwa 15 Empfehlungen im Jahr lohnt sich White-Label mehr als die Empfehlung — dann rechnet ihr selbst ab.'
+          : 'Einmalig auf die Jahresgebühr, nicht wiederkehrend — dafür ohne Aufwand nach der Empfehlung.'
+      );
+
+      rechner!.querySelectorAll<HTMLElement>('[data-saeule]').forEach((s, i) => {
+        const bis = (i + 1) / 12;
+        const hoehe = Math.min(76, Math.max(4, Math.round(((anteil * bis) / MAX) * 76 * 3.2)));
+        s.style.height = `${hoehe}px`;
+      });
+
+      rechner!.querySelectorAll<HTMLButtonElement>('[data-tarif]').forEach((b) => {
+        const an = Number(b.dataset.tarif) === zustand.tarif;
+        b.classList.toggle('on', an);
+        b.setAttribute('aria-pressed', String(an));
+      });
+    }
+
+    rechner.addEventListener('click', (e) => {
+      const knopf = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
+      if (!knopf) return;
+
+      if (knopf.dataset.anzahl === 'plus') zustand.anzahl = Math.min(25, zustand.anzahl + 1);
+      else if (knopf.dataset.anzahl === 'minus') zustand.anzahl = Math.max(1, zustand.anzahl - 1);
+      else if (knopf.dataset.tarif) zustand.tarif = Number(knopf.dataset.tarif);
+      else return;
+
+      zeichne();
+    });
+
+    zeichne();
+  }
+</script>

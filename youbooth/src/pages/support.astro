@@ -1,0 +1,305 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+
+const schritte = [
+  {
+    titel: 'Kopplung & Lizenz',
+    text: 'Box mit dem Konto verbinden, Lizenz zuweisen. Der einzige Schritt, der nicht übersprungen werden kann.',
+  },
+  { titel: 'Kamera', text: 'Tethering, Hotfolder oder Webcam. Live-Testbild direkt im Assistenten.' },
+  {
+    titel: 'Drucker',
+    text: 'Über den Systemdruck — oder bewusst ohne Drucker, dann entfällt der Druckschritt im Booth.',
+  },
+  { titel: 'Module', text: 'Freischalten, was dieses Event braucht. Später jederzeit änderbar.' },
+  {
+    titel: 'Netzwerk & HTTPS',
+    text: 'Hotspot oder WLAN, HTTPS für QR-Downloads, Kiosk-PIN setzen.',
+  },
+  {
+    titel: 'Selbstprüfung',
+    text: 'Kamera, Drucker, Papier, Speicher und Upload-Queue in einem Durchlauf.',
+  },
+];
+
+const anforderungen = [
+  ['Windows', '11, 8 GB RAM, SSD'],
+  ['macOS', '14 oder neuer, Apple Silicon'],
+  ['iPad', 'iPadOS 17, Booth im Kiosk'],
+  ['Kamera', 'DSLR/Systemkamera per USB oder Hotfolder'],
+  ['Drucker', 'Alles, was das System kennt (z. B. Thermosublimation)'],
+  ['Netz', 'Optional — Betrieb offline möglich'],
+];
+
+const dateien = [
+  { titel: 'youbooth für Windows', kennung: 'V4.3.0', ziel: '/download' },
+  { titel: 'youbooth für macOS', kennung: 'V4.3.0', ziel: '/download' },
+  { titel: 'Vorlagenpaket', kennung: '82 Layouts', ziel: '/vorlagen' },
+  { titel: 'Aufbau-Checkliste (PDF)', kennung: '2 Seiten', ziel: '/download' },
+];
+
+const fragen = [
+  {
+    frage: 'Der Drucker wird nicht erkannt',
+    text: 'youbooth druckt über den Systemdruck: erst im Betriebssystem testen, dann im Einstellungsmenü unter Druck erneut suchen.',
+  },
+  {
+    frage: 'Kein WLAN im Saal',
+    text: 'Hotspot der Box aktivieren: QR-Download und Teilen-Station funktionieren, Uploads laufen später nach.',
+  },
+  {
+    frage: 'Gast will ein Bild löschen',
+    text: 'Über die Fernbedienung „Letztes löschen" oder in der Moderation im Cockpit — verschwindet auch von Wand und Galerie.',
+  },
+  {
+    frage: 'Papier oder Tinte am Ende',
+    text: 'Cockpit warnt ab 15 %. Nach dem Wechsel Queue fortsetzen — angefangene Aufträge werden nachgedruckt.',
+  },
+];
+---
+
+<Marketing
+  titel="Support & Installation"
+  beschreibung="Installation in sechs Schritten, Systemanforderungen, Tickets mit Protokoll aus der Software."
+>
+  <section class="hero">
+    <span class="mono mono--amber">Support & Installation</span>
+    <h1>Aufbauen, prüfen, loslegen</h1>
+    <p class="fliess">
+      Die Installation führt das Installations-Zentrum in sechs Schritten. Wenn doch etwas klemmt,
+      gehen Tickets direkt aus der Software raus — mit Protokoll im Anhang, damit niemand
+      Screenshots sammeln muss.
+    </p>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Installation in sechs Schritten</h2>
+    <div class="raster raster--3">
+      {
+        schritte.map((s, i) => (
+          <article class="karte">
+            <span class="mono">Schritt {i + 1}</span>
+            <span class="display display--klein">{s.titel}</span>
+            <span class="karte__text">{s.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt zweispalter">
+    <div class="spalte">
+      <span class="mono">Systemanforderungen</span>
+      <h2>Was der Rechner braucht</h2>
+      <dl class="anforderungen">
+        {
+          anforderungen.map(([was, wert]) => (
+            <div class="anforderung">
+              <dt>{was}</dt>
+              <dd>{wert}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+
+    <div class="spalte spalte--schmal">
+      <h2>Ticket aus der Software</h2>
+      <article class="karte">
+        <span class="karte__text">
+          Im Installations-Zentrum und im Cockpit öffnet ein Klick ein Ticket mit Protokoll, Version
+          und Geräteliste im Anhang. Antwort werktags innerhalb von vier Stunden, am Wochenende
+          Notfallnummer für laufende Events.
+        </span>
+        <div class="reihe knopfreihe">
+          <a class="knopf knopf--dunkel knopf--flach" href="/kontakt">Support kontaktieren</a>
+          <a class="knopf knopf--rahmen knopf--flach" href="/anmelden">Tickets im Cockpit</a>
+        </div>
+      </article>
+
+      <h2>Downloads</h2>
+      <div class="dateien">
+        {
+          dateien.map((d) => (
+            <a class="datei" href={d.ziel}>
+              <span class="datei__titel">{d.titel}</span>
+              <span class="mono">{d.kennung}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Was am Eventtag am häufigsten gefragt wird</h2>
+    <div class="raster raster--breit">
+      {
+        fragen.map((f) => (
+          <article class="karte">
+            <span class="display display--klein">{f.frage}</span>
+            <span class="karte__text">{f.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display">Läuft gerade ein Event und etwas klemmt?</span>
+      <span class="beiwort">
+        Notfallnummer aus dem Cockpit, auch am Wochenende. Aufnahmen liegen lokal und gehen nicht
+        verloren.
+      </span>
+    </div>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Notfall-Kontakt</a>
+      <a class="knopf knopf--rahmen-hell knopf--mittel" href="/system">System nachlesen</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4vw, 54px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 660px;
+  }
+
+  .zweispalter {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 26px;
+    align-items: flex-start;
+  }
+
+  .spalte {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .spalte--schmal {
+    flex: 1 1 340px;
+    min-width: min(320px, 100%);
+  }
+
+  .anforderungen {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte);
+    overflow: hidden;
+  }
+
+  .anforderung {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .anforderung:last-child {
+    border-bottom: none;
+  }
+
+  .anforderung dt {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .anforderung dd {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--text-leise);
+    text-align: right;
+  }
+
+  .knopfreihe {
+    gap: 10px;
+  }
+
+  .knopf--flach {
+    height: 46px;
+    font-size: 13.5px;
+  }
+
+  .dateien {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .datei {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-chip);
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: border-color var(--t-farbe);
+  }
+
+  .datei:hover {
+    border-color: var(--amber);
+  }
+
+  .datei__titel {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .raster--breit {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding-block: 52px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 640px;
+  }
+
+  .schluss .display {
+    font-size: clamp(26px, 2.6vw, 32px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15px;
+    color: var(--text-hell-leise);
+  }
+</style>

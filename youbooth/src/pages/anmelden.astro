@@ -1,0 +1,535 @@
+---
+import '../styles/global.css';
+
+/**
+ * Cockpit-Anmeldung. Eigenes, schlankes Layout ohne Kopfleiste und Fußzeile —
+ * wie im Entwurf: links die Einordnung, rechts das Formular.
+ *
+ * OFFEN: Es gibt noch keine Anmeldung im Hintergrund. Das Formular prüft die
+ * Eingaben und zeigt einen Hinweis; sobald der Dienst steht, `action` setzen.
+ */
+
+const kennzahlen = [
+  { wert: '3', text: 'Boxen gekoppelt' },
+  { wert: '137', text: 'Sessions heute' },
+  { wert: '2', text: 'Offene Buchungen' },
+];
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Anmelden · youbooth</title>
+    <meta name="description" content="Anmeldung zum youbooth-Cockpit: Boxen, Moderation, Druck-Queue, Buchungen." />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/favicon-180.png" />
+    <meta name="theme-color" content="#0b0b0d" />
+  </head>
+  <body class="anmeldeseite">
+    <main class="teilung">
+      <section class="einordnung">
+        <a class="marke" href="/">
+          <img src="/assets/youbooth-mark.svg" alt="" width="30" height="30" />
+          <span class="wortmarke">youbooth</span>
+        </a>
+
+        <div class="einordnung__text">
+          <span class="mono mono--amber">Cockpit</span>
+          <h1>Alles, was gerade läuft — in einem Fenster</h1>
+          <p class="fliess">
+            Boxen und Puls, Moderation, Druck-Queue, Buchungen und Verträge. Dieselbe Anmeldung gilt
+            für die Fernbedienung am Handy.
+          </p>
+          <div class="reihe zahlen">
+            {
+              kennzahlen.map((k) => (
+                <span class="zahlkachel">
+                  <b>{k.wert}</b>
+                  <span class="mono mono--hell">{k.text}</span>
+                </span>
+              ))
+            }
+          </div>
+        </div>
+
+        <span class="hinweis">
+          <span class="mono mono--hell">Noch kein Konto?</span>
+          <a class="knopf knopf--amber knopf--flach" href="/kontakt">14 Tage testen</a>
+        </span>
+      </section>
+
+      <section class="formularseite">
+        <form class="anmeldung" novalidate>
+          <h2 class="frei">Anmelden</h2>
+
+          <fieldset class="wahl">
+            <legend class="nur-vorlese">Rolle</legend>
+            <input type="radio" id="rolle-betreiber" name="rolle" value="betreiber" checked />
+            <label class="segment" for="rolle-betreiber">Betreiber</label>
+            <input type="radio" id="rolle-kunde" name="rolle" value="kunde" />
+            <label class="segment" for="rolle-kunde">Kunde</label>
+          </fieldset>
+
+          <div class="feld">
+            <label class="nur-vorlese" for="email">E-Mail</label>
+            <input
+              class="eingabe"
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="username"
+              placeholder="E-Mail"
+              required
+            />
+          </div>
+
+          <div class="feld passwortfeld">
+            <label class="nur-vorlese" for="passwort">Passwort</label>
+            <input
+              class="eingabe"
+              id="passwort"
+              name="passwort"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Passwort"
+              required
+            />
+            <button class="zeigen" type="button" data-feld="zeigen" aria-controls="passwort">
+              Anzeigen
+            </button>
+          </div>
+
+          <div class="zeile">
+            <label class="merken">
+              <input type="checkbox" name="merken" />
+              <span class="kasten" aria-hidden="true">✓</span>
+              Angemeldet bleiben
+            </label>
+            <a class="vergessen" href="/kontakt">Passwort vergessen?</a>
+          </div>
+
+          <button class="knopf knopf--amber ins-cockpit" type="submit">Ins Cockpit</button>
+
+          <span class="meldung" data-feld="meldung" role="status" hidden></span>
+
+          <span class="trenner" aria-hidden="true"></span>
+
+          <span class="mono">Box am Eventort koppeln</span>
+          <div class="kopplung">
+            <label class="nur-vorlese" for="code">Kopplungscode, sechsstellig</label>
+            <input
+              class="eingabe eingabe--code"
+              id="code"
+              name="code"
+              inputmode="numeric"
+              maxlength="6"
+              placeholder="6-stellig"
+            />
+            <button class="knopf knopf--dunkel knopf--flach" type="button" data-feld="koppeln">
+              Koppeln
+            </button>
+          </div>
+          <span class="fussnote">
+            Den Code zeigt das Installations-Zentrum auf der Box. Danach erscheint sie mit Puls im
+            Cockpit.
+          </span>
+        </form>
+      </section>
+    </main>
+
+    <footer class="rechtszeile">
+      <span>© 2026 youbooth</span>
+      <span class="rechtszeile__links">
+        <a href="/support">Support</a>
+        <a href="/">Zur Website</a>
+        <a href="/datenschutz">Datenschutz</a>
+      </span>
+    </footer>
+
+    <style>
+      .anmeldeseite {
+        background: var(--ink);
+      }
+
+      .teilung {
+        min-height: 100vh;
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .einordnung {
+        flex: 1;
+        min-width: min(520px, 100%);
+        background: var(--ink);
+        color: var(--text-hell);
+        padding: 44px var(--rand);
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+      }
+
+      .marke {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-hell);
+        text-decoration: none;
+      }
+
+      .marke img {
+        display: block;
+      }
+
+      .wortmarke {
+        font-weight: 900;
+        font-size: 24px;
+        letter-spacing: -0.04em;
+        text-transform: lowercase;
+      }
+
+      .einordnung__text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 24px;
+        max-width: 520px;
+      }
+
+      .einordnung h1 {
+        font-size: clamp(34px, 4vw, 54px);
+        line-height: 1.02;
+        color: var(--text-hell);
+      }
+
+      .einordnung .fliess {
+        color: var(--text-hell-leise);
+      }
+
+      .zahlen {
+        gap: 14px;
+      }
+
+      .zahlkachel {
+        background: var(--ink-soft);
+        border-radius: var(--r-chip);
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .zahlkachel b {
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: -0.025em;
+        line-height: 1;
+      }
+
+      .zahlkachel .mono {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--text-hell-still);
+      }
+
+      .hinweis {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      /* Formularseite */
+      .formularseite {
+        flex: 1;
+        min-width: min(520px, 100%);
+        background: var(--paper);
+        padding: 44px var(--rand);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .anmeldung {
+        width: 100%;
+        max-width: 440px;
+        background: var(--weiss);
+        border: 1px solid var(--linie);
+        border-radius: 16px;
+        padding: 34px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .frei {
+        text-transform: none;
+        font-size: 32px;
+      }
+
+      fieldset {
+        border: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .wahl {
+        display: flex;
+        gap: 10px;
+      }
+
+      .wahl input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .segment {
+        flex: 1;
+        height: 46px;
+        border-radius: var(--r-pille);
+        background: #f2efe9;
+        color: var(--text-leise);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 13.5px;
+        cursor: pointer;
+        transition: background var(--t-farbe), color var(--t-farbe);
+      }
+
+      .wahl input:checked + .segment {
+        background: var(--ink-soft);
+        color: var(--weiss);
+      }
+
+      .wahl input:focus-visible + .segment {
+        outline: 2px solid var(--amber);
+        outline-offset: 3px;
+      }
+
+      .feld {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .eingabe {
+        height: 52px;
+        border-radius: var(--r-knopf);
+        border: 1px solid rgba(0, 0, 0, 0.14);
+        padding: 0 16px;
+        font-family: var(--schrift);
+        font-size: 14px;
+        color: var(--text);
+        background: var(--weiss);
+        width: 100%;
+      }
+
+      .eingabe:focus {
+        outline: none;
+        border-color: var(--amber);
+        box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.18);
+      }
+
+      .eingabe[aria-invalid='true'] {
+        border-color: var(--warn);
+      }
+
+      .passwortfeld {
+        position: relative;
+      }
+
+      .zeigen {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-still);
+      }
+
+      .zeigen:hover {
+        color: var(--text);
+      }
+
+      .zeile {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+        color: rgba(0, 0, 0, 0.55);
+      }
+
+      .merken {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .merken input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .kasten {
+        width: 17px;
+        height: 17px;
+        border-radius: 4px;
+        border: 1px solid rgba(0, 0, 0, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        color: transparent;
+      }
+
+      .merken input:checked + .kasten {
+        background: var(--amber);
+        border-color: var(--amber);
+        color: var(--amber-ink);
+      }
+
+      .vergessen {
+        font-weight: 500;
+      }
+
+      .ins-cockpit {
+        height: 54px;
+        font-size: 15.5px;
+        width: 100%;
+      }
+
+      .meldung {
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: #a5291f;
+      }
+
+      .trenner {
+        height: 1px;
+        background: rgba(0, 0, 0, 0.08);
+        display: block;
+        margin: 4px 0;
+      }
+
+      .kopplung {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .eingabe--code {
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 16px;
+        letter-spacing: 0.24em;
+      }
+
+      .knopf--flach {
+        height: 52px;
+        font-size: 13.5px;
+        flex: none;
+      }
+
+      .fussnote {
+        font-size: 12.5px;
+        line-height: 1.55;
+        color: rgba(0, 0, 0, 0.5);
+      }
+
+      /* Rechtszeile */
+      .rechtszeile {
+        background: var(--ink);
+        color: var(--text-hell-fein);
+        padding: 34px var(--rand);
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        border-top: 1px solid var(--linie-dunkel-zart);
+        font-family: var(--mono);
+        font-weight: 500;
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .rechtszeile__links {
+        display: flex;
+        gap: 20px;
+      }
+
+      .rechtszeile a {
+        color: rgba(244, 242, 238, 0.55);
+      }
+
+      .rechtszeile a:hover {
+        color: var(--text-hell);
+      }
+    </style>
+
+    <script>
+      const formular = document.querySelector<HTMLFormElement>('.anmeldung');
+
+      if (formular) {
+        const passwort = formular.querySelector<HTMLInputElement>('#passwort')!;
+        const email = formular.querySelector<HTMLInputElement>('#email')!;
+        const zeigen = formular.querySelector<HTMLButtonElement>('[data-feld="zeigen"]')!;
+        const meldung = formular.querySelector<HTMLElement>('[data-feld="meldung"]')!;
+        const koppeln = formular.querySelector<HTMLButtonElement>('[data-feld="koppeln"]')!;
+        const code = formular.querySelector<HTMLInputElement>('#code')!;
+
+        zeigen.addEventListener('click', () => {
+          const sichtbar = passwort.type === 'text';
+          passwort.type = sichtbar ? 'password' : 'text';
+          zeigen.textContent = sichtbar ? 'Anzeigen' : 'Verbergen';
+        });
+
+        function sage(text: string) {
+          meldung.textContent = text;
+          meldung.hidden = text === '';
+        }
+
+        formular.addEventListener('submit', (e) => {
+          // Solange kein Anmeldedienst existiert, wird hier abgefangen.
+          e.preventDefault();
+          const mailOk = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email.value.trim());
+          const passOk = passwort.value.length >= 6;
+
+          email.setAttribute('aria-invalid', String(!mailOk));
+          passwort.setAttribute('aria-invalid', String(!passOk));
+
+          if (!mailOk) return sage('Bitte eine vollständige E-Mail-Adresse angeben.');
+          if (!passOk) return sage('Das Passwort ist zu kurz.');
+          sage('Das Cockpit ist noch nicht angebunden — die Anmeldung folgt mit dem Dienst.');
+        });
+
+        koppeln.addEventListener('click', () => {
+          const sauber = code.value.replace(/\D/g, '');
+          if (sauber.length !== 6) {
+            code.setAttribute('aria-invalid', 'true');
+            return sage('Der Kopplungscode hat sechs Ziffern.');
+          }
+          code.removeAttribute('aria-invalid');
+          sage(`Code ${sauber} vorgemerkt — die Kopplung folgt mit dem Dienst.`);
+        });
+      }
+    </script>
+  </body>
+</html>

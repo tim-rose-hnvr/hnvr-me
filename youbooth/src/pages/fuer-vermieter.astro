@@ -1,0 +1,262 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Bildplatz from '../components/Bildplatz.astro';
+import { zusatzmodule } from '../daten/module';
+
+const vermietung = zusatzmodule.find((m) => m.id === 'vermietung')!;
+
+const ablauf = [
+  { titel: 'Anfrage', text: 'Kunde prüft das Datum, wählt ein Paket, legt ein Konto an.' },
+  {
+    titel: 'Angebot',
+    text: 'Ihr prüft Verfügbarkeit der Boxen und schickt das Angebot aus der Liste.',
+  },
+  {
+    titel: 'Vertrag',
+    text: 'Vertrag und Anzahlung laufen automatisch, Zahlungsstand steht am Auftrag.',
+  },
+  {
+    titel: 'Event',
+    text: 'Branding, Vorlagen und Module werden dem Event zugeordnet und auf die Box geschickt.',
+  },
+  {
+    titel: 'Abgabe',
+    text: 'Galerie-Link, Statistik und Schlussrechnung liegen im gleichen Kundenkonto.',
+  },
+];
+
+const entlastung = [
+  'Doppelbuchungen sind ausgeschlossen: der Kalender kennt jede Box und jede Blockzeit.',
+  'Pakete und Zusatzstunden pflegt ihr einmal — die Buchungsseite rechnet damit.',
+  'Erinnerung sieben Tage vorher, Packliste je Paket, Übergabeprotokoll am Eventtag.',
+  'Statistik pro Event als Beleg: Sessions, Ausdrucke, Galerie-Aufrufe.',
+];
+
+const marke = [
+  {
+    titel: 'Buchungsseite',
+    text: 'Eigene Farben, Logo, Texte und eigene Domain. Kein youbooth-Branding für Endkunden.',
+  },
+  {
+    titel: 'Booth & Druck',
+    text: 'Attract-Text, Laufband, Rahmen und Streifen pro Event austauschbar.',
+  },
+  {
+    titel: 'Galerie',
+    text: 'Galerie und Microsite laufen unter eurem Namen, inklusive Absender bei Mails.',
+  },
+];
+---
+
+<Marketing
+  titel="Für Vermieter"
+  beschreibung="Buchungsseite mit Kalender und Paketen: aus einer bestätigten Anfrage entsteht automatisch das Event, das die Box am Veranstaltungstag lädt."
+>
+  <section class="hero">
+    <div class="hero__text">
+      <span class="mono mono--amber">Für Vermieter</span>
+      <h1>Vermieten, buchen, abrechnen — im gleichen Konto</h1>
+      <p class="fliess">
+        Das Modul Vermietung & Buchung gibt euch eine öffentliche Buchungsseite mit Kalender und
+        Paketen. Aus einer bestätigten Anfrage entsteht automatisch das Event, das die Box am
+        Veranstaltungstag lädt.
+      </p>
+      <div class="reihe knopfreihe">
+        <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Modul testen</a>
+        <a class="knopf knopf--rahmen-hell knopf--mittel" href={vermietung.pfad}>
+          ab {vermietung.preis} €/Mon.
+        </a>
+      </div>
+    </div>
+    <div class="hero__bild">
+      <Bildplatz motiv="Screenshot: Buchungsseite mit Kalender" format="16 / 10" radius={16} laden="eager" />
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Von der Anfrage bis zur Galerie</h2>
+    <ol class="kette">
+      {
+        ablauf.map((s, i) => (
+          <li class="stufe">
+            <span class="stufe__nummer">{String(i + 1).padStart(2, '0')}</span>
+            <span class="stufe__titel">{s.titel}</span>
+            <span class="stufe__text">{s.text}</span>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="abschnitt abschnitt--dunkel entlastung">
+    <div class="entlastung__bild">
+      <Bildplatz motiv="Screenshot: Anfragen-Verwaltung" format="4 / 3" radius={16} />
+    </div>
+    <div class="entlastung__text">
+      <h2>Was euch Arbeit abnimmt</h2>
+      <ul class="punkte">
+        {entlastung.map((e) => <li>{e}</li>)}
+      </ul>
+      <a class="knopf knopf--rahmen-hell knopf--mittel selbst" href="/anmelden">Cockpit-Login</a>
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Eure Marke, nicht unsere</h2>
+    <div class="raster raster--3">
+      {
+        marke.map((m) => (
+          <article class="karte">
+            <span class="display display--klein">{m.titel}</span>
+            <span class="karte__text">{m.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display">Buchungsseite in zwei Tagen online</span>
+      <span class="beiwort">
+        Pakete anlegen, Kalender füllen, Domain verbinden — mehr braucht der Start nicht.
+      </span>
+    </div>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Starten</a>
+      <a class="knopf knopf--rahmen-hell knopf--mittel" href="/referenzen">Referenzen</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand) 60px;
+    display: flex;
+    gap: 44px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .hero__text {
+    flex: 1 1 440px;
+    min-width: min(420px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4vw, 54px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 560px;
+  }
+
+  .hero__bild {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+
+  /* Ablaufkette */
+  .kette {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+  }
+
+  .stufe {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    position: relative;
+    box-shadow: var(--schatten-karte);
+  }
+
+  .stufe__nummer {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--amber);
+  }
+
+  .stufe__titel {
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    font-size: 20px;
+    color: var(--text);
+  }
+
+  .stufe__text {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-leise);
+  }
+
+  /* Entlastung */
+  .entlastung {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 44px;
+    align-items: center;
+  }
+
+  .entlastung__bild {
+    flex: 1 1 380px;
+    min-width: min(360px, 100%);
+  }
+
+  .entlastung__text {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .selbst {
+    align-self: flex-start;
+  }
+
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding-block: 52px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 640px;
+  }
+
+  .schluss .display {
+    font-size: clamp(26px, 2.6vw, 32px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15px;
+    color: var(--text-hell-leise);
+  }
+</style>

@@ -1,0 +1,222 @@
+---
+import Marketing from '../layouts/Marketing.astro';
+import Bildplatz from '../components/Bildplatz.astro';
+
+const einsaetze = [
+  {
+    kennung: 'Hochzeit · 140 Gäste · Boxwerk GmbH',
+    titel: 'Sofortdruck plus Galerie, ohne WLAN im Saal',
+    text: 'Streifen mit Monogramm, QR-Download über den Hotspot der Box, Foto-Wall auf dem Beamer. Der Upload lief am Folgetag im Lager durch.',
+    zahlen: [
+      { wert: '137', text: 'Sessions' },
+      { wert: '212', text: 'Ausdrucke' },
+      { wert: '1:48', text: 'Ø Session' },
+      { wert: '0', text: 'Eingriffe vor Ort' },
+    ],
+  },
+  {
+    kennung: 'Messe · 3 Tage · Eventhaus Süd',
+    titel: 'Leadliste statt Zettelwirtschaft',
+    text: 'Slow-Motion am Stand, Bilder nur per Mail mit Einwilligung, Effekt-Studio im Messedesign. Bezahlung war deaktiviert, Limits pro Stunde aktiv.',
+    zahlen: [
+      { wert: '1.412', text: 'Clips' },
+      { wert: '908', text: 'Mail-Freigaben' },
+      { wert: '11', text: 'Boxen im Konto' },
+    ],
+  },
+  {
+    kennung: 'Feste Installation · 6 Monate · Pixelwiese',
+    titel: 'Unbeaufsichtigt, mit Kasse am Screen',
+    text: 'Leerlauf-Modus, Kiosk-PIN, Bezahlung vor dem Druck. Störungen meldet die Selbstprüfung, bevor Gäste sie merken.',
+    zahlen: [
+      { wert: '4.860', text: 'Drucke verkauft' },
+      { wert: '2', text: 'Vor-Ort-Einsätze' },
+      { wert: '99,4 %', text: 'Laufzeit' },
+    ],
+  },
+];
+
+const galeriebilder = [
+  'Foto: Streifen in der Hand',
+  'Foto: Gäste vor der Box',
+  'Foto: Foto-Wall am Beamer',
+  'Foto: Messestand mit Booth',
+  'Foto: Aufbau im Case',
+  'Foto: Abzüge auf dem Tisch',
+];
+---
+
+<Marketing
+  titel="Referenzen"
+  beschreibung="Drei Einsätze aus der Praxis: Hochzeit, Messe und feste Installation — mit Zahlen aus der Event-Statistik."
+>
+  <section class="hero">
+    <span class="mono mono--amber">Referenzen</span>
+    <h1>Abende, die durchgelaufen sind</h1>
+    <p class="fliess">
+      Drei Einsätze, drei Zuschnitte — Hochzeit, Messe und feste Installation. Die Zahlen kommen aus
+      der Event-Statistik im Cockpit, die Zitate sind Platzhalter bis zur Freigabe der Betreiber.
+    </p>
+  </section>
+
+  <section class="abschnitt">
+    {
+      einsaetze.map((e) => (
+        <article class="einsatz">
+          <div class="einsatz__text">
+            <span class="mono">{e.kennung}</span>
+            <h2>{e.titel}</h2>
+            <p class="fliess">{e.text}</p>
+            <span class="zitat">[ Zitat Betreiber · Freigabe offen ]</span>
+          </div>
+          <div class="einsatz__zahlen">
+            {e.zahlen.map((z) => (
+              <span class="zahlkachel">
+                <b>{z.wert}</b>
+                <span class="mono">{z.text}</span>
+              </span>
+            ))}
+          </div>
+        </article>
+      ))
+    }
+  </section>
+
+  <section class="abschnitt">
+    <div class="abschnitt-kopf">
+      <h2>Aus den Galerien</h2>
+      <span class="mono mono--still">Mit Freigabe der Paare und Veranstalter</span>
+    </div>
+    <div class="raster raster--auto">
+      {galeriebilder.map((motiv) => <Bildplatz motiv={motiv} format="3 / 2" />)}
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display">Referenz mit euren eigenen Events aufbauen</span>
+      <span class="beiwort">
+        Die Event-Statistik liefert die Zahlen — ihr entscheidet, was davon nach außen geht.
+      </span>
+    </div>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Testphase starten</a>
+      <a class="knopf knopf--rahmen-hell knopf--mittel" href="/fuer-vermieter">Für Vermieter</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4vw, 54px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 660px;
+  }
+
+  .einsatz {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte-gross);
+    padding: 30px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    box-shadow: var(--schatten-karte);
+  }
+
+  .einsatz__text {
+    flex: 1 1 420px;
+    min-width: min(400px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .einsatz h2 {
+    font-size: clamp(24px, 2.4vw, 32px);
+  }
+
+  .einsatz .fliess {
+    font-size: 15px;
+  }
+
+  .zitat {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-fein);
+    border: 1px dashed var(--linie-stark);
+    border-radius: var(--r-chip);
+    padding: 14px 16px;
+    margin-top: 6px;
+  }
+
+  .einsatz__zahlen {
+    flex: 1 1 300px;
+    min-width: min(280px, 100%);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .zahlkachel {
+    background: var(--paper);
+    border-radius: var(--r-chip);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .zahlkachel b {
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding-block: 52px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 640px;
+  }
+
+  .schluss .display {
+    font-size: clamp(26px, 2.6vw, 32px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15px;
+    color: var(--text-hell-leise);
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+</style>

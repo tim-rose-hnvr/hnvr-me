@@ -1,0 +1,20 @@
+# Bauartefakte gehoeren nicht ins Repo — sie entstehen aus dem
+# Quelltext und wuerden bei jedem Bau neue Aenderungen melden.
+#
+# Diese Datei liegt im Wurzelverzeichnis, obwohl die Projekte je einen
+# eigenen .gitignore haben: ein `npx astro build`, das versehentlich
+# eine Ebene zu hoch laeuft, legt node_modules/ und .astro/ hier ab.
+# Die Unterordner fangen das nicht ab.
+node_modules/
+dist/
+.astro/
+.wix/
+
+# Umgebungsdateien. Ein Schluessel im Repo ist ein Schluessel in jeder
+# Kopie des Repos — auch in denen, die man nicht mehr einsammeln kann.
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log

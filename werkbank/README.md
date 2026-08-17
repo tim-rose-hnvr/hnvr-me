@@ -35,11 +35,29 @@ ohne eine eigene Datei zu suchen.
 
 Oberfläche und Marketingseite folgen dem Handoff „PDF Studio": Akzent
 `#0f766e`, dunkle Chrome `#1d2327`, Bühne `#5f686e`, Papier `#fdfcf9`,
-IBM Plex in Sans, Serif und Mono, nur 4er-Schritte im Raster, **Radius 0** —
-alles kantig. Aufbau von oben: Titelleiste 38 px mit Dokumentreitern,
-Menüleiste 27 px, Werkzeugzeile 46 px mit beschrifteten Gruppen und einer
-rechten Gruppe, die beim Scrollen stehen bleibt, dann Bühne mit den beiden
-Leisten (196 px links, 296 px rechts), unten Statusleiste 30 px.
+Statusleiste `#333b40`, IBM Plex in Sans, Serif und Mono, nur 4er-Schritte im
+Raster, **Radius 0** — alles kantig. Aufbau von oben: Titelleiste 38 px mit
+Dokumentreitern und akzentfarbenem Primärknopf, Menüleiste 27 px,
+Werkzeugzeile 46 px, dann Bühne mit den beiden Leisten (196 px links, 296 px
+rechts), unten Statusleiste 30 px.
+
+**Die Werkzeugzeile trägt die vier Gruppen des Handoffs**, jeder Knopf 34 px
+hoch mit Sinnbild *und* Wort: Auswahl/Text · Hervorheben/Notiz/Schwärzen ·
+Formularfeld/Unterschrift · Seiten/Vergleichen/Dokument, dazu „Mehr" für die
+elf übrigen Werkzeuge und rechts eine Gruppe (OCR, Exportieren), die beim
+Scrollen stehen bleibt. Sie trug einmal sechzehn Knöpfe, sechs davon nur als
+Zeichen — ein Sinnbild ohne Wort ist die stille Annahme, jeder wisse schon,
+was es bedeutet.
+
+Die Seitenleiste zeigt die Seiten **einspaltig**: Karte 112 px auf
+Papierfarbe, darunter Mono-Seitenzahl, Kurztitel aus der ersten Zeile, die
+nicht auf jeder Seite steht, und die Zahl der Kommentare. Dialoge tragen den
+dunklen Kopf aus dem Handoff (42 px, Rautenmarke, Serif-Titel).
+
+Nachgemessen wird das, nicht nachgesehen: `vollpruefung.mjs` prüft Höhen,
+Breiten, Farben, Knopfhöhen, dass jeder Werkzeugknopf ein Wort trägt und dass
+im ganzen Fenster kein runder Rahmen steht — mit genau den vier Ausnahmen, die
+das Handoff zulässt.
 
 Zwei Abweichungen vom Handoff, beide mit Grund:
 
@@ -67,15 +85,17 @@ und er nennt bei einem Überhang das schuldige Element beim Namen.
 
 ## Wo alles steht
 
-Ein Befehl, den niemand findet, gibt es nicht. Deshalb hat jeder der 77
+Ein Befehl, den niemand findet, gibt es nicht. Deshalb hat jeder der 83
 Befehle einen Weg mit der Maus:
 
 - **Menüleiste** unter dem Kopf — Datei, Bearbeiten, Seiten, Ansicht,
   Werkzeuge, Gehe zu, Schutz, Hilfe. Sie wird aus dem Befehlsregister gebaut,
   nicht daneben gepflegt; was nirgends einsortiert ist, landet sichtbar unter
   „Weiteres". Der Prüflauf lässt keinen Befehl ohne Menüweg durch.
-- **Werkzeugzeile** unter dem Menü — die sechzehn Werkzeuge, in fünf Gruppen,
-  die wichtigsten mit Beschriftung. Rechts bleiben „OCR ausführen" und
+- **Werkzeugzeile** unter dem Menü — die vier Gruppen des Handoffs, jeder
+  Knopf mit Wort: Auswahl/Text · Hervorheben/Notiz/Schwärzen ·
+  Formularfeld/Unterschrift · Seiten/Vergleichen/Dokument. Dahinter „Mehr" mit
+  den elf übrigen der achtzehn Werkzeuge; rechts bleiben „OCR ausführen" und
   „Exportieren" beim Scrollen stehen.
 - **Rückgängig und Wiederholen** ganz links in der Werkzeugzeile, mit dem
   Namen des Schritts im Tooltip („Rückgängig: 3 Seiten gelöscht").
@@ -153,6 +173,28 @@ PDF, das in jedem Betrachter gleich aussieht.
 Größe, Grund- und Schriftfarbe werden aus der gezeichneten Seite abgegriffen.
 Auf Wunsch wird der alte Text wirklich entfernt (die Seite wird dabei zum
 Bild) statt nur überdeckt — beides steht im Dialog.
+
+**Aus Word, Excel, Text ein PDF** — `.docx`, `.xlsx`, `.csv`, `.txt` und
+`.md` werden im Browser gelesen (ZIP + OOXML) und auf A4 gesetzt:
+Überschriften, Absätze, Aufzählungen, Tabellen, fett und kursiv; bei Excel
+jedes Blatt als eigene Tabelle mit wiederholter Kopfzeile. Nicht mit kommen
+Bilder, Kopf- und Fußzeilen, Fußnoten, Spalten und Farben — das steht im
+Dialog, bevor jemand auf „Erstellen" drückt. Eine Word-Datei auf die Werkbank
+zu ziehen öffnet sie; das Ergebnis wird geöffnet, nicht heruntergeladen.
+
+**Messen** — Strecken und Flächen in echten Einheiten (mm, cm, m, Zoll, Fuß,
+Punkt). Ohne Kalibrierung gilt das Papiermaß: ein PDF-Punkt ist 1/72 Zoll,
+also 0,3528 mm — auf dem Papier stimmt das immer. Wer einen Grundriss misst,
+zieht eine Strecke bekannter Länge und trägt sie ein; **die Kalibrierung wirkt
+rückwirkend auf alle Messungen**. Die Maßzahl steht auf dem Bildschirm und
+wandert mit in die gesicherte Datei.
+
+**Stapel** — dieselbe Arbeit an vielen Dateien: entschützen, reparieren,
+Metadaten entfernen, drehen, linearisieren, schützen. Nur Schritte, die keine
+Entscheidung brauchen; die Reihenfolge steht fest (entschützen zuerst,
+schützen zuletzt), nicht die des Anklickens. Eine gescheiterte Datei hält den
+Lauf nicht auf — das Ergebnis ist ein ZIP mit einem Bericht darin, der jede
+Datei beim Namen nennt.
 
 **Kennwort und Rechte** — geschützte Dateien öffnen (die Werkbank fragt nach
 dem Kennwort und entschlüsselt einmalig), Schutz mit AES-256 setzen, Drucken,
@@ -261,7 +303,7 @@ Werkzeug für Werkzeug, in der Reihenfolge, in der Acrobat sie anbietet.
 | PDF bearbeiten | **teilweise** | Text bearbeiten ja; Bilder und Objekte im PDF nein |
 | E-Signaturen anfordern | nein | Unterschriftslauf über mehrere Personen braucht einen Server |
 | Diese PDF-Datei übersetzen | nein | Übersetzungsdienst |
-| PDF erstellen | **teilweise** | aus Bildern ja; aus Word oder Excel nein |
+| PDF erstellen | **ja** | aus Bildern, Word, Excel, CSV, Text und Markdown |
 | Dateien zusammenführen | **ja** | |
 | Seiten verwalten | **ja** | eigene Ansicht „Seiten ordnen“: sortieren, drehen, löschen, verdoppeln, auszugsweise ausgeben |
 | Zum Kommentieren senden | nein | gemeinsames Kommentieren braucht einen Server |
@@ -271,24 +313,30 @@ Werkzeug für Werkzeug, in der Reihenfolge, in der Acrobat sie anbietet.
 | PDF komprimieren | **ja** | „Verkleinern", mit Vorher/Nachher |
 | Formular vorbereiten | **ja** | Rahmen ziehen, Art wählen: Text, mehrzeilig, Ankreuz, Auswahl, Option, Unterschrift |
 | Kommentare hinzufügen | **ja** | zehn Werkzeuge, Liste, Bericht |
-| In PDF konvertieren | **teilweise** | Bilder ja; Office-Dateien nein |
+| In PDF konvertieren | **ja** | Bilder, .docx, .xlsx, .csv, .txt, .md — Text und Tabellen, kein Layout |
 | Stempel hinzufügen | **ja** | Vorlagen und eigener Text, wahlweise mit Datum |
 | Ein Zertifikat verwenden | **ja** | PAdES-B-B aus einer .p12; kein Zeitstempeldienst, keine Sperrlisten |
 | Druckproduktion verwenden | nein | Druckvorstufe, Farbauszüge |
-| Objekte messen | nein | |
+| Objekte messen | **ja** | Strecke und Fläche, Maßstab kalibrierbar, Maß wandert in die Datei |
 | Dateien vergleichen | **ja** | wortweiser Textvergleich je Seite |
 | Rich Media hinzufügen | nein | bewusst nicht: Video im PDF ist eine Sicherheitslücke mit Abspieltaste |
-| Geführte Aktionen verwenden | **teilweise** | Befehlspalette statt Aktionsfolgen; kein Stapelbetrieb über Ordner |
+| Geführte Aktionen verwenden | **ja** | Stapel über viele Dateien; kein Ordnerzugriff — der Browser gibt keinen her |
 | Barrierefreiheit vorbereiten | **teilweise** | Prüfung mit Begründung; Sprache, Titel und Feldbeschriftungen werden gesetzt. Auszeichnung (Tags) nicht — sie wäre geraten |
 | PDF-Standards anwenden | nein | PDF/A, PDF/X |
 | Suchindex hinzufügen | **teilweise** | Volltextsuche im Dokument ja; Index über einen Ordner nein |
 | JavaScript verwenden | nein | bewusst nicht: JavaScript im PDF ist seit Jahren ein Einfallstor |
 | Benutzerdefiniertes Tool erstellen | **teilweise** | jede Fähigkeit ist ein Befehl und über die Palette erreichbar |
 
-Elf von neunundzwanzig fehlen ganz. Sechs davon brauchen einen Server oder
-einen Dienst und passen deshalb nicht zu einer Anwendung, die nichts
-weitergibt. Zwei sind bewusst abgelehnt. Drei — Zertifikat, Formularfelder
-anlegen, Barrierefreiheit — sind echte Lücken und ließen sich hier bauen.
+**Sieben von neunundzwanzig fehlen ganz** — und keine davon ist eine Lücke,
+die sich hier schließen ließe: fünf brauchen einen Server oder einen Dienst
+(Stilisieren, E-Signaturen anfordern, Übersetzen, gemeinsames Kommentieren,
+Druckvorstufe) und passen nicht zu einer Anwendung, die nichts weitergibt;
+zwei sind bewusst abgelehnt (Rich Media, JavaScript im PDF). Offen bleibt
+PDF/A: dafür braucht es ein ICC-Profil und eine Konformitätsprüfung, beides
+wäre hier zu bauen, aber nur richtig oder gar nicht.
+
+Die drei früheren echten Lücken — Zertifikat, Formularfelder anlegen,
+Barrierefreiheit — sind geschlossen, ebenso Einlesen, Messen und Stapel.
 
 ## Was sie nicht kann
 
@@ -398,9 +446,9 @@ Zwei Läufe in einem echten Chromium, beide ohne Netz, und ein dritter gegen
 die veröffentlichte Seite:
 
 ```sh
-node werkzeuge/pruefen.mjs        # 96 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 83 Prüfungen — die Bedienung
-node werkzeuge/live-pruefen.mjs   # 19 Prüfungen — was der Hoster ausliefert
+node werkzeuge/pruefen.mjs        # 128 Prüfungen — das Ergebnis in der Datei
+node werkzeuge/vollpruefung.mjs   # 102 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/live-pruefen.mjs   #  31 Prüfungen — was der Hoster ausliefert
 ```
 
 **`pruefen.mjs`** fragt: Stimmt, was herauskommt? Geschwärzte Seite ohne
@@ -420,7 +468,15 @@ Die Barrierefreiheit wird zweimal geprüft: dass der Bericht die Mängel nennt,
 und dass Sprache, Titel und Feldbeschriftungen danach wirklich im Katalog
 stehen. Bei der Unterschrift rechnet **openssl** die Signatur nach — und ein
 absichtlich verändertes Byte muss sie brechen, sonst gilt der Lauf als
-gescheitert.
+gescheitert. Fürs Einlesen läuft ein Rundlauf: das Beispiel geht nach Word,
+die `.docx` wird zurückgelesen, daraus ein PDF gesetzt und dessen Text wieder
+ausgelesen — Überschriften, Umbrüche, fette Stellen und Umlaute müssen den
+Weg überstehen. Beim Messen wird gegen die Definition gerechnet (100 pt sind
+35,3 mm), kalibriert und nachgesehen, ob die Maßzahl in der gesicherten Datei
+steht. Der Stapel läuft über drei Dateien, von denen eine absichtlich kaputt
+ist: zwei müssen durchkommen, die dritte mit Begründung im Bericht stehen —
+und das erzeugte Archiv wird von zwei Lesern gegengelesen, dem des Prüflaufs
+und dem der Werkbank selbst.
 
 **`vollpruefung.mjs`** fragt: Lässt sich alles bedienen? Zoomstufen, Drehen,
 Blättern, Tastatur, Tafeln, jedes Werkzeug, Anmerkung wählen, verschieben,
@@ -433,9 +489,20 @@ der Leiste beschnitten wird, dass die Ordnen-Ansicht per Ziehen sortiert und
 Löschen zurücknehmbar bleibt, und dass der Fokus die richtigen Seiten mit den
 richtigen Nummern zeigt.
 
+Ein eigener Abschnitt misst die **Gestaltung gegen das Handoff**: Höhen und
+Breiten der Chrome auf den Pixel (38/27/46/30, 196/296), die Farben auf den
+Hexwert, dass der Primärknopf akzentfarben ist, dass jeder Werkzeugknopf
+34 px hoch ist und ein Wort trägt, dass im ganzen Fenster kein runder Rahmen
+steht, dass der Dialog den dunklen 42-px-Kopf hat und die Seitenliste
+einspaltig mit 112-px-Karte, Mono-Zahl und Kurztitel ist. Das ist die einzige
+Art, eine Gestaltung zu prüfen, die nicht darauf hinausläuft, zwei
+Bildschirmabzüge nebeneinanderzuhalten — und sie hat einen echten Fehler
+gefunden: `.knopf-voll` stand oberhalb von `.knopf` und wurde von dessen
+Grundwerten überschrieben, der Primärknopf war weiß statt akzentfarben.
+
 **`live-pruefen.mjs`** fragt: Kommt draußen an, was hier gebaut wurde? Beim
 Hoster entscheiden Dinge, die örtlich nie auffallen — MIME-Typen,
-Verzeichnisregister, Zwischenspeicher. Der Lauf holt jede der 220 Dateien von
+Verzeichnisregister, Zwischenspeicher. Der Lauf holt jede der 241 Dateien von
 der veröffentlichten Adresse und vergleicht die Prüfsumme mit der gebauten
 Fassung; stimmen alle überein, läuft dort dieselbe Anwendung, die die beiden
 anderen Läufe durchgemessen haben. Zusätzlich geprüft: `.wasm` als

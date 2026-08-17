@@ -22,7 +22,7 @@ import {
   aendere, waehleAn, uebernehmeAuswahl, bezeichne, hatUnterschrift,
 } from './anmerkungen.js';
 import { starteSeiten, drehe, loesche, verdopple, gewaehlteOderAktuelle } from './seiten.js';
-import { starteOrdnen, umschalteOrdnen, schliesseOrdnen } from './ordnen.js';
+import { starteOrdnen, umschalteOrdnen, schliesseOrdnen, oeffneOrdnen, ordnenOffen } from './ordnen.js';
 import { starteMenue } from './menue.js';
 import { starteMappen, mappenListe, neueMappe, wechsleZu, schliesse as schliesseMappe, frischeAuf as frischeMappen } from './mappen.js';
 import { starteSuche, suche, trefferListe, weiter, zurueck, leere as leereSuche, markiereAlle, suchbegriff, textAusgeben } from './suche.js';
@@ -256,19 +256,36 @@ export function setzeWerkzeug(id) {
   zeichneRechteTafel();
 }
 
-/* Die Werkzeugzeile nach dem Handoff: Sinnbild **und** Beschriftung, in vier
-   Gruppen getrennt, und rechts eine Gruppe, die beim Scrollen stehen bleibt.
-   Nur Sinnbilder waren die stille Annahme, jeder kenne sie schon. */
-/* Beschriftet werden die Werkzeuge, nach denen jemand sucht. Die Formen
-   (Rechteck, Ellipse, Pfeil) tragen nur ihr Sinnbild: sie sind selbsterklärend
-   und würden die Zeile sonst auf zwei Bildschirmbreiten dehnen. */
+/* Die Werkzeugzeile nach dem Handoff: vier Gruppen, durch eine Haarlinie
+   getrennt, jeder Knopf mit Sinnbild **und** Wort, rechts eine Gruppe, die
+   beim Scrollen stehen bleibt.
+
+   Sie trug einmal sechzehn Knöpfe, sechs davon nur als Zeichen. Das war ein
+   anderes Programm als das gezeichnete: das Handoff zeigt neun beschriftete
+   Knöpfe und nichts sonst. Was jetzt nicht mehr in der Zeile steht, ist
+   deshalb nicht fort — es steht hinter „Mehr" und im Menü Werkzeuge. */
 const WERKZEUGGRUPPEN = [
   [['auswahl', true], ['text', true]],
-  [['hervor', true], ['unterstrich', false], ['durchstrich', false], ['notiz', true]],
-  [['freihand', false], ['rechteck', false], ['ellipse', false], ['pfeil', false]],
-  [['ersetzen', true], ['schwaerzen', true]],
-  [['feld', true], ['unterschrift', true], ['stempel', false], ['bereich', false]],
-  [['messen', true], ['flaeche', false]],
+  [['hervor', true], ['notiz', true], ['schwaerzen', true]],
+  [['feld', true], ['unterschrift', true]],
+];
+
+/* Die vierte Gruppe im Handoff sind keine Werkzeuge, sondern die drei
+   Ansichten: Seiten, Vergleichen, Dokument. Genau die drei hat die Werkbank
+   auch — der Seitenordner, der Vergleich und die Leseansicht. */
+const ANSICHTEN = [
+  ['ordnen', 'Seiten', 'M4 4h6v7H4zM14 4h6v7h-6zM4 13h6v7H4zM14 13h6v7h-6z'],
+  ['vergleich', 'Vergleichen', 'M4 4h6v16H4zM14 4h6v16h-6z'],
+  ['dokument', 'Dokument', 'M6 2h8l4 4v16H6zM14 2v5h4'],
+];
+
+/* Alles, was nicht in die vier Gruppen passt, steht hinter einem beschrifteten
+   Knopf statt als Sinnbild ohne Wort in der Zeile. Das Handoff kennt keine
+   unbeschrifteten Werkzeuge; ein Zeichen ohne Wort ist die stille Annahme,
+   jeder wisse schon, was es bedeutet. */
+const WEITERE_WERKZEUGE = [
+  'unterstrich', 'durchstrich', 'freihand', 'rechteck', 'ellipse', 'pfeil',
+  'ersetzen', 'stempel', 'bereich', 'messen', 'flaeche',
 ];
 
 /* Die Dokumentreiter in der Titelleiste. Sie sind die einzige Stelle, an der
@@ -338,25 +355,53 @@ function zeichneWerkzeugleiste() {
   }
   leiste.append(el('span', { klasse: 'werkzeug-trenner' }));
 
-  WERKZEUGGRUPPEN.forEach((gruppe, i) => {
-    for (const [id, beschriftet] of gruppe) {
-      const werkzeug = WERKZEUGE.find((w) => w.id === id);
-      if (!werkzeug) continue;
-      const aktiv = zustand.werkzeug === werkzeug.id;
-      const knopf = el('button', {
-        klasse: `werkzeug ${beschriftet ? '' : 'werkzeug-schmal'} ${aktiv ? 'ist-aktiv' : ''}`,
-        title: `${werkzeug.name} (${werkzeug.kuerzel})`,
-        'aria-label': werkzeug.name,
-        'aria-pressed': aktiv ? 'true' : 'false',
-        beiClick: () => setzeWerkzeug(werkzeug.id),
-      });
-      const kurz = werkzeug.name.replace(' anlegen', '').replace(' kopieren', '');
-      knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${werkzeug.zeichen}"/></svg>`
-        + (beschriftet ? `<span>${kurz}</span>` : '');
-      leiste.append(knopf);
-    }
-    if (i < WERKZEUGGRUPPEN.length - 1) leiste.append(el('span', { klasse: 'werkzeug-trenner' }));
+  const werkzeugKnopf = (id) => {
+    const werkzeug = WERKZEUGE.find((w) => w.id === id);
+    if (!werkzeug) return null;
+    const aktiv = zustand.werkzeug === werkzeug.id;
+    const knopf = el('button', {
+      klasse: `werkzeug ${aktiv ? 'ist-aktiv' : ''}`,
+      title: `${werkzeug.name} (${werkzeug.kuerzel})`,
+      'aria-label': werkzeug.name,
+      'aria-pressed': aktiv ? 'true' : 'false',
+      beiClick: () => setzeWerkzeug(werkzeug.id),
+    });
+    const kurz = werkzeug.name.replace(' anlegen', '').replace(' kopieren', '');
+    knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${werkzeug.zeichen}"/></svg><span>${kurz}</span>`;
+    return knopf;
+  };
+
+  for (const gruppe of WERKZEUGGRUPPEN) {
+    for (const [id] of gruppe) leiste.append(werkzeugKnopf(id));
+    leiste.append(el('span', { klasse: 'werkzeug-trenner' }));
+  }
+
+  /* Vierte Gruppe: die drei Ansichten. */
+  for (const [id, name, zeichen] of ANSICHTEN) {
+    const aktiv = (id === 'ordnen' && ordnenOffen())
+      || (id === 'vergleich' && vergleichOffen())
+      || (id === 'dokument' && !ordnenOffen() && !vergleichOffen());
+    const knopf = el('button', {
+      klasse: `werkzeug ${aktiv ? 'ist-aktiv' : ''}`,
+      title: name, 'aria-pressed': aktiv ? 'true' : 'false',
+      beiClick: () => wechsleAnsicht(id),
+    });
+    knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${zeichen}"/></svg><span>${name}</span>`;
+    leiste.append(knopf);
+  }
+  leiste.append(el('span', { klasse: 'werkzeug-trenner' }));
+
+  /* „Mehr": die übrigen Werkzeuge, beschriftet, in einer Liste am Fenster. */
+  const mehrAktiv = WEITERE_WERKZEUGE.includes(zustand.werkzeug);
+  const mehr = el('button', {
+    klasse: `werkzeug ${mehrAktiv ? 'ist-aktiv' : ''}`,
+    title: 'Weitere Werkzeuge', 'aria-haspopup': 'true',
+    beiClick: (ereignis) => zeigeWeitereWerkzeuge(ereignis.currentTarget),
   });
+  const gewaehlt = WERKZEUGE.find((w) => w.id === zustand.werkzeug);
+  mehr.innerHTML = '<svg viewBox="0 0 24 24" class="sinnbild"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>'
+    + `<span>${mehrAktiv ? gewaehlt.name.replace(' kopieren', '') : 'Mehr'}</span>`;
+  leiste.append(mehr);
 
   const rechts = el('div', { klasse: 'werkzeug-rechts' });
   for (const [id, name, zeichen] of [
@@ -368,6 +413,57 @@ function zeichneWerkzeugleiste() {
     rechts.append(knopf);
   }
   leiste.append(rechts);
+}
+
+/* Die drei Ansichten schließen einander aus: es gibt genau eine Bühne. */
+function wechsleAnsicht(id) {
+  if (id === 'ordnen') {
+    if (vergleichOffen()) schliesseVergleich();
+    if (!ordnenOffen()) oeffneOrdnen();
+  } else if (id === 'vergleich') {
+    if (ordnenOffen()) schliesseOrdnen();
+    if (!vergleichOffen()) $('#dateiwahl-vergleich').click();
+  } else {
+    if (ordnenOffen()) schliesseOrdnen();
+    if (vergleichOffen()) schliesseVergleich();
+  }
+  zeichneWerkzeugleiste();
+}
+
+/* Die übrigen Werkzeuge als Liste am Knopf — beschriftet, mit Kürzel, wie
+   ein Menü. Sie hängt am Fenster, nicht an der Zeile: die Zeile darf scrollen. */
+function zeigeWeitereWerkzeuge(knopf) {
+  $('#weitere-werkzeuge')?.remove();
+  const liste = el('div', { klasse: 'menue-liste', id: 'weitere-werkzeuge', role: 'menu' });
+  for (const id of WEITERE_WERKZEUGE) {
+    const werkzeug = WERKZEUGE.find((w) => w.id === id);
+    if (!werkzeug) continue;
+    liste.append(el('button', {
+      klasse: `menue-eintrag ${zustand.werkzeug === id ? 'ist-an' : ''}`,
+      role: 'menuitem',
+      beiClick: () => { liste.remove(); setzeWerkzeug(id); },
+    },
+      el('span', { klasse: 'menue-name', text: werkzeug.name }),
+      el('span', { klasse: 'menue-kuerzel', text: werkzeug.kuerzel })));
+  }
+  document.body.append(liste);
+
+  const kasten = knopf.getBoundingClientRect();
+  const breite = liste.getBoundingClientRect().width;
+  const rand = 8;
+  liste.style.top = `${Math.round(kasten.bottom + 2)}px`;
+  liste.style.left = `${Math.round(Math.max(rand, Math.min(kasten.left, window.innerWidth - breite - rand)))}px`;
+  liste.style.maxHeight = `${Math.round(window.innerHeight - kasten.bottom - rand * 2)}px`;
+
+  const zu = (ereignis) => {
+    if (ereignis && liste.contains(ereignis.target)) return;
+    liste.remove();
+    document.removeEventListener('pointerdown', zu, true);
+    window.removeEventListener('resize', zu);
+  };
+  setTimeout(() => document.addEventListener('pointerdown', zu, true), 0);
+  window.addEventListener('resize', zu, { once: true });
+  liste.querySelector('button')?.focus();
 }
 
 /* ---------- Tafeln --------------------------------------------------------- */
@@ -541,7 +637,9 @@ function zeichneKommentartafel() {
       beiClick: () => { waehleAn(a.id); melde('seiten:springe', nummerVon(a.seiteId)); },
     },
       el('div', { klasse: 'faden-kopf' },
-        el('strong', { text: bezeichne(a) }),
+        /* Handoff: die Art steht als Mono-Chip in Versalien, nicht als fette
+           Zeile. Das trennt sie sichtbar vom Text des Kommentars. */
+        el('span', { klasse: 'art-chip', text: bezeichne(a) }),
         el('span', { klasse: 'mono klein leise', text: `S.${nummerVon(a.seiteId)} · ${uhrzeit(a.erstellt)}` })),
       a.text ? el('p', { klasse: 'faden-text', text: a.text }) : null,
       ...(a.antworten || []).map((antwort) => el('div', { klasse: 'faden-antwort' },
@@ -1199,6 +1297,9 @@ export const EINSTELLUNGEN = {
   'mitdenken.hoechstens': { kategorie: 'Allgemein', name: 'Höchstens so viele Hinweise', hinweis: '', art: 'wahl', werte: [['3', '3'], ['6', '6'], ['12', '12']], wert: '6' },
 };
 
+/* Steht im Einstellungsdialog unter den Kategorien. */
+const FASSUNG = '2026.8';
+
 const KATEGORIEN = ['Allgemein', 'Anzeige & Lesen', 'Anmerkungen', 'OCR & Text', 'Signaturen', 'Speicher & Privatsphäre', 'Tastenkürzel'];
 let offeneKategorie = 'Allgemein';
 
@@ -1263,12 +1364,19 @@ function zeigeEinstellungen(kategorie = offeneKategorie) {
       beiClick: () => { offeneKategorie = name; liste.querySelectorAll('.einst-kategorie').forEach((k) => k.classList.toggle('ist-aktiv', k.textContent === name)); zeichneInhalt(); },
     }));
   }
+  /* Das Handoff setzt die Fassung unter die Kategorien. Sie steht hier, weil
+     es der einzige Ort ist, an dem jemand danach sucht. */
+  liste.append(el('div', { klasse: 'einst-fassung' },
+    el('div', { klasse: 'mono', text: 'FASSUNG' }),
+    el('div', { klasse: 'mono', text: `${FASSUNG} · örtlich` })));
+
   zeichneInhalt();
 
   zeigeDialog({
     titel: 'Einstellungen',
     breit: true,
     rumpf: el('div', { klasse: 'einstellungen' }, liste, inhalt),
+    fussHinweis: 'Änderungen wirken sofort — für diese Sitzung.',
     knoepfe: [{ beschriftung: 'Schließen', betont: true }],
   });
 }

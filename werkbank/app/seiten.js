@@ -56,12 +56,20 @@ export function baueMiniaturen() {
   }, { root: behaelter, rootMargin: '200px' });
 
   zustand.folge.forEach((eintrag, i) => {
+    /* Aufbau wie im Handoff: eine Karte auf Papierfarbe, darunter eine Zeile
+       mit Seitenzahl (Mono), Kurztitel und — wenn es welche gibt — der Zahl
+       der Kommentare. Eine Spalte, nicht zwei: der Kurztitel braucht Platz,
+       und zwei Spalten machen aus einer Seitenliste ein Briefmarkenalbum. */
+    const anmerkungen = zustand.anmerkungen.filter((a) => a.seiteId === eintrag.id).length;
     const knoten = el('div', {
       klasse: 'miniatur', daten: { seite: eintrag.id }, draggable: 'true', title: `Seite ${i + 1}`,
       beiClick: (ereignis) => beiKlick(ereignis, eintrag, i),
     },
-      el('canvas', { width: 100, height: 140 }),
-      el('div', { klasse: 'marke', text: String(i + 1) }));
+      el('div', { klasse: 'miniatur-karte' }, el('canvas', { width: 100, height: 140 })),
+      el('div', { klasse: 'miniatur-zeile' },
+        el('span', { klasse: 'miniatur-nummer', text: String(i + 1) }),
+        el('span', { klasse: 'miniatur-titel', text: kurztitel(eintrag) }),
+        anmerkungen ? el('span', { klasse: 'miniatur-zahl', text: String(anmerkungen) }) : null));
 
     knoten.addEventListener('dragstart', (e) => {
       if (!zustand.gewaehlteSeiten.has(eintrag.id)) {
@@ -81,7 +89,7 @@ export function baueMiniaturen() {
       if (!e.dataTransfer.types.includes('text/werkbank-seiten')) return;
       e.preventDefault();
       const kasten = knoten.getBoundingClientRect();
-      const nachher = e.clientX > kasten.left + kasten.width / 2;
+      const nachher = e.clientY > kasten.top + kasten.height / 2;
       gitter.querySelectorAll('.ziel-vor, .ziel-nach').forEach((k) => k.classList.remove('ziel-vor', 'ziel-nach'));
       knoten.classList.add(nachher ? 'ziel-nach' : 'ziel-vor');
     });
@@ -90,7 +98,7 @@ export function baueMiniaturen() {
       if (!nutzlast) return;
       e.preventDefault();
       const kasten = knoten.getBoundingClientRect();
-      const nachher = e.clientX > kasten.left + kasten.width / 2;
+      const nachher = e.clientY > kasten.top + kasten.height / 2;
       const zielIndex = zustand.folge.findIndex((x) => x.id === eintrag.id) + (nachher ? 1 : 0);
       sortiere(nutzlast.split(','), zielIndex);
     });
@@ -102,6 +110,32 @@ export function baueMiniaturen() {
 
   markiereAktuelle();
   markiereAuswahl();
+}
+
+/* Ein Wort, an dem die Seite wiederzuerkennen ist: die erste Zeile mit Text.
+   Steht noch keiner da (der Text kommt asynchron), bleibt die Zeile leer —
+   lieber leer als „Seite 3" doppelt neben der 3. */
+function kurztitel(eintrag) {
+  const quelle = zustand.quellen.get(eintrag.quelleId);
+  const roh = quelle?.textkarte.get(eintrag.index)?.roh || '';
+  const zeilen = roh.split('\n').map((z) => z.trim()).filter((z) => z.length > 2);
+  /* Die erste Zeile ist auf jeder Seite dieselbe, wenn das Dokument eine
+     Kopfzeile trägt — dann taugt sie nicht zum Unterscheiden. In dem Fall
+     wird die erste Zeile genommen, die nicht auf allen Seiten steht. */
+  const zeile = zeilen.find((z) => !istKopfzeile(quelle, z)) || zeilen[0] || '';
+  return zeile.slice(0, 40);
+}
+
+/* Eine Zeile gilt als Kopfzeile, wenn sie auf mindestens der Hälfte der
+   gelesenen Seiten als erste Zeile auftaucht. */
+function istKopfzeile(quelle, text) {
+  if (!quelle || quelle.textkarte.size < 3) return false;
+  let treffer = 0;
+  for (const { roh } of quelle.textkarte.values()) {
+    const erste = roh.split('\n').map((z) => z.trim()).find((z) => z.length > 2);
+    if (erste === text) treffer += 1;
+  }
+  return treffer * 2 >= quelle.textkarte.size;
 }
 
 function beiKlick(ereignis, eintrag, index) {

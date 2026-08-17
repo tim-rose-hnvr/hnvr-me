@@ -106,6 +106,13 @@ pruefe(/[Kk]ostenlos anmelden/.test(startText), 'und sagt am Knopf, dass das nic
 pruefe(/href="\/werkbank\/index\.html"/.test(startText),
   'daneben steht der kurze Weg für Angemeldete');
 pruefe(/hnvr\.me/i.test(startText), 'Kontakt hnvr.me digital steht auf der Seite');
+/* Das Handoff zeigt im Aufmacher ein Fenster mit Seitenleiste, Dokument und
+   Kommentaren — nicht eine Liste von Werkzeugnamen. Geprüft wird, dass das
+   Fenster ausgeliefert wird und die alte Liste fort ist. */
+pruefe(/class="fenster-rumpf"/.test(startText) && /class="fenster-buehne"/.test(startText),
+  'der Aufmacher zeigt das Fenster aus dem Handoff');
+pruefe(/class="mini/.test(startText) && /class="faden/.test(startText),
+  'mit Seitenleiste und Kommentarspalte');
 pruefe(!/\d+\s*(€|EUR|Euro)\s*(\/|pro)/i.test(startText), 'kein Preis versprochen');
 pruefe(/[Kk]ostenlos/.test(startText), 'die Seite sagt, dass es nichts kostet');
 pruefe(/[Aa]nmeldung/.test(startText), 'und dass es eine Anmeldung braucht');

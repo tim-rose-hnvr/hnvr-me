@@ -42,29 +42,57 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         </div>
       </div>
 
-      <div class="leiste" role="img" aria-label="Werkzeugleiste der Werkbank mit sechzehn Werkzeugen">
-        <div class="leiste-kopf">
+      <!-- Das Fenster aus dem Handoff: Titelzeile mit drei Punkten und
+           Dateinamen, darunter drei Spalten — Seitenleiste, Dokument auf der
+           Bühnenfarbe, Kommentare. Es zeigt die Anwendung, nicht eine Liste
+           ihrer Werkzeugnamen: wer sich fragt, wie das aussieht, bekommt hier
+           die Antwort und nicht das Inhaltsverzeichnis. -->
+      <div>
+      <div class="fenster" role="img" aria-label="Die Werkbank mit Seitenleiste, Dokument und Kommentaren">
+        <div class="fenster-kopf">
           <i class="ampel"></i><i class="ampel"></i><i class="ampel"></i>
-          <span class="leiste-titel">Vertragsentwurf.pdf — 5 Seiten</span>
+          <span class="fenster-titel">Vertragsentwurf.pdf — Werkbank</span>
         </div>
-        <div class="werkzeuge">
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 3l7 17 2-7 7-2z"/></svg>Auswahl<kbd>V</kbd></div>
-          <div class="werkzeug hebt"><svg viewBox="0 0 24 24"><path d="M3 20h18M6 16l9-9 3 3-9 9H6z"/></svg>Hervorheben<kbd>H</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M6 4v7a6 6 0 0 0 12 0V4M5 20h14"/></svg>Unterstreichen<kbd>U</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 12h16M7 6h10M7 18h10"/></svg>Durchstreichen<kbd>D</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 4h16v11H9l-5 5z"/></svg>Notiz<kbd>N</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M3 17c4 0 4-10 8-10s4 10 8 10"/></svg>Freihand<kbd>F</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M5 5h14M12 5v14M9 19h6"/></svg>Text<kbd>T</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/></svg>Rechteck<kbd>R</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M12 5c4.4 0 8 3.1 8 7s-3.6 7-8 7-8-3.1-8-7 3.6-7 8-7z"/></svg>Ellipse<kbd>E</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 20L20 4M20 4h-7M20 4v7"/></svg>Pfeil<kbd>P</kbd></div>
-          <div class="werkzeug hebt"><svg viewBox="0 0 24 24"><path d="M4 20h7M14 4l6 6-9 9H5v-6z"/></svg>Text bearbeiten<kbd>B</kbd></div>
-          <div class="werkzeug hebt"><svg viewBox="0 0 24 24"><path d="M4 8h16v8H4zM4 4h16"/></svg>Schwärzen<kbd>S</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M3 18c3 0 5-12 8-12s2 9 4 9 2-3 6-3"/></svg>Unterschrift<kbd>G</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M5 20h14M7 16h10V9l-3-5H10L7 9z"/></svg>Stempel<kbd>Z</kbd></div>
-          <div class="werkzeug"><svg viewBox="0 0 24 24"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/></svg>Bereich<kbd>M</kbd></div>
-          <div class="werkzeug hebt"><svg viewBox="0 0 24 24"><path d="M3 7h18v10H3zM7 10h6"/></svg>Formularfeld<kbd>K</kbd></div>
+        <div class="fenster-rumpf">
+          <div class="fenster-seiten">
+            <div class="mini"><i style="width:62%"></i><i></i><i style="width:88%"></i><i style="width:94%"></i></div>
+            <div class="mini ist-aktiv"><i style="width:54%"></i><i></i><i style="width:92%"></i><i style="width:70%"></i></div>
+            <div class="mini"><i style="width:58%"></i><i></i><i style="width:86%"></i><i style="width:96%"></i></div>
+            <div class="mini"><i style="width:48%"></i><i></i><i style="width:90%"></i><i style="width:64%"></i></div>
+          </div>
+          <div class="fenster-buehne">
+            <div class="fenster-blatt">
+              <span class="blatt-kopf">RAHMENVERTRAG SITZUNGSTECHNIK</span>
+              <span class="blatt-nummer">§ 2</span>
+              <span class="blatt-titel">Leistungsumfang</span>
+              <i class="zeile"></i>
+              <i class="zeile" style="width:94%"></i>
+              <i class="zeile hebt" style="width:76%"></i>
+              <i class="zeile" style="width:88%"></i>
+              <i class="zeile schwarz" style="width:52%"></i>
+              <i class="zeile" style="width:80%"></i>
+              <span class="nadel">1</span>
+            </div>
+          </div>
+          <div class="fenster-kommentare">
+            <div class="faden ist-aktiv">
+              <span class="faden-art">Änderung nötig</span>
+              <i class="zeile"></i><i class="zeile" style="width:72%"></i>
+            </div>
+            <div class="faden">
+              <span class="faden-art">Frage</span>
+              <i class="zeile"></i><i class="zeile" style="width:64%"></i>
+            </div>
+            <div class="faden">
+              <span class="faden-art">Erledigt</span>
+              <i class="zeile" style="width:80%"></i>
+            </div>
+          </div>
         </div>
+      </div>
+      <p class="fenster-bildzeile">
+        Seitenleiste · Dokument · Kommentare — <a href="/werkbank/index.html">die laufende Anwendung öffnen</a>
+      </p>
       </div>
     </div>
   </section>

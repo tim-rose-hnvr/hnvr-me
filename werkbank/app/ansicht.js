@@ -53,8 +53,11 @@ function setzeWerkzeugKlasse() {
 
 /** Maßstab für einen Eintrag unter der aktuellen Zoom-Einstellung. */
 function maszstab(basisBreite, basisHoehe) {
-  const platzBreite = buehne.clientWidth - 48;
-  const platzHoehe = buehne.clientHeight - 48;
+  /* 52 = zweimal 26 px Rand der Spur, wie im Handoff; unten 34 statt 26,
+     deshalb 60 in der Höhe. Ohne diesen Abzug rechnet „Breite" die Seite
+     genau auf die Bühne und der Rand fällt weg. */
+  const platzBreite = buehne.clientWidth - 52;
+  const platzHoehe = buehne.clientHeight - 60;
   if (zustand.zoom === 'breite') return Math.max(0.1, platzBreite / basisBreite);
   if (zustand.zoom === 'seite') return Math.max(0.1, Math.min(platzBreite / basisBreite, platzHoehe / basisHoehe));
   return Number(zustand.zoom) || 1;

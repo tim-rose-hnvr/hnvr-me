@@ -48,6 +48,12 @@
   --chrome-linie: #2C3438;
   --chrome-leise: #8B979C;
 
+  /* Aus dem Handoff, für die Fenster-Attrappe im Aufmacher: dieselben Werte,
+     die auch in der Anwendung gelten. */
+  --tafel:        #EFF1F2;
+  --buehne:       #5F686E;
+  --papier:       #FDFCF9;
+
   --sans: 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
   --serif: 'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
   --mono: 'IBM Plex Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -164,29 +170,72 @@ p:last-child { margin-bottom: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .stempel { animation: none; } }
 
-/* Werkzeugleiste als Beweisstück */
-.leiste {
-  background: var(--flaeche); border: 1px solid var(--linie); border-radius: 0;
-  padding: .9rem; box-shadow: 0 1px 2px rgba(20,26,28,.06), 0 14px 40px rgba(20,26,28,.09);
+/* Fenster-Attrappe im Aufmacher, nach dem Handoff: dunkler Rahmen mit drei
+   Punkten und Dateinamen, darin die drei Spalten der Anwendung. Sie zeigt,
+   wie die Werkbank aussieht — vorher stand hier eine Liste von
+   Werkzeugnamen, und die zeigt nur, dass es Werkzeuge gibt. */
+.fenster {
+  background: var(--chrome-900); padding: 8px; border-radius: 0;
+  box-shadow: 0 1px 2px rgba(20,26,28,.06), 0 14px 40px rgba(20,26,28,.16);
 }
-.leiste-kopf {
-  display: flex; align-items: center; gap: .4rem; padding: 0 .3rem .7rem;
-  border-bottom: 1px solid var(--linie); margin-bottom: .7rem;
+.fenster-kopf { display: flex; align-items: center; gap: .35rem; padding: 4px 6px 10px; }
+.ampel { width: .5rem; height: .5rem; border-radius: 50%; background: #4b5459; flex: none; }
+.fenster-titel {
+  font-family: var(--mono); font-size: .6875rem; color: #98a3a8;
+  margin-left: .5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.ampel { width: .55rem; height: .55rem; border-radius: 50%; background: var(--linie-stark); }
-.leiste-titel { font-size: .8125rem; color: var(--tinte-leise); margin-left: .35rem; }
-.werkzeuge { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: .25rem; }
-.werkzeug {
-  display: flex; align-items: center; gap: .5rem;
-  padding: .45rem .5rem; border-radius: 0; font-size: .8125rem;
-  color: var(--tinte-leise);
-  min-width: 0; white-space: nowrap; overflow: hidden;
+.fenster-rumpf { display: grid; grid-template-columns: 1fr 1.7fr 1.25fr; background: var(--flaeche); }
+
+.fenster-seiten { background: var(--tafel); padding: 8px; display: grid; gap: 8px; align-content: start; }
+.mini {
+  background: var(--papier); border: 1px solid var(--linie-stark);
+  height: 3.4rem; padding: 6px 7px; display: grid; gap: 3px; align-content: start;
 }
-.werkzeug svg { width: 1.05rem; height: 1.05rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.werkzeug.hebt { background: var(--tally-grund); color: var(--tally); }
-.werkzeug kbd {
-  margin-left: auto; flex: none; font-family: var(--mono); font-size: .6875rem;
-  color: var(--linie-stark);
+.mini.ist-aktiv { border-color: var(--tally); box-shadow: 0 0 0 1px var(--tally); }
+.mini i { display: block; height: 2px; width: 100%; background: #c9ced2; }
+.mini i:first-child { height: 4px; background: #5c666d; margin-bottom: 2px; }
+
+.fenster-buehne { background: var(--buehne); padding: 12px 10px; display: grid; place-items: start center; }
+.fenster-blatt {
+  position: relative; width: 100%; background: var(--papier);
+  padding: 12px 14px 18px; display: grid; gap: 5px; align-content: start;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3);
+}
+.blatt-kopf {
+  font-family: var(--mono); font-size: .5rem; letter-spacing: .12em; color: #8b8478;
+  border-bottom: 1px solid #e6e2d9; padding-bottom: 5px; margin-bottom: 3px;
+}
+.blatt-nummer { font-family: var(--mono); font-size: .6rem; color: var(--tally); }
+.blatt-titel { font-family: var(--serif); font-size: .95rem; font-weight: 600; margin-bottom: 3px; }
+.zeile { display: block; height: 3px; width: 100%; background: #d3d7da; }
+.zeile.hebt { background: rgba(212,175,55,.55); height: 5px; }
+.zeile.schwarz { background: #12181c; height: 5px; }
+.nadel {
+  position: absolute; right: -9px; top: 46%;
+  width: 18px; height: 18px; background: var(--tally); color: #fff;
+  border-radius: 50% 50% 50% 2px;
+  display: grid; place-items: center; font-family: var(--mono); font-size: .55rem;
+}
+
+.fenster-kommentare { background: var(--flaeche); padding: 8px; display: grid; gap: 6px; align-content: start; }
+.faden {
+  border: 1px solid var(--linie); border-left: 3px solid var(--linie-stark);
+  padding: 6px 8px; display: grid; gap: 4px;
+}
+.faden.ist-aktiv { border-left-color: var(--tally); }
+.faden-art {
+  font-family: var(--mono); font-size: .5rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--tally); background: var(--tally-grund); padding: 1px 4px; justify-self: start;
+}
+.fenster-bildzeile {
+  margin: .7rem 0 0; font-family: var(--mono); font-size: .6875rem;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--tinte-leise);
+}
+.fenster-bildzeile a { color: var(--tally); }
+
+@media (max-width: 40rem) {
+  .fenster-rumpf { grid-template-columns: 1fr 1.6fr; }
+  .fenster-kommentare { display: none; }
 }
 
 /* ---------- Raster -------------------------------------------------------- */

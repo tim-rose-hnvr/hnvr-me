@@ -172,10 +172,12 @@ export async function mitLader(text, arbeit) {
 /* ---------- Dialoge ------------------------------------------------------ */
 let dialogSchliessen = null;
 
-export function zeigeDialog({ titel, rumpf, knoepfe = [], breit = false, beiSchliessen = null }) {
+export function zeigeDialog({ titel, rumpf, knoepfe = [], breit = false, beiSchliessen = null, fussHinweis = '' }) {
   const schirm = $('#schirm');
   schirm.innerHTML = '';
   const fuss = el('div', { klasse: 'dialog-fuss' });
+  /* Handoff: links im Fuß ein Hinweis, rechts die Knöpfe. */
+  if (fussHinweis) fuss.append(el('span', { klasse: 'dialog-fuss-hinweis', text: fussHinweis }));
   const dialog = el('div', { klasse: 'dialog', stil: breit ? { width: 'min(64rem, 100%)' } : {}, role: 'dialog', 'aria-modal': 'true' },
     el('div', { klasse: 'dialog-kopf' },
       el('h2', { text: titel }),

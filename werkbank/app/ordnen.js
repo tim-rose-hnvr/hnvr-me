@@ -46,6 +46,9 @@ export function schliesseOrdnen() {
   gezeichnet.clear();
 }
 
+/** Ob der Seitenordner offen ist — die Werkzeugzeile zeigt es an. */
+export function ordnenOffen() { return istOffen(); }
+
 export function umschalteOrdnen() {
   if (istOffen()) schliesseOrdnen(); else oeffneOrdnen();
 }

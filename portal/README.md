@@ -27,7 +27,7 @@ skripte/app-einbetten.mjs   legt ../werkbank nach public/werkbank
 
 `npm run build` kopiert vorher `../werkbank` nach `public/werkbank` — damit
 wird die Anwendung mit ausgeliefert und läuft unter `/werkbank/` auf demselben
-Wix-Hosting wie die Marketingseite. **11,8 MB in 235 Dateien**, keine davon
+Wix-Hosting wie die Marketingseite. **12,2 MB in 240 Dateien**, keine davon
 über 3 MB. Mit `node skripte/app-einbetten.mjs --schlank` sind es 8,3 MB —
 dann ohne CJK-Zeichentabellen und ohne englische Texterkennung.
 
@@ -39,8 +39,8 @@ allein ergäbe 404. Dafür stehen in `astro.config.mjs` zwei Umleitungen auf
 `/werkbank/index.html`, damit auch eine von Hand eingegebene Adresse ankommt.
 
 **Nachgemessen an der veröffentlichten Seite** mit
-`node ../werkbank/werkzeuge/live-pruefen.mjs` (29 Prüfungen): alle 236 Dateien
-erreichbar und Byte für Byte gleich der gebauten Fassung (11,84 MB verglichen),
+`node ../werkbank/werkzeuge/live-pruefen.mjs` (31 Prüfungen): alle 241 Dateien
+erreichbar und Byte für Byte gleich der gebauten Fassung (12,18 MB verglichen),
 `.wasm` als `application/wasm`, die Sprachdaten als `application/gzip`, alle
 drei Wege in die Anwendung offen. Dazu wird ins verlinkte Stilblatt gesehen:
 IBM Plex ist eingebunden, ein Verweis auf Google Fonts steht nirgends, der
@@ -50,8 +50,9 @@ nennt einen Abrufer ohne Sitzung ausdrücklich nicht angemeldet, die
 ausgelieferte Anwendung trägt die Schranken-Zeile, und `/api/auth/login` leitet
 auf die Anmeldung von Wix und von dort zurück auf diese Seite. Damit läuft dort
 dieselbe Anwendung, die `pruefen.mjs` und `vollpruefung.mjs` im Browser
-durchgemessen haben — 96 + 87 Prüfungen, darunter Texterkennung,
-qpdf-Verschlüsselung und die digitale Unterschrift.
+durchgemessen haben — 128 + 102 Prüfungen, darunter Texterkennung,
+qpdf-Verschlüsselung, die digitale Unterschrift und ein eigener Abschnitt, der
+die Gestaltung gegen das Handoff nachmisst.
 
 ## Örtlich ansehen
 
@@ -132,6 +133,11 @@ Seite sonst als serverseitig ansieht — ohne Adapter bricht der Bau dann ab.
 - **Kontakt**: hnvr.me digital.
 - **Preis**: keiner. Die Werkbank kostet nichts, es braucht nur eine
   Anmeldung — das steht so auf der Seite und am Knopf.
+- **Der Aufmacher zeigt die Anwendung**, nicht eine Liste ihrer
+  Werkzeugnamen: das Fenster aus dem Handoff mit Seitenleiste, Dokument auf
+  der Bühnenfarbe (Markierung, Schwärzung, Kommentar-Nadel) und
+  Kommentarspalte. Wer sich fragt, wie das aussieht, bekommt hier die Antwort
+  und nicht das Inhaltsverzeichnis.
 - **Ausprobieren**: der Knopf führt über `/api/auth/login` in die laufende
   Anwendung unter `/werkbank/`. Das ist die stärkste Stelle der Seite: das
   Versprechen lässt sich sofort nachprüfen, mit einer eigenen Datei und

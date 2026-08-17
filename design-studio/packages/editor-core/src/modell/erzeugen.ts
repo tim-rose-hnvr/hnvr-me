@@ -7,16 +7,16 @@
  */
 
 import {
-  SCHEMA_VERSION,
   type BildElement,
   type ElementBasis,
   type Entwurf,
   type Entwurfselement,
   type FormElement,
+  SCHEMA_VERSION,
   type Seite,
   type TextElement,
 } from './entwurf.js';
-import { mmZuPx, type Format } from './masse.js';
+import { type Format, formatInPx } from './masse.js';
 
 export type IdErzeuger = () => string;
 export type Uhr = () => string;
@@ -60,9 +60,8 @@ export function erzeugeEntwurf(
   optionen: EntwurfOptionen,
   werkzeuge: Werkzeuge = standardWerkzeuge,
 ): Entwurf {
-  const { format } = optionen;
-  const dpi = format.dpi;
-  const anschnitt = mmZuPx(format.anschnittMm, dpi);
+  const masse = formatInPx(optionen.format);
+  const anschnitt = masse.anschnitt;
   const zeitpunkt = werkzeuge.jetzt();
 
   return {
@@ -70,13 +69,9 @@ export function erzeugeEntwurf(
     id: werkzeuge.neueId(),
     organisationId: optionen.organisationId,
     name: optionen.name,
-    masse: {
-      breite: mmZuPx(format.breiteMm, dpi),
-      hoehe: mmZuPx(format.hoeheMm, dpi),
-      dpi,
-    },
+    masse: { breite: masse.breite, hoehe: masse.hoehe, dpi: masse.dpi },
     anschnitt: { oben: anschnitt, rechts: anschnitt, unten: anschnitt, links: anschnitt },
-    sicherheitsabstand: mmZuPx(format.sicherheitsabstandMm, dpi),
+    sicherheitsabstand: masse.sicherheitsabstand,
     seiten: [erzeugeSeite('Seite 1', werkzeuge)],
     markenkitId: optionen.markenkitId ?? null,
     vorlageId: optionen.vorlageId ?? null,

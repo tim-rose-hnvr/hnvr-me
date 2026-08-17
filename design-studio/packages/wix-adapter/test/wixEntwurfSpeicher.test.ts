@@ -1,13 +1,13 @@
-import { describe, expect, it } from 'vitest';
 import {
+  type Entwurf,
   erzeugeEntwurf,
   erzeugeText,
   festeUhr,
   formatNachSchluessel,
-  zaehlerId,
-  type Entwurf,
   type Werkzeuge,
+  zaehlerId,
 } from '@studio/editor-core';
+import { describe, expect, it } from 'vitest';
 import {
   NichtGefunden,
   SpeicherFehler,
@@ -145,7 +145,9 @@ describe('Sichern und Laden', () => {
     datensatz['inhalt'] = null;
     datensatz['inhaltDateiId'] = null;
 
-    await expect(speicher.lade(mandant, e.id)).rejects.toThrow(/weder Inhalt noch Auslagerungsdatei/);
+    await expect(speicher.lade(mandant, e.id)).rejects.toThrow(
+      /weder Inhalt noch Auslagerungsdatei/,
+    );
   });
 
   it('meldet eine fehlende Auslagerungsdatei mit Bezug auf den Entwurf', async () => {
@@ -204,9 +206,9 @@ describe('liste', () => {
     await speicher.sichere(mandant, mitElementen(50));
     const gelesen: string[] = [];
     const echtesLies = blobs.liesText.bind(blobs);
-    blobs.liesText = async (id: string) => {
-      gelesen.push(id);
-      return echtesLies(id);
+    blobs.liesText = async (referenz) => {
+      gelesen.push(referenz.id);
+      return echtesLies(referenz);
     };
 
     await speicher.liste(mandant);

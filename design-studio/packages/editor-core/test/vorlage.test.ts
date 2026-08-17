@@ -1,34 +1,65 @@
 import { describe, expect, it } from 'vitest';
 import {
-  VorlagenFehler,
+  type AssetReferenz,
   erzeugeAusVorlage,
   erzeugeBild,
   sammlePlatzhalter,
-  type AssetReferenz,
   type Vorlage,
+  VorlagenFehler,
   type VorlagenWert,
 } from '../src/index.js';
 import { druckEntwurf, erzeugeForm, erzeugeText, mitElementen, testWerkzeuge } from './hilfen.js';
 
-const logo: AssetReferenz = { id: 'logo-1', url: '/logo.png', breite: 800, hoehe: 200, mimeTyp: 'image/png' };
-const kundenlogo: AssetReferenz = { id: 'logo-2', url: '/kunde.png', breite: 900, hoehe: 300, mimeTyp: 'image/png' };
+const logo: AssetReferenz = {
+  id: 'logo-1',
+  url: '/logo.png',
+  breite: 800,
+  hoehe: 200,
+  mimeTyp: 'image/png',
+};
+const kundenlogo: AssetReferenz = {
+  id: 'logo-2',
+  url: '/kunde.png',
+  breite: 900,
+  hoehe: 300,
+  mimeTyp: 'image/png',
+};
 
 function vorlage(): Vorlage {
   const w = testWerkzeuge('bau');
   const bauplan = mitElementen(
     druckEntwurf(w),
-    erzeugeText({ x: 200, y: 200, breite: 2000, hoehe: 300 }, 'Ihre Schlagzeile', {
-      name: 'Schlagzeile',
-      platzhalter: { schluessel: 'schlagzeile', bearbeitbar: ['text'], beschriftung: 'Schlagzeile' },
-    }, w),
-    erzeugeBild({ x: 200, y: 600, breite: 800, hoehe: 200 }, logo, {
-      name: 'Logo',
-      platzhalter: { schluessel: 'logo', bearbeitbar: ['bild'], beschriftung: 'Kundenlogo' },
-    }, w),
-    erzeugeForm({ x: 0, y: 0, breite: 2480, hoehe: 100 }, 'rechteck', {
-      name: 'Zierbalken',
-      gesperrt: true,
-    }, w),
+    erzeugeText(
+      { x: 200, y: 200, breite: 2000, hoehe: 300 },
+      'Ihre Schlagzeile',
+      {
+        name: 'Schlagzeile',
+        platzhalter: {
+          schluessel: 'schlagzeile',
+          bearbeitbar: ['text'],
+          beschriftung: 'Schlagzeile',
+        },
+      },
+      w,
+    ),
+    erzeugeBild(
+      { x: 200, y: 600, breite: 800, hoehe: 200 },
+      logo,
+      {
+        name: 'Logo',
+        platzhalter: { schluessel: 'logo', bearbeitbar: ['bild'], beschriftung: 'Kundenlogo' },
+      },
+      w,
+    ),
+    erzeugeForm(
+      { x: 0, y: 0, breite: 2480, hoehe: 100 },
+      'rechteck',
+      {
+        name: 'Zierbalken',
+        gesperrt: true,
+      },
+      w,
+    ),
   );
 
   return {
@@ -86,7 +117,12 @@ describe('erzeugeAusVorlage', () => {
   });
 
   it('vermerkt Herkunft und Markenkit am Ergebnis', () => {
-    const entwurf = erzeugeAusVorlage(vorlage(), werte, { name: 'Aushang Juli' }, testWerkzeuge('neu'));
+    const entwurf = erzeugeAusVorlage(
+      vorlage(),
+      werte,
+      { name: 'Aushang Juli' },
+      testWerkzeuge('neu'),
+    );
 
     expect(entwurf.vorlageId).toBe('vorlage-1');
     expect(entwurf.markenkitId).toBe('kit-1');
@@ -113,6 +149,86 @@ describe('erzeugeAusVorlage', () => {
     const bild = entwurf.seiten[0]!.elemente[1];
     if (bild?.typ !== 'bild') throw new Error('Bildelement erwartet');
     expect(bild.zuschnitt).toEqual({ x: 0, y: 0, breite: 1, hoehe: 1 });
+  });
+
+  it('setzt eine Farbe auf Text und auf Form', () => {
+    const v = vorlage();
+    const w = testWerkzeuge('farb');
+    const mitFarbfeld: Vorlage = {
+      ...v,
+      bauplan: mitElementen(
+        v.bauplan,
+        erzeugeForm(
+          { x: 0, y: 900, breite: 100, hoehe: 100 },
+          'rechteck',
+          {
+            name: 'Akzent',
+            platzhalter: { schluessel: 'akzent', bearbeitbar: ['farbe'], beschriftung: null },
+          },
+          w,
+        ),
+      ),
+    };
+
+    const entwurf = erzeugeAusVorlage(
+      mitFarbfeld,
+      { ...werte, akzent: { typ: 'farbe', wert: '#003366' } },
+      {},
+      testWerkzeuge('neu'),
+    );
+
+    const akzent = entwurf.seiten[0]!.elemente.at(-1);
+    if (akzent?.typ !== 'form') throw new Error('Formelement erwartet');
+    expect(akzent.fuellung).toBe('#003366');
+  });
+
+  it('weist eine Farbe auf einem Element ohne Farbe ab', () => {
+    const v = vorlage();
+    const w = testWerkzeuge('grp');
+    const mitGruppe: Vorlage = {
+      ...v,
+      bauplan: mitElementen(v.bauplan, {
+        ...erzeugeForm(
+          { x: 0, y: 900, breite: 10, hoehe: 10 },
+          'rechteck',
+          {
+            name: 'Block',
+            platzhalter: { schluessel: 'block', bearbeitbar: ['farbe'], beschriftung: null },
+          },
+          w,
+        ),
+        typ: 'gruppe',
+        kinder: [],
+      } as never),
+    };
+
+    expect(() =>
+      erzeugeAusVorlage(
+        mitGruppe,
+        { ...werte, block: { typ: 'farbe', wert: '#003366' } },
+        {},
+        testWerkzeuge('neu'),
+      ),
+    ).toThrow(/keine Farbe hat/);
+  });
+
+  it('vergibt auch Kindern einer Gruppe frische ids', () => {
+    const v = vorlage();
+    const w = testWerkzeuge('grp');
+    const kind = erzeugeText({ x: 0, y: 0, breite: 10, hoehe: 10 }, 'Kind', {}, w);
+    const mitGruppe: Vorlage = {
+      ...v,
+      bauplan: mitElementen(v.bauplan, {
+        ...erzeugeForm({ x: 0, y: 900, breite: 10, hoehe: 10 }, 'rechteck', { name: 'G' }, w),
+        typ: 'gruppe',
+        kinder: [kind],
+      } as never),
+    };
+
+    const entwurf = erzeugeAusVorlage(mitGruppe, werte, {}, testWerkzeuge('neu'));
+    const gruppe = entwurf.seiten[0]!.elemente.at(-1);
+    if (gruppe?.typ !== 'gruppe') throw new Error('Gruppe erwartet');
+    expect(gruppe.kinder[0]?.id).not.toBe(kind.id);
   });
 
   it('meldet fehlende und unbekannte Platzhalter gesammelt', () => {
@@ -167,7 +283,14 @@ describe('erzeugeAusVorlage', () => {
           ...s,
           elemente: s.elemente.map((e) =>
             e.typ === 'bild'
-              ? { ...e, platzhalter: { schluessel: 'logo', bearbeitbar: ['text' as const], beschriftung: null } }
+              ? {
+                  ...e,
+                  platzhalter: {
+                    schluessel: 'logo',
+                    bearbeitbar: ['text' as const],
+                    beschriftung: null,
+                  },
+                }
               : e,
           ),
         })),

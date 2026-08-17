@@ -1,15 +1,15 @@
 import {
+  type Entwurf,
+  type Entwurfselement,
   erzeugeEntwurf,
   erzeugeForm,
   erzeugeText,
+  type Format,
   festeUhr,
   formatNachSchluessel,
-  zaehlerId,
-  type Entwurf,
-  type Entwurfselement,
-  type Format,
   type Markenkit,
   type Werkzeuge,
+  zaehlerId,
 } from '../src/index.js';
 
 export function testWerkzeuge(praefix = 'id'): Werkzeuge {

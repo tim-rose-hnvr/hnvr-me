@@ -11,17 +11,17 @@
  */
 
 import type { Entwurf, Entwurfselement } from '../modell/entwurf.js';
-import { alleElemente } from '../modell/navigation.js';
 import {
   anschnittkasten,
   endformat,
   enthaelt,
   huelleGedreht,
+  type Kasten,
   pxZuPt,
   sicherheitskasten,
   ueberschneidet,
-  type Kasten,
 } from '../modell/masse.js';
+import { alleElemente } from '../modell/navigation.js';
 
 export type Druckschwere = 'fehler' | 'warnung';
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SchemaFehler, ladeEntwurf, migriere, pruefeEntwurf } from '../src/index.js';
+import { ladeEntwurf, migriere, pruefeEntwurf, SchemaFehler } from '../src/index.js';
 import { druckEntwurf, erzeugeText, mitElementen, testWerkzeuge } from './hilfen.js';
 
 /** Der Weg, den ein Entwurf beim Speichern und Laden tatsächlich nimmt. */

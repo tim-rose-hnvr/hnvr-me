@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
+  darfAendern,
   ElementAendern,
   ElementEntfernen,
   ElementVerschieben,
-  KommandoStack,
-  StapelReihenfolgeAendern,
-  TextAendern,
-  darfAendern,
   festeUhr,
   findeElement,
+  KommandoStack,
   type Platzhalter,
+  StapelReihenfolgeAendern,
+  TextAendern,
 } from '../src/index.js';
 import { druckEntwurf, erzeugeText, mitElementen, testWerkzeuge } from './hilfen.js';
 
@@ -48,9 +48,9 @@ describe('Platzhalter', () => {
     expect(() => stack.ausfuehren(new ElementVerschieben(text.id, 10, 0))).toThrow(
       /erlaubt nur \[text\], nicht "position"/,
     );
-    expect(() => stack.ausfuehren(new ElementAendern(text.id, { farbe: '#ff0000' }, 'farbe'))).toThrow(
-      /erlaubt nur \[text\]/,
-    );
+    expect(() =>
+      stack.ausfuehren(new ElementAendern(text.id, { farbe: '#ff0000' }, 'farbe')),
+    ).toThrow(/erlaubt nur \[text\]/);
   });
 
   it('verbieten strukturelle Eingriffe grundsätzlich, auch bei weiten Rechten', () => {

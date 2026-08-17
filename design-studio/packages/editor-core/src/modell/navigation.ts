@@ -90,7 +90,9 @@ export function entnimmElement(entwurf: Entwurf, elementId: string): Entnahme | 
     elemente
       .filter((element) => element.id !== elementId)
       .map((element) =>
-        element.typ === 'gruppe' ? { ...element, kinder: entferneAusListe(element.kinder) } : element,
+        element.typ === 'gruppe'
+          ? { ...element, kinder: entferneAusListe(element.kinder) }
+          : element,
       );
 
   const seiten = entwurf.seiten.map((seite) => ({
@@ -141,7 +143,9 @@ export function fuegeElementEin(
 }
 
 /** Alle Elemente eines Entwurfs in Dokumentreihenfolge, Gruppen eingeschlossen. */
-export function* alleElemente(entwurf: Entwurf): Generator<{ element: Entwurfselement; seiteId: string }> {
+export function* alleElemente(
+  entwurf: Entwurf,
+): Generator<{ element: Entwurfselement; seiteId: string }> {
   function* durchlaufe(
     elemente: readonly Entwurfselement[],
     seiteId: string,

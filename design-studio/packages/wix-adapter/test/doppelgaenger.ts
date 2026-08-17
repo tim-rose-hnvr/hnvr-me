@@ -4,7 +4,7 @@
  * der Adapter nicht darauf verlassen.
  */
 
-import type { BlobSpeicher, Mandant } from '../src/speicher.js';
+import type { Blobreferenz, BlobSpeicher, Mandant } from '../src/speicher.js';
 import type { WixDatenClient, WixDatensatz, WixMedienClient } from '../src/wixApi.js';
 
 export class DatenDoppelgaenger implements WixDatenClient {
@@ -75,34 +75,59 @@ export class BlobDoppelgaenger implements BlobSpeicher {
     name: string,
     _mimeTyp: string,
     daten: Blob,
-  ): Promise<{ id: string; url: string }> {
+  ): Promise<Blobreferenz> {
     this.#zaehler += 1;
     const id = `datei-${this.#zaehler}`;
     this.dateien.set(id, await daten.text());
     return { id, url: `https://static.example/${id}/${name}` };
   }
 
-  async liesText(id: string): Promise<string> {
-    const inhalt = this.dateien.get(id);
-    if (inhalt === undefined) throw new Error(`Datei "${id}" gibt es nicht`);
+  async liesText(referenz: Blobreferenz): Promise<string> {
+    // Bewusst nur über die id: eine dauerhafte URL taugt bei privaten Dateien
+    // nicht zum Lesen, und dieser Doppelgänger soll das nicht verschleiern.
+    const inhalt = this.dateien.get(referenz.id);
+    if (inhalt === undefined) throw new Error(`Datei "${referenz.id}" gibt es nicht`);
     return inhalt;
   }
 
-  async loesche(id: string): Promise<void> {
-    this.dateien.delete(id);
+  async loesche(referenz: Blobreferenz): Promise<void> {
+    this.dateien.delete(referenz.id);
   }
 }
 
+/**
+ * Bildet den Media Manager **einschließlich seiner Unfreundlichkeit** nach:
+ * die beim Hochladen zurückgegebene `url` einer privaten Datei antwortet mit
+ * 403, lesbar ist nur eine über `generateFileDownloadUrl` ausgestellte,
+ * befristete URL. Ein gutmütigerer Doppelgänger hat genau diesen Fehler schon
+ * einmal durchgelassen.
+ */
 export class MedienDoppelgaenger implements WixMedienClient {
   readonly aufrufe: { mimeType: string; optionen: unknown }[] = [];
+  readonly downloadAufrufe: { fileId: string; optionen: unknown }[] = [];
+  /** id → Inhalt, wie er nach dem Upload im Media Manager läge. */
+  readonly inhalte = new Map<string, string>();
+  /** Auf `false` setzen, um einen Client ohne diese Fähigkeit nachzubilden. */
+  kannDownloadUrl = true;
 
   readonly files = {
     generateFileUploadUrl: async (mimeType: string, optionen?: unknown) => {
       this.aufrufe.push({ mimeType, optionen });
       return { uploadUrl: `https://upload.example/${this.aufrufe.length}` };
     },
+
+    generateFileDownloadUrl: async (fileId: string, optionen?: unknown) => {
+      if (!this.kannDownloadUrl) throw new Error('nicht verfügbar');
+      this.downloadAufrufe.push({ fileId, optionen });
+      return { downloadUrls: [{ assetKey: 'src', url: `${BEFRISTET}${fileId}?token=abc` }] };
+    },
   };
 }
+
+/** Präfix der befristeten, lesbaren URLs im Doppelgänger. */
+export const BEFRISTET = 'https://download-files.example/';
+/** Präfix der dauerhaften URLs, die bei privaten Dateien 403 liefern. */
+export const DAUERHAFT = 'https://static.example/';
 
 export const mandant: Mandant = { organisationId: 'org-1' };
 export const fremderMandant: Mandant = { organisationId: 'org-2' };

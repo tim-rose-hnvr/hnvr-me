@@ -1,0 +1,65 @@
+name: Design Studio
+
+on:
+  push:
+    branches: ['**']
+    paths: ['design-studio/**', '.github/workflows/design-studio.yml']
+  pull_request:
+    paths: ['design-studio/**', '.github/workflows/design-studio.yml']
+
+# Ein laufender Durchgang je Branch reicht; ältere werden abgebrochen.
+concurrency:
+  group: design-studio-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: design-studio
+
+jobs:
+  pruefen:
+    name: Lint, Typen, Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: design-studio/pnpm-lock.yaml
+
+      - name: Abhängigkeiten installieren
+        run: pnpm install --frozen-lockfile
+
+      - name: Linter und Formatierung
+        run: pnpm run lint
+
+      - name: Typen prüfen
+        run: pnpm run typecheck
+
+      - name: Tests mit Abdeckung
+        run: pnpm run test:coverage
+
+      # Der Spike ist ein Messwerkzeug — hier wird geprüft, dass er überhaupt
+      # etwas misst. Ohne Browser überspringt er sich selbst, deshalb wird der
+      # Pfad ausdrücklich gesetzt statt auf die Selbstsuche zu vertrauen.
+      - name: Spike-Selbsttest
+        env:
+          CHROMIUM_PFAD: /usr/bin/google-chrome
+        run: pnpm run spike
+
+      - name: Abdeckungsbericht sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abdeckung
+          path: design-studio/packages/*/coverage/lcov.info
+          if-no-files-found: warn
+          retention-days: 7

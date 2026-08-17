@@ -62,16 +62,24 @@ export interface MarkenkitSpeicher {
 }
 
 /**
+ * Verweis auf eine abgelegte Datei.
+ *
+ * Beides wird gebraucht und beides wird mitgespeichert: die `id` ist der
+ * dauerhafte Schlüssel, über den sich ein Lesezugriff beschaffen lässt, die
+ * `url` taugt für öffentliche Dateien und als Anzeigepfad. Bei privaten Dateien
+ * ist die `url` **nicht** zum Lesen zu gebrauchen — siehe `wixBlobSpeicher.ts`.
+ */
+export interface Blobreferenz {
+  id: string;
+  url: string;
+}
+
+/**
  * Rohdatenablage für alles, was nicht in einen Datensatz passt: Bilder,
  * Schriften und ausgelagerte Entwurfsinhalte.
  */
 export interface BlobSpeicher {
-  schreibe(
-    mandant: Mandant,
-    name: string,
-    mimeTyp: string,
-    daten: Blob,
-  ): Promise<{ id: string; url: string }>;
-  liesText(id: string): Promise<string>;
-  loesche(id: string): Promise<void>;
+  schreibe(mandant: Mandant, name: string, mimeTyp: string, daten: Blob): Promise<Blobreferenz>;
+  liesText(referenz: Blobreferenz): Promise<string>;
+  loesche(referenz: Blobreferenz): Promise<void>;
 }

@@ -3,15 +3,22 @@ import {
   ElementAendern,
   ElementEntfernen,
   ElementHinzufuegen,
+  type Entwurf,
+  festeUhr,
+  findeElement,
   KommandoFehler,
   KommandoStack,
   StapelReihenfolgeAendern,
   TextAendern,
-  festeUhr,
-  findeElement,
-  type Entwurf,
 } from '../src/index.js';
-import { druckEntwurf, ersteSeiteId, erzeugeForm, erzeugeText, mitElementen, testWerkzeuge } from './hilfen.js';
+import {
+  druckEntwurf,
+  ersteSeiteId,
+  erzeugeForm,
+  erzeugeText,
+  mitElementen,
+  testWerkzeuge,
+} from './hilfen.js';
 
 function reihenfolge(entwurf: Entwurf): string[] {
   return entwurf.seiten[0]?.elemente.map((e) => e.name) ?? [];
@@ -46,7 +53,10 @@ describe('ElementHinzufuegen und ElementEntfernen', () => {
     const kollision = { ...doppelt, id: ids[0]! };
     expect(() =>
       stack.ausfuehren(
-        new ElementHinzufuegen({ seiteId: ersteSeiteId(stack.entwurf), gruppenId: null, index: 0 }, kollision),
+        new ElementHinzufuegen(
+          { seiteId: ersteSeiteId(stack.entwurf), gruppenId: null, index: 0 },
+          kollision,
+        ),
       ),
     ).toThrow(/schon vergeben/);
   });
@@ -124,10 +134,17 @@ describe('StapelReihenfolgeAendern', () => {
 describe('ElementAendern', () => {
   it('nimmt genau die geänderten Felder zurück', () => {
     const w = testWerkzeuge();
-    const text = erzeugeText({ x: 0, y: 0, breite: 100, hoehe: 40 }, 'Titel', { schriftGroesse: 20 }, w);
+    const text = erzeugeText(
+      { x: 0, y: 0, breite: 100, hoehe: 40 },
+      'Titel',
+      { schriftGroesse: 20 },
+      w,
+    );
     const stack = new KommandoStack(mitElementen(druckEntwurf(w), text), { jetzt: festeUhr() });
 
-    stack.ausfuehren(new ElementAendern(text.id, { schriftGroesse: 48, farbe: '#003366' }, 'farbe'));
+    stack.ausfuehren(
+      new ElementAendern(text.id, { schriftGroesse: 48, farbe: '#003366' }, 'farbe'),
+    );
     const geaendert = findeElement(stack.entwurf, text.id)?.element;
     if (geaendert?.typ !== 'text') throw new Error('Textelement erwartet');
     expect(geaendert.schriftGroesse).toBe(48);
@@ -146,7 +163,9 @@ describe('ElementAendern', () => {
     const text = erzeugeText({ x: 0, y: 0, breite: 10, hoehe: 10 }, 'x', {}, w);
     const stack = new KommandoStack(mitElementen(druckEntwurf(w), text), { jetzt: festeUhr() });
 
-    const boesartig = { id: 'anders' } as unknown as ConstructorParameters<typeof ElementAendern>[1];
+    const boesartig = { id: 'anders' } as unknown as ConstructorParameters<
+      typeof ElementAendern
+    >[1];
     expect(() => stack.ausfuehren(new ElementAendern(text.id, boesartig, 'farbe'))).toThrow(
       /darf nicht geändert werden/,
     );
@@ -157,7 +176,9 @@ describe('ElementAendern', () => {
     const text = erzeugeText({ x: 0, y: 0, breite: 10, hoehe: 10 }, 'x', {}, w);
     const stack = new KommandoStack(mitElementen(druckEntwurf(w), text), { jetzt: festeUhr() });
 
-    expect(() => stack.ausfuehren(new ElementAendern(text.id, {}, 'farbe'))).toThrow(/leere Änderung/);
+    expect(() => stack.ausfuehren(new ElementAendern(text.id, {}, 'farbe'))).toThrow(
+      /leere Änderung/,
+    );
   });
 });
 

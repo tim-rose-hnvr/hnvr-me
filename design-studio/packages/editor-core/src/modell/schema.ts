@@ -10,7 +10,6 @@
  */
 
 import {
-  SCHEMA_VERSION,
   type Anschnitt,
   type AssetReferenz,
   type Autoanpassung,
@@ -23,6 +22,7 @@ import {
   type Kontur,
   type Masse,
   type Platzhalter,
+  SCHEMA_VERSION,
   type Seite,
   type Textausrichtung,
   type Zuschnitt,
@@ -250,7 +250,10 @@ function pruefeElement(p: Pruefer, roh: unknown, pfad: string): Entwurfselement 
         inhalt: p.text(o['inhalt'], `${pfad}.inhalt`),
         schriftFamilie: p.text(o['schriftFamilie'], `${pfad}.schriftFamilie`, { nichtLeer: true }),
         schriftGroesse: p.zahl(o['schriftGroesse'], `${pfad}.schriftGroesse`, { min: 0.1 }),
-        schriftStaerke: p.zahl(o['schriftStaerke'], `${pfad}.schriftStaerke`, { min: 100, max: 900 }),
+        schriftStaerke: p.zahl(o['schriftStaerke'], `${pfad}.schriftStaerke`, {
+          min: 100,
+          max: 900,
+        }),
         kursiv: p.wahrheitswert(o['kursiv'], `${pfad}.kursiv`),
         farbe: p.farbe(o['farbe'], `${pfad}.farbe`),
         ausrichtung: p.auswahl(o['ausrichtung'], `${pfad}.ausrichtung`, AUSRICHTUNGEN),
@@ -354,12 +357,14 @@ export function pruefeEntwurf(roh: unknown): Entwurf {
     anschnitt: pruefeAnschnitt(p, o['anschnitt'], '$.anschnitt'),
     sicherheitsabstand: p.zahl(o['sicherheitsabstand'], '$.sicherheitsabstand', { min: 0 }),
     seiten: rohSeiten.map((seite, i) => pruefeSeite(p, seite, `$.seiten[${i}]`)),
-    markenkitId: o['markenkitId'] === null || o['markenkitId'] === undefined
-      ? null
-      : p.text(o['markenkitId'], '$.markenkitId', { nichtLeer: true }),
-    vorlageId: o['vorlageId'] === null || o['vorlageId'] === undefined
-      ? null
-      : p.text(o['vorlageId'], '$.vorlageId', { nichtLeer: true }),
+    markenkitId:
+      o['markenkitId'] === null || o['markenkitId'] === undefined
+        ? null
+        : p.text(o['markenkitId'], '$.markenkitId', { nichtLeer: true }),
+    vorlageId:
+      o['vorlageId'] === null || o['vorlageId'] === undefined
+        ? null
+        : p.text(o['vorlageId'], '$.vorlageId', { nichtLeer: true }),
     erstelltAm: p.zeitpunkt(o['erstelltAm'], '$.erstelltAm'),
     geaendertAm: p.zeitpunkt(o['geaendertAm'], '$.geaendertAm'),
   };

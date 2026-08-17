@@ -1,16 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type AssetReferenz,
   DPI_DRUCK,
+  type Entwurf,
   erzeugeBild,
   mmZuPx,
   nurDruckfehler,
   pruefeDruck,
   ptZuPx,
   wirksameDpi,
-  type AssetReferenz,
-  type Entwurf,
 } from '../src/index.js';
-import { druckEntwurf, erzeugeForm, erzeugeText, mitElementen, socialEntwurf, testWerkzeuge } from './hilfen.js';
+import {
+  druckEntwurf,
+  erzeugeForm,
+  erzeugeText,
+  mitElementen,
+  socialEntwurf,
+  testWerkzeuge,
+} from './hilfen.js';
 
 const anschnittPx = mmZuPx(3, DPI_DRUCK);
 
@@ -43,7 +50,12 @@ describe('Anschnitt', () => {
     const entwurf = mitElementen(
       basis,
       erzeugeForm(
-        { x: -anschnittPx, y: -anschnittPx, breite: basis.masse.breite + 2 * anschnittPx, hoehe: 400 },
+        {
+          x: -anschnittPx,
+          y: -anschnittPx,
+          breite: basis.masse.breite + 2 * anschnittPx,
+          hoehe: 400,
+        },
         'rechteck',
         { name: 'Kopfbalken' },
         w,
@@ -151,7 +163,9 @@ describe('Bildauflösung', () => {
       erzeugeBild({ x: 200, y: 200, breite: 1200, hoehe: 1200 }, foto(200, 200), {}, w),
     );
 
-    expect(pruefeDruck(entwurf, { pruefeAufloesung: false }).map((b) => b.regel)).not.toContain('aufloesung');
+    expect(pruefeDruck(entwurf, { pruefeAufloesung: false }).map((b) => b.regel)).not.toContain(
+      'aufloesung',
+    );
   });
 });
 
@@ -160,9 +174,14 @@ describe('Haarlinien', () => {
     const w = testWerkzeuge();
     const entwurf = mitElementen(
       druckEntwurf(w),
-      erzeugeForm({ x: 300, y: 300, breite: 400, hoehe: 200 }, 'rechteck', {
-        kontur: { farbe: '#003366', staerke: ptZuPx(0.1, DPI_DRUCK) },
-      }, w),
+      erzeugeForm(
+        { x: 300, y: 300, breite: 400, hoehe: 200 },
+        'rechteck',
+        {
+          kontur: { farbe: '#003366', staerke: ptZuPx(0.1, DPI_DRUCK) },
+        },
+        w,
+      ),
     );
 
     const befund = pruefeDruck(entwurf).find((b) => b.regel === 'haarlinie');
@@ -173,9 +192,14 @@ describe('Haarlinien', () => {
     const w = testWerkzeuge();
     const entwurf = mitElementen(
       druckEntwurf(w),
-      erzeugeForm({ x: 300, y: 300, breite: 400, hoehe: 200 }, 'rechteck', {
-        kontur: { farbe: '#003366', staerke: ptZuPx(1, DPI_DRUCK) },
-      }, w),
+      erzeugeForm(
+        { x: 300, y: 300, breite: 400, hoehe: 200 },
+        'rechteck',
+        {
+          kontur: { farbe: '#003366', staerke: ptZuPx(1, DPI_DRUCK) },
+        },
+        w,
+      ),
     );
 
     expect(regeln(entwurf)).not.toContain('haarlinie');

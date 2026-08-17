@@ -14,9 +14,9 @@ fremde Projekte.
 
 | Paket | Zustand |
 |---|---|
-| `packages/editor-core` | steht, 86 Tests |
-| `packages/wix-adapter` | steht, 24 Tests |
-| `apps/spike-pdf` | messbereit, gegen zwei CSP-Fassungen geprüft |
+| `packages/editor-core` | steht, 117 Tests, 91 % Abdeckung |
+| `packages/wix-adapter` | steht, 31 Tests, 92 % Abdeckung |
+| `apps/spike-pdf` | messbereit, mit eigenem Selbsttest (5 Tests) |
 | `packages/editor-ui` | **wartet auf die Lizenzklärung** |
 | `packages/export` | offen |
 | `packages/embed` | offen |
@@ -39,9 +39,14 @@ Zwei Dinge blockieren alles Weitere, beide unabhängig voneinander:
 
 ```bash
 pnpm install
-pnpm -r test
-pnpm -r typecheck
+pnpm run check     # Linter, Typen, Tests mit Abdeckung
+pnpm run spike     # Selbsttest des CSP-Spikes (braucht Chromium)
 ```
+
+`pnpm run check` ist das Tor: dasselbe läuft in der CI
+(`.github/workflows/design-studio.yml`) bei jedem Push. Biome übernimmt Linten
+und Formatieren, die Abdeckungsschwellen sind Sperrklinken knapp unter dem
+Ist-Stand.
 
 ## Wo was liegt
 
@@ -60,10 +65,30 @@ pnpm -r typecheck
 - **Speicher** — `packages/wix-adapter/src/speicher.ts` ist die anbieterfreie Grenze.
   Alles Wix-Spezifische liegt daneben.
 
-## Eine Wix-Eigenheit, die man kennen muss
+## Zwei Wix-Eigenheiten, die man kennen muss
 
-Ein Datensatz in Wix Data darf höchstens **512 KB** groß sein (Fehler WDE0009). Ein
+**Ein Datensatz in Wix Data darf höchstens 512 KB groß sein** (Fehler WDE0009). Ein
 Entwurf mit vielen Elementen sprengt das — und zwar lautlos erst beim Kunden. Der
 `WixEntwurfSpeicher` schreibt den Inhalt deshalb nur unterhalb einer Schwelle direkt in
 den Datensatz und lagert ihn darüber in den Media Manager aus. Die Übersichtsliste
 kommt in beiden Fällen ohne den Inhalt aus.
+
+**Private Dateien sind über ihre `url` nicht lesbar.** Wix gibt beim Hochladen eine
+URL zurück, die bei `private: true` mit 403 antwortet. Lesbar wird die Datei nur über
+eine befristete URL aus `generateFileDownloadUrl` — und dieser Aufruf braucht
+`SCOPE.DC-MEDIA.MANAGE-MEDIAMANAGER`, den eine Besuchersitzung im Browser nicht hat.
+Im Frontend muss die Auflösung deshalb über eine eigene Serverfunktion laufen; dafür
+ist `downloadUrlAufloeser` im `WixBlobSpeicher` da. **Das ist die erste
+Serverfunktion, die `apps/studio` braucht.**
+
+## Was beim Härten gefunden wurde
+
+Drei echte Fehler, alle inzwischen durch Tests abgesichert — die Regeln dahinter
+stehen in `CLAUDE.md`:
+
+1. Rückgängig nahm von zehn Ziehschritten nur einen zurück, weil die Umkehrung
+   von `ElementVerschieben` relativ statt absolut war.
+2. Instagram Story wurde 1919,99 px statt 1920, weil alle Formate durch
+   Millimeter gerechnet wurden.
+3. Ausgelagerte Entwürfe wären beim Kunden nie ladbar gewesen: der Adapter las
+   private Dateien über ihre dauerhafte URL, die immer 403 liefert.

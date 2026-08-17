@@ -57,6 +57,23 @@ export interface WixMedienClient {
         labels?: string[];
       },
     ): Promise<{ uploadUrl: string }>;
+
+    /**
+     * Befristete Download-URL für eine private Datei. Optional, weil im
+     * Browser stattdessen ein eigener Endpunkt aufgelöst wird — der Aufruf
+     * braucht `SCOPE.DC-MEDIA.MANAGE-MEDIAMANAGER`.
+     * https://dev.wix.com/docs/api-reference/assets/media/media-manager/files/generate-file-download-url
+     */
+    generateFileDownloadUrl?(
+      fileId: string,
+      optionen?: {
+        downloadFileName?: string;
+        expirationInMinutes?: number;
+        expirationRedirectUrl?: string;
+        assetKeys?: string[];
+        contentDisposition?: 'ATTACHMENT' | 'INLINE';
+      },
+    ): Promise<{ downloadUrls?: { url?: string; assetKey?: string }[] }>;
   };
 }
 

@@ -51,6 +51,42 @@ negative Koordinaten. Das ist gewollt.
 
 ---
 
+## Drei Regeln, die aus echten Fehlern stammen
+
+Jede davon war einmal falsch und ist durch einen Test abgesichert. Wer sie
+aufweicht, holt den Fehler zurück.
+
+1. **Verschmelzbare Kommandos brauchen absolute Umkehrungen.** Der Stack behält
+   beim Verschmelzen nur die Umkehrung des *ersten* Kommandos. Eine relative
+   Umkehrung (`-dx`) nahm von zehn Ziehschritten genau einen zurück. Deshalb ist
+   die Umkehrung von `ElementVerschieben` ein `ElementPositionSetzen`.
+2. **Jedes Format trägt seine natürliche Einheit.** Druck in mm, Bildschirm in px.
+   Der Umweg über Millimeter ergab 1919,99 px für die Instagram Story statt 1920.
+   Bildschirmformate müssen pixelgenau sein.
+3. **Private Wix-Dateien sind über ihre `url` nicht lesbar** — sie antwortet mit
+   403. Lesen geht nur über eine befristete URL aus `generateFileDownloadUrl`,
+   und das braucht erhöhte Rechte, also eine Serverfunktion.
+
+Und die Lehre daraus für Tests: **Doppelgänger müssen so unfreundlich sein wie
+der echte Dienst.** Fehler 3 blieb nur deshalb liegen, weil der Testdoppelgänger
+eine URL zurückgab, die funktionierte — der echte Media Manager tut das nicht.
+
+## Werkzeuge
+
+```bash
+pnpm run check      # Linter, Typen, Tests mit Abdeckung — das Tor vor jedem Commit
+pnpm run lint:fix   # Biome formatiert und räumt auf
+pnpm run spike      # Selbsttest des CSP-Spikes, braucht einen Chromium
+```
+
+Abdeckungsschwellen sind Sperrklinken knapp unter dem Ist-Stand: sie melden
+einen Rückschritt, sie sind kein Ziel. Wer eine Schwelle senkt, begründet es im
+Commit.
+
+Biome und TypeScript sind aufeinander abgestimmt: `noPropertyAccessFromIndexSignature`
+verlangt Klammerzugriff bei Index-Signaturen, deshalb ist Biomes `useLiteralKeys`
+abgeschaltet. Die beiden dürfen sich nicht widersprechen.
+
 ## Aufbau
 
 ```

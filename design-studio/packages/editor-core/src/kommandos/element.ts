@@ -21,8 +21,8 @@ import {
   findeSeite,
   fuegeElementEin,
 } from '../modell/navigation.js';
-import { KommandoFehler, type Kommando, type KommandoErgebnis } from './stack.js';
-import { verlangeAenderungsrecht, type Aspekt } from './schutz.js';
+import { type Aspekt, verlangeAenderungsrecht } from './schutz.js';
+import { type Kommando, type KommandoErgebnis, KommandoFehler } from './stack.js';
 
 /**
  * Teiländerung an einem Element. `Partial` verteilt sich über die Vereinigung,
@@ -158,6 +158,12 @@ export class ElementAendern implements Kommando {
 /**
  * Verschieben ist ein eigenes Kommando statt einer `ElementAendern`-Variante,
  * weil es beim Ziehen hundertfach je Sekunde kommt und deshalb verschmelzen muss.
+ *
+ * Die Umkehrung ist bewusst `ElementPositionSetzen` und nicht die
+ * Gegenverschiebung: der Stack behält beim Verschmelzen nur die **erste**
+ * Umkehrung, und eine relative Gegenverschiebung würde dann nur den ersten
+ * Ziehschritt zurücknehmen statt der ganzen Bewegung. Siehe die Regel zu
+ * absoluten Umkehrungen in `stack.ts`.
  */
 export class ElementVerschieben implements Kommando {
   readonly name = 'Element verschieben';
@@ -178,6 +184,7 @@ export class ElementVerschieben implements Kommando {
     }
     verlangeAenderungsrecht(this.name, fundstelle.element, 'position');
 
+    const { x: altX, y: altY } = fundstelle.element;
     const neu = ersetzeElement(entwurf, this.elementId, (element) => ({
       ...element,
       x: element.x + this.dx,
@@ -189,7 +196,48 @@ export class ElementVerschieben implements Kommando {
 
     return {
       entwurf: neu,
-      umkehr: new ElementVerschieben(this.elementId, -this.dx, -this.dy),
+      umkehr: new ElementPositionSetzen(this.elementId, altX, altY),
+    };
+  }
+}
+
+/**
+ * Setzt eine Position absolut. Umkehrung von `ElementVerschieben` und selbst
+ * verschmelzbar — die Umkehrung ist wieder absolut, damit bleibt die Regel
+ * über beliebig viele Rückgängig- und Wiederholen-Schritte erhalten.
+ */
+export class ElementPositionSetzen implements Kommando {
+  readonly name = 'Position setzen';
+  readonly verschmelzSchluessel: string;
+
+  constructor(
+    private readonly elementId: string,
+    private readonly x: number,
+    private readonly y: number,
+  ) {
+    this.verschmelzSchluessel = `verschieben:${elementId}`;
+  }
+
+  anwenden(entwurf: Entwurf): KommandoErgebnis {
+    const fundstelle = findeElement(entwurf, this.elementId);
+    if (fundstelle === null) {
+      throw new KommandoFehler(this.name, `Element "${this.elementId}" gibt es nicht`);
+    }
+    verlangeAenderungsrecht(this.name, fundstelle.element, 'position');
+
+    const { x: altX, y: altY } = fundstelle.element;
+    const neu = ersetzeElement(entwurf, this.elementId, (element) => ({
+      ...element,
+      x: this.x,
+      y: this.y,
+    }));
+    if (neu === null) {
+      throw new KommandoFehler(this.name, `Element "${this.elementId}" verschwand beim Ersetzen`);
+    }
+
+    return {
+      entwurf: neu,
+      umkehr: new ElementPositionSetzen(this.elementId, altX, altY),
     };
   }
 }
@@ -267,7 +315,11 @@ export class StapelReihenfolgeAendern implements Kommando {
       return { entwurf, umkehr: new StapelIndexSetzen(this.elementId, index) };
     }
 
-    const neu = fuegeElementEin(entnahme.entwurf, { seiteId, gruppenId, index: zielIndex }, element);
+    const neu = fuegeElementEin(
+      entnahme.entwurf,
+      { seiteId, gruppenId, index: zielIndex },
+      element,
+    );
     if (neu === null) {
       throw new KommandoFehler(this.name, 'Einfügestelle nach dem Entnehmen nicht mehr gefunden');
     }

@@ -9,15 +9,16 @@
  * die Übersichtsliste, damit `liste()` nie den Inhalt laden muss.
  */
 
-import { ladeEntwurf, type Entwurf } from '@studio/editor-core';
+import { type Entwurf, ladeEntwurf } from '@studio/editor-core';
 import {
-  NichtGefunden,
-  SpeicherFehler,
+  type Blobreferenz,
   type BlobSpeicher,
   type EntwurfSpeicher,
   type Kurzfassung,
   type Mandant,
+  NichtGefunden,
   type Seitenabfrage,
+  SpeicherFehler,
 } from './speicher.js';
 import { datenAus, type WixDatenClient, type WixDatensatz } from './wixApi.js';
 
@@ -44,10 +45,23 @@ interface EntwurfDatensatz extends WixDatensatz {
   inhalt: string | null;
   /** Blob-id des ausgelagerten JSON, wenn er zu groß war — sonst `null`. */
   inhaltDateiId: string | null;
+  /**
+   * URL derselben Datei. Wird mitgeschrieben, weil die Blobreferenz beides
+   * trägt — zum Lesen privater Dateien taugt sie nicht, siehe `wixBlobSpeicher`.
+   */
+  inhaltDateiUrl: string | null;
 }
 
 function byteLaenge(text: string): number {
   return new TextEncoder().encode(text).length;
+}
+
+/** Liest die Auslagerungsreferenz aus einem Datensatz, oder `null`. */
+function auslagerung(datensatz: WixDatensatz): Blobreferenz | null {
+  const id = datensatz['inhaltDateiId'];
+  if (typeof id !== 'string' || id === '') return null;
+  const url = datensatz['inhaltDateiUrl'];
+  return { id, url: typeof url === 'string' ? url : '' };
 }
 
 export interface WixEntwurfSpeicherOptionen {
@@ -84,6 +98,7 @@ export class WixEntwurfSpeicher implements EntwurfSpeicher {
 
     let inhalt: string | null = json;
     let inhaltDateiId: string | null = null;
+    let inhaltDateiUrl: string | null = null;
 
     if (groesse > this.#schwelle) {
       const datei = await this.#blobs.schreibe(
@@ -94,6 +109,7 @@ export class WixEntwurfSpeicher implements EntwurfSpeicher {
       );
       inhalt = null;
       inhaltDateiId = datei.id;
+      inhaltDateiUrl = datei.url;
     }
 
     const datensatz: EntwurfDatensatz = {
@@ -105,6 +121,7 @@ export class WixEntwurfSpeicher implements EntwurfSpeicher {
       markenkitId: entwurf.markenkitId,
       inhalt,
       inhaltDateiId,
+      inhaltDateiUrl,
     };
 
     try {
@@ -149,9 +166,8 @@ export class WixEntwurfSpeicher implements EntwurfSpeicher {
       throw new SpeicherFehler(`Entwurf "${entwurfId}" ließ sich nicht löschen`, ursache);
     }
 
-    if (typeof datensatz['inhaltDateiId'] === 'string') {
-      await this.#blobs.loesche(datensatz['inhaltDateiId']);
-    }
+    const referenz = auslagerung(datensatz);
+    if (referenz !== null) await this.#blobs.loesche(referenz);
   }
 
   async liste(mandant: Mandant, abfrage: Seitenabfrage = {}): Promise<Kurzfassung[]> {
@@ -195,18 +211,18 @@ export class WixEntwurfSpeicher implements EntwurfSpeicher {
   async #inhaltVon(datensatz: WixDatensatz, entwurfId: string): Promise<string> {
     if (typeof datensatz['inhalt'] === 'string') return datensatz['inhalt'];
 
-    const dateiId = datensatz['inhaltDateiId'];
-    if (typeof dateiId !== 'string' || dateiId === '') {
+    const referenz = auslagerung(datensatz);
+    if (referenz === null) {
       throw new SpeicherFehler(
         `Entwurf "${entwurfId}" hat weder Inhalt noch Auslagerungsdatei — der Datensatz ist kaputt`,
       );
     }
 
     try {
-      return await this.#blobs.liesText(dateiId);
+      return await this.#blobs.liesText(referenz);
     } catch (ursache) {
       throw new SpeicherFehler(
-        `Auslagerungsdatei "${dateiId}" von Entwurf "${entwurfId}" ist nicht lesbar`,
+        `Auslagerungsdatei "${referenz.id}" von Entwurf "${entwurfId}" ist nicht lesbar`,
         ursache,
       );
     }

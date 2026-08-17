@@ -42,8 +42,5 @@ export function verlangeAenderungsrecht(
       `Platzhalter "${element.platzhalter.schluessel}" erlaubt nur [${erlaubt}], nicht "${aspekt}"`,
     );
   }
-  throw new KommandoFehler(
-    kommando,
-    `Element "${element.name}" (${element.id}) ist gesperrt`,
-  );
+  throw new KommandoFehler(kommando, `Element "${element.name}" (${element.id}) ist gesperrt`);
 }

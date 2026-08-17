@@ -5,15 +5,25 @@
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "build": "pnpm -r build",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run test:coverage",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck"
+    "test:coverage": "pnpm -r test:coverage",
+    "spike": "node --test apps/spike-pdf/spike.test.mjs"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.8",
+    "@vitest/coverage-v8": "^3.2.7",
+    "playwright-core": "^1.62.1",
     "typescript": "^5.7.3",
     "vitest": "^3.0.5"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

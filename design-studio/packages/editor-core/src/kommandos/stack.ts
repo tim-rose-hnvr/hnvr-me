@@ -25,6 +25,15 @@ export interface Kommando {
   /**
    * Kommandos mit gleichem Schlüssel, die direkt aufeinander folgen, werden zu
    * einem Rückgängig-Schritt zusammengefasst. `null` heißt: nie verschmelzen.
+   *
+   * **Regel für verschmelzbare Kommandos: die Umkehrung muss absolut sein.**
+   * Beim Verschmelzen behält der Stack nur die Umkehrung des *ersten*
+   * Kommandos — sie muss also den Zustand von vor der ganzen Folge
+   * wiederherstellen, nicht bloß einen Schritt zurückgehen. Eine relative
+   * Umkehrung (etwa eine Gegenverschiebung um `-dx`) nimmt sonst von zehn
+   * Ziehschritten nur einen zurück. Deshalb ist die Umkehrung von
+   * `ElementVerschieben` ein `ElementPositionSetzen` und die von `TextAendern`
+   * der vollständige alte Text.
    */
   readonly verschmelzSchluessel: string | null;
   anwenden(entwurf: Entwurf): KommandoErgebnis;

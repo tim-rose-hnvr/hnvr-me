@@ -7,9 +7,9 @@
  * bringen, weil jedes Kommando am Altbestand scheitert.
  */
 
-import { KommandoFehler, type Kommando, type KommandoErgebnis } from '../kommandos/stack.js';
+import { type Kommando, type KommandoErgebnis, KommandoFehler } from '../kommandos/stack.js';
 import type { Entwurf } from '../modell/entwurf.js';
-import { pruefeMarkenkonform, type Markenkit, type Markenverstoss } from './markenkit.js';
+import { type Markenkit, type Markenverstoss, pruefeMarkenkonform } from './markenkit.js';
 
 function kennung(verstoss: Markenverstoss): string {
   return `${verstoss.regel}|${verstoss.elementId ?? '-'}|${verstoss.seiteId ?? '-'}|${verstoss.meldung}`;

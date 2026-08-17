@@ -8,5 +8,5 @@
 
 export * from './speicher.js';
 export * from './wixApi.js';
-export * from './wixEntwurfSpeicher.js';
 export * from './wixBlobSpeicher.js';
+export * from './wixEntwurfSpeicher.js';

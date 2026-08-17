@@ -7,7 +7,13 @@
  * Standardweg im Produkt — freies Gestalten ist die Ausnahme.
  */
 
-import { SCHEMA_VERSION, type AssetReferenz, type Entwurf, type Entwurfselement, type Farbe } from '../modell/entwurf.js';
+import {
+  type AssetReferenz,
+  type Entwurf,
+  type Entwurfselement,
+  type Farbe,
+  SCHEMA_VERSION,
+} from '../modell/entwurf.js';
 import { standardWerkzeuge, type Werkzeuge } from '../modell/erzeugen.js';
 import { alleElemente } from '../modell/navigation.js';
 

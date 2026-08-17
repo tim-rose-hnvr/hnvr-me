@@ -91,8 +91,14 @@ const pruefungen = [
         const arbeiter = new Worker(quelle);
         const antwort = await new Promise((loese, brich) => {
           const uhr = setTimeout(() => brich(new Error('Zeitüberschreitung')), 3000);
-          arbeiter.onmessage = (e) => { clearTimeout(uhr); loese(e.data); };
-          arbeiter.onerror = (e) => { clearTimeout(uhr); brich(new Error(e.message || 'Worker-Fehler')); };
+          arbeiter.onmessage = (e) => {
+            clearTimeout(uhr);
+            loese(e.data);
+          };
+          arbeiter.onerror = (e) => {
+            clearTimeout(uhr);
+            brich(new Error(e.message || 'Worker-Fehler'));
+          };
           arbeiter.postMessage('los');
         });
         arbeiter.terminate();
@@ -108,7 +114,12 @@ async function messe() {
   const bericht = [];
   for (const pruefung of pruefungen) {
     try {
-      bericht.push({ name: pruefung.name, kritisch: pruefung.kritisch, bestanden: true, ausgabe: await pruefung.lauf() });
+      bericht.push({
+        name: pruefung.name,
+        kritisch: pruefung.kritisch,
+        bestanden: true,
+        ausgabe: await pruefung.lauf(),
+      });
     } catch (fehler) {
       bericht.push({
         name: pruefung.name,

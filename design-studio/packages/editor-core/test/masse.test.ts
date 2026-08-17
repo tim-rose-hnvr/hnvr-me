@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DPI_DRUCK,
   anschnittkasten,
+  DPI_DRUCK,
   endformat,
   enthaelt,
+  erzeugeEntwurf,
+  FORMATE,
+  formatInPx,
   huelleGedreht,
   mmZuPx,
   ptZuPx,
@@ -13,7 +16,7 @@ import {
   skaliereAufDpi,
   ueberschneidet,
 } from '../src/index.js';
-import { druckEntwurf, erzeugeText, mitElementen, testWerkzeuge } from './hilfen.js';
+import { druckEntwurf, erzeugeText, format, mitElementen, testWerkzeuge } from './hilfen.js';
 
 describe('Einheiten', () => {
   it('rechnet A4 bei 300 dpi auf die bekannten Pixelmaße', () => {
@@ -96,6 +99,62 @@ describe('huelleGedreht', () => {
     expect(huelle.breite).toBeCloseTo(Math.SQRT2 * 100, 6);
     expect(huelle.x + huelle.breite / 2).toBeCloseTo(50, 9);
     expect(huelle.y + huelle.hoehe / 2).toBeCloseTo(50, 9);
+  });
+});
+
+describe('Formate', () => {
+  it('liefert Bildschirmformate pixelgenau', () => {
+    // Der eigentliche Grund für die Einheit je Format: der frühere Umweg über
+    // Millimeter ergab 1919,99 px für die Story und 1199,99 px für LinkedIn.
+    const erwartet: Record<string, [number, number]> = {
+      'instagram-post': [1080, 1080],
+      'instagram-story': [1080, 1920],
+      'linkedin-post': [1200, 627],
+      'facebook-post': [1200, 630],
+    };
+
+    for (const [schluessel, [breite, hoehe]] of Object.entries(erwartet)) {
+      const px = formatInPx(format(schluessel));
+      expect(px.breite, `${schluessel} Breite`).toBe(breite);
+      expect(px.hoehe, `${schluessel} Höhe`).toBe(hoehe);
+      expect(Number.isInteger(px.breite) && Number.isInteger(px.hoehe)).toBe(true);
+    }
+  });
+
+  it('rechnet Druckformate über die dpi um', () => {
+    const a4 = formatInPx(format('a4-hoch'));
+    expect(a4.dpi).toBe(DPI_DRUCK);
+    expect(a4.breite).toBeCloseTo(mmZuPx(210, DPI_DRUCK), 9);
+    expect(a4.anschnitt).toBeCloseTo(mmZuPx(3, DPI_DRUCK), 9);
+    expect(pxZuMm(a4.hoehe, DPI_DRUCK)).toBeCloseTo(297, 9);
+  });
+
+  it('gibt Bildschirmformaten keinen Anschnitt', () => {
+    for (const f of FORMATE.filter((f) => f.einheit === 'px')) {
+      expect(f.anschnitt, f.schluessel).toBe(0);
+    }
+  });
+
+  it('gibt jedem Druckformat einen Anschnitt und einen Sicherheitsabstand', () => {
+    for (const f of FORMATE.filter((f) => f.einheit === 'mm')) {
+      expect(f.anschnitt, f.schluessel).toBeGreaterThan(0);
+      expect(f.sicherheitsabstand, f.schluessel).toBeGreaterThan(0);
+    }
+  });
+
+  it('hat eindeutige Schlüssel', () => {
+    const schluessel = FORMATE.map((f) => f.schluessel);
+    expect(new Set(schluessel).size).toBe(schluessel.length);
+  });
+
+  it('erzeugt einen Entwurf mit genau den Formatmaßen', () => {
+    const entwurf = erzeugeEntwurf(
+      { organisationId: 'org-1', name: 'Story', format: format('instagram-story') },
+      testWerkzeuge(),
+    );
+    expect(entwurf.masse).toEqual({ breite: 1080, hoehe: 1920, dpi: 72 });
+    expect(entwurf.anschnitt).toEqual({ oben: 0, rechts: 0, unten: 0, links: 0 });
+    expect(entwurf.sicherheitsabstand).toBe(100);
   });
 });
 

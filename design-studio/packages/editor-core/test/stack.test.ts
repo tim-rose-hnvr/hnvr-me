@@ -3,12 +3,12 @@ import {
   ElementEntfernen,
   ElementHinzufuegen,
   ElementVerschieben,
+  type Entwurf,
+  festeUhr,
+  findeElement,
   KommandoFehler,
   KommandoStack,
   TextAendern,
-  festeUhr,
-  findeElement,
-  type Entwurf,
 } from '../src/index.js';
 import { druckEntwurf, ersteSeiteId, erzeugeText, mitElementen, testWerkzeuge } from './hilfen.js';
 
@@ -59,6 +59,50 @@ describe('KommandoStack', () => {
     expect(stack.verlauf).toHaveLength(3);
   });
 
+  it('nimmt eine verschmolzene Ziehbewegung vollständig zurück', () => {
+    // Die Regel hinter diesem Test: verschmelzbare Kommandos brauchen absolute
+    // Umkehrungen. Mit einer relativen Gegenverschiebung nahm Rückgängig von
+    // zehn Ziehschritten nur einen zurück.
+    const { stack, textId } = stackMitText();
+
+    for (let i = 0; i < 10; i += 1) stack.ausfuehren(new ElementVerschieben(textId, 5, 3));
+    expect(findeElement(stack.entwurf, textId)?.element.x).toBe(150);
+    expect(findeElement(stack.entwurf, textId)?.element.y).toBe(130);
+    expect(stack.verlauf).toHaveLength(1);
+
+    stack.rueckgaengig();
+    expect(findeElement(stack.entwurf, textId)?.element.x).toBe(100);
+    expect(findeElement(stack.entwurf, textId)?.element.y).toBe(100);
+
+    stack.wiederholen();
+    expect(findeElement(stack.entwurf, textId)?.element.x).toBe(150);
+    expect(findeElement(stack.entwurf, textId)?.element.y).toBe(130);
+  });
+
+  it('bleibt auch über mehrere Rückgängig-Wiederholen-Runden richtig', () => {
+    const { stack, textId } = stackMitText();
+    for (let i = 0; i < 5; i += 1) stack.ausfuehren(new ElementVerschieben(textId, 10, 0));
+
+    for (let runde = 0; runde < 3; runde += 1) {
+      stack.rueckgaengig();
+      expect(findeElement(stack.entwurf, textId)?.element.x).toBe(100);
+      stack.wiederholen();
+      expect(findeElement(stack.entwurf, textId)?.element.x).toBe(150);
+    }
+  });
+
+  it('nimmt verschmolzenes Tippen vollständig zurück', () => {
+    const { stack, textId } = stackMitText();
+    for (const inhalt of ['A', 'Ab', 'Abc', 'Abcd']) {
+      stack.ausfuehren(new TextAendern(textId, inhalt));
+    }
+
+    stack.rueckgaengig();
+    const text = findeElement(stack.entwurf, textId)?.element;
+    if (text?.typ !== 'text') throw new Error('Textelement erwartet');
+    expect(text.inhalt).toBe('Anfang');
+  });
+
   it('verschmilzt Verschiebungen je Element getrennt', () => {
     const w = testWerkzeuge();
     const a = erzeugeText({ x: 0, y: 0, breite: 10, hoehe: 10 }, 'a', {}, w);
@@ -104,10 +148,12 @@ describe('KommandoStack', () => {
     const stack = new KommandoStack(ausgang, { grenze: 3, jetzt: festeUhr() });
 
     for (let i = 0; i < 10; i += 1) {
-      stack.ausfuehren(new ElementHinzufuegen(
-        { seiteId: ersteSeiteId(ausgang), gruppenId: null, index: 0 },
-        erzeugeText({ x: i, y: 0, breite: 10, hoehe: 10 }, `t${i}`, {}, testWerkzeuge(`f${i}`)),
-      ));
+      stack.ausfuehren(
+        new ElementHinzufuegen(
+          { seiteId: ersteSeiteId(ausgang), gruppenId: null, index: 0 },
+          erzeugeText({ x: i, y: 0, breite: 10, hoehe: 10 }, `t${i}`, {}, testWerkzeuge(`f${i}`)),
+        ),
+      );
     }
 
     expect(stack.verlauf).toHaveLength(3);

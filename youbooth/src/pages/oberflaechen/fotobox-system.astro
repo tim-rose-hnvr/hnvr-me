@@ -1,0 +1,240 @@
+---
+import Marketing from '../../layouts/Marketing.astro';
+import Bildplatz from '../../components/Bildplatz.astro';
+
+/**
+ * Der Booth-Flow — mit Screenshots aus der laufenden Software, nicht aus
+ * einem Entwurf. Das Testbild der Kamera ist bewusst als solches erkennbar.
+ */
+
+const schritte = [
+  {
+    nummer: '1.1',
+    titel: 'Attract',
+    text: 'Wartebildschirm mit Event-Titel und Laufband. Nach 45 Sekunden Leerlauf springt der Booth von selbst hierhin zurück — die Box steht nie mit halbem Ablauf da.',
+    bild: '/assets/app-booth-attract.png',
+  },
+  {
+    nummer: '1.2',
+    titel: 'Aufnahmeart',
+    text: 'Foto, Streifen, Boomerang oder GIF — angeboten wird nur, was für dieses Event freigegeben ist. Jede Kachel nennt, was sie bedeutet.',
+    bild: '/assets/app-booth-auswahl.png',
+  },
+  {
+    nummer: '1.3',
+    titel: 'Countdown',
+    text: 'Ring, Zahl oder Balken, drei oder fünf Sekunden. Dazu die Regieanweisung, damit niemand ratlos in die Kamera schaut, und der Blitz im Auslösemoment.',
+    bild: '/assets/app-booth-countdown.png',
+  },
+  {
+    nummer: '1.4',
+    titel: 'Ergebnis',
+    text: 'Behalten oder nochmal. Auto-Weiter nach acht Sekunden verhindert, dass die Box am Ergebnis hängen bleibt. Gesichert ist die Aufnahme zu diesem Zeitpunkt längst.',
+    bild: '/assets/app-booth-ergebnis.png',
+  },
+  {
+    nummer: '1.5',
+    titel: 'Ausgabe',
+    text: 'Drucken über den Systemdruck, Datei sichern, QR-Code über das eigene WLAN der Box. Das Stundenlimit steht in der Fußzeile, damit das Material bis zum Ende reicht.',
+    bild: '/assets/app-booth-ausgabe.png',
+  },
+];
+
+const regeln = [
+  {
+    titel: 'Erst sichern, dann zeigen',
+    text: 'Die Aufnahme liegt in der Ablage, bevor sie am Screen erscheint. Schlägt das Sichern fehl, sagt die Box es — und zeigt das Bild trotzdem.',
+  },
+  {
+    titel: 'Gespiegelt zeigen, ungespiegelt drucken',
+    text: 'Am Screen erwarten Gäste einen Spiegel. Auf dem Abzug wäre Schrift dann seitenverkehrt, deshalb dreht die Box das Bild zurück.',
+  },
+  {
+    titel: 'Ziele nie unter 64 Pixel',
+    text: 'Bedient wird mit dem Finger, oft mit einem Glas in der anderen Hand. Schrift und Flächen sind für Blickabstand ausgelegt.',
+  },
+  {
+    titel: 'Nichts, was Netz voraussetzt',
+    text: 'Aufnahme, Layout, Druck und Ablage laufen lokal. Ohne Verbindung fehlt nur der Weg über die Cloud.',
+  },
+];
+---
+
+<Marketing
+  titel="Booth-Flow und Cockpit"
+  beschreibung="Der Ablauf am Gerät — Attract, Auswahl, Countdown, Ergebnis, Ausgabe — und das Cockpit dahinter."
+>
+  <section class="hero">
+    <span class="mono mono--amber">Oberflächen · aus der laufenden Software</span>
+    <h1>Was der Gast sieht, und was ihr steuert</h1>
+    <p class="fliess">
+      Die Bilder auf dieser Seite sind Screenshots der Software, nicht aus einem Entwurf. Das
+      Kamerabild darin ist das Testbild des Systems — im Betrieb steht dort das Live-Bild eurer
+      Kamera.
+    </p>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--mittel" href="/download">Software laden</a>
+      <a class="knopf knopf--rahmen-hell knopf--mittel" href="/kontakt">14 Tage testen</a>
+    </div>
+  </section>
+
+  <section class="abschnitt">
+    <div class="abschnitt-kopf">
+      <h2>Der Ablauf am Gerät</h2>
+      <span class="mono mono--still">Booth-Screens dunkel, 16:9</span>
+    </div>
+
+    {
+      schritte.map((s, i) => (
+        <article class:list={['schritt', { gedreht: i % 2 === 1 }]}>
+          <div class="schritt__text">
+            <span class="mono">{s.nummer}</span>
+            <h3>{s.titel}</h3>
+            <p class="fliess">{s.text}</p>
+          </div>
+          <div class="schritt__bild">
+            <Bildplatz
+              motiv={`Screenshot: ${s.titel}`}
+              src={s.bild}
+              alt={`Booth-Screen: ${s.titel}`}
+              format="16 / 9"
+              radius={14}
+            />
+          </div>
+        </article>
+      ))
+    }
+  </section>
+
+  <section class="abschnitt abschnitt--dunkel">
+    <div class="abschnitt-kopf">
+      <h2>Cockpit</h2>
+      <span class="mono mono--hell">Betreiber-Ansicht, hell und dicht</span>
+    </div>
+    <p class="fliess">
+      Das Cockpit zeigt, was diese Box weiß: Sessions, Aufnahmen, Drucke der letzten Stunde,
+      Löschfrist. Von hier laufen auch Eventname, Attract-Titel und die Ausgabe-Adresse.
+    </p>
+    <Bildplatz
+      motiv="Screenshot: Cockpit"
+      src="/assets/app-cockpit.png"
+      alt="Cockpit mit Kennzahlen und letzten Aufnahmen"
+      format="16 / 10"
+      radius={16}
+    />
+  </section>
+
+  <section class="abschnitt">
+    <h2>Regeln, die fest eingebaut sind</h2>
+    <div class="raster raster--2">
+      {
+        regeln.map((r) => (
+          <article class="karte karte--gross">
+            <span class="display display--klein">{r.titel}</span>
+            <span class="karte__text">{r.text}</span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--tief schluss">
+    <div class="schluss__text">
+      <span class="display">Selbst durchklicken</span>
+      <span class="beiwort">
+        Die Testphase läuft ohne Hardware über die Web-Sofortbild-Kamera — der Ablauf ist derselbe.
+      </span>
+    </div>
+    <div class="reihe knopfreihe">
+      <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Testkonto anlegen</a>
+      <a class="knopf knopf--rahmen-hell knopf--mittel" href="/system">System ansehen</a>
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4vw, 54px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 660px;
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+
+  .schritt {
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 24px 0;
+    border-top: 1px solid var(--linie);
+  }
+
+  .schritt.gedreht {
+    flex-direction: row-reverse;
+  }
+
+  .schritt__text {
+    flex: 1 1 320px;
+    min-width: min(300px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .schritt h3 {
+    font-size: clamp(22px, 2.2vw, 30px);
+  }
+
+  .schritt .fliess {
+    font-size: 15.5px;
+  }
+
+  .schritt__bild {
+    flex: 1 1 480px;
+    min-width: min(440px, 100%);
+    border-radius: var(--r-karte);
+    overflow: hidden;
+    box-shadow: var(--schatten-hoch);
+  }
+
+  .schluss {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding-block: 52px;
+  }
+
+  .schluss__text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 640px;
+  }
+
+  .schluss .display {
+    font-size: clamp(26px, 2.6vw, 32px);
+    line-height: 1.05;
+  }
+
+  .beiwort {
+    font-size: 15px;
+    color: var(--text-hell-leise);
+  }
+</style>

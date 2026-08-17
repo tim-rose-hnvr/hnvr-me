@@ -37,6 +37,7 @@ Fehlerkorrektur sind Druckentscheidungen, keine Darstellungsdetails.**
 | `qr` (svg.go) | Vektorausgabe in Millimetern: sechs Modulformen, eigene Augenformen, Ruhezone, Logoaussparung. Kein eingebettetes Rasterbild |
 | `druck` | Druckurteil nach den **veröffentlichten Grenzwerten** von pnkt.me: 0,20 mm Bildschirm, 0,40 mm Laser und Tinte, 0,50 mm Offset, 0,75 mm Großformat, 1,00 mm Gravur; Kontrast ab 4:1, Ruhezone 4 Module, Warnung ab 60 % verbrauchter Reserve |
 | `farbe` | Drei Farbwelten: Bildschirm, CMYK und Sonderfarbe mit Ersatzrezept |
+| `regel` | Wohin ein Scan führt: Liste statt Zuordnung, mit Zeitzone; UTM mit Platzhaltern |
 | `gs1` | GTIN-Prüfziffer nach Modulo 10, Digital Link bauen und zurücklesen |
 | `inhalt` | GiroCode nach EPC069-12 mit IBAN-Prüfung (ISO 13616, Modulo 97, Längentabelle je Land), vCard 3.0, WLAN |
 | `speicher` | Anhängende Dateien plus Verzeichnis im Arbeitsspeicher. Kollisionsschutz beim Kürzel, Fassungszählung, Ereignisprotokoll, Tageszähler |
@@ -107,9 +108,11 @@ schreibende Wege 403.
    Gezählt wird in Klassen: Gerät, System, Sprache, Quelle, Stunde. Was
    hier nicht entsteht, kann später niemand verlangen oder herausgeben
    müssen.
-3. **Die Reihenfolge des Regelwerks ist festgelegt** — Zeit vor Land vor
-   Sprache vor Gerät. Wäre sie frei, könnte niemand vorhersagen, wohin
-   ein gedruckter Code führt.
+3. **Das Regelwerk ist eine Liste, keine Zuordnung** — die erste
+   zutreffende Regel gewinnt. Damit bestimmt der Kunde selbst, ob am
+   Wochenende in Österreich die Wochenend- oder die Landesregel greift.
+   Bei einer Zuordnung entschiede das Programm, und niemand könnte es
+   vorhersagen.
 
 Die Landregel wertet einen Kopf aus, den ein vorgelagerter Server setzt.
 Eine eigene Standortbestimmung findet nicht statt.
@@ -253,9 +256,6 @@ Module für das gewählte Verfahren.
 Gemessen am veröffentlichten Stand von pnkt.me fehlt dieser Fassung:
 
 - **Ordner, Suche, Löschen, Mitarbeitende** in der Zentrale.
-- **Regeln als Liste** mit Zeitzone, wie die Schnittstellenseite sie zeigt
-  (`{art:land, werte:[…], ziel}`); hier liegen sie noch als Zuordnung.
-- **UTM mit Platzhaltern** wie `{land}-{geraet}`.
 - **Produktpass.** Die gehostete Seite hinter dem Code ist die
   eigentliche Anforderung der ESPR.
 - **Übernahme aus Wix.** `PK_Codes` lässt sich zeilenweise in

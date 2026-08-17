@@ -28,6 +28,7 @@ import (
 	"pnkt.me/pnkt/farbe"
 	"pnkt.me/pnkt/gs1"
 	"pnkt.me/pnkt/qr"
+	"pnkt.me/pnkt/regel"
 	"pnkt.me/pnkt/speicher"
 )
 
@@ -162,87 +163,80 @@ func (d *dienst) weiterleiten(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, ziel, http.StatusFound)
 }
 
-// waehleZiel wendet das Regelwerk an. Die Reihenfolge ist festgelegt:
-// Zeit vor Land vor Sprache vor Geraet. Waere sie frei, koennte niemand
-// vorhersagen, wohin ein gedruckter Code fuehrt.
+// waehleZiel wendet das Regelwerk an. Die Entscheidung selbst liegt im
+// Paket regel; hier wird nur der Scan in Umstaende uebersetzt.
 func waehleZiel(c *speicher.Code, r *http.Request) string {
-	regeln := c.Regeln
-
-	if fenster, da := regeln["zeit"].([]any); da {
-		jetzt := time.Now().UTC()
-		for _, roh := range fenster {
-			f, gut := roh.(map[string]any)
-			if !gut {
-				continue
-			}
-			von, _ := time.Parse("2006-01-02", str(f["von"]))
-			bis, _ := time.Parse("2006-01-02", str(f["bis"]))
-			ziel := str(f["ziel"])
-			if ziel == "" {
-				continue
-			}
-			if (von.IsZero() || !jetzt.Before(von)) && (bis.IsZero() || !jetzt.After(bis.Add(24*time.Hour))) {
-				return ziel
-			}
-		}
+	u := umstand(r)
+	e := regel.Waehle(regelwerkAus(c), u)
+	if e.Ziel == "" {
+		e.Ziel = c.Ziel
 	}
-
-	// Das Land kommt aus dem Kopf, den ein vorgelagerter Server setzt.
-	// Ohne einen solchen bleibt die Regel wirkungslos — das ist gewollt,
-	// eine eigene Standortbestimmung findet nicht statt.
-	if land := r.Header.Get("CF-IPCountry"); land != "" {
-		if ziele, da := regeln["land"].(map[string]any); da {
-			if ziel := str(ziele[land]); ziel != "" {
-				return ziel
-			}
-		}
-	}
-
-	if ziele, da := regeln["sprache"].(map[string]any); da {
-		sprache := strings.ToLower(r.Header.Get("Accept-Language"))
-		if len(sprache) >= 2 {
-			if ziel := str(ziele[sprache[:2]]); ziel != "" {
-				return ziel
-			}
-		}
-	}
-
-	if ziele, da := regeln["geraet"].(map[string]any); da {
-		if ziel := str(ziele[geraet(r)]); ziel != "" {
-			return ziel
-		}
-	}
-
-	ziel := c.Ziel
-	if s := str(regeln["standard"]); s != "" {
-		ziel = s
-	}
-	return ergaenzeKampagne(ziel, c.UTM)
+	return regel.Kampagne(e.Ziel, c.UTM, u, c.Kuerzel)
 }
 
-func ergaenzeKampagne(ziel string, utm map[string]string) string {
-	if len(utm) == 0 {
-		return ziel
+// umstand liest aus der Anfrage, was das Regelwerk braucht. Das Land
+// kommt aus einem Kopf, den ein vorgelagerter Server setzt — eine eigene
+// Standortbestimmung findet nicht statt.
+func umstand(r *http.Request) regel.Umstand {
+	sprache := ""
+	if s := r.Header.Get("Accept-Language"); len(s) >= 2 {
+		sprache = strings.ToLower(s[:2])
 	}
-	vorhanden := ""
-	if i := strings.Index(ziel, "?"); i >= 0 {
-		vorhanden = ziel[i+1:]
+	return regel.Umstand{
+		Jetzt:   time.Now(),
+		Land:    r.Header.Get("CF-IPCountry"),
+		Sprache: sprache,
+		Geraet:  geraet(r),
 	}
-	var neu []string
-	for k, v := range utm {
-		if v == "" || strings.Contains(vorhanden, k+"=") {
-			continue
+}
+
+// regelwerkAus liest das Regelwerk eines Codes. Es versteht die Form der
+// veroeffentlichten Schnittstelle — eine Liste — und die aeltere Form mit
+// Zuordnungen, damit bestehende Codes weiterlaufen.
+func regelwerkAus(c *speicher.Code) regel.Werk {
+	roh, err := json.Marshal(c.Regeln)
+	if err != nil {
+		return regel.Werk{Standard: c.Ziel}
+	}
+	var w regel.Werk
+	if err := json.Unmarshal(roh, &w); err == nil && len(w.Regeln) > 0 {
+		if w.Standard == "" {
+			w.Standard = c.Ziel
 		}
-		neu = append(neu, k+"="+v)
+		return w
 	}
-	if len(neu) == 0 {
-		return ziel
+
+	// Aeltere Form: Zuordnungen je Art. Die Reihenfolge wird hier
+	// festgelegt und entspricht der bisherigen: Zeit, Land, Sprache, Geraet.
+	var alt struct {
+		Standard string `json:"standard"`
+		Zeit     []struct {
+			Von  string `json:"von"`
+			Bis  string `json:"bis"`
+			Ziel string `json:"ziel"`
+		} `json:"zeit"`
+		Land    map[string]string `json:"land"`
+		Sprache map[string]string `json:"sprache"`
+		Geraet  map[string]string `json:"geraet"`
 	}
-	trenner := "?"
-	if vorhanden != "" {
-		trenner = "&"
+	if err := json.Unmarshal(roh, &alt); err != nil {
+		return regel.Werk{Standard: c.Ziel}
 	}
-	return ziel + trenner + strings.Join(neu, "&")
+	w = regel.Werk{Standard: oder(alt.Standard, c.Ziel)}
+	for _, z := range alt.Zeit {
+		w.Regeln = append(w.Regeln, regel.Einzelregel{
+			Art: "zeitraum", Von: z.Von, Bis: z.Bis, Ziel: z.Ziel})
+	}
+	for _, paar := range []struct {
+		art  string
+		zuor map[string]string
+	}{{"land", alt.Land}, {"sprache", alt.Sprache}, {"geraet", alt.Geraet}} {
+		for wert, ziel := range paar.zuor {
+			w.Regeln = append(w.Regeln, regel.Einzelregel{
+				Art: paar.art, Werte: []string{wert}, Ziel: ziel})
+		}
+	}
+	return w
 }
 
 func geraet(r *http.Request) string {

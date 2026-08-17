@@ -72,7 +72,20 @@ try {
   pruefe(grund.blaetter === 5, 'fünf Blätter im Fluss');
   pruefe(grund.miniaturen === 5, 'fünf Miniaturen');
   pruefe(grund.textstuecke > 5, 'Textebene liegt über der ersten Seite');
-  pruefe(grund.felder === 6, 'sechs Formularfelder erkannt', `waren ${grund.felder}`);
+  pruefe(grund.felder === 10, 'zehn Formularfelder erkannt (Text, mehrzeilig, Kasten, Auswahl, zwei Optionen, Unterschrift)', `waren ${grund.felder}`);
+
+  console.log('\nLesezeichen');
+  await seite.evaluate(() => window.werkbank.fuehreAus('leiste:seiten'));
+  await seite.evaluate(() => document.querySelector('[data-tafel="gliederung"].reiter-knopf').click());
+  await seite.waitForTimeout(500);
+  const lesezeichen = await seite.evaluate(() => [...document.querySelectorAll('#tafel-gliederung .eintrag')].map((k) => k.textContent));
+  pruefe(lesezeichen.length === 4, 'vier Lesezeichen in der Gliederung', lesezeichen.join(' | '));
+  await seite.evaluate(() => [...document.querySelectorAll('#tafel-gliederung .eintrag')][1].click());
+  await seite.waitForTimeout(1400);
+  pruefe(await seite.evaluate(() => window.werkbank.zustand.aktuelleSeite) === 2, 'Lesezeichen springt auf die richtige Seite');
+  await seite.evaluate(() => document.querySelector('[data-tafel="miniaturen"].reiter-knopf').click());
+  await seite.evaluate(() => window.werkbank.fuehreAus('gehezu:erste'));
+  await seite.waitForTimeout(1400);
 
   console.log('\nMitdenken');
   const vorschlaege = await seite.evaluate(() => [...document.querySelectorAll('.vorschlag b')].map((k) => k.textContent));
@@ -83,9 +96,11 @@ try {
   console.log('\nAnmerkungen aus Textauswahl');
   const stelle = await seite.evaluate(() => {
     const span = [...document.querySelectorAll('.textebene span')].find((s) => s.textContent.includes('Bankverbindung'));
+    if (!span) return null;
     const r = span.getBoundingClientRect();
     return { x: r.left, y: r.top, b: r.width, h: r.height };
   });
+  if (!stelle) throw new Error('Textstück „Bankverbindung" nicht gefunden — steht Seite 1 im Bild?');
   await seite.mouse.move(stelle.x + 2, stelle.y + stelle.h / 2);
   await seite.mouse.down();
   await seite.mouse.move(stelle.x + stelle.b - 2, stelle.y + stelle.h / 2, { steps: 8 });
@@ -254,6 +269,123 @@ try {
   await seite.waitForTimeout(2500);
   const nachher = await seite.evaluate(() => ({ seiten: window.werkbank.zustand.folge.length, quellen: window.werkbank.zustand.quellen.size }));
   pruefe(nachher.seiten === 10 && nachher.quellen === 2, 'zweite Datei angehängt', JSON.stringify(nachher));
+
+  console.log('\nFormularfelder aller Arten');
+  await seite.setInputFiles('#dateiwahl', join(WURZEL, 'beispiel', 'beispiel.pdf'));
+  await seite.waitForSelector('.blatt canvas');
+  await seite.waitForTimeout(2000);
+  await seite.fill('#feld-seite', '3');
+  await seite.press('#feld-seite', 'Enter');
+  await seite.waitForTimeout(2200);
+  await seite.fill('[data-feld="bemerkungen"]', 'Zwei Zeilen\nzweite Zeile');
+  await seite.check('input[type=radio][data-feld="abnahme"]');
+  await seite.waitForTimeout(400);
+  const felderWerte = await seite.evaluate(() => Object.fromEntries(window.werkbank.zustand.formularwerte));
+  pruefe(/zweite Zeile/.test(felderWerte.bemerkungen || ''), 'mehrzeiliges Feld nimmt Zeilenumbrüche');
+  pruefe(!!felderWerte.abnahme, 'Optionsfeld lässt sich setzen', JSON.stringify(felderWerte.abnahme));
+
+  console.log('\nUnterschriftsfeld');
+  await seite.click('[data-feld="unterschrift_abnahme"]');
+  await seite.waitForSelector('.unterschrift-reiter', { timeout: 15000 });
+  await seite.click('.unterschrift-reiter button:has-text("Tippen")');
+  await seite.fill('.dialog input[placeholder="Vorname Nachname"]', 'Ada Musterfrau');
+  await seite.click('.dialog-fuss .knopf:last-child');
+  await seite.waitForTimeout(900);
+  const gesetzt = await seite.evaluate(() => window.werkbank.zustand.anmerkungen.find((a) => a.art === 'unterschrift'));
+  pruefe(!!gesetzt && Math.abs(gesetzt.x - 56) < 2 && gesetzt.b > 200,
+    'Klick ins Unterschriftsfeld setzt die Unterschrift passend hinein',
+    gesetzt ? `${Math.round(gesetzt.x)}/${Math.round(gesetzt.y)} ${Math.round(gesetzt.b)}×${Math.round(gesetzt.h)} pt` : 'nichts gesetzt');
+
+  console.log('\nMitdenken: jede Regel einmal auslösen');
+  const vorschlaegeJetzt = () => seite.evaluate(() => [...document.querySelectorAll('.vorschlag b')].map((k) => k.textContent));
+  await seite.evaluate(() => {
+    const z = window.werkbank.zustand;
+    z.gedaechtnis.abgelehnteVorschlaege.clear();
+    z.eigenschaften.dateigroesse = 9 * 1024 * 1024;          // groß genug fürs Verkleinern
+    z.gedaechtnis.benutzteWerkzeuge.set('hervor', 3);        // Kniff-Regel
+    z.anmerkungen.push({ id: 'test-schwaerzung', art: 'schwaerzen', seiteId: z.folge[0].id, x: 0, y: 0, x2: 10, y2: 10 });
+  });
+  await seite.evaluate(() => window.werkbank.zustand.geaendert = true);
+  await seite.evaluate(() => window.dispatchEvent(new Event('resize')));
+  await seite.evaluate(async () => { const m = await import('./app/mitdenken.js'); await m.untersuche(); });
+  await seite.waitForTimeout(1200);
+  // Die Tafel zeigt nur die wichtigsten; geprüft wird die vollständige Liste.
+  const regeln = await seite.evaluate(async () => {
+    const m = await import('./app/mitdenken.js');
+    return m.vorschlaege().map((v) => v.titel);
+  });
+  const angezeigt = await vorschlaegeJetzt();
+  pruefe(angezeigt.length <= 6, 'die Tafel bleibt auf sechs Vorschläge begrenzt', `zeigt ${angezeigt.length}`);
+  pruefe(regeln.length > angezeigt.length
+    ? await seite.evaluate(() => [...document.querySelectorAll('#tafel-rechts button')].some((k) => /weitere zeigen/.test(k.textContent)))
+    : true, 'verdeckte Vorschläge werden angeboten statt verschwiegen');
+  for (const [name, muster] of [
+    ['Formular', /Formular/],
+    ['Unterschriftsstelle', /Unterschriftsstelle/],
+    ['personenbezogene Angaben', /personenbezogene/],
+    ['Schwärzung gesetzt', /Schwärzung/],
+    ['Datei zu groß', /MB groß/],
+    ['Metadaten', /Metadaten/],
+    ['ungesicherte Änderungen', /Ungesicherte/],
+  ]) pruefe(regeln.some((r) => muster.test(r)), `Vorschlag: ${name}`, regeln.join(' · ').slice(0, 90));
+  await seite.evaluate(() => {
+    const z = window.werkbank.zustand;
+    z.anmerkungen = z.anmerkungen.filter((a) => a.id !== 'test-schwaerzung');
+  });
+
+  console.log('\nAnsicht und Zoom');
+  await seite.selectOption('#feld-zoom', 'breite');
+  await seite.waitForTimeout(800);
+  await seite.keyboard.press('Control+Equal');
+  await seite.waitForTimeout(800);
+  const zoomLage = await seite.evaluate(() => ({
+    zustand: String(window.werkbank.zustand.zoom),
+    feld: document.querySelector('#feld-zoom').value,
+  }));
+  pruefe(zoomLage.zustand === zoomLage.feld, 'Zoomanzeige folgt dem tatsächlichen Zoom', JSON.stringify(zoomLage));
+
+  await seite.evaluate(() => {
+    // Vier Aufträge in Folge: keiner darf unter den Tisch fallen.
+    window.werkbank.fuehreAus('ansicht:drehen');
+    window.werkbank.fuehreAus('ansicht:drehen');
+    window.werkbank.fuehreAus('ansicht:drehen');
+    window.werkbank.fuehreAus('ansicht:drehen');
+  });
+  await seite.waitForTimeout(2500);
+  const nachDrehung = await seite.evaluate(() => ({
+    drehung: window.werkbank.zustand.ansichtDrehung,
+    hochkant: document.querySelector('.blatt').getBoundingClientRect().height > document.querySelector('.blatt').getBoundingClientRect().width,
+  }));
+  pruefe(nachDrehung.drehung === 0 && nachDrehung.hochkant, 'vier Drehungen führen zurück zum Ausgangsbild', JSON.stringify(nachDrehung));
+
+  console.log('\nHilfe');
+  await seite.evaluate(() => window.werkbank.fuehreAus('hilfe'));
+  await seite.waitForSelector('.dialog');
+  const hilfe = await seite.textContent('.dialog-rumpf');
+  await seite.evaluate(() => { const s = document.querySelector('#schirm'); s.hidden = true; s.innerHTML = ''; });
+  pruefe(hilfe.includes('Strg+K') && hilfe.includes('Esc'), 'Hilfe listet auch Palette und Escape');
+
+  console.log('\nGeschützte Datei öffnen');
+  await seite.goto(basis);
+  await seite.waitForTimeout(800);
+  await seite.setInputFiles('#dateiwahl', geschuetzt);
+  await seite.waitForSelector('.dialog input[type=password]', { timeout: 20000 });
+  await seite.fill('.dialog input[type=password]', 'falsch');
+  await seite.click('.dialog-fuss .knopf:last-child');
+  await seite.waitForTimeout(2000);
+  const zweiterTitel = await seite.textContent('.dialog-kopf h2');
+  pruefe(/stimmt nicht/.test(zweiterTitel), 'falsches Kennwort wird erkannt', zweiterTitel);
+  await seite.fill('.dialog input[type=password]', 'geheim');
+  await seite.click('.dialog-fuss .knopf:last-child');
+  await seite.waitForSelector('.blatt canvas', { timeout: 25000 });
+  await seite.waitForTimeout(2000);
+  const entsperrt = await seite.evaluate(() => ({
+    seiten: window.werkbank.zustand.folge.length,
+    war: [...window.werkbank.zustand.quellen.values()].some((q) => q.warGeschuetzt),
+    vorschlag: [...document.querySelectorAll('.vorschlag b')].some((k) => /kennwortgeschützt/i.test(k.textContent)),
+  }));
+  pruefe(entsperrt.seiten === 5 && entsperrt.war, 'mit richtigem Kennwort geht die Datei auf', JSON.stringify(entsperrt));
+  pruefe(entsperrt.vorschlag, 'die Werkbank bietet an, den Schutz wiederherzustellen');
 
   console.log(`\nKonsolenfehler: ${fehler.length}`);
   pruefe(fehler.length === 0, 'kein Fehler in der Browserkonsole', fehler.slice(0, 3).join(' | '));

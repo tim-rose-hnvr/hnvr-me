@@ -24,7 +24,12 @@ python3 -m http.server 8080
 ```
 
 Beim ersten Öffnen liegt eine Beispieldatei bereit (`Beispiel laden`); sie
-lässt sich mit `node werkzeuge/beispiel-bauen.mjs` neu erzeugen.
+lässt sich mit `node werkzeuge/beispiel-bauen.mjs` neu erzeugen. Sie ist
+absichtlich vielfältig: Lesezeichen, Text- und Querformatseiten, eine Seite
+ohne Text, personenbezogene Angaben — und ein Formular mit Textfeld,
+mehrzeiligem Feld, Ankreuzfeld, Auswahlliste, Optionsfeld und einem echten
+Unterschriftsfeld. Damit lässt sich jede Fähigkeit der Werkbank ausprobieren,
+ohne eine eigene Datei zu suchen.
 
 ## Was mitdenkt
 
@@ -47,6 +52,9 @@ und kommt in dieser Sitzung nicht wieder.
 | Metadaten mit Verfasser | vor der Weitergabe zum Entfernen anbieten |
 | mehrere Quellen zusammengeführt | Reihenfolge prüfen lassen |
 | dritte Hervorhebung in Folge | den Kniff dazu zeigen (Text markieren genügt) |
+
+Es werden höchstens sechs Vorschläge gezeigt, nach Gewicht sortiert. Greifen
+mehr Regeln, steht darunter „N weitere zeigen" — verschwiegen wird nichts.
 
 Dazu kommen kleine Aufmerksamkeiten: die Farbe wird je Werkzeug gemerkt (Gelb
 zum Hervorheben, Tinte zum Schreiben), ein Tastendruck auf `H` wendet die
@@ -105,7 +113,9 @@ Rand wird abgeschnitten. Klick in ein Unterschriftsfeld setzt sie passend ein.
 
 **Vergleichen** — zwei Dateien seitenweise wortweise gegenüberstellen.
 
-**Ausgeben** — PDF, Text (`.txt`), Seite als PNG, Anmerkungsbericht.
+**Ausgeben** — PDF, Text (`.txt`), Seite als PNG, Anmerkungsbericht. Gedruckt
+wird nicht die Bildschirmseite, sondern die Datei, die auch beim Sichern
+entstünde — sie wird dafür im Betrachter des Browsers geöffnet.
 
 **Bedienung** — Befehlspalette mit `Strg+K`; jede Fähigkeit ist ein Befehl und
 über Werkzeugleiste, Palette, Tastenkürzel und Vorschlag gleichermaßen
@@ -180,13 +190,27 @@ Die Werkbank wählt selbst und sagt im Sicherungsdialog, welcher Weg gilt:
 
 ## Prüfen
 
+Zwei Läufe, beide in einem echten Chromium, beide ohne Netz:
+
 ```sh
-node werkzeuge/pruefen.mjs
+node werkzeuge/pruefen.mjs        # 49 Prüfungen — das Ergebnis in der Datei
+node werkzeuge/vollpruefung.mjs   # 49 Prüfungen — die Bedienung
 ```
 
-Fährt Chromium über die Hauptwege und prüft am Ende die erzeugten Dateien:
-geschwärzte Seite ohne auslesbaren Text, unberührte Seite mit Text,
-Formularwert in der Ausgabe, Rückgängig, Suche, Verkleinern, Texterkennung mit
-Inhalts- und Sicherheitsprüfung, durchsuchbarer Scan nach dem Sichern,
-Kennwortschutz (ohne Kennwort verschlossen, mit Kennwort offen), Text ersetzen,
-Zusammenführen — und dass die Browserkonsole leer bleibt. 29 Prüfungen.
+**`pruefen.mjs`** fragt: Stimmt, was herauskommt? Geschwärzte Seite ohne
+auslesbaren Text, unberührte Seite mit Text, Formularwert in der Ausgabe,
+Lesezeichen springen richtig, alle Feldarten ausfüllbar, Unterschrift sitzt im
+Unterschriftsfeld, Texterkennung mit Inhalts- und Sicherheitsprüfung,
+durchsuchbarer Scan nach dem Sichern, geschützte Datei ohne Kennwort
+verschlossen und mit Kennwort offen, falsches Kennwort erkannt, jede
+Mitdenken-Regel einmal ausgelöst, Zoomanzeige deckt sich mit dem Zoom.
+
+**`vollpruefung.mjs`** fragt: Lässt sich alles bedienen? Zoomstufen, Drehen,
+Blättern, Tastatur, Tafeln, jedes Werkzeug, Anmerkung wählen, verschieben,
+löschen, zurücknehmen, Miniaturen ziehen, Suche mit Optionen, jeder Dialog,
+Befehlspalette, Teilen, Reparieren, Linearisieren, Verkleinern, Vergleich,
+Unterschrift in allen drei Wegen, Drucken.
+
+Bei einem Fehlschlag legt `vollpruefung.mjs` ein Bildschirmfoto und einen
+Zustandsauszug ab und nennt den Pfad. Beide Läufe schlagen auch dann fehl,
+wenn in der Browserkonsole ein Fehler auftaucht.

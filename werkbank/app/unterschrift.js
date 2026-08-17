@@ -59,16 +59,32 @@ export function zeigeUnterschriftDialog(beiFertig) {
     el('div', { klasse: 'zeile' }, el('label', { text: 'Name' }), namensfeld, schriftwahl));
 
   const bildwahl = el('input', { type: 'file', accept: 'image/png,image/jpeg', klasse: 'feld' });
+  const bildHinweis = el('span', { klasse: 'hinweis' });
   const bildBereich = el('div', { stil: { display: 'none' } },
     el('div', { klasse: 'zeile' }, el('label', { text: 'Bilddatei' }), bildwahl),
-    el('p', { klasse: 'hinweis', text: 'Am besten ein PNG mit durchsichtigem Grund.' }));
+    el('p', { klasse: 'hinweis' }, 'Am besten ein PNG mit durchsichtigem Grund. '),
+    el('p', {}, bildHinweis));
 
-  let geladenesBild = null;
+  let geladenesBild = null;   // { datenUrl, verhaeltnis }
   bildwahl.addEventListener('change', () => {
     const datei = bildwahl.files?.[0];
     if (!datei) return;
     const leser = new FileReader();
-    leser.onload = () => { geladenesBild = leser.result; };
+    leser.onload = () => {
+      // Erst wenn das Bild geladen ist, stehen die echten Maße fest. Vorher
+      // hatte die Werkbank ein Verhältnis geraten — die Unterschrift wurde
+      // dadurch verzerrt eingesetzt.
+      const bild = new Image();
+      bild.onload = () => {
+        geladenesBild = {
+          datenUrl: leser.result,
+          verhaeltnis: (bild.naturalWidth || 3) / (bild.naturalHeight || 1),
+        };
+        bildHinweis.textContent = `${bild.naturalWidth} × ${bild.naturalHeight} Bildpunkte`;
+      };
+      bild.onerror = () => { bildHinweis.textContent = 'Diese Datei ließ sich nicht als Bild lesen.'; };
+      bild.src = leser.result;
+    };
     leser.readAsDataURL(datei);
   });
 
@@ -136,12 +152,7 @@ export function zeigeUnterschriftDialog(beiFertig) {
       h2.fillText(name, 30, 130);
       return beschneide(hilfe);
     }
-    if (art === 'bild' && geladenesBild) {
-      const bild = new Image();
-      bild.src = geladenesBild;
-      // Seitenverhältnis konservativ schätzen; Bild wird beim Ziehen skaliert.
-      return { datenUrl: geladenesBild, verhaeltnis: bild.naturalWidth && bild.naturalHeight ? bild.naturalWidth / bild.naturalHeight : 3 };
-    }
+    if (art === 'bild') return geladenesBild;   // enthält Maße aus dem geladenen Bild
     return null;
   }
 }

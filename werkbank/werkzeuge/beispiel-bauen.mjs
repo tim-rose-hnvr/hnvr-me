@@ -5,7 +5,7 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { PDFDocument, StandardFonts, rgb } from '../fremd/pdf-lib.mjs';
+import { PDFDocument, StandardFonts, rgb, PDFString, PDFName, PDFNumber } from '../fremd/pdf-lib.mjs';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const A4 = [595.28, 841.89];
@@ -88,8 +88,40 @@ const auswahl = formular.createDropdown('lieferung');
 auswahl.addOptions(['ja', 'nein', 'mit Vorbehalt']);
 auswahl.addToPage(s3, { x: 56, y: 330, width: 200, height: 22, borderWidth: 0.8, borderColor: leise });
 
+/* Optionsfeld — damit die Werkbank auch diese Feldart zu sehen bekommt. */
+s3.drawText('Abnahme erfolgt', { x: 300, y: 358, size: 10, font: normal, color: leise });
+const optionen = formular.createRadioGroup('abnahme');
+optionen.addOptionToPage('vollstaendig', s3, { x: 300, y: 332, width: 16, height: 16, borderWidth: 0.8, borderColor: leise });
+optionen.addOptionToPage('unter_vorbehalt', s3, { x: 380, y: 332, width: 16, height: 16, borderWidth: 0.8, borderColor: leise });
+s3.drawText('ganz', { x: 320, y: 336, size: 9, font: normal, color: tinte });
+s3.drawText('vorbehaltlich', { x: 400, y: 336, size: 9, font: normal, color: tinte });
+
+/* Mehrzeiliges Feld für Bemerkungen. */
+s3.drawText('Bemerkungen', { x: 56, y: 300, size: 10, font: normal, color: leise });
+const bemerkung = formular.createTextField('bemerkungen');
+bemerkung.enableMultiline();
+bemerkung.addToPage(s3, { x: 56, y: 260, width: 380, height: 34, borderWidth: 0.8, borderColor: leise, backgroundColor: rgb(0.97, 0.98, 0.98) });
+
 s3.drawLine({ start: { x: 56, y: 200 }, end: { x: 300, y: 200 }, thickness: 0.8, color: leise });
 s3.drawText('Ort, Datum, Unterschrift', { x: 56, y: 186, size: 9, font: normal, color: leise });
+
+/* Ein echtes Unterschriftsfeld (/FT /Sig). pdf-lib hat dafür keine bequeme
+   Schnittstelle, also wird das Widget von Hand angelegt und in das Formular
+   eingehängt — so kann die Werkbank den Klick darauf beantworten. */
+const formularWurzel = dok.getForm();
+const kontext = dok.context;
+const unterschriftsfeld = kontext.obj({
+  Type: 'Annot',
+  Subtype: 'Widget',
+  FT: 'Sig',
+  T: PDFString.of('unterschrift_abnahme'),
+  Rect: kontext.obj([56, 206, 300, 250]),
+  F: PDFNumber.of(4),
+  P: s3.ref,
+});
+const feldVerweis = kontext.register(unterschriftsfeld);
+s3.node.addAnnot(feldVerweis);
+formularWurzel.acroForm.addField(feldVerweis);
 s3.drawText('Diese Seite ist rechtsverbindlich zu unterschreiben.', { x: 56, y: 160, size: 10, font: normal, color: tinte });
 
 /* Seite 4 — leere Trennseite */
@@ -109,6 +141,33 @@ const zeilen = [
 zeilen.forEach((zeile, r) => {
   zeile.forEach((zelle, i) => s5.drawText(zelle, { x: 56 + i * 180, y: 450 - r * 26, size: 11, font: normal, color: tinte }));
 });
+
+/* Lesezeichen — von Hand, weil pdf-lib dafür keine Schnittstelle hat.
+   Damit ist die Gliederungstafel der Werkbank am Beispiel prüfbar. */
+const gliederungsPunkte = [
+  ['Vertragsentwurf', s1.ref],
+  ['Leistungsbeschreibung', s2.ref],
+  ['Abnahmeprotokoll', s3.ref],
+  ['Anlage 1 — Platzliste', s5.ref],
+];
+const wurzelVerweis = dok.context.nextRef();
+const punktVerweise = gliederungsPunkte.map(() => dok.context.nextRef());
+gliederungsPunkte.forEach(([titel, seitenVerweis], i) => {
+  dok.context.assign(punktVerweise[i], dok.context.obj({
+    Title: PDFString.of(titel),
+    Parent: wurzelVerweis,
+    Dest: dok.context.obj([seitenVerweis, PDFName.of('Fit')]),
+    ...(i > 0 ? { Prev: punktVerweise[i - 1] } : {}),
+    ...(i < gliederungsPunkte.length - 1 ? { Next: punktVerweise[i + 1] } : {}),
+  }));
+});
+dok.context.assign(wurzelVerweis, dok.context.obj({
+  Type: 'Outlines',
+  First: punktVerweise[0],
+  Last: punktVerweise.at(-1),
+  Count: PDFNumber.of(gliederungsPunkte.length),
+}));
+dok.catalog.set(PDFName.of('Outlines'), wurzelVerweis);
 
 dok.setTitle('Vertragsentwurf Sitzungstechnik');
 dok.setAuthor('Dr. Ada Musterfrau');

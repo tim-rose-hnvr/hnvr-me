@@ -72,6 +72,11 @@ export async function untersuche() {
 
 /* ---------- Vorschläge ---------------------------------------------------- */
 
+let alleZeigen = false;
+
+/** Alle greifenden Vorschläge — auch für den Prüflauf einsehbar. */
+export function vorschlaege() { return alleVorschlaege(); }
+
 function alleVorschlaege() {
   const liste = [];
   const seitenzahl = zustand.folge.length;
@@ -277,7 +282,8 @@ export function tafelMitdenken() {
     abschnitt.append(el('p', { klasse: 'hinweis', text: 'Nichts zu melden. Das Dokument sieht unauffällig aus.' }));
   }
 
-  for (const vorschlag of vorschlaege.slice(0, 6)) {
+  const sichtbare = alleZeigen ? vorschlaege : vorschlaege.slice(0, 6);
+  for (const vorschlag of sichtbare) {
     const knopf = el('button', {
       klasse: 'vorschlag',
       beiClick: () => {
@@ -307,12 +313,27 @@ export function tafelMitdenken() {
     weg.style.right = '.4rem';
     abschnitt.append(zeile);
   }
+  // Nichts verschweigen: was nicht in die Liste passt, wird wenigstens gezählt.
+  if (vorschlaege.length > sichtbare.length) {
+    abschnitt.append(el('button', {
+      klasse: 'knopf knopf-klein knopf-still',
+      text: `${vorschlaege.length - sichtbare.length} weitere zeigen`,
+      beiClick: () => { alleZeigen = true; melde('mitdenken:geaendert'); },
+    }));
+  } else if (alleZeigen && vorschlaege.length > 6) {
+    abschnitt.append(el('button', {
+      klasse: 'knopf knopf-klein knopf-still',
+      text: 'weniger zeigen',
+      beiClick: () => { alleZeigen = false; melde('mitdenken:geaendert'); },
+    }));
+  }
+
   wurzel.append(abschnitt);
   return wurzel;
 }
 
 export function starteMitdenken() {
-  hoer('dokument:geladen', () => { zustand.gedaechtnis.abgelehnteVorschlaege.clear(); untersuche(); });
+  hoer('dokument:geladen', () => { zustand.gedaechtnis.abgelehnteVorschlaege.clear(); alleZeigen = false; untersuche(); });
   hoer('seiten:geaendert', () => melde('mitdenken:geaendert'));
   hoer('anmerkungen:geaendert', () => melde('mitdenken:geaendert'));
   hoer('formular:geaendert', () => melde('mitdenken:geaendert'));

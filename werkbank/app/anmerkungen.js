@@ -110,7 +110,7 @@ export function zeichneAnmerkungen(ebene, eintrag, sicht) {
         }
         form.classList.add('anmerkung-griff');
         form.dataset.anmerkung = a.id;
-        if (gewaehlt) form.setAttribute('stroke-dasharray', '');
+        if (a.art !== 'hervor') svg.append(fangbahn(form, a.id, Math.max(10, hoehe * 0.5)));
         svg.append(form);
       }
       if (gewaehlt) svg.append(rahmen(umriss(a, sicht)));
@@ -125,7 +125,7 @@ export function zeichneAnmerkungen(ebene, eintrag, sicht) {
       });
       zug.classList.add('anmerkung-griff');
       zug.dataset.anmerkung = a.id;
-      svg.append(zug);
+      svg.append(fangbahn(zug, a.id, Math.max(12, a.staerke * sicht.scale * 3), gewaehlt), zug);
       if (gewaehlt) svg.append(rahmen(umriss(a, sicht)));
       continue;
     }
@@ -217,9 +217,30 @@ export function zeichneAnmerkungen(ebene, eintrag, sicht) {
     }
     form.classList.add('anmerkung-griff');
     form.dataset.anmerkung = a.id;
+    if (a.art !== 'schwaerzen') svg.append(fangbahn(form, a.id, Math.max(14, (a.staerke || 2) * sicht.scale * 3), gewaehlt));
     svg.append(form);
     if (gewaehlt) svg.append(rahmen({ links, oben, breite, hoehe }));
   }
+}
+
+/* Formen ohne Fuellung treffen nur auf ihrer Linie. Eine unsichtbare Bahn
+   entlang derselben Geometrie macht sie greifbar, ohne die Flaeche zu
+   verschliessen — darunter bleibt Text auswaehlbar. */
+function fangbahn(form, id, breite, ganzeFlaeche = false) {
+  const kopie = form.cloneNode(true);
+  const setzen = (knoten) => {
+    knoten.setAttribute('stroke', 'transparent');
+    knoten.setAttribute('stroke-width', String(breite));
+    knoten.setAttribute('fill', 'none');
+    // Unberührt: nur die Linie fängt, damit Text darunter auswählbar bleibt.
+    // Gewählt: die ganze Fläche fängt, damit sich die Form bequem ziehen lässt.
+    knoten.setAttribute('pointer-events', ganzeFlaeche ? 'all' : 'stroke');
+  };
+  setzen(kopie);
+  kopie.querySelectorAll('*').forEach(setzen);
+  kopie.classList.add('anmerkung-griff');
+  kopie.dataset.anmerkung = id;
+  return kopie;
 }
 
 function rahmen({ links, oben, breite, hoehe }) {

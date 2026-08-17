@@ -15,7 +15,7 @@ import {
 } from './dokument.js';
 import {
   starteAnsicht, baueNeu, zeigeSeite, bringeInSicht, setzeZoom, zoomeSchritt, dreheAnsicht,
-  zuPdfPunkt, blattVon,
+  zuPdfPunkt, blattVon, aktuelleSkala,
 } from './ansicht.js';
 import {
   WERKZEUGE, FARBEN, starteWerkzeuge, setzeSichtHoler, anmerkungsListe, fuegeAn, entferne,
@@ -59,7 +59,26 @@ function baueBefehle() {
     sichereBytes(await blob.arrayBuffer(), vorschlagsname(`-seite-${zustand.aktuelleSeite}`).replace(/\.pdf$/i, '.png'), 'image/png');
   });
   befehl('vergleich', 'Mit anderer Datei vergleichen …', 'Datei', () => $('#dateiwahl-vergleich').click());
-  befehl('drucken', 'Drucken', 'Datei', () => window.print(), 'Strg+P');
+  befehl('drucken', 'Drucken', 'Datei', async () => {
+    // Nicht die Bildschirmseite drucken: dort steht nur, was gerade gezeichnet
+    // ist. Gedruckt wird die Datei, die auch beim Sichern entstünde.
+    await mitLader('Druckfassung wird erzeugt …', async () => {
+      const bytes = await baueDokument({ formularEinbrennen: true });
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      const fenster = window.open(url, '_blank');
+      if (!fenster) {
+        sichereBytes(bytes, vorschlagsname('-druck'));
+        sage('Der Browser hat das Druckfenster geblockt — die Datei wurde stattdessen gesichert.', { art: 'warn', dauer: 6000 });
+      } else {
+        // Der eingebaute PDF-Betrachter meldet sich nicht immer mit „load".
+        // Deshalb beides: Versuch beim Laden und ein Versuch nach kurzer Frist.
+        try { fenster.addEventListener?.('load', () => fenster.print(), { once: true }); } catch { /* fremdes Fenster */ }
+        setTimeout(() => { try { fenster.print(); } catch { /* Betrachter druckt selbst */ } }, 1200);
+        sage('Druckfassung geöffnet — falls kein Druckfenster erscheint, dort Strg+P drücken', { dauer: 6000 });
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    });
+  }, 'Strg+P');
   befehl('verkleinern', 'Verkleinern …', 'Datei', zeigeVerkleinernDialog);
   befehl('reparieren', 'Datei reparieren', 'Datei', async () => {
     await mitLader('Datei wird neu geschrieben …', async () => {
@@ -80,6 +99,13 @@ function baueBefehle() {
 
   befehl('texterkennung', 'Texterkennung (OCR) …', 'Text', () => zeigeErkennungsDialog());
   befehl('schutz:setzen', 'Mit Kennwort schützen …', 'Schutz', zeigeSchutzDialog);
+  befehl('schutz:entfernen', 'Schutz entfernen und offen sichern', 'Schutz', async () => {
+    const warGeschuetzt = [...zustand.quellen.values()].some((q) => q.warGeschuetzt);
+    await sichereMit({ dateiname: vorschlagsname('-ohne-schutz') });
+    sage(warGeschuetzt
+      ? 'Ohne Kennwort gesichert — die neue Datei ist für jeden lesbar.'
+      : 'Das Dokument trug keinen Schutz; die Datei ist unverändert offen.', { dauer: 5000 });
+  });
   befehl('schutz:zeigen', 'Schutz und Rechte anzeigen', 'Schutz', async () => {
     await mitLader('Rechte werden gelesen …', async () => {
       const { rechte } = await import('./schutz.js');
@@ -151,6 +177,11 @@ function baueBefehle() {
     baueNeu({ haltePosition: true });
   }, 'F5');
 
+  befehl('palette', 'Befehle suchen …', 'Gehe zu', zeigePalette, 'Strg+K');
+  befehl('gehezu:vor', 'Nächste Seite', 'Gehe zu', () => zeigeSeite(zustand.aktuelleSeite + 1), 'Bild ab');
+  befehl('gehezu:zurueck', 'Vorherige Seite', 'Gehe zu', () => zeigeSeite(zustand.aktuelleSeite - 1), 'Bild auf');
+  befehl('gehezu:erste', 'Erste Seite', 'Gehe zu', () => zeigeSeite(1), 'Pos1');
+  befehl('gehezu:letzte', 'Letzte Seite', 'Gehe zu', () => zeigeSeite(zustand.folge.length), 'Ende');
   befehl('suchen', 'Suchen', 'Gehe zu', () => { zeigeLeiste('links', 'suche'); $('#suchfeld')?.focus(); }, 'Strg+F');
   befehl('gehezu:seite', 'Zu Seite springen …', 'Gehe zu', () => { $('#feld-seite').focus(); $('#feld-seite').select(); }, 'Strg+G');
   befehl('springe:unterschrift', 'Zur Unterschriftsstelle', 'Gehe zu', () => {
@@ -687,6 +718,14 @@ function zeigeHilfe() {
       rumpf.append(el('div', { klasse: 'merkmal' }, el('span', { text: b.name }), el('span', { klasse: 'marke', text: b.kuerzel })));
     }
   }
+  rumpf.append(el('h3', { text: 'Ohne Befehl', klasse: 'klein leise', stil: { margin: '.75rem 0 .25rem' } }));
+  for (const [was, taste] of [
+    ['Werkzeug abwählen, Dialog schließen', 'Esc'],
+    ['Text markieren und Werkzeugtaste drücken — wendet es sofort an', 'H / U / D'],
+    ['Seiten mehrfach wählen', 'Umschalt- oder Strg-Klick in den Miniaturen'],
+    ['Seiten umsortieren', 'Miniatur ziehen'],
+  ]) rumpf.append(el('div', { klasse: 'merkmal' }, el('span', { text: was }), el('span', { klasse: 'marke', text: taste })));
+
   rumpf.append(el('h3', { text: 'Was diese Werkbank nicht kann', klasse: 'klein leise', stil: { margin: '1rem 0 .25rem' } }));
   for (const satz of [
     'Kryptografisch signieren nach eIDAS — die Unterschrift ist ein Bild, kein Zertifikat.',
@@ -1006,6 +1045,8 @@ export function starteOberflaeche() {
     zeichneRechteTafel();
   });
   hoer('seite:gewechselt', aktualisiereFuss);
+  hoer('zoom:geaendert', aktualisiereZoomAnzeige);
+  hoer('ansicht:neu', aktualisiereZoomAnzeige);
   hoer('seiten:geaendert', () => { aktualisiereFuss(); zeichneRechteTafel(); });
   hoer('seiten:springe', (nummer) => zeigeSeite(nummer));
   hoer('anmerkungen:geaendert', () => { zeichneAnmerkungstafel(); zeichneRechteTafel(); });
@@ -1052,6 +1093,26 @@ async function oeffne(dateien, anhaengen) {
     if (anhaengen) { await ermittleFormularfelder(); await ermittleMerkmale(); untersuche(); melde('seiten:geaendert'); }
   });
   sage(anhaengen ? 'Angehängt' : `${zustand.name} geöffnet`);
+}
+
+/** Haelt das Auswahlfeld am tatsaechlichen Zoom — auch nach Strg+/-. */
+function aktualisiereZoomAnzeige() {
+  const feld = $('#feld-zoom');
+  if (!feld) return;
+  const wert = String(zustand.zoom);
+  let eigene = feld.querySelector('option[data-eigen]');
+  if (wert === 'breite' || wert === 'seite' || [...feld.options].some((o) => o.value === wert && !o.dataset.eigen)) {
+    eigene?.remove();
+    feld.value = wert;
+    return;
+  }
+  if (!eigene) {
+    eigene = el('option', { daten: { eigen: '1' } });
+    feld.append(eigene);
+  }
+  eigene.value = wert;
+  eigene.textContent = `${Math.round(Number(wert) * 100)} %`;
+  feld.value = wert;
 }
 
 function aktualisiereFuss() {

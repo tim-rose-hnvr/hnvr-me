@@ -94,6 +94,8 @@ export function leereDokument() {
   zustand.anmerkungen = [];
   zustand.formularfelder = [];
   zustand.formularwerte.clear();
+  zustand.ocr.clear();
+  zustand.textLaenge.clear();
   zustand.gewaehlteSeiten.clear();
   zustand.gewaehlteAnmerkung = null;
   zustand.historie = [];

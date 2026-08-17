@@ -65,7 +65,7 @@ export function zeichneFormularfelder(ebene, eintrag, sicht) {
       knoten = el('div', {
         klasse: 'formularfeld', stil: { ...stil, display: 'grid', placeItems: 'center', cursor: 'pointer', fontSize: '11px' },
         text: 'Unterschreiben', title: `Unterschriftsfeld „${feld.name}"`,
-        beiClick: () => melde('unterschrift:anfordern', { seitenId: feld.seiteId, rechteck: feld.rechteck }),
+        beiClick: () => melde('unterschrift:anfordern', { seiteId: feld.seiteId, rechteck: feld.rechteck }),
       });
     } else if (feld.mehrzeilig) {
       knoten = el('textarea', {

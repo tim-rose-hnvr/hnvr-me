@@ -13,6 +13,7 @@ const blaetter = new Map();     // seitenId → { knoten, eintrag, sicht, gerend
 let beobachter = null;
 let buehne = null, spur = null;
 let esLaeuft = false;
+let nachzuholen = null;   // Neuaufbau, der waehrend eines laufenden kam
 
 export function starteAnsicht() {
   buehne = $('#buehne');
@@ -61,7 +62,10 @@ function maszstab(basisBreite, basisHoehe) {
 
 export async function baueNeu({ haltePosition = false } = {}) {
   if (!spur) return;
-  if (esLaeuft) return;
+  // Kommt ein zweiter Auftrag herein, waehrend gezeichnet wird, wird er
+  // gemerkt und danach ausgefuehrt. Frueher fiel er unter den Tisch — die
+  // Ansicht zeigte dann einen Zoom, den der Zustand nicht mehr kannte.
+  if (esLaeuft) { nachzuholen = { haltePosition }; return; }
   esLaeuft = true;
   const merkeSeite = zustand.aktuelleSeite;
 
@@ -73,7 +77,6 @@ export async function baueNeu({ haltePosition = false } = {}) {
   for (const eintrag of zustand.folge) {
     const { sicht } = await seitenMasse(eintrag, zustand.ansichtDrehung);
     const skala = maszstab(sicht.width, sicht.height);
-    zustand.zoomWert = skala;
     const knoten = el('div', {
       klasse: 'blatt',
       daten: { seite: eintrag.id },
@@ -95,9 +98,25 @@ export async function baueNeu({ haltePosition = false } = {}) {
     beobachter.observe(knoten);
   }
 
+  // Der Maszstab der aktuellen Seite ist der, den der Mensch sieht. Frueher
+  // stand hier der Wert der letzten Seite — bei gemischten Formaten falsch.
+  zustand.zoomWert = aktuelleSkala();
+
   esLaeuft = false;
   melde('ansicht:neu');
   if (haltePosition) zeigeSeite(Math.min(merkeSeite, zustand.folge.length), { sanft: false });
+
+  if (nachzuholen) {
+    const auftrag = nachzuholen;
+    nachzuholen = null;
+    await baueNeu(auftrag);
+  }
+}
+
+/** Maszstab der Seite, die gerade betrachtet wird. */
+export function aktuelleSkala() {
+  const eintrag = zustand.folge[zustand.aktuelleSeite - 1] || zustand.folge[0];
+  return blaetter.get(eintrag?.id)?.skala || 1;
 }
 
 async function rendereBlatt(seitenId) {
@@ -244,7 +263,7 @@ export function setzeZoom(wert) {
 
 export function zoomeSchritt(richtung) {
   const stufen = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 6];
-  const jetzt = Number(zustand.zoom) || zustand.zoomWert || 1;
+  const jetzt = Number(zustand.zoom) || aktuelleSkala() || 1;
   const naechste = richtung > 0
     ? stufen.find((s) => s > jetzt + 0.01) ?? stufen.at(-1)
     : [...stufen].reverse().find((s) => s < jetzt - 0.01) ?? stufen[0];

@@ -53,6 +53,10 @@ const gestaltung = !profil
 
 const lage = profil?.erreichbarkeit ? bewerteErreichbarkeit(profil.erreichbarkeit, jetzt()) : null;
 
+/* Die Rückmeldung nach dem Absenden steht in der Adresse — so übersteht sie die
+   Umleitung nach dem POST, und ein Neuladen schickt nichts ein zweites Mal. */
+const nachrichtStand = Astro.url.searchParams.get('nachricht') ?? undefined;
+
 const adresse = new URL(`/t/${profil?.slug ?? slug ?? ''}`, Astro.site ?? Astro.url).toString();
 
 const titel = profil
@@ -84,7 +88,13 @@ if (profil) {
 >
   {
     profil ? (
-      <Profilansicht profil={profil} gestaltung={gestaltung} lage={lage} adresse={adresse} />
+      <Profilansicht
+        profil={profil}
+        gestaltung={gestaltung}
+        lage={lage}
+        adresse={adresse}
+        nachrichtStand={nachrichtStand}
+      />
     ) : (
       <Nichtgefunden gesucht={slug} />
     )

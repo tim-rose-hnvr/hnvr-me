@@ -1,18 +1,20 @@
 ---
 /**
- * Preise.
+ * Preise — zurzeit keine.
+ *
+ * Das System ist jung, und solange es das ist, kostet alles nichts. Das ist
+ * keine Werbeaktion mit Ablaufdatum im Kleingedruckten, sondern die schlichte
+ * Lage: es fehlen noch zu viele Stücke, um dafür Geld zu nehmen.
+ *
+ * Diese Seite steht trotzdem, und sie nennt auch die Beträge, die später
+ * gelten sollen. Wer heute eine Seite baut und einen QR-Code darauf druckt,
+ * hat ein Recht darauf zu wissen, was in einem Jahr Geld kostet — die
+ * Alternative wäre, ihn später damit zu überraschen.
  *
  * Aufbau und Leistungsumfang stammen aus dem Design-Handoff, die Beträge sind
- * von Schweizer Franken auf Euro umgestellt — der Betrieb sitzt in Hannover.
- * Die Zahlen sind dabei nicht umgerechnet, sondern als Preispunkte übernommen:
- * 9 CHF und 9 € sind beide der Punkt „unter zehn", und ein krummer
- * Umrechnungsbetrag wie 9,40 € verkauft sich schlechter als er einbringt.
- *
- * Was hier steht, muss stimmen. Deshalb ist jede Zeile der Tabelle entweder
- * heute eingelöst oder trägt sichtbar den Vermerk, dass sie es noch nicht ist —
- * dieselbe Regel wie beim Abschnitt „was heute fehlt" auf der Startseite. Eine
- * Preisliste, die Funktionen verkauft, die es nicht gibt, ist die teuerste
- * Sorte Werbeaussage.
+ * von Franken auf Euro umgestellt. Nicht umgerechnet, sondern als Preispunkte
+ * übernommen: 9 CHF und 9 € sind beide „unter zehn", und 9,40 € verkauft sich
+ * schlechter als es einbringt.
  */
 import { cssVariablen, vorlage } from '../kern/gestaltung.ts';
 import { zeichen } from '../kern/zeichen.ts';
@@ -30,7 +32,7 @@ const stil = Object.entries(cssVariablen(gestaltung))
 
 const titel = `Preise — ${MARKE.name}`;
 const beschreibung =
-  'Kostenlos anfangen. Zahlen, wenn es Arbeit spart. Drei Pläne, monatlich kündbar, Preise in Euro und ohne Kleingedrucktes.';
+  'Zurzeit kostet alles nichts — das System ist jung. Was später Geld kosten soll, steht trotzdem schon hier, in Euro und ohne Kleingedrucktes.';
 
 /** `jetzt` heißt: heute im Produkt vorhanden. Alles andere steht als geplant da. */
 const plaene = [
@@ -39,12 +41,13 @@ const plaene = [
     name: 'Frei',
     preis: '0 €',
     takt: 'für immer',
-    satz: 'Alles, was eine Kontaktseite ausmacht.',
+    hervor: true,
+    satz: 'Alles, was es heute gibt. Bleibt kostenlos, auch wenn später Pläne dazukommen.',
     leistungen: [
       { text: 'Unbegrenzte Links und Besuche', jetzt: true },
       { text: 'Erreichbarkeit aus deinen Öffnungszeiten', jetzt: true },
       { text: 'Digitale Visitenkarte und QR-Code', jetzt: true },
-      { text: 'Drei Vorlagen, Farben und Schrift frei', jetzt: true },
+      { text: 'Alle dreizehn Vorlagen, Farben und Schrift frei', jetzt: true },
       { text: 'Profil- und Titelbild', jetzt: true },
     ],
     knopf: { text: 'Seite bauen', ziel: '/werkstatt', voll: false },
@@ -53,11 +56,10 @@ const plaene = [
     kennung: 'pro',
     name: 'Pro',
     preis: '9 €',
-    takt: 'je Monat',
-    satz: 'Für alle, bei denen die Seite Arbeit abnehmen soll.',
-    hervor: true,
+    takt: 'je Monat, später',
+    spaeter: true,
+    satz: 'Geplant, sobald die Stücke darin stehen. Heute ist alles davon offen.',
     leistungen: [
-      { text: 'Alles aus Frei', jetzt: true },
       { text: 'Alle dreizehn Vorlagen und drei Anordnungen', jetzt: true },
       { text: 'Nachricht direkt auf der Seite', jetzt: false },
       { text: 'Eigene Domain', jetzt: false },
@@ -71,8 +73,9 @@ const plaene = [
     kennung: 'studio',
     name: 'Studio',
     preis: '39 €',
-    takt: 'je Monat',
-    satz: 'Ein Auftritt fürs ganze Team, eure Marke davor.',
+    takt: 'je Monat, später',
+    spaeter: true,
+    satz: 'Ein Auftritt fürs ganze Team, eure Marke davor. Ebenfalls geplant.',
     leistungen: [
       { text: 'Alles aus Pro, bis zwanzig Profile', jetzt: false },
       { text: 'Eigenes Logo und eigene Domain', jetzt: false },
@@ -88,7 +91,7 @@ const plaene = [
 const tabelle = [
   { was: 'Kontaktwege, Visitenkarte, QR-Code', frei: true, pro: true, studio: true },
   { was: 'Erreichbarkeit nach Öffnungszeiten', frei: true, pro: true, studio: true },
-  { was: 'Vorlagen', frei: 'drei', pro: 'alle dreizehn', studio: 'alle dreizehn' },
+  { was: 'Vorlagen', frei: 'alle dreizehn', pro: 'alle dreizehn', studio: 'alle dreizehn' },
   { was: 'Nachricht auf der Seite', frei: false, pro: 'geplant', studio: 'geplant' },
   { was: 'Eigene Domain', frei: false, pro: 'geplant', studio: 'geplant' },
   { was: 'Terminbuchung', frei: false, pro: 'geplant', studio: 'geplant' },
@@ -100,14 +103,14 @@ const tabelle = [
 
 const fragen = [
   {
-    frage: 'Warum steht bei manchen Zeilen „geplant"?',
+    frage: 'Was heißt „zurzeit kostenlos" genau?',
     antwort:
-      'Weil es sie noch nicht gibt. Terminbuchung, Bewertungen, eigene Domain und Zahlen sind entworfen und eingeplant, aber nicht gebaut. Wer heute Pro bucht, zahlt für das, was heute da ist — und bekommt den Rest ohne Aufpreis, sobald er steht. Was nicht da ist, verkaufen wir nicht als da.',
+      'Dass es heute keine Rechnung gibt und keine Zahlungsdaten abgefragt werden. Alles, was das System kann, ist offen. Pro und Studio sind geplant — wenn sie kommen, bleibt der Freiplan bestehen und behält, was er heute hat. Wer vorher gebaut hat, verliert nichts.',
   },
   {
-    frage: 'Was passiert mit meiner Seite, wenn ich kündige?',
+    frage: 'Warum steht bei so vielen Zeilen „geplant"?',
     antwort:
-      'Sie fällt auf Frei zurück und bleibt online. Adresse, Kontaktwege, Visitenkarte und QR-Code bleiben, die Pro-Vorlagen weichen der Vorgabe. Gedruckte Codes zeigen weiter auf eine Seite, die es gibt — das ist der Punkt.',
+      'Weil es sie noch nicht gibt. Terminbuchung, Bewertungen, eigene Domain, Zahlen und die Nachricht auf der Seite sind entworfen und eingeplant, aber nicht gebaut. Sie hier als Häkchen zu zeigen wäre die teuerste Sorte Werbeaussage — auch dann, wenn gerade nichts dafür verlangt wird.',
   },
   {
     frage: 'Werbung auf dem Freiplan?',
@@ -161,10 +164,11 @@ function zelle(wert: boolean | string) {
 
         <section class="kopf">
           <p class="marke">preise</p>
-          <h1>Kostenlos anfangen.<br />Zahlen, wenn's Arbeit spart.</h1>
+          <h1>Zurzeit kostet<br />alles nichts.</h1>
           <p class="fuehrung">
-            Drei Pläne, monatlich kündbar, Preise in Euro und inklusive Mehrwertsteuer. Was noch nicht gebaut ist,
-            steht als „geplant" da statt als Häkchen.
+            Zurzeit kostet alles nichts — es fehlen noch zu viele Stücke, um dafür Geld zu nehmen. Was später Geld
+            kosten soll, steht trotzdem schon hier: wer heute einen QR-Code druckt, soll nicht in einem Jahr
+            überrascht werden. Beträge in Euro, inklusive Mehrwertsteuer.
           </p>
         </section>
 
@@ -172,8 +176,9 @@ function zelle(wert: boolean | string) {
           <div class="plaene">
             {
               plaene.map((p) => (
-                <div class:list={['plan', p.hervor && 'plan--hervor']}>
-                  {p.hervor && <span class="plan__band">empfohlen</span>}
+                <div class:list={['plan', p.hervor && 'plan--hervor', p.spaeter && 'plan--spaeter']}>
+                  {p.hervor && <span class="plan__band">zurzeit gratis</span>}
+                  {p.spaeter && <span class="plan__band plan__band--ruhig">geplant</span>}
                   <h2 class="plan__name">{p.name}</h2>
                   <p class="plan__preis">
                     {p.preis}
@@ -252,7 +257,7 @@ function zelle(wert: boolean | string) {
 
         <section class="schluss">
           <p class="marke">loslegen</p>
-          <h2>Bau sie in zwei Minuten.</h2>
+          <h2>Kostet nichts. Bau sie.</h2>
           <div class="knopfreihe">
             <a class="knopf knopf--voll" href="/werkstatt">
               Seite bauen

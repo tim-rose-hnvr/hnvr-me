@@ -822,3 +822,147 @@ summary:focus-visible {
     transition: none;
   }
 }
+
+/* ============================================================
+   Nachricht
+   ============================================================
+
+   Der eine Baustein, bei dem der Besucher auf der Seite bleibt. Er ist bewusst
+   kein hübsches Kästchen, sondern ein Formular: Beschriftungen über den
+   Feldern, sichtbarer Fokus, Fehler in Worten. Ein Kontaktweg, den nur die
+   Hälfte bedienen kann, ist kein Kontaktweg.
+   ============================================================ */
+
+.nachricht {
+  margin-top: 26px;
+}
+
+.nachricht__form {
+  display: grid;
+  gap: 13px;
+  margin-top: 14px;
+}
+
+.nachricht__falle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.nachricht__absichten {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.nachricht__absichten legend {
+  padding: 0;
+  margin-bottom: 9px;
+  font-size: 14px;
+  color: var(--vg-neben);
+}
+
+/* Die Absicht ist eine Pille, kein Radioknopf — aber sie bleibt einer, damit
+   Tastatur und Vorlesesoftware sie als Auswahl erkennen. */
+.nachricht__absicht input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.nachricht__absicht span {
+  display: inline-block;
+  padding: 9px 14px;
+  border: 1px solid var(--linie);
+  border-radius: 999px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.nachricht__absicht input:checked + span {
+  border-color: var(--akzent);
+  background: var(--akzent);
+  color: var(--akzent-text);
+}
+
+.nachricht__absicht input:focus-visible + span {
+  outline: 2px solid var(--akzent);
+  outline-offset: 2px;
+}
+
+.nachricht__feld {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--vg-neben);
+  min-width: 0;
+}
+
+.nachricht__zeile {
+  display: grid;
+  gap: 13px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.nachricht input[type='text'],
+.nachricht textarea {
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-klein);
+  background: var(--kachel);
+  color: var(--vg);
+  font: inherit;
+  font-size: 15px;
+  resize: vertical;
+}
+
+.nachricht input[type='text']:focus-visible,
+.nachricht textarea:focus-visible {
+  outline: 2px solid var(--akzent);
+  outline-offset: 1px;
+}
+
+.nachricht__senden {
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.nachricht__hinweis {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--vg-leise);
+}
+
+.nachricht__fehler,
+.nachricht__quittung {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin: 12px 0 0;
+  padding: 14px 15px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-klein);
+  font-size: 14.5px;
+}
+
+.nachricht__fehler {
+  border-color: var(--akzent);
+}
+
+.nachricht__quittung .zeichen {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--akzent);
+}

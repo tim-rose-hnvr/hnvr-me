@@ -51,8 +51,16 @@ export function musterprofil(): Profil {
       { id: 'b2', art: 'aktion', kanal: 'whatsapp', beschriftung: 'WhatsApp schreiben', unterzeile: 'Auch außerhalb der Zeiten', ziel: '+49 170 0000000', aktiv: true },
       { id: 'b3', art: 'aktion', kanal: 'mail', beschriftung: 'E-Mail schreiben', unterzeile: '', ziel: 'post@beispiel.de', aktiv: true },
       { id: 'b4', art: 'aktion', kanal: 'route', beschriftung: 'Anfahrt', unterzeile: '', ziel: 'Musterstraße 1, 30159 Hannover', aktiv: true },
-      { id: 'b5', art: 'ueberschrift', beschriftung: 'Mehr von uns', aktiv: true },
-      { id: 'b6', art: 'aktion', kanal: 'link', beschriftung: 'Website', unterzeile: 'Leistungen und Referenzen', ziel: 'https://beispiel.de', aktiv: true },
+      {
+        id: 'b5',
+        art: 'nachricht',
+        beschriftung: 'Schreib uns',
+        frage: 'Worum geht es?',
+        absichten: ['Anfrage für einen Auftrag', 'Termin', 'Etwas anderes'],
+        aktiv: true,
+      },
+      { id: 'b6', art: 'ueberschrift', beschriftung: 'Mehr von uns', aktiv: true },
+      { id: 'b7', art: 'aktion', kanal: 'link', beschriftung: 'Website', unterzeile: 'Leistungen und Referenzen', ziel: 'https://beispiel.de', aktiv: true },
     ],
     kanaele: [{ netzwerk: 'instagram', ziel: 'beispiel' }],
     visitenkarte: {

@@ -116,6 +116,18 @@
       "aktiv": true
     },
     {
+      "id": "nachricht",
+      "art": "nachricht",
+      "beschriftung": "Schreib uns",
+      "frage": "Worum geht es?",
+      "absichten": [
+        "Anfrage für ein Projekt",
+        "Technik für eine Veranstaltung",
+        "Etwas anderes"
+      ],
+      "aktiv": true
+    },
+    {
       "id": "kopf-leistungen",
       "art": "ueberschrift",
       "beschriftung": "Was wir machen",

@@ -84,7 +84,40 @@ export interface Trennerblock {
   aktiv: boolean;
 }
 
-export type Block = Aktionsblock | Textblock | Trennerblock;
+/**
+ * Der Nachricht-Baustein — der Unterschied zwischen einer Linkliste und einer
+ * Kontaktseite.
+ *
+ * Jeder andere Block wirft den Besucher aus der Seite hinaus: in WhatsApp, in
+ * ein Mailprogramm, in den Telefonwähler. Wer dort landet, muss selbst wissen,
+ * was er schreiben soll, und ein Teil davon schreibt gar nichts. Dieser Block
+ * ist die Ausnahme: der Kontakt entsteht auf der Seite.
+ *
+ * Die Absichten sind der Kern. „Schreib mir" ist eine leere Fläche, „Anfrage
+ * für einen Auftrag / Termin / etwas anderes" ist eine Frage, die man
+ * beantworten kann — und für den Empfänger ist eine sortierte Anfrage mehr wert
+ * als eine unsortierte.
+ */
+export interface Nachrichtblock {
+  id: string;
+  art: 'nachricht';
+  beschriftung: string;
+  /** Die Frage über den Absichten, z. B. „Worum geht es?". */
+  frage?: string;
+  /** Zwei bis fünf Absichten. Ohne sie wäre es ein leeres Feld. */
+  absichten: string[];
+  aktiv: boolean;
+}
+
+export type Block = Aktionsblock | Textblock | Trennerblock | Nachrichtblock;
+
+/** Grenzen der Nachricht. Großzügig genug für ein Anliegen, eng genug gegen Missbrauch. */
+export const NACHRICHT_GRENZEN = {
+  text: 2000,
+  name: 120,
+  antwortweg: 200,
+  absichten: 5,
+} as const;
 
 export interface Kanal {
   netzwerk: Netzwerk;
@@ -315,6 +348,22 @@ function lieseBloecke(roh: unknown, fehler: Lesefehler[]): Block[] {
 
     if (art === 'trenner') {
       bloecke.push({ id, art: 'trenner', aktiv });
+      return;
+    }
+
+    if (art === 'nachricht') {
+      const beschriftung = text(eintrag.beschriftung) ?? 'Schreib uns';
+      const roh = Array.isArray(eintrag.absichten) ? eintrag.absichten : [];
+      const absichten = roh.map((a) => text(a)).filter((a): a is string => !!a).slice(0, NACHRICHT_GRENZEN.absichten);
+      if (absichten.length === 0) {
+        fehler.push({
+          stelle: `${wo}.absichten`,
+          meldung: 'Ohne Absichten ist der Baustein ein leeres Feld — nenne mindestens eine.',
+        });
+        return;
+      }
+      const frage = text(eintrag.frage);
+      bloecke.push({ id, art: 'nachricht', beschriftung, absichten, aktiv, ...(frage ? { frage } : {}) });
       return;
     }
 

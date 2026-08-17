@@ -37,6 +37,7 @@ import { musterprofil, neueKennung } from '../kern/muster.ts';
 import { packe, entpacke } from '../kern/packung.ts';
 import {
   KANALARTEN,
+  NACHRICHT_GRENZEN,
   NETZWERKE,
   lieseProfil,
   pruefeSlug,
@@ -365,7 +366,16 @@ function blockKarte(block: Block, index: number): HTMLElement {
   const kopf = el('div', { class: 'block__kopf' }, [
     el('span', {
       class: 'block__art',
-      text: block.art === 'aktion' ? KANALNAMEN[block.kanal] : block.art === 'ueberschrift' ? 'Überschrift' : block.art === 'text' ? 'Textblock' : 'Trennlinie',
+      text:
+        block.art === 'aktion'
+          ? KANALNAMEN[block.kanal]
+          : block.art === 'nachricht'
+            ? 'Nachricht'
+            : block.art === 'ueberschrift'
+              ? 'Überschrift'
+              : block.art === 'text'
+                ? 'Textblock'
+                : 'Trennlinie',
     }),
     el('div', { class: 'block__werkzeug' }, [
       el('button', { type: 'button', title: 'Nach oben', text: '↑', onclick: () => verschiebe(index, -1) }),
@@ -397,6 +407,31 @@ function blockKarte(block: Block, index: number): HTMLElement {
   const karte = el('div', { class: block.aktiv ? 'block' : 'block block--aus' }, [kopf]);
 
   if (block.art === 'trenner') return karte;
+
+  if (block.art === 'nachricht') {
+    const nachricht = block;
+    karte.append(
+      textfeld('Überschrift', nachricht.beschriftung, (w) => (nachricht.beschriftung = w)),
+      textfeld('Frage darüber', nachricht.frage ?? '', (w) => (nachricht.frage = w), 'Worum geht es?'),
+      textfeld(
+        'Absichten, mit Komma getrennt',
+        nachricht.absichten.join(', '),
+        (w) => {
+          nachricht.absichten = w
+            .split(',')
+            .map((a) => a.trim())
+            .filter(Boolean)
+            .slice(0, NACHRICHT_GRENZEN.absichten);
+        },
+        'Auftrag, Termin, Etwas anderes',
+      ),
+      el('p', {
+        class: 'whinweis',
+        text: 'Höchstens fünf. Wer die Wahl zwischen acht Absichten hat, wählt keine — und eine sortierte Anfrage ist für dich mehr wert als eine unsortierte.',
+      }),
+    );
+    return karte;
+  }
 
   if (block.art === 'ueberschrift' || block.art === 'text') {
     karte.append(
@@ -451,7 +486,16 @@ function zeichneBloecke() {
       });
     } else if (art === 'trenner') {
       entwurf.bloecke.push({ id, art: 'trenner', aktiv: true });
-    } else {
+    } else if (art === 'nachricht') {
+      entwurf.bloecke.push({
+        id,
+        art: 'nachricht',
+        beschriftung: 'Schreib uns',
+        frage: 'Worum geht es?',
+        absichten: ['Anfrage für einen Auftrag', 'Termin', 'Etwas anderes'],
+        aktiv: true,
+      });
+    } else if (art === 'ueberschrift' || art === 'text') {
       entwurf.bloecke.push({ id, art, beschriftung: art === 'ueberschrift' ? 'Überschrift' : 'Text', aktiv: true });
     }
     geaendert(true);
@@ -461,6 +505,7 @@ function zeichneBloecke() {
     ...KANALARTEN.map((k) =>
       el('button', { type: 'button', text: `+ ${KANALNAMEN[k]}`, onclick: () => hinzu('aktion', k) }),
     ),
+    el('button', { type: 'button', text: '+ Nachricht', onclick: () => hinzu('nachricht') }),
     el('button', { type: 'button', text: '+ Überschrift', onclick: () => hinzu('ueberschrift') }),
     el('button', { type: 'button', text: '+ Textblock', onclick: () => hinzu('text') }),
     el('button', { type: 'button', text: '+ Trennlinie', onclick: () => hinzu('trenner') }),

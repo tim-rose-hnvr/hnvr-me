@@ -403,8 +403,8 @@ describe('Hintergrundbild', () => {
 });
 
 describe('Schriftangebot', () => {
-  it('liefert zwölf Familien, alle bis auf System selbst ausgeliefert', () => {
-    strictEqual(SCHRIFTEN.length, 12);
+  it('liefert dreizehn Familien, alle bis auf System selbst ausgeliefert', () => {
+    strictEqual(SCHRIFTEN.length, 13, 'Archivo ist als Hausschrift dazugekommen');
     strictEqual(SCHRIFTEN.filter((s) => !s.eigen).length, 1, 'nur „System" lädt nichts nach');
   });
 

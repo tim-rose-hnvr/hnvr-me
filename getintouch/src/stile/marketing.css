@@ -687,3 +687,21 @@ summary:focus-visible {
   margin-top: 18px;
   justify-content: center;
 }
+
+/* Ein Plan, den es noch nicht gibt, darf nicht aussehen wie einer, den man
+   buchen kann. Ruhiger Rahmen, gedämpfte Schrift, kein Standfuß. */
+.plan--spaeter {
+  border-style: dashed;
+  background: none;
+}
+
+.plan--spaeter .plan__preis,
+.plan--spaeter .plan__name {
+  color: var(--vg-neben);
+}
+
+.plan__band--ruhig {
+  background: none;
+  border: 1px dashed var(--linie);
+  color: var(--vg-leise);
+}

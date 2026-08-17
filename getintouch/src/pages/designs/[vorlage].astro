@@ -60,7 +60,7 @@ const paar = `${schrift(gestaltung.anzeige).name} + ${schrift(gestaltung.schrift
   adresse={new URL(`/designs/${kennung}`, Astro.site ?? Astro.url).toString()}
   indexierbar={false}
 >
-  <Profilansicht profil={profil} gestaltung={gestaltung} lage={lage} adresse={adresse} />
+  <Profilansicht profil={profil} gestaltung={gestaltung} lage={lage} adresse={adresse} nachrichtZiel={null} />
 
   <nav class="blaetterleiste" aria-label="Vorlagen durchblättern">
     <a class="blaetterleiste__pfeil" href={`/designs/${vorige.vorlage}`} aria-label={`Vorige Vorlage: ${vorlagenName(vorige.vorlage)}`}>

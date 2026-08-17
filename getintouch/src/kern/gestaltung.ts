@@ -57,7 +57,7 @@ export interface Schriftart {
 }
 
 /**
- * Zwölf Familien, alle selbst ausgeliefert. Deklariert sind sie alle, geladen
+ * Dreizehn Familien, alle selbst ausgeliefert. Deklariert sind sie alle, geladen
  * wird nur, was eine Seite tatsächlich benutzt — so verlangt es die Norm für
  * `@font-face`. Das Angebot kostet eine Profilseite deshalb kein einziges Byte.
  *

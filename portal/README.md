@@ -37,22 +37,39 @@ npm install
 npm run dev      # http://localhost:4321
 ```
 
-## An Wix hängen — drei Befehle mit Browser
-
-Diese Schritte brauchen eine Anmeldung im Browser und lassen sich deshalb
-nicht aus einer Sitzung ohne Bildschirm erledigen. Reihenfolge einhalten:
+## An Wix hängen — ein Befehl
 
 ```sh
 cd portal
-npx @wix/cli login                                            # 1. Konto verbinden
-npm create @wix/new@latest -- headless link --business-name "Werkbank"   # 2. Projekt anhängen
-npx @wix/cli build && npx @wix/cli release                    # 3. veröffentlichen
+npm run wix:veroeffentlichen
 ```
 
-Schritt 2 legt in Ihrem Wix-Konto ein Geschäft samt Site an, richtet die
-Astro-Integration ein und ergänzt die nötigen Abhängigkeiten. Danach steht die
-Seite unter einer Wix-Adresse; eine eigene Domain lässt sich im Wix-Dashboard
-verbinden.
+Das Skript `skripte/wix-veroeffentlichen.mjs` erledigt alles: anmelden,
+Projekt anhängen, Werkbank einbetten, bauen, veröffentlichen. Es ist
+wiederholbar — beim zweiten Lauf überspringt es Anmeldung und Anhängen und
+veröffentlicht nur neu.
+
+**Ein Browser wird gebraucht, ein Bildschirm am selben Rechner nicht.** Wo die
+Anmeldung nicht selbst öffnen kann, gibt der Wix-Befehl eine Adresse und einen
+achtstelligen Code aus. Der Code lässt sich an einem beliebigen Gerät
+bestätigen, auch am Telefon; danach läuft das Skript von allein weiter. Er
+verfällt nach zehn Minuten — dann das Skript einfach neu starten, es fragt
+einen frischen an.
+
+Ganz ohne Zutun geht es mit einem Schlüssel aus dem
+[API-Keys-Manager](https://manage.wix.com/account/api-keys):
+
+```sh
+WIX_API_KEY="…" npm run wix:veroeffentlichen
+```
+
+Der Schlüssel gehört in die Umgebung, nicht ins Repository.
+
+Beim ersten Lauf legt Wix ein Geschäft samt Site an, richtet die
+Astro-Integration ein und schreibt `wix.config.json`. Dabei ersetzt der
+Link-Befehl die Skripte in `package.json` durch eigene — das Skript holt
+`app:einbetten` und `prebuild` danach zurück, sonst fehlte der Seite ab dem
+zweiten Bau die Anwendung.
 
 Voraussetzung: Node ab 20.11 und **Astro 5** — Astro 6 wird vom Link-Befehl
 nicht unterstützt. Dieses Projekt ist bewusst auf Astro 5 festgelegt.

@@ -1,0 +1,11 @@
+{
+  "projectType": "Site",
+  "appId": "2e5bb9f7-a8ba-436e-817a-a4e74c137a94",
+  "siteId": "9eb1e4b6-2d62-4932-ab99-5ec65de9085c",
+  "site": {
+    "outputDirectory": {
+      "client": "./dist",
+      "server": "./wix-server"
+    }
+  }
+}

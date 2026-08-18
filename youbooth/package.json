@@ -8,7 +8,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "schuesse": "node tools/seitenschuesse.mjs"
+    "schuesse": "node tools/seitenschuesse.mjs",
+    "release": "astro build && wix release"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.2.5",

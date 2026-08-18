@@ -108,3 +108,22 @@ per JavaScript erzeugt zu werden.
   unsere Software, eure Box.
 - **Rechtstexte** (Impressum, Datenschutz, AGB) sind in den Entwürfen nur als Fußzeilenlinks
   vorhanden.
+
+## Veröffentlichen
+
+Die Seite läuft als Wix-managed-Headless-Projekt:
+<https://youbooth-dd5eab6d-hnvrme.wix-site-host.com>
+
+```
+npx wix login          # einmalig, Geräte-Anmeldung im Browser
+npm run release        # baut und veröffentlicht
+```
+
+`wix.config.json` verknüpft den Ordner mit dem Wix-Projekt und nennt zwei
+Ausgabeorte: `dist` (die gebaute Seite) und `wix-server` (der Wegweiser).
+
+Der Wegweiser ist nötig, weil Wix hochgeladene Dateien wörtlich ausliefert:
+`/module/index.html` kommt an, `/module/` nicht. `wix-server/entry.mjs` holt für
+solche Anfragen die passende `index.html` nach. Warum es nicht der
+Astro-Adapter für Cloudflare tut und welche zwei Fallen dabei zuschnappen,
+steht im Kopf der Datei.

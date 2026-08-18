@@ -6,3 +6,6 @@ doku/seite/
 # `wix.config.json` gehört dagegen ins Repo: Sie verknüpft das Projekt und
 # enthält nur die Kennung, kein Geheimnis.
 youbooth/.wix/
+
+# Örtlicher Kram des Wrangler-Werkzeugs, entsteht beim Bauen für Wix.
+youbooth/.wrangler/

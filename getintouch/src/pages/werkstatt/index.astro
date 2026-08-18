@@ -16,10 +16,22 @@
  * Ergebnis nicht.
  */
 import { zeichen } from '../../kern/zeichen.ts';
-import { MARKE, MARKENFARBEN, SIGNET } from '../../kern/marke.ts';
+import { MARKE, MARKENFARBEN, zeichenPlaettchen } from '../../kern/marke.ts';
+import { lucide } from '../../kern/lucide.ts';
 import '../../stile/werkstatt.css';
 
 export const prerender = false;
+
+/* Die Bausteine aus dem Editor-Screen. `jetzt` heißt: im Programm vorhanden. */
+const bausteine = [
+  { zeichen: 'message-circle-heart' as const, name: 'Nachricht', jetzt: true },
+  { zeichen: 'link' as const, name: 'Link', jetzt: true },
+  { zeichen: 'contact-round' as const, name: 'Karte', jetzt: true },
+  { zeichen: 'calendar-heart' as const, name: 'Termin', jetzt: false },
+  { zeichen: 'images' as const, name: 'Bild-Karte', jetzt: false },
+  { zeichen: 'star' as const, name: 'Bewertungen', jetzt: false },
+  { zeichen: 'rss' as const, name: 'Feed', jetzt: false },
+];
 
 const reiter = [
   { kennung: 'inhalt', name: 'Inhalt' },
@@ -39,26 +51,25 @@ const reiter = [
     <meta name="robots" content="noindex" />
     <title>Werkstatt — {MARKE.name}</title>
     <meta name="theme-color" content={MARKENFARBEN.grund} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" href={`data:image/svg+xml,${encodeURIComponent(zeichenPlaettchen())}`} type="image/svg+xml" />
     <link rel="stylesheet" href="/schriften/schriften.css" />
   </head>
 
   <body>
+    {/*
+      Kopfleiste aus dem Mockup `6a`: Lockup, die Adresse als Pille, die
+      Segmente und rechts der rote Knopf. Die Segmente sind hier dieselben
+      Reiter wie vorher — der Aufbau des Screens, mit dem, was das Programm
+      wirklich kann.
+    */}
     <header class="wkopf">
       <a class="wmarke" href="/">
-        <Fragment set:html={SIGNET} />
+        <Fragment set:html={zeichenPlaettchen()} />
         <span>{MARKE.name}</span>
       </a>
-      <nav class="wnavi">
-        <a href="/vorlagen">Vorlagen</a>
-        <a href="/preise">Preise</a>
-      </nav>
-    </header>
-
-    <main class="werkstatt">
-      <section class="regler" aria-label="Seite bauen">
-        <div class="reiter" role="tablist" aria-label="Bereiche">
+      <span class="wadresse" id="wadresse">/deinname</span>
+      <div class="wschub"></div>
+      <div class="wsegmente" role="tablist" aria-label="Bereiche">
           {
             reiter.map((r, i) => (
               <button
@@ -72,7 +83,40 @@ const reiter = [
               </button>
             ))
           }
+      </div>
+      <button type="button" class="wlive" id="livesetzen">Live setzen</button>
+    </header>
+
+    <main class="werkstatt">
+      <section class="wbausteine" aria-label="Bausteine und Regeln">
+        <p class="wrubrik">Bausteine</p>
+        <div class="wpillen">
+          {
+            bausteine.map((b) => (
+              <span class:list={['wpille', b.jetzt && 'wpille--jetzt']} title={b.jetzt ? 'im Programm' : 'entworfen, noch nicht gebaut'}>
+                <Fragment set:html={lucide(b.zeichen, 14)} />
+                {b.name}
+              </span>
+            ))
+          }
         </div>
+
+        <p class="wrubrik">Regeln</p>
+        <div class="wregel wregel--an">
+          Nach <b>19 Uhr</b> steht <b>Termin</b> über <b>Nachricht</b>.
+        </div>
+        <div class="wregel">Aus Instagram kommend: <b>Portfolio</b> zuerst.</div>
+        <span class="wregel__neu">
+          <Fragment set:html={lucide('plus', 13)} />
+          Regel
+        </span>
+        <p class="whinweis">
+          Bausteine mit vollem Grund stehen im Programm. Die übrigen sind aus dem Entwurf übernommen und noch
+          nicht gebaut — sie stehen hier, damit die Reihenfolge später passt.
+        </p>
+      </section>
+
+      <section class="regler" aria-label="Seite bauen">
 
         {
           reiter
@@ -122,6 +166,7 @@ const reiter = [
       </section>
 
       <section class="buehne2" aria-label="Vorschau">
+        <p class="wrubrik">Vorschau</p>
         <div class="geraet">
           <iframe id="vorschaurahmen" class="geraet__schirm" title="Vorschau der Seite" loading="eager"></iframe>
         </div>

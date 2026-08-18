@@ -24,6 +24,7 @@
   --w-leise: rgba(32, 30, 29, 0.45);
   --w-akzent: #ec3013;
   --w-akzent-tief: #ae1800;
+  --w-rose: #fff2ef;
 }
 
 *,
@@ -45,13 +46,15 @@ body {
 
 /* --- Kopf ------------------------------------------------- */
 
+/* Kopfleiste aus Mockup `6a`: 58 px hoch, 2 px Trennlinie, Segmente in der
+   Mitte, rechts der rote Knopf. */
 .wkopf {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 22px;
-  border-bottom: 1px solid var(--w-linie);
+  gap: 13px;
+  padding: 0 22px;
+  height: 58px;
+  border-bottom: 2px solid var(--w-linie);
 }
 
 .wmarke {
@@ -96,16 +99,35 @@ body {
 
 /* --- Aufteilung ------------------------------------------- */
 
+/* Drei Spalten wie im Screen: Bausteine, Reihenfolge, Vorschau.
+   Der Screen misst 212px / 1fr / 300px; hier ist die Vorschau breiter, weil
+   sie eine echte Seite zeigt und keine Attrappe. */
 .werkstatt {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1180px) {
+  .werkstatt {
+    grid-template-columns: 232px minmax(0, 1fr) minmax(360px, 430px);
+    align-items: start;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1179px) {
   .werkstatt {
     grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
     align-items: start;
   }
+
+  .wbausteine {
+    grid-column: 1 / -1;
+    border-right: 0;
+    border-bottom: 2px solid var(--w-linie);
+  }
+}
+
+@media (min-width: 900px) {
 
   .buehne2 {
     position: sticky;
@@ -329,8 +351,8 @@ input[type='range'] {
    tiefen Stufe — `#ec3013` schafft den Kontrast auf `#f3f2f2` nicht. */
 .befund--fehler {
   border-color: var(--w-akzent);
-  background: #fff2ef;
-  color: #ae1800;
+  background: var(--w-rose);
+  color: var(--w-akzent-tief);
 }
 
 .befund--warnung {
@@ -739,4 +761,164 @@ input[type='date'] {
   .wknopf {
     transition: none;
   }
+}
+
+/* ============================================================
+   Editor-Gerüst aus Mockup `6a`
+   ============================================================ */
+
+.wmarke .signet {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.wadresse {
+  padding: 5px 11px;
+  border-radius: 14px;
+  background: var(--w-flaeche);
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--w-neben);
+}
+
+.wschub {
+  flex: 1;
+}
+
+/* Die Segmente: ein Kasten, das gewählte Segment hebt sich mit Standfuß ab. */
+.wsegmente {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 20px;
+  background: var(--w-flaeche);
+}
+
+.wsegmente button {
+  padding: 6px 13px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--w-neben);
+  cursor: pointer;
+  transition: background 0.14s, box-shadow 0.14s;
+}
+
+.wsegmente button[aria-selected='true'] {
+  background: var(--w-grund);
+  font-weight: 800;
+  color: var(--w-vg);
+  box-shadow: 0 2px 0 0 var(--w-linie);
+}
+
+.wlive {
+  padding: 9px 15px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--w-akzent);
+  color: var(--w-grund);
+  font-weight: 800;
+  font-size: 11.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 0 var(--w-akzent-tief);
+  transition: transform 0.13s, box-shadow 0.13s;
+}
+
+.wlive:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 0 var(--w-akzent-tief);
+}
+
+/* --- Spalte 1: Bausteine und Regeln ----------------------- */
+
+.wbausteine {
+  padding: 18px 16px 30px;
+  border-right: 2px solid var(--w-linie);
+}
+
+.wrubrik {
+  margin: 0 0 11px;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--w-leise);
+}
+
+.wpillen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 22px;
+}
+
+.wpille {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: 18px;
+  border: 2px solid var(--w-vg);
+  font-weight: 800;
+  font-size: 11.5px;
+  cursor: grab;
+  transition: background 0.14s;
+}
+
+.wpille:hover {
+  background: var(--w-rose);
+}
+
+/* Voller Grund heißt: den Baustein gibt es wirklich. */
+.wpille--jetzt {
+  background: var(--w-akzent);
+  border-color: var(--w-akzent);
+  color: var(--w-grund);
+  box-shadow: 0 3px 0 0 var(--w-akzent-tief);
+}
+
+.wpille--jetzt:hover {
+  background: #dd2b0f;
+}
+
+.wregel {
+  padding: 13px 14px;
+  border-radius: 18px;
+  background: var(--w-flaeche);
+  margin-bottom: 9px;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.wregel--an {
+  background: var(--w-rose);
+}
+
+.wregel b {
+  font-weight: 800;
+}
+
+.wregel__neu {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  border: 2px dashed var(--w-linie);
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--w-akzent-tief);
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+
+.wregel__neu:hover {
+  border-color: var(--w-akzent);
+}
+
+.wbausteine .whinweis {
+  margin-top: 18px;
 }

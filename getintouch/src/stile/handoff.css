@@ -1374,14 +1374,14 @@ img.zitat__bild {
    Eingabe daneben — was man tippt, steht sofort in der Adresse.
    ============================================================ */
 
-.geraet {
+.heldgeraet {
   border-radius: 30px;
   background: var(--color-bg);
   padding: 16px;
   box-shadow: 0 8px 0 0 var(--color-neutral-300);
 }
 
-.geraet__leiste {
+.heldgeraet__leiste {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1390,19 +1390,19 @@ img.zitat__bild {
   padding: 2px 6px 12px;
 }
 
-.geraet__zeichen {
+.heldgeraet__zeichen {
   display: flex;
   gap: 6px;
 }
 
-.geraet__blatt {
+.heldgeraet__blatt {
   display: block;
   padding: 22px 20px 24px;
   border-radius: 24px;
   background: var(--color-accent-100);
 }
 
-.geraet__avatar {
+.heldgeraet__avatar {
   display: block;
   width: 56px;
   height: 56px;
@@ -1411,32 +1411,32 @@ img.zitat__bild {
   border: 2px solid var(--color-text);
 }
 
-.geraet__name {
+.heldgeraet__name {
   display: block;
   font: 800 20px var(--font-body);
   letter-spacing: -0.02em;
   margin-top: 12px;
 }
 
-.geraet__rolle {
+.heldgeraet__rolle {
   display: block;
   font-size: 12px;
   color: var(--ink-60);
   margin-top: 2px;
 }
 
-.geraet__adresse {
+.heldgeraet__adresse {
   display: block;
   font-size: 11.5px;
   color: var(--ink-50);
   margin-top: 10px;
 }
 
-.geraet__adresse b {
+.heldgeraet__adresse b {
   color: var(--color-accent-700);
 }
 
-.geraet__status {
+.heldgeraet__status {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1448,7 +1448,7 @@ img.zitat__bild {
 }
 
 /* Genau ein Puls je Ansicht — hier ist er. */
-.geraet__punkt {
+.heldgeraet__punkt {
   position: relative;
   width: 8px;
   height: 8px;
@@ -1457,7 +1457,7 @@ img.zitat__bild {
   flex: none;
 }
 
-.geraet__punkt::after {
+.heldgeraet__punkt::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -1466,8 +1466,8 @@ img.zitat__bild {
   animation: gtRipple 2.4s ease-out infinite;
 }
 
-.geraet__haupt,
-.geraet__neben {
+.heldgeraet__haupt,
+.heldgeraet__neben {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -1478,18 +1478,18 @@ img.zitat__bild {
   transition: transform 0.14s ease;
 }
 
-.geraet__haupt {
+.heldgeraet__haupt {
   margin-top: 16px;
   background: var(--color-accent);
   color: var(--color-bg);
   box-shadow: 0 4px 0 0 var(--color-accent-700);
 }
 
-.geraet__neben {
+.heldgeraet__neben {
   border: 2px solid var(--color-text);
 }
 
-.geraet:hover .geraet__haupt {
+.heldgeraet:hover .heldgeraet__haupt {
   transform: translateY(-2px);
 }
 

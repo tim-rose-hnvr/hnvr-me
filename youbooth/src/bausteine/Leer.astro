@@ -1,0 +1,51 @@
+---
+/**
+ * 3.10 Leer — was dasteht, wenn ein Filter nichts findet.
+ *
+ * Pflicht fuer jede Filterflaeche. Eine Galerie, die bei null Treffern
+ * einfach nichts zeigt, sieht kaputt aus; jemand haelt sie fuer einen Fehler
+ * und geht. Deshalb: sagen, dass nichts da ist, und den naechstbesten Weg
+ * gleich danebenstellen.
+ */
+interface Props {
+  /** Was nicht gefunden wurde, in einem Satz. */
+  satz: string;
+  weiter?: { text: string; ziel: string };
+}
+
+const { satz, weiter } = Astro.props;
+---
+
+<div class="leer">
+  <span class="mono mono--still">Kein Treffer</span>
+  <p>{satz}</p>
+  {weiter && <a class="knopf knopf--rahmen" href={weiter.ziel}>{weiter.text}</a>}
+</div>
+
+<style>
+  .leer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 56px 20px;
+    text-align: center;
+    border: 1px dashed var(--linie);
+    border-radius: var(--r-karte);
+  }
+
+  :global(.abschnitt--dunkel) .leer {
+    border-color: var(--linie-dunkel);
+  }
+
+  .leer p {
+    max-width: 46ch;
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--text-leise);
+  }
+
+  :global(.abschnitt--dunkel) .leer p {
+    color: var(--text-hell-leise);
+  }
+</style>

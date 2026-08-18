@@ -1,0 +1,56 @@
+---
+/**
+ * 3.4 Knopf — drei Arten, mehr gibt es nicht.
+ *
+ * `haupt` ist das Ziel der Seite und kommt genau einmal je Bildschirm vor.
+ * `rahmen` steht daneben, `text` ist ein Weiterverweis im Fliess.
+ *
+ * Rendert `<a>`, wenn ein Ziel da ist, sonst `<button>`. Ein Knopf, der
+ * weiterfuehrt, muss ein Link sein: Sonst kann man ihn nicht in einem neuen
+ * Fenster oeffnen, und Suchmaschinen sehen den Weg nicht.
+ */
+interface Props {
+  art?: 'haupt' | 'rahmen' | 'text';
+  /** Rahmenknopf auf dunklem Grund. */
+  hell?: boolean;
+  klein?: boolean;
+  ziel?: string;
+  typ?: 'button' | 'submit';
+  klasse?: string;
+  [weiteres: string]: unknown;
+}
+
+const {
+  art = 'haupt',
+  hell = false,
+  klein = false,
+  ziel,
+  typ = 'button',
+  klasse = '',
+  ...rest
+} = Astro.props;
+
+const artKlasse =
+  art === 'haupt'
+    ? 'knopf--amber'
+    : art === 'text'
+      ? 'knopf--text'
+      : hell
+        ? 'knopf--rahmen-hell'
+        : 'knopf--rahmen';
+
+const klassen = ['knopf', artKlasse, klein ? 'knopf--klein' : '', klasse].filter(Boolean).join(' ');
+---
+
+{
+  ziel ? (
+    <a class={klassen} href={ziel} {...rest}>
+      <slot />
+      {art === 'text' && <span aria-hidden="true">→</span>}
+    </a>
+  ) : (
+    <button class={klassen} type={typ} {...rest}>
+      <slot />
+    </button>
+  )
+}

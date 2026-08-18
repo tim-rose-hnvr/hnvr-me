@@ -1,0 +1,60 @@
+---
+/**
+ * 3.5 Chip — der Filter, und damit die tragende Interaktion der Website.
+ *
+ * Die Spec sagt: „Kein Chip ohne Wirkung — sieht ein Chip nach Filter aus,
+ * muss er filtern." Deshalb ist er ein echter Knopf mit `aria-pressed` und
+ * nicht ein eingefaerbtes `span`: Wer mit der Tastatur oder mit einer
+ * Vorlesehilfe unterwegs ist, muss den Zustand hoeren koennen.
+ */
+interface Props {
+  aktiv?: boolean;
+  wert?: string;
+  klasse?: string;
+  [weiteres: string]: unknown;
+}
+
+const { aktiv = false, wert, klasse = '', ...rest } = Astro.props;
+---
+
+<button
+  class={`chip ${aktiv ? 'chip--an' : ''} ${klasse}`.trim()}
+  type="button"
+  aria-pressed={aktiv ? 'true' : 'false'}
+  data-wert={wert}
+  {...rest}
+>
+  <slot />
+</button>
+
+<style>
+  .chip {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: var(--r-chip);
+    border: 1px solid var(--linie);
+    background: var(--weiss);
+    color: var(--text);
+    font-family: var(--schrift);
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background var(--t-farbe), color var(--t-farbe), border-color var(--t-farbe);
+  }
+
+  .chip:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .chip--an {
+    background: var(--ink);
+    color: var(--text-hell);
+    border-color: transparent;
+  }
+
+  .chip:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+  }
+</style>

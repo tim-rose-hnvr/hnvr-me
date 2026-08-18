@@ -1,0 +1,51 @@
+---
+/**
+ * 3.3 Karte — die Flaeche, auf der fast alles steht.
+ *
+ * Das Eckkennzeichen ist kein Schmuck, sondern eine Aussage: Amber heisst
+ * „das ist Software", Ink heisst „das ist eure Hardware oder eure Seite".
+ * Deshalb hat es zwei Toene und keine freie Farbe.
+ */
+interface Props {
+  ton?: 'weiss' | 'ink';
+  /** Hebt sich beim Ueberfahren. Nur setzen, wenn die Karte auch etwas tut. */
+  klickbar?: boolean;
+  gross?: boolean;
+  /** Kennzeichen oben rechts. */
+  ecke?: { text: string; ton?: 'amber' | 'ink' };
+  klasse?: string;
+}
+
+const { ton = 'weiss', klickbar = false, gross = false, ecke, klasse = '' } = Astro.props;
+
+const klassen = [
+  'karte',
+  ton === 'ink' ? 'karte--dunkel' : '',
+  klickbar ? 'karte--klickbar' : '',
+  gross ? 'karte--gross' : '',
+  ecke ? 'karte--mitecke' : '',
+  klasse,
+]
+  .filter(Boolean)
+  .join(' ');
+---
+
+<div class={klassen}>
+  {
+    ecke && (
+      <span class={`karte__marke ${ecke.ton === 'ink' ? 'karte__marke--dunkel' : ''}`}>
+        {ecke.text}
+      </span>
+    )
+  }
+  <slot />
+</div>
+
+<style>
+  /* Ohne Positionskontext haengt das Eckkennzeichen an der naechsten
+     positionierten Flaeche weiter oben — meist am ganzen Abschnitt. */
+  .karte--mitecke {
+    position: relative;
+    overflow: hidden;
+  }
+</style>

@@ -1,6 +1,6 @@
 ---
 import Marketing from '../layouts/Marketing.astro';
-import Boxbild from '../components/Boxbild.astro';
+import { Bildflaeche } from '../bausteine';
 import Bildplatz from '../components/Bildplatz.astro';
 import Icon from '../components/Icon.astro';
 import Standmarke from '../components/Standmarke.astro';
@@ -138,7 +138,7 @@ const betrieb = [
     </div>
 
     <div class="hero__bild">
-      <Boxbild art="box" format="4 / 3" bildtext="Kamera, Screen, Drucker im Sockel" />
+      <Bildflaeche format="4 / 3" motiv="Kamera, Screen, Drucker im Sockel" />
     </div>
   </section>
 

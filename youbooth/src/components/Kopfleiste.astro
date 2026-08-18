@@ -56,7 +56,7 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: clamp(16px, 2.2vw, 38px);
+    gap: 20px;
     padding: 0 var(--rand);
     /* Feste Hoehe, kein Umbruch: Die Leiste ist 74px hoch, Punkt. Mit
        `flex-wrap` konnte sie bei zwoelf Eintraegen in eine zweite Zeile
@@ -120,7 +120,7 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(2px, 0.5vw, 8px);
+    gap: 2px;
     flex: 1 1 auto;
     flex-wrap: nowrap;
     min-width: 0;
@@ -131,7 +131,7 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     text-decoration: none;
     font-weight: 500;
     font-size: 13.5px;
-    padding: 9px 11px;
+    padding: 9px 10px;
     border-radius: var(--r-pille);
     white-space: nowrap;
     transition: color var(--t-farbe), background var(--t-farbe);
@@ -227,13 +227,29 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     transition: transform var(--t-transform), opacity var(--t-farbe);
   }
 
-  /* Unter 1160px: Burger statt Leiste.
+  /* Unter 1365px: Burger statt Leiste.
+
+     Die Spec nennt 1160px. Das geht mit ihren eigenen Werten nicht auf:
+     Zwoelf Punkte in Archivo 500 bei 13.5px brauchen samt Innenabstand
+     840px, dazu Wortmarke (~190px) und zwei Knoepfe (~270px) — gemessen,
+     nicht geschaetzt. Unterhalb von 1366px schiebt sich die Navigation
+     deshalb ueber die Wortmarke und ueber „Anmelden".
+
+     Der Widerspruch steckt in der Spec selbst: Der Entwurf, den sie
+     beschreibt, hat NEUN Punkte (System · Module · Anlässe · Vorlagen ·
+     Vergleich · Rechner · Preise · Hilfe · Über uns), die Prosa nennt zwoelf.
+     Mit neun passt 1160px genau.
+
+     Hier gilt die Prosa (zwoelf Punkte, Reihenfolge unveraendert) und der
+     Umbruchpunkt weicht auf den gemessenen Wert aus — ueberlappende Schrift
+     waere die schlechtere Abweichung. Sollen es neun werden, kann 1160
+     zurueck.
 
      Das Panel haengt UNTER der Leiste, nicht in ihr. Vorher lief es ueber
      `flex-wrap` in einer zweiten Zeile mit — das hielt die Leiste nur solange
      auf 74px, wie sie zu war, und schob beim Oeffnen die Seite nach unten.
      Die Spec sagt: feste Hoehe, Panel darunter. */
-  @media (max-width: 1160px) {
+  @media (max-width: 1365px) {
     .burger {
       display: flex;
     }
@@ -356,6 +372,6 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
   /* Wird das Fenster über den Umbruchpunkt hinaus breiter, gibt es kein
      Panel mehr, das offen sein könnte — die Scroll-Sperre bliebe sonst. */
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 1160 && kopf?.hasAttribute('data-offen')) setze(false);
+    if (window.innerWidth > 1365 && kopf?.hasAttribute('data-offen')) setze(false);
   });
 </script>

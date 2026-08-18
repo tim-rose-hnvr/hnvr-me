@@ -1,0 +1,138 @@
+---
+/**
+ * 3.6 Klappe — eine Zeile eines Akkordeons.
+ *
+ * Geoeffnet wird ueber `grid-template-rows: 0fr → 1fr`. Der naheliegende Weg
+ * waere `max-height`, aber der verlangt eine geratene Hoehe: Zu klein
+ * schneidet ab, zu gross laesst die Bewegung am Ende leerlaufen. Mit `fr`
+ * misst der Browser selbst.
+ *
+ * Immer nur eine Zeile offen — das regelt die Gruppe (`Klappen.astro`),
+ * nicht die einzelne Zeile.
+ */
+interface Props {
+  titel: string;
+  offen?: boolean;
+  /** Gruppenname; alle Zeilen einer Gruppe schliessen sich gegenseitig. */
+  gruppe?: string;
+}
+
+const { titel, offen = false, gruppe = 'standard' } = Astro.props;
+const kennung = 'klappe-' + Math.random().toString(36).slice(2, 9);
+---
+
+<div class="klappe" data-gruppe={gruppe} data-offen={offen ? '' : undefined}>
+  <button class="kopf" type="button" aria-expanded={offen ? 'true' : 'false'} aria-controls={kennung}>
+    <span class="titel">{titel}</span>
+    <span class="zeichen" aria-hidden="true">+</span>
+  </button>
+  <div class="huelle" id={kennung}>
+    <div class="inhalt">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .klappe {
+    border-top: 1px solid var(--linie);
+  }
+
+  :global(.abschnitt--dunkel) .klappe {
+    border-top-color: var(--linie-dunkel);
+  }
+
+  .kopf {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+    font-family: var(--schrift);
+  }
+
+  .kopf:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+  }
+
+  .titel {
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .zeichen {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--text-leise);
+    transition: transform var(--t-transform);
+  }
+
+  :global(.abschnitt--dunkel) .zeichen {
+    color: var(--text-hell-leise);
+  }
+
+  .klappe[data-offen] .zeichen {
+    transform: rotate(45deg);
+  }
+
+  .huelle {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--t-klapp);
+  }
+
+  .klappe[data-offen] .huelle {
+    grid-template-rows: 1fr;
+  }
+
+  .inhalt {
+    overflow: hidden;
+  }
+
+  .klappe[data-offen] .inhalt {
+    padding-bottom: 20px;
+  }
+
+  .inhalt :global(p) {
+    max-width: var(--spalte-text);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-leise);
+  }
+
+  :global(.abschnitt--dunkel) .inhalt :global(p) {
+    color: var(--text-hell-leise);
+  }
+</style>
+
+<script>
+  /* Eine Zeile je Gruppe. Der Zuhoerer haengt am Dokument, nicht an jeder
+     Zeile: Sonst gaebe es bei 24 Hilfe-Artikeln 24 Zuhoerer, die alle
+     dasselbe tun. */
+  document.addEventListener('click', (e) => {
+    const kopf = (e.target as HTMLElement).closest('.klappe > .kopf');
+    if (!kopf) return;
+    const klappe = kopf.parentElement as HTMLElement;
+    const gruppe = klappe.dataset.gruppe;
+    const wirdOffen = !klappe.hasAttribute('data-offen');
+
+    document.querySelectorAll<HTMLElement>(`.klappe[data-gruppe="${gruppe}"]`).forEach((z) => {
+      const auf = z === klappe && wirdOffen;
+      z.toggleAttribute('data-offen', auf);
+      z.querySelector('.kopf')?.setAttribute('aria-expanded', String(auf));
+    });
+  });
+</script>

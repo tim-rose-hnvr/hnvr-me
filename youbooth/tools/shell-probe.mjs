@@ -68,18 +68,35 @@ pruefe('youbooth.de kommt nirgends vor', !fuss.punktde);
 
 /* 3 — Kein waagerechtes Scrollen, auf keiner Breite. */
 console.log('\n3 · Breiten');
-for (const breite of [1280, 1160, 1020, 900, 640, 380]) {
+for (const breite of [1600, 1440, 1366, 1280, 1160, 1020, 900, 640, 380]) {
   const k = await browser.newContext({ viewport: { width: breite, height: 900 } });
   const s = await k.newPage();
   await s.goto(BASIS + '/', { waitUntil: 'networkidle' });
-  const messwert = await s.evaluate(() => ({
-    ueber: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
-    kopfhoehe: document.querySelector('.kopf').getBoundingClientRect().height,
-    burger: getComputedStyle(document.querySelector('.burger')).display !== 'none',
-  }));
+  /* Nach dem Bild vom ersten Durchgang: „steht nichts seitlich über" reicht
+     nicht. Die Navigation kann bei `nowrap` auch INNERHALB der Leiste über
+     Wortmarke und Knöpfe laufen — sichtbar, aber ohne Scrollbalken. */
+  const messwert = await s.evaluate(() => {
+    const kopf = document.querySelector('.kopf');
+    const marke = kopf.querySelector('.marke').getBoundingClientRect();
+    const rechts = kopf.querySelector('.rechts').getBoundingClientRect();
+    const punkte = [...kopf.querySelectorAll('.links a')].map((a) => a.getBoundingClientRect());
+    const sichtbar = getComputedStyle(kopf.querySelector('.links')).flexDirection === 'row';
+    let ueberlappt = '';
+    if (sichtbar && punkte.length) {
+      if (punkte[0].left < marke.right - 0.5) ueberlappt = 'Navigation über der Wortmarke';
+      else if (punkte[punkte.length - 1].right > rechts.left + 0.5) ueberlappt = 'Navigation über den Knöpfen';
+    }
+    return {
+      ueber: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+      kopfhoehe: kopf.getBoundingClientRect().height,
+      burger: getComputedStyle(kopf.querySelector('.burger')).display !== 'none',
+      ueberlappt,
+    };
+  });
   pruefe(`${breite}px: nichts steht seitlich über`, !messwert.ueber);
   pruefe(`${breite}px: Leiste bleibt 74px`, Math.round(messwert.kopfhoehe) === 74, String(messwert.kopfhoehe));
-  pruefe(`${breite}px: Burger ${breite <= 1160 ? 'da' : 'weg'}`, messwert.burger === (breite <= 1160));
+  pruefe(`${breite}px: Burger ${breite <= 1365 ? 'da' : 'weg'}`, messwert.burger === (breite <= 1365));
+  pruefe(`${breite}px: nichts in der Leiste überlappt`, !messwert.ueberlappt, messwert.ueberlappt || '');
   await k.close();
 }
 

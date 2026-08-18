@@ -12,6 +12,11 @@ interface Props {
   alt?: string;
   format?: string;
   radius?: number;
+  /* `cover` gab es hier als Wahlmoeglichkeit. BUILD_SPEC 3.9 und
+     Abnahmekriterium 9 lassen keine: Ein angeschnittener Screenshot zeigt die
+     Oberflaeche falsch, und genau die soll er zeigen. Die Eigenschaft bleibt
+     nur, damit die Seiten nicht auf einen Schlag umgeschrieben werden
+     muessen — sie wirkt nicht mehr. */
   fit?: 'contain' | 'cover';
   laden?: 'eager' | 'lazy';
 }
@@ -22,14 +27,14 @@ const {
   alt,
   format = '16 / 9',
   radius = 12,
-  fit = 'contain',
+  fit: _fitEgal = 'contain',
   laden = 'lazy',
 } = Astro.props;
 ---
 
 <div
   class:list={['platz', { leer: !src }]}
-  style={`--format:${format};--radius:${radius}px;--fit:${fit}`}
+  style={`--format:${format};--radius:${radius}px;--fit:contain`}
 >
   {
     src ? (

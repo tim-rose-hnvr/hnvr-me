@@ -1,0 +1,50 @@
+---
+/**
+ * 3.7 Kennzahl — Zahl mit Beschriftung.
+ *
+ * In Rechnern zaehlt die Zahl auf den neuen Wert, statt zu springen. Das ist
+ * kein Effekt: Wer einen Regler bewegt, muss sehen, in WELCHE Richtung sich
+ * das Ergebnis bewegt. Ein Sprung zeigt nur, dass sich etwas geaendert hat.
+ */
+interface Props {
+  wert: string | number;
+  beschriftung: string;
+  /** Zaehlt beim Aendern hoch statt zu springen. */
+  zaehlend?: boolean;
+  kennung?: string;
+}
+
+const { wert, beschriftung, zaehlend = false, kennung } = Astro.props;
+---
+
+<div class="kennzahl">
+  <span class="wert" data-zaehlend={zaehlend ? '' : undefined} data-kennung={kennung}>{wert}</span>
+  <span class="mono beschriftung">{beschriftung}</span>
+</div>
+
+<style>
+  .kennzahl {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .wert {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: clamp(26px, 3vw, 40px);
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .beschriftung {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--text-leise);
+  }
+
+  :global(.abschnitt--dunkel) .beschriftung {
+    color: var(--text-hell-leise);
+  }
+</style>

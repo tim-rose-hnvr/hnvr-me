@@ -1,0 +1,83 @@
+---
+/**
+ * 3.9 Bildflaeche — der Ersatz fuer `<image-slot>` aus den Entwuerfen.
+ *
+ * Zwei Regeln aus der Spec, beide gegen die Versuchung:
+ *
+ *  1. `object-fit: contain`, immer. Ein Screenshot, der angeschnitten wird,
+ *     zeigt die Oberflaeche falsch — und genau die soll er zeigen.
+ *  2. Fehlt das Bild, kommt eine Flaeche mit dem Motivtext. KEIN gezeichnetes
+ *     Ersatzmotiv. Hier standen einmal drei gezeichnete Boxen; die Spec
+ *     verbietet das ausdruecklich, und zwar zu Recht: Eine Zeichnung sieht
+ *     aus wie eine Entscheidung, ein leeres Feld mit Beschriftung sieht aus
+ *     wie eine offene Aufgabe. Nur das Zweite stimmt.
+ *
+ * Der Motivtext ist zugleich das Briefing fuer das Foto, das dort einmal
+ * hingehoert.
+ */
+interface Props {
+  /** Seitenverhaeltnis: Booth und Mosaik 16/9, Cockpit und Editor 16/10,
+      Galerie hochkant, Event- und Gaestefotos 3/2. */
+  format?: string;
+  /** Pfad zum Bild. Fehlt er, erscheint die Flaeche mit dem Motivtext. */
+  quelle?: string;
+  /** Was auf dem Bild zu sehen sein soll — Alternativtext und Briefing. */
+  motiv: string;
+  hell?: boolean;
+  klasse?: string;
+}
+
+const { format = '16 / 9', quelle, motiv, hell = false, klasse = '' } = Astro.props;
+---
+
+<figure
+  class={`bildflaeche ${hell ? 'bildflaeche--hell' : ''} ${quelle ? '' : 'bildflaeche--leer'} ${klasse}`.trim()}
+  style={`--format:${format}`}
+>
+  {
+    quelle ? (
+      <img src={quelle} alt={motiv} loading="lazy" decoding="async" />
+    ) : (
+      <figcaption class="motiv">{motiv}</figcaption>
+    )
+  }
+</figure>
+
+<style>
+  .bildflaeche {
+    margin: 0;
+    aspect-ratio: var(--format);
+    border-radius: var(--r-chip);
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.06);
+    display: grid;
+    place-items: center;
+  }
+
+  .bildflaeche--hell {
+    background: rgba(244, 242, 238, 0.06);
+  }
+
+  .bildflaeche img {
+    width: 100%;
+    height: 100%;
+    /* Nie anschneiden — Abnahmekriterium 9. */
+    object-fit: contain;
+  }
+
+  .motiv {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 11px;
+    line-height: 1.6;
+    letter-spacing: 0.08em;
+    text-align: center;
+    padding: 16px;
+    color: var(--text-still);
+    max-width: 32ch;
+  }
+
+  .bildflaeche--hell .motiv {
+    color: var(--text-hell-still);
+  }
+</style>

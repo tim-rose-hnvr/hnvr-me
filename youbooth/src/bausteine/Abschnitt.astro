@@ -1,0 +1,56 @@
+---
+/**
+ * 3.1 Abschnitt — der vertikale Block, aus dem jede Seite besteht.
+ *
+ * Warum das eine Komponente ist und keine Klasse: Eine Klasse kann man
+ * vergessen. Die Spec verlangt, dass jede Seite ausschliesslich aus den
+ * Primitives besteht — das laesst sich nur halten, wenn es die Primitives
+ * wirklich gibt und nicht bloss als Konvention.
+ *
+ * Innen sitzt ein Kasten mit 1240px Hoechstbreite. Der Aussenrand ist der
+ * Seitenrand, die Breite darin die Inhaltsbreite: So bleibt der Hintergrund
+ * randlos, waehrend der Text bei jeder Fenstergroesse an derselben Kante
+ * beginnt.
+ */
+interface Props {
+  /** Grundflaeche. Mehr als zwei je Seite sind laut Spec zu viele. */
+  ton?: 'paper' | 'ink' | 'weiss';
+  /** Hoehe des Innenabstands: normal 80px, kompakt 70px, eng 56px. */
+  polster?: 'normal' | 'kompakt' | 'eng';
+  /** Abstand zwischen den Kindern. */
+  luecke?: number;
+  klasse?: string;
+  id?: string;
+}
+
+const { ton = 'paper', polster = 'normal', luecke = 32, klasse = '', id } = Astro.props;
+
+const tonKlasse = ton === 'ink' ? 'abschnitt--dunkel' : ton === 'weiss' ? 'abschnitt--weiss' : '';
+const polsterKlasse =
+  polster === 'kompakt' ? 'abschnitt--kompakt' : polster === 'eng' ? 'abschnitt--eng' : '';
+---
+
+<section class={`abschnitt ${tonKlasse} ${polsterKlasse} ${klasse}`.trim()} id={id}>
+  <div class="innen" style={`--luecke:${luecke}px`}>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .abschnitt {
+    padding-inline: 0;
+  }
+
+  .innen {
+    max-width: var(--breite);
+    margin-inline: auto;
+    padding-inline: var(--rand);
+    display: flex;
+    flex-direction: column;
+    gap: var(--luecke);
+  }
+
+  .abschnitt--weiss {
+    background: var(--weiss);
+  }
+</style>

@@ -69,7 +69,7 @@ const kennzahlen = [
         <span class="mono" data-feld="treffer" role="status">
           {vorlagen.length} von {vorlagen.length} Vorlagen
         </span>
-        <button class="chip" type="button" data-feld="zuruecksetzen">Zurücksetzen</button>
+        <button class="knopf knopf--rahmen knopf--klein" type="button" data-feld="zuruecksetzen">Zurücksetzen</button>
       </span>
     </div>
 
@@ -198,29 +198,6 @@ const kennzahlen = [
     flex-wrap: wrap;
     align-items: center;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  }
-
-  .chip {
-    padding: 10px 15px;
-    border-radius: 20px;
-    background: var(--weiss);
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    color: rgba(0, 0, 0, 0.65);
-    font-family: var(--schrift);
-    font-weight: 600;
-    font-size: 12.5px;
-    cursor: pointer;
-    transition: background var(--t-farbe), color var(--t-farbe), border-color var(--t-farbe);
-  }
-
-  .chip:hover {
-    border-color: rgba(0, 0, 0, 0.3);
-  }
-
-  .chip.on {
-    background: var(--ink-soft);
-    color: var(--weiss);
-    border-color: var(--ink-soft);
   }
 
   .trenner {

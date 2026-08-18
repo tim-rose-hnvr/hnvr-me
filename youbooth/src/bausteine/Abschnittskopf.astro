@@ -1,0 +1,92 @@
+---
+/**
+ * 3.2 Abschnittskopf — der Kopf jedes Abschnitts.
+ *
+ * Die Spec sagt: „Jeder Abschnitt beginnt damit — kein nacktes h2." Das ist
+ * keine Formsache. Ein Abschnitt ohne Augenbraue und ohne Beiwort zwingt den
+ * Leser, aus der Ueberschrift allein zu erraten, worum es geht; mit beidem
+ * weiss er es in einer Zeile.
+ *
+ * Rechts steht entweder eine Notiz (Mono, klein) oder ein Beiwort (Fliesstext,
+ * hoechstens 440px) — nie beides, sonst kippt die Waage nach rechts.
+ */
+interface Props {
+  augenbraue?: string;
+  titel: string;
+  /** Kurze Kennzeichnung rechts, in Mono. */
+  notiz?: string;
+  /** Erklaerender Satz rechts, im Fliesstext. */
+  beiwort?: string;
+  /** Textlink rechts unten, z. B. „Alle 14 Module ansehen". */
+  weiter?: { text: string; ziel: string };
+  /** Ueberschriftsrang. Auf einer Seite gibt es genau eine 1. */
+  rang?: 1 | 2 | 3;
+}
+
+const { augenbraue, titel, notiz, beiwort, weiter, rang = 2 } = Astro.props;
+const Titel = `h${rang}` as 'h1' | 'h2' | 'h3';
+---
+
+<div class="kopf">
+  <div class="links">
+    {augenbraue && <span class="mono mono--amber">{augenbraue}</span>}
+    <Titel>{titel}</Titel>
+  </div>
+
+  {
+    (notiz || beiwort || weiter) && (
+      <div class="rechts">
+        {notiz && <span class="mono mono--still">{notiz}</span>}
+        {beiwort && <p class="beiwort">{beiwort}</p>}
+        {weiter && (
+          <a class="knopf knopf--text" href={weiter.ziel}>
+            {weiter.text} <span aria-hidden="true">→</span>
+          </a>
+        )}
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .kopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .rechts {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    text-align: right;
+  }
+
+  .beiwort {
+    max-width: 440px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-leise);
+  }
+
+  :global(.abschnitt--dunkel) .beiwort {
+    color: var(--text-hell-leise);
+  }
+
+  @media (max-width: 900px) {
+    .rechts {
+      align-items: flex-start;
+      text-align: left;
+    }
+  }
+</style>

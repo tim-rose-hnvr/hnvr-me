@@ -1,0 +1,51 @@
+---
+/**
+ * 3.8 Punkt — Aufzaehlung ohne Listenoptik.
+ *
+ * Der Punkt sitzt 7px unter der Oberkante, damit er auf der ersten Zeile
+ * liegt und nicht daneben — bei mehrzeiligen Eintraegen faellt das sofort
+ * auf.
+ */
+interface Props {
+  /** Punktfarbe hell setzen, auf dunklem Grund. */
+  hell?: boolean;
+}
+
+const { hell = false } = Astro.props;
+---
+
+<span class={`punkt ${hell ? 'punkt--hell' : ''}`.trim()}>
+  <i aria-hidden="true"></i>
+  <span class="text"><slot /></span>
+</span>
+
+<style>
+  .punkt {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+  }
+
+  .punkt i {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    margin-top: 7px;
+    border-radius: var(--r-kreis);
+    background: var(--ink-soft);
+  }
+
+  .punkt--hell i {
+    background: var(--amber);
+  }
+
+  .text {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--text-leise);
+  }
+
+  .punkt--hell .text {
+    color: var(--text-hell-leise);
+  }
+</style>

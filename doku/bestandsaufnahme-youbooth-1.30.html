@@ -1,0 +1,819 @@
+<title>Bestandsaufnahme youbooth 1.30</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;700&display=swap">
+
+<style>
+  /* Gestaltung folgt dem Entwurf „Nachtschicht" aus DESIGN-nachtschicht.md:
+     Nachtblau statt Schwarz, zwei Akzente mit Zuständigkeit — Blitz (warm,
+     alles Körperliche: Befunde, Belege) und Strom (kühl, alles Strukturelle).
+     Dunkel zuerst, weil das Cockpit dunkel ist; helle Fassung vollständig
+     durchgezogen, damit die Seite auf jedem Grund steht. */
+  :root {
+    --grund: #0a0f1c;
+    --erhoben: #111a2e;
+    --tiefer: #070b15;
+    --linie: rgba(125, 151, 255, 0.18);
+    --linie-stark: rgba(125, 151, 255, 0.34);
+    --schrift: #e9edf7;
+    --leise: #97a3c2;
+    --blitz: #ffc857;
+    --strom: #7d97ff;
+    --fehler: #ff7a6b;
+    --gut: #5cc98d;
+    --achtung: #ffb454;
+    --marke-blitz: rgba(255, 200, 87, 0.14);
+    --marke-strom: rgba(125, 151, 255, 0.14);
+    --schatten: 0 18px 44px rgba(0, 0, 0, 0.45);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --grund: #f7f8fb;
+      --erhoben: #ffffff;
+      --tiefer: #eef1f7;
+      --linie: rgba(24, 40, 88, 0.16);
+      --linie-stark: rgba(24, 40, 88, 0.3);
+      --schrift: #131a2b;
+      --leise: #556180;
+      --blitz: #9a6b00;
+      --strom: #3a54c4;
+      --fehler: #b3382c;
+      --gut: #1f7a4d;
+      --achtung: #8a5a00;
+      --marke-blitz: rgba(154, 107, 0, 0.12);
+      --marke-strom: rgba(58, 84, 196, 0.1);
+      --schatten: 0 14px 34px rgba(24, 40, 88, 0.12);
+    }
+  }
+
+  :root[data-theme="light"] {
+    --grund: #f7f8fb;
+    --erhoben: #ffffff;
+    --tiefer: #eef1f7;
+    --linie: rgba(24, 40, 88, 0.16);
+    --linie-stark: rgba(24, 40, 88, 0.3);
+    --schrift: #131a2b;
+    --leise: #556180;
+    --blitz: #9a6b00;
+    --strom: #3a54c4;
+    --fehler: #b3382c;
+    --gut: #1f7a4d;
+    --achtung: #8a5a00;
+    --marke-blitz: rgba(154, 107, 0, 0.12);
+    --marke-strom: rgba(58, 84, 196, 0.1);
+    --schatten: 0 14px 34px rgba(24, 40, 88, 0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--grund);
+    color: var(--schrift);
+    font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .blatt {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  /* --- Kopf ------------------------------------------------------- */
+
+  .kopf {
+    padding: 72px 0 40px;
+    border-bottom: 1px solid var(--linie);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .marke {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--blitz);
+  }
+
+  h1 {
+    font-family: Fraunces, Georgia, serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(34px, 6vw, 56px);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .vorspann {
+    max-width: 62ch;
+    color: var(--leise);
+    font-size: 18.5px;
+    margin: 0;
+  }
+
+  .stempel {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12.5px;
+    color: var(--leise);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+
+  /* --- Abschnitte ------------------------------------------------- */
+
+  section {
+    padding-top: 56px;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--strom);
+    margin: 0 0 10px;
+  }
+
+  h2 {
+    font-family: Fraunces, Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(25px, 3.4vw, 33px);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: 'Public Sans', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.35;
+    margin: 0 0 6px;
+  }
+
+  p { max-width: 72ch; margin: 0 0 16px; }
+  p.weit { max-width: none; }
+
+  a { color: var(--strom); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--blitz);
+    outline-offset: 3px;
+  }
+
+  strong { font-weight: 700; }
+
+  code, .pfad {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.88em;
+    background: var(--marke-strom);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+
+  ul, ol { max-width: 72ch; padding-left: 22px; margin: 0 0 16px; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--leise); }
+
+  /* --- Zahlen ------------------------------------------------------ */
+
+  .rahmen {
+    overflow-x: auto;
+    border: 1px solid var(--linie);
+    border-radius: 12px;
+    background: var(--erhoben);
+    margin-bottom: 22px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--linie);
+    vertical-align: top;
+  }
+
+  thead th {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--leise);
+    font-weight: 500;
+    background: var(--tiefer);
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  td.zahl, th.zahl { text-align: right; white-space: nowrap; }
+
+  /* --- Befunde ------------------------------------------------------ */
+
+  .befund {
+    border: 1px solid var(--linie);
+    border-left: 3px solid var(--blitz);
+    border-radius: 10px;
+    background: var(--erhoben);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    box-shadow: var(--schatten);
+  }
+
+  .befund--doku { border-left-color: var(--strom); }
+  .befund--alt { border-left-color: var(--leise); }
+
+  .befund__kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px 14px;
+    margin-bottom: 8px;
+  }
+
+  .chip {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--linie-stark);
+    color: var(--leise);
+    white-space: nowrap;
+  }
+
+  .chip--belegt { color: var(--fehler); border-color: currentColor; }
+  .chip--doku { color: var(--strom); border-color: currentColor; }
+  .chip--kosmetik { color: var(--achtung); border-color: currentColor; }
+
+  .befund p { margin-bottom: 10px; }
+  .befund p:last-child { margin-bottom: 0; }
+
+  .beleg {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12.5px;
+    color: var(--leise);
+    border-top: 1px dashed var(--linie);
+    padding-top: 10px;
+    margin-top: 12px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+  }
+
+  /* --- Listenkarten -------------------------------------------------- */
+
+  .karten {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .karte {
+    border: 1px solid var(--linie);
+    border-radius: 10px;
+    background: var(--erhoben);
+    padding: 16px 18px;
+  }
+
+  .karte h3 { margin-bottom: 4px; }
+  .karte p { font-size: 15px; color: var(--leise); margin: 0; }
+
+  .rosine {
+    border-top: 1px solid var(--linie);
+    padding: 18px 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .rosine:last-of-type { border-bottom: 1px solid var(--linie); }
+  .rosine p { margin: 0; font-size: 16px; }
+  .rosine .quelle {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--leise);
+  }
+
+  .hinweis {
+    border-left: 3px solid var(--blitz);
+    background: var(--marke-blitz);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    margin: 24px 0;
+  }
+  .hinweis p:last-child { margin-bottom: 0; }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--linie);
+    margin: 56px 0 0;
+  }
+
+  .fuss {
+    padding-top: 28px;
+    color: var(--leise);
+    font-size: 14.5px;
+  }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    .kopf { padding-top: 48px; }
+  }
+</style>
+
+<div class="blatt">
+
+  <header class="kopf">
+    <span class="marke">Bestandsaufnahme · 18.08.2026</span>
+    <h1>Was in youbooth&nbsp;1.30 steckt</h1>
+    <p class="vorspann">
+      Gelesen aus dem hochgeladenen Quelltext: 36&nbsp;622 Zeilen eigener Code, neun
+      Dokumente, siebzehn Werkzeuge. Was das System kann, was daran nachweislich
+      kaputt ist, wo die Doku dem Code widerspricht — und was das für die beiden
+      Ordner in <span class="pfad">hnvr-me</span> bedeutet.
+    </p>
+    <div class="stempel">
+      <span>Quelle: youboothquelltext1.29.0.zip</span>
+      <span>package.json: 1.30.0</span>
+      <span>Prüfstand: gelesen, nicht ausgeführt</span>
+    </div>
+  </header>
+
+  <section>
+    <p class="eyebrow">Vorbemerkung</p>
+    <h2>Was ich gelesen habe — und was nicht drin war</h2>
+    <p>
+      Das Paket enthält die <strong>Box</strong>: den Express-Server, die 49 Web-Seiten,
+      die Electron-Hülle, die Vorlagen, die Werkzeuge und die Doku. Es enthält
+      <strong>nicht</strong> die Gegenseite: die Zentrale mit Konto, Lizenzen,
+      Events und Fernsteuerung. Der Code verweist an dutzenden Stellen auf sie
+      (<span class="pfad">src/lib/db.ts</span>, <span class="pfad">lib/warnungen.ts</span>,
+      die Astro-App, das Wix-Projekt) — die Dateien selbst fehlen. Alles, was ich
+      unten über die Zentrale sage, ist also aus der Sicht der Box gelesen.
+    </p>
+    <p>
+      Ausgeführt habe ich nichts. Jeder Befund ist am Quelltext belegt und mit
+      Datei und Zeile ausgewiesen, damit du ihn in einer Minute nachschlagen kannst.
+    </p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Umfang</p>
+    <h2>Das System in Zahlen</h2>
+
+    <div class="rahmen">
+      <table>
+        <thead>
+          <tr><th>Bereich</th><th class="zahl">Zeilen</th><th>Was darin steckt</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="pfad">server.js</span></td><td class="zahl">4 038</td><td>91 Schnittstellen, Einstellungen, Lizenz, Fernsteuerung, Druck, Cloud-Warteschlange</td></tr>
+          <tr><td><span class="pfad">public/*.html</span></td><td class="zahl">19 623</td><td>49 Seiten: Booth, Cockpit, zwei Designer, Wand, Galerie, Station, Finder, Gästebuch, 360°, Slowmo</td></tr>
+          <tr><td><span class="pfad">public/*.css</span></td><td class="zahl">4 513</td><td>11 Stilbögen, davon 6 verwaist (siehe Altlasten)</td></tr>
+          <tr><td><span class="pfad">public/*.js</span></td><td class="zahl">3 748</td><td>GIF-Kodierer, Formate, Countdowns, Materialien, Icons, i18n, Effekte</td></tr>
+          <tr><td><span class="pfad">tools/</span></td><td class="zahl">3 492</td><td>17 Werkzeuge: Ausliefern, Durchtesten, Quelltext prüfen, Netz prüfen, Vorlagen bauen</td></tr>
+          <tr><td>Electron + Hilfsmodule</td><td class="zahl">1 224</td><td>Hülle, Selbst-Update, Kamera, Zertifikat, Hashtag, Produkte</td></tr>
+          <tr><td>Doku</td><td class="zahl">1 519</td><td>README, PRODUCT, WETTBEWERB, Arbeitsliste, Vorlagen-Philosophie, Design</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="karten">
+      <div class="karte"><h3>78 Druckvorlagen</h3><p>19 im Code, 59 im Paket — in 7 Papierformaten bei 300 dpi.</p></div>
+      <div class="karte"><h3>7 Module</h3><p>Wand, Galerie, Gästebuch, Gäste-Kamera, Event-Seiten, Diashow, Selfie-Finder — an der Route gesperrt, nicht in der Oberfläche.</p></div>
+      <div class="karte"><h3>2 Editionen</h3><p>Desktop mit Druck und Hardware, Cloud im Browser ohne Druck — aus einem Code, über eine Umgebungsvariable.</p></div>
+      <div class="karte"><h3>20 Countdown-Stile</h3><p>Dazu 20 Textanimationen und 21 Materialien, jeweils als Bibliothek mit fester Kennung.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Aufbau</p>
+    <h2>Wie das Ding zusammenhängt</h2>
+    <p>
+      Ein einziger Node-Prozess trägt alles. Er liefert die Seiten aus, hält die
+      Einstellungen, spricht mit Drucker und Kamera, verteilt über WebSocket an
+      Booth, Wand und Station und meldet sich im Sekundentakt bei der Zentrale ab.
+      Electron ist nur die Hülle drumherum: Vollbild, Symbol im Infobereich,
+      Selbst-Update, Datenordner.
+    </p>
+    <p>
+      Zwei Entscheidungen prägen den ganzen Aufbau. Erstens: <strong>die Box holt
+      Aufträge ab, statt Verbindungen anzunehmen</strong> — sie steht hinter einem
+      fremden Router, eingehend ist sie nicht erreichbar. Zweitens: <strong>die
+      Oberfläche entscheidet nichts</strong>. Modulsperre, Druckgrenzen und
+      Fernwartungsrechte hängen am Server, weil Booth, Station und jedes Handy im
+      Feier-WLAN dieselben Schnittstellen benutzen.
+    </p>
+    <p>
+      Die Inhalte können an zwei Orten liegen: im Programm oder in einem
+      nachgeladenen Ordner. Express nimmt die erste Datei, die es findet — deshalb
+      lädt ein Update nur 1,5&nbsp;MB statt 27, denn Freistell-Modelle,
+      Gesichtserkennung und Vorlagen bleiben im Programm. Startet die nachgeladene
+      Fassung nicht, wird sie beiseitegelegt und die mitgelieferte genommen.
+    </p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Rosinen</p>
+    <h2>Was dieser Code besser macht, als er müsste</h2>
+    <p>
+      Das ist der Teil, den man nicht nachbaut, ohne die Nächte gehabt zu haben,
+      aus denen er stammt. Jede dieser Stellen trägt ihre Begründung im Kommentar
+      — meist mit dem Vorfall, der sie erzwungen hat.
+    </p>
+
+    <div class="rosine">
+      <p><strong>Dateien, die einen Stromausfall überstehen.</strong> Geschrieben wird in eine Nebendatei, mit <span class="pfad">fsync</span> auf die Platte gezwungen, dann umbenannt. Die vorige gute Fassung bleibt als <span class="pfad">.bak</span>. Beim Lesen wird repariert statt still auf Werkseinstellungen zurückgesprungen — der Fehler davor kostete Drucker, Lizenz und Marke, und der Betreiber merkte es, als der erste Gast davorstand.</p>
+      <p class="quelle">server.js:402–453 · loadJson / saveJson</p>
+    </div>
+
+    <div class="rosine">
+      <p><strong>Einstellungen mischen, nicht ersetzen.</strong> Ein <span class="pfad">{ …standard, …gespeichert }</span> ersetzte verschachtelte Blöcke komplett. Folge: <span class="pfad">Math.max(60, undefined)</span> ergibt NaN, <span class="pfad">setInterval(fn, NaN)</span> läuft mit einer Millisekunde — und <span class="pfad">moderation</span> war <span class="pfad">undefined</span>, also hätte die Box Fremdbeiträge ungeprüft gedruckt. Beides steht als Warnung im Code.</p>
+      <p class="quelle">server.js:469–478 · einstellungenMischen</p>
+    </div>
+
+    <div class="rosine">
+      <p><strong>Selbstprüfung alle fünf Minuten — mit einer Grenze.</strong> Schreibrecht, Platz, Drucker, Vollständigkeit der Einstellungen. Repariert wird nur, was eindeutig ist; alles andere wird gemeldet. Der Satz dazu ist die ganze Haltung: eine Box, die selbstständig den Drucker wechselt, druckt eine Hochzeit auf dem Bürodrucker im Nebenraum.</p>
+      <p class="quelle">server.js:748–860 · selbstpruefung</p>
+    </div>
+
+    <div class="rosine">
+      <p><strong>Modulsperre an der Route.</strong> Eine ausgegraute Kachel ist keine Sperre. Gesperrt wird vor der Dateiauslieferung — und zwei Wege bleiben immer offen: <span class="pfad">/share</span> und <span class="pfad">/photos</span>, die Links, die Gäste in der Hand halten. Ein Gast, dem sein Foto wegen eines Abos verweigert wird, ist ein Schaden beim Kunden.</p>
+      <p class="quelle">server.js:596–645 · MODULE / Sperre vor der Auslieferung</p>
+    </div>
+
+    <div class="rosine">
+      <p><strong>Fernwartung mit Positivliste und Abschalter.</strong> Aus der Ferne setzbar sind genau 13 Einstellungen; alles, was Geld, Rechte oder Datenschutz berührt, bleibt draußen. Der Betreiber kann Fernwartung ganz abschalten, und jeder Eingriff wird quittiert.</p>
+      <p class="quelle">server.js:1116–1128 · FERN_EINSTELLUNGEN</p>
+    </div>
+
+    <div class="rosine">
+      <p><strong>Zwei Druckgrenzen, die verschiedene Dinge schützen.</strong> Die Stundengrenze am Gerät schützt die Hardware vor der leergedruckten Rolle; die Grenze je Runde und je Event schützt die Kalkulation („zwei Abzüge je Gast" ist eine Zusage im Angebot). Beide werden im Server geprüft, nicht im Knopf.</p>
+      <p class="quelle">server.js:3601–3665 · /api/print</p>
+    </div>
+
+    <div class="rosine">
+      <p><strong>Eine Quelle für die Formate.</strong> Der Designer rechnete stur mit 1800×1200, obwohl der Druck sieben Formate kennt — bei 41 von 78 Vorlagen lag die Bühne falsch herum, jede gezogene Position saß auf dem Papier woanders. Die Maße stehen jetzt einmal in <span class="pfad">formate.js</span>, geladen von Booth, Designer und Server.</p>
+      <p class="quelle">public/formate.js:1–40</p>
+    </div>
+
+    <div class="rosine">
+      <p><strong>Ein leerer Zuhörer, der den Absturz verhindert.</strong> <span class="pfad">ws</span> reicht den 'error' des HTTP-Servers an sich selbst weiter; ohne eigenen Zuhörer beendet Node den Prozess mitten im Verteilen — und die eigene Ausweichport-Behandlung dreitausend Zeilen weiter unten kam nie dran. Gemessen, nicht vermutet.</p>
+      <p class="quelle">server.js:551–560</p>
+    </div>
+
+    <div class="rosine">
+      <p><strong>Werkzeuge, die je einen echten Vorfall festhalten.</strong> <span class="pfad">durchtesten.mjs</span>, <span class="pfad">quelltext-pruefen.mjs</span>, <span class="pfad">netz-pruefen.mjs</span>, <span class="pfad">listen-pruefen.mjs</span>, <span class="pfad">module-pruefen.mjs</span>. Jede Prüfung steht für einen Fehler, den weder Bauvorgang noch Codelesen gefunden hätten — leere Icons, ein Skript mit Syntaxfehler auf einer selten geöffneten Seite, eine auseinandergelaufene Positivliste.</p>
+      <p class="quelle">tools/</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Befunde im Code</p>
+    <h2>Drei Sachen, die nicht stimmen</h2>
+
+    <article class="befund">
+      <div class="befund__kopf">
+        <h3>Der Startbildschirm zeigt heute immer null</h3>
+        <span class="chip chip--belegt">belegt</span>
+      </div>
+      <p>
+        Die Tageszahlen im Bereitschafts-Überblick lesen <span class="pfad">stats[heute]</span>.
+        Geschrieben und überall sonst gelesen wird aber <span class="pfad">stats.days[tag]</span>
+        — an sechs anderen Stellen im selben File. Der Zugriff geht ins Leere, also
+        stehen Aufnahmen, Drucke und Gäste-Uploads dauerhaft auf 0. Ausgerechnet auf
+        dem Bildschirm, der die Frage „was ist heute gelaufen" beantworten soll,
+        und ausgerechnet als stille Null statt als Fehler.
+      </p>
+      <p class="beleg">server.js:3398   const stat = (stats && stats[heute]) || {};
+server.js:530    if (!stats.days[day]) stats.days[day] = {};
+server.js:999    const d = stats.days[tag] || {};</p>
+    </article>
+
+    <article class="befund">
+      <div class="befund__kopf">
+        <h3>Eine frisch installierte Box druckt keine der 78 Vorlagen</h3>
+        <span class="chip chip--belegt">belegt</span>
+      </div>
+      <p>
+        Die Voreinstellung zeigt auf <span class="pfad">classic-strip</span> und
+        <span class="pfad">classic-photo</span>. Diese Kennungen gibt es in den
+        mitgelieferten Vorlagen nicht mehr — die heißen seit der Umstellung
+        <span class="pfad">klassik-streifen</span> und <span class="pfad">klassik-foto</span>.
+        <span class="pfad">tpl()</span> im Booth findet nichts und fällt auf ein fest
+        eingebautes Ersatzlayout zurück, dessen Titel „Youbooth" lautet statt des
+        Eventnamens.
+      </p>
+      <p>
+        Auf bestehenden Boxen fällt es nicht auf: deren <span class="pfad">config/templates.json</span>
+        trägt die alten Kennungen noch mit. Genau deshalb ist es bisher niemandem
+        aufgefallen — es trifft nur den ersten Abend einer Neuinstallation.
+      </p>
+      <p class="beleg">server.js:124        active: { strip: 'classic-strip', single: 'classic-photo' },
+public/booth.html:527 dasselbe noch einmal
+public/booth.html:559 function tpl(kind) → Rückfall mit title: 'Youbooth'</p>
+    </article>
+
+    <article class="befund">
+      <div class="befund__kopf">
+        <h3>Drucken gibt es nur unter Windows</h3>
+        <span class="chip chip--belegt">belegt</span>
+      </div>
+      <p>
+        Sowohl die Druckerliste als auch der Druck selbst rufen PowerShell auf
+        (<span class="pfad">Get-Printer</span>, <span class="pfad">System.Drawing.Printing</span>).
+        Auf einem Mac gibt es beides nicht. Die Desktop-Edition schaltet
+        <span class="pfad">CAN_PRINT</span> aber allein anhand der Edition frei, nicht
+        anhand des Betriebssystems — der Mac zeigt also Druckknöpfe, die nichts tun
+        können, und meldet bestenfalls „Druckerabfrage fehlgeschlagen".
+      </p>
+      <p>
+        Für CUPS wären es zwei Aufrufe: <span class="pfad">lpstat -a</span> für die Liste,
+        <span class="pfad">lp -d &lt;drucker&gt; -o fit-to-page</span> für den Druck. Das ist
+        überschaubare Arbeit — aber solange sie fehlt, ist „Windows und macOS" für
+        den Druckweg nicht wahr.
+      </p>
+      <p class="beleg">server.js:3298  app.get('/api/printers') → execFile('powershell', …)
+server.js:3311  function printImageFile() → PowerShell + System.Drawing
+server.js:37    const CAN_PRINT = EDITION === 'desktop';</p>
+    </article>
+  </section>
+
+  <section>
+    <p class="eyebrow">Befunde in der Doku</p>
+    <h2>Wo die Papiere dem Code widersprechen</h2>
+
+    <article class="befund befund--doku">
+      <div class="befund__kopf">
+        <h3>Die Kasse ist ausgebaut, steht aber noch in drei Papieren</h3>
+        <span class="chip chip--doku">Doku</span>
+      </div>
+      <p>
+        In 1.30 ist die Bezahlschranke an der Box entfernt, sauber und mit
+        Begründung. <span class="pfad">WETTBEWERB.md</span> führt „Pay to Print / Pay to
+        Share" weiter als halbe Sache, der Fahrplan hakt „Bezahlung (QR)" als erledigt
+        ab, und <span class="pfad">PRODUCT.md</span> nennt unter den Grenzen noch
+        „die Box prüft keine Zahlung, sie sperrt und gibt frei". Es sperrt nichts mehr.
+      </p>
+      <p class="beleg">server.js:2591 „Bezahlung: ENTFERNT (1.30)" · WETTBEWERB.md:173, 179–194, 310–318 · PRODUCT.md „Bekannte Grenzen"</p>
+    </article>
+
+    <article class="befund befund--doku">
+      <div class="befund__kopf">
+        <h3>„Desktop mit Druck, Windows und macOS"</h3>
+        <span class="chip chip--doku">Doku</span>
+      </div>
+      <p>
+        Siehe oben: Der Druckweg ist Windows-only, die Spiegelreflex über
+        digiCamControl ebenso. <span class="pfad">LIESMICH-MAC.txt</span> ist ehrlich
+        („kein Installer", keine Signierung), <span class="pfad">PRODUCT.md</span> ist es
+        an dieser Stelle nicht.
+      </p>
+    </article>
+
+    <article class="befund befund--doku">
+      <div class="befund__kopf">
+        <h3>Vier Versionsstände nebeneinander</h3>
+        <span class="chip chip--doku">Doku</span>
+      </div>
+      <p>
+        Das Zip heißt 1.29.0, <span class="pfad">package.json</span> sagt 1.30.0,
+        <span class="pfad">WETTBEWERB.md</span> ist auf Stand 1.12.0 geprüft, das
+        Kapitel „Reihenfolge" auf 1.8.0, und <span class="pfad">PRODUCT.md</span>
+        verweist auf Programmaufnahmen aus 1.29.0. Für ein Papier, dessen Wert genau
+        darin liegt, dass es geprüft ist, ist das die gefährlichste Art von Alterung:
+        Es sieht weiter aus wie eine Messung.
+      </p>
+    </article>
+
+    <article class="befund befund--doku">
+      <div class="befund__kopf">
+        <h3>78 mitgeliefert, 82 auf der Verkaufsseite</h3>
+        <span class="chip chip--doku">Doku</span>
+      </div>
+      <p>
+        Mitgeliefert sind 19 + 59 = 78. Die Zahl 82 stammt aus
+        <span class="pfad">config/templates.json</span> — der Datei <em>einer</em> Box, die
+        vier eigene Vorlagen zusätzlich trägt (<span class="pfad">classic-strip</span>,
+        <span class="pfad">classic-photo</span>, <span class="pfad">night-strip</span>,
+        <span class="pfad">lib_hochzeit_gold</span>). Der Betriebsstand einer einzelnen
+        Box ist in die Werbung gewandert.
+      </p>
+      <p class="beleg">nachgezählt: DEFAULT_TEMPLATES 19 · vorlagen-paket.json 59 · config/templates.json 82</p>
+    </article>
+
+    <article class="befund befund--doku">
+      <div class="befund__kopf">
+        <h3>„Keine Emojis" — außer an 77 Stellen</h3>
+        <span class="chip chip--kosmetik">kosmetisch</span>
+      </div>
+      <p>
+        Die Markenzusage nennt einen eigenen Iconsatz und ausdrücklich keine Emojis,
+        begründet mit Lizenzfragen bei White-Label-Kunden. In vier Dateien stehen
+        trotzdem 77: <span class="pfad">countdowns.js</span> (25) und
+        <span class="pfad">materials.js</span> (17) benutzen sie als Vorschau in der
+        Auswahl, <span class="pfad">i18n.js</span> (20) und <span class="pfad">cam.html</span> (15)
+        <em>in Gästetexten</em> — „🚀 Ab an die Wand!", „💾 Aufs Handy speichern",
+        „✨ Verzieren".
+      </p>
+      <p>
+        Ein Sonderfall bleibt bewusst: Die AR-Filter <em>zeichnen</em> Emojis ins Bild
+        (Brille, Krone, Hut). Das ist eine Funktion, aber eine mit Nebenwirkung — wie
+        eine Krone aussieht, entscheidet die Systemschrift, und auf dem Abzug ist das
+        sichtbar.
+      </p>
+      <p class="beleg">public/cam.html:378–380 · public/i18n.js:12–26 · gezählt ohne ★-Zeichen aus Kommentaren</p>
+    </article>
+  </section>
+
+  <section>
+    <p class="eyebrow">Altlasten</p>
+    <h2>Was mitfährt, ohne gebraucht zu werden</h2>
+
+    <article class="befund befund--alt">
+      <div class="befund__kopf">
+        <h3>142 kB tote Dateien in <span class="pfad">public/</span></h3>
+        <span class="chip">gemessen</span>
+      </div>
+      <p>
+        Zehn Dateien, auf die im gesamten Projekt kein Verweis mehr zeigt — darunter
+        zwei vollständige alte Fassungen der Startseite
+        (<span class="pfad">start.html.alt</span>, <span class="pfad">start-zeichnung.html.bak</span>,
+        zusammen 65 kB) und vier Stilbögen aus früheren Entwürfen
+        (<span class="pfad">apfel.css</span>, <span class="pfad">markt2.css</span>,
+        <span class="pfad">buehne.css</span>, <span class="pfad">seiten.css</span>).
+        Sie liegen in <span class="pfad">public/**</span> und wandern damit in jeden Installer.
+      </p>
+      <p class="beleg">start.html.alt 34 kB · start-zeichnung.html.bak 31 kB · apfel.css 28 kB · markt2.css 13 kB · picme-icons.js 13 kB · buehne.css 7 kB · seiten.css 5 kB · schau.js 5 kB · buehne.js 4 kB · apfel.js 1 kB</p>
+    </article>
+
+    <article class="befund befund--alt">
+      <div class="befund__kopf">
+        <h3>Die Ausschlussliste des Installers zeigt ins Leere</h3>
+        <span class="chip chip--belegt">belegt</span>
+      </div>
+      <p>
+        <span class="pfad">package.json</span> schließt fünf Dateien vom Paket aus, die es
+        nicht mehr gibt (<span class="pfad">konzept-a</span> bis <span class="pfad">-d.html</span>,
+        <span class="pfad">_icontest.html</span>). Die beiden, die es <em>gibt</em>, stehen
+        nicht drin: <span class="pfad">konzept-motion.html</span> (21 kB) und
+        <span class="pfad">verwaltung.html</span> (16 kB) — auf beide verweist nichts, beide
+        werden ausgeliefert.
+      </p>
+      <p class="beleg">package.json &gt; build.files · public/konzept-motion.html, public/verwaltung.html</p>
+    </article>
+
+    <article class="befund befund--alt">
+      <div class="befund__kopf">
+        <h3>Betriebsdaten und Baureste im Quelltextpaket</h3>
+        <span class="chip">Hinweis</span>
+      </div>
+      <p>
+        Im Zip liegen <span class="pfad">config/</span> mit dem Zustand einer echten Box
+        (Statistik, 82 Vorlagen, Pakete) und <span class="pfad">tools/__pycache__/</span>.
+        Fürs Weitergeben des Quelltextes gehört beides nicht hinein — die
+        Vorlagen-Datei allein ist 134 kB.
+      </p>
+    </article>
+  </section>
+
+  <section>
+    <p class="eyebrow">Offen</p>
+    <h2>Was noch zu bauen ist</h2>
+    <p>
+      Zusammengelegt aus deinen eigenen Listen (die sieben Lücken und sieben halben
+      Sachen aus <span class="pfad">WETTBEWERB.md</span>, die offenen Punkte der
+      <span class="pfad">arbeitsliste.md</span>) und den Befunden oben. Sortiert
+      danach, was dich blockiert — nicht danach, was am schwersten ist.
+    </p>
+
+    <h3 style="margin-top:26px">Geht sofort, hängt an niemandem</h3>
+    <ul>
+      <li>Die drei Code-Befunde: Tageszahlen, Vorlagen-Voreinstellung, Druck unter macOS über CUPS.</li>
+      <li>Altlasten raus, Ausschlussliste geradeziehen — spart 142 kB je Installer und eine Fehlerquelle beim Suchen.</li>
+      <li><strong>Serienbild-Modus</strong> als eigener Weg statt über den Streifen.</li>
+      <li><strong>Gemeinsame Steuerung mehrerer Terminals</strong>: Die Station zeigt schon mehrere Boxen über <span class="pfad">?boxen=</span>, es fehlt der gemeinsame Auslöser.</li>
+      <li><strong>Hautglättung</strong>: Die Gesichtspunkte liegen vor (face-api), es fehlt der Filter.</li>
+      <li><strong>Testversion mit Wasserzeichen</strong>: Das Lizenzsystem trägt die Stufe schon, sie wird nur nicht ausgewertet.</li>
+      <li>Emojis aus den Gästetexten in den eigenen Iconsatz überführen.</li>
+    </ul>
+
+    <h3>Braucht Hardware auf dem Tisch</h3>
+    <ul>
+      <li>GoPro (eigene WLAN-Schnittstelle, kein digiCamControl), Mehrkamera und Bullet-Time (Auslöse-Bus).</li>
+      <li>Kamerawerte durchreichen (ISO, Blende, Zeit) — digiCamControl kann es, die Box reicht es nicht durch.</li>
+      <li>Münzprüfer und Kartenleser (serielle Anbindung).</li>
+      <li>Drucker-Sonderfunktionen: Randlos, Materialstand, Schnitt — hängen am Treiber des Sofortdruckers.</li>
+    </ul>
+
+    <h3>Hängt an Konten und Verträgen — nicht an Code</h3>
+    <ul>
+      <li>Instagram-Hashtag-Druck: geprüfte Meta-App. Der Hashtag-Drucker selbst läuft.</li>
+      <li>Echte Bezahlung: Zahlungsdienst. Bewusst nicht mehr an der Box, sondern über hnvr.me.</li>
+      <li>macOS signieren und notarisieren: Apple-Entwicklerkonto. Windows-SmartScreen: Zertifikat.</li>
+      <li>Echte Push-Nachricht bei Störungen — Konto und Mail sind nachgewiesen, Push fehlt.</li>
+    </ul>
+
+    <h3>Aus der Arbeitsliste, außerhalb dieses Pakets</h3>
+    <ul>
+      <li>Die Astro-App trägt weiter den alten Entwurf: 26 Routen, <span class="pfad">/hilfe</span> mit 39 Artikeln, 121 Verweise auf <span class="pfad">style.css</span>. Wer im neuen Menü „Hilfe" klickt, landet im alten Aussehen.</li>
+      <li><span class="pfad">betreiber-website.html</span>, <span class="pfad">rental.html</span>, <span class="pfad">pillar.html</span> hängen noch an <span class="pfad">seiten.css</span> + <span class="pfad">schau.js</span>.</li>
+      <li>Ausliefern ist blockiert — offen ist die Frage, welche der zwei Site-Adressen benutzt wird.</li>
+      <li>Die Oberfläche der Box an den neuen Entwurf angleichen.</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">Verhältnis</p>
+    <h2>Und was heißt das für <span class="pfad">hnvr-me</span>?</h2>
+
+    <p>
+      Der ehrliche Teil zuerst: <strong>Der Ordner <span class="pfad">booth/</span> ist ein
+      Nachbau dessen, was hier schon steht</strong> — kleiner und an jeder Stelle
+      weniger weit. 6 832 Zeilen gegen 36 622. Jedes Stück, das ich dort in den
+      letzten Stunden gebaut habe, existiert in 1.30 bereits und meist gründlicher:
+    </p>
+
+    <div class="rahmen">
+      <table>
+        <thead>
+          <tr><th>In <span class="pfad">booth/</span> gebaut</th><th>In 1.30 vorhanden</th><th>Abstand</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Vorlagen-Editor, 2 Blattformate</td><td><span class="pfad">layout-editor.html</span>, 7 Formate</td><td>Ebenen, 60 Schritte zurück, Drehen, Fangen, QR-Gestaltung mit 9 Inhaltsarten, eigene Schriften</td></tr>
+          <tr><td>4 mitgelieferte Vorlagen</td><td>78</td><td>aus PSD gewonnen, Fotoplätze aus Ebenennamen</td></tr>
+          <tr><td>GIF-Kodierer (Median-Cut, LZW)</td><td>derselbe Ansatz in <span class="pfad">gif.js</span></td><td>gleichauf — beide selbst geschrieben, beide ohne Fremdpaket</td></tr>
+          <tr><td>Foto-Wall</td><td><span class="pfad">mosaic.html</span></td><td>vier Modi inkl. Photomosaik aus Gästefotos</td></tr>
+          <tr><td>Kunden-Galerie</td><td><span class="pfad">gallery.html</span> + Finder + Station</td><td>ZIP-Übergabe, Gesichtssuche, Kiosk-Station</td></tr>
+          <tr><td>Installations-Zentrum</td><td><span class="pfad">einrichten.html</span> + <span class="pfad">/api/selbstpruefung</span></td><td>läuft alle fünf Minuten weiter, nicht nur bei der Einrichtung</td></tr>
+          <tr><td>Fernauslöser über <span class="pfad">/fern</span></td><td><span class="pfad">remote.html</span>, <span class="pfad">/api/control</span>, <span class="pfad">/api/fern/auftrag</span></td><td>ganze Fernsteuerung samt Vorlagen-Push, 40 s Rundlauf</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hinweis">
+      <p>
+        <strong>Umgekehrt gibt es kaum etwas zu holen.</strong> Zwei Dinge sind es wert,
+        angesehen zu werden: der Rust-Auslieferungsdienst als eigener Prozess (in 1.30
+        macht Express dasselbe — besser, weil er ohnehin läuft), und die
+        <span class="pfad">prefers-reduced-motion</span>-Regel, die in beiden Projekten
+        steht. Das war's. Wer „die Rosinen übernimmt", trägt sie in diese Richtung:
+        <strong>von 1.30 nach nirgendwo</strong> — sie sind schon da.
+      </p>
+    </div>
+
+    <p>
+      Bei der <strong>Website</strong> liegt es anders, aber nicht besser: Es gibt sie
+      jetzt dreimal. Die Seiten in <span class="pfad">public/*.html</span>, aus denen
+      <span class="pfad">build-wix.py</span> die Wix-Site erzeugt. Die Astro-App, die
+      laut Arbeitsliste noch den alten Entwurf trägt. Und
+      <span class="pfad">hnvr-me/youbooth</span> mit 50 Routen und 15 608 Zeilen in einer
+      dritten Gestaltungsrichtung — Papierweiß und Amber, während „Nachtschicht"
+      Nachtblau mit zwei Akzenten festlegt (<span class="pfad">#0a0f1c</span>,
+      <span class="pfad">--blitz #ffc857</span>, <span class="pfad">--strom #7d97ff</span>).
+    </p>
+    <p>
+      Dein eigener Grundsatz Nummer vier sagt dazu alles: <em>Eine Quelle je Sache.
+      Zwei gepflegte Listen laufen auseinander.</em> Drei laufen schneller auseinander.
+    </p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Vorschlag</p>
+    <h2>Woran ich als Nächstes arbeiten würde</h2>
+    <ol>
+      <li><strong>Die drei Code-Befunde beheben.</strong> Zusammen ein überschaubarer Eingriff, und der macOS-Druck macht die Aussage „Windows und macOS" erst wahr. Dazu je eine Prüfung in <span class="pfad">tools/quelltext-pruefen.mjs</span>, damit sie nicht zurückkommen — genau so, wie du es dort schon hältst.</li>
+      <li><strong>Die Papiere auf 1.30 nachziehen.</strong> Kasse raus, macOS-Druck ehrlich benennen, Versionsstände vereinheitlichen, 78 statt 82. Das kostet eine Stunde und rettet den Wert der Dokumente: Sie sind gut, weil sie geprüft sind.</li>
+      <li><strong>Eine Entscheidung zur Website</strong> — welche der drei überlebt. Danach kann ich die anderen beiden darauf zurückführen, statt dass alle drei gepflegt werden müssen.</li>
+      <li><strong>Danach die Lücken</strong>, in der Reihenfolge der ersten Liste oben: Serienbild, gemeinsame Steuerung, Hautglättung, Wasserzeichen-Stufe.</li>
+    </ol>
+    <p>
+      Was ich <em>nicht</em> vorschlage: <span class="pfad">booth/</span> weiterbauen. Jede
+      Stunde dort ist eine Stunde, die 1.30 nicht bekommt — und am Ende stünden zwei
+      Fotoboxen, von denen die schlechtere gepflegt wird.
+    </p>
+  </section>
+
+  <hr>
+  <p class="fuss">
+    Gelesen am 18.08.2026 aus <span class="pfad">youboothquelltext1.29.0.zip</span> ·
+    36 622 Zeilen ohne <span class="pfad">vendor/</span>, <span class="pfad">faceapi/</span>,
+    <span class="pfad">freistellen/</span> · Nichts ausgeführt, alles am Quelltext belegt.
+  </p>
+
+</div>

@@ -16,19 +16,15 @@
  * übernommen: 9 CHF und 9 € sind beide „unter zehn", und 9,40 € verkauft sich
  * schlechter als es einbringt.
  */
-import { cssVariablen, vorlage } from '../kern/gestaltung.ts';
+import Marketingrahmen from '../komponenten/Marketingrahmen.astro';
 import { zeichen } from '../kern/zeichen.ts';
-import { MARKE, SIGNET } from '../kern/marke.ts';
+import { MARKE } from '../kern/marke.ts';
 import '../stile/marketing.css';
 
 export const prerender = false;
 
 Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
 
-const gestaltung = vorlage('signal');
-const stil = Object.entries(cssVariablen(gestaltung))
-  .map(([name, wert]) => `${name}:${wert}`)
-  .join(';');
 
 const titel = `Preise — ${MARKE.name}`;
 const beschreibung =
@@ -131,153 +127,111 @@ function zelle(wert: boolean | string) {
 }
 ---
 
-<!doctype html>
-<html lang="de">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{titel}</title>
-    <meta name="description" content={beschreibung} />
-    <meta name="theme-color" content={gestaltung.grund} />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={titel} />
-    <meta property="og:description" content={beschreibung} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/schriften/schriften.css" />
-  </head>
+<Marketingrahmen titel={titel} beschreibung={beschreibung} hier="/preise">
 
-  <body style={stil}>
-    <div class="seite">
-      <div class="bahn">
-        <header class="kopfzeile">
-          <a class="wortmarke" href="/">
-            <Fragment set:html={SIGNET} />
-            <span>{MARKE.name}</span>
-          </a>
-          <nav class="kopfnavi">
-            <a href="/designs">Designs</a>
-            <a href="/karte">Karte &amp; NFC</a>
-            <a href="/teams">Für Teams</a>
-            <a href="/preise">Preise</a>
-            <a href="/marke">Marke</a>
-          </nav>
-        </header>
+    <section class="kopf">
+      <p class="marke">preise</p>
+      <h1>Zurzeit kostet<br />alles nichts.</h1>
+      <p class="fuehrung">
+        Zurzeit kostet alles nichts — es fehlen noch zu viele Stücke, um dafür Geld zu nehmen. Was später Geld
+        kosten soll, steht trotzdem schon hier: wer heute einen QR-Code druckt, soll nicht in einem Jahr
+        überrascht werden. Beträge in Euro, inklusive Mehrwertsteuer.
+      </p>
+    </section>
 
-        <section class="kopf">
-          <p class="marke">preise</p>
-          <h1>Zurzeit kostet<br />alles nichts.</h1>
-          <p class="fuehrung">
-            Zurzeit kostet alles nichts — es fehlen noch zu viele Stücke, um dafür Geld zu nehmen. Was später Geld
-            kosten soll, steht trotzdem schon hier: wer heute einen QR-Code druckt, soll nicht in einem Jahr
-            überrascht werden. Beträge in Euro, inklusive Mehrwertsteuer.
-          </p>
-        </section>
-
-        <section>
-          <div class="plaene">
-            {
-              plaene.map((p) => (
-                <div class:list={['plan', p.hervor && 'plan--hervor', p.spaeter && 'plan--spaeter']}>
-                  {p.hervor && <span class="plan__band">zurzeit gratis</span>}
-                  {p.spaeter && <span class="plan__band plan__band--ruhig">geplant</span>}
-                  <h2 class="plan__name">{p.name}</h2>
-                  <p class="plan__preis">
-                    {p.preis}
-                    <span>{p.takt}</span>
-                  </p>
-                  <p class="plan__satz">{p.satz}</p>
-                  <ul class="plan__liste">
-                    {p.leistungen.map((l) => (
-                      <li class:list={[!l.jetzt && 'plan__spaeter']}>
-                        <Fragment set:html={zeichen(l.jetzt ? 'haken' : 'uhr')} />
-                        <span>
-                          {l.text}
-                          {!l.jetzt && <b> · geplant</b>}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <a class:list={['knopf', p.knopf.voll && 'knopf--voll']} href={p.knopf.ziel}>
-                    {p.knopf.text}
-                  </a>
-                </div>
-              ))
-            }
-          </div>
-        </section>
-
-        <section>
-          <p class="marke">im einzelnen</p>
-          <h2>Was in welchem Plan steckt.</h2>
-          <div class="tabellenrahmen">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Leistung</th>
-                  <th scope="col">Frei</th>
-                  <th scope="col">Pro</th>
-                  <th scope="col">Studio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {
-                  tabelle.map((z) => (
-                    <tr>
-                      <td data-spalte="Leistung">{z.was}</td>
-                      <td data-spalte="Frei">{zelle(z.frei)}</td>
-                      <td data-spalte="Pro" class="wert--wir">
-                        {zelle(z.pro)}
-                      </td>
-                      <td data-spalte="Studio">{zelle(z.studio)}</td>
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
-          </div>
-          <p class="quelle">
-            „Geplant" heißt entworfen und eingeplant, aber nicht gebaut. Der Stand steht auf der <a href="/">
-              Startseite
-            </a> unter „was heute fehlt" und wird dort mitgepflegt.
-          </p>
-        </section>
-
-        <section>
-          <p class="marke">fragen</p>
-          <div class="fragen">
-            {
-              fragen.map((f) => (
-                <div class="frage">
-                  <h3>{f.frage}</h3>
-                  <p>{f.antwort}</p>
-                </div>
-              ))
-            }
-          </div>
-        </section>
-
-        <section class="schluss">
-          <p class="marke">loslegen</p>
-          <h2>Kostet nichts. Bau sie.</h2>
-          <div class="knopfreihe">
-            <a class="knopf knopf--voll" href="/werkstatt">
-              Seite bauen
-              <Fragment set:html={zeichen('pfeil')} />
-            </a>
-            <a class="knopf" href="/designs">Designs ansehen</a>
-          </div>
-        </section>
-
-        <footer class="fuss">
-          <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
-          <span>
-            <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
-            ·
-            <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
-          </span>
-        </footer>
+    <section>
+      <div class="plaene">
+        {
+          plaene.map((p) => (
+            <div class:list={['plan', p.hervor && 'plan--hervor', p.spaeter && 'plan--spaeter']}>
+              {p.hervor && <span class="plan__band">zurzeit gratis</span>}
+              {p.spaeter && <span class="plan__band plan__band--ruhig">geplant</span>}
+              <h2 class="plan__name">{p.name}</h2>
+              <p class="plan__preis">
+                {p.preis}
+                <span>{p.takt}</span>
+              </p>
+              <p class="plan__satz">{p.satz}</p>
+              <ul class="plan__liste">
+                {p.leistungen.map((l) => (
+                  <li class:list={[!l.jetzt && 'plan__spaeter']}>
+                    <Fragment set:html={zeichen(l.jetzt ? 'haken' : 'uhr')} />
+                    <span>
+                      {l.text}
+                      {!l.jetzt && <b> · geplant</b>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <a class:list={['knopf', p.knopf.voll && 'knopf--voll']} href={p.knopf.ziel}>
+                {p.knopf.text}
+              </a>
+            </div>
+          ))
+        }
       </div>
-    </div>
-  </body>
-</html>
+    </section>
+
+    <section>
+      <p class="marke">im einzelnen</p>
+      <h2>Was in welchem Plan steckt.</h2>
+      <div class="tabellenrahmen">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Leistung</th>
+              <th scope="col">Frei</th>
+              <th scope="col">Pro</th>
+              <th scope="col">Studio</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              tabelle.map((z) => (
+                <tr>
+                  <td data-spalte="Leistung">{z.was}</td>
+                  <td data-spalte="Frei">{zelle(z.frei)}</td>
+                  <td data-spalte="Pro" class="wert--wir">
+                    {zelle(z.pro)}
+                  </td>
+                  <td data-spalte="Studio">{zelle(z.studio)}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="quelle">
+        „Geplant" heißt entworfen und eingeplant, aber nicht gebaut. Der Stand steht auf der <a href="/">
+          Startseite
+        </a> unter „was heute fehlt" und wird dort mitgepflegt.
+      </p>
+    </section>
+
+    <section>
+      <p class="marke">fragen</p>
+      <div class="fragen">
+        {
+          fragen.map((f) => (
+            <div class="frage">
+              <h3>{f.frage}</h3>
+              <p>{f.antwort}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="schluss">
+      <p class="marke">loslegen</p>
+      <h2>Kostet nichts. Bau sie.</h2>
+      <div class="knopfreihe">
+        <a class="knopf knopf--voll" href="/werkstatt">
+          Seite bauen
+          <Fragment set:html={zeichen('pfeil')} />
+        </a>
+        <a class="knopf" href="/designs">Designs ansehen</a>
+      </div>
+    </section>
+
+</Marketingrahmen>

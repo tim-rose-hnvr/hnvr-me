@@ -22,6 +22,8 @@ import {
   pruefeLesbarkeit,
   SCHRIFTEN,
   vorlage,
+  vorlagenart,
+  vorlagenfaecher,
   vorlagenName,
   VORLAGEN,
 } from '../src/kern/gestaltung.ts';
@@ -460,6 +462,22 @@ describe('Vorlagen', () => {
     for (const v of VORLAGEN) {
       ok(vorlagenName(v.vorlage) !== v.vorlage, `„${v.vorlage}" ohne Namen`);
     }
+  });
+
+  /* `vorlagenart` fällt bei einer unbekannten Kennung auf „Marke" zurück, damit
+     die Galerie nicht wegen einer fehlenden Zeile abstürzt. Genau dieser
+     Rückfall verschluckt aber auch das Versehen: eine neue Vorlage ohne
+     Zuordnung landete stillschweigend im falschen Fach. Deshalb hier geprüft. */
+  it('haben Fach und Charakter — und nicht nur den Rückfall', () => {
+    for (const v of VORLAGEN) {
+      const art = vorlagenart(v.vorlage);
+      ok(art.charakter !== '', `„${v.vorlage}" ohne Charakter`);
+      ok(vorlagenfaecher().includes(art.fach), `„${v.vorlage}" mit unbekanntem Fach`);
+    }
+  });
+
+  it('verteilen sich auf mehrere Fächer — sonst wäre die Filterleiste Zierde', () => {
+    ok(vorlagenfaecher().length >= 5, `nur ${vorlagenfaecher().length} Fächer`);
   });
 });
 

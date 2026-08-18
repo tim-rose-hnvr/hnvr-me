@@ -8,11 +8,63 @@
    er trifft — und nicht drei Farbpunkte.
    ============================================================ */
 
+/* Filterleiste nach Fach. Erscheint erst, wenn das Skript sie einschaltet —
+   ohne Skript stehen ohnehin alle Vorlagen da. */
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter[hidden] {
+  display: none;
+}
+
+.filter__pille {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 15px;
+  border: 2px solid var(--linie);
+  border-radius: 18px;
+  background: transparent;
+  color: var(--vg-leise);
+  cursor: pointer;
+  transition: border-color 0.14s, color 0.14s;
+}
+
+.filter__pille:hover {
+  border-color: var(--vg);
+  color: var(--vg);
+}
+
+.filter__pille--hier {
+  background: var(--vg);
+  border-color: var(--vg);
+  color: var(--grund-fest);
+}
+
+.filter__leer {
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--vg-leise);
+}
+
+.filter__leer[hidden] {
+  display: none;
+}
+
 .galerie {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 14px;
   margin-top: 28px;
+}
+
+/* `hidden` allein reicht bei einem Rasterkind nicht — `display:grid` vom
+   Elternteil setzt es sonst wieder sichtbar. */
+.probe[hidden] {
+  display: none;
 }
 
 .probe {
@@ -159,6 +211,12 @@
   margin-top: 2px;
   font-size: 12px;
   color: var(--vg-leise);
+}
+
+/* Der Charakter steht vor den technischen Angaben und trägt etwas mehr
+   Gewicht: er ist der Grund, aus dem jemand diese Vorlage nimmt. */
+.probe__fuss .probe__charakter {
+  color: var(--vg);
 }
 
 @media (prefers-reduced-motion: reduce) {

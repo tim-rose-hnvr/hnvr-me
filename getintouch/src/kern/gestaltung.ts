@@ -200,6 +200,53 @@ export function vorlagenName(id: string): string {
 }
 
 /**
+ * Charakter und Fach je Vorlage.
+ *
+ * Der Design-Handoff beschreibt jede Vorlage in einer Zeile und ordnet sie
+ * einem Gewerbe zu — „warm, rund, freundlich (Creator)". Das ist keine
+ * Verzierung: wer eine Vorlage sucht, sucht nach seinem Fach, nicht nach einem
+ * Farbwert. Das Fach trägt die Filterleiste der Galerie, der Charakter steht
+ * im Fuß jeder Kachel.
+ *
+ * Steht hier und nicht in der Seite, weil beide Seiten der Galerie und die
+ * Werkstatt dieselbe Zuordnung brauchen.
+ */
+export interface Vorlagenart {
+  /** Fach für die Filterleiste. */
+  fach: string;
+  /** Ein Satz, der den Charakter benennt. */
+  charakter: string;
+}
+
+const VORLAGENARTEN: Record<string, Vorlagenart> = {
+  signal: { fach: 'Marke', charakter: 'sachlich, rot, unser eigenes' },
+  kirsche: { fach: 'Creator', charakter: 'warm, rund, freundlich' },
+  nachtschicht: { fach: 'Musik', charakter: 'dunkel und laut' },
+  beton: { fach: 'Studio & Atelier', charakter: 'streng, sachlich, kantig' },
+  sticker: { fach: 'Creator', charakter: 'verspielt und schief' },
+  papier: { fach: 'Studio & Atelier', charakter: 'skizzenhaft und leicht' },
+  tresen: { fach: 'Café & Laden', charakter: 'Ansprache zuerst' },
+  werkbank: { fach: 'Handwerk & Team', charakter: 'robust, für mehrere' },
+  sprechstunde: { fach: 'Praxis', charakter: 'ruhig, Termin zuerst' },
+  riso: { fach: 'Kollektiv', charakter: 'Druck-Look, Linien statt Flächen' },
+  feuer: { fach: 'Marke', charakter: 'das Hausdesign von hnvr.me' },
+};
+
+export function vorlagenart(id: string): Vorlagenart {
+  return VORLAGENARTEN[id] ?? { fach: 'Marke', charakter: '' };
+}
+
+/** Alle vorkommenden Fächer in der Reihenfolge der Vorlagen, ohne Wiederholung. */
+export function vorlagenfaecher(): string[] {
+  const gesehen: string[] = [];
+  for (const v of VORLAGEN) {
+    const f = vorlagenart(v.vorlage).fach;
+    if (!gesehen.includes(f)) gesehen.push(f);
+  }
+  return gesehen;
+}
+
+/**
  * Nur die Werte, die von der Vorlage abweichen.
  *
  * So bleibt ein gespeichertes Profil klein und lesbar, und — wichtiger — es

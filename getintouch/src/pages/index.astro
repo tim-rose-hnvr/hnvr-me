@@ -19,17 +19,12 @@
  * und vom Kunden kommen muss. Statt eines grauen Platzhalters steht rechts die
  * Sache selbst — dieselbe Seite zu zwei Uhrzeiten.
  */
+import Marketingrahmen from '../komponenten/Marketingrahmen.astro';
 import { cssVariablen, vorlage, vorlagenName } from '../kern/gestaltung.ts';
 import { zeichen } from '../kern/zeichen.ts';
-import { MARKE, SIGNET } from '../kern/marke.ts';
 import '../stile/marketing.css';
 
 export const prerender = true;
-
-const gestaltung = vorlage('signal');
-const stil = Object.entries(cssVariablen(gestaltung))
-  .map(([name, wert]) => `${name}:${wert}`)
-  .join(';');
 
 const titel = 'Get in Touch — die Kontaktseite, die weiß, wann du da bist';
 const beschreibung =
@@ -114,236 +109,193 @@ const fragen = [
 ];
 ---
 
-<!doctype html>
-<html lang="de">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{titel}</title>
-    <meta name="description" content={beschreibung} />
-    <meta name="theme-color" content={gestaltung.grund} />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={titel} />
-    <meta property="og:description" content={beschreibung} />
-    <meta name="twitter:card" content="summary" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/schriften/schriften.css" />
-  </head>
+<Marketingrahmen titel={titel} beschreibung={beschreibung} hier="/">
 
-  <body style={stil}>
-    <div class="seite">
-      <div class="bahn">
-        <header class="kopfzeile">
-          <a class="wortmarke" href="/">
-            <Fragment set:html={SIGNET} />
-            <span>{MARKE.name}</span>
-          </a>
-          <nav class="kopfnavi">
-            <a href="/designs">Designs</a>
-            <a href="/karte">Karte &amp; NFC</a>
-            <a href="/teams">Für Teams</a>
-            <a href="/preise">Preise</a>
-            <a href="/marke">Marke</a>
-          </nav>
-        </header>
+    <section class="held">
+      <div class="held__text">
+        <p class="abzeichen">
+          <Fragment set:html={zeichen('uhr')} />
+          Ein Link, der antwortet
+        </p>
+        <h1>Deine Leute sollen dich erreichen, nicht nur anklicken.</h1>
+        <p class="fuehrung">
+          Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code unter einer kurzen Adresse. Nach vorn stellt
+          sie, was gerade wirklich trägt: im Betrieb den Anruf, danach den schriftlichen Weg.
+        </p>
 
-        <section class="held">
-          <div class="held__text">
-            <p class="abzeichen">
-              <Fragment set:html={zeichen('uhr')} />
-              Ein Link, der antwortet
+        <form class="adressfeld" action="/werkstatt" method="get">
+          <span class="adressfeld__praefix">/t/</span>
+          <input type="text" name="name" placeholder="deinname" spellcheck="false" autocomplete="off" />
+          <button type="submit" class="knopf knopf--voll">Sichern</button>
+        </form>
+        <p class="leise">Kostenlos starten · ohne Konto · in zwei Minuten live</p>
+      </div>
+
+      {/* Kein Produktfoto: der Handoff hält fest, dass Bildmaterial fehlt.
+          Statt eines Platzhalters steht hier die Sache selbst. */}
+      <div class="held__probe">
+        <div class="lagen">
+          <div class="lage">
+            <p class="lage__zeit">Mittwoch, 14:00</p>
+            <p class="lage__status lage__status--offen">
+              <span class="lage__punkt"></span>
+              Jetzt erreichbar · bis 18:00
             </p>
-            <h1>Deine Leute sollen dich erreichen, nicht nur anklicken.</h1>
-            <p class="fuehrung">
-              Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code unter einer kurzen Adresse. Nach vorn stellt
-              sie, was gerade wirklich trägt: im Betrieb den Anruf, danach den schriftlichen Weg.
+            <p class="lage__knopf">
+              <Fragment set:html={zeichen('telefon')} />
+              Jetzt anrufen
             </p>
-
-            <form class="adressfeld" action="/werkstatt" method="get">
-              <span class="adressfeld__praefix">/t/</span>
-              <input type="text" name="name" placeholder="deinname" spellcheck="false" autocomplete="off" />
-              <button type="submit" class="knopf knopf--voll">Sichern</button>
-            </form>
-            <p class="leise">Kostenlos starten · ohne Konto · in zwei Minuten live</p>
+            <p class="lage__nach">Der Anruf steht oben, weil jemand da ist.</p>
           </div>
+          <div class="lage">
+            <p class="lage__zeit">Samstag, 23:00</p>
+            <p class="lage__status">
+              <Fragment set:html={zeichen('uhr')} />
+              Gerade geschlossen · Montag ab 9:00
+            </p>
+            <p class="lage__knopf">
+              <Fragment set:html={zeichen('whatsapp')} />
+              WhatsApp schreiben
+            </p>
+            <p class="lage__nach">Nachts führt der schriftliche Weg — mit ehrlicher Ansage.</p>
+          </div>
+        </div>
+        <p class="schwebe">
+          <span class="schwebe__punkt"></span>
+          Dieselbe Seite, zwei Zeitpunkte
+        </p>
+      </div>
+    </section>
 
-          {/* Kein Produktfoto: der Handoff hält fest, dass Bildmaterial fehlt.
-              Statt eines Platzhalters steht hier die Sache selbst. */}
-          <div class="held__probe">
-            <div class="lagen">
-              <div class="lage">
-                <p class="lage__zeit">Mittwoch, 14:00</p>
-                <p class="lage__status lage__status--offen">
-                  <span class="lage__punkt"></span>
-                  Jetzt erreichbar · bis 18:00
-                </p>
-                <p class="lage__knopf">
-                  <Fragment set:html={zeichen('telefon')} />
-                  Jetzt anrufen
-                </p>
-                <p class="lage__nach">Der Anruf steht oben, weil jemand da ist.</p>
-              </div>
-              <div class="lage">
-                <p class="lage__zeit">Samstag, 23:00</p>
-                <p class="lage__status">
-                  <Fragment set:html={zeichen('uhr')} />
-                  Gerade geschlossen · Montag ab 9:00
-                </p>
-                <p class="lage__knopf">
-                  <Fragment set:html={zeichen('whatsapp')} />
-                  WhatsApp schreiben
-                </p>
-                <p class="lage__nach">Nachts führt der schriftliche Weg — mit ehrlicher Ansage.</p>
+    <section>
+      <div class="zahlen">
+        {
+          kennzahlen.map((k) => (
+            <div class:list={['zahl', k.rose && 'zahl--rose']}>
+              <b>{k.zahl}</b>
+              <span>{k.was}</span>
+              <em>{k.neben}</em>
+            </div>
+          ))
+        }
+      </div>
+      <p class="quelle">
+        Größe und Skriptzahl im August 2026 am ausgelieferten HTML gemessen — an beiden Seiten, nicht an
+        Werbeaussagen. Vier weitere Skripte kommen auf unserer Seite von der Auslieferung durch Wix dazu; sie
+        stammen nicht aus diesem Programm und lassen sich aus ihm nicht entfernen.
+      </p>
+    </section>
+
+    <section>
+      <p class="marke">der unterschied</p>
+      <h2>Drei Dinge, die eine<br />Linkliste nicht kann.</h2>
+      <div class="koennen">
+        {
+          koennen.map((k) => (
+            <div class="kann">
+              <span class={`kann__zeichen kann__zeichen--${k.ton}`}>
+                <Fragment set:html={zeichen(k.zeichen)} />
+              </span>
+              <h3>{k.titel}</h3>
+              <p>{k.text}</p>
+              <div class="kann__chips">
+                {k.chips.map((c) => (
+                  <span class="chip">{c}</span>
+                ))}
               </div>
             </div>
-            <p class="schwebe">
-              <span class="schwebe__punkt"></span>
-              Dieselbe Seite, zwei Zeitpunkte
-            </p>
-          </div>
-        </section>
-
-        <section>
-          <div class="zahlen">
-            {
-              kennzahlen.map((k) => (
-                <div class:list={['zahl', k.rose && 'zahl--rose']}>
-                  <b>{k.zahl}</b>
-                  <span>{k.was}</span>
-                  <em>{k.neben}</em>
-                </div>
-              ))
-            }
-          </div>
-          <p class="quelle">
-            Größe und Skriptzahl im August 2026 am ausgelieferten HTML gemessen — an beiden Seiten, nicht an
-            Werbeaussagen. Vier weitere Skripte kommen auf unserer Seite von der Auslieferung durch Wix dazu; sie
-            stammen nicht aus diesem Programm und lassen sich aus ihm nicht entfernen.
-          </p>
-        </section>
-
-        <section>
-          <p class="marke">der unterschied</p>
-          <h2>Drei Dinge, die eine<br />Linkliste nicht kann.</h2>
-          <div class="koennen">
-            {
-              koennen.map((k) => (
-                <div class="kann">
-                  <span class={`kann__zeichen kann__zeichen--${k.ton}`}>
-                    <Fragment set:html={zeichen(k.zeichen)} />
-                  </span>
-                  <h3>{k.titel}</h3>
-                  <p>{k.text}</p>
-                  <div class="kann__chips">
-                    {k.chips.map((c) => (
-                      <span class="chip">{c}</span>
-                    ))}
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-        </section>
-
-        <section>
-          <p class="marke">so läuft's</p>
-          <h2>Von der Idee zur Adresse.</h2>
-          <div class="schritte">
-            {
-              schritte.map((s, i) => (
-                <div class="schritt">
-                  <span class="schritt__zahl">{i + 1}</span>
-                  <h3>{s.titel}</h3>
-                  <p>{s.text}</p>
-                </div>
-              ))
-            }
-          </div>
-        </section>
-
-        <section>
-          <p class="marke">ein look pro charakter</p>
-          <h2>Elf Vorlagen,<br />drei Anordnungen.</h2>
-          <div class="anrisse">
-            {
-              anrisse.map((k) => {
-                const v = vorlage(k);
-                const s = Object.entries(cssVariablen(v))
-                  .map(([n, w]) => `${n}:${w}`)
-                  .join(';');
-                return (
-                  <a class="anriss" href={`/designs/${k}`}>
-                    <span class="anriss__blatt" style={s}>
-                      <span class="anriss__bild" />
-                      <span class="anriss__name">{vorlagenName(k)}</span>
-                      <span class="anriss__knopf" />
-                      <span class="anriss__zeile" />
-                      <span class="anriss__zeile" />
-                    </span>
-                    <span class="anriss__fuss">{vorlagenName(k)}</span>
-                  </a>
-                );
-              })
-            }
-          </div>
-          <p class="quelle">
-            Alle elf stehen in der <a href="/designs">Galerie</a> — jede mit eigenem Schriftpaar und eigener
-            Anordnung, jede gegen WCAG durchgerechnet.
-          </p>
-        </section>
-
-        <section>
-          <p class="marke">was heute fehlt</p>
-          <h2>Damit du es nicht selbst<br />herausfinden musst.</h2>
-          <ul class="offen">
-            {
-              offen.map((o) => (
-                <li>
-                  <span class="offen__marke">{o.marke}</span>
-                  <b>{o.titel}</b>
-                  <span>{o.text}</span>
-                </li>
-              ))
-            }
-          </ul>
-        </section>
-
-        <section>
-          <p class="marke">fragen</p>
-          <div class="fragen">
-            {
-              fragen.map((f) => (
-                <div class="frage">
-                  <h3>{f.frage}</h3>
-                  <p>{f.antwort}</p>
-                </div>
-              ))
-            }
-          </div>
-        </section>
-
-        <section class="banner">
-          <p class="marke">bereit?</p>
-          <h2>Hör auf, Leute wegzuschicken.</h2>
-          <div class="knopfreihe">
-            <a class="knopf knopf--hell" href="/werkstatt">
-              Seite bauen
-              <Fragment set:html={zeichen('pfeil')} />
-            </a>
-            <a class="knopf knopf--kontur" href="/t/hnvr">Echte Seite ansehen</a>
-          </div>
-        </section>
-
-        <footer class="fuss">
-          <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
-          <span>
-            <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
-            ·
-            <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
-          </span>
-        </footer>
+          ))
+        }
       </div>
-    </div>
-  </body>
-</html>
+    </section>
+
+    <section>
+      <p class="marke">so läuft's</p>
+      <h2>Von der Idee zur Adresse.</h2>
+      <div class="schritte">
+        {
+          schritte.map((s, i) => (
+            <div class="schritt">
+              <span class="schritt__zahl">{i + 1}</span>
+              <h3>{s.titel}</h3>
+              <p>{s.text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section>
+      <p class="marke">ein look pro charakter</p>
+      <h2>Elf Vorlagen,<br />drei Anordnungen.</h2>
+      <div class="anrisse">
+        {
+          anrisse.map((k) => {
+            const v = vorlage(k);
+            const s = Object.entries(cssVariablen(v))
+              .map(([n, w]) => `${n}:${w}`)
+              .join(';');
+            return (
+              <a class="anriss" href={`/designs/${k}`}>
+                <span class="anriss__blatt" style={s}>
+                  <span class="anriss__bild" />
+                  <span class="anriss__name">{vorlagenName(k)}</span>
+                  <span class="anriss__knopf" />
+                  <span class="anriss__zeile" />
+                  <span class="anriss__zeile" />
+                </span>
+                <span class="anriss__fuss">{vorlagenName(k)}</span>
+              </a>
+            );
+          })
+        }
+      </div>
+      <p class="quelle">
+        Alle elf stehen in der <a href="/designs">Galerie</a> — jede mit eigenem Schriftpaar und eigener
+        Anordnung, jede gegen WCAG durchgerechnet.
+      </p>
+    </section>
+
+    <section>
+      <p class="marke">was heute fehlt</p>
+      <h2>Damit du es nicht selbst<br />herausfinden musst.</h2>
+      <ul class="offen">
+        {
+          offen.map((o) => (
+            <li>
+              <span class="offen__marke">{o.marke}</span>
+              <b>{o.titel}</b>
+              <span>{o.text}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <p class="marke">fragen</p>
+      <div class="fragen">
+        {
+          fragen.map((f) => (
+            <div class="frage">
+              <h3>{f.frage}</h3>
+              <p>{f.antwort}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="banner">
+      <p class="marke">bereit?</p>
+      <h2>Hör auf, Leute wegzuschicken.</h2>
+      <div class="knopfreihe">
+        <a class="knopf knopf--hell" href="/werkstatt">
+          Seite bauen
+          <Fragment set:html={zeichen('pfeil')} />
+        </a>
+        <a class="knopf knopf--kontur" href="/t/hnvr">Echte Seite ansehen</a>
+      </div>
+    </section>
+
+</Marketingrahmen>

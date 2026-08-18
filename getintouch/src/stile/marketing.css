@@ -308,12 +308,17 @@ p {
 
 /* --- Merkmale --------------------------------------------- */
 
+/* Haarlinien zwischen den Karten.
+   Sie kommen aus einem Schatten je Karte, nicht aus dem Hintergrund des
+   Gitters: bei fünf Karten in drei Spalten bleibt eine Zelle leer, und ein
+   durchgefärbtes Gitter zeigte dort einen grauen Kasten, den niemand gesetzt
+   hat. So bleibt die leere Zelle einfach leer. */
 .merkmale {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
   gap: 1px;
   margin-top: 34px;
-  background: var(--linie);
+  background: var(--grund-fest);
   border: 1px solid var(--linie);
   border-radius: var(--radius);
   overflow: hidden;
@@ -322,6 +327,7 @@ p {
 .merkmal {
   padding: 26px 24px;
   background: var(--grund-fest);
+  box-shadow: 0 0 0 1px var(--linie);
 }
 
 .merkmal svg {

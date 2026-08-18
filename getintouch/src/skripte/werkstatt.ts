@@ -48,6 +48,7 @@ import {
   type Profil,
 } from '../kern/profil.ts';
 import { nameDesWochentags, type Wochentag } from '../kern/zeit.ts';
+import { lucide, type Lucidename } from '../kern/lucide.ts';
 
 const SCHUBLADE = 'getintouch.entwurf.v1';
 const RUHEZEIT = 350;
@@ -71,6 +72,20 @@ function el<K extends keyof HTMLElementTagNameMap>(
   }
   for (const kind of kinder) knoten.append(kind);
   return knoten;
+}
+
+/**
+ * Eine SVG-Zeichenkette als Knoten.
+ *
+ * `lucide()` gibt Markup zurück, weil es auch beim Bauen der Seiten gebraucht
+ * wird. Hier im Browser braucht es einen Knoten — und `innerHTML` auf einem
+ * Wegwerf-Element ist dafür der kurze Weg. Die Zeichenketten stammen aus
+ * einer erzeugten Datei im eigenen Projekt, nicht aus einer Eingabe.
+ */
+function knotenAus(markup: string): Node {
+  const huelle = document.createElement('span');
+  huelle.innerHTML = markup;
+  return huelle.firstElementChild ?? document.createTextNode('');
 }
 
 function frage<T extends HTMLElement>(wahl: string): T {
@@ -362,34 +377,159 @@ function verschiebe(index: number, richtung: -1 | 1) {
   geaendert(true);
 }
 
+/* Zeichen und Kurzbeschreibung je Baustein — im Editor-Screen `6a` trägt
+   jede Zeile beides, damit man die Reihenfolge lesen kann, ohne sie
+   aufzuklappen. */
+function blockZeichen(block: Block): Lucidename {
+  switch (block.art) {
+    case 'nachricht':
+      return 'message-circle-heart';
+    case 'aktion':
+      return 'link';
+    case 'ueberschrift':
+      return 'user-round';
+    case 'text':
+      return 'newspaper';
+    default:
+      return 'grip-vertical';
+  }
+}
+
+function blockName(block: Block): string {
+  switch (block.art) {
+    case 'aktion':
+      return KANALNAMEN[block.kanal];
+    case 'nachricht':
+      return 'Nachricht';
+    case 'ueberschrift':
+      return 'Überschrift';
+    case 'text':
+      return 'Textblock';
+    default:
+      return 'Trennlinie';
+  }
+}
+
+function blockUnterzeile(block: Block): string {
+  switch (block.art) {
+    case 'nachricht': {
+      const n = block.absichten.length;
+      return `${n} ${n === 1 ? 'Absicht' : 'Absichten'}${block.frage ? ' · Frage im Kopf' : ''}`;
+    }
+    case 'aktion':
+      return block.beschriftung || 'ohne Beschriftung';
+    case 'ueberschrift':
+    case 'text':
+      return block.beschriftung || 'leer';
+    default:
+      return 'trennt zwei Abschnitte';
+  }
+}
+
+/**
+ * Ziehen zum Ordnen.
+ *
+ * Der Editor-Screen `6a` zeigt die Reihenfolge als Karten mit Griff und eine
+ * gestrichelte rote Zone, in die man ablegt. Beides hier.
+ *
+ * Die Pfeiltasten an jeder Karte bleiben. Ziehen ist mit der Tastatur nicht
+ * bedienbar und für manche Zeigergeräte mühsam — eine Oberfläche, die nur
+ * gezogen werden kann, schließt Leute aus.
+ */
+/**
+ * Welcher Baustein gerade aufgeklappt ist.
+ *
+ * Der Editor-Screen `6a` zeigt die Reihenfolge als schmale Zeilen und die
+ * Felder rechts im Inspektor — „Ziehen zum Ordnen · Klick zum Bearbeiten".
+ * Hier klappt der angetippte Baustein an Ort und Stelle auf, weil die dritte
+ * Spalte schon die Vorschau trägt. Die Wirkung ist dieselbe: man sieht die
+ * Reihenfolge, ohne durch acht ausgeklappte Formulare zu scrollen.
+ */
+let offenerBaustein: string | null = null;
+
+function ziehenEinrichten(liste: HTMLElement): void {
+  let herkunft = -1;
+
+  const zonen = () => Array.from(liste.querySelectorAll<HTMLElement>('.block'));
+
+  liste.addEventListener('dragstart', (e) => {
+    const karte = (e.target as HTMLElement).closest<HTMLElement>('.block');
+    if (!karte) return;
+    herkunft = Number(karte.dataset.index);
+    karte.classList.add('block--zieht');
+    e.dataTransfer?.setData('text/plain', String(herkunft));
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+  });
+
+  liste.addEventListener('dragend', () => {
+    herkunft = -1;
+    zonen().forEach((z) => z.classList.remove('block--zieht', 'block--ziel'));
+  });
+
+  liste.addEventListener('dragover', (e) => {
+    if (herkunft < 0) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    const ueber = (e.target as HTMLElement).closest<HTMLElement>('.block');
+    zonen().forEach((z) => z.classList.toggle('block--ziel', z === ueber && Number(z.dataset.index) !== herkunft));
+  });
+
+  liste.addEventListener('drop', (e) => {
+    if (herkunft < 0) return;
+    e.preventDefault();
+    const ueber = (e.target as HTMLElement).closest<HTMLElement>('.block');
+    if (!ueber) return;
+    const ziel = Number(ueber.dataset.index);
+    if (Number.isNaN(ziel) || ziel === herkunft) return;
+    const [block] = entwurf.bloecke.splice(herkunft, 1);
+    entwurf.bloecke.splice(ziel, 0, block!);
+    herkunft = -1;
+    geaendert(true);
+  });
+}
+
 function blockKarte(block: Block, index: number): HTMLElement {
-  const kopf = el('div', { class: 'block__kopf' }, [
-    el('span', {
-      class: 'block__art',
-      text:
-        block.art === 'aktion'
-          ? KANALNAMEN[block.kanal]
-          : block.art === 'nachricht'
-            ? 'Nachricht'
-            : block.art === 'ueberschrift'
-              ? 'Überschrift'
-              : block.art === 'text'
-                ? 'Textblock'
-                : 'Trennlinie',
-    }),
+  const offen = block.id === offenerBaustein;
+
+  const kopf = el(
+    'div',
+    {
+      class: offen ? 'block__kopf block__kopf--offen' : 'block__kopf',
+      onclick: (e: Event) => {
+        /* Die Werkzeuge im Kopf haben ihre eigene Aufgabe. */
+        if ((e.target as HTMLElement).closest('.block__werkzeug')) return;
+        offenerBaustein = offen ? null : block.id;
+        geaendert(true);
+      },
+    },
+    [
+    /* Der Griff ist der Anfasser zum Ziehen. Er sagt es auch, statt es nur
+       zu können: ein Feld, das man ziehen kann, muss danach aussehen. */
+    el('span', { class: 'block__griff', title: 'Ziehen zum Ordnen', 'aria-hidden': 'true' }, [
+      knotenAus(lucide('grip-vertical', 14)),
+    ]),
+    el('span', { class: 'block__zeichen', 'aria-hidden': 'true' }, [knotenAus(lucide(blockZeichen(block), 17))]),
+    el('span', { class: 'block__benennung' }, [
+      el('span', { class: 'block__art', text: blockName(block) }),
+      el('span', { class: 'block__unter', text: blockUnterzeile(block) }),
+    ]),
     el('div', { class: 'block__werkzeug' }, [
       el('button', { type: 'button', title: 'Nach oben', text: '↑', onclick: () => verschiebe(index, -1) }),
       el('button', { type: 'button', title: 'Nach unten', text: '↓', onclick: () => verschiebe(index, 1) }),
-      el('button', {
-        type: 'button',
-        title: block.aktiv ? 'Ausblenden' : 'Einblenden',
-        class: block.aktiv ? '' : 'aus',
-        text: block.aktiv ? '◉' : '○',
-        onclick: () => {
-          block.aktiv = !block.aktiv;
-          geaendert(true);
+      el(
+        'button',
+        {
+          type: 'button',
+          title: block.aktiv ? 'Ausblenden' : 'Einblenden',
+          'aria-pressed': String(block.aktiv),
+          class: block.aktiv ? 'block__auge' : 'block__auge aus',
+          onclick: () => {
+            block.aktiv = !block.aktiv;
+            geaendert(true);
+          },
         },
-      }),
+        [knotenAus(lucide(block.aktiv ? 'eye' : 'eye-off', 15))],
+      ),
       el('button', {
         type: 'button',
         title: 'Entfernen',
@@ -402,11 +542,21 @@ function blockKarte(block: Block, index: number): HTMLElement {
         },
       }),
     ]),
-  ]);
+    ],
+  );
 
-  const karte = el('div', { class: block.aktiv ? 'block' : 'block block--aus' }, [kopf]);
+  const karte = el(
+    'div',
+    {
+      class: block.aktiv ? 'block' : 'block block--aus',
+      draggable: 'true',
+      'data-index': String(index),
+    },
+    [kopf],
+  );
 
-  if (block.art === 'trenner') return karte;
+  /* Zugeklappt bleibt es bei der Zeile — die Felder baut nur, wer sie sieht. */
+  if (!offen || block.art === 'trenner') return karte;
 
   if (block.art === 'nachricht') {
     const nachricht = block;
@@ -470,7 +620,13 @@ function blockKarte(block: Block, index: number): HTMLElement {
 
 function zeichneBloecke() {
   const tafel = frage('#tafel-bloecke');
+  const ueberschrift = el('div', { class: 'reihenfolge' }, [
+    el('b', { text: 'Reihenfolge' }),
+    el('span', { text: 'Ziehen zum Ordnen · Klick zum Bearbeiten' }),
+  ]);
+
   const liste = el('div', { class: 'blockliste' }, entwurf.bloecke.map(blockKarte));
+  ziehenEinrichten(liste);
 
   const hinzu = (art: Block['art'], kanal?: KanalArt) => {
     const id = neueKennung(entwurf.bloecke.map((b) => b.id));
@@ -513,7 +669,7 @@ function zeichneBloecke() {
 
   tafel.replaceChildren(
     el('div', { class: 'feldgruppe' }, [
-      el('h2', { class: 'wmarke2', text: 'Blöcke' }),
+      ueberschrift,
       el('p', {
         class: 'whinweis',
         text: 'Anrufen, Nachricht, Anfahrt und Termin werden Kacheln und stehen nebeneinander. Alles, was auf eine Seite zum Lesen führt, wird eine ruhige Zeile.',

@@ -539,11 +539,28 @@ a:focus-visible {
   margin-top: 14px;
 }
 
+/* Weiche Karte mit Standfuß, wie im Editor-Screen `6a`. */
 .block {
-  padding: 12px 14px 16px;
-  border: 1px solid var(--w-linie);
-  border-radius: 13px;
-  background: var(--w-flaeche);
+  padding: 14px 16px;
+  border-radius: 22px;
+  background: var(--w-grund);
+  box-shadow: 0 4px 0 0 var(--w-linie);
+  transition: box-shadow 0.14s, transform 0.14s;
+}
+
+.block:has(.block__auge:not(.aus)):hover {
+  box-shadow: 0 4px 0 0 var(--w-akzent);
+}
+
+/* Die gezogene Karte wird blass, die Zielkarte bekommt den roten Rahmen —
+   das ist die Ablegezone aus dem Screen, nur an der Karte statt daneben. */
+.block--zieht {
+  opacity: 0.4;
+}
+
+.block--ziel {
+  box-shadow: 0 0 0 2px var(--w-akzent), 0 4px 0 0 var(--w-akzent);
+  background: var(--w-rose);
 }
 
 .block--aus {
@@ -553,16 +570,45 @@ a:focus-visible {
 .block__kopf {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
+}
+
+.block__griff {
+  display: flex;
+  color: var(--w-leise);
+  cursor: grab;
+  flex: none;
+}
+
+.block:active .block__griff {
+  cursor: grabbing;
+}
+
+.block__zeichen {
+  display: flex;
+  flex: none;
+}
+
+.block__benennung {
+  flex: 1;
+  min-width: 0;
+}
+
+.block__unter {
+  display: block;
+  font-size: 10.5px;
+  color: var(--w-neben);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .block__art {
-  font-family: 'Clash Display', system-ui, sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--w-leise);
+  display: block;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--w-vg);
 }
 
 .block__werkzeug {
@@ -921,4 +967,57 @@ input[type='date'] {
 
 .wbausteine .whinweis {
   margin-top: 18px;
+}
+
+/* Das Auge trägt ein Zeichen statt eines Kreises. */
+.block__auge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--w-neben);
+}
+
+.block__auge.aus {
+  color: var(--w-leise);
+}
+
+.blockliste {
+  margin-top: 14px;
+}
+
+/* Der Kopf ist der Schalter zum Aufklappen. */
+.block__kopf {
+  cursor: pointer;
+}
+
+.block__kopf--offen {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--w-linie);
+}
+
+.block__kopf--offen .block__art {
+  color: var(--w-akzent-tief);
+}
+
+.block__werkzeug {
+  cursor: default;
+}
+
+/* Die Zeile über der Liste, wie im Screen. */
+.reihenfolge {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reihenfolge b {
+  font-size: 13.5px;
+}
+
+.reihenfolge span {
+  font-size: 11px;
+  color: var(--w-leise);
 }

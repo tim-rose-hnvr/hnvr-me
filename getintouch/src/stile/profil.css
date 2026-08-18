@@ -380,17 +380,16 @@ body {
    danach kleingesetzt und weit gesperrt. */
 .marke {
   margin: 34px 0 4px;
+  /* Kicker nach dem Markenbaukasten: 800, gesperrt, Versalien. Der Vorsatz
+     „// " stand hier aus dem alten System und kommt im Handoff nirgends vor.
+     Elf statt zehn Pixel, weil die Profilseite keine App-Oberfläche ist und
+     ihre Schrift je Vorlage wechselt — zehn wären in Fraunces zu klein. */
   font-family: var(--anzeige);
-  font-weight: 500;
+  font-weight: 800;
   font-size: 11px;
-  letter-spacing: 0.26em;
-  text-transform: lowercase;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--vg-leise);
-}
-
-.marke::before {
-  content: '// ';
-  color: var(--akzent);
 }
 
 .textblock {
@@ -481,12 +480,18 @@ body {
   color: var(--vg-neben);
 }
 
+/* „QR-Code" brach auf schmalen Geräten hinter dem Bindestrich um — die
+   Adresse daneben nahm zu viel Platz. Die Beschriftung bleibt jetzt in einer
+   Zeile, die Adresse gibt nach. */
 .code__beschriftung {
   font-weight: 600;
+  white-space: nowrap;
+  flex: none;
 }
 
 .code__adresse {
   margin-left: auto;
+  min-width: 0;
   font-size: 13px;
   color: var(--vg-leise);
   overflow: hidden;
@@ -965,4 +970,71 @@ summary:focus-visible {
   height: 20px;
   flex: none;
   color: var(--akzent);
+}
+
+/* ============================================================
+   Der Standfuß
+   ============================================================
+
+   Aus dem Markenbaukasten: „Jeder Knopf hat 4–6 px Schatten und sinkt beim
+   Drücken ein. Das ist unser Tastgefühl." Die Profilseite hatte das bis eben
+   nicht — sie schrumpfte beim Druck (`scale(.99)`), was eine andere Marke ist.
+
+   Er sitzt nur unter gefüllten Flächen. Bei einer Vorlage mit Kontur oder Glas
+   wäre ein harter Schatten unter einem durchsichtigen Knopf ein Fehler, kein
+   Merkmal — und der Handoff macht es an seinen eigenen Vorlagen genauso:
+   Kirsche hat den Fuß, Beton nicht.
+   ============================================================ */
+
+.blatt[data-schaltflaeche='gefuellt'] .aktion--haupt {
+  box-shadow: 0 5px 0 0 var(--akzent-tief);
+}
+
+.blatt[data-schaltflaeche='gefuellt'] .kachel--betont {
+  box-shadow: 0 4px 0 0 var(--akzent-tief);
+}
+
+.blatt[data-schaltflaeche='gefuellt'] .aktion--haupt:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 0 var(--akzent-tief);
+}
+
+.blatt[data-schaltflaeche='gefuellt'] .kachel--betont:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 0 var(--akzent-tief);
+}
+
+/* Der Fuß darf nicht mitwandern, wenn nur die Fläche gedrückt wird. */
+.blatt[data-schaltflaeche='gefuellt'] .aktion--haupt,
+.blatt[data-schaltflaeche='gefuellt'] .kachel--betont {
+  transition: transform 0.13s ease, box-shadow 0.13s ease, background-color 0.15s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blatt[data-schaltflaeche='gefuellt'] .aktion--haupt:active,
+  .blatt[data-schaltflaeche='gefuellt'] .kachel--betont:active {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   Bild über Bild
+   ============================================================
+
+   Aus Screen `5a`: das Profilbild überlappt das Titelbild und trägt einen
+   Ring in der Grundfarbe, damit es sich davon löst. Vorher saß es darunter,
+   und zwischen beiden klaffte eine Lücke.
+   ============================================================ */
+
+.kopf--mitTitelbild .bild {
+  margin-top: -34px;
+  position: relative;
+  border: 3px solid var(--grund-fest);
+  box-shadow: 0 2px 0 0 var(--linie);
+}
+
+@media (max-width: 420px) {
+  .kopf--mitTitelbild .bild {
+    margin-top: -26px;
+  }
 }

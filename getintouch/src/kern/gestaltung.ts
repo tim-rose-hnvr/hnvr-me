@@ -322,6 +322,27 @@ export function istDunkel(farbe: string): boolean {
   return helligkeit(farbe) < 0.34;
 }
 
+/**
+ * Die tiefe Stufe einer Farbe — der Standfuß unter einer Schaltfläche.
+ *
+ * Der Markenbaukasten nennt sie fest (`#AE1800` unter `#EC3013`), aber jede
+ * Vorlage bringt ihren eigenen Akzent mit. Deshalb gerechnet: dieselbe Farbe,
+ * um `anteil` in Richtung Schwarz gezogen.
+ *
+ * Ist der Akzent schon sehr dunkel, wird stattdessen aufgehellt — ein
+ * schwarzer Fuß unter einer fast schwarzen Fläche ist kein Fuß, sondern ein
+ * unsichtbarer Rand.
+ */
+export function tiefereStufe(farbe: string, anteil = 0.38): string {
+  const rgb = zuRgb(farbe);
+  if (!rgb) return farbe;
+  const runter = helligkeit(farbe) > 0.12;
+  const [r, g, b] = rgb.map((wert) =>
+    Math.round(runter ? wert * (1 - anteil) : wert + (255 - wert) * anteil),
+  ) as [number, number, number];
+  return `#${[r, g, b].map((wert) => wert.toString(16).padStart(2, '0')).join('')}`;
+}
+
 export interface Lesbarkeitsbefund {
   /** `warnung`: schwer lesbar. `fehler`: unter dem Mindestmaß von WCAG AA. */
   schwere: 'warnung' | 'fehler';
@@ -433,6 +454,8 @@ export function cssVariablen(gestaltung: Gestaltung): Record<string, string> {
     '--akzent': akzent,
     '--akzent-text': akzentText,
     '--akzent-schleier': mitDeckkraft(akzent, 0.14),
+    /* Der Standfuß: dieselbe Farbe, eine Stufe tiefer. */
+    '--akzent-tief': tiefereStufe(akzent),
     // Auf dunklem Grund trägt eine aufgehellte Fläche, auf hellem eine abgedunkelte.
     '--kachel': mitDeckkraft(vordergrund, dunkel ? 0.06 : 0.04),
     '--kachel-aktiv': mitDeckkraft(vordergrund, dunkel ? 0.11 : 0.08),

@@ -78,6 +78,13 @@ const paar = `${schrift(gestaltung.anzeige).name} + ${schrift(gestaltung.schrift
 
 <style is:global>
   /* Nur auf dieser Vorführseite: die Leiste gehört nicht zum Produkt. */
+  /* Die Leiste schwebt über der Seite und verdeckte damit, was ganz unten
+     steht — beim Durchklicken war der Absenden-Knopf des Nachrichtenblocks
+     nicht erreichbar. Deshalb bekommt das Blatt darunter Luft. */
+  :global(.blatt) {
+    padding-bottom: 96px;
+  }
+
   .blaetterleiste {
     position: fixed;
     left: 50%;
@@ -157,6 +164,10 @@ const paar = `${schrift(gestaltung.anzeige).name} + ${schrift(gestaltung.schrift
   @media print {
     .blaetterleiste {
       display: none;
+    }
+
+    :global(.blatt) {
+      padding-bottom: 0;
     }
   }
 </style>

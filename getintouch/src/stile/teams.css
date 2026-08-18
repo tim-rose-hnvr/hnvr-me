@@ -50,20 +50,35 @@
   flex: none;
 }
 
+/* Firmenname und Domain stehen in einer Zeile. Auf 360 px schoben sie die
+   Seite um zwei Pixel auf — nachgemessen, nicht geschätzt. Beide geben nach,
+   statt zu drücken. */
 .vorschau__firma {
   font: 800 12.5px var(--font-body);
   letter-spacing: 0.04em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .vorschau__domain {
   font-size: 10.5px;
   color: var(--ink-50);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .vorschau__paar {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 11px;
+}
+
+.vorschau__paar > * {
+  min-width: 0;
 }
 
 .vorschau__person {

@@ -812,8 +812,12 @@ function zeichneZeiten() {
   for (let tag = 1 as Wochentag; tag <= 7; tag = (tag + 1) as Wochentag) {
     const fenster = plan.fenster.filter((f) => f.tag === tag);
     const zeilen = fenster.map((f) => {
-      const von = el('input', { type: 'time', value: f.von });
-      const bis = el('input', { type: 'time', value: f.bis });
+      /* Zehn nackte Zeitfelder untereinander sind mit einer Vorlesehilfe
+         nicht auseinanderzuhalten — deshalb sagt jedes, zu welchem Tag und
+         welchem Ende es gehört. */
+      const tagname = nameDesWochentags(tag);
+      const von = el('input', { type: 'time', value: f.von, 'aria-label': `${tagname}: von` });
+      const bis = el('input', { type: 'time', value: f.bis, 'aria-label': `${tagname}: bis` });
       von.addEventListener('input', () => {
         f.von = von.value;
         geaendert();

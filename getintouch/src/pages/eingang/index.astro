@@ -1,0 +1,94 @@
+---
+/**
+ * Was hinter „Anmelden" steht.
+ *
+ * Die Kopfzeile aus dem Handoff hat einen Anmelde-Verweis. Der zeigte bis
+ * eben auf `/eingang` — eine Adresse, die es nicht gab: auf jeder der fünf
+ * Verkaufsseiten ein toter Knopf. Aufgefallen beim Durchklicken, nicht beim
+ * Lesen.
+ *
+ * Ihn einfach zu entfernen wäre die bequeme Lösung gewesen. Aber die Frage
+ * dahinter ist berechtigt — wer schon eine Seite hat, will an seine Anfragen.
+ * Also steht hier, wie das geht, statt eines Anmeldeformulars, das an kein
+ * Konto führen könnte: Konten gibt es noch nicht.
+ */
+import Handoffrahmen from '../../komponenten/Handoffrahmen.astro';
+import { lucide } from '../../kern/lucide.ts';
+import { MARKE } from '../../kern/marke.ts';
+
+export const prerender = false;
+
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+
+const titel = `Anmelden — ${MARKE.name}`;
+const beschreibung = 'Wie du an deine Anfragen kommst — mit deinem Eingangs-Link, ohne Konto und ohne Passwort.';
+---
+
+<Handoffrahmen titel={titel} beschreibung={beschreibung}>
+  <section class="pkopf an-rise" style="padding:30px 0 28px;max-width:60ch">
+    <span class="abzeichen">
+      <Fragment set:html={lucide('inbox', 14)} />
+      Eingang
+    </span>
+    <h1 class="h1 h1--klein" style="margin:18px 0 14px;max-width:none">Kein Konto. Ein Schlüssel.</h1>
+    <p class="fliess" style="max-width:none">
+      Es gibt hier nichts anzumelden — kein Passwort, keine Bestätigungsmail, keine vergessene Zugangskennung. Deine
+      Anfragen liegen hinter einer eigenen Adresse, die nur du kennst.
+    </p>
+  </section>
+
+  <section class="dreier" style="padding-bottom:50px" data-auf>
+    <div class="karte">
+      <span class="kachel kachel--signal"><Fragment set:html={lucide('link', 22)} /></span>
+      <h3 class="h3">Du hast den Link</h3>
+      <p class="karteText">
+        Dann ruf ihn auf. Er sieht aus wie <code>/eingang/</code> und dahinter 32 Zeichen. Kein Anmelden nötig, er
+        ist der Schlüssel.
+      </p>
+    </div>
+
+    <div class="karte">
+      <span class="kachel kachel--ink"><Fragment set:html={lucide('mail', 22)} /></span>
+      <h3 class="h3">Du hast ihn nicht mehr</h3>
+      <p class="karteText">
+        Schreib uns von der Adresse, die im Profil steht. Wir erzeugen einen neuen und der alte wird ungültig — das
+        ist die ganze Wiederherstellung.
+      </p>
+      <a class="textlink" href={`mailto:${MARKE.postfach}?subject=Eingang%20%E2%80%94%20neuer%20Schl%C3%BCssel`}>
+        Neuen Schlüssel anfragen
+        <Fragment set:html={lucide('arrow-right', 14)} />
+      </a>
+    </div>
+
+    <div class="karte">
+      <span class="kachel kachel--rose"><Fragment set:html={lucide('lock', 22)} /></span>
+      <h3 class="h3">Warum so</h3>
+      <p class="karteText">
+        Ein Passwort, das niemand braucht, ist ein Passwort, das irgendwo notiert wird. Der Link tut dasselbe und
+        ist widerrufbar. Behandle ihn wie einen Türschlüssel: nicht in Gruppenchats, nicht in Signaturen.
+      </p>
+    </div>
+  </section>
+
+  <section class="band" data-auf>
+    <p class="kicker">Noch keine Seite?</p>
+    <h2>Dann fang damit an.</h2>
+    <div class="knopfreihe">
+      <a class="knopf knopf--hell" href="/werkstatt">
+        Seite bauen
+        <Fragment set:html={lucide('arrow-right', 16)} />
+      </a>
+      <a class="knopf knopf--kontur" href="/preise">Preise ansehen</a>
+    </div>
+  </section>
+</Handoffrahmen>
+
+<style>
+  code {
+    font-family: ui-monospace, monospace;
+    font-size: 0.92em;
+    padding: 1px 5px;
+    border-radius: 6px;
+    background: var(--color-surface);
+  }
+</style>

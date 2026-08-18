@@ -2025,3 +2025,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Weder gebaut noch bloß entworfen: der Screen steht, das Produkt hat ihn
+   aber noch nicht übernommen. Das ist ein dritter Zustand und braucht ein
+   eigenes Zeichen — sonst liest sich „entworfen" wie eine Entschuldigung. */
+.screen__stand--offen {
+  background: var(--color-accent-700);
+  color: var(--color-bg);
+}

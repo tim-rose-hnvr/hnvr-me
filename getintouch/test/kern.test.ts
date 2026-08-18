@@ -21,6 +21,10 @@ import {
   lieseGestaltung,
   pruefeLesbarkeit,
   SCHRIFTEN,
+  cssVariablen,
+  zuRgb,
+  helligkeit,
+  tiefereStufe,
   vorlage,
   vorlagenart,
   vorlagenfaecher,
@@ -527,5 +531,34 @@ describe('Herkunft des Aufrufs', () => {
     const anfrage = new Request('http://beispiel.test/x');
     // Fetch setzt den Host-Kopf selbst; hier zählt nur, dass nichts kaputtgeht.
     ok(herkunft(anfrage, ersatz).href.startsWith('http://'));
+  });
+});
+
+describe('Tiefere Stufe für den Standfuß', () => {
+  /* Der Markenbaukasten nennt #AE1800 als Fuß unter #EC3013. Die gerechnete
+     Stufe muss in derselben Gegend landen, sonst sieht der Fuß nach einem
+     anderen Rot aus als die Fläche darüber. */
+  it('zieht eine helle Farbe zur tieferen Stufe', () => {
+    const tief = tiefereStufe('#EC3013');
+    ok(helligkeit(tief) < helligkeit('#EC3013'), 'nicht dunkler geworden');
+    const [r, g, b] = zuRgb(tief)!;
+    ok(r > g && r > b, 'der Rotton ist verloren gegangen');
+  });
+
+  /* Unter einer fast schwarzen Fläche wäre ein noch schwärzerer Fuß
+     unsichtbar. Dann muss aufgehellt werden. */
+  it('hellt eine sehr dunkle Farbe auf, statt sie zu ertränken', () => {
+    ok(helligkeit(tiefereStufe('#0A0A0A')) > helligkeit('#0A0A0A'));
+  });
+
+  it('lässt unbrauchbare Angaben unverändert', () => {
+    strictEqual(tiefereStufe('keine farbe'), 'keine farbe');
+  });
+
+  it('steht als Variable in jeder Vorlage', () => {
+    for (const v of VORLAGEN) {
+      const wert = cssVariablen(v)['--akzent-tief'];
+      ok(wert && wert !== v.akzent, `„${v.vorlage}" ohne eigenen Standfuß`);
+    }
   });
 });

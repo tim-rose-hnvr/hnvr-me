@@ -1,0 +1,713 @@
+---
+/**
+ * Die App-Screens aus dem Handoff.
+ *
+ * Nachbau von `doku/handoff/design/GetInTouch Mockups.dc.html`, Runde 6 —
+ * die laut Handoff maßgebliche. Jeder Screen steht in seiner Breite, mit
+ * seiner Kennung und dem Satz, der im Entwurf danebensteht.
+ *
+ * **Warum das eine eigene Seite ist.** Die Screens beschreiben Funktionen,
+ * die es überwiegend noch nicht gibt — Buchung, Bewertungen, Analytics,
+ * Whitelabel. Sie hier als Entwurf zu zeigen ist ehrlich; sie im Produkt als
+ * Menüpunkte zu führen wäre es nicht. Was schon läuft, steht als solches
+ * gekennzeichnet und verlinkt dorthin.
+ *
+ * Nicht indexiert: eine Entwurfsseite gehört nicht in Suchergebnisse.
+ */
+import { lucide } from '../../kern/lucide.ts';
+import { MARKE, zeichenPlaettchen } from '../../kern/marke.ts';
+import '../../stile/screens.css';
+
+export const prerender = false;
+
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+
+const titel = `Oberflächen — ${MARKE.name}`;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{titel}</title>
+    <meta name="theme-color" content="#f3f2f2" />
+    <link rel="icon" href={`data:image/svg+xml,${encodeURIComponent(zeichenPlaettchen())}`} type="image/svg+xml" />
+    <link rel="stylesheet" href="/schriften/schriften.css" />
+  </head>
+
+  <body>
+    <div class="bahn">
+      <header class="kopf">
+        <a class="lockup" href="/">
+          <Fragment set:html={zeichenPlaettchen()} />
+          <span>{MARKE.name}</span>
+        </a>
+        <span class="abzeichen">Entwurf</span>
+        <div class="schub"></div>
+        <a class="anmelden" href="/vorlagen">Vorlagen</a>
+        <a class="kopfknopf" href="/werkstatt">Zur Werkstatt</a>
+      </header>
+
+      <section class="screens">
+        <h1 class="h1 h1--klein" style="margin:0 0 14px;max-width:24ch">Die Oberflächen, Screen für Screen.</h1>
+        <p class="fliess" style="max-width:64ch">
+          Nachbau der Entwurfsdatei aus dem Handoff — nicht als Bild, sondern als dasselbe CSS, das auch das Produkt
+          trägt. An jedem Screen steht, ob es ihn wirklich gibt. Die Buchung, die Bewertungen, die Zahlen und der
+          Team-Bereich sind entworfen und noch nicht gebaut; wer sie hier sieht, sieht einen Plan, kein Angebot.
+        </p>
+      </section>
+
+      <!-- 6a Editor -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">6a</span>
+          <span class="screen__stand screen__stand--steht">gebaut</span>
+          <span class="screen__satz">
+            Editor: Bausteine als Pillen ziehen, Reihenfolge als weiche Karten, Inspektor rechts. Kontextregeln
+            bleiben. — <a href="/werkstatt">läuft als Werkstatt</a>.
+          </span>
+        </div>
+      </section>
+
+      <!-- 6b Buchen -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">6b</span>
+          <span class="screen__stand screen__stand--entwurf">entworfen</span>
+          <span class="screen__satz">
+            Buchen in drei Schritten — Pillen statt Formular, echte Slots, Bewertung wird am Ende freundlich
+            angefragt.
+          </span>
+        </div>
+        <div class="screen__bahn">
+          <div class="karteikarte karteikarte--schmal">
+            <div class="sk__kopfzeile">
+              <Fragment set:html={lucide('arrow-left', 15)} />
+              Schritt 1 / 3
+            </div>
+            <div class="sk__leib">
+              <h3 class="sk__titel">Was brauchst du?</h3>
+              <div class="sk__liste">
+                <button class="sk__wahl sk__wahl--hier" type="button">
+                  <Fragment set:html={lucide('camera', 17)} />
+                  <span class="sk__wahlText">
+                    <span class="sk__wahlName">Portrait-Shooting</span>
+                    <span class="sk__wahlUnter">ab 480 € · 2 Std.</span>
+                  </span>
+                  <Fragment set:html={lucide('check', 15)} />
+                </button>
+                <button class="sk__wahl" type="button">
+                  <Fragment set:html={lucide('users-round', 17)} />
+                  <span class="sk__wahlText">
+                    <span class="sk__wahlName">Business / Team</span>
+                    <span class="sk__wahlUnter">Angebot auf Anfrage</span>
+                  </span>
+                </button>
+                <button class="sk__wahl" type="button">
+                  <Fragment set:html={lucide('message-circle-question', 17)} />
+                  <span class="sk__wahlText">
+                    <span class="sk__wahlName">Erst mal fragen</span>
+                    <span class="sk__wahlUnter">Nachricht ohne Termin</span>
+                  </span>
+                </button>
+              </div>
+              <p class="sk__fuss">
+                <Fragment set:html={lucide('timer', 13)} />
+                Dauert 40 Sekunden.
+              </p>
+            </div>
+          </div>
+
+          <div class="karteikarte karteikarte--schmal">
+            <div class="sk__kopfzeile">
+              <Fragment set:html={lucide('arrow-left', 15)} />
+              Schritt 2 / 3
+            </div>
+            <div class="sk__leib">
+              <h3 class="sk__titel" style="margin-bottom:3px">September</h3>
+              <p class="sk__wahlUnter" style="font-size:11.5px;margin:0 0 13px">Echte freie Slots aus Linas Kalender.</p>
+              <div class="sk__monat">
+                {
+                  [
+                    { tag: 'Mo', zahl: '7.' },
+                    { tag: 'Di', zahl: '8.', hier: true },
+                    { tag: 'Mi', zahl: '9.' },
+                    { tag: 'Do', zahl: '10.', aus: true },
+                    { tag: 'Fr', zahl: '11.' },
+                    { tag: 'Sa', zahl: '12.', aus: true },
+                    { tag: 'So', zahl: '13.' },
+                    { tag: 'Mo', zahl: '14.' },
+                  ].map((d) => (
+                    <button
+                      class:list={['sk__tag', d.hier && 'sk__tag--hier', d.aus && 'sk__tag--aus']}
+                      type="button"
+                      disabled={d.aus}
+                    >
+                      <span>{d.tag}</span>
+                      <span>{d.zahl}</span>
+                    </button>
+                  ))
+                }
+              </div>
+              <div class="sk__slots">
+                <button class="sk__slot" type="button">09:30</button>
+                <button class="sk__slot sk__slot--hier" type="button">14:00</button>
+                <button class="sk__slot sk__slot--aus" type="button" disabled>17:30</button>
+              </div>
+              <button class="sk__knopf" type="button">
+                Di 8., 14:00 nehmen
+                <span class="sk__schub"></span>
+                <Fragment set:html={lucide('arrow-right', 15)} />
+              </button>
+            </div>
+          </div>
+
+          <div class="karteikarte karteikarte--schmal">
+            <div class="sk__kopfzeile">Schritt 3 / 3</div>
+            <div class="sk__leib">
+              <span class="sk__haken an-pop"><Fragment set:html={lucide('check', 24)} /></span>
+              <h3 class="sk__titel" style="margin:14px 0 6px">Steht!</h3>
+              <p class="karteText" style="font-size:12.5px;margin-bottom:15px">
+                Lina hat deine Anfrage. Bestätigung geht an <b>m.keller@mail.de</b>.
+              </p>
+              <div class="sk__kasten">
+                <p class="sk__rubrik" style="color:var(--color-accent-700);margin-bottom:6px">Dein Termin</p>
+                <div style="font:800 14px var(--font-body)">Di 8. Sept · 14:00 · 2 Std.</div>
+                <div style="font-size:11px;color:var(--ink-60);margin-top:2px">Studio Hardturm, Zürich</div>
+              </div>
+              <div class="sk__paar">
+                <button class="sk__nebenknopf" type="button">
+                  <Fragment set:html={lucide('calendar-plus', 14)} />
+                  Kalender
+                </button>
+                <button class="sk__nebenknopf" type="button">
+                  <Fragment set:html={lucide('contact-round', 14)} />
+                  Kontakt
+                </button>
+              </div>
+              <p class="sk__kasten--ruhig">
+                Nach dem Termin fragen wir einmal nach einer Bewertung — ein Tipp, kein Konto.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6c Onboarding -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">6c</span>
+          <span class="screen__stand screen__stand--entwurf">entworfen</span>
+          <span class="screen__satz">
+            Onboarding: Adresse, Import, Ziel. Bild reinziehen inklusive — nach 90 Sekunden steht die Seite.
+          </span>
+        </div>
+        <div class="screen__bahn">
+          <div class="karteikarte karteikarte--schmal">
+            <div class="sk__balken"><span style="width:33%"></span></div>
+            <div class="sk__leib" style="padding:18px">
+              <p class="sk__rubrik">1 · Adresse</p>
+              <h3 class="sk__titel sk__titel--gross">Wie sollen dich Leute finden?</h3>
+              <div class="sk__handle">
+                <span style="color:var(--ink-50)">getintouch.me/</span>
+                <b>linamoser</b>
+              </div>
+              <p class="sk__frei">
+                <Fragment set:html={lucide('circle-check', 14)} />
+                frei
+              </p>
+              <p class="sk__hinweis sk__hinweis--ruhig">Eigene Domain? Geht später in einer Minute.</p>
+              <button class="sk__knopf" type="button">
+                Weiter
+                <span class="sk__schub"></span>
+                <Fragment set:html={lucide('arrow-right', 15)} />
+              </button>
+            </div>
+          </div>
+
+          <div class="karteikarte karteikarte--schmal">
+            <div class="sk__balken"><span style="width:66%"></span></div>
+            <div class="sk__leib" style="padding:18px">
+              <p class="sk__rubrik">2 · Bilder &amp; Inhalte</p>
+              <h3 class="sk__titel sk__titel--gross">Zieh dein Foto rein.</h3>
+              <div class="sk__bilder">
+                <span class="sk__portrait"></span>
+                <span class="sk__titelbild"></span>
+              </div>
+              <div class="sk__zeilen">
+                <div class="sk__zeile sk__zeile--an">
+                  <Fragment set:html={lucide('instagram', 15)} />
+                  <span>Instagram</span>
+                  <span class="sk__marke">verbunden</span>
+                </div>
+                <div class="sk__zeile">
+                  <Fragment set:html={lucide('calendar', 15)} />
+                  <span>Kalender</span>
+                  <span class="sk__tun">verbinden</span>
+                </div>
+                <div class="sk__zeile">
+                  <Fragment set:html={lucide('link', 15)} />
+                  <span>Alte Linkliste</span>
+                  <span class="sk__tun">importieren</span>
+                </div>
+              </div>
+              <div class="sk__paar" style="margin-top:15px">
+                <button class="sk__nebenknopf" style="flex:none;border-color:var(--color-neutral-300)" type="button">
+                  Später
+                </button>
+                <button class="sk__knopf" style="margin-top:0" type="button">
+                  Weiter
+                  <span class="sk__schub"></span>
+                  <Fragment set:html={lucide('arrow-right', 14)} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="karteikarte karteikarte--schmal">
+            <div class="sk__balken"><span style="width:100%"></span></div>
+            <div class="sk__leib" style="padding:18px">
+              <p class="sk__rubrik">3 · Ziel</p>
+              <h3 class="sk__titel sk__titel--gross">Was soll passieren?</h3>
+              <div class="sk__pillen">
+                <button class="sk__pille" type="button">Mehr Follower</button>
+                <button class="sk__pille sk__pille--hier" type="button">Anfragen &amp; Buchungen</button>
+                <button class="sk__pille" type="button">Verkäufe</button>
+                <button class="sk__pille" type="button">Nur Visitenkarte</button>
+              </div>
+              <p class="sk__hinweis">Danach ordnen wir deine Seite passend — änderbar bleibt alles.</p>
+              <button class="sk__knopf sk__knopf--ink" type="button">
+                Seite ansehen
+                <span class="sk__schub"></span>
+                <Fragment set:html={lucide('arrow-up-right', 15)} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6d Bewertungen -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">6d</span>
+          <span class="screen__stand screen__stand--entwurf">entworfen</span>
+          <span class="screen__satz">
+            Bewertungen: verifizierte Stimmen öffentlich, Kritik erst privat. Antworten direkt in der Karte.
+          </span>
+        </div>
+        <div class="screen__bahn">
+          <div class="karteikarte karteikarte--mittel">
+            <div class="bw__kopf">
+              <div>
+                <h3 class="bw__titel">Bewertungen</h3>
+                <p class="bw__unter">Nur nach abgeschlossener Buchung.</p>
+              </div>
+              <div class="bw__schnitt">
+                <span class="bw__zahl">4,9</span>
+                <span>
+                  <span class="sterne__reihe">
+                    {[1, 2, 3, 4, 5].map(() => <Fragment set:html={lucide('star', 11, true)} />)}
+                  </span>
+                  <span class="bw__stimmen">128 Stimmen</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="bw__zwei">
+              <div class="bw__block">
+                <p class="sk__rubrik">Verteilung</p>
+                <div class="bw__balken">
+                  {
+                    [
+                      { n: '5', breit: '88%', zahl: '112' },
+                      { n: '4', breit: '10%', zahl: '13' },
+                      { n: '3', breit: '3%', zahl: '3' },
+                      { n: '2', breit: '0%', zahl: '0' },
+                    ].map((b) => (
+                      <div class="bw__zeile">
+                        <span class="bw__stern">{b.n}</span>
+                        <span class="bw__spur">
+                          <span style={`width:${b.breit}`} />
+                        </span>
+                        <span class="bw__anzahl">{b.zahl}</span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+
+              <div class="bw__block bw__block--rose">
+                <p class="sk__rubrik" style="color:var(--color-accent-700)">Privates Feedback</p>
+                <p class="bw__satz">
+                  Bei 3 Sternen oder weniger fragen wir zuerst unter vier Augen. Öffentlich wird nichts ohne
+                  Freigabe.
+                </p>
+                <div class="bw__schwelle">
+                  <span>Schwelle: 3 Sterne</span>
+                  <Fragment set:html={lucide('sliders-horizontal', 15)} />
+                </div>
+              </div>
+            </div>
+
+            <div class="bw__leib">
+              <div class="bw__filter">
+                <button class="bw__pille bw__pille--hier" type="button">Alle</button>
+                <button class="bw__pille" type="button">Unbeantwortet · 2</button>
+                <button class="bw__pille" type="button">Nicht öffentlich</button>
+              </div>
+
+              <div class="bw__karten">
+                <article class="bw__karte">
+                  <div class="bw__kartenkopf">
+                    <span class="sterne__reihe">
+                      {[1, 2, 3, 4, 5].map(() => <Fragment set:html={lucide('star', 12, true)} />)}
+                    </span>
+                    <span class="bw__wer">Café Kreis 4</span>
+                    <span class="bw__siegel">
+                      <Fragment set:html={lucide('shield-check', 11)} />
+                      verifiziert
+                    </span>
+                    <span class="sk__schub" />
+                    <span class="bw__wann">Juli 2026</span>
+                  </div>
+                  <p class="bw__text">
+                    „Wir hatten in zehn Minuten einen Termin und nach zwei Wochen die Bilder. Unkompliziert von
+                    Anfang bis Ende."
+                  </p>
+                  <div class="sk__paar">
+                    <button class="bw__tun bw__tun--voll" type="button">Antworten</button>
+                    <button class="bw__tun" type="button">Aufs Profil</button>
+                  </div>
+                </article>
+
+                <article class="bw__karte bw__karte--privat">
+                  <div class="bw__kartenkopf">
+                    <span class="sterne__reihe">
+                      {[1, 2, 3].map(() => <Fragment set:html={lucide('star', 12, true)} />)}
+                      {[4, 5].map(() => <Fragment set:html={lucide('star', 12)} />)}
+                    </span>
+                    <span class="bw__wer">M. Keller</span>
+                    <span class="bw__siegel bw__siegel--zu">
+                      <Fragment set:html={lucide('lock', 11)} />
+                      nur für dich
+                    </span>
+                    <span class="sk__schub" />
+                    <span class="bw__wann">vor 2 Tagen</span>
+                  </div>
+                  <p class="bw__text">
+                    „Bilder super, aber die Rückmeldung hat zehn Tage gedauert — da war ich unsicher."
+                  </p>
+                  <div class="bw__antwort">
+                    <span class="bw__feld">Antwort schreiben …</span>
+                    <button class="bw__senden" type="button" aria-label="Antwort senden">
+                      <Fragment set:html={lucide('send', 17)} />
+                    </button>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6e Analytics -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">6e</span>
+          <span class="screen__stand screen__stand--entwurf">entworfen</span>
+          <span class="screen__satz">Analytics: jede Zahl kommt mit einer Handlung, die ein Tipp ausführt.</span>
+        </div>
+        <div class="screen__bahn">
+          <div class="karteikarte karteikarte--mittel">
+            <div class="an__kopf">
+              <div class="bw__kopf" style="padding:0">
+                <div>
+                  <h3 class="bw__titel">Diese Woche</h3>
+                  <p class="bw__unter">11.–17. Aug · gegen Vorwoche</p>
+                </div>
+                <div class="an__takt">
+                  <button class="an__taktHier" type="button">7T</button>
+                  <button class="an__taktAus" type="button">30T</button>
+                  <button class="an__taktAus" type="button">Alles</button>
+                </div>
+              </div>
+
+              <div class="an__zahlen">
+                <div class="an__zahl">
+                  <b>1 284</b>
+                  <span>Besuche <em>+18 %</em></span>
+                </div>
+                <div class="an__zahl an__zahl--rose">
+                  <b>96</b>
+                  <span>Kontakte <em>+41 %</em></span>
+                </div>
+                <div class="an__zahl">
+                  <b>7,5 %</b>
+                  <span>Kontaktrate</span>
+                </div>
+              </div>
+
+              <div class="an__saeulen">
+                {
+                  [
+                    { h: '38%' },
+                    { h: '52%' },
+                    { h: '44%' },
+                    { h: '66%' },
+                    { h: '58%', dunkel: true },
+                    { h: '82%', rot: true },
+                    { h: '100%', rot: true },
+                  ].map((s) => (
+                    <span
+                      class:list={['an__saeule', s.rot && 'an__saeule--rot', s.dunkel && 'an__saeule--dunkel']}
+                      style={`height:${s.h}`}
+                    />
+                  ))
+                }
+              </div>
+            </div>
+
+            <div class="an__leib">
+              <p class="sk__rubrik">Was ich tun würde</p>
+              <div class="an__rat">
+                <div class="an__zeile an__zeile--wichtig">
+                  <Fragment set:html={lucide('arrow-up-to-line', 18)} />
+                  <div class="an__text">
+                    <b>„Prints kaufen" nach oben</b>
+                    <span>Platz 5, aber 31 % aller Klicks. Die meisten scrollen vorher weg.</span>
+                  </div>
+                  <button class="an__tun an__tun--voll" type="button">Verschieben</button>
+                </div>
+                <div class="an__zeile">
+                  <Fragment set:html={lucide('moon', 18)} />
+                  <div class="an__text">
+                    <b>Abends brechen Buchungen ab</b>
+                    <span>Nach 20 Uhr steigen 6 von 10 aus. Auto-Antwort mit freien Slots?</span>
+                  </div>
+                  <button class="an__tun" type="button">Einschalten</button>
+                </div>
+                <div class="an__zeile">
+                  <Fragment set:html={lucide('star', 18)} />
+                  <div class="an__text">
+                    <b>9 Kund:innen um Bewertung bitten</b>
+                    <span>Abgeschlossene Aufträge der letzten 30 Tage. Eine Nachricht, ein Tipp für sie.</span>
+                  </div>
+                  <button class="an__tun" type="button">Anfragen</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6f Whitelabel -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">6f</span>
+          <span class="screen__stand screen__stand--entwurf">entworfen</span>
+          <span class="screen__satz">Whitelabel: eigene Domain, Logo, Akzent — und Team-Profile aus einer Vorlage.</span>
+        </div>
+        <div class="screen__bahn">
+          <div class="karteikarte karteikarte--breit">
+            <div class="an__kopf" style="padding:20px 22px 16px">
+              <p class="sk__rubrik" style="margin-bottom:6px">Whitelabel · Studio Hardturm</p>
+              <h3 class="bw__titel">Marke &amp; Team</h3>
+              <p class="bw__unter">Eine Vorlage, 14 Profile. Änderungen hier gelten überall.</p>
+            </div>
+
+            <div class="wl__zwei">
+              <div class="wl__spalte">
+                <div class="wl__block">
+                  <p class="wl__label">Domain</p>
+                  <div class="wl__feld">
+                    <span>kontakt.studiohardturm.de</span>
+                    <Fragment set:html={lucide('circle-check', 15)} />
+                  </div>
+                  <p class="wl__unter">DNS verifiziert · SSL aktiv · kein „getintouch" sichtbar</p>
+                </div>
+
+                <div class="wl__block">
+                  <p class="wl__label">Logo</p>
+                  <div class="wl__logo">
+                    <span class="wl__platte">LOGO</span>
+                    <span class="wl__satz">SVG oder PNG. Erscheint im Kopf und in der Mail-Signatur.</span>
+                  </div>
+                </div>
+
+                <div class="wl__block">
+                  <p class="wl__label">Akzent</p>
+                  <div class="wl__farben">
+                    <span class="wl__farbe wl__farbe--hier"></span>
+                    <span class="wl__farbe wl__farbe--ink"></span>
+                    <span class="wl__farbe wl__farbe--tief"></span>
+                    <span class="wl__farbe wl__farbe--neu"><Fragment set:html={lucide('plus', 14)} /></span>
+                  </div>
+                </div>
+
+                <div class="wl__block">
+                  <p class="wl__label">Fürs Team gesperrt</p>
+                  <div class="chipreihe">
+                    <span class="wl__chip wl__chip--zu">Logo</span>
+                    <span class="wl__chip wl__chip--zu">Farben</span>
+                    <span class="wl__chip">Reihenfolge</span>
+                    <span class="wl__chip">Links</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="wl__spalte">
+                <div class="wl__kopfreihe">
+                  <span class="sk__rubrik" style="margin:0">Profile</span>
+                  <button class="wl__neu" type="button">+ Person</button>
+                </div>
+                <div class="sk__zeilen">
+                  {
+                    [
+                      { name: 'Lina Moser', unter: '/lina · 96 Kontakte', stand: 'live' },
+                      { name: 'Tim Vogt', unter: '/tim · 41 Kontakte', stand: 'live' },
+                      { name: 'Sara Iten', unter: '/sara · Einladung offen', stand: 'wartet' },
+                    ].map((pr) => (
+                      <div class:list={['wl__person', pr.stand === 'wartet' && 'wl__person--wartet']}>
+                        <span class="wl__avatar" />
+                        <span class="an__text">
+                          <b style="font-size:12px">{pr.name}</b>
+                          <span style="font-size:10.5px">{pr.unter}</span>
+                        </span>
+                        <span class:list={['wl__stand', pr.stand === 'wartet' && 'wl__stand--wartet']}>{pr.stand}</span>
+                      </div>
+                    ))
+                  }
+                  <div class="wl__person wl__person--mehr">
+                    <span class="wl__avatar wl__avatar--leer"><Fragment set:html={lucide('plus', 13)} /></span>
+                    <span class="wl__satz">11 weitere aus CSV übernehmen</span>
+                  </div>
+                </div>
+
+                <div class="wl__vorschau">
+                  <p class="sk__rubrik">Vorschau</p>
+                  <div class="wl__blatt">
+                    <div class="wl__firma">
+                      <span class="wl__zeichen"></span>
+                      <span>STUDIO HARDTURM</span>
+                    </div>
+                    <div style="font:800 15px var(--font-body)">Lina Moser</div>
+                    <div class="wl__unter" style="margin-bottom:10px">kontakt.studiohardturm.de/lina</div>
+                    <span class="wl__haupt">
+                      <Fragment set:html={lucide('message-circle-heart', 14)} />
+                      Schreib mir
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6g Desktop-Profil -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">6g</span>
+          <span class="screen__stand screen__stand--steht">gebaut</span>
+          <span class="screen__satz">
+            Desktop-Profil: links Bild und Person, rechts der Kontakt. — <a href="/t/hnvr">läuft als echte Seite</a>,
+            dort ohne Bildflächen, weil die Bilder vom Kunden kommen.
+          </span>
+        </div>
+        <div class="screen__bahn">
+          <div class="karteikarte karteikarte--voll">
+            <div class="dp__kopf">
+              <span style="font:800 14px var(--font-body);letter-spacing:-.01em">Lina Moser</span>
+              <span class="sk__schub"></span>
+              <span class="dp__navi">Arbeit</span>
+              <span class="dp__navi">Prints</span>
+              <span class="dp__navi">Über mich</span>
+              <button class="dp__haupt" type="button">
+                <Fragment set:html={lucide('message-circle-heart', 14)} />
+                Schreib mir
+              </button>
+            </div>
+
+            <div class="dp__leib">
+              <div>
+                <div class="dp__portrait"></div>
+                <h2 class="dp__titel">Fotografin für Menschen, die nicht posieren wollen.</h2>
+                <p class="dp__satz">
+                  Zürich, seit 2014. Portraits, Teams, Reportage — mit Tageslicht und wenig Regie.
+                </p>
+                <div class="dp__zahlen">
+                  <div class="dp__zahl"><b>4,9</b><span>128 Bewertungen</span></div>
+                  <div class="dp__zahl"><b>~2 Std.</b><span>Antwortzeit</span></div>
+                  <div class="dp__zahl"><b>2014</b><span>seit</span></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="dp__kontakt">
+                  <p class="sk__rubrik" style="color:var(--color-accent-700);margin-bottom:11px">Kontakt</p>
+                  <div class="chipreihe" style="margin-bottom:13px">
+                    <span class="dp__absicht dp__absicht--hier">Shooting anfragen</span>
+                    <span class="dp__absicht">Preise</span>
+                    <span class="dp__absicht">Kooperation</span>
+                  </div>
+                  <div class="dp__feld">
+                    <span class="dp__platzhalter">Erzähl kurz, worum es geht …</span>
+                    <div class="dp__feldfuss">
+                      <span class="wl__unter">Antwort per Mail oder Signal</span>
+                      <button class="dp__senden" type="button">
+                        Senden
+                        <Fragment set:html={lucide('arrow-right', 13)} />
+                      </button>
+                    </div>
+                  </div>
+                  <div class="sk__paar" style="margin-top:11px">
+                    <button class="sk__nebenknopf" type="button">
+                      <Fragment set:html={lucide('calendar-heart', 14)} />
+                      Termin
+                    </button>
+                    <button class="sk__nebenknopf" type="button">
+                      <Fragment set:html={lucide('contact-round', 14)} />
+                      Karte
+                    </button>
+                  </div>
+                </div>
+
+                <div class="dp__paar">
+                  <a class="dp__bildkarte" href="/t/hnvr">
+                    <span class="dp__flaeche dp__flaeche--a"></span>
+                    <span class="dp__bildtext">
+                      <b>Portfolio 2026</b>
+                      <span>32 Serien</span>
+                    </span>
+                  </a>
+                  <a class="dp__bildkarte" href="/t/hnvr">
+                    <span class="dp__flaeche dp__flaeche--b"></span>
+                    <span class="dp__bildtext">
+                      <b>Prints kaufen</b>
+                      <span>ab 45 €</span>
+                    </span>
+                  </a>
+                </div>
+
+                <div class="sk__zeilen" style="margin-top:11px">
+                  <div class="dp__link">
+                    <Fragment set:html={lucide('instagram', 16)} />
+                    <span>Instagram</span>
+                    <Fragment set:html={lucide('arrow-up-right', 14)} />
+                  </div>
+                  <div class="dp__link">
+                    <Fragment set:html={lucide('newspaper', 16)} />
+                    <span>Presse</span>
+                    <Fragment set:html={lucide('arrow-up-right', 14)} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

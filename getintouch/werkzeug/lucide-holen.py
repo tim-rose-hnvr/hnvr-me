@@ -1,6 +1,17 @@
 import re, os, json
 
-namen = "arrow-right badge-check bar-chart-3 battery-full building-2 calendar-heart camera check contact-round download file-spreadsheet git-branch globe grid-2x2 hammer image images inbox instagram link linkedin lock mail map-pin message-circle message-circle-heart nfc palette phone plus qr-code quote repeat rss share-2 shield-check sliders-horizontal smartphone-nfc sparkles star stethoscope users-round wand-sparkles wifi x youtube".split()
+namen = (
+    # Die Verkaufsseiten
+    "arrow-right badge-check bar-chart-3 battery-full building-2 calendar-heart camera check "
+    "contact-round download file-spreadsheet git-branch globe grid-2x2 hammer image images inbox "
+    "instagram link linkedin lock mail map-pin message-circle message-circle-heart nfc palette "
+    "phone plus qr-code quote repeat rss share-2 shield-check sliders-horizontal smartphone-nfc "
+    "sparkles star stethoscope users-round wand-sparkles wifi x youtube "
+    # Dazu die App-Screens aus `GetInTouch Mockups.dc.html`
+    "arrow-left arrow-up-right arrow-up-to-line calendar calendar-plus circle-check eye eye-off "
+    "grip-vertical message-circle-question monitor moon newspaper send shopping-bag smartphone "
+    "timer user-round"
+).split()
 
 quelle = 'node_modules/lucide-static/icons'
 

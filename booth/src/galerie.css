@@ -207,3 +207,101 @@ body.galerieseite {
   border-color: var(--amber);
   color: var(--amber);
 }
+
+
+/* --- Diashow und Miniaturen --------------------------------------------
+
+   Beides gehört zusammen: Der Balken sagt, wie lange das Bild noch steht,
+   der Streifen sagt, wo man ist. Ohne den einen wirkt der Wechsel wie ein
+   Ruck, ohne den anderen klickt sich niemand durch 400 Aufnahmen. */
+
+.gbalken {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: var(--amber);
+  z-index: 2;
+}
+
+.gbalken[data-an] {
+  animation: gtakt 4s linear forwards;
+}
+
+@keyframes gtakt {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.gstreifen {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 74px;
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  background: linear-gradient(to top, rgba(11, 11, 13, 0.85), transparent);
+}
+
+/* Während die Diashow läuft, ist der Streifen im Weg — man schaut, statt
+   zu suchen. */
+.glightbox[data-diashow] .gstreifen {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-farbe);
+}
+
+.gminiatur {
+  flex: none;
+  width: 64px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--ink-soft);
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity var(--t-farbe), border-color var(--t-farbe);
+}
+
+.gminiatur img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gminiatur:hover {
+  opacity: 0.85;
+}
+
+.gminiatur.an {
+  opacity: 1;
+  border-color: var(--amber);
+}
+
+.gminiatur:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.gdiashow {
+  min-width: 9.5em;
+}
+
+@media (max-width: 640px) {
+  .gstreifen {
+    bottom: 66px;
+  }
+
+  .gminiatur {
+    width: 52px;
+    height: 36px;
+  }
+}

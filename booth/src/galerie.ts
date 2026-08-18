@@ -165,12 +165,60 @@ function zeigeGross(
 
   const zaehler = tag('span', 'gmono');
 
+  /* Diashow: alle vier Sekunden weiter, mit einem Balken, der die Zeit
+     zeigt. Ohne den Balken wirkt jeder Wechsel wie ein Ruck — mit ihm wie
+     ein Takt, und man weiß, wie lange man noch schauen kann.
+
+     Gebraucht wird sie in genau einer Lage: Das Paar sitzt am Tag danach
+     zu zweit vor dem Rechner und will nicht 400-mal klicken. */
+  const diashow = tag('button', 'gschliessen gdiashow');
+  /* Die Beschriftung wurde bisher erst in `stoppeDiashow()` gesetzt — und die
+     läuft beim Öffnen nicht. Der Knopf stand deshalb leer da: ein Kasten, der
+     nichts sagt und den trotzdem jemand drückt. */
+  diashow.textContent = 'Diashow';
+  const balken = tag('span', 'gbalken');
+  let laeuft = false;
+  let uhr: number | null = null;
+
+  const stoppeDiashow = (): void => {
+    laeuft = false;
+    if (uhr !== null) window.clearInterval(uhr);
+    uhr = null;
+    diashow.textContent = 'Diashow';
+    balken.removeAttribute('data-an');
+    decke.removeAttribute('data-diashow');
+  };
+
+  const starteDiashow = (): void => {
+    laeuft = true;
+    diashow.textContent = 'Diashow anhalten';
+    decke.setAttribute('data-diashow', '');
+    takte();
+    uhr = window.setInterval(() => weiter(1), 4000);
+  };
+
+  /* Den Balken bei jedem Bild neu anstoßen. Ohne das Umbrechen läuft die
+     Animation beim zweiten Bild nicht noch einmal. */
+  const takte = (): void => {
+    if (!laeuft) return;
+    balken.removeAttribute('data-an');
+    void balken.offsetWidth;
+    balken.setAttribute('data-an', '');
+  };
+
   const zeige = () => {
     const a = liste[i];
     if (!a) return;
     // Gross zeigt die Bewegung, wenn es eine gibt.
     bild.src = bewegte.get(a.id) ?? adressen.get(a.id) ?? '';
     zaehler.textContent = `${i + 1} von ${liste.length}`;
+    takte();
+    /* Der Streifen unten führt mit: Wer bei Bild 300 ist, soll ihn nicht
+       selbst dorthin schieben müssen. */
+    streifen.querySelectorAll('.gminiatur').forEach((m, nr) => {
+      m.classList.toggle('an', nr === i);
+      if (nr === i) m.scrollIntoView({ block: 'nearest', inline: 'center' });
+    });
   };
 
   const weiter = (schritt: number) => {
@@ -179,28 +227,46 @@ function zeigeGross(
   };
 
   const beenden = () => {
+    stoppeDiashow();
     decke.remove();
     document.removeEventListener('keydown', taste);
   };
 
   const taste = (e: KeyboardEvent) => {
     if (e.key === 'Escape') beenden();
-    if (e.key === 'ArrowLeft') weiter(-1);
-    if (e.key === 'ArrowRight') weiter(1);
+    /* Wer selbst blättert, will nicht gleichzeitig weitergeschoben werden. */
+    if (e.key === 'ArrowLeft') { stoppeDiashow(); weiter(-1); }
+    if (e.key === 'ArrowRight') { stoppeDiashow(); weiter(1); }
+    if (e.key === ' ') { e.preventDefault(); laeuft ? stoppeDiashow() : starteDiashow(); }
   };
 
-  zurueck.addEventListener('click', () => weiter(-1));
-  vor.addEventListener('click', () => weiter(1));
+  zurueck.addEventListener('click', () => { stoppeDiashow(); weiter(-1); });
+  vor.addEventListener('click', () => { stoppeDiashow(); weiter(1); });
   zu.addEventListener('click', beenden);
+  diashow.addEventListener('click', () => (laeuft ? stoppeDiashow() : starteDiashow()));
   decke.addEventListener('click', (e) => {
     if (e.target === decke) beenden();
   });
   document.addEventListener('keydown', taste);
 
-  const leiste = tag('div', 'gleiste');
-  leiste.append(zaehler, zu);
+  /* Miniaturen: der schnellste Weg von Bild 12 zu Bild 300. */
+  const streifen = tag('div', 'gstreifen');
+  liste.forEach((a, nr) => {
+    const m = tag('button', 'gminiatur') as HTMLButtonElement;
+    const mb = document.createElement('img');
+    mb.src = adressen.get(a.id) ?? '';
+    mb.alt = '';
+    mb.loading = 'lazy';
+    m.append(mb);
+    m.setAttribute('aria-label', `Bild ${nr + 1}`);
+    m.addEventListener('click', () => { stoppeDiashow(); i = nr; zeige(); });
+    streifen.append(m);
+  });
 
-  decke.append(zurueck, bild, vor, leiste);
+  const leiste = tag('div', 'gleiste');
+  leiste.append(zaehler, diashow, zu);
+
+  decke.append(balken, zurueck, bild, vor, streifen, leiste);
   document.body.append(decke);
   zeige();
   zu.focus();

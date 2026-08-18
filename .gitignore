@@ -19,6 +19,11 @@ dist/
 # Ergebnis von `npm run eine-datei` — 4 MB, entsteht aus dist/.
 website/pnkt-me.html
 
+# Der nach WebAssembly uebersetzte Kern. Entsteht aus pnkt/ mit
+# website/skripte/wasm-bauen.sh und waere sonst eine 3,4-MB-Binaerdatei
+# im Verlauf, die sich bei jedem Bau aendert.
+website/public/wasm/
+
 .DS_Store
 *.log
 

@@ -1,0 +1,732 @@
+---
+import { weg } from '../lib/weg';
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+
+// Die Werkstatt, in der wirklich ein Code entsteht.
+//
+// Bis hierher war jede Seite eine Seite ÜBER das Programm. Diese ist
+// das Programm: derselbe Go-Kern, nach WebAssembly übersetzt, läuft im
+// Browser des Lesers. Kodieren, formen, beurteilen, als SVG, PDF und
+// EPS ausgeben — alles hier, ohne Server, ohne Konto, ohne Abruf.
+//
+// Was hier fehlt und auch nicht hingehört: dynamische Codes, Zentrale,
+// Zählung. Ein Code, dessen Ziel man später tauschen kann, braucht eine
+// Adresse, die jemand beantwortet — also einen Server. Der steht noch
+// nicht. Statische Codes sind dafür vollständig: sie funktionieren
+// ohne alles, für immer.
+//
+// Die Bedienung folgt der Werkstatt aus dem Go-Programm, weil die
+// bereits eingerichtet ist und derselben Gestaltung folgt.
+
+const modulformen = [
+  { wert: 'quadrat', name: 'Quadrat' },
+  { wert: 'rund', name: 'Rund' },
+  { wert: 'weich', name: 'Weich' },
+  { wert: 'punkt', name: 'Punkt' },
+  { wert: 'mosaik', name: 'Mosaik' },
+  { wert: 'fliessend', name: 'Fließend' },
+  { wert: 'tropfen', name: 'Tropfen' },
+  { wert: 'raute', name: 'Raute' },
+];
+
+const augenrahmen = [
+  { wert: 'quadrat', name: 'Quadrat', rat: 'gemessen: 40 von 40 gelesen' },
+  { wert: 'kissen', name: 'Kissen', rat: 'gemessen: 40 von 40 gelesen' },
+  { wert: 'rund', name: 'Rund', rat: 'gemessen: 0 von 40 gelesen' },
+  { wert: 'blatt', name: 'Blatt', rat: 'gemessen: 0 von 40 gelesen' },
+];
+
+const augenkerne = [
+  { wert: 'quadrat', name: 'Quadrat' },
+  { wert: 'rund', name: 'Rund' },
+  { wert: 'punkt', name: 'Punkt' },
+  { wert: 'weich', name: 'Weich' },
+];
+
+// Die Farben sind die des Hauses. Wer eine eigene Marke hat, trägt sie
+// im Feld daneben ein — die Prüfung rechnet den Kontrast sofort nach.
+const farben = [
+  { wert: '#201e1d', name: 'Tinte' },
+  { wert: '#8c491a', name: 'Terrakotta' },
+  { wert: '#4a5638', name: 'Salbei' },
+  { wert: '#1f3a5f', name: 'Tiefblau' },
+  { wert: '#000000', name: 'Schwarz' },
+];
+
+const typen = [
+  { wert: 'url', name: 'Adresse' },
+  { wert: 'text', name: 'Text' },
+  { wert: 'vcard', name: 'Visitenkarte' },
+  { wert: 'wlan', name: 'WLAN' },
+  { wert: 'giro', name: 'Überweisung' },
+];
+---
+
+<Seite
+  titel="Werkstatt"
+  beschreibung="Einen QR-Code bauen, prüfen und als SVG, PDF oder EPS mitnehmen — im Browser, ohne Konto und ohne dass etwas den Rechner verlässt."
+  aktiv="studio"
+>
+  <section class="spur kopf">
+    <div>
+      <span class="tag tag-accent">
+        <Icon name="code" groesse={16} />
+        Werkstatt
+      </span>
+      <h1 class="titel-seite" style="margin:14px 0 12px">Bau deinen Code</h1>
+      <p class="fliess">
+        Läuft im Browser. Kein Konto, keine Anmeldung, und nichts verlässt
+        diesen Rechner — auch der fertige Code nicht, bis du ihn herunterlädst.
+      </p>
+    </div>
+    <div class="stand" id="stand" role="status">
+      <span class="stand-punkt"></span>
+      <span id="standtext">Kern wird geladen …</span>
+    </div>
+  </section>
+
+  <section class="spur werkbank">
+    <!-- Vorschau -->
+    <div class="tafel vorschautafel">
+      <div class="tafel-kopf">
+        <span>Vorschau</span>
+        <span id="masse" class="zahl"></span>
+      </div>
+      <div class="vorschau" id="vorschau">
+        <div class="suchlinie" id="suchlinie" hidden></div>
+        <div id="bild" class="bild" aria-label="Vorschau des Codes"></div>
+      </div>
+
+      <div class="urteilzeile">
+        <span id="urteil"></span>
+        <div class="zahlen" id="zahlen"></div>
+      </div>
+      <div id="befunde" class="befunde"></div>
+
+      <div class="holen">
+        <button type="button" class="btn btn-primary" data-holen="svg">SVG</button>
+        <button type="button" class="btn btn-primary" data-holen="pdf">PDF</button>
+        <button type="button" class="btn btn-secondary" data-holen="eps">EPS</button>
+        <button type="button" class="btn btn-secondary" data-holen="png">PNG 2048</button>
+      </div>
+      <p class="hinweis">
+        SVG, PDF und EPS sind echter Vektor in Millimetermaß. PNG rechnet der
+        Browser aus demselben SVG — für den Druck nimmt man es nicht.
+      </p>
+    </div>
+
+    <!-- Regler -->
+    <div class="tafel reglertafel">
+      <div class="reiter" role="tablist">
+        <button type="button" class="reiter-knopf reiter-aktiv" data-reiter="inhalt" role="tab" aria-selected="true">Inhalt</button>
+        <button type="button" class="reiter-knopf" data-reiter="form" role="tab" aria-selected="false">Form</button>
+        <button type="button" class="reiter-knopf" data-reiter="farbe" role="tab" aria-selected="false">Farbe</button>
+        <button type="button" class="reiter-knopf" data-reiter="druck" role="tab" aria-selected="false">Druck</button>
+      </div>
+
+      <div class="tafel-koerper">
+        <!-- Inhalt -->
+        <div class="blatt" data-blatt="inhalt">
+          <label class="feld">Was soll der Code enthalten?
+            <select class="eingabe" id="typ">
+              {typen.map((t) => <option value={t.wert}>{t.name}</option>)}
+            </select>
+          </label>
+
+          <div data-typfeld="url text">
+            <label class="feld">Inhalt
+              <input class="eingabe" id="text" value="https://example.de/aktion" />
+            </label>
+          </div>
+
+          <div data-typfeld="vcard" hidden>
+            <div class="paar">
+              <label class="feld">Vorname<input class="eingabe" data-vcard="vorname" /></label>
+              <label class="feld">Nachname<input class="eingabe" data-vcard="nachname" /></label>
+            </div>
+            <div class="paar">
+              <label class="feld">Firma<input class="eingabe" data-vcard="firma" /></label>
+              <label class="feld">Stellung<input class="eingabe" data-vcard="stellung" /></label>
+            </div>
+            <div class="paar">
+              <label class="feld">Telefon<input class="eingabe" data-vcard="telefon" /></label>
+              <label class="feld">E-Mail<input class="eingabe" data-vcard="mail" /></label>
+            </div>
+          </div>
+
+          <div data-typfeld="wlan" hidden>
+            <label class="feld">Netzname (SSID)<input class="eingabe" data-wlan="ssid" /></label>
+            <div class="paar">
+              <label class="feld">Passwort<input class="eingabe" data-wlan="passwort" /></label>
+              <label class="feld">Verschlüsselung
+                <select class="eingabe" data-wlan="art">
+                  <option value="WPA">WPA / WPA2</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">offen</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div data-typfeld="giro" hidden>
+            <label class="feld">Empfänger<input class="eingabe" data-giro="empfaenger" /></label>
+            <div class="paar">
+              <label class="feld">IBAN<input class="eingabe" data-giro="iban" placeholder="DE…" /></label>
+              <label class="feld">Betrag in Euro<input class="eingabe" data-giro="betrag" placeholder="12,50" /></label>
+            </div>
+            <label class="feld">Verwendungszweck<input class="eingabe" data-giro="zweck" /></label>
+            <p class="hinweis">
+              Die IBAN wird nach ISO 7064 geprüft, bevor ein Code entsteht — eine
+              falsche Prüfsumme fällt hier auf und nicht erst beim Bezahlen.
+            </p>
+          </div>
+
+          <p class="hinweis" id="laenge"></p>
+        </div>
+
+        <!-- Form -->
+        <div class="blatt" data-blatt="form" hidden>
+          <div class="feldname">Module</div>
+          <div class="wahl" id="modulform">
+            {modulformen.map((m, i) => (
+              <button type="button" class:list={['wahlknopf', { 'wahl-aktiv': i === 0 }]} data-wert={m.wert}>{m.name}</button>
+            ))}
+          </div>
+
+          <div class="feldname">Rahmen der Augen</div>
+          <div class="wahl" id="augenrahmen">
+            {augenrahmen.map((a, i) => (
+              <button type="button" class:list={['wahlknopf', { 'wahl-aktiv': i === 0 }]} data-wert={a.wert} title={a.rat}>{a.name}</button>
+            ))}
+          </div>
+          <p class="hinweis">
+            Runde Augen wurden in unserer Messung von einem verbreiteten Decoder
+            in keinem von 40 Fällen gelesen. Verboten ist es nicht — die Prüfung
+            warnt, die Entscheidung bleibt bei dir.
+          </p>
+
+          <div class="feldname">Kern der Augen</div>
+          <div class="wahl" id="augenkern">
+            {augenkerne.map((a, i) => (
+              <button type="button" class:list={['wahlknopf', { 'wahl-aktiv': i === 0 }]} data-wert={a.wert}>{a.name}</button>
+            ))}
+          </div>
+
+          <label class="feld">Aussparung in der Mitte für ein Logo
+            <input type="range" id="logo" min="0" max="0.3" step="0.01" value="0" />
+            <span class="zahl" id="logo-wert">0 %</span>
+          </label>
+        </div>
+
+        <!-- Farbe -->
+        <div class="blatt" data-blatt="farbe" hidden>
+          <div class="feldname">Code</div>
+          <div class="wahl" id="vordergrund">
+            {farben.map((f, i) => (
+              <button type="button" class:list={['farbknopf', { 'wahl-aktiv': i === 0 }]} data-wert={f.wert} title={f.name}>
+                <span class="farbfleck" style={`background:${f.wert}`}></span>
+                {f.name}
+              </button>
+            ))}
+          </div>
+          <div class="paar">
+            <label class="feld">Eigene Farbe
+              <input class="eingabe" id="vordergrund-hex" value="#201e1d" />
+            </label>
+            <label class="feld">Hintergrund
+              <input class="eingabe" id="hintergrund-hex" value="#ffffff" />
+            </label>
+          </div>
+          <p class="hinweis">
+            Der Kontrast wird nach WCAG 2.1 gerechnet. Unter 3:1 ist es ein
+            Fehler, unter 4:1 eine Warnung — und ein heller Code auf dunklem
+            Grund ist immer ein Fehler, den ältere Scanner nicht verzeihen.
+          </p>
+        </div>
+
+        <!-- Druck -->
+        <div class="blatt" data-blatt="druck" hidden>
+          <div class="paar">
+            <label class="feld">Breite in Millimetern
+              <input class="eingabe" id="breite" type="number" min="8" max="1000" value="40" />
+            </label>
+            <label class="feld">Fehlerkorrektur
+              <select class="eingabe" id="stufe">
+                <option value="L">L — 7 %</option>
+                <option value="M" selected>M — 15 %</option>
+                <option value="Q">Q — 25 %</option>
+                <option value="H">H — 30 %</option>
+              </select>
+            </label>
+          </div>
+          <label class="feld">Verfahren
+            <select class="eingabe" id="verfahren"></select>
+          </label>
+          <label class="feld">Ruhezone in Modulen
+            <input class="eingabe" id="ruhezone" type="number" min="0" max="10" value="4" />
+          </label>
+          <label class="ankreuz">
+            <input type="checkbox" id="fuerkasse" />
+            Soll an der Kasse gelesen werden (GS1-Maße)
+          </label>
+          <label class="feld">Leseabstand in Zentimetern
+            <input type="range" id="abstand" min="10" max="500" step="10" value="30" />
+          </label>
+          <p class="hinweis" id="abstand-rat"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel-dunkel">
+      <h2 class="titel-panel">Was hier noch nicht geht</h2>
+      <p class="dunkel-text">
+        Dieser Code ist <b>statisch</b>: sein Ziel steht fest im Muster. Das ist
+        kein Mangel, sondern eine Eigenschaft — er funktioniert ohne jeden
+        Server, für immer, auch wenn es pnkt.me einmal nicht mehr gibt.
+      </p>
+      <p class="dunkel-text">
+        Ein <b>dynamischer</b> Code, dessen Ziel du später tauschen kannst,
+        braucht eine Adresse, die jemand beantwortet — also einen Server. Der
+        steht noch nicht. Sobald er steht, kommen Zentrale, Zahlen und
+        Landeseiten dazu; gebaut sind sie.
+      </p>
+    </div>
+  </section>
+</Seite>
+
+<!-- Das Laufzeitgerüst von Go. Es kommt unverändert aus der
+     Go-Installation und definiert die Klasse `Go`, die das Modul unten
+     braucht. `is:inline`, damit Astro es nicht anfasst. -->
+<script is:inline src={weg('/wasm/wasm_exec.js')}></script>
+
+<script>
+  // Der Kern kommt aus Go. Diese Datei bedient ihn und rechnet selbst
+  // nichts nach — sonst gäbe es zwei Wahrheiten über denselben Code.
+  const e = (id) => document.getElementById(id);
+  let bereit = false;
+  let letzte = null;
+  let letzteURL = null;
+
+  const stil = {
+    modulform: 'quadrat', augenrahmen: 'quadrat', augenkern: 'quadrat',
+    vordergrund: '#201e1d', hintergrund: '#ffffff', ruhezone: 4, logo: 0,
+  };
+
+  function standSetzen(text, art) {
+    e('standtext').textContent = text;
+    e('stand').dataset.art = art || '';
+  }
+
+  // ── Kern laden ────────────────────────────────────────────────────
+  // Der Pfad muss den Basispfad tragen: unter einem Unterverzeichnis
+  // liegt die Datei nicht unter /wasm/. import.meta.env.BASE_URL setzt
+  // Vite beim Bauen ein.
+  const WASMWEG = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/wasm/pnkt.wasm';
+
+  async function kernLaden() {
+    const go = new Go();
+    try {
+      const antwort = await fetch(WASMWEG);
+      if (!antwort.ok) throw new Error('HTTP ' + antwort.status);
+      const bytes = await antwort.arrayBuffer();
+      const teil = await WebAssembly.instantiate(bytes, go.importObject);
+      go.run(teil.instance);
+      bereit = true;
+      standSetzen('Kern geladen — läuft in diesem Browser', 'gut');
+      verfahrenFuellen();
+      zeichnen();
+    } catch (fehler) {
+      standSetzen('Der Kern ließ sich nicht laden: ' + fehler.message, 'schlecht');
+    }
+  }
+
+  function verfahrenFuellen() {
+    const liste = JSON.parse(pnktVerfahren());
+    e('verfahren').innerHTML = liste
+      .map((v) => '<option value="' + v.schluessel + '"' +
+        (v.schluessel === 'offset' ? ' selected' : '') + '>' +
+        v.name + ' — ab ' + v.minModulMm.toFixed(2).replace('.', ',') + ' mm</option>')
+      .join('');
+  }
+
+  // ── Inhalt ────────────────────────────────────────────────────────
+  function felderSammeln(art) {
+    const aus = {};
+    document.querySelectorAll('[data-' + art + ']').forEach((f) => {
+      aus[f.dataset[art]] = f.value;
+    });
+    return aus;
+  }
+
+  function inhaltText() {
+    const typ = e('typ').value;
+    if (typ === 'url' || typ === 'text') return { text: e('text').value };
+    const felder = typ === 'vcard' ? felderSammeln('vcard')
+      : typ === 'wlan' ? felderSammeln('wlan')
+      : felderSammeln('giro');
+    const antwort = JSON.parse(pnktInhalt(JSON.stringify({ typ, felder })));
+    if (antwort.fehler) return { fehler: antwort.fehler };
+    return { text: antwort.text };
+  }
+
+  // ── Rechnen ───────────────────────────────────────────────────────
+  let linienUhr = null;
+  function linieAn() {
+    clearTimeout(linienUhr);
+    linienUhr = setTimeout(() => { e('suchlinie').hidden = false; }, 180);
+  }
+  function linieAus() {
+    clearTimeout(linienUhr);
+    e('suchlinie').hidden = true;
+  }
+
+  let letztesUrteil = '';
+  function zeichnen() {
+    if (!bereit) return;
+    linieAn();
+
+    const inhalt = inhaltText();
+    if (inhalt.fehler) {
+      e('urteil').innerHTML = '<span class="urteil u-kritisch">nicht baubar</span>';
+      e('befunde').innerHTML = '<div class="befund fehler"><b>' + inhalt.fehler + '</b></div>';
+      e('bild').innerHTML = '';
+      linieAus();
+      return;
+    }
+
+    const wunsch = {
+      text: inhalt.text,
+      breiteMm: Number(e('breite').value) || 40,
+      verfahren: e('verfahren').value,
+      stufe: e('stufe').value,
+      fuerKasse: e('fuerkasse').checked,
+      stil: { ...stil, ruhezone: Number(e('ruhezone').value) || 4 },
+    };
+
+    const d = JSON.parse(pnktRendern(JSON.stringify(wunsch)));
+    if (d.fehler) {
+      e('urteil').innerHTML = '<span class="urteil u-kritisch">nicht baubar</span>';
+      e('befunde').innerHTML = '<div class="befund fehler"><b>' + d.fehler + '</b></div>';
+      e('bild').innerHTML = '';
+      linieAus();
+      return;
+    }
+
+    letzte = d;
+    e('bild').innerHTML = d.svg;
+
+    const wort = d.pruefung === 'gut' ? 'druckreif'
+      : d.pruefung === 'achtung' ? 'achtung' : 'so nicht drucken';
+    e('urteil').innerHTML = '<span class="urteil u-' + d.pruefung + '">' +
+      wort + ' · Note ' + d.urteil.note + '</span>';
+    if (d.pruefung !== letztesUrteil) {
+      letztesUrteil = d.pruefung;
+      const siegel = e('urteil').firstElementChild;
+      if (siegel) { siegel.classList.remove('atmet'); void siegel.offsetWidth; siegel.classList.add('atmet'); }
+    }
+
+    e('zahlen').innerHTML =
+      '<span>Version <b>' + d.version + '</b></span>' +
+      '<span>Module <b>' + d.kante + '</b></span>' +
+      '<span>Modul <b>' + d.urteil.modulMm.toFixed(3).replace('.', ',') + ' mm</b></span>' +
+      '<span>Kontrast <b>' + d.urteil.kontrast + ':1</b></span>' +
+      '<span>kleinste Breite <b>' + d.urteil.kleinsteMm + ' mm</b></span>';
+
+    e('befunde').innerHTML = (d.urteil.befunde || [])
+      .map((b) => '<div class="befund ' + b.schwere + '"><b>' + b.text + '</b>' +
+        (b.rat ? '<span>' + b.rat + '</span>' : '') + '</div>')
+      .join('') || '<div class="befund gut"><b>Keine Beanstandung.</b></div>';
+
+    e('masse').textContent = wunsch.breiteMm + ' mm';
+    e('laenge').textContent = inhalt.text.length + ' Zeichen. Je mehr im Code steht, ' +
+      'desto größer muss er gedruckt werden.';
+    linieAus();
+  }
+
+  // ── Herunterladen ─────────────────────────────────────────────────
+  function ablegen(daten, art, name) {
+    const tropf = new Blob([daten], { type: art });
+    const weg = URL.createObjectURL(tropf);
+    const anker = document.createElement('a');
+    anker.href = weg;
+    anker.download = name;
+    anker.click();
+    setTimeout(() => URL.revokeObjectURL(weg), 4000);
+  }
+
+  function ausBase64(b64) {
+    const roh = atob(b64);
+    const feld = new Uint8Array(roh.length);
+    for (let i = 0; i < roh.length; i++) feld[i] = roh.charCodeAt(i);
+    return feld;
+  }
+
+  document.querySelectorAll('[data-holen]').forEach((k) => {
+    k.addEventListener('click', () => {
+      if (!letzte) return;
+      const art = k.dataset.holen;
+      if (art === 'svg') return ablegen(letzte.svg, 'image/svg+xml', 'pnkt-code.svg');
+      if (art === 'pdf') return ablegen(ausBase64(letzte.pdf), 'application/pdf', 'pnkt-code.pdf');
+      if (art === 'eps') return ablegen(ausBase64(letzte.eps), 'application/postscript', 'pnkt-code.eps');
+      // PNG rechnet der Browser aus demselben SVG. Fuer den Druck nimmt
+      // man es nicht — es steht hier fuer Bildschirm und Vorschau.
+      const bild = new Image();
+      const tropf = new Blob([letzte.svg], { type: 'image/svg+xml' });
+      const weg = URL.createObjectURL(tropf);
+      bild.onload = () => {
+        const tafel = document.createElement('canvas');
+        tafel.width = 2048; tafel.height = 2048;
+        const stift = tafel.getContext('2d');
+        stift.fillStyle = stil.hintergrund || '#ffffff';
+        stift.fillRect(0, 0, 2048, 2048);
+        stift.drawImage(bild, 0, 0, 2048, 2048);
+        tafel.toBlob((b) => {
+          const w2 = URL.createObjectURL(b);
+          const a = document.createElement('a');
+          a.href = w2; a.download = 'pnkt-code.png'; a.click();
+          setTimeout(() => URL.revokeObjectURL(w2), 4000);
+        }, 'image/png');
+        URL.revokeObjectURL(weg);
+      };
+      bild.src = weg;
+    });
+  });
+
+  // ── Bedienung ─────────────────────────────────────────────────────
+  document.querySelectorAll('.reiter-knopf').forEach((k) => {
+    k.addEventListener('click', () => {
+      document.querySelectorAll('.reiter-knopf').forEach((a) => {
+        a.classList.toggle('reiter-aktiv', a === k);
+        a.setAttribute('aria-selected', a === k ? 'true' : 'false');
+      });
+      document.querySelectorAll('.blatt').forEach((b) => {
+        b.hidden = b.dataset.blatt !== k.dataset.reiter;
+      });
+    });
+  });
+
+  for (const [id, feld] of [['modulform', 'modulform'], ['augenrahmen', 'augenrahmen'],
+                            ['augenkern', 'augenkern'], ['vordergrund', 'vordergrund']]) {
+    e(id).addEventListener('click', (ev) => {
+      const k = ev.target.closest('[data-wert]');
+      if (!k) return;
+      e(id).querySelectorAll('[data-wert]').forEach((a) => a.classList.toggle('wahl-aktiv', a === k));
+      stil[feld] = k.dataset.wert;
+      if (feld === 'vordergrund') e('vordergrund-hex').value = k.dataset.wert;
+      zeichnen();
+    });
+  }
+
+  e('typ').addEventListener('change', () => {
+    const typ = e('typ').value;
+    document.querySelectorAll('[data-typfeld]').forEach((f) => {
+      f.hidden = !f.dataset.typfeld.split(' ').includes(typ);
+    });
+    zeichnen();
+  });
+
+  e('logo').addEventListener('input', () => {
+    stil.logo = Number(e('logo').value);
+    e('logo-wert').textContent = Math.round(stil.logo * 100) + ' %';
+    zeichnen();
+  });
+
+  e('vordergrund-hex').addEventListener('input', () => { stil.vordergrund = e('vordergrund-hex').value; zeichnen(); });
+  e('hintergrund-hex').addEventListener('input', () => { stil.hintergrund = e('hintergrund-hex').value; zeichnen(); });
+
+  e('abstand').addEventListener('input', () => {
+    const cm = Number(e('abstand').value);
+    e('abstand-rat').innerHTML = 'Faustregel: Kantenlänge ≈ Leseabstand ÷ 10. Für ' +
+      cm + ' cm Abstand wären das <b>' + Math.round(cm) + ' mm</b>.';
+  });
+
+  let tippUhr = null;
+  document.querySelectorAll('.eingabe, input[type=checkbox]').forEach((f) => {
+    const art = f.tagName === 'SELECT' || f.type === 'checkbox' ? 'change' : 'input';
+    f.addEventListener(art, () => {
+      clearTimeout(tippUhr);
+      tippUhr = setTimeout(zeichnen, 160);
+    });
+  });
+
+  e('abstand').dispatchEvent(new Event('input'));
+  kernLaden();
+</script>
+
+<style is:global>
+  /* Die Werkstatt benutzt die Bausteine des Systems; hier steht nur,
+     was es dort noch nicht gibt. */
+  .kopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .stand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    background: var(--color-surface);
+    border-radius: 999px;
+    padding: 9px 18px;
+    color: rgba(32, 30, 29, 0.7);
+  }
+  .stand-punkt {
+    width: 9px; height: 9px; border-radius: 999px;
+    background: var(--color-neutral-400);
+    flex: none;
+  }
+  .stand[data-art='gut'] .stand-punkt { background: var(--color-accent-2); }
+  .stand[data-art='schlecht'] .stand-punkt { background: #a82e23; }
+
+  .werkbank {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+  .werkbank > * { min-width: 0; }
+
+  .tafel {
+    background: var(--color-surface);
+    border-radius: 32px;
+    overflow: hidden;
+  }
+  .tafel-kopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 22px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--color-accent-700);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+  }
+  .tafel-koerper { padding: 20px 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+  .vorschau {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 30px;
+    min-height: 340px;
+    background: var(--color-bg);
+  }
+  .bild { width: min(100%, 380px); }
+  .bild svg { width: 100%; height: auto; display: block; }
+
+  .urteilzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+    padding: 16px 22px 0;
+  }
+  .urteil {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 6px 14px;
+  }
+  .u-gut { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
+  .u-achtung { background: var(--color-accent-200); color: var(--color-accent-800); }
+  .u-kritisch { background: #f7e7e5; color: #a82e23; }
+
+  .zahlen { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: rgba(32, 30, 29, 0.65); }
+
+  .befunde { display: flex; flex-direction: column; gap: 8px; padding: 14px 22px 0; }
+  .befund {
+    font-size: 13.5px;
+    line-height: 1.5;
+    border-left: 3px solid var(--color-neutral-400);
+    padding: 6px 0 6px 12px;
+  }
+  .befund b { display: block; font-weight: 600; }
+  .befund span { color: rgba(32, 30, 29, 0.62); }
+  .befund.fehler { border-color: #a82e23; }
+  .befund.warnung { border-color: var(--color-accent); }
+  .befund.hinweis { border-color: var(--color-neutral-400); }
+  .befund.gut { border-color: var(--color-accent-2); }
+
+  .holen { display: flex; flex-wrap: wrap; gap: 8px; padding: 18px 22px 0; }
+  .holen .btn { font-size: 14px; padding: 9px 18px; }
+
+  .reiter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 14px 18px 0;
+  }
+  .reiter-knopf {
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    color: rgba(32, 30, 29, 0.62);
+  }
+  .reiter-knopf:hover { color: var(--color-text); }
+  .reiter-aktiv { background: var(--color-accent); color: var(--color-bg); }
+  .reiter-aktiv:hover { color: var(--color-bg); }
+
+  .blatt { display: flex; flex-direction: column; gap: 14px; }
+  /* `display` schlaegt das hidden-Attribut. Ohne diese Zeile stehen
+     alle vier Reiter gleichzeitig untereinander, und die Reiterleiste
+     sieht aus, als tue sie nichts. */
+  .blatt[hidden], [data-typfeld][hidden] { display: none; }
+  .feld { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px;
+    font-weight: 600; color: rgba(32, 30, 29, 0.62); }
+  .feldname { font-size: 12.5px; font-weight: 600; color: rgba(32, 30, 29, 0.62); }
+  .eingabe {
+    font: inherit;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--color-text);
+    background: var(--color-bg);
+    border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
+    border-radius: 14px;
+    padding: 11px 14px;
+    width: 100%;
+  }
+  .eingabe:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+  .paar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .paar > * { min-width: 0; }
+  .ankreuz { display: flex; align-items: center; gap: 9px; font-size: 14px; }
+
+  .wahl { display: flex; flex-wrap: wrap; gap: 7px; }
+  .wahlknopf, .farbknopf {
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    background: var(--color-bg);
+    border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+    border-radius: 999px;
+    padding: 8px 15px;
+    color: var(--color-text);
+  }
+  .farbknopf { display: inline-flex; align-items: center; gap: 8px; }
+  .farbfleck { width: 13px; height: 13px; border-radius: 999px; display: inline-block; }
+  .wahlknopf:hover, .farbknopf:hover { border-color: var(--color-accent); }
+  .wahl-aktiv { background: var(--color-accent); color: var(--color-bg); border-color: var(--color-accent); }
+
+  .hinweis { font-size: 13px; line-height: 1.55; color: rgba(32, 30, 29, 0.6); margin: 0; }
+  .zahl { font-variant-numeric: tabular-nums; }
+
+  .dunkel-text { font-size: 15px; line-height: 1.65; color: rgba(245, 234, 216, 0.78); margin: 0 0 14px; max-width: 46rem; }
+
+  @media (max-width: 900px) {
+    .werkbank { grid-template-columns: 1fr; }
+  }
+</style>

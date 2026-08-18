@@ -1,3 +1,8 @@
 
 # Abgeleitete Seitenaufnahmen — `youbooth/tools/seitenschuesse.mjs` erzeugt sie neu.
 doku/seite/
+
+# Örtlicher Kram des Wix-CLI (Absturzberichte, Anmeldezustand) — nie einchecken.
+# `wix.config.json` gehört dagegen ins Repo: Sie verknüpft das Projekt und
+# enthält nur die Kennung, kein Geheimnis.
+youbooth/.wix/

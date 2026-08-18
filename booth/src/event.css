@@ -4,7 +4,10 @@
    unser Haus — Papier, Ink, Archivo, IBM Plex Mono. */
 
 :root {
-  --eakzent: #f2b23e;
+  /* Zeigt auf den gemeinsamen Akzent statt ihn zu wiederholen. Der Name
+     bleibt, weil eine Event-Seite ihn später je Kunde überschreiben können
+     soll — dann steht hier die Farbe des Betreibers. */
+  --eakzent: var(--amber);
 }
 
 /* `stil.css` legt für den Booth ein Vollbild fest, das nicht scrollt. Diese

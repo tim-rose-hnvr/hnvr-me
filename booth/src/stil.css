@@ -1,30 +1,31 @@
 @import './schrift.css';
 
 /* Booth-Oberfläche: dunkel, große Ziele, lesbar aus ~80 cm Abstand.
-   Die Werte stammen aus demselben Gestaltungssystem wie die Website
-   (youbooth/src/styles/tokens.css) — hier nur, was der Booth braucht. */
+
+   Die Werte kommen aus `gestaltung/tokens.css` — demselben Satz, den auch
+   die Website benutzt. BUILD_SPEC Teil 1 verlangt genau ein Token-Modul für
+   Website, Cockpit und Booth; hier stand vorher eine zweite Fassung, die
+   sich schon unterschied (Knöpfe 14px statt 10px, Karten 18px statt 14px,
+   das stillste Grau .45 statt .5).
+
+   Was unten folgt, sind KEINE neuen Werte, sondern die Eigenheiten des
+   Booths: Er steht immer auf Dunkel, deshalb meint `--linie` hier die helle
+   Linie, und sein Antippziel ist größer als das der Website — vor einer Box
+   steht jemand im Halbdunkel mit einem Glas in der Hand. */
+@import '../../gestaltung/tokens.css';
 
 :root {
-  --ink: #0b0b0d;
-  --ink-soft: #17171c;
-  --ink-hoch: #22222a;
-  --amber: #f2b23e;
-  --amber-ink: #141008;
-  --hell: #f4f2ee;
-  --hell-leise: rgba(244, 242, 238, 0.62);
-  --hell-still: rgba(244, 242, 238, 0.45);
-  --linie: rgba(244, 242, 238, 0.14);
-  --ok: #17b187;
-  --warn: #e0483c;
+  /* Kurzformen für die dunkle Oberfläche. Sie zeigen auf die gemeinsamen
+     Werte, damit eine Änderung dort auch hier ankommt. */
+  --hell: var(--text-hell);
+  --hell-leise: var(--text-hell-leise);
+  --hell-still: var(--text-hell-still);
 
-  --schrift: 'Archivo Variable', Archivo, system-ui, sans-serif;
-  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  /* Absichtlich überschrieben: Auf schwarzem Grund ist eine schwarze Linie
+     keine. */
+  --linie: var(--linie-dunkel);
 
-  --r-knopf: 14px;
-  --r-karte: 18px;
-  --r-kreis: 999px;
-
-  /* Kleinstes Antippziel — nie darunter. */
+  /* Booth statt Website: 64 statt 44. */
   --ziel: 64px;
 }
 

@@ -1,10 +1,15 @@
-/* Booth-Editor: hell wie Cockpit und Einrichtung, Blatt links, Werkzeug rechts. */
+/* Booth-Editor: hell wie Cockpit und Einrichtung, Blatt links, Werkzeug rechts.
+
+   Die vier Namen unten waren eigene Farbwerte — dieselben Zahlen wie im
+   gemeinsamen Satz, aber noch einmal getippt. Genau daraus entsteht mit der
+   Zeit ein zweites Gestaltungssystem: Beim nächsten Farbwechsel ändert
+   jemand die Quelle und übersieht diese vier. Sie zeigen jetzt dorthin. */
 
 :root {
-  --v-tinte: #17171c;
-  --v-papier: #f6f4f1;
-  --v-amber: #f2b23e;
-  --v-linie: rgba(0, 0, 0, 0.11);
+  --v-tinte: var(--ink-soft);
+  --v-papier: var(--paper);
+  --v-amber: var(--amber);
+  --v-linie: var(--linie);
 }
 
 body.editorseite {

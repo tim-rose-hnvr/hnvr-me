@@ -10,7 +10,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       // Zwei Oberflaechen: Booth fuer Gaeste, Cockpit fuer Betreiber.
-      input: { booth: 'index.html', cockpit: 'cockpit.html' },
+      input: { booth: 'index.html', cockpit: 'cockpit.html', wand: 'wand.html' },
     },
   },
   clearScreen: false,

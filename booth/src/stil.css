@@ -30,6 +30,12 @@
   box-sizing: border-box;
 }
 
+/* Das hidden-Attribut muss jedes display schlagen — sonst bleibt etwa der
+   Leer-Hinweis der Wand über den Kacheln stehen. */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;

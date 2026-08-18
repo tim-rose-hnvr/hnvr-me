@@ -1,0 +1,3015 @@
+[
+ {
+  "id": "v-after-party-photo-booth-template-017-4x6-01",
+  "name": "After Party 017 · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 2,
+  "papier": "#f4f4f4",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/after-party-photo-booth-template-017-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.152,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.4523,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8104,
+    "b": 0.88,
+    "h": 0.023999999999999997,
+    "text": "{date}",
+    "groesse": 30,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-after-party-photo-booth-template-017-4x6-02",
+  "name": "After Party 017 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#f4f4f4",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/after-party-photo-booth-template-017-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0608,
+    "y": 0.1493,
+    "b": 0.396,
+    "h": 0.1707
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5416,
+    "y": 0.1493,
+    "b": 0.3968,
+    "h": 0.1707
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0608,
+    "y": 0.3493,
+    "b": 0.396,
+    "h": 0.1707
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5416,
+    "y": 0.3493,
+    "b": 0.3968,
+    "h": 0.1707
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0608,
+    "y": 0.5493,
+    "b": 0.396,
+    "h": 0.1707
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5416,
+    "y": 0.5493,
+    "b": 0.3968,
+    "h": 0.1707
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8443,
+    "b": 0.88,
+    "h": 0.0184,
+    "text": "{date}",
+    "groesse": 23,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-after-party-photo-booth-template-017-6x4-01",
+  "name": "After Party 017 · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#f4f4f4",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/after-party-photo-booth-template-017-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.1488,
+    "y": 0.06,
+    "b": 0.3787,
+    "h": 0.368
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5755,
+    "y": 0.06,
+    "b": 0.3787,
+    "h": 0.368
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.1488,
+    "y": 0.5,
+    "b": 0.3787,
+    "h": 0.368
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5755,
+    "y": 0.5,
+    "b": 0.3787,
+    "h": 0.368
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.4977,
+    "b": 0.88,
+    "h": 0.0276,
+    "text": "{date}",
+    "groesse": 23,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-birth-day-party-photo-booth-019-1240x1844-2up-center",
+  "name": "Birth Day Party Photo Booth 019 · 1240x1844 2up center",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 2,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/birth-day-party-photo-booth-019-1240x1844-2up-center-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.0693,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.3696,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7046,
+    "b": 0.88,
+    "h": 0.0656,
+    "text": "{date}",
+    "groesse": 82,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-birth-day-party-photo-booth-019-1240x1844-3up-spaced",
+  "name": "Birth Day Party Photo Booth 019 · 1240x1844 3up spaced",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/birth-day-party-photo-booth-019-1240x1844-3up-spaced-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0648,
+    "y": 0.152,
+    "b": 0.388,
+    "h": 0.1653
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5456,
+    "y": 0.152,
+    "b": 0.3888,
+    "h": 0.1653
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0672,
+    "y": 0.352,
+    "b": 0.3856,
+    "h": 0.1653
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.548,
+    "y": 0.352,
+    "b": 0.3864,
+    "h": 0.1653
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0648,
+    "y": 0.552,
+    "b": 0.388,
+    "h": 0.1653
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5456,
+    "y": 0.552,
+    "b": 0.3888,
+    "h": 0.1653
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7739,
+    "b": 0.88,
+    "h": 0.0504,
+    "text": "{date}",
+    "groesse": 63,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-birth-day-party-photo-booth-019-1844-x-1240-3x1-right",
+  "name": "Birth Day Party Photo Booth 019 · 1844 x 1240 3x1 right",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/birth-day-party-photo-booth-019-1844-x-1240-3x1-right-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.056,
+    "y": 0.0752,
+    "b": 0.2752,
+    "h": 0.2664
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.3616,
+    "y": 0.0752,
+    "b": 0.2757,
+    "h": 0.2664
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.6677,
+    "y": 0.0752,
+    "b": 0.2752,
+    "h": 0.2664
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.4629,
+    "y": 0.4208,
+    "b": 0.48,
+    "h": 0.4704
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.49129999999999996,
+    "b": 0.88,
+    "h": 0.0984,
+    "text": "{date}",
+    "groesse": 82,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-birthday-pastel-photo-booth-template-008-4x6-01",
+  "name": "Birthday Pastel 008 · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 2,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/birthday-pastel-photo-booth-template-008-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.1904,
+    "y": 0.0587,
+    "b": 0.62,
+    "h": 0.2768
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.1904,
+    "y": 0.3589,
+    "b": 0.62,
+    "h": 0.2763
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.857,
+    "b": 0.88,
+    "h": 0.0448,
+    "text": "{date}",
+    "groesse": 56,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-birthday-pastel-photo-booth-template-008-4x6-02",
+  "name": "Birthday Pastel 008 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/birthday-pastel-photo-booth-template-008-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.1413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.1413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.3413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.3413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.5413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.5413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.788,
+    "b": 0.88,
+    "h": 0.1328,
+    "text": "{date}",
+    "groesse": 166,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-birthday-pastel-photo-booth-template-008-6x4-01",
+  "name": "Birthday Pastel 008 · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/birthday-pastel-photo-booth-template-008-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.056,
+    "y": 0.0456,
+    "b": 0.6032,
+    "h": 0.6032
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.68,
+    "y": 0.0456,
+    "b": 0.264,
+    "h": 0.264
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.68,
+    "y": 0.3296,
+    "b": 0.264,
+    "h": 0.264
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.68,
+    "y": 0.6136,
+    "b": 0.264,
+    "h": 0.264
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8607,
+    "b": 0.88,
+    "h": 0.0672,
+    "text": "{date}",
+    "groesse": 56,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-brush-uptown-photo-booth-template-018-cmyk-1240x1844-3up-center",
+  "name": "Brush Uptown 018 · 1240x1844 3up center",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#f4f4f4",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/brush-uptown-photo-booth-template-018-cmyk-1240x1844-3up-center-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.0587,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.3589,
+    "b": 0.588,
+    "h": 0.2555
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.6592,
+    "b": 0.588,
+    "h": 0.2555
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8511,
+    "b": 0.88,
+    "h": 0.06,
+    "text": "{date}",
+    "groesse": 75,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-brush-uptown-photo-booth-template-018-cmyk-4x6-02",
+  "name": "Brush Uptown 018 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#bcc4bc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/brush-uptown-photo-booth-template-018-cmyk-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0672,
+    "y": 0.0597,
+    "b": 0.384,
+    "h": 0.1664
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5472,
+    "y": 0.0597,
+    "b": 0.384,
+    "h": 0.1664
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0672,
+    "y": 0.2603,
+    "b": 0.384,
+    "h": 0.1664
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5472,
+    "y": 0.2603,
+    "b": 0.384,
+    "h": 0.1664
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0672,
+    "y": 0.4608,
+    "b": 0.384,
+    "h": 0.1621
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5472,
+    "y": 0.4608,
+    "b": 0.384,
+    "h": 0.1621
+   },
+   {
+    "id": "z6",
+    "art": "bild",
+    "x": 0.0672,
+    "y": 0.6571,
+    "b": 0.384,
+    "h": 0.1664
+   },
+   {
+    "id": "z7",
+    "art": "bild",
+    "x": 0.5472,
+    "y": 0.6571,
+    "b": 0.384,
+    "h": 0.1664
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8190999999999999,
+    "b": 0.88,
+    "h": 0.06,
+    "text": "{date}",
+    "groesse": 75,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-brush-uptown-photo-booth-template-018-cmyk-6x4-01",
+  "name": "Brush Uptown 018 · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#bcc4bc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/brush-uptown-photo-booth-template-018-cmyk-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0667,
+    "y": 0.08,
+    "b": 0.5819,
+    "h": 0.5712
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.6907,
+    "y": 0.08,
+    "b": 0.2427,
+    "h": 0.232
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.6907,
+    "y": 0.364,
+    "b": 0.2427,
+    "h": 0.232
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.6907,
+    "y": 0.648,
+    "b": 0.2427,
+    "h": 0.232
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.6536000000000001,
+    "b": 0.88,
+    "h": 0.11760000000000001,
+    "text": "{date}",
+    "groesse": 98,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-brushed-chic-photo-booth-template-005-4x6-01",
+  "name": "Brushed Chic 005 · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#e4d4dc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/brushed-chic-photo-booth-template-005-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.004,
+    "y": 0.0581,
+    "b": 0.6968,
+    "h": 0.2725
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.0568,
+    "y": 0.36,
+    "b": 0.5936,
+    "h": 0.2688
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.004,
+    "y": 0.6587,
+    "b": 0.6968,
+    "h": 0.2725
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7845,
+    "b": 0.88,
+    "h": 0.0464,
+    "text": "{date}",
+    "groesse": 58,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-brushed-chic-photo-booth-template-005-4x6-02",
+  "name": "Brushed Chic 005 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#ecdcdc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/brushed-chic-photo-booth-template-005-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.0384,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.0384,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.2384,
+    "b": 0.42,
+    "h": 0.1872
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.2384,
+    "b": 0.4208,
+    "h": 0.1872
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.4384,
+    "b": 0.42,
+    "h": 0.1872
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.4384,
+    "b": 0.4208,
+    "h": 0.1872
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7064,
+    "b": 0.88,
+    "h": 0.056799999999999996,
+    "text": "{date}",
+    "groesse": 71,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-brushed-chic-photo-booth-template-005-6x4",
+  "name": "Brushed Chic 005 · 6x4",
+  "format": "postkarte-4x6",
+  "art": "foto",
+  "aufnahmen": 1,
+  "papier": "#ecdcdc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/brushed-chic-photo-booth-template-005-6x4-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.056,
+    "y": 0.0456,
+    "b": 0.7792,
+    "h": 0.7792
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.6766,
+    "b": 0.88,
+    "h": 0.0852,
+    "text": "{date}",
+    "groesse": 71,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-colorful-baby-birthday-photo-booth-template-009-cmyk-4x6-01",
+  "name": "Colorful Baby Birthday 009 · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 2,
+  "papier": "#fc9ce4",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/colorful-baby-birthday-photo-booth-template-009-cmyk-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.1904,
+    "y": 0.0587,
+    "b": 0.62,
+    "h": 0.2768
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.1904,
+    "y": 0.3589,
+    "b": 0.62,
+    "h": 0.2763
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8712,
+    "b": 0.88,
+    "h": 0.023999999999999997,
+    "text": "{date}",
+    "groesse": 30,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-colorful-baby-birthday-photo-booth-template-009-cmyk-4x6-02",
+  "name": "Colorful Baby Birthday 009 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fc9ce4",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/colorful-baby-birthday-photo-booth-template-009-cmyk-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.1413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.1413,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.3413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.3413,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.5413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.5413,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8998,
+    "b": 0.88,
+    "h": 0.0168,
+    "text": "{date}",
+    "groesse": 21,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-colorful-baby-birthday-photo-booth-template-009-cmyk-6x4-01",
+  "name": "Colorful Baby Birthday 009 · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fc9ce4",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/colorful-baby-birthday-photo-booth-template-009-cmyk-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.056,
+    "y": 0.0456,
+    "b": 0.6032,
+    "h": 0.6032
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.68,
+    "y": 0.0456,
+    "b": 0.264,
+    "h": 0.264
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.68,
+    "y": 0.3296,
+    "b": 0.264,
+    "h": 0.264
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.68,
+    "y": 0.6136,
+    "b": 0.264,
+    "h": 0.264
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8812,
+    "b": 0.88,
+    "h": 0.036,
+    "text": "{date}",
+    "groesse": 30,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-cream-wedding-photo-booth-template-012-4x6-01",
+  "name": "Cream Wedding 012 · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#ececec",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/cream-wedding-photo-booth-template-012-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.0693,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.3696,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.6699,
+    "b": 0.588,
+    "h": 0.2555
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.6274,
+    "b": 0.88,
+    "h": 0.052,
+    "text": "{date}",
+    "groesse": 65,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-cream-wedding-photo-booth-template-012-4x6-02",
+  "name": "Cream Wedding 012 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#ececec",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/cream-wedding-photo-booth-template-012-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0608,
+    "y": 0.0464,
+    "b": 0.396,
+    "h": 0.1707
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5416,
+    "y": 0.0464,
+    "b": 0.3968,
+    "h": 0.1707
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0608,
+    "y": 0.2464,
+    "b": 0.396,
+    "h": 0.1707
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5416,
+    "y": 0.2464,
+    "b": 0.3968,
+    "h": 0.1707
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0608,
+    "y": 0.4464,
+    "b": 0.396,
+    "h": 0.1707
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5416,
+    "y": 0.4464,
+    "b": 0.3968,
+    "h": 0.1707
+   },
+   {
+    "id": "z6",
+    "art": "bild",
+    "x": 0.0608,
+    "y": 0.6464,
+    "b": 0.396,
+    "h": 0.1707
+   },
+   {
+    "id": "z7",
+    "art": "bild",
+    "x": 0.5416,
+    "y": 0.6464,
+    "b": 0.3968,
+    "h": 0.1707
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8418,
+    "b": 0.88,
+    "h": 0.052,
+    "text": "{date}",
+    "groesse": 65,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-cream-wedding-photo-booth-template-012-6x4-01",
+  "name": "Cream Wedding 012 · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#f4ecec",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/cream-wedding-photo-booth-template-012-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0453,
+    "y": 0.06,
+    "b": 0.3787,
+    "h": 0.368
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.472,
+    "y": 0.06,
+    "b": 0.3787,
+    "h": 0.368
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0453,
+    "y": 0.5,
+    "b": 0.3787,
+    "h": 0.368
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.472,
+    "y": 0.5,
+    "b": 0.3787,
+    "h": 0.368
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.4314,
+    "b": 0.88,
+    "h": 0.078,
+    "text": "{date}",
+    "groesse": 65,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-elegant-deco-party-photo-booth-template-4x6-01",
+  "name": "Elegant Deco Party · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#0c0c64",
+  "tinte": "#f6f1e7",
+  "akzent": "#cfc7b6",
+  "hintergrund": "/vorlagen/elegant-deco-party-photo-booth-template-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.3248,
+    "y": 0.0565,
+    "b": 0.632,
+    "h": 0.2805
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.3344,
+    "y": 0.36,
+    "b": 0.6152,
+    "h": 0.2741
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.3344,
+    "y": 0.6597,
+    "b": 0.6152,
+    "h": 0.2747
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8007,
+    "b": 0.88,
+    "h": 0.1128,
+    "text": "{date}",
+    "groesse": 141,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-elegant-deco-party-photo-booth-template-4x6-02",
+  "name": "Elegant Deco Party · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#0c0c64",
+  "tinte": "#f6f1e7",
+  "akzent": "#cfc7b6",
+  "hintergrund": "/vorlagen/elegant-deco-party-photo-booth-template-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0504,
+    "y": 0.1483,
+    "b": 0.4176,
+    "h": 0.1851
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5328,
+    "y": 0.1483,
+    "b": 0.4168,
+    "h": 0.1851
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0504,
+    "y": 0.3451,
+    "b": 0.4176,
+    "h": 0.1851
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5328,
+    "y": 0.3451,
+    "b": 0.4168,
+    "h": 0.1851
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0504,
+    "y": 0.5424,
+    "b": 0.4176,
+    "h": 0.1845
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5328,
+    "y": 0.5424,
+    "b": 0.4168,
+    "h": 0.1845
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8098000000000001,
+    "b": 0.88,
+    "h": 0.05279999999999999,
+    "text": "{date}",
+    "groesse": 66,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-elegant-deco-party-photo-booth-template-6x4-01",
+  "name": "Elegant Deco Party · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#0c0c64",
+  "tinte": "#f6f1e7",
+  "akzent": "#cfc7b6",
+  "hintergrund": "/vorlagen/elegant-deco-party-photo-booth-template-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0469,
+    "y": 0.0608,
+    "b": 0.4992,
+    "h": 0.4992
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.0469,
+    "y": 0.6096,
+    "b": 0.2944,
+    "h": 0.2952
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.352,
+    "y": 0.6096,
+    "b": 0.2949,
+    "h": 0.2952
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.6587,
+    "y": 0.6096,
+    "b": 0.2944,
+    "h": 0.2952
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.2017,
+    "b": 0.88,
+    "h": 0.0948,
+    "text": "{date}",
+    "groesse": 79,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-gold-art-deco-wedding-photo-booth-template-011-4x6-01",
+  "name": "Gold Art Deco Wedding 011 · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#242c3c",
+  "tinte": "#f6f1e7",
+  "akzent": "#cfc7b6",
+  "hintergrund": "/vorlagen/gold-art-deco-wedding-photo-booth-template-011-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.1904,
+    "y": 0.048,
+    "b": 0.6176,
+    "h": 0.2875
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.1904,
+    "y": 0.3483,
+    "b": 0.6176,
+    "h": 0.2875
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.1904,
+    "y": 0.6485,
+    "b": 0.6176,
+    "h": 0.2869
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8239,
+    "b": 0.88,
+    "h": 0.058399999999999994,
+    "text": "{date}",
+    "groesse": 73,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-gold-art-deco-wedding-photo-booth-template-011-4x6-02",
+  "name": "Gold Art Deco Wedding 011 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#24343c",
+  "tinte": "#f6f1e7",
+  "akzent": "#cfc7b6",
+  "hintergrund": "/vorlagen/gold-art-deco-wedding-photo-booth-template-011-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.1413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.1413,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.3413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.3413,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.5413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.5413,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7494,
+    "b": 0.88,
+    "h": 0.06399999999999999,
+    "text": "{date}",
+    "groesse": 80,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-gold-art-deco-wedding-photo-booth-template-011-6x4-01",
+  "name": "Gold Art Deco Wedding 011 · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "foto",
+  "aufnahmen": 1,
+  "papier": "#242c3c",
+  "tinte": "#f6f1e7",
+  "akzent": "#cfc7b6",
+  "hintergrund": "/vorlagen/gold-art-deco-wedding-photo-booth-template-011-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.072,
+    "y": 0.0856,
+    "b": 0.7653,
+    "h": 0.76
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.6719,
+    "b": 0.88,
+    "h": 0.11520000000000001,
+    "text": "{date}",
+    "groesse": 96,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-gold-line-wedding-photo-booth-templates-4x6-01",
+  "name": "Gold Line Wedding S · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/gold-line-wedding-photo-booth-templates-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.3328,
+    "y": 0.0597,
+    "b": 0.6168,
+    "h": 0.2741
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.3328,
+    "y": 0.36,
+    "b": 0.6168,
+    "h": 0.2741
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.3328,
+    "y": 0.6603,
+    "b": 0.6168,
+    "h": 0.2741
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.807,
+    "b": 0.88,
+    "h": 0.12319999999999999,
+    "text": "{date}",
+    "groesse": 154,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-graduation-photo-booth-template-v1-4x6-square-snappic",
+  "name": "Graduation V1 · 4x6 square_snappic",
+  "format": "hoch-4x6",
+  "art": "foto",
+  "aufnahmen": 1,
+  "papier": "#141c2c",
+  "tinte": "#f6f1e7",
+  "akzent": "#cfc7b6",
+  "hintergrund": "/vorlagen/graduation-photo-booth-template-v1-4x6-square-snappic-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.068,
+    "y": 0.048,
+    "b": 0.864,
+    "h": 0.576
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7456999999999999,
+    "b": 0.88,
+    "h": 0.1104,
+    "text": "{date}",
+    "groesse": 138,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-graduation-photo-booth-template-v1-4x6-strip",
+  "name": "Graduation V1 · 4x6 strip",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#141c2c",
+  "tinte": "#f6f1e7",
+  "akzent": "#cfc7b6",
+  "hintergrund": "/vorlagen/graduation-photo-booth-template-v1-4x6-strip-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.0384,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.0384,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.2384,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.2384,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.4384,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.4384,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.6838,
+    "b": 0.88,
+    "h": 0.216,
+    "text": "{date}",
+    "groesse": 270,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-graduation-photo-booth-template-v1-5-25-square-top",
+  "name": "Graduation V1 · 5.25 square_top",
+  "format": "quadrat-4x4",
+  "art": "foto",
+  "aufnahmen": 1,
+  "papier": "#141c2c",
+  "tinte": "#f6f1e7",
+  "akzent": "#cfc7b6",
+  "hintergrund": "/vorlagen/graduation-photo-booth-template-v1-5-25-square-top-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0758,
+    "y": 0.0758,
+    "b": 0.8485,
+    "h": 0.8024
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8309,
+    "b": 0.88,
+    "h": 0.1956,
+    "text": "{date}",
+    "groesse": 163,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-graduation-photo-booth-template-v2-6x4-postcard",
+  "name": "Graduation V2 · 6x4 postcard",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/graduation-photo-booth-template-v2-6x4-postcard-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0864,
+    "y": 0.0792,
+    "b": 0.4,
+    "h": 0.4
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5131,
+    "y": 0.0792,
+    "b": 0.4,
+    "h": 0.4
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0864,
+    "y": 0.5208,
+    "b": 0.4,
+    "h": 0.4
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7176,
+    "b": 0.88,
+    "h": 0.18719999999999998,
+    "text": "{date}",
+    "groesse": 156,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-pink-blue-marble-wedding-photo-booth-template-014-4x6-01",
+  "name": "Pink Blue Marble Wedding 014 · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 2,
+  "papier": "#f4bcdc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/pink-blue-marble-wedding-photo-booth-template-014-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.0693,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.3696,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.772,
+    "b": 0.88,
+    "h": 0.038400000000000004,
+    "text": "{date}",
+    "groesse": 48,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-pink-blue-marble-wedding-photo-booth-template-014-4x6-02",
+  "name": "Pink Blue Marble Wedding 014 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fcdcf4",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/pink-blue-marble-wedding-photo-booth-template-014-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0608,
+    "y": 0.1493,
+    "b": 0.396,
+    "h": 0.1707
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5416,
+    "y": 0.1493,
+    "b": 0.3968,
+    "h": 0.1707
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0608,
+    "y": 0.3493,
+    "b": 0.396,
+    "h": 0.1707
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5416,
+    "y": 0.3493,
+    "b": 0.3968,
+    "h": 0.1707
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0608,
+    "y": 0.5493,
+    "b": 0.396,
+    "h": 0.1707
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5416,
+    "y": 0.5493,
+    "b": 0.3968,
+    "h": 0.1707
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8358,
+    "b": 0.88,
+    "h": 0.0328,
+    "text": "{date}",
+    "groesse": 41,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-pink-gold-wedding-002-4x6-01",
+  "name": "Pink Gold Wedding 002 · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#ececec",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/pink-gold-wedding-002-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0472,
+    "y": 0.0635,
+    "b": 0.6232,
+    "h": 0.2725
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.0472,
+    "y": 0.3637,
+    "b": 0.6232,
+    "h": 0.2725
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0472,
+    "y": 0.664,
+    "b": 0.6232,
+    "h": 0.2725
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8015,
+    "b": 0.88,
+    "h": 0.0904,
+    "text": "{date}",
+    "groesse": 113,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-pink-gold-wedding-002-4x6-02",
+  "name": "Pink Gold Wedding 002 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#ecdcec",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/pink-gold-wedding-002-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.1472,
+    "b": 0.42,
+    "h": 0.1872
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.1472,
+    "b": 0.4208,
+    "h": 0.1872
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.344,
+    "b": 0.42,
+    "h": 0.1872
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.344,
+    "b": 0.4208,
+    "h": 0.1872
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.5413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.5413,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7951999999999999,
+    "b": 0.88,
+    "h": 0.0456,
+    "text": "{date}",
+    "groesse": 57,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-pink-gold-wedding-002-6x4-01",
+  "name": "Pink Gold Wedding 002 · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#ececec",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/pink-gold-wedding-002-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0347,
+    "y": 0.044,
+    "b": 0.4,
+    "h": 0.4
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.4613,
+    "y": 0.044,
+    "b": 0.4,
+    "h": 0.4
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0347,
+    "y": 0.484,
+    "b": 0.4,
+    "h": 0.4
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.4613,
+    "y": 0.484,
+    "b": 0.4,
+    "h": 0.4
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.4455,
+    "b": 0.88,
+    "h": 0.0684,
+    "text": "{date}",
+    "groesse": 57,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-purple-gold-photo-booth-template-003-4x6-01",
+  "name": "Purple Gold 003 · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#f4dcec",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/purple-gold-photo-booth-template-003-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.3336,
+    "y": 0.0597,
+    "b": 0.6176,
+    "h": 0.2747
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.3328,
+    "y": 0.36,
+    "b": 0.6176,
+    "h": 0.2747
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.3328,
+    "y": 0.6603,
+    "b": 0.6176,
+    "h": 0.2747
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8757,
+    "b": 0.88,
+    "h": 0.0304,
+    "text": "{date}",
+    "groesse": 38,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-purple-gold-photo-booth-template-003-4x6-02",
+  "name": "Purple Gold 003 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/purple-gold-photo-booth-template-003-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0504,
+    "y": 0.1483,
+    "b": 0.4176,
+    "h": 0.1851
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.532,
+    "y": 0.1483,
+    "b": 0.4176,
+    "h": 0.1851
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0504,
+    "y": 0.3451,
+    "b": 0.4176,
+    "h": 0.1851
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.532,
+    "y": 0.3451,
+    "b": 0.4176,
+    "h": 0.1851
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0504,
+    "y": 0.5424,
+    "b": 0.4176,
+    "h": 0.1845
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.532,
+    "y": 0.5424,
+    "b": 0.4176,
+    "h": 0.1845
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.813,
+    "b": 0.88,
+    "h": 0.0416,
+    "text": "{date}",
+    "groesse": 52,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-purple-gold-photo-booth-template-003-6x4-01",
+  "name": "Purple Gold 003 · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#ecdcec",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/purple-gold-photo-booth-template-003-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0469,
+    "y": 0.0608,
+    "b": 0.2944,
+    "h": 0.2952
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.3525,
+    "y": 0.0608,
+    "b": 0.2949,
+    "h": 0.2952
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.6587,
+    "y": 0.0608,
+    "b": 0.2933,
+    "h": 0.2952
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.0469,
+    "y": 0.4064,
+    "b": 0.4992,
+    "h": 0.4992
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.6574,
+    "b": 0.88,
+    "h": 0.066,
+    "text": "{date}",
+    "groesse": 55,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-rustic-floral-photo-booth-template-4x6-01",
+  "name": "Rustic Floral · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/rustic-floral-photo-booth-template-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.0693,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.3696,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.2064,
+    "y": 0.6699,
+    "b": 0.588,
+    "h": 0.2549
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.5955,
+    "b": 0.88,
+    "h": 0.038400000000000004,
+    "text": "{date}",
+    "groesse": 48,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-rustic-floral-photo-booth-template-6x4-01",
+  "name": "Rustic Floral · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/rustic-floral-photo-booth-template-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.1472,
+    "y": 0.0568,
+    "b": 0.3808,
+    "h": 0.3696
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5755,
+    "y": 0.0568,
+    "b": 0.3803,
+    "h": 0.3696
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.1472,
+    "y": 0.4976,
+    "b": 0.3808,
+    "h": 0.3704
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5755,
+    "y": 0.4976,
+    "b": 0.3803,
+    "h": 0.3704
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.399,
+    "b": 0.88,
+    "h": 0.0648,
+    "text": "{date}",
+    "groesse": 54,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-summer-party-photo-booth-template-010-cmyk-1240x1844-3up-center",
+  "name": "Summer Party 010 · 1240x1844 3up center",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#fc848c",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/summer-party-photo-booth-template-010-cmyk-1240x1844-3up-center-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.1904,
+    "y": 0.0587,
+    "b": 0.62,
+    "h": 0.2768
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.1904,
+    "y": 0.3589,
+    "b": 0.62,
+    "h": 0.2768
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.1904,
+    "y": 0.6592,
+    "b": 0.62,
+    "h": 0.2763
+   }
+  ]
+ },
+ {
+  "id": "v-summer-party-photo-booth-template-010-cmyk-1240x1844-3up-spaced",
+  "name": "Summer Party 010 · 1240x1844 3up spaced",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/summer-party-photo-booth-template-010-cmyk-1240x1844-3up-spaced-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.1413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.1413,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.3413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.3413,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.5413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5296,
+    "y": 0.5413,
+    "b": 0.4208,
+    "h": 0.1867
+   },
+   {
+    "id": "t-title",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7837999999999999,
+    "b": 0.88,
+    "h": 0.11679999999999999,
+    "text": "{event}",
+    "groesse": 146,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.9008,
+    "b": 0.88,
+    "h": 0.0624,
+    "text": "{date}",
+    "groesse": 78,
+    "gewicht": 400,
+    "schrift": "sans",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-summer-party-photo-booth-template-010-cmyk-1844-x-1240-1up-left",
+  "name": "Summer Party 010 · 1844 x 1240 1up left",
+  "format": "postkarte-4x6",
+  "art": "foto",
+  "aufnahmen": 1,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/summer-party-photo-booth-template-010-cmyk-1844-x-1240-1up-left-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.072,
+    "y": 0.0856,
+    "b": 0.7653,
+    "h": 0.76
+   },
+   {
+    "id": "t-title",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8774,
+    "b": 0.88,
+    "h": 0.066,
+    "text": "{event}",
+    "groesse": 55,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.9440000000000001,
+    "b": 0.88,
+    "h": 0.0348,
+    "text": "{date}",
+    "groesse": 29,
+    "gewicht": 400,
+    "schrift": "sans",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-together-forever-photo-booth-template-007-cmyk-4x6-01",
+  "name": "Together Forever 007 · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/together-forever-photo-booth-template-007-cmyk-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.0587,
+    "b": 0.62,
+    "h": 0.2763
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.0384,
+    "y": 0.3563,
+    "b": 0.6568,
+    "h": 0.2917
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.6592,
+    "b": 0.62,
+    "h": 0.2763
+   }
+  ]
+ },
+ {
+  "id": "v-together-forever-photo-booth-template-007-cmyk-4x6-02",
+  "name": "Together Forever 007 · 4x6 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/together-forever-photo-booth-template-007-cmyk-4x6-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0392,
+    "y": 0.1403,
+    "b": 0.448,
+    "h": 0.1989
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.1413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.3413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5312,
+    "y": 0.3413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0488,
+    "y": 0.5413,
+    "b": 0.42,
+    "h": 0.1867
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5216,
+    "y": 0.5403,
+    "b": 0.448,
+    "h": 0.1995
+   },
+   {
+    "id": "t-title",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7930999999999999,
+    "b": 0.88,
+    "h": 0.112,
+    "text": "{event}",
+    "groesse": 140,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.9053,
+    "b": 0.88,
+    "h": 0.0592,
+    "text": "{date}",
+    "groesse": 74,
+    "gewicht": 400,
+    "schrift": "sans",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-together-forever-photo-booth-template-007-cmyk-6x4-01",
+  "name": "Together Forever 007 · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/together-forever-photo-booth-template-007-cmyk-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.6763,
+    "y": 0.0424,
+    "b": 0.2885,
+    "h": 0.2888
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.056,
+    "y": 0.0456,
+    "b": 0.6032,
+    "h": 0.6032
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.68,
+    "y": 0.6136,
+    "b": 0.264,
+    "h": 0.264
+   },
+   {
+    "id": "t-title",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.9026000000000001,
+    "b": 0.88,
+    "h": 0.0528,
+    "text": "{event}",
+    "groesse": 44,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.9556,
+    "b": 0.88,
+    "h": 0.0276,
+    "text": "{date}",
+    "groesse": 23,
+    "gewicht": 400,
+    "schrift": "sans",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-woven-blue-photo-booth-template-4x6-01",
+  "name": "Woven Blue · 4x6 01",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#ccf4fc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/woven-blue-photo-booth-template-4x6-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0864,
+    "y": 0.064,
+    "b": 0.5568,
+    "h": 0.2603
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.0864,
+    "y": 0.3627,
+    "b": 0.5568,
+    "h": 0.2603
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0864,
+    "y": 0.6656,
+    "b": 0.5568,
+    "h": 0.256
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7253,
+    "b": 0.88,
+    "h": 0.0456,
+    "text": "{date}",
+    "groesse": 57,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-woven-blue-photo-booth-template-6x4-01",
+  "name": "Woven Blue · 6x4 01",
+  "format": "postkarte-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#fcfcfc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/woven-blue-photo-booth-template-6x4-01-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0453,
+    "y": 0.06,
+    "b": 0.3787,
+    "h": 0.368
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.472,
+    "y": 0.06,
+    "b": 0.3792,
+    "h": 0.368
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0453,
+    "y": 0.5,
+    "b": 0.3787,
+    "h": 0.3688
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.472,
+    "y": 0.5,
+    "b": 0.3792,
+    "h": 0.3688
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.3623,
+    "b": 0.88,
+    "h": 0.0684,
+    "text": "{date}",
+    "groesse": 57,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ },
+ {
+  "id": "v-woven-blue-photo-booth-template-6x4-02",
+  "name": "Woven Blue · 6x4 02",
+  "format": "hoch-4x6",
+  "art": "streifen",
+  "aufnahmen": 4,
+  "papier": "#ccf4fc",
+  "tinte": "#12100d",
+  "akzent": "#6b6355",
+  "hintergrund": "/vorlagen/woven-blue-photo-booth-template-6x4-02-hg.jpg",
+  "felder": [
+   {
+    "id": "z0",
+    "art": "bild",
+    "x": 0.0728,
+    "y": 0.0384,
+    "b": 0.3968,
+    "h": 0.1867
+   },
+   {
+    "id": "z1",
+    "art": "bild",
+    "x": 0.5304,
+    "y": 0.0384,
+    "b": 0.3968,
+    "h": 0.1867
+   },
+   {
+    "id": "z2",
+    "art": "bild",
+    "x": 0.0728,
+    "y": 0.2384,
+    "b": 0.3968,
+    "h": 0.1872
+   },
+   {
+    "id": "z3",
+    "art": "bild",
+    "x": 0.5304,
+    "y": 0.2384,
+    "b": 0.3968,
+    "h": 0.1872
+   },
+   {
+    "id": "z4",
+    "art": "bild",
+    "x": 0.0728,
+    "y": 0.4384,
+    "b": 0.3968,
+    "h": 0.1872
+   },
+   {
+    "id": "z5",
+    "art": "bild",
+    "x": 0.5304,
+    "y": 0.4384,
+    "b": 0.3968,
+    "h": 0.1872
+   },
+   {
+    "id": "t-line1",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.7253,
+    "b": 0.88,
+    "h": 0.0456,
+    "text": "{date}",
+    "groesse": 57,
+    "gewicht": 700,
+    "schrift": "serif",
+    "ausrichtung": "mitte",
+    "umbruch": false
+   }
+  ]
+ }
+]

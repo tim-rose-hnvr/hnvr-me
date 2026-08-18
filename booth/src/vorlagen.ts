@@ -1,21 +1,50 @@
 /**
  * Ablage der Vorlagen.
  *
- * Mitgelieferte Vorlagen sind unveränderlich — sie kommen aus dem Code und
+ * Drei Töpfe, in dieser Reihenfolge sichtbar:
+ *   · unsere vier eigenen (im Code, `eigeneStandards`)
+ *   · der übernommene Katalog (`daten/vorlagen-katalog.json`, 59 Blätter)
+ *   · die des Betreibers (lokal gesichert)
+ *
+ * Die ersten beiden sind unveränderlich — sie kommen aus dem Programm und
  * bleiben, wie sie sind. Wer eine davon bearbeitet, bekommt eine Kopie. So ist
  * der Weg zurück immer offen, auch nach einer verunglückten Nacht am Editor.
  */
 
-import { standardVorlagen, type Blattart, type Vorlage } from './vorlage';
+import katalogRoh from './daten/vorlagen-katalog.json';
+import { eigeneStandards, pruefeVorlage, type Formatschluessel, type Vorlage } from './vorlage';
 
 const SCHLUESSEL = 'youbooth.vorlagen';
+
+/**
+ * Der Katalog geht durch dieselbe Prüfung wie eine eingelesene Datei. Er wird
+ * von einem Werkzeug erzeugt; eine kaputte Zeile darf nicht als kaputtes Blatt
+ * im Drucker enden.
+ */
+const KATALOG: Vorlage[] = (katalogRoh as unknown[]).flatMap((roh) => {
+  const geprueft = pruefeVorlage(roh);
+  return 'vorlage' in geprueft ? [geprueft.vorlage] : [];
+});
+
+const MITGELIEFERT: Vorlage[] = [...eigeneStandards(), ...KATALOG];
+const MITGELIEFERT_IDS = new Set(MITGELIEFERT.map((v) => v.id));
+
+export function mitgelieferteVorlagen(): Vorlage[] {
+  return MITGELIEFERT;
+}
 
 export function eigeneVorlagen(): Vorlage[] {
   try {
     const roh = localStorage.getItem(SCHLUESSEL);
     if (!roh) return [];
-    const liste = JSON.parse(roh) as Vorlage[];
-    return Array.isArray(liste) ? liste : [];
+    const liste = JSON.parse(roh) as unknown[];
+    if (!Array.isArray(liste)) return [];
+    // Auch die eigenen werden geprüft: Sie können aus einer älteren Fassung
+    // stammen, in der ein Blatt noch `foto`/`streifen` hieß.
+    return liste.flatMap((roheres) => {
+      const geprueft = pruefeVorlage(roheres);
+      return 'vorlage' in geprueft ? [geprueft.vorlage] : [];
+    });
   } catch {
     return [];
   }
@@ -35,27 +64,36 @@ export function sichereEigene(liste: Vorlage[]): { ok: true } | { fehler: string
 }
 
 export function alleVorlagen(): Vorlage[] {
-  return [...standardVorlagen(), ...eigeneVorlagen()];
+  return [...MITGELIEFERT, ...eigeneVorlagen()];
 }
 
 export function istMitgeliefert(id: string): boolean {
-  return standardVorlagen().some((v) => v.id === id);
+  return MITGELIEFERT_IDS.has(id);
 }
 
-export function findeVorlage(id: string, blatt: Blattart): Vorlage {
+/**
+ * Die Vorlage zu einer Kennung. Gibt es sie nicht mehr, wird die erste des
+ * passenden Blattes genommen — die Box druckt weiter, auch wenn eine Vorlage
+ * gelöscht wurde, während sie eingestellt war.
+ */
+export function findeVorlage(id: string, art: 'foto' | 'streifen'): Vorlage {
   const alle = alleVorlagen();
-  const treffer = alle.find((v) => v.id === id && v.blatt === blatt);
-  if (treffer) return treffer;
-  // Fällt zurück auf die erste Vorlage des Blattes — die Box druckt weiter,
-  // auch wenn eine Vorlage gelöscht wurde, während sie eingestellt war.
-  return alle.find((v) => v.blatt === blatt) ?? standardVorlagen()[0]!;
+  return (
+    alle.find((v) => v.id === id) ??
+    alle.find((v) => v.art === art) ??
+    MITGELIEFERT[0]!
+  );
+}
+
+export function vorlagenNachFormat(format: Formatschluessel): Vorlage[] {
+  return alleVorlagen().filter((v) => v.format === format);
 }
 
 export function neueVorlagenKennung(): string {
   return 'v' + Math.random().toString(36).slice(2, 9);
 }
 
-/** Kopiert eine Vorlage samt Feldern; Namen bekommt der Aufrufer. */
+/** Kopiert eine Vorlage samt Feldern; den Namen bekommt der Aufrufer. */
 export function kopiere(v: Vorlage, name: string): Vorlage {
   return {
     ...v,

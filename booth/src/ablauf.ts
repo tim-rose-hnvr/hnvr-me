@@ -13,7 +13,7 @@ import type { Einstellungen } from './einstellungen';
 import { ladeEinstellungen, sichereEinstellungen, standardEinstellungen } from './einstellungen';
 import { alsBilddaten, alsBlob, alsDoppelstreifen, zeichneMitVorlage } from './layout';
 import { alsGif } from './gif';
-import { werteJetzt } from './vorlage';
+import { bildfelder, werteJetzt } from './vorlage';
 import { findeVorlage } from './vorlagen';
 import {
   darfDrucken,
@@ -516,12 +516,17 @@ export class Booth {
     this.aufnahmen = [];
     this.geheZu('aufnahme');
 
-    for (let i = 0; i < this.art.bilder; i++) {
+    // Wie viele Bilder gebraucht werden, entscheidet die Vorlage — nicht die
+    // Aufnahmeart. Ein Streifen mit vier Bildfeldern will vier Aufnahmen;
+    // bisher kamen immer drei, und das vierte Feld bekam eine Wiederholung.
+    const anzahl = this.bilderJeSerie();
+
+    for (let i = 0; i < anzahl; i++) {
       await this.countdown(i);
       this.blitze();
       this.aufnahmen.push(this.kamera.standbild(this.einstellungen.spiegeln));
 
-      if (i < this.art.bilder - 1 && this.art.pause > 0) {
+      if (i < anzahl - 1 && this.art.pause > 0) {
         await warte(this.art.pause * 1000);
       }
       // Ein Abbruch (Escape, Leerlauf) beendet die Serie.
@@ -530,6 +535,21 @@ export class Booth {
 
     await this.baueErgebnis();
     this.geheZu('ergebnis');
+  }
+
+  /**
+   * Anzahl Aufnahmen einer Serie. Bewegtbild bringt seine eigene Zahl mit
+   * (die Bewegung braucht viele Bilder); beim Streifen zählt die Vorlage.
+   */
+  private bilderJeSerie(): number {
+    if (this.art.bewegt) return this.art.bilder;
+    if (this.art.id !== 'streifen') return this.art.bilder;
+    const vorlage = findeVorlage(this.einstellungen.vorlageStreifen, 'streifen');
+    const felder = bildfelder(vorlage);
+    // Doppelstreifen-Vorlagen zeigen dieselbe Serie zweimal: dann ist die
+    // halbe Feldzahl die Serie. Sonst so viele Aufnahmen wie Felder.
+    const gewuenscht = vorlage.aufnahmen > 0 ? vorlage.aufnahmen : felder;
+    return Math.max(1, Math.min(8, gewuenscht));
   }
 
   private countdown(index: number): Promise<void> {
@@ -545,7 +565,7 @@ export class Booth {
 
         const oben = element('div', 'zustand');
         oben.append(
-          mono(`Aufnahme ${index + 1} von ${this.art.bilder}`, 'mono mono--amber')
+          mono(`Aufnahme ${index + 1} von ${this.bilderJeSerie()}`, 'mono mono--amber')
         );
         feld.append(oben);
 
@@ -614,9 +634,15 @@ export class Booth {
     if (this.art.id === 'streifen') {
       const vorlage = findeVorlage(this.einstellungen.vorlageStreifen, 'streifen');
       const streifen = await zeichneMitVorlage(vorlage, this.aufnahmen, werte);
-      this.ergebnis = this.einstellungen.doppelstreifen
-        ? alsDoppelstreifen(streifen, this.einstellungen.schnittlinie)
-        : streifen;
+      // Doppeln gilt nur für das schmale 2×6-Blatt: Zwei davon passen auf ein
+      // 4×6, das der Cutter mittig trennt. Eine Vorlage, die schon auf 4×6
+      // gestaltet ist, würde beim Doppeln auf halbe Größe zusammenfallen —
+      // viele Katalogblätter zeigen die Serie ohnehin bereits zweimal.
+      const darfDoppeln = vorlage.format === 'streifen-2x6';
+      this.ergebnis =
+        this.einstellungen.doppelstreifen && darfDoppeln
+          ? alsDoppelstreifen(streifen, this.einstellungen.schnittlinie)
+          : streifen;
     } else {
       // Bewegtbild: als Blatt gesichert wird das erste Bild der Serie.
       const vorlage = findeVorlage(this.einstellungen.vorlageFoto, 'foto');

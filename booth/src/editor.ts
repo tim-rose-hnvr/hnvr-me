@@ -17,22 +17,30 @@ import './editor.css';
 import { ladeEinstellungen, sichereEinstellungen } from './einstellungen';
 import { Kamera } from './kamera';
 import { alsBilddaten } from './layout';
-import { drucke } from './ausgabe';
+import { drucke, qrBild } from './ausgabe';
 import {
-  BLATT,
   PLATZHALTER,
   klemme,
   neueFeldKennung,
   pruefeVorlage,
   zeichneVorlage,
+  ladeZubehoer,
+  LEERES_ZUBEHOER,
   type Ausrichtung,
-  type Blattart,
   type Feld,
   type Feldart,
-  type Schriftart,
   type Vorlage,
   type Werte,
+  type Zubehoer,
 } from './vorlage';
+import {
+  FORMATE,
+  FORMATLISTE,
+  SCHRIFTNAMEN,
+  formatVon,
+  type Formatschluessel,
+  type Schriftart,
+} from './formate';
 import {
   alleVorlagen,
   eigeneVorlagen,
@@ -153,7 +161,7 @@ let eigene = eigeneVorlagen();
 let aktuell: Vorlage = alleVorlagen()[0]!;
 let gewaehlt: string | null = null;
 let muster = testbilder();
-let logobild: HTMLImageElement | null = null;
+let zubehoer: Zubehoer = LEERES_ZUBEHOER;
 let ungesichert = false;
 
 const einstellungen = ladeEinstellungen();
@@ -226,13 +234,14 @@ function zeichneAlles(teile: Wunsch = {}): void {
 }
 
 function zeichneBlatt(): void {
-  const bild = zeichneVorlage(aktuell, muster, musterwerte(), logobild);
+  const bild = zeichneVorlage(aktuell, muster, musterwerte(), zubehoer);
   leinwand.width = bild.width;
   leinwand.height = bild.height;
   leinwand.getContext('2d')!.drawImage(bild, 0, 0);
   blatt.style.aspectRatio = `${bild.width} / ${bild.height}`;
+  const f = formatVon(aktuell.format);
   el<HTMLSpanElement>('blattmass').textContent =
-    `${BLATT[aktuell.blatt].name} · ${bild.width} × ${bild.height} px bei 300 dpi`;
+    `${f.name} · ${f.kurz} · ${bild.width} × ${bild.height} px bei 300 dpi`;
 }
 
 function baueRahmen(): void {
@@ -269,7 +278,9 @@ function beschriftung(f: Feld): string {
   if (f.art === 'text') return `Text „${(f.text ?? '').slice(0, 24)}"`;
   if (f.art === 'bild') return 'Bildfeld';
   if (f.art === 'logo') return 'Logo';
-  return 'Fläche';
+  if (f.art === 'bilddatei') return `Bilddatei ${(f.quelle ?? '').split('/').pop() ?? ''}`;
+  if (f.art === 'qr') return 'QR-Code';
+  return f.figur === 'ellipse' ? 'Ellipse' : f.figur === 'linie' ? 'Linie' : 'Fläche';
 }
 
 /* --- Ziehen und Schieben -------------------------------------------- */
@@ -433,6 +444,12 @@ function neuesFeld(art: Feldart): void {
   }
   if (art === 'flaeche') {
     feld.farbe = '#f2b23e';
+    feld.figur = 'rechteck';
+  }
+  if (art === 'qr') {
+    feld.quelle = '{event}';
+    feld.b = 0.2;
+    feld.h = 0.2 * (formatVon(aktuell.format).breite / formatVon(aktuell.format).hoehe);
   }
   aendere((v) => {
     v.felder.push(feld);
@@ -495,8 +512,8 @@ function bauePruefer(): void {
     );
 
   // Maße in Millimetern: so steht es auf dem Papier und so redet die Druckerei.
-  const mmB = BLATT[aktuell.blatt].mmBreite;
-  const mmH = BLATT[aktuell.blatt].mmHoehe;
+  const mmB = formatVon(aktuell.format).mmBreite;
+  const mmH = formatVon(aktuell.format).mmHoehe;
 
   const masse = document.createElement('div');
   masse.className = 'vvier';
@@ -537,10 +554,10 @@ function bauePruefer(): void {
       feldblock(
         'Schrift',
         auswahl<Schriftart>(
-          [
-            { wert: 'anzeige', text: 'Anzeige (Archivo)' },
-            { wert: 'mono', text: 'Mono (IBM Plex Mono)' },
-          ],
+          (Object.keys(SCHRIFTNAMEN) as Schriftart[]).map((k) => ({
+            wert: k,
+            text: SCHRIFTNAMEN[k],
+          })),
           feld.schrift ?? 'anzeige',
           (w) => setze((f) => (f.schrift = w))
         )
@@ -585,6 +602,15 @@ function bauePruefer(): void {
     versalien.append(haken, document.createTextNode(' Großbuchstaben'));
     kasten.append(versalien);
 
+    const umbruch = document.createElement('label');
+    umbruch.className = 'vhaken';
+    const uhaken = document.createElement('input');
+    uhaken.type = 'checkbox';
+    uhaken.checked = Boolean(feld.umbruch);
+    uhaken.addEventListener('change', () => setze((f) => (f.umbruch = uhaken.checked)));
+    umbruch.append(uhaken, document.createTextNode(' Umbrechen statt stauchen'));
+    kasten.append(umbruch);
+
     kasten.append(
       feldblock(
         'Farbe',
@@ -594,6 +620,20 @@ function bauePruefer(): void {
   }
 
   if (feld.art === 'flaeche') {
+    kasten.append(
+      feldblock(
+        'Figur',
+        auswahl(
+          [
+            { wert: 'rechteck', text: 'Rechteck' },
+            { wert: 'ellipse', text: 'Ellipse' },
+            { wert: 'linie', text: 'Linie' },
+          ],
+          feld.figur ?? 'rechteck',
+          (w) => setze((f) => (f.figur = w as 'rechteck' | 'ellipse' | 'linie'))
+        )
+      )
+    );
     kasten.append(
       feldblock(
         'Füllung',
@@ -622,6 +662,53 @@ function bauePruefer(): void {
       )
     );
   }
+
+  if (feld.art === 'bild') {
+    const schatten = document.createElement('label');
+    schatten.className = 'vhaken';
+    const shaken = document.createElement('input');
+    shaken.type = 'checkbox';
+    shaken.checked = Boolean(feld.schatten);
+    shaken.addEventListener('change', () => setze((f) => (f.schatten = shaken.checked)));
+    schatten.append(shaken, document.createTextNode(' Schatten unter dem Bild'));
+    kasten.append(schatten);
+
+    kasten.append(
+      feldblock(
+        'Rahmen',
+        farbwahl(feld.rahmen ?? 'transparent', (w) => setze((f) => (f.rahmen = w)))
+      )
+    );
+    kasten.append(
+      feldblock(
+        'Rahmenstärke',
+        zahleneingabe(feld.rahmenB ?? 0, 1, (n) => setze((f) => (f.rahmenB = Math.max(0, n))), 0, 40)
+      )
+    );
+  }
+
+  if (feld.art === 'bilddatei' || feld.art === 'qr') {
+    const quelle = document.createElement('input');
+    quelle.type = 'text';
+    quelle.className = 'veingabe';
+    quelle.value = feld.quelle ?? '';
+    quelle.placeholder = feld.art === 'qr' ? 'https://… oder {event}' : '/vorlagen/bild.png';
+    quelle.addEventListener('input', () => {
+      setze((f) => (f.quelle = quelle.value));
+      ladeZubehoerNeu();
+    });
+    kasten.append(
+      feldblock(feld.art === 'qr' ? 'Inhalt des QR-Codes' : 'Bildquelle', quelle)
+    );
+  }
+
+  // Drehung gilt für jedes Feld — sie dreht um die eigene Mitte.
+  kasten.append(
+    feldblock(
+      'Drehung (Grad)',
+      zahleneingabe(feld.dreh ?? 0, 1, (n) => setze((f) => (f.dreh = n)), -180, 180)
+    )
+  );
 }
 
 /* --- Kopf und Vorlagenverwaltung ------------------------------------ */
@@ -629,13 +716,38 @@ function bauePruefer(): void {
 function baueKopf(): void {
   const wahl = el<HTMLSelectElement>('wahl');
   wahl.replaceChildren();
-  standardsUndEigene().forEach((v) => {
-    const o = document.createElement('option');
-    o.value = v.id;
-    o.textContent = `${v.name} · ${BLATT[v.blatt].name}`;
-    if (v.id === aktuell.id) o.selected = true;
-    wahl.append(o);
+
+  // Nach Herkunft gruppiert: 63 Blätter in einer flachen Liste findet niemand.
+  const gruppen: { name: string; liste: Vorlage[] }[] = [
+    { name: 'Eigene Gestaltung', liste: alleVorlagen().filter((v) => istMitgeliefert(v.id) && !v.hintergrund) },
+    { name: 'Katalog', liste: alleVorlagen().filter((v) => istMitgeliefert(v.id) && v.hintergrund) },
+    { name: 'Auf dieser Box', liste: eigene },
+  ];
+  gruppen.forEach((g) => {
+    if (!g.liste.length) return;
+    const topf = document.createElement('optgroup');
+    topf.label = `${g.name} (${g.liste.length})`;
+    g.liste.forEach((v) => {
+      const o = document.createElement('option');
+      o.value = v.id;
+      o.textContent = `${v.name} · ${formatVon(v.format).kurz}`;
+      if (v.id === aktuell.id) o.selected = true;
+      topf.append(o);
+    });
+    wahl.append(topf);
   });
+
+  // Die sieben Papierformate stehen einmal in `formate.ts` — nicht im HTML.
+  const formatwahl = el<HTMLSelectElement>('blattart');
+  if (formatwahl.options.length !== FORMATLISTE.length) {
+    formatwahl.replaceChildren();
+    FORMATLISTE.forEach((k) => {
+      const o = document.createElement('option');
+      o.value = k;
+      o.textContent = `${FORMATE[k].name} · ${FORMATE[k].kurz}`;
+      formatwahl.append(o);
+    });
+  }
 
   el<HTMLSpanElement>('herkunft').textContent = istMitgeliefert(aktuell.id)
     ? 'mitgeliefert · schreibgeschützt'
@@ -649,7 +761,9 @@ function baueKopf(): void {
   if (namensfeld.value !== aktuell.name) namensfeld.value = aktuell.name;
   const papierfeld = el<HTMLInputElement>('papier');
   if (papierfeld.value !== aktuell.papier) papierfeld.value = aktuell.papier;
-  el<HTMLSelectElement>('blattart').value = aktuell.blatt;
+  const tintenfeld = el<HTMLInputElement>('tinte');
+  if (tintenfeld.value !== aktuell.tinte) tintenfeld.value = aktuell.tinte;
+  el<HTMLSelectElement>('blattart').value = aktuell.format;
   el<HTMLSpanElement>('logostand').textContent = aktuell.logo
     ? `Logo gesetzt · ${Math.round(aktuell.logo.length / 1024)} kB`
     : 'kein Logo';
@@ -658,8 +772,8 @@ function baueKopf(): void {
   const streifenHaken = el<HTMLInputElement>('standard-streifen');
   fotoHaken.checked = einstellungen.vorlageFoto === aktuell.id;
   streifenHaken.checked = einstellungen.vorlageStreifen === aktuell.id;
-  fotoHaken.disabled = aktuell.blatt !== 'foto';
-  streifenHaken.disabled = aktuell.blatt !== 'streifen';
+  fotoHaken.disabled = aktuell.art !== 'foto';
+  streifenHaken.disabled = aktuell.art !== 'streifen';
 }
 
 function standardsUndEigene(): Vorlage[] {
@@ -672,23 +786,29 @@ function waehleVorlage(id: string): void {
   if (!treffer) return;
   aktuell = treffer;
   gewaehlt = null;
-  ladeLogobild();
+  ladeZubehoerNeu();
   zeichneAlles();
 }
 
-function ladeLogobild(): void {
-  logobild = null;
-  if (!aktuell.logo) {
-    zeichneAlles();
-    return;
-  }
-  const bild = new Image();
-  bild.onload = () => {
-    logobild = bild;
-    zeichneAlles();
-  };
-  bild.onerror = () => sage('Das Logo lässt sich nicht lesen.', 'fehler');
-  bild.src = aktuell.logo;
+/**
+ * Hintergrund, Logo, eingefügte Bilder, QR-Codes und Schriften der aktuellen
+ * Vorlage laden. Danach einmal neu zeichnen — vorher wäre das Blatt halb.
+ */
+let ladelauf = 0;
+function ladeZubehoerNeu(): void {
+  const lauf = ++ladelauf;
+  zubehoer = LEERES_ZUBEHOER;
+  void ladeZubehoer(aktuell, musterwerte(), qrBild)
+    .then((z) => {
+      // Ein älterer Lauf darf einen neueren nicht überschreiben: Wer schnell
+      // durch die Vorlagen blättert, sähe sonst den Hintergrund von vorhin.
+      if (lauf !== ladelauf) return;
+      zubehoer = z;
+      zeichneAlles();
+    })
+    .catch(() => {
+      if (lauf === ladelauf) sage('Zubehör der Vorlage ließ sich nicht laden.', 'fehler');
+    });
 }
 
 /* --- Werkzeuge im Kopf ---------------------------------------------- */
@@ -697,8 +817,12 @@ function neueVorlage(): void {
   const vorlage: Vorlage = {
     id: neueVorlagenKennung(),
     name: 'Neue Vorlage',
-    blatt: 'foto',
+    format: 'hoch-4x6',
+    art: 'foto',
+    aufnahmen: 1,
     papier: '#ffffff',
+    tinte: '#17171c',
+    akzent: '#f2b23e',
     felder: [
       { id: neueFeldKennung(), art: 'bild', x: 0.05, y: 0.05, b: 0.9, h: 0.6 },
       {
@@ -721,7 +845,7 @@ function neueVorlage(): void {
   aktuell = vorlage;
   gewaehlt = null;
   ungesichert = true;
-  logobild = null;
+  ladeZubehoerNeu();
   zeichneAlles();
   sage('Neue Vorlage angelegt. „Sichern" legt sie dauerhaft ab.');
 }
@@ -749,7 +873,7 @@ function loescheAktuelle(): void {
   sichereAlles();
   aktuell = standardsUndEigene()[0]!;
   gewaehlt = null;
-  ladeLogobild();
+  ladeZubehoerNeu();
   zeichneAlles();
   sage(`„${name}" gelöscht.`);
 }
@@ -778,7 +902,7 @@ async function ausDatei(datei: File): Promise<void> {
     aktuell = neu;
     gewaehlt = null;
     ungesichert = true;
-    ladeLogobild();
+    ladeZubehoerNeu();
     zeichneAlles();
     sage(`„${neu.name}" geladen. „Sichern" legt sie auf dieser Box ab.`, 'gut');
   } catch {
@@ -787,7 +911,7 @@ async function ausDatei(datei: File): Promise<void> {
 }
 
 function testdruck(): void {
-  const bild = zeichneVorlage(aktuell, muster, musterwerte(), logobild);
+  const bild = zeichneVorlage(aktuell, muster, musterwerte(), zubehoer);
   drucke(alsBilddaten(bild), aktuell.name);
   sage('Testdruck an den Systemdruck übergeben.');
 }
@@ -831,7 +955,7 @@ async function logoAusDatei(datei: File): Promise<void> {
   aendere((v) => {
     v.logo = daten;
   });
-  ladeLogobild();
+  ladeZubehoerNeu();
   if (!aktuell.felder.some((f) => f.art === 'logo')) {
     sage('Logo hinterlegt — jetzt noch ein Logo-Feld auf dem Blatt setzen.');
   }
@@ -871,8 +995,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-tun]').forEach((k) => {
         aendere((v) => {
           v.logo = undefined;
         });
-        logobild = null;
-        zeichneAlles();
+        ladeZubehoerNeu();
         return sage('Logo entfernt.');
     }
   });
@@ -897,11 +1020,24 @@ el<HTMLInputElement>('name').addEventListener('input', (e) => {
 });
 
 el<HTMLSelectElement>('blattart').addEventListener('change', (e) => {
-  const wert = (e.target as HTMLSelectElement).value as Blattart;
+  const wert = (e.target as HTMLSelectElement).value as Formatschluessel;
   aendere((v) => {
-    v.blatt = wert;
+    v.format = wert;
+    // Streifenblätter erwarten eine Serie, Einzelblätter ein Bild. Das
+    // entscheidet, welche Aufnahmeart die Vorlage überhaupt bedienen kann.
+    v.art = wert === 'streifen-2x6' || wert === 'lesezeichen' ? 'streifen' : v.art;
   });
   sage('Blattformat gewechselt — die Felder behalten ihre Anteile, prüf das Ergebnis.');
+});
+
+el<HTMLInputElement>('tinte').addEventListener('input', (e) => {
+  const wert = (e.target as HTMLInputElement).value;
+  aendere(
+    (v) => {
+      v.tinte = wert;
+    },
+    { kopf: false }
+  );
 });
 
 el<HTMLInputElement>('papier').addEventListener('input', (e) => {
@@ -927,7 +1063,7 @@ el<HTMLInputElement>('vorlagendatei').addEventListener('change', (e) => {
   if (datei) void ausDatei(datei).finally(() => (feld.value = ''));
 });
 
-function setzeStandard(blattart: Blattart, an: boolean): void {
+function setzeStandard(blattart: 'foto' | 'streifen', an: boolean): void {
   if (!an) {
     sage('Eine Vorlage muss eingestellt bleiben — wähl stattdessen eine andere aus.');
     zeichneAlles();
@@ -970,6 +1106,6 @@ PLATZHALTER.forEach((p) => {
 // Die eingestellte Vorlage ist der sinnvollste Startpunkt.
 aktuell =
   standardsUndEigene().find((v) => v.id === einstellungen.vorlageFoto) ?? standardsUndEigene()[0]!;
-ladeLogobild();
+ladeZubehoerNeu();
 zeichneAlles();
 sage('Vorschau und Druck nutzen denselben Renderer — was hier steht, kommt so aus dem Drucker.');

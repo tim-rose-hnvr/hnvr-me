@@ -63,14 +63,15 @@
           </label>
           <label class="vfeld">
             <span>Blatt</span>
-            <select id="blattart" class="veingabe">
-              <option value="foto">Foto — 10 × 15 cm</option>
-              <option value="streifen">Streifen — 5 × 15 cm</option>
-            </select>
+            <select id="blattart" class="veingabe"></select>
           </label>
           <label class="vfeld">
             <span>Papierfarbe</span>
             <input type="text" id="papier" class="veingabe" />
+          </label>
+          <label class="vfeld">
+            <span>Textfarbe</span>
+            <input type="text" id="tinte" class="veingabe" />
           </label>
           <div class="vfeld">
             <span>Logo</span>
@@ -99,10 +100,12 @@
         <div class="vblock">
           <h2 class="vzeile">Felder</h2>
           <div class="vreihe vreihe--umbruch">
-            <button type="button" class="vknopf vknopf--klein" data-neu="bild">+ Bild</button>
+            <button type="button" class="vknopf vknopf--klein" data-neu="bild">+ Bildfeld</button>
             <button type="button" class="vknopf vknopf--klein" data-neu="text">+ Text</button>
             <button type="button" class="vknopf vknopf--klein" data-neu="flaeche">+ Fläche</button>
             <button type="button" class="vknopf vknopf--klein" data-neu="logo">+ Logo</button>
+            <button type="button" class="vknopf vknopf--klein" data-neu="bilddatei">+ Bilddatei</button>
+            <button type="button" class="vknopf vknopf--klein" data-neu="qr">+ QR</button>
           </div>
           <ul class="vliste" id="liste"></ul>
         </div>

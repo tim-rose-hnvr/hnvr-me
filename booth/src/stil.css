@@ -1,3 +1,5 @@
+@import './schrift.css';
+
 /* Booth-Oberfläche: dunkel, große Ziele, lesbar aus ~80 cm Abstand.
    Die Werte stammen aus demselben Gestaltungssystem wie die Website
    (youbooth/src/styles/tokens.css) — hier nur, was der Booth braucht. */

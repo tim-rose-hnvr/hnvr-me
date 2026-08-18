@@ -146,9 +146,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  justify-content: center;
+  /* „safe" verhindert, dass der Inhalt bei wenig Höhe oben aus der Bühne
+     herausragt — sonst liegt die erste Kachel unter der Kopfleiste und ist
+     nicht mehr antippbar (fällt erst bei 1280×720 auf). */
+  justify-content: safe center;
   min-height: 0;
   overflow: auto;
+  padding: 4px 0;
 }
 
 /* --- Schrift ------------------------------------------------------------ */

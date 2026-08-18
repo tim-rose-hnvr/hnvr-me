@@ -20,6 +20,7 @@ import {
 } from './layout';
 import { darfDrucken, dateiname, drucke, druckeInLetzterStunde, qrFuer, sichereAlsDatei } from './ausgabe';
 import { neueKennung, raeumeAuf, sichere, anzahl as gesamtzahl } from './speicher';
+import { ausgabeAdresse, legeAb } from './huelle';
 
 type Schritt = 'attract' | 'auswahl' | 'aufnahme' | 'ergebnis' | 'ausgabe';
 
@@ -65,6 +66,15 @@ export class Booth {
     // Abgelaufene Aufnahmen räumt die Box beim Start weg.
     void raeumeAuf(this.einstellungen.loeschfristTage).catch(() => undefined);
     void this.zaehleAuf();
+
+    // Läuft der Booth in der Desktop-Hülle, kennt sie die Adresse, unter der
+    // die Box ihre Dateien anbietet — der QR-Code braucht dann keine
+    // Konfiguration von Hand.
+    void ausgabeAdresse().then((adresse) => {
+      if (adresse && !this.einstellungen.ausgabeBasis) {
+        this.einstellungen.ausgabeBasis = adresse;
+      }
+    });
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') this.zumAttract();
@@ -543,6 +553,9 @@ export class Booth {
         event: this.einstellungen.event,
         blob,
       });
+      // In der Desktop-Hülle zusätzlich als Datei — nur so kann der
+      // Auslieferungsdienst sie über den QR-Code herausgeben.
+      void legeAb(this.ergebnisKennung, blob);
       void this.zaehleAuf();
     } catch {
       // Sichern fehlgeschlagen: die Aufnahme bleibt trotzdem am Screen,

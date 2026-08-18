@@ -504,7 +504,8 @@
   letter-spacing: -0.03em;
   margin: 0;
   flex: 1;
-  min-width: 280px;
+  /* Auf 360 px passt eine feste Mindestbreite nicht mehr in die Bahn. */
+  min-width: min(280px, 100%);
   max-width: 20ch;
 }
 

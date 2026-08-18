@@ -20,7 +20,7 @@ const version: string = JSON.parse(
    installierte App fragt dieselbe Liste ab. Eine zweite Ablage für Installer
    gäbe es damit nicht — zwei Listen laufen auseinander. */
 const releases = 'https://github.com/tim-rose-hnvr/hnvr-me/releases';
-const datei = (name: string) => `${releases}/download/booth-v${version}/${name}`;
+const datei = (name: string) => `${releases}/download/v${version}/${name}`;
 
 const plattformen = [
   {

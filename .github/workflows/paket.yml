@@ -1,6 +1,11 @@
 name: Booth · Installationspaket
 
-# Baut die Desktop-Hülle und hängt sie an eine GitHub-Release. Genau diese
+# Baut die Desktop-Hülle und hängt sie an eine GitHub-Release. Der Tag heißt
+# `v<Fassung>` — nicht, weil das schöner wäre, sondern weil `electron-builder`
+# genau dorthin veröffentlicht. Ein eigener Name hier hätte bedeutet, dass die
+# Download-Seite auf eine Release zeigt, die es nicht gibt.
+#
+# Genau diese
 # Release ist zugleich die Quelle der Selbstaktualisierung: `electron-updater`
 # in der installierten App fragt dieselbe Liste ab. Eine zweite Ablage für
 # Installer gibt es deshalb bewusst nicht — zwei Listen laufen auseinander,
@@ -8,7 +13,7 @@ name: Booth · Installationspaket
 
 on:
   push:
-    tags: ['booth-v*']
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       fassung:

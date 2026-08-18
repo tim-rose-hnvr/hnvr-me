@@ -33,6 +33,9 @@ const nichtGespeichert = [
 ];
 
 const offen = [
+  'Hosting: Wix setzt Analyse-, Telemetrie- und Tag-Manager-Skripte in jede ' +
+    'ausgelieferte Seite und schickt ein Cookie mit. Entweder Umzug auf einen ' +
+    'eigenen Server oder eine Einwilligung, bevor diese Skripte laden.',
   'Verantwortlicher: Name, Anschrift, Kontakt (Art. 13 Abs. 1 lit. a DSGVO)',
   'Datenschutzbeauftragter, falls benannt (lit. b)',
   'Auftragsverarbeiter: wer betreibt den Server, wo steht er, liegt ein AVV vor',
@@ -61,10 +64,41 @@ const offen = [
     <p>
       Wer einen pnkt-Code scannt, wird auf ein Ziel geleitet oder sieht eine kleine
       Seite. Dabei wird <b>ein Zähler erhöht</b> — ein Zähler je Code und Tag, in
-      groben Klassen. Es entsteht kein Eintrag, der zu einer Person führt, und es
-      wird nichts auf dem Gerät abgelegt. Deshalb erscheint auch kein Banner: es
-      gibt keine Zustimmung einzuholen, weil nichts gespeichert oder ausgelesen
-      wird, was nach § 25 TDDDG zustimmungspflichtig wäre.
+      groben Klassen. Es entsteht kein Eintrag, der zu einer Person führt, und das
+      Programm legt nichts auf dem Gerät ab.
+    </p>
+    <p>
+      Dieser Absatz beschreibt <b>das Programm</b>. Er beschreibt nicht den Server,
+      auf dem diese Werbeseite gerade liegt — siehe den nächsten Abschnitt. Der
+      Unterschied ist keine Spitzfindigkeit: zustimmungspflichtig nach § 25 TDDDG
+      ist, was auf dem Gerät gespeichert oder ausgelesen wird, gleichgültig ob es
+      vom Programm kommt oder vom Hoster.
+    </p>
+
+    <h2 id="hoster">Wo diese Seite gerade liegt</h2>
+    <div class="warnung">
+      <b>Diese Werbeseite liegt zurzeit auf Wix-Hosting</b>, und das ist an der
+      ausgelieferten Seite messbar. Sie bekommt dort Skripte eingesetzt, die
+      unser Bau nicht enthält:
+    </div>
+    <ul class="lueckenliste">
+      <li><code>site-analytics</code> und <code>site-bi</code> von
+        <code>static.parastorage.com</code> — Reichweitenmessung und Telemetrie</li>
+      <li><code>tag-manager-client</code> — nachladbare weitere Skripte</li>
+      <li><code>cookie-consent-policy</code> und <code>site-consent-policy</code></li>
+      <li>Der Server setzt beim ersten Aufruf ein Cookie
+        (<code>sec-fetch-unsupported</code>)</li>
+    </ul>
+    <p>
+      Solange das so ist, gilt der Satz „es wird nichts auf dem Gerät abgelegt"
+      <b>für diese Werbeseite nicht</b>. Für das Programm hinter den Codes gilt er
+      weiter — es läuft nicht hier, sondern auf einem eigenen Server.
+    </p>
+    <p>
+      Was daraus folgt, gehört in eine rechtliche Prüfung und nicht in eine
+      Entwicklerentscheidung: entweder die Seite zieht auf einen Server um, auf
+      dem nichts davon passiert, oder sie braucht eine Einwilligung, bevor diese
+      Skripte laden. Beides ist offen und steht unten in der Liste.
     </p>
 
     <h2>Was gezählt wird</h2>

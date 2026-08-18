@@ -75,10 +75,19 @@ const spalten = [
       <span>© 2026 pnkt.me · [Anbieter und Sitz eintragen]</span>
       <span class="fuss-zusage">
         <Icon name="geprueft" groesse={16} />
-        {/* „EU-Hosting" ist eine Aussage ueber den Server, den es noch
-            nicht gibt — sie steht erst da, wenn er steht. Der zweite
-            Teil gilt schon heute und folgt aus dem Code. */}
-        keine Cookies, kein Tracking
+        {/* Hier stand „keine Cookies, kein Tracking". Das galt fuer das
+            Programm und stimmte, solange die Seite auf einem eigenen
+            Server lag. Auf dem Wix-Hosting stimmt es nicht mehr: die
+            ausgelieferte Seite bekommt dort site-analytics, site-bi und
+            einen Tag-Manager von static.parastorage.com eingesetzt, und
+            der Server schickt ein Cookie mit. Nachgemessen an der
+            ausgelieferten Seite, nicht am Bau.
+
+            Eine Zusage, die der Hoster widerlegt, ist schlimmer als
+            keine. Was hier jetzt steht, gilt an jedem Ort: die
+            Schriften kommen aus dieser Seite und nicht von Google.
+            Was der Hoster tut, steht im Datenschutz. */}
+        Schriften selbst ausgeliefert, nichts von Google
       </span>
     </div>
   </div>

@@ -126,8 +126,15 @@ jobs:
       - name: Projektwerte holen
         run: npx wix env pull
 
+      # VORSCHAU=1: Riegel oben und noindex. Die alte Seite trug an
+      # derselben Stelle ein noindex, solange Pflichtangaben fehlten —
+      # und sie fehlen weiter. Ohne diese Zeile war die erste
+      # Auslieferung indexierbar, mit einem Impressum aus Platzhaltern.
+      # Wegnehmen, sobald Impressum und Datenschutz stehen.
       - name: Bauen
         run: npm run build
+        env:
+          VORSCHAU: '1'
 
       - name: Ausliefern
         run: npm run release

@@ -210,13 +210,32 @@ export async function kontoNachMail(mail: string): Promise<Record<string, unknow
   return treffer.items[0] ?? null;
 }
 
-export async function statistikVonCode(codeId: string, tage = 30): Promise<{ tag: string; gesamt: number }[]> {
+export interface Tagesstand {
+  tag: string;
+  gesamt: number;
+  /** Grobe Klassen: geraet:…, system:…, quelle:… */
+  klassen: Record<string, number>;
+}
+
+export async function statistikVonCode(codeId: string, tage = 30): Promise<Tagesstand[]> {
   const w = await wixModule();
   if (!w) return [];
   const abfrage = w.auth.elevate(w.items.query)(STATISTIK);
   const treffer = await abfrage.eq('codeId', codeId).descending('tag').limit(tage).find();
-  return treffer.items.map((i) => ({
-    tag: typeof i.tag === 'string' ? i.tag : '',
-    gesamt: typeof i.gesamt === 'number' ? i.gesamt : 0,
-  }));
+  return treffer.items.map((i) => {
+    let klassen: Record<string, number> = {};
+    if (typeof i.zaehlerJson === 'string') {
+      try {
+        klassen = JSON.parse(i.zaehlerJson) as Record<string, number>;
+      } catch {
+        // Ein kaputter Satz darf die Auswertung nicht mitreissen.
+        klassen = {};
+      }
+    }
+    return {
+      tag: typeof i.tag === 'string' ? i.tag : '',
+      gesamt: typeof i.gesamt === 'number' ? i.gesamt : 0,
+      klassen,
+    };
+  });
 }

@@ -56,7 +56,8 @@ const wege = [
         erklärt wird. Der Anmeldeknopf kommt zurück, wenn es etwas
         anzumelden gibt. */}
     <span class="kopf-rechts">
-      {dynamisch && <a href={weg('/anmelden')} class="anmelden">Anmelden</a>}
+      {dynamisch && <a href={weg('/zentrale')} class="anmelden">Zentrale</a>}
+      {dynamisch && <a href={weg('/zahlen')} class="anmelden">Zahlen</a>}
       <a href={weg('/preise')} class="btn btn-primary kopf-knopf">
         <Icon name="zahlen" />
         Zurzeit kostenlos

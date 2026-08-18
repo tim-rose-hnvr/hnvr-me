@@ -62,12 +62,23 @@ async function hole<T>(pfad: string, wunsch?: RequestInit): Promise<T> {
  */
 export async function sichere(
   bilddaten: string,
-  art: string
+  art: string,
+  /**
+   * Name einer Aufnahme, die diese hier ersetzen soll. Gedacht für den
+   * Ergebnisbildschirm: Der Gast wählt einen Kunststil, das Blatt wird neu
+   * gerechnet — und tritt an die Stelle des alten, statt daneben zu liegen.
+   *
+   * Die Box entscheidet, ob sie das zulässt. Sie tut es nur für eine Datei,
+   * die es gibt und die jung genug ist, um zur laufenden Runde zu gehören.
+   * Kommt sie nicht mit, legt sie eine neue an — der Gast bekommt sein Bild,
+   * und höchstens die Ablage hat ein Blatt zu viel.
+   */
+  ersetzt?: string
 ): Promise<Aufnahme> {
   const antwort = await hole<{ ok: boolean; photo: Rohaufnahme }>('/api/photos', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image: bilddaten, mode: art, source: 'booth' }),
+    body: JSON.stringify({ image: bilddaten, mode: art, source: 'booth', ersetzt }),
   });
   return deute(antwort.photo);
 }

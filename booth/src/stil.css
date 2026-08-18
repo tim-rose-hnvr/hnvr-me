@@ -341,6 +341,85 @@ p {
   gap: 3px;
 }
 
+/* --- Kunststile im Ergebnis --------------------------------------------- */
+
+/* Zwei Spalten, nicht sieben Pillen in einer Reihe: In 380 px Spaltenbreite
+   ergäbe eine Reihe drei Zeilen mit unterschiedlich langen Knöpfen, und der
+   Gast findet den, den er sucht, nicht wieder. Ein Raster steht still. */
+.stile {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+.stil {
+  /* Nicht `--ziel` (64 px wie die grossen Booth-Knöpfe): Sieben davon in zwei
+     Spalten schöben „Behalten" unter die Bildschirmkante. 56 px liegen über
+     dem Mindestmass für einen Finger und lassen die Wahl in vier Reihen. */
+  min-height: 56px;
+  border-radius: var(--r-chip);
+  border: 2px solid var(--linie);
+  background: var(--ink-soft);
+  color: var(--hell);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--schrift);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.stil.gewaehlt {
+  border-color: var(--amber);
+  background: rgba(242, 178, 62, 0.12);
+}
+
+.stil:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.stil:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.stil__name {
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+/* Die Beschreibung ist für den, der hinsieht — nicht für den, der aus zwei
+   Metern trifft. Deshalb schmaler gesetzt als die übrigen Monozeilen: mit
+   0.16em Sperrung passte kein Halbsatz in eine 180 px breite Kachel. */
+.stil .mono {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+}
+
+/* Auf einem 720p-Bildschirm passt die Ergebnisspalte mit sieben Stilen und
+   beiden grossen Knoepfen auf den Pixel genau — und beim naechsten laengeren
+   Eventnamen nicht mehr. Dann faellt die Beschreibung weg: Der Name sagt
+   genug, und ein Gast, der scrollen muss, um „Behalten" zu finden, hat ein
+   groesseres Problem als eine fehlende Erklaerung. */
+@media (max-height: 820px) {
+  .stil {
+    min-height: 48px;
+    justify-content: center;
+  }
+
+  .stil .mono {
+    display: none;
+  }
+}
+
 /* --- Countdown ---------------------------------------------------------- */
 
 .countdown {

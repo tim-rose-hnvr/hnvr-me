@@ -61,7 +61,12 @@ export const MODULSTAND: Record<string, Eintrag> = {
     stand: 'laeuft',
     offen: 'Vertrag und Zahlungsstand fehlen noch — Anfrage, Kalender, Pakete und Tickets laufen.',
   },
-  'effekt-studio': { stand: 'arbeit', offen: 'Der Anschluss steht, die Auswahl am Screen fehlt.' },
+  'effekt-studio': {
+    stand: 'laeuft',
+    offen:
+      'Sechs Stile und die Freistellung vor dem Tuch laufen. Freistellung OHNE Tuch, ' +
+      'die Motivbibliothek und die Live-Vorschau vor dem Auslösen fehlen noch.',
+  },
   'web-kamera': {
     stand: 'laeuft',
     offen: 'Gesichtsfilter und Sticker kommen noch; aufnehmen und senden geht.',
@@ -76,6 +81,25 @@ export const MODULSTAND: Record<string, Eintrag> = {
 
 export function standVon(id: string): Eintrag {
   return MODULSTAND[id] ?? { stand: 'geplant' };
+}
+
+/**
+ * Die Stufen, die auf einer Seite wirklich vorkommen — in der Reihenfolge
+ * von fertig nach geplant.
+ *
+ * Eine Legende, die eine Marke erklärt, die auf der Seite nirgends steht,
+ * ist keine Hilfe, sondern eine Frage: „Wo ist denn das Gelbe?" Also wird
+ * sie aus den gezeigten Modulen abgeleitet und nicht auf jeder Seite von
+ * Hand aufgezählt — drei Aufzählungen derselben Sache laufen auseinander,
+ * sobald ein Modul die Stufe wechselt.
+ *
+ * Ohne Angabe zählen alle Module; `nur` grenzt auf die Kennungen ein, die
+ * eine Seite tatsächlich zeigt.
+ */
+export function verwendeteStufen(nur?: readonly string[]): Stand[] {
+  const kennungen = nur ?? alleModule.map((m) => m.id);
+  const vorhanden = new Set(kennungen.map((id) => standVon(id).stand));
+  return (['laeuft', 'arbeit', 'geplant'] as const).filter((st) => vorhanden.has(st));
 }
 
 /**

@@ -258,7 +258,7 @@ export const modulseiten: Modulseite[] = [
     merkmale: ['Freistellung ohne Tuch', '6 Stile', 'Eigene Hintergründe'],
     screenshot: null,
     ablaufTitel: 'Vom Rohbild zum Look',
-    ablauf: [{ titel: 'Freistellen', text: 'KI erkennt Personen, ganz ohne Greenscreen-Tuch.' }, { titel: 'Hintergrund', text: 'Aus 24 Motiven oder eigenen Bildern, pro Event freigegeben.' }, { titel: 'Stil auflegen', text: 'Aquarell, Comic, Kohle, Retro-Film, S/W, Neon — Stärke einstellbar.' }],
+    ablauf: [{ titel: 'Freistellen', text: 'KI erkennt Personen, ganz ohne Greenscreen-Tuch.' }, { titel: 'Hintergrund', text: 'Aus 24 Motiven oder eigenen Bildern, pro Event freigegeben.' }, { titel: 'Stil auflegen', text: 'Schwarzweiß, Sepia, Comic, Aquarell, Öl, Pop-Art — am Ergebnis wählbar.' }],
     vertiefungTitel: 'Der Gast sieht, was er bekommt',
     vertiefungText: 'Alle Effekte laufen in der Live-Vorschau, nicht erst nach dem Auslösen. Aktive Effekte stehen als Chips über dem Bild, damit niemand rätselt, warum er anders aussieht.',
     punkte: ['Klassischer Greenscreen bleibt möglich, wenn ein Tuch steht', 'Kantenweichheit einstellbar, für schwierige Haare', 'Gast darf den Hintergrund selbst wählen — oder eben nicht', 'Stile gelten für Foto, Streifen, GIF und Boomerang'],

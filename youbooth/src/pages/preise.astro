@@ -2,7 +2,7 @@
 import Marketing from '../layouts/Marketing.astro';
 import { basismodul, zusatzmodule } from '../daten/module';
 import Standmarke from '../components/Standmarke.astro';
-import { standVon, STANDTEXTE } from '../daten/stand';
+import { standVon, verwendeteStufen, STANDTEXTE } from '../daten/stand';
 
 /**
  * Konfigurator. Der Startzustand wird serverseitig gerechnet und ausgeliefert,
@@ -134,7 +134,7 @@ const rechendaten = {
 
         <p class="legende">
           {
-            (['laeuft', 'arbeit', 'geplant'] as const).map((st) => (
+            verwendeteStufen([basismodul.id, ...reihenfolge]).map((st) => (
               <span class="legende__glied">
                 <Standmarke stand={st} />
                 <span>{STANDTEXTE[st]}</span>

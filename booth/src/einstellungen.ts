@@ -65,9 +65,27 @@ export type Einstellungen = {
   logo: string | null;
   /** Firmenname für Fußzeilen und Angebote. */
   firma: string;
+  /**
+   * Freigegebene Kunststile im Ergebnis. Der Betreiber entscheidet, was am
+   * Screen zur Wahl steht — eine Firmenfeier will oft nur Schwarzweiß, eine
+   * Hochzeit gar nichts. `ohne` gehört immer dazu und steht nicht in der
+   * Liste: Es ist kein Stil, sondern deren Abwesenheit.
+   */
+  effekte: string[];
+  /**
+   * Freistellung vor dem Tuch. Der Hintergrund ist ein Bild als Data-URL —
+   * er liegt auf der Box und geht nie ins Netz.
+   */
+  greenscreen: { an: boolean; farbe: string; toleranz: number; hintergrund: string | null };
 };
 
+import { EFFEKTE, istEffekt } from './effekte';
+
 const ZWISCHENSPEICHER = 'youbooth.einstellungen.stand';
+
+/* Welche Stile es gibt, weiß `effekte.ts` — hier steht nur, dass zunächst
+   alle freigegeben sind. „Ohne" ist kein Stil und gehört nicht in die Liste. */
+const ALLE_EFFEKTE = EFFEKTE.filter((e) => e.id !== 'ohne').map((e) => e.id);
 
 const STANDARD: Einstellungen = {
   box: 'Box #1',
@@ -94,6 +112,8 @@ const STANDARD: Einstellungen = {
   ausgabeBasis: '',
   logo: null,
   firma: '',
+  effekte: ALLE_EFFEKTE,
+  greenscreen: { an: false, farbe: '#00c800', toleranz: 42, hintergrund: null },
 };
 
 /* ------------------------------------------------------------------ */
@@ -148,7 +168,25 @@ export function ausBoxstand(roh: Boxstand): Einstellungen {
     ausgabeBasis: STANDARD.ausgabeBasis,
     logo: feld<string | null>(roh, 'betreiber.logo', null),
     firma: feld(roh, 'betreiber.firma', ''),
+    effekte: erlaubteEffekte(feld<unknown>(roh, 'effekte.erlaubt', null)),
+    greenscreen: {
+      an: feld(roh, 'greenscreen.enabled', false),
+      farbe: feld(roh, 'greenscreen.key', STANDARD.greenscreen.farbe),
+      toleranz: feld(roh, 'greenscreen.similarity', STANDARD.greenscreen.toleranz),
+      hintergrund: feld<string | null>(roh, 'greenscreen.background', null),
+    },
   };
+}
+
+/**
+ * Eine fehlende Liste heißt „alle" — eine leere heißt „keine". Der
+ * Unterschied ist wichtig: Eine Box, die das Feld noch nicht kennt, soll
+ * die Stile zeigen; ein Betreiber, der alle abgewählt hat, soll sie
+ * loswerden können.
+ */
+function erlaubteEffekte(roh: unknown): string[] {
+  if (!Array.isArray(roh)) return [...ALLE_EFFEKTE];
+  return roh.filter((e) => istEffekt(e) && e !== 'ohne');
 }
 
 /** Und zurück: nur die Felder, die die Box wirklich annimmt. */
@@ -167,6 +205,11 @@ export function alsBoxstand(e: Einstellungen): Boxstand {
       gif: e.arten.includes('gif'),
     },
     vorschau: { spiegeln: e.spiegeln },
+    /* Der Greenscreen-Hintergrund ist ein Bild von bis zu fünf Megabyte.
+       Er steht hier bewusst NICHT: Sonst schöbe jedes Sichern des Cockpits
+       dasselbe Bild erneut über die Leitung, ohne dass sich etwas geändert
+       hätte. Wer ihn setzt, tut das an der Stelle, an der er ihn auswählt. */
+    effekte: { erlaubt: e.effekte },
     printing: e.druck,
     printer: e.drucker || null,
     druck: {
@@ -250,6 +293,40 @@ export async function sichereEinstellungen(e: Einstellungen): Promise<boolean> {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(alsBoxstand(e)),
+    });
+    if (!antwort.ok) return false;
+    const daten = (await antwort.json()) as { settings?: Boxstand };
+    if (daten.settings) {
+      stand = ausBoxstand(daten.settings);
+      merke(daten.settings);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Schreibt die Freistellung auf die Box — eigener Weg, weil der Hintergrund
+ * ein Bild ist. Er hängt bewusst nicht an `alsBoxstand`: Sonst schöbe jedes
+ * Sichern einer beliebigen Einstellung dasselbe Bild erneut über die
+ * Leitung, und auf einer Box mit schwachem Netz merkt man das.
+ */
+export async function sichereGreenscreen(
+  teil: Einstellungen['greenscreen']
+): Promise<boolean> {
+  try {
+    const antwort = await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        greenscreen: {
+          enabled: teil.an,
+          key: teil.farbe,
+          similarity: teil.toleranz,
+          background: teil.hintergrund,
+        },
+      }),
     });
     if (!antwort.ok) return false;
     const daten = (await antwort.json()) as { settings?: Boxstand };

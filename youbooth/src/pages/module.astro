@@ -3,7 +3,7 @@ import Marketing from '../layouts/Marketing.astro';
 import Icon from '../components/Icon.astro';
 import { basismodul, zusatzmodule } from '../daten/module';
 import Standmarke from '../components/Standmarke.astro';
-import { standVon, STANDTEXTE } from '../daten/stand';
+import { standVon, verwendeteStufen, STANDTEXTE } from '../daten/stand';
 
 const grundsaetze = [
   {
@@ -79,7 +79,7 @@ const grundsaetze = [
 
     <p class="legende">
       {
-        (['laeuft', 'arbeit', 'geplant'] as const).map((st) => (
+        verwendeteStufen().map((st) => (
           <span class="legende__glied">
             <Standmarke stand={st} />
             <span>{STANDTEXTE[st]}</span>

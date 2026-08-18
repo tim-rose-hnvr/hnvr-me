@@ -86,6 +86,18 @@ const COUNTDOWN_STYLES = [
   'dots', 'heartbeat', 'flash', 'zoom', 'spin3d', 'wave', 'pixel', 'sparkle', 'balloon', 'gradient',
 ];
 
+/* Die Kunststile, die die Box rechnen kann. Was sie tun, steht in
+   `src/effekte.ts`; hier stehen nur die Kennungen, damit der Server nichts
+   annimmt, was der Booth nicht zeichnen kann. Eine Liste, zwei Nutzungen:
+   die Vorgabe unten und die Pruefung beim Speichern. */
+/* Wie lange ein frisch abgelegtes Blatt durch eine neue Fassung ersetzt
+   werden darf. Zehn Minuten sind grosszuegig fuer einen Gast, der am
+   Ergebnis Stile durchprobiert, und viel zu kurz, um an die Aufnahme des
+   Vorgaengers zu kommen. */
+const ERSETZ_FRIST = 10 * 60 * 1000;
+
+const EFFEKT_IDS = ['schwarzweiss', 'sepia', 'comic', 'aquarell', 'oel', 'popart'];
+
 const DEFAULT_SETTINGS = {
   eventName: 'Youbooth Event',
   tagline: 'youbooth.me',
@@ -282,6 +294,11 @@ const DEFAULT_SETTINGS = {
   faceFinder: { enabled: false, showHint: true, consent: true, consentText: '' },
   /* AR-Gesichtsfilter (live, Premium-Modul) */
   arFilters: { enabled: false },
+  /* Kunststile im Ergebnis, gerechnet auf der Box. `erlaubt` sagt, was am
+     Screen zur Wahl steht — eine Firmenfeier will oft nur Schwarzweiss,
+     eine Trauung gar nichts. Eine leere Liste blendet die Wahl aus.
+     „Ohne" steht nicht drin: Das ist kein Stil, sondern dessen Fehlen. */
+  effekte: { erlaubt: [...EFFEKT_IDS] },
   /* Generative KI-Kunststile über eigenen Endpoint (lokale GPU / Cloud).
      Vertrag: POST {image (dataURL), prompt} -> {image (dataURL)}. Key bleibt am Server. */
   aiArt: { enabled: false, endpoint: '', key: '' },
@@ -754,7 +771,13 @@ if (!fs.existsSync(path.join(OBERFLAECHE, 'index.html'))) {
 app.use(express.static(OBERFLAECHE));
 /* API-Antworten nie cachen (sonst zeigt ein Reload alte Einstellungen) */
 app.use('/api', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
-app.use('/photos', express.static(PHOTOS_DIR, { maxAge: '1d' }));
+/* Ein Tag Cache, aber mit Rueckfrage. Seit ein Blatt am Ergebnisbildschirm
+   durch eine andere Fassung ERSETZT werden kann (Kunststile), behaelt die
+   Datei ihren Namen und aendert ihren Inhalt. Ohne `must-revalidate` zeigte
+   die Wand am Beamer weiter die alte Fassung, bis jemand hart neu laedt —
+   und der Gast sieht am Screen etwas anderes als seine Gaeste an der Wand.
+   Die Rueckfrage kostet ein 304, nicht das Bild. */
+app.use('/photos', express.static(PHOTOS_DIR, { maxAge: '1d', etag: true, lastModified: true, cacheControl: true, setHeaders: (res) => res.setHeader('Cache-Control', 'public, max-age=86400, must-revalidate') }));
 /* Eigene Schriften. Eigener Pfad, damit sie nicht mit den mitgelieferten
    unter /schrift/ durcheinandergehen. */
 app.use('/eigene-schrift', express.static(SCHRIFT_DIR, { maxAge: '7d' }));
@@ -1332,7 +1355,7 @@ const EVENT_EINSTELLUNGEN = [
      ans Event — eine Hochzeit spricht anders als eine Firmenfeier, und wie
      viel Papier ein Abend kosten darf, ist eine Frage des Auftrags, nicht
      des Geräts. */
-  'texte', 'druckGrenzen', 'greenscreen', 'survey', 'faceFinder',
+  'texte', 'druckGrenzen', 'greenscreen', 'survey', 'faceFinder', 'effekte',
   /* Seit 1.26: die gestalteten Gäste-Bildschirme. Sie gehören ans Event —
      eine Hochzeit sieht anders aus als ein Messestand, und beides läuft auf
      derselben Box. `front` bleibt für alte Events mit dabei. */
@@ -2705,6 +2728,11 @@ app.put('/api/settings', requireKey, (req, res) => {
   }
   if (b.arFilters && typeof b.arFilters === 'object') {
     if (typeof b.arFilters.enabled === 'boolean') settings.arFilters.enabled = b.arFilters.enabled;
+  }
+  if (b.effekte && typeof b.effekte === 'object' && Array.isArray(b.effekte.erlaubt)) {
+    settings.effekte.erlaubt = b.effekte.erlaubt
+      .filter(e => EFFEKT_IDS.includes(e))
+      .slice(0, EFFEKT_IDS.length);
   }
   if (b.aiArt && typeof b.aiArt === 'object') {
     if (typeof b.aiArt.enabled === 'boolean') settings.aiArt.enabled = b.aiArt.enabled;
@@ -4355,7 +4383,7 @@ function bildAufnehmen(mime, rohdaten, quelle, modus, gesichter) {
 }
 
 app.post('/api/photos', (req, res) => {
-  const { image, source, mode, gesichter } = req.body || {};
+  const { image, source, mode, gesichter, ersetzt } = req.body || {};
   const match = /^data:(image\/(?:jpeg|png|gif|webp)|video\/(?:webm|mp4));base64,(.+)$/.exec(image || '');
   if (!match) return res.status(400).json({ error: 'Ungültige Bilddaten' });
   const ext = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp', 'video/webm': 'webm', 'video/mp4': 'mp4' }[match[1]];
@@ -4364,14 +4392,42 @@ app.post('/api/photos', (req, res) => {
      Wer den Ordner kopiert, kopiert die Zuordnung mit. */
   const arten = ['foto', 'streifen', 'boomerang', 'gif', 'gast'];
   const artName = arten.includes(mode) ? mode : (source === 'guest' ? 'gast' : 'foto');
-  const name = `youbooth_${Date.now()}_${artName}_${crypto.randomBytes(3).toString('hex')}.${ext}`;
+
+  /* Ersetzen statt neu anlegen: Der Gast wählt am Ergebnis einen Kunststil,
+     und das Blatt wird neu gerechnet. Ohne diesen Weg entstünde je Stil eine
+     eigene Datei — sieben Blätter für eine Aufnahme, in Galerie, Wand und
+     Löschfrist.
+     Das ist bewusst KEIN Löschrecht. Ueberschrieben werden darf nur eine
+     Datei, die es gibt, die dem Namensschema der Box folgt und die jünger
+     ist als ERSETZ_FRIST — also das Blatt der Runde, die gerade laeuft.
+     Alles Aeltere gehoert einem anderen Gast und bleibt unberuehrbar; wer
+     wirklich loeschen will, braucht weiterhin den Betreiberschluessel. */
+  const ersatzName = typeof ersetzt === 'string' ? path.basename(ersetzt) : '';
+  const darfErsetzen = ersatzName
+    && /^youbooth_\d+_[a-z]+_[0-9a-f]{6}\.[a-z0-9]+$/.test(ersatzName)
+    && ersatzName.endsWith('.' + ext)
+    && fs.existsSync(path.join(PHOTOS_DIR, ersatzName))
+    && Date.now() - fs.statSync(path.join(PHOTOS_DIR, ersatzName)).mtimeMs < ERSETZ_FRIST;
+
+  const name = darfErsetzen
+    ? ersatzName
+    : `youbooth_${Date.now()}_${artName}_${crypto.randomBytes(3).toString('hex')}.${ext}`;
   const rohdaten = Buffer.from(match[2], 'base64');
   fs.writeFileSync(path.join(PHOTOS_DIR, name), rohdaten);
   const meta = { ...photoMeta(name), source: source || 'booth', art: artName };
   genutzt();
-  broadcast({ type: 'photo', photo: meta });
-  recordStat(['photo', 'strip', 'boomerang', 'gif'].includes(mode) ? mode : (source === 'guest' ? 'guest' : 'photo'));
-  meldeAnZentrale('foto');   // gedrosselt auf höchstens 1× pro Minute
+  /* Beim Ersetzen bleibt der Name. Gemeldet wird trotzdem als `photo`:
+     Wand, Galerie und Cockpit holen darauf die Liste neu, und weil die
+     Datei unter demselben Namen liegt, haengt kein zweites Bild daneben.
+     `ersetzt` sagt einer Oberflaeche, die es genauer wissen will, was
+     passiert ist — noetig ist es fuer keine. */
+  broadcast({ type: 'photo', photo: meta, ersetzt: darfErsetzen });
+  /* Beim Ersetzen wird nicht noch einmal gezaehlt: Es ist dieselbe Aufnahme
+     in einer anderen Fassung, kein zweiter Gast. */
+  if (!darfErsetzen) {
+    recordStat(['photo', 'strip', 'boomerang', 'gif'].includes(mode) ? mode : (source === 'guest' ? 'guest' : 'photo'));
+    meldeAnZentrale('foto');   // gedrosselt auf höchstens 1× pro Minute
+  }
 
   /* Photomosaik-Sticker: jede ankommende Kachel als kleinen Sticker drucken (haptische Wand) */
   if (settings.mosaicMode === 'photomosaic' && settings.mosaicSticker && CAN_PRINT && settings.printer

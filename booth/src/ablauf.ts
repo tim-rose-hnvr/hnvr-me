@@ -15,6 +15,7 @@ import {
   ladeEinstellungen,
   pinStimmt,
   sichereEinstellungen,
+  sichereGreenscreen,
   standardEinstellungen,
 } from './einstellungen';
 import { alsBilddaten, alsBlob, alsDoppelstreifen, zeichneMitVorlage } from './layout';
@@ -32,6 +33,7 @@ import {
 } from './ausgabe';
 import { raeumeAuf, sichere, anzahl as gesamtzahl, type Aufnahme } from './speicher';
 import { amDraht, istNeuladen, type Nachricht } from './draht';
+import { EFFEKTE, stelleFrei, wende, type Effektkennung } from './effekte';
 
 type Schritt = 'attract' | 'auswahl' | 'aufnahme' | 'ergebnis' | 'ausgabe';
 
@@ -49,6 +51,19 @@ export class Booth {
   private bewegtbild: Aufnahme | null = null;
   private ergebnisKennung = '';
   private sitzungen = 0;
+
+  /** Gewählter Kunststil. Gilt für die laufende Runde, nicht für die Box. */
+  private effekt: Effektkennung = 'ohne';
+  /** Läuft gerade eine Neuberechnung? Solange bleiben die Stile gesperrt. */
+  private rechnet = false;
+  /** Der Greenscreen-Hintergrund, einmal geladen. */
+  private hintergrundbild: HTMLImageElement | null = null;
+  /**
+   * Die Aufnahmen in der Fassung, die im Blatt steckt. Die Schleife im
+   * Ergebnis zeigt sie — nicht die rohen: Sonst liefe die Vorschau ohne
+   * den Stil, den der Gast gerade gewählt hat.
+   */
+  private gezeigteAufnahmen: HTMLCanvasElement[] = [];
 
   private leerlaufUhr: number | null = null;
   private weiterUhr: number | null = null;
@@ -86,6 +101,11 @@ export class Booth {
 
     // Welche Vorlagen es gibt und welche eingestellt ist, weiß die Box.
     void ladeVorlagen();
+
+    // Der Greenscreen-Hintergrund wird einmal geladen, nicht bei jeder
+    // Aufnahme: Ein Bild aus einer Data-URL zu dekodieren kostet Zeit, die
+    // sonst zwischen Blitz und Ergebnis läge.
+    void this.ladeHintergrund();
 
     // Ab hier meldet die Box selbst, wenn sich etwas ändert.
     amDraht('booth', (n) => this.vonDerBox(n));
@@ -135,6 +155,9 @@ export class Booth {
 
     if (n.type === 'settings' || n.type === 'hello') {
       this.einstellungen = ladeEinstellungen();
+      // Ein neuer Hintergrund für die Freistellung wird sofort geladen, nicht
+      // erst beim nächsten Blitz.
+      void this.ladeHintergrund();
       if (ruht) this.zeichne();
     }
 
@@ -190,8 +213,11 @@ export class Booth {
     this.stoppeWeiter();
     this.stoppeAnimation();
     this.aufnahmen = [];
+    this.gezeigteAufnahmen = [];
     this.ergebnis = null;
     this.bewegtbild = null;
+    // Der Stil gehört dem Gast, der ihn gewählt hat. Der nächste fängt ohne an.
+    this.effekt = 'ohne';
     this.schritt = 'attract';
     this.zeichne();
   }
@@ -398,7 +424,7 @@ export class Booth {
   private ergebnisfeld(): HTMLElement {
     const feld = element('div', 'bild');
 
-    if (this.art.bewegt && this.aufnahmen.length > 1) {
+    if (this.art.bewegt && this.aufnahmen.length > 1 && !this.rechnet) {
       // Bewegtbild: die Serie läuft als Schleife, vor und zurück.
       const bild = document.createElement('img');
       bild.className = 'ergebnis';
@@ -418,7 +444,8 @@ export class Booth {
 
   private spieleSerie(ziel: HTMLImageElement): void {
     this.stoppeAnimation();
-    const bilder = this.aufnahmen.map((a) => a.toDataURL('image/jpeg', 0.85));
+    const reihenfolge = this.gezeigteAufnahmen.length ? this.gezeigteAufnahmen : this.aufnahmen;
+    const bilder = reihenfolge.map((a) => a.toDataURL('image/jpeg', 0.85));
     const reihe = [...bilder, ...bilder.slice(1, -1).reverse()];
     let i = 0;
     ziel.src = reihe[0] ?? '';
@@ -445,10 +472,16 @@ export class Booth {
     nochmal.textContent = 'Nochmal';
     nochmal.addEventListener('click', () => void this.starteSerie());
 
-    spalte.append(titel, zaehler, behalten, nochmal);
+    spalte.append(titel, zaehler);
+    const stile = this.stilreihe();
+    if (stile) spalte.append(stile);
+    spalte.append(behalten, nochmal);
 
-    // Auto-Weiter: die Box darf nicht am Ergebnis hängen bleiben.
+    /* Auto-Weiter: die Box darf nicht am Ergebnis hängen bleiben. Solange
+       ein Stil gerechnet wird, läuft die Uhr nicht — sonst stünde der Gast
+       schon in der Ausgabe, wenn sein Bild fertig ist. */
     this.stoppeWeiter();
+    if (this.rechnet) return spalte;
     let rest = this.einstellungen.autoWeiter;
     const tick = () => {
       rest -= 1;
@@ -463,6 +496,43 @@ export class Booth {
     this.weiterUhr = window.setTimeout(tick, 1000);
 
     return spalte;
+  }
+
+  /**
+   * Die Stilwahl unter dem Ergebnis.
+   *
+   * Sie erscheint nur, wenn der Betreiber mehr als nichts freigegeben hat —
+   * eine Reihe mit einem einzigen Knopf „Ohne" ist keine Wahl. Und sie
+   * erscheint nicht beim Bewegtbild-Rechnen, weil dort jede Änderung eine
+   * ganze Serie neu rechnet.
+   */
+  private stilreihe(): HTMLElement | null {
+    const frei = EFFEKTE.filter(
+      (e) => e.id === 'ohne' || this.einstellungen.effekte.includes(e.id)
+    );
+    if (frei.length < 2) return null;
+
+    const reihe = element('div', 'stile');
+    reihe.dataset.feld = 'stile';
+
+    frei.forEach((e) => {
+      const knopf = element('button', 'stil');
+      knopf.dataset.stil = e.id;
+      if (e.id === this.effekt) knopf.classList.add('gewaehlt');
+      if (this.rechnet) knopf.setAttribute('disabled', 'true');
+
+      const name = element('span', 'stil__name');
+      name.textContent = e.name;
+      knopf.append(name, mono(this.rechnet && e.id === this.effekt ? 'wird gerechnet …' : e.zeile));
+
+      knopf.addEventListener('click', () => {
+        void this.waehleEffekt(e.id);
+        this.setzeLeerlauf();
+      });
+      reihe.append(knopf);
+    });
+
+    return reihe;
   }
 
   private ausgabespalte(): HTMLElement {
@@ -541,6 +611,8 @@ export class Booth {
     this.stoppeWeiter();
     this.stoppeAnimation();
     this.aufnahmen = [];
+    this.gezeigteAufnahmen = [];
+    this.effekt = 'ohne';
     this.geheZu('aufnahme');
 
     // Wie viele Bilder gebraucht werden, entscheidet die Vorlage — nicht die
@@ -650,17 +722,82 @@ export class Booth {
     blitz.classList.add('aus');
   }
 
-  /** Setzt die Aufnahmen ins Druckbild und sichert sie sofort. */
-  private async baueErgebnis(): Promise<void> {
+  /**
+   * Die Aufnahmen, wie sie ins Blatt kommen: erst freigestellt, dann im
+   * gewählten Stil.
+   *
+   * Die Reihenfolge ist nicht beliebig. Wer zuerst stilisiert, verschiebt
+   * das Grün des Tuchs — Sepia macht daraus ein Braun, und danach findet
+   * die Freistellung nichts mehr, wonach sie suchen könnte.
+   *
+   * Der Stil greift auf die Aufnahme, nicht auf das fertige Blatt: Rahmen,
+   * Logo und Eventname bleiben in ihren Farben. Ein sepiafarbenes
+   * Firmenlogo wäre kein Effekt, sondern ein Fehler.
+   */
+  private bearbeiteAufnahmen(): HTMLCanvasElement[] {
+    const gs = this.einstellungen.greenscreen;
+    // Ohne Hintergrundbild wird nicht freigestellt: Ein durchsichtiges Bild
+    // im Blatt sieht aus wie ein Fehler, nicht wie ein Effekt.
+    const frei =
+      gs.an && this.hintergrundbild
+        ? this.aufnahmen.map((a) =>
+            stelleFrei(a, this.hintergrundbild, {
+              an: true,
+              farbe: gs.farbe,
+              toleranz: gs.toleranz,
+            })
+          )
+        : this.aufnahmen;
+
+    return this.effekt === 'ohne' ? frei : frei.map((a) => wende(a, this.effekt));
+  }
+
+  /**
+   * Wählt einen Kunststil und rechnet das Blatt neu.
+   *
+   * Neu gerechnet heißt auch: neu abgelegt. Die Datei auf der Box ist das,
+   * was Galerie, Wand und QR-Code zeigen — sie muss dasselbe zeigen wie der
+   * Screen. Erst das neue Blatt sichern, dann das alte löschen: Andersherum
+   * wäre die Aufnahme zwischen den beiden Schritten weg.
+   */
+  private async waehleEffekt(id: Effektkennung): Promise<void> {
+    if (this.rechnet || id === this.effekt || this.aufnahmen.length === 0) return;
+
+    this.effekt = id;
+    this.rechnet = true;
+    // Während gerechnet wird, springt der Booth nicht weiter — der Gast
+    // hat gerade etwas gewählt und würde die Antwort verpassen.
+    this.stoppeWeiter();
+    this.zeichne();
+
+    try {
+      await this.baueErgebnis(true);
+    } finally {
+      this.rechnet = false;
+      this.zeichne();
+    }
+  }
+
+  /**
+   * Setzt die Aufnahmen ins Druckbild und sichert sie sofort.
+   *
+   * `ersatz` heißt: Es gab schon ein Blatt dieser Runde, und das neue tritt
+   * an seine Stelle. Dann wird die Runde nicht noch einmal gezählt, und die
+   * alte Datei verschwindet von der Box.
+   */
+  private async baueErgebnis(ersatz = false): Promise<void> {
     const werte = werteJetzt(
       this.einstellungen.event,
       this.einstellungen.box,
       this.sitzungen + 1
     );
 
+    const quellen = this.bearbeiteAufnahmen();
+    this.gezeigteAufnahmen = quellen;
+
     if (this.art.id === 'streifen') {
       const vorlage = findeVorlage(eingestellt().streifen, 'streifen');
-      const streifen = await zeichneMitVorlage(vorlage, this.aufnahmen, werte);
+      const streifen = await zeichneMitVorlage(vorlage, quellen, werte);
       // Doppeln gilt nur für das schmale 2×6-Blatt: Zwei davon passen auf ein
       // 4×6, das der Cutter mittig trennt. Eine Vorlage, die schon auf 4×6
       // gestaltet ist, würde beim Doppeln auf halbe Größe zusammenfallen —
@@ -673,21 +810,28 @@ export class Booth {
     } else {
       // Bewegtbild: als Blatt gesichert wird das erste Bild der Serie.
       const vorlage = findeVorlage(eingestellt().foto, 'foto');
-      this.ergebnis = await zeichneMitVorlage(vorlage, [this.aufnahmen[0]!], werte);
+      this.ergebnis = await zeichneMitVorlage(vorlage, [quellen[0]!], werte);
     }
 
+    /* Beim Stilwechsel tritt das neue Blatt an die Stelle des alten — unter
+       demselben Namen. Das ist wichtiger, als es aussieht: Der QR-Code, den
+       der Gast vielleicht schon abfotografiert hat, zeigt auf diesen Namen,
+       und die Wand am Beamer hängt schon daran. Ein neuer Name hieße: sieben
+       Blätter für eine Aufnahme und ein toter QR-Code. */
+    const altesBlatt = ersatz ? this.ergebnisKennung : '';
+    const altesBewegtbild = ersatz ? this.bewegtbild?.id ?? '' : '';
     this.ergebnisKennung = '';
     this.bewegtbild = null;
 
     try {
       // Die Box vergibt den Namen — sie legt die Datei an, und ab da ist der
       // Name die Kennung für QR-Code, Wand und Galerie.
-      const abgelegt = await sichere(alsBilddaten(this.ergebnis), this.art.id);
+      const abgelegt = await sichere(alsBilddaten(this.ergebnis), this.art.id, altesBlatt);
       this.ergebnisKennung = abgelegt.id;
-      void this.zaehleAuf();
+      if (!ersatz) void this.zaehleAuf();
       // Das Bewegtbild kommt danach: Es dauert länger, und der Gast soll sein
       // Bild sehen, ohne darauf zu warten.
-      if (this.art.bewegt) void this.baueBewegtbild(this.aufnahmen.slice());
+      if (this.art.bewegt) void this.baueBewegtbild(quellen.slice(), altesBewegtbild);
     } catch {
       // Sichern fehlgeschlagen: die Aufnahme bleibt trotzdem am Screen,
       // damit der Gast sein Bild bekommt.
@@ -702,7 +846,7 @@ export class Booth {
    * Kodiert die Serie als GIF und legt sie zur Aufnahme dazu. Läuft nach dem
    * Sichern des Blattes; schlägt es fehl, bleibt das Blatt unberührt.
    */
-  private async baueBewegtbild(rahmen: HTMLCanvasElement[]): Promise<void> {
+  private async baueBewegtbild(rahmen: HTMLCanvasElement[], ersetzt = ''): Promise<void> {
     const gehoert = this.ergebnisKennung;
     try {
       const bewegt = await alsGif(rahmen, {
@@ -714,7 +858,7 @@ export class Booth {
       // Das GIF ist eine eigene Aufnahme auf der Box, kein Anhängsel des
       // Blattes: So sieht es die Galerie, die Wand und jedes Handy im WLAN —
       // und der QR-Code kann direkt darauf zeigen.
-      const abgelegt = await sichere(await alsDatenadresse(bewegt.blob), this.art.id);
+      const abgelegt = await sichere(await alsDatenadresse(bewegt.blob), this.art.id, ersetzt);
 
       if (this.ergebnisKennung === gehoert) {
         this.bewegtbild = abgelegt;
@@ -723,6 +867,33 @@ export class Booth {
       }
     } catch {
       // Ohne Bewegtbild bleibt das Blatt — der Gast bekommt sein Bild.
+    }
+  }
+
+  /**
+   * Lädt das Hintergrundbild für die Freistellung. Schlägt es fehl, wird
+   * nicht freigestellt — ein durchsichtiger Gast ist schlimmer als ein Tuch
+   * im Bild.
+   */
+  private async ladeHintergrund(): Promise<void> {
+    const quelle = this.einstellungen.greenscreen.hintergrund;
+    if (!quelle) {
+      this.hintergrundbild = null;
+      return;
+    }
+    if (this.hintergrundbild?.src === quelle) return;
+
+    try {
+      this.hintergrundbild = await new Promise<HTMLImageElement>((fertig, schiefgegangen) => {
+        const bild = new Image();
+        bild.addEventListener('load', () => fertig(bild), { once: true });
+        bild.addEventListener('error', () => schiefgegangen(new Error('Hintergrund')), {
+          once: true,
+        });
+        bild.src = quelle;
+      });
+    } catch {
+      this.hintergrundbild = null;
     }
   }
 
@@ -952,6 +1123,60 @@ export class Booth {
       attractstile.append(knopf);
     });
 
+    /* Freistellung vor dem Tuch. Der Hintergrund kommt aus einer Datei am
+       Gerät — nicht aus dem Netz: Eine Box in einer Scheune hat keins, und
+       das Bild soll auch nach dem Abbau noch da sein. */
+    const freistellung = element('div', 'chips');
+    freistellung.append(
+      schalter('Freistellung', e.greenscreen.an, (v) => (e.greenscreen.an = v))
+    );
+
+    const hintergrundwahl = element('label', 'chip') as HTMLLabelElement;
+    hintergrundwahl.textContent = e.greenscreen.hintergrund
+      ? 'Hintergrund wechseln'
+      : 'Hintergrund wählen';
+    const datei = document.createElement('input');
+    datei.type = 'file';
+    datei.accept = 'image/*';
+    datei.hidden = true;
+    datei.addEventListener('change', async () => {
+      const gewaehlt = datei.files?.[0];
+      if (!gewaehlt) return;
+      try {
+        e.greenscreen.hintergrund = await alsHintergrund(gewaehlt);
+        hintergrundwahl.textContent = 'Hintergrund gewählt';
+      } catch {
+        hintergrundwahl.textContent = 'Bild ging nicht';
+      }
+    });
+    hintergrundwahl.append(datei);
+    freistellung.append(hintergrundwahl);
+
+    if (e.greenscreen.hintergrund) {
+      const weg = element('button', 'chip');
+      weg.textContent = 'Hintergrund entfernen';
+      weg.addEventListener('click', () => {
+        e.greenscreen.hintergrund = null;
+        hintergrundwahl.textContent = 'Hintergrund wählen';
+        weg.remove();
+      });
+      freistellung.append(weg);
+    }
+
+    /* Welche Kunststile am Ergebnis zur Wahl stehen. Der Betreiber entscheidet
+       das je Event: Eine Firmenfeier will oft nur Schwarzweiss, eine Trauung
+       gar keinen. Wird alles abgewaehlt, verschwindet die Reihe am Screen —
+       eine Wahl mit einem einzigen Eintrag ist keine. */
+    const kunststile = element('div', 'chips');
+    EFFEKTE.filter((k) => k.id !== 'ohne').forEach((k) => {
+      const knopf = schalter(k.name, e.effekte.includes(k.id), (an) => {
+        e.effekte = an
+          ? [...e.effekte, k.id]
+          : e.effekte.filter((vorhanden) => vorhanden !== k.id);
+      });
+      kunststile.append(knopf);
+    });
+
     const schalterreihe = element('div', 'chips');
     schalterreihe.append(
       schalter('Übergänge', e.uebergang, (v) => (e.uebergang = v)),
@@ -965,7 +1190,9 @@ export class Booth {
     const sichern = element('button', 'knopf knopf--amber knopf--breit');
     sichern.textContent = 'Sichern und schließen';
     sichern.addEventListener('click', () => {
-      sichereEinstellungen(e);
+      void sichereEinstellungen(e);
+      // Die Freistellung geht ihren eigenen Weg — siehe `sichereGreenscreen`.
+      void sichereGreenscreen(e.greenscreen).then(() => this.ladeHintergrund());
       this.einstellungen = e;
       tafel.decke.remove();
       this.zeichne();
@@ -1007,6 +1234,10 @@ export class Booth {
       stile,
       mono('Attract-Stil'),
       attractstile,
+      mono('Kunststile am Ergebnis'),
+      kunststile,
+      mono('Freistellung'),
+      freistellung,
       mono('Schalter'),
       schalterreihe,
       sichern,
@@ -1032,6 +1263,36 @@ async function boxAdresse(): Promise<string> {
 }
 
 /** Blob als Datenadresse — so nimmt die Box sie über die Schnittstelle an. */
+/**
+ * Bereitet ein gewähltes Bild als Greenscreen-Hintergrund auf.
+ *
+ * Verkleinert wird nicht aus Ordnungsliebe: Die Einstellungen der Box gehen
+ * als eine JSON-Datei über die Leitung, und ein Foto vom Handy bringt
+ * zwölf Megabyte mit. Hinter der Aufnahme steht es ohnehin nur in deren
+ * Auflösung — mehr als 1920 Punkte Breite sieht niemand.
+ */
+async function alsHintergrund(datei: File): Promise<string> {
+  const bild = await new Promise<HTMLImageElement>((fertig, schiefgegangen) => {
+    const b = new Image();
+    b.addEventListener('load', () => fertig(b), { once: true });
+    b.addEventListener('error', () => schiefgegangen(new Error('Bild')), { once: true });
+    b.src = URL.createObjectURL(datei);
+  });
+
+  const faktor = Math.min(1, 1920 / Math.max(1, bild.naturalWidth));
+  const flaeche = document.createElement('canvas');
+  flaeche.width = Math.round(bild.naturalWidth * faktor);
+  flaeche.height = Math.round(bild.naturalHeight * faktor);
+  const stift = flaeche.getContext('2d');
+  if (!stift) throw new Error('Zeichenfläche nicht verfügbar');
+  stift.drawImage(bild, 0, 0, flaeche.width, flaeche.height);
+  URL.revokeObjectURL(bild.src);
+
+  // JPEG, nicht PNG: Ein Hintergrund braucht keine Transparenz, und PNG
+  // wäre bei einem Foto um ein Vielfaches größer.
+  return flaeche.toDataURL('image/jpeg', 0.86);
+}
+
 function alsDatenadresse(blob: Blob): Promise<string> {
   return new Promise((fertig, fehler) => {
     const leser = new FileReader();

@@ -34,6 +34,13 @@ const wege = [
 
 const laufendeWege = wege.filter((w) => w.stand === 'laeuft').length;
 
+/* Die Legende unter den Wegen erklärt die Marken, die dort stehen — nicht
+   die drei, die es theoretisch gibt. Steht kein Weg auf „In Arbeit", fehlt
+   die Zeile, statt eine Farbe zu erklären, die niemand findet. */
+const wegstufen = (['laeuft', 'arbeit', 'geplant'] as const).filter((st) =>
+  wege.some((w) => w.stand === st)
+);
+
 const kennzahlen = [
   { wert: String(vorlagenzahlen.gesamt), text: 'Vorlagen' },
   { wert: '48', text: 'Streifen' },
@@ -224,7 +231,7 @@ const technik = [
 
     <p class="legende">
       {
-        (['laeuft', 'arbeit', 'geplant'] as const).map((st) => (
+        wegstufen.map((st) => (
           <span class="legende__glied">
             <Standmarke stand={st} hell />
             <span>{STANDTEXTE[st]}</span>

@@ -463,6 +463,16 @@ p {
   color: var(--amber);
 }
 
+/* Als Verweis sieht ein Chip aus wie ein Chip — nur ohne Unterstrich. */
+a.chip {
+  text-decoration: none;
+}
+
+a.chip:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
 .fortschritt {
   display: flex;
   gap: 8px;

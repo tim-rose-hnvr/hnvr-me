@@ -30,6 +30,7 @@ Desktop-App verpackt — auf Windows und macOS. Die Website dazu liegt in `../yo
 ```bash
 npm install
 npm run dev      # Booth im Browser auf http://localhost:4400
+                 #   im Kiosk führen die Einstellungen (PIN) zu allen Oberflächen
                  #   /cockpit.html      Betreiber-Ansicht
                  #   /wand.html         Foto-Wall für Beamer
                  #   /galerie.html      Kunden-Galerie

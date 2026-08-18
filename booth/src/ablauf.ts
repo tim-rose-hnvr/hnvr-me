@@ -893,8 +893,27 @@ export class Booth {
       this.zeichne();
     });
 
+    // Im Kiosk ist dies der einzige Weg zu den anderen Oberflächen der Box.
+    const wege = element('div', 'chips');
+    (
+      [
+        ['Cockpit', './cockpit.html'],
+        ['Editor', './editor.html'],
+        ['Galerie', './galerie.html'],
+        ['Foto-Wall', './wand.html'],
+        ['Einrichtung', './einrichtung.html'],
+      ] as const
+    ).forEach(([name, ziel]) => {
+      const glied = element('a', 'chip') as HTMLAnchorElement;
+      glied.href = ziel;
+      glied.textContent = name;
+      wege.append(glied);
+    });
+
     tafel.inhalt.append(
       mono(`Box ${e.box} · Kiosk-PIN ${e.kioskPin}`),
+      mono('Oberflächen'),
+      wege,
       ...felder,
       mono('Countdown-Stil'),
       stile,

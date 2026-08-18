@@ -21,6 +21,7 @@ Desktop-App verpackt — auf Windows und macOS. Die Website dazu liegt in `../yo
 | Installations-Zentrum mit echter Selbstprüfung | läuft |
 | Booth-Editor: Druckvorlagen entwerfen, Vorschau = Druckbild | läuft |
 | Fernauslöser am Telefon der Gäste, aus dem WLAN der Box | läuft (in der Desktop-Hülle) |
+| Bewegung: Attract-Stil, Countdown-Stil, Übergang, Blitz | läuft, im Kiosk-Menü umstellbar |
 | Bewegtbild (Boomerang, GIF) als Datei — eigener GIF-Kodierer | läuft |
 | DSLR-Tethering, Drucker-Sonderfunktionen, Freistellung, Cloud | offen, siehe unten |
 
@@ -126,6 +127,17 @@ Bewusst ein Zähler statt eines Ereignisses: eine verpasste Abfrage verschluckt 
 außen lässt sich nichts weiter anstoßen als das Hochzählen einer Zahl. Ausgelöst wird nur aus
 Attract oder Auswahl — wer während einer laufenden Serie tippt, unterbricht niemanden. Der QR zum
 Auslöser steht im Attract, aber nur, wenn die Box den Dienst tatsächlich anbietet.
+
+## Bewegung
+
+Drei Stellschrauben im Kiosk-Menü: Attract-Stil (ruhig, pulsender Startknopf, Laufband mit eigenem
+Text), Countdown-Stil (Ring, Zahl, Balken) und der weiche Auftritt beim Schrittwechsel. Dazu der
+Blitz im Auslösemoment.
+
+Zwei Regeln stecken darin: Der Auftritt dauert 220 ms und der Puls atmet über 2,4 s — nichts
+blinkt, denn ein zappelnder Kiosk wirkt kaputt statt lebendig. Und wer am Gerät „Bewegung
+reduzieren" eingestellt hat, bekommt keine Schleifen; das entscheidet das Betriebssystem, nicht das
+Menü.
 
 ## Regeln, die im Code stecken
 

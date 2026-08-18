@@ -118,6 +118,39 @@ export const oberflaechen: Oberflaeche[] = [
     ],
   },
   {
+    id: 'booth-animationen',
+    titel: 'Bewegung am Screen',
+    kicker: 'Attract, Countdown, Übergang',
+    h1: 'Bewegung, die führt statt ablenkt',
+    sub: 'Der Attract holt Gäste heran, der Countdown sagt ihnen, wann sie stillhalten sollen, der Übergang zeigt, dass etwas passiert ist. Jede Bewegung hat eine Aufgabe — und lässt sich abschalten.',
+    screenshot: '/assets/app-attract.png',
+    bildbeschreibung: 'Attract-Bild der Box mit Laufband und QR-Code zum Auslöser',
+    koennen: [
+      'Attract in drei Stufen: ruhig, pulsender Startknopf oder Laufband mit eigenem Text',
+      'Drei Countdown-Stile: Ring, Zahl, Balken',
+      'Blitz im Auslösemoment, abschaltbar',
+      'Weicher Auftritt beim Schrittwechsel, abschaltbar',
+      'Boomerang und GIF laufen schon im Ergebnis animiert, vor dem Sichern',
+      'Umgestellt wird im Kiosk-Menü, ohne Neustart und ohne Datei zu tauschen',
+    ],
+    regeln: [
+      {
+        titel: 'Weniger Bewegung heißt weniger Bewegung',
+        text: 'Wer am Gerät „Bewegung reduzieren" eingestellt hat, bekommt keine Schleifen und keinen Auftritt. Das ist keine Einstellung im Menü, sondern die des Betriebssystems.',
+      },
+      {
+        titel: 'Kurz statt auffällig',
+        text: 'Der Auftritt dauert 220 Millisekunden, der Puls atmet über zwei Sekunden. Nichts blinkt: Ein Kiosk, der zappelt, wirkt kaputt statt lebendig.',
+      },
+    ],
+    offen:
+      'Einen Animations-Editor gibt es nicht. Videohintergründe, Partikel und eigene Übergänge je Event stehen im Katalog, aber nicht in der Software — sie kosten Rechenzeit, die beim Kamerabild fehlt.',
+    knoepfe: [
+      { text: 'Booth-Flow ansehen', ziel: '/oberflaechen/fotobox-system' },
+      { text: 'Software laden', ziel: '/download' },
+    ],
+  },
+  {
     id: 'iphone-apps',
     titel: 'Auslöser am Telefon',
     kicker: 'Im WLAN der Box',

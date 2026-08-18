@@ -19,7 +19,7 @@ selbst (`/oberflaechen/*`) — die entstehen als eigenständige Anwendung, siehe
 | `/kontakt`, `/anmelden` | fertig, kein Dienst dahinter |
 | `/design-system` | fertig, liest die echten Tokens |
 | `/impressum`, `/datenschutz`, `/agb` | Gerüst mit Platzhaltern, rechtlich zu prüfen |
-| App-Oberflächen `/oberflaechen/*` | Booth-Flow, Editor, Foto-Wall, Galerie, Onboarding stehen |
+| App-Oberflächen `/oberflaechen/*` | alle sieben stehen, mit Screenshots aus der laufenden Software |
 
 Offene Routen sind erreichbar und zeigen eine „In Arbeit"-Seite mit Verweis auf die Entwurfsdatei.
 

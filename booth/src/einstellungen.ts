@@ -4,6 +4,8 @@
  */
 
 export type Countdownstil = 'ring' | 'zahl' | 'balken';
+/** Bewegung im Attract: ruhig, pulsender Startknopf oder Laufband. */
+export type Attractstil = 'ruhe' | 'puls' | 'laufband';
 
 export type Einstellungen = {
   /** Anzeigename der Box, steht in der Kopfleiste. */
@@ -15,6 +17,9 @@ export type Einstellungen = {
   /** Sekunden bis zur Aufnahme. */
   countdown: number;
   countdownstil: Countdownstil;
+  attractstil: Attractstil;
+  /** Weicher Übergang zwischen den Schritten. */
+  uebergang: boolean;
   /** Sekunden Leerlauf, bis der Booth zum Attract zurückspringt. */
   leerlauf: number;
   /** Sekunden bis „Auto-Weiter" im Ergebnis. */
@@ -51,6 +56,8 @@ const STANDARD: Einstellungen = {
   laufband: '3 · 2 · 1 · Cheese · Streifen in 13 Sekunden · Fotos nur für dieses Event',
   countdown: 3,
   countdownstil: 'ring',
+  attractstil: 'laufband',
+  uebergang: true,
   leerlauf: 45,
   autoWeiter: 8,
   arten: ['foto', 'streifen', 'boomerang', 'gif'],

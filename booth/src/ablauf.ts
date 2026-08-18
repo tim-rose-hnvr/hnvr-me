@@ -228,7 +228,10 @@ export class Booth {
   }
 
   private buehne(): HTMLElement {
-    const buehne = element('div', 'buehne');
+    const buehne = element(
+      'div',
+      this.einstellungen.uebergang ? 'buehne buehne--auftritt' : 'buehne'
+    );
 
     switch (this.schritt) {
       case 'attract':
@@ -281,7 +284,11 @@ export class Booth {
     const titel = document.createElement('h1');
     titel.textContent = this.einstellungen.attractTitel;
 
-    const start = element('button', 'knopf knopf--amber knopf--gross');
+    const puls = this.einstellungen.attractstil === 'puls';
+    const start = element(
+      'button',
+      puls ? 'knopf knopf--amber knopf--gross knopf--puls' : 'knopf knopf--amber knopf--gross'
+    );
     start.textContent = 'Jetzt starten';
     start.addEventListener('click', () => this.geheZu('auswahl'));
 
@@ -291,6 +298,17 @@ export class Booth {
       start,
       absatz(this.einstellungen.attractZeile)
     );
+
+    // Laufband: der Text steht zweimal darin, damit die Schleife ohne Lücke
+    // durchläuft. Ohne Text kein Band — ein leeres Band wäre nur Bewegung.
+    if (this.einstellungen.attractstil === 'laufband' && this.einstellungen.laufband.trim()) {
+      const band = element('div', 'laufband');
+      const spur = element('div', 'laufband__spur');
+      const text = `${this.einstellungen.laufband}   ·   `;
+      spur.append(mono(text), mono(text));
+      band.append(spur);
+      flaeche.append(band);
+    }
 
     // Der Auslöser fürs Handy: nur zeigen, wenn die Box ihn auch anbietet.
     if (this.fernQr) {
@@ -816,6 +834,7 @@ export class Booth {
 
     text('Event', e.event, (v) => (e.event = v));
     text('Attract-Titel', e.attractTitel, (v) => (e.attractTitel = v));
+    text('Laufband', e.laufband, (v) => (e.laufband = v));
     text('Ausgabe-Adresse', e.ausgabeBasis, (v) => (e.ausgabeBasis = v));
     zahl('Countdown (s)', e.countdown, (v) => (e.countdown = Math.max(1, v)));
     zahl('Leerlauf (s)', e.leerlauf, (v) => (e.leerlauf = Math.max(10, v)));
@@ -834,8 +853,21 @@ export class Booth {
       stile.append(knopf);
     });
 
+    const attractstile = element('div', 'chips');
+    (['ruhe', 'puls', 'laufband'] as const).forEach((stil) => {
+      const knopf = element('button', e.attractstil === stil ? 'chip an' : 'chip');
+      knopf.textContent = stil;
+      knopf.addEventListener('click', () => {
+        e.attractstil = stil;
+        attractstile.querySelectorAll('.chip').forEach((c) => c.classList.remove('an'));
+        knopf.classList.add('an');
+      });
+      attractstile.append(knopf);
+    });
+
     const schalterreihe = element('div', 'chips');
     schalterreihe.append(
+      schalter('Übergänge', e.uebergang, (v) => (e.uebergang = v)),
       schalter('Spiegeln', e.spiegeln, (v) => (e.spiegeln = v)),
       schalter('Blitz', e.blitz, (v) => (e.blitz = v)),
       schalter('Drucken', e.druck, (v) => (e.druck = v)),
@@ -866,6 +898,8 @@ export class Booth {
       ...felder,
       mono('Countdown-Stil'),
       stile,
+      mono('Attract-Stil'),
+      attractstile,
       mono('Schalter'),
       schalterreihe,
       sichern,

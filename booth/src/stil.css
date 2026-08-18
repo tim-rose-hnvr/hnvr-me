@@ -629,3 +629,61 @@ p {
   background: #fff;
   padding: 6px;
 }
+
+/* --- Bewegung ----------------------------------------------------------- */
+
+/* Auftritt beim Schrittwechsel: kurz, sonst wirkt die Box träge. */
+.buehne--auftritt {
+  animation: auftritt 220ms ease-out both;
+}
+
+@keyframes auftritt {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Pulsender Startknopf: zieht den Blick, ohne zu blinken. */
+.knopf--puls {
+  animation: puls 2.4s ease-in-out infinite;
+}
+
+@keyframes puls {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(242, 178, 62, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 18px rgba(242, 178, 62, 0);
+  }
+}
+
+/* Laufband: der Text steht zweimal in der Spur, deshalb genügt -50 %. */
+.laufband {
+  overflow: hidden;
+  width: 100%;
+  margin-top: 18px;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.laufband__spur {
+  display: flex;
+  width: max-content;
+  gap: 0;
+  animation: laufen 26s linear infinite;
+}
+
+@keyframes laufen {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Wer weniger Bewegung eingestellt hat, bekommt weniger Bewegung. */
+@media (prefers-reduced-motion: reduce) {
+  .buehne--auftritt,
+  .knopf--puls,
+  .laufband__spur {
+    animation: none;
+  }
+}

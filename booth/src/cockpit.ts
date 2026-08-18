@@ -9,9 +9,16 @@
 
 import './stil.css';
 import './cockpit.css';
-import { holeEinstellungen, ladeEinstellungen, sichereEinstellungen } from './einstellungen';
+import {
+  holeEinstellungen,
+  ladeEinstellungen,
+  sichereEinstellungen,
+  ENTWICKLUNGEN,
+  FILMLAENGEN,
+  FILMLOOKS,
+} from './einstellungen';
 import { alle, raeumeAuf, type Aufnahme } from './speicher';
-import { druckeInLetzterStunde } from './ausgabe';
+import { druckeInLetzterStunde, qrBild } from './ausgabe';
 import { amDraht } from './draht';
 import { abmelden, verlangeAnmeldung } from './anmeldung';
 
@@ -62,8 +69,384 @@ async function zeichne(ziel: HTMLElement): Promise<void> {
     ]),
     aufnahmenbereich(aufnahmen, ablageFehler),
     eventbereich(einstellungen, ziel),
+    filmbereich(einstellungen, ziel),
+    stimmbereich(einstellungen, ziel),
+    zeitlupenbereich(einstellungen, ziel),
     offenerBereich()
   );
+}
+
+/**
+ * Die Einwegkamera. Der Bereich, den der Betreiber am Sonntagmorgen
+ * aufmacht — deshalb steht der Knopf „Jetzt entwickeln" darin und nicht
+ * irgendwo in den Einstellungen der Box.
+ *
+ * Was hier NICHT steht: die Bilder. Sie liegen bis zur Entwicklung in einem
+ * eigenen Ordner, und auch der Betreiber sieht sie erst danach — dort, wo
+ * alle Aufnahmen liegen. Ein Vorschaufenster hier wäre die eine Hintertür,
+ * die das ganze Versprechen aushebelt.
+ */
+function filmbereich(
+  einstellungen: ReturnType<typeof ladeEinstellungen>,
+  ziel: HTMLElement
+): HTMLElement {
+  const bereich = tag('section', 'cbereich');
+  const kopfzeile = tag('div', 'cbereich__kopf');
+  const titel = document.createElement('h2');
+  titel.textContent = 'Einwegkamera';
+  const stand = mono('wird geladen …');
+  stand.dataset.feld = 'filmstand';
+  kopfzeile.append(titel, stand);
+  bereich.append(kopfzeile);
+
+  const e = einstellungen.einweg;
+
+  /* Der Schalter ist ein Zustand, kein Aufruf — deshalb NICHT amber. Zwei
+     amberfarbene Knöpfe nebeneinander streiten sich um dieselbe Aufmerksamkeit,
+     und die gehört hier dem „Sichern". Welcher Zustand gilt, sagt der Punkt. */
+  const schalter = tag('button', 'cknopf');
+  const punkt = tag('span', e.an ? 'cpunkt cpunkt--an' : 'cpunkt');
+  schalter.append(punkt, document.createTextNode(e.an ? 'Ausgabefach offen' : 'Ausgabefach geschlossen'));
+  schalter.addEventListener('click', async () => {
+    e.an = !e.an;
+    schalter.replaceChildren(document.createTextNode('Sichere …'));
+    await sichereEinstellungen(einstellungen);
+    await zeichne(ziel);
+  });
+
+  const formular = tag('div', 'cformular');
+
+  const wahl = <T extends string | number>(
+    marke: string,
+    liste: readonly { id: T; name: string }[],
+    ist: T,
+    setze: (v: T) => void
+  ) => {
+    const zeile = tag('label', 'czeile');
+    const feld = document.createElement('select');
+    feld.className = 'ceingabe';
+    liste.forEach((eintrag) => {
+      const glied = document.createElement('option');
+      glied.value = String(eintrag.id);
+      glied.textContent = eintrag.name;
+      glied.selected = eintrag.id === ist;
+      feld.append(glied);
+    });
+    feld.addEventListener('change', () => {
+      const gewaehlt = liste.find((l) => String(l.id) === feld.value);
+      if (gewaehlt) setze(gewaehlt.id);
+    });
+    zeile.append(mono(marke), feld);
+    formular.append(zeile);
+  };
+
+  wahl(
+    'Filmlänge',
+    FILMLAENGEN.map((n) => ({ id: n, name: `${n} Aufnahmen` })),
+    e.bilder,
+    (v) => (e.bilder = v)
+  );
+  wahl('Entwicklung', ENTWICKLUNGEN, e.entwicklung, (v) => (e.entwicklung = v));
+  wahl('Look', FILMLOOKS, e.look, (v) => (e.look = v));
+  wahl(
+    'Zweiter Film',
+    [
+      { id: 'nein', name: 'Ein Film je Gast' },
+      { id: 'ja', name: 'Nachladen erlaubt' },
+    ] as const,
+    e.nachladen ? 'ja' : 'nein',
+    (v) => (e.nachladen = v === 'ja')
+  );
+
+  const sichern = tag('button', 'cknopf cknopf--amber');
+  sichern.textContent = 'Sichern';
+  sichern.addEventListener('click', async () => {
+    sichern.textContent = 'Sichere …';
+    const gut = await sichereEinstellungen(einstellungen);
+    sichern.textContent = gut ? 'Sichern' : 'Die Box hat nicht angenommen';
+    if (gut) await zeichne(ziel);
+  });
+
+  const entwickeln = tag('button', 'cknopf');
+  entwickeln.dataset.feld = 'entwickeln';
+  entwickeln.textContent = 'Jetzt entwickeln';
+  entwickeln.addEventListener('click', async () => {
+    entwickeln.textContent = 'Entwickle …';
+    try {
+      const antwort = await fetch('/api/film/entwickeln', { method: 'POST' });
+      const daten = (await antwort.json()) as { entwickelt?: number };
+      entwickeln.textContent = antwort.ok
+        ? `${daten.entwickelt ?? 0} Bilder entwickelt`
+        : 'Die Box hat nicht angenommen';
+    } catch {
+      entwickeln.textContent = 'Die Box antwortet nicht';
+    }
+    window.setTimeout(() => void zeichne(ziel), 1500);
+  });
+
+  const zuruecksetzen = tag('button', 'cknopf cknopf--klein');
+  zuruecksetzen.dataset.feld = 'filme-zuruecksetzen';
+  zuruecksetzen.textContent = 'Filme zurücksetzen';
+  zuruecksetzen.title = 'Für die nächste Veranstaltung. Geht erst, wenn alles entwickelt ist.';
+  zuruecksetzen.addEventListener('click', async () => {
+    zuruecksetzen.textContent = 'Setze zurück …';
+    try {
+      const antwort = await fetch('/api/filme/zuruecksetzen', { method: 'POST' });
+      const daten = (await antwort.json()) as { verworfen?: number; error?: string };
+      zuruecksetzen.textContent = antwort.ok
+        ? `${daten.verworfen ?? 0} Filme verworfen`
+        : daten.error || 'Ging nicht';
+    } catch {
+      zuruecksetzen.textContent = 'Die Box antwortet nicht';
+    }
+    window.setTimeout(() => void zeichne(ziel), 2200);
+  });
+
+  const knoepfe = tag('div', 'creihe');
+  knoepfe.append(schalter, sichern, entwickeln, zuruecksetzen);
+
+  const liste = tag('div', 'cfilme');
+  liste.dataset.feld = 'filme';
+
+  /* Der Aufsteller für den Tisch. Ohne ihn ist das Modul unbenutzbar: Kein
+     Gast tippt eine Adresse mit Doppelpunkt und Portnummer ab. Der Code wird
+     im Browser gerechnet, nicht bei einem Dienst — er zeigt auf das WLAN im
+     Saal und hat außerhalb ohnehin keinen Sinn. */
+  const aufsteller = tag('div', 'caufsteller');
+  aufsteller.dataset.feld = 'aufsteller';
+  bereich.append(
+    hinweis(
+      'Gäste holen ihren Film mit diesem Code am Tisch. Bis zur Entwicklung sieht die ' +
+        'Bilder niemand — auch hier stehen keine.'
+    ),
+    aufsteller,
+    formular,
+    knoepfe,
+    liste
+  );
+
+  // Beides kommt nach, damit der Rest des Cockpits nicht darauf wartet.
+  void ladeFilme(stand, liste);
+  void zeigeAufsteller(aufsteller);
+  return bereich;
+}
+
+/** QR-Code und abtippbare Adresse für einen Tischaufsteller. */
+async function zeigeAufsteller(ziel: HTMLElement, pfad = '/film'): Promise<void> {
+  let basis = '';
+  try {
+    const antwort = await fetch('/api/info');
+    if (antwort.ok) basis = ((await antwort.json()) as { base?: string }).base ?? '';
+  } catch {
+    basis = '';
+  }
+  /* Ohne Auskunft der Box die Adresse dieses Fensters. Sie stimmt immer dann,
+     wenn das Cockpit nicht gerade auf `localhost` läuft — und genau dann
+     steht der Betreiber ohnehin an der Box. */
+  if (!basis) basis = location.origin;
+  const adresse = `${basis.replace(/\/$/, '')}${pfad}`;
+
+  const zeile = mono(adresse);
+  zeile.classList.add('caufsteller__adresse');
+
+  try {
+    const code = document.createElement('img');
+    code.className = 'caufsteller__code';
+    code.alt = `QR-Code auf ${adresse}`;
+    code.src = await qrBild(adresse);
+    ziel.replaceChildren(code, zeile);
+  } catch {
+    // Ohne Code bleibt die Adresse — abtippbar ist sie allemal.
+    ziel.replaceChildren(zeile);
+  }
+}
+
+/**
+ * Das Audio-Gästebuch. Klein gehalten: ein Schalter, eine Länge, ein Code.
+ * Mehr gibt es nicht zu entscheiden — die Grüße landen als Aufnahmen in der
+ * Galerie und werden dort behandelt wie alles andere.
+ */
+function stimmbereich(
+  einstellungen: ReturnType<typeof ladeEinstellungen>,
+  ziel: HTMLElement
+): HTMLElement {
+  const bereich = tag('section', 'cbereich');
+  const titel = document.createElement('h2');
+  titel.textContent = 'Gesprochene Grüße';
+  bereich.append(titel);
+
+  const e = einstellungen.stimme;
+
+  const schalter = tag('button', 'cknopf');
+  const punkt = tag('span', e.an ? 'cpunkt cpunkt--an' : 'cpunkt');
+  schalter.append(punkt, document.createTextNode(e.an ? 'Eingeschaltet' : 'Ausgeschaltet'));
+  schalter.addEventListener('click', async () => {
+    e.an = !e.an;
+    schalter.replaceChildren(document.createTextNode('Sichere …'));
+    await sichereEinstellungen(einstellungen);
+    await zeichne(ziel);
+  });
+
+  const formular = tag('div', 'cformular');
+  const zeile = tag('label', 'czeile');
+  const laenge = document.createElement('select');
+  laenge.className = 'ceingabe';
+  [20, 30, 45, 60].forEach((n) => {
+    const glied = document.createElement('option');
+    glied.value = String(n);
+    glied.textContent = `${n} Sekunden`;
+    glied.selected = n === e.sekunden;
+    laenge.append(glied);
+  });
+  laenge.addEventListener('change', () => (e.sekunden = Number(laenge.value)));
+  zeile.append(mono('Höchstlänge'), laenge);
+  formular.append(zeile);
+
+  const sichern = tag('button', 'cknopf cknopf--amber');
+  sichern.textContent = 'Sichern';
+  sichern.addEventListener('click', async () => {
+    sichern.textContent = 'Sichere …';
+    const gut = await sichereEinstellungen(einstellungen);
+    sichern.textContent = gut ? 'Sichern' : 'Die Box hat nicht angenommen';
+    if (gut) await zeichne(ziel);
+  });
+
+  const aufsteller = tag('div', 'caufsteller');
+  aufsteller.dataset.feld = 'stimm-aufsteller';
+
+  const knoepfe = tag('div', 'creihe');
+  knoepfe.append(schalter, sichern);
+
+  bereich.append(
+    hinweis(
+      'Der Gast spricht seinen Gruß ins Handy; daraus entsteht ein Video mit Standbild und ' +
+        'Stimme, das wie jede andere Aufnahme in der Galerie liegt.'
+    ),
+    aufsteller,
+    formular,
+    knoepfe
+  );
+
+  void zeigeAufsteller(aufsteller, '/stimme');
+  return bereich;
+}
+
+/**
+ * Die Zeitlupe. Ein Schalter und eine Sammeldauer — mehr ist es nicht: Wie
+ * stark die Zeitlupe ausfällt, entscheidet die Kamera, und das steht auf der
+ * Seite selbst, wo man es beim Aufbau braucht.
+ */
+function zeitlupenbereich(
+  einstellungen: ReturnType<typeof ladeEinstellungen>,
+  ziel: HTMLElement
+): HTMLElement {
+  const bereich = tag('section', 'cbereich');
+  const titel = document.createElement('h2');
+  titel.textContent = 'Zeitlupe';
+  bereich.append(titel);
+
+  const e = einstellungen.zeitlupe;
+
+  const schalter = tag('button', 'cknopf');
+  const punkt = tag('span', e.an ? 'cpunkt cpunkt--an' : 'cpunkt');
+  schalter.append(punkt, document.createTextNode(e.an ? 'Eingeschaltet' : 'Ausgeschaltet'));
+  schalter.addEventListener('click', async () => {
+    e.an = !e.an;
+    schalter.replaceChildren(document.createTextNode('Sichere …'));
+    await sichereEinstellungen(einstellungen);
+    await zeichne(ziel);
+  });
+
+  const formular = tag('div', 'cformular');
+  const zeile = tag('label', 'czeile');
+  const dauer = document.createElement('select');
+  dauer.className = 'ceingabe';
+  [2, 3, 4, 6, 8].forEach((n) => {
+    const glied = document.createElement('option');
+    glied.value = String(n);
+    glied.textContent = `${n} Sekunden sammeln`;
+    glied.selected = n === e.sekunden;
+    dauer.append(glied);
+  });
+  dauer.addEventListener('change', () => (e.sekunden = Number(dauer.value)));
+  zeile.append(mono('Aufnahmedauer'), dauer);
+  formular.append(zeile);
+
+  const sichern = tag('button', 'cknopf cknopf--amber');
+  sichern.textContent = 'Sichern';
+  sichern.addEventListener('click', async () => {
+    sichern.textContent = 'Sichere …';
+    const gut = await sichereEinstellungen(einstellungen);
+    sichern.textContent = gut ? 'Sichern' : 'Die Box hat nicht angenommen';
+    if (gut) await zeichne(ziel);
+  });
+
+  const oeffnen = tag('a', 'cknopf') as HTMLAnchorElement;
+  oeffnen.href = './zeitlupe.html';
+  oeffnen.textContent = 'Zeitlupe öffnen';
+
+  const knoepfe = tag('div', 'creihe');
+  knoepfe.append(schalter, sichern, oeffnen);
+
+  bereich.append(
+    hinweis(
+      'Läuft an der Box, nicht am Gästehandy: Zeitlupe braucht Dauerlicht und eine Kamera, ' +
+        'die viele Bilder je Sekunde liefert. Wie stark sie ausfällt, zeigt die Seite selbst — ' +
+        'sie misst, was wirklich ankommt.'
+    ),
+    formular,
+    knoepfe
+  );
+  return bereich;
+}
+
+type Filmstand = {
+  entwickelt: boolean;
+  entwickeltAm: number | null;
+  imLabor: number;
+  filme: { id: string; name: string; laenge: number; geknipst: number; geholt: number }[];
+};
+
+async function ladeFilme(stand: HTMLElement, liste: HTMLElement): Promise<void> {
+  let daten: Filmstand;
+  try {
+    const antwort = await fetch('/api/filme');
+    if (!antwort.ok) throw new Error(String(antwort.status));
+    daten = (await antwort.json()) as Filmstand;
+  } catch {
+    stand.textContent = 'Filme nicht abrufbar';
+    return;
+  }
+
+  const wann = daten.entwickeltAm ? new Date(daten.entwickeltAm) : null;
+  stand.textContent = daten.entwickelt
+    ? `entwickelt · ${daten.filme.length} ${daten.filme.length === 1 ? 'Film' : 'Filme'}`
+    : `${daten.imLabor} ${daten.imLabor === 1 ? 'Bild' : 'Bilder'} im Labor · ` +
+      `${daten.filme.length} ${daten.filme.length === 1 ? 'Film' : 'Filme'}` +
+      (wann ? ` · Entwicklung ${wann.toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}` : ' · von Hand');
+
+  liste.replaceChildren();
+  if (daten.filme.length === 0) {
+    liste.append(hinweis('Noch hat kein Gast einen Film geholt.'));
+    return;
+  }
+
+  daten.filme.forEach((f) => {
+    const zeile = tag('div', 'cfilm');
+    const name = tag('span', 'cfilm__name');
+    name.textContent = f.name;
+
+    /* Der Balken sagt in einem Blick, was eine Zahl erst nach Nachdenken
+       sagt: Wie voll ist der Film? Bei achtzig Gästen zählt niemand mehr. */
+    const balken = tag('span', 'cfilm__balken');
+    const fuellung = tag('span', 'cfilm__fuellung');
+    fuellung.style.width = `${Math.round((f.geknipst / f.laenge) * 100)}%`;
+    balken.append(fuellung);
+
+    const zahl = mono(`${f.geknipst} / ${f.laenge}`);
+    zeile.append(name, balken, zahl);
+    liste.append(zeile);
+  });
 }
 
 function kopf(box: string, event: string): HTMLElement {

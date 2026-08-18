@@ -15,6 +15,25 @@
  */
 
 export type Countdownstil = 'ring' | 'zahl' | 'balken';
+/** Wann die Bilder der Einwegkamera sichtbar werden. */
+export type Entwicklung = 'sofort' | 'mitternacht' | 'morgen' | 'hand';
+/** Die Anmutung, die jede Filmaufnahme mitbekommt. */
+export type Filmlook = 'neutral' | 'korn' | 'stempel' | 'blitz';
+
+/** Filmlängen wie im Drogeriemarkt — krumme Zahlen sind kein Film. */
+export const FILMLAENGEN = [12, 24, 36] as const;
+export const ENTWICKLUNGEN: { id: Entwicklung; name: string }[] = [
+  { id: 'sofort', name: 'Sofort' },
+  { id: 'mitternacht', name: 'Um Mitternacht' },
+  { id: 'morgen', name: 'Am Tag danach, 10 Uhr' },
+  { id: 'hand', name: 'Von Hand' },
+];
+export const FILMLOOKS: { id: Filmlook; name: string }[] = [
+  { id: 'neutral', name: 'Ohne' },
+  { id: 'korn', name: 'Kleinbild-Korn' },
+  { id: 'stempel', name: 'Korn und Datumsstempel' },
+  { id: 'blitz', name: 'Blitz-Anmutung' },
+];
 /** Bewegung im Attract: ruhig, pulsender Startknopf oder Laufband. */
 export type Attractstil = 'ruhe' | 'puls' | 'laufband';
 
@@ -79,6 +98,19 @@ export type Einstellungen = {
   greenscreen: { an: boolean; farbe: string; toleranz: number; hintergrund: string | null };
   /** Vollbild-Diashow für Beamer und Fernseher. */
   diashow: { dauer: number; bewegung: boolean; jedesTafel: number };
+  /** Slow-Motion: Zeitlupe an der Box. */
+  zeitlupe: { an: boolean; sekunden: number };
+  /** Audio-Gästebuch: gesprochene Grüße als Video mit Standbild. */
+  stimme: { an: boolean; sekunden: number };
+  /** Einwegkamera: Film je Gast auf dessen eigenem Handy. */
+  einweg: {
+    an: boolean;
+    bilder: number;
+    entwicklung: Entwicklung;
+    entwickeltAm: number | null;
+    look: Filmlook;
+    nachladen: boolean;
+  };
   /** Zwischenbilder der Diashow, zugleich die Werbe-Playlist der Box. */
   tafeln: Tafel[];
 };
@@ -137,6 +169,16 @@ const STANDARD: Einstellungen = {
   greenscreen: { an: false, farbe: '#00c800', toleranz: 42, hintergrund: null },
   diashow: { dauer: 7, bewegung: true, jedesTafel: 5 },
   tafeln: [],
+  zeitlupe: { an: false, sekunden: 4 },
+  stimme: { an: false, sekunden: 30 },
+  einweg: {
+    an: false,
+    bilder: 24,
+    entwicklung: 'morgen',
+    entwickeltAm: null,
+    look: 'stempel',
+    nachladen: false,
+  },
 };
 
 /* ------------------------------------------------------------------ */
@@ -192,6 +234,22 @@ export function ausBoxstand(roh: Boxstand): Einstellungen {
     logo: feld<string | null>(roh, 'betreiber.logo', null),
     firma: feld(roh, 'betreiber.firma', ''),
     effekte: erlaubteEffekte(feld<unknown>(roh, 'effekte.erlaubt', null)),
+    zeitlupe: {
+      an: feld(roh, 'zeitlupe.enabled', STANDARD.zeitlupe.an),
+      sekunden: feld(roh, 'zeitlupe.sekunden', STANDARD.zeitlupe.sekunden),
+    },
+    stimme: {
+      an: feld(roh, 'stimme.enabled', STANDARD.stimme.an),
+      sekunden: feld(roh, 'stimme.sekunden', STANDARD.stimme.sekunden),
+    },
+    einweg: {
+      an: feld(roh, 'einweg.enabled', STANDARD.einweg.an),
+      bilder: feld(roh, 'einweg.bilder', STANDARD.einweg.bilder),
+      entwicklung: feld(roh, 'einweg.entwicklung', STANDARD.einweg.entwicklung),
+      entwickeltAm: feld<number | null>(roh, 'einweg.entwickeltAm', null),
+      look: feld(roh, 'einweg.look', STANDARD.einweg.look),
+      nachladen: feld(roh, 'einweg.nachladen', STANDARD.einweg.nachladen),
+    },
     diashow: {
       dauer: feld(roh, 'diashow.dauer', STANDARD.diashow.dauer),
       bewegung: feld(roh, 'diashow.bewegung', STANDARD.diashow.bewegung),
@@ -276,6 +334,18 @@ export function alsBoxstand(e: Einstellungen): Boxstand {
        hätte. Wer ihn setzt, tut das an der Stelle, an der er ihn auswählt. */
     effekte: { erlaubt: e.effekte },
     diashow: { ...e.diashow },
+    /* `entwickeltAm` steht hier NICHT: Die Box rechnet den Zeitpunkt aus der
+       gewählten Art aus. Schriebe die Oberfläche ihn mit, überschriebe ein
+       Sichern am Sonntagmorgen die eben von Hand ausgelöste Entwicklung. */
+    stimme: { enabled: e.stimme.an, sekunden: e.stimme.sekunden },
+    zeitlupe: { enabled: e.zeitlupe.an, sekunden: e.zeitlupe.sekunden },
+    einweg: {
+      enabled: e.einweg.an,
+      bilder: e.einweg.bilder,
+      entwicklung: e.einweg.entwicklung,
+      look: e.einweg.look,
+      nachladen: e.einweg.nachladen,
+    },
     printing: e.druck,
     printer: e.drucker || null,
     druck: {

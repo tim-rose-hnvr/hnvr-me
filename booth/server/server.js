@@ -96,6 +96,19 @@ const COUNTDOWN_STYLES = [
    Vorgaengers zu kommen. */
 const ERSETZ_FRIST = 10 * 60 * 1000;
 
+/* Filmlaengen wie im Drogeriemarkt. Krumme Zahlen sind kein Film, sondern
+   eine Einstellung — und der Reiz des Moduls lebt davon, dass es sich wie
+   ein Film anfuehlt. */
+/* Die Aufnahmearten, die im Dateinamen stehen duerfen. Eine Liste fuer beide
+   Wege, auf denen ein Bild in die Ablage kommt (`/api/photos` und der
+   Hashtag-Drucker) — zwei Listen liefen auseinander, und die Galerie
+   filterte danach ins Leere. */
+const AUFNAHMEARTEN = ['foto', 'streifen', 'boomerang', 'gif', 'gast', 'einweg', 'stimme', 'zeitlupe'];
+
+const EINWEG_LAENGEN = [12, 24, 36];
+const EINWEG_ENTWICKLUNG = ['sofort', 'mitternacht', 'morgen', 'hand'];
+const EINWEG_LOOKS = ['neutral', 'korn', 'stempel', 'blitz'];
+
 const EFFEKT_IDS = ['schwarzweiss', 'sepia', 'comic', 'aquarell', 'oel', 'popart'];
 
 const DEFAULT_SETTINGS = {
@@ -313,6 +326,27 @@ const DEFAULT_SETTINGS = {
   /* Werbe-Playlist: Slides, die auf Leerlauf-/Werbe-Bildschirmen rotieren.
      Dieselben Tafeln laufen als Zwischenbilder in der Diashow. */
   playlist: { enabled: false, slides: [] },
+  /* Slow-Motion: Red-Carpet-Zeitlupe an der Box.
+     `sekunden` — wie lange gesammelt wird. Vier Sekunden bei 60 B/s ergeben
+     einen Clip von zehn Sekunden; laenger wird es langweilig. */
+  zeitlupe: { enabled: false, sekunden: 4 },
+  /* Audio-Gaestebuch: Gruesse, die man hoert. Standbild plus Stimme wird
+     LIVE als Video aufgezeichnet — kein Zusammenrechnen hinterher, das
+     dauerte so lange wie die Aufnahme selbst.
+     `sekunden` — Hoechstlaenge. Ueber sechzig hoert sich niemand an. */
+  stimme: { enabled: false, sekunden: 30 },
+  /* Einwegkamera: Jedes Gaestehandy wird zur Wegwerfkamera.
+     `bilder`      — Filmlaenge je Gast (12, 24, 36 sind die Klassiker).
+     `entwicklung` — wann die Bilder sichtbar werden:
+                     'sofort' | 'mitternacht' | 'morgen' | 'hand'
+     `entwickeltAm`— Zeitpunkt (ms), ab dem entwickelt ist. Wird aus
+                     `entwicklung` errechnet oder von Hand gesetzt.
+     `look`        — 'neutral' | 'korn' | 'stempel' | 'blitz'
+     `nachladen`   — darf ein Gast einen zweiten Film holen? */
+  einweg: {
+    enabled: false, bilder: 24, entwicklung: 'morgen',
+    entwickeltAm: null, look: 'stempel', nachladen: false,
+  },
   /* Vollbild-Diashow fuer Beamer und Fernseher (`/diashow.html`).
      `dauer`  — Sekunden je Foto. Unter vier wird es unruhig, ueber zwoelf
                 merkt der Gast nicht mehr, dass sich etwas bewegt.
@@ -1364,7 +1398,7 @@ const EVENT_EINSTELLUNGEN = [
      ans Event — eine Hochzeit spricht anders als eine Firmenfeier, und wie
      viel Papier ein Abend kosten darf, ist eine Frage des Auftrags, nicht
      des Geräts. */
-  'texte', 'druckGrenzen', 'greenscreen', 'survey', 'faceFinder', 'effekte', 'diashow',
+  'texte', 'druckGrenzen', 'greenscreen', 'survey', 'faceFinder', 'effekte', 'diashow', 'einweg', 'stimme', 'zeitlupe',
   /* Seit 1.26: die gestalteten Gäste-Bildschirme. Sie gehören ans Event —
      eine Hochzeit sieht anders aus als ein Messestand, und beides läuft auf
      derselben Box. `front` bleibt für alte Events mit dabei. */
@@ -2767,6 +2801,30 @@ app.put('/api/settings', requireKey, (req, res) => {
     if (typeof b.playlist.enabled === 'boolean') settings.playlist.enabled = b.playlist.enabled;
     if (Array.isArray(b.playlist.slides)) settings.playlist.slides = cleanSlides(b.playlist.slides);
   }
+  if (b.zeitlupe && typeof b.zeitlupe === 'object') {
+    if (typeof b.zeitlupe.enabled === 'boolean') settings.zeitlupe.enabled = b.zeitlupe.enabled;
+    if (Number.isFinite(b.zeitlupe.sekunden)) settings.zeitlupe.sekunden = Math.min(10, Math.max(2, Math.round(b.zeitlupe.sekunden)));
+  }
+  if (b.stimme && typeof b.stimme === 'object') {
+    if (typeof b.stimme.enabled === 'boolean') settings.stimme.enabled = b.stimme.enabled;
+    if (Number.isFinite(b.stimme.sekunden)) settings.stimme.sekunden = Math.min(60, Math.max(10, Math.round(b.stimme.sekunden)));
+  }
+  if (b.einweg && typeof b.einweg === 'object') {
+    const ew = b.einweg;
+    if (typeof ew.enabled === 'boolean') settings.einweg.enabled = ew.enabled;
+    if (EINWEG_LAENGEN.includes(Number(ew.bilder))) settings.einweg.bilder = Number(ew.bilder);
+    if (EINWEG_ENTWICKLUNG.includes(ew.entwicklung)) {
+      settings.einweg.entwicklung = ew.entwicklung;
+      /* Der Zeitpunkt wird beim Umstellen NEU gerechnet. Bliebe der alte
+         stehen, waere ein Film mit „am Tag danach" schon entwickelt, weil
+         vorher „sofort" eingestellt war. */
+      settings.einweg.entwickeltAm = entwicklungszeitpunkt(ew.entwicklung);
+    }
+    if (ew.entwickeltAm === null) settings.einweg.entwickeltAm = null;
+    if (Number.isFinite(ew.entwickeltAm)) settings.einweg.entwickeltAm = Number(ew.entwickeltAm);
+    if (EINWEG_LOOKS.includes(ew.look)) settings.einweg.look = ew.look;
+    if (typeof ew.nachladen === 'boolean') settings.einweg.nachladen = ew.nachladen;
+  }
   if (b.diashow && typeof b.diashow === 'object') {
     if (Number.isFinite(b.diashow.dauer)) settings.diashow.dauer = Math.min(30, Math.max(3, Math.round(b.diashow.dauer)));
     if (typeof b.diashow.bewegung === 'boolean') settings.diashow.bewegung = b.diashow.bewegung;
@@ -3237,6 +3295,226 @@ app.get('/api/survey.csv', requireKey, (req, res) => {
      .set('Content-Disposition', 'attachment; filename="youbooth-umfrage.csv"')
      .send([head.map(esc).join(','), ...rows].join('\n'));
 });
+
+/* ---------- API: Einwegkamera (Film je Gast) ---------- */
+
+/* Der Kern des Moduls ist eine Verneinung: Der Gast sieht seine Bilder NICHT.
+   Deshalb liegen sie auch nicht dort, wo alles andere liegt. Ein unentwickelter
+   Film wohnt in einem eigenen Ordner, und die Galerie, die Wand und der
+   QR-Weg wissen nichts von ihm. „Entwickeln" ist dann keine Zustandsspalte,
+   sondern buchstaeblich ein Umzug: Die Bilder wandern aus dem Labor in die
+   Ablage und sind ab da normale Aufnahmen.
+
+   Das ist bewusst der grobe Weg. Ein Flag in der Datenbank haetten wir an
+   sieben Stellen abfragen muessen, und eine davon haetten wir vergessen —
+   und ein einziger vergessener Filter zeigt einem Gast die Bilder, die er
+   ausdruecklich nicht sehen sollte. */
+
+const FILME_FILE = path.join(CONFIG_DIR, 'filme.json');
+const LABOR_DIR = path.join(DATA_DIR, 'labor');
+if (!fs.existsSync(LABOR_DIR)) fs.mkdirSync(LABOR_DIR, { recursive: true });
+
+/** Wann ein heute geholter Film entwickelt wird. */
+function entwicklungszeitpunkt(art) {
+  const jetzt = new Date();
+  if (art === 'sofort') return Date.now();
+  if (art === 'mitternacht') {
+    const m = new Date(jetzt);
+    m.setHours(24, 0, 0, 0);
+    return m.getTime();
+  }
+  if (art === 'morgen') {
+    /* Zehn Uhr am Tag danach — nicht Mitternacht: Eine Hochzeit endet um
+       drei, und der Galerie-Link soll beim Fruehstueck da sein, nicht
+       waehrend noch getanzt wird. */
+    const m = new Date(jetzt);
+    m.setDate(m.getDate() + 1);
+    m.setHours(10, 0, 0, 0);
+    return m.getTime();
+  }
+  return null;   // 'hand' — der Betreiber entscheidet
+}
+
+/** Ist der Film des Hauses entwickelt? */
+function entwickelt() {
+  const wann = settings.einweg.entwickeltAm;
+  return typeof wann === 'number' && Date.now() >= wann;
+}
+
+function ladeFilme() {
+  return loadJson(FILME_FILE, []);
+}
+
+function sichereFilme(liste) {
+  saveJson(FILME_FILE, liste.slice(0, 2000));
+}
+
+/** Was ein Gast von seinem Film erfahren darf — nie die Bilder selbst. */
+function filmNachAussen(film) {
+  return {
+    id: film.id,
+    name: film.name,
+    laenge: film.laenge,
+    uebrig: Math.max(0, film.laenge - film.bilder.length),
+    geknipst: film.bilder.length,
+    look: settings.einweg.look,
+    entwickelt: entwickelt(),
+    entwickeltAm: settings.einweg.entwickeltAm,
+    nachladen: settings.einweg.nachladen,
+  };
+}
+
+/* Einen Film holen. Der Gast bekommt eine Kennung, die auf SEINEM Geraet
+   bleibt — wer sein Handy weggibt, gibt seinen Film weg. Genau so ist es
+   gedacht, sonst waere es eine Galerie mit Zaehler. */
+app.post('/api/film', (req, res) => {
+  if (!settings.einweg.enabled) return res.status(403).json({ error: 'Keine Filme im Ausgabefach' });
+
+  const name = String((req.body || {}).name || '').slice(0, 60).replace(/[<>]/g, '').trim();
+  if (!name) return res.status(400).json({ error: 'Bitte einen Namen eintragen' });
+
+  const filme = ladeFilme();
+  const film = {
+    id: 'f_' + crypto.randomBytes(5).toString('hex'),
+    name,
+    laenge: settings.einweg.bilder,
+    bilder: [],
+    geholt: Date.now(),
+  };
+  filme.unshift(film);
+  sichereFilme(filme);
+  recordStat('einweg-film');
+  broadcast({ type: 'film', film: { id: film.id, name: film.name, laenge: film.laenge, geknipst: 0 } });
+  res.json({ ok: true, film: filmNachAussen(film) });
+});
+
+/* Stand eines Films. Der Gast fragt danach, wenn er die Seite neu laedt —
+   das Zaehlwerk gehoert der Box, nicht dem Browser: Sonst waere der Film
+   mit einem Neuladen wieder voll. */
+app.get('/api/film/:id', (req, res) => {
+  const film = ladeFilme().find((f) => f.id === req.params.id);
+  if (!film) return res.status(404).json({ error: 'Diesen Film gibt es nicht' });
+  res.json({ ok: true, film: filmNachAussen(film) });
+});
+
+/* Ein Bild auf den Film. Ist er voll, ist er voll. */
+app.post('/api/film/:id/bild', (req, res) => {
+  if (!settings.einweg.enabled) return res.status(403).json({ error: 'Die Kamera ist aus' });
+
+  const filme = ladeFilme();
+  const film = filme.find((f) => f.id === req.params.id);
+  if (!film) return res.status(404).json({ error: 'Diesen Film gibt es nicht' });
+  if (film.bilder.length >= film.laenge) {
+    return res.status(409).json({ error: 'Der Film ist voll', film: filmNachAussen(film) });
+  }
+
+  const bild = (req.body || {}).image || '';
+  const match = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(bild);
+  if (!match) return res.status(400).json({ error: 'Ungültige Bilddaten' });
+
+  const ext = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[match[1]];
+  const nummer = String(film.bilder.length + 1).padStart(2, '0');
+  const name = `youbooth_${Date.now()}_einweg_${crypto.randomBytes(3).toString('hex')}.${ext}`;
+  fs.writeFileSync(path.join(LABOR_DIR, name), Buffer.from(match[2], 'base64'));
+
+  film.bilder.push({ datei: name, nummer: Number(nummer), zeit: Date.now() });
+  sichereFilme(filme);
+  genutzt();
+  recordStat('einweg-bild');
+  /* Gemeldet wird nur der Zaehlerstand, nie das Bild — an dieser Nachricht
+     haengen Cockpit und Foto-Wall, und die Wand steht im Saal. */
+  broadcast({ type: 'film', film: { id: film.id, name: film.name, laenge: film.laenge, geknipst: film.bilder.length } });
+
+  /* Bei „sofort" wandert das Bild gleich in die Ablage — dann ist der Film
+     kein Film mehr, sondern eine zweite Gastkamera. Auch das ist eine
+     zulaessige Betriebsart, etwa auf einer Messe. */
+  if (entwickelt()) entwickleFilme();
+
+  res.json({ ok: true, film: filmNachAussen(film) });
+});
+
+/**
+ * Entwickeln: Alle Bilder aus dem Labor wandern in die Ablage.
+ *
+ * Ab da sind es normale Aufnahmen — Galerie, Wand, QR-Code und Loeschfrist
+ * behandeln sie wie jede andere. Der Dateiname trug die Aufnahmeart schon
+ * beim Ablegen, deshalb muss hier nichts umbenannt werden.
+ */
+function entwickleFilme() {
+  let bewegt = 0;
+  for (const datei of fs.readdirSync(LABOR_DIR)) {
+    if (!/\.(jpe?g|png|webp)$/i.test(datei)) continue;
+    const von = path.join(LABOR_DIR, datei);
+    const nach = path.join(PHOTOS_DIR, datei);
+    if (fs.existsSync(nach)) { fs.unlinkSync(von); continue; }
+    fs.renameSync(von, nach);
+    bewegt++;
+    broadcast({ type: 'photo', photo: { ...photoMeta(datei), source: 'einweg', art: 'einweg' } });
+  }
+  return bewegt;
+}
+
+/* Von Hand entwickeln. Der Knopf, den der Betreiber am Sonntagmorgen
+   drueckt — und der bei „hand" der einzige Weg ist. */
+app.post('/api/film/entwickeln', requireKey, (req, res) => {
+  settings.einweg.entwickeltAm = Date.now();
+  saveJson(SETTINGS_FILE, settings);
+  const bewegt = entwickleFilme();
+  // `broadcast` nimmt die PIN von selbst heraus — siehe dort.
+  broadcast({ type: 'settings', settings: wirksam() });
+  res.json({ ok: true, entwickelt: bewegt });
+});
+
+/* Uebersicht fuer den Betreiber: wie viele Filme laufen, wie voll sind sie.
+   Ohne Bilder — die sieht auch der Betreiber erst nach der Entwicklung, und
+   zwar dort, wo alle Aufnahmen liegen. */
+app.get('/api/filme', requireKey, (req, res) => {
+  const filme = ladeFilme();
+  res.json({
+    ok: true,
+    entwickelt: entwickelt(),
+    entwickeltAm: settings.einweg.entwickeltAm,
+    imLabor: fs.readdirSync(LABOR_DIR).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).length,
+    filme: filme.map((f) => ({
+      id: f.id, name: f.name, laenge: f.laenge,
+      geknipst: f.bilder.length, geholt: f.geholt,
+    })),
+  });
+});
+
+/* Filme zuruecksetzen — fuer die naechste Veranstaltung.
+   Nur wenn das Labor leer ist: Solange dort Bilder liegen, gehoeren sie
+   Gaesten, die sie noch nicht gesehen haben. Der Betreiber muss erst
+   entwickeln, dann darf er aufraeumen. */
+app.post('/api/filme/zuruecksetzen', requireKey, (req, res) => {
+  const imLabor = fs.readdirSync(LABOR_DIR).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).length;
+  if (imLabor > 0) {
+    return res.status(409).json({
+      error: `Im Labor liegen noch ${imLabor} Bilder. Erst entwickeln, dann zurücksetzen.`,
+      imLabor,
+    });
+  }
+  const anzahl = ladeFilme().length;
+  sichereFilme([]);
+  /* Der Entwicklungszeitpunkt wird ebenfalls neu gerechnet — sonst waere
+     der erste Film der naechsten Feier schon entwickelt, bevor ihn jemand
+     geholt hat. */
+  settings.einweg.entwickeltAm = entwicklungszeitpunkt(settings.einweg.entwicklung);
+  saveJson(SETTINGS_FILE, settings);
+  broadcast({ type: 'settings', settings: wirksam() });
+  res.json({ ok: true, verworfen: anzahl });
+});
+
+/* Der Wecker fuers Labor. Steht die Entwicklung auf Mitternacht oder auf den
+   Tag danach, darf niemand darauf warten muessen, dass jemand eine Seite
+   aufruft — die Box entwickelt von selbst. Jede Minute nachzusehen kostet
+   nichts; ein Ordner mit zwoelf Dateien zu lesen ist billiger als der
+   Herzschlag daneben. */
+setInterval(() => {
+  if (!settings.einweg.enabled || !entwickelt()) return;
+  const bewegt = entwickleFilme();
+  if (bewegt > 0) console.log(`Einwegkamera: ${bewegt} Bilder entwickelt.`);
+}, 60 * 1000).unref?.();
 
 /* ---------- API: Gästebuch (Text-Grüße der Gäste) ---------- */
 
@@ -3840,6 +4118,22 @@ app.get('/fern', (req, res) => {
   res.redirect('/fern.html');
 });
 
+/* Kurze Adresse für den QR-Code am Mikrofonplatz: /stimme */
+app.get('/stimme', (req, res) => {
+  const gebaut = path.join(OBERFLAECHE, 'stimme.html');
+  if (fs.existsSync(gebaut)) return res.sendFile(gebaut);
+  res.redirect('/stimme.html');
+});
+
+/* Kurze Adresse für den QR-Code am Gästetisch: /film
+   Der Aufsteller trägt sie ausgedruckt; sie muss abtippbar sein, wenn die
+   Kamera des Gastes den Code nicht liest. */
+app.get('/film', (req, res) => {
+  const gebaut = path.join(OBERFLAECHE, 'film.html');
+  if (fs.existsSync(gebaut)) return res.sendFile(gebaut);
+  res.redirect('/film.html');
+});
+
 app.get('/m/:slug', (req, res) => {
   const gebaut = path.join(OBERFLAECHE, 'event.html');
   if (fs.existsSync(gebaut)) return res.sendFile(gebaut);
@@ -4384,8 +4678,11 @@ function bildAufnehmen(mime, rohdaten, quelle, modus, gesichter) {
   /* Die Aufnahmeart steht IM Dateinamen. Sonst wüsste nur die Statistik, wie
      ein Bild entstanden ist — und die Galerie könnte nicht danach filtern.
      Wer den Ordner kopiert, kopiert die Zuordnung mit. */
-  const arten = ['foto', 'streifen', 'boomerang', 'gif', 'gast'];
-  const artName = arten.includes(mode) ? mode : (source === 'guest' ? 'gast' : 'foto');
+  /* Hier standen `mode` und `source` — Namen, die es in dieser Funktion nicht
+     gibt. Der Hashtag-Drucker lief damit in einen ReferenceError, und zwar
+     erst dann, wenn tatsaechlich jemand ein Bild mit Hashtag schickte. Die
+     Parameter heissen `modus` und `quelle`. */
+  const artName = AUFNAHMEARTEN.includes(modus) ? modus : (quelle === 'guest' ? 'gast' : 'foto');
   const name = `youbooth_${Date.now()}_${artName}_${crypto.randomBytes(3).toString('hex')}.${ext}`;
   fs.writeFileSync(path.join(PHOTOS_DIR, name), rohdaten);
   const meta = { ...photoMeta(name), source: quelle || 'booth' };
@@ -4404,8 +4701,7 @@ app.post('/api/photos', (req, res) => {
   /* Die Aufnahmeart steht IM Dateinamen. Sonst wüsste nur die Statistik, wie
      ein Bild entstanden ist — und die Galerie könnte nicht danach filtern.
      Wer den Ordner kopiert, kopiert die Zuordnung mit. */
-  const arten = ['foto', 'streifen', 'boomerang', 'gif', 'gast'];
-  const artName = arten.includes(mode) ? mode : (source === 'guest' ? 'gast' : 'foto');
+  const artName = AUFNAHMEARTEN.includes(mode) ? mode : (source === 'guest' ? 'gast' : 'foto');
 
   /* Ersetzen statt neu anlegen: Der Gast wählt am Ergebnis einen Kunststil,
      und das Blatt wird neu gerechnet. Ohne diesen Weg entstünde je Stil eine
@@ -4439,7 +4735,7 @@ app.post('/api/photos', (req, res) => {
   /* Beim Ersetzen wird nicht noch einmal gezaehlt: Es ist dieselbe Aufnahme
      in einer anderen Fassung, kein zweiter Gast. */
   if (!darfErsetzen) {
-    recordStat(['photo', 'strip', 'boomerang', 'gif'].includes(mode) ? mode : (source === 'guest' ? 'guest' : 'photo'));
+    recordStat(['photo', 'strip', 'boomerang', 'gif', 'stimme', 'einweg', 'zeitlupe'].includes(mode) ? mode : (source === 'guest' ? 'guest' : 'photo'));
     meldeAnZentrale('foto');   // gedrosselt auf höchstens 1× pro Minute
   }
 

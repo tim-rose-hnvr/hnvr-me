@@ -71,7 +71,10 @@ async function starte(ziel: HTMLElement): Promise<void> {
       return;
     }
 
-    // Neueste zuerst; Bewegtbilder laufen mit, sie sind ein Bild wie andere.
+    /* Neueste zuerst. GIFs laufen mit — sie sind ein Bild wie andere.
+       Echte Videodateien nicht: Ein gesprochener Gruß braucht Ton, und der
+       Beamer hat keinen. Stumm ist er eine wackelnde Linie. */
+    neu = neu.filter((a) => !a.video);
     neu.sort((a, b) => b.zeit - a.zeit);
 
     const bekannt = new Set(reihe.map((a) => a.id));

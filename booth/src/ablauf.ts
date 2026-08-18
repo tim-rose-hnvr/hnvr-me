@@ -1324,6 +1324,9 @@ export class Booth {
         ['Galerie', './galerie.html'],
         ['Foto-Wall', './wand.html'],
         ['Diashow', './diashow.html'],
+        ['Einwegkamera', './film.html'],
+        ['Gesprochene Grüße', './stimme.html'],
+        ['Zeitlupe', './zeitlupe.html'],
         ['Einrichtung', './einrichtung.html'],
       ] as const
     ).forEach(([name, ziel]) => {
@@ -1372,7 +1375,6 @@ async function boxAdresse(): Promise<string> {
   }
 }
 
-/** Blob als Datenadresse — so nimmt die Box sie über die Schnittstelle an. */
 /**
  * Bereitet ein gewähltes Bild als Greenscreen-Hintergrund auf.
  *
@@ -1403,6 +1405,7 @@ async function alsHintergrund(datei: File): Promise<string> {
   return flaeche.toDataURL('image/jpeg', 0.86);
 }
 
+/** Blob als Datenadresse — so nimmt die Box sie über die Schnittstelle an. */
 function alsDatenadresse(blob: Blob): Promise<string> {
   return new Promise((fertig, fehler) => {
     const leser = new FileReader();

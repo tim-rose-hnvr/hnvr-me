@@ -221,3 +221,105 @@ body.cockpitseite {
   border-radius: 14px;
   padding: 24px;
 }
+
+/* --- Einwegkamera: die laufenden Filme ---------------------------------- */
+
+.cfilme {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Name, Balken, Zahl. Der Balken trägt die Aussage: Bei achtzig Gästen liest
+   niemand mehr „17 / 24", aber jeder sieht einen fast vollen Streifen. */
+.cfilm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(80px, 2fr) max-content;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--weiss);
+  border: 1px solid rgba(0, 0, 0, 0.09);
+}
+
+.cfilm__name {
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfilm__balken {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--paper-tief);
+  overflow: hidden;
+}
+
+.cfilm__fuellung {
+  display: block;
+  height: 100%;
+  background: var(--amber);
+}
+
+.cfilm .cmono {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 620px) {
+  .cfilm {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+
+  .cfilm__balken {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Der Tischaufsteller: Code und Adresse nebeneinander, damit beides in
+   einem Screenshot landet — genau so wird es weitergegeben. */
+.caufsteller {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--weiss);
+  border: 1px solid rgba(0, 0, 0, 0.09);
+}
+
+.caufsteller__code {
+  width: 132px;
+  height: 132px;
+  display: block;
+  /* Ein QR-Code muss scharf bleiben: weichgezeichnete Kanten liest keine
+     Handykamera zuverlässig, und der Aufsteller wird oft vergrößert. */
+  image-rendering: pixelated;
+}
+
+.caufsteller__adresse {
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--ink-soft);
+  word-break: break-all;
+}
+
+/* Ein Zustandspunkt im Knopf: Er sagt „offen" oder „zu", ohne dass der Knopf
+   dafür die Farbe der Hauptaktion beansprucht. */
+.cpunkt {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  margin-right: 9px;
+  flex: none;
+}
+
+.cpunkt--an {
+  background: var(--ok);
+}

@@ -1,0 +1,106 @@
+/* Das Audio-Gästebuch. Auf dem Handy des Gastes oder an einem Tablet neben
+   dem Mikrofon — hochkant wie quer brauchbar, weil beides vorkommt. */
+
+body.stimmeseite {
+  margin: 0;
+  background: var(--ink);
+  color: var(--hell);
+  font-family: var(--schrift);
+  min-height: 100%;
+}
+
+.stflaeche {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+  gap: 4px;
+  justify-content: center;
+}
+
+/* --- Die Bühne: Standbild oder Abspieler -------------------------------- */
+
+.stbuehne {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-karte-gross);
+  overflow: hidden;
+  background: var(--ink-soft);
+  border: 1px solid var(--linie);
+}
+
+.sttafel,
+.stabspieler {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+/* Solange aufgenommen wird, steht die Zeichenfläche da — sie IST das Bild,
+   das gerade aufgezeichnet wird. Danach der Abspieler mit dem Ergebnis. */
+.stabspieler { display: none; }
+
+.stflaeche[data-lage='hoert'] .sttafel,
+.stflaeche[data-lage='sendet'] .sttafel,
+.stflaeche[data-lage='fertig'] .sttafel { display: none; }
+
+.stflaeche[data-lage='hoert'] .stabspieler,
+.stflaeche[data-lage='sendet'] .stabspieler,
+.stflaeche[data-lage='fertig'] .stabspieler { display: block; }
+
+/* Ein roter Rand, solange es läuft. Wer spricht, sieht nicht auf die
+   Schrift — er sieht, dass etwas passiert. */
+.stflaeche[data-lage='nimmt'] .stbuehne {
+  border-color: var(--warn-hell);
+  box-shadow: 0 0 0 3px rgba(255, 130, 113, 0.24);
+}
+
+/* --- Text und Bedienung ------------------------------------------------- */
+
+.stsagt {
+  margin: 0;
+  padding: 18px 4px 10px;
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--hell-leise);
+  min-height: 3.6em;
+}
+
+.stleiste {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 24px;
+}
+
+.stknopf {
+  min-height: var(--ziel);
+  width: 100%;
+  font-size: 16px;
+}
+
+.stname {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stmono {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hell-still);
+}
+
+.steingabe {
+  width: 100%;
+  min-height: var(--ziel);
+  font-size: 17px;
+}

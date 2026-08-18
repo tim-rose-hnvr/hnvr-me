@@ -24,8 +24,14 @@ export type Aufnahme = {
   zeit: number;
   /** Aufnahmeart, aus dem Dateinamen gelesen. */
   art: string;
-  /** Bewegtbild (GIF) statt Standbild. */
+  /** Bewegtbild statt Standbild — GIF ebenso wie echtes Video. */
   bewegt: boolean;
+  /**
+   * Echte Videodatei. Der Unterschied zum GIF ist keine Formatfrage: Ein
+   * GIF läuft in einem `<img>`, ein Video braucht ein `<video>` — und es
+   * hat Ton. Wer beides gleich behandelt, zeigt eine kaputte Kachel.
+   */
+  video: boolean;
 };
 
 type Rohaufnahme = { name: string; url: string; time: number; type: string };
@@ -44,6 +50,7 @@ function deute(roh: Rohaufnahme): Aufnahme {
     zeit: roh.time,
     art,
     bewegt: /\.(gif|webm|mp4)$/i.test(roh.name),
+    video: /\.(webm|mp4)$/i.test(roh.name),
   };
 }
 

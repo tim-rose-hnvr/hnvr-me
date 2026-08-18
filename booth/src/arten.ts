@@ -33,6 +33,30 @@ export const ARTEN: Art[] = [
   { id: 'gif', name: 'GIF', zeilen: ['4 Bilder', 'Pingpong an'], bilder: 4, pause: 0.5, bewegt: true },
 ];
 
+/**
+ * Was in der Ablage liegt, aber nicht am Booth entsteht.
+ *
+ * Die Galerie zeigt alles nebeneinander — Booth-Abzüge, Handybilder, Filme
+ * der Einwegkamera und gesprochene Grüße. Ohne diese Liste hätte die Hälfte
+ * davon keinen Namen und damit keinen Filter: Wer am Tag danach nur die
+ * Grüße hören will, scrollt sonst durch vierhundert Fotos.
+ */
+export const HERKUENFTE: { id: string; name: string }[] = [
+  { id: 'gast', name: 'Vom Handy' },
+  { id: 'einweg', name: 'Einwegkamera' },
+  { id: 'stimme', name: 'Gesprochene Grüße' },
+  { id: 'zeitlupe', name: 'Zeitlupe' },
+];
+
+/** Der Anzeigename einer Aufnahmeart — egal, woher sie kommt. */
+export function artname(id: string): string {
+  return (
+    ARTEN.find((a) => a.id === id)?.name ??
+    HERKUENFTE.find((h) => h.id === id)?.name ??
+    id
+  );
+}
+
 export function findeArt(id: string): Art {
   return ARTEN.find((a) => a.id === id) ?? ARTEN[0]!;
 }

@@ -154,6 +154,9 @@ function zeichne(ziel: HTMLElement, wer: string): void {
     ['Galerie', 'Aufnahmen des Abends', './galerie.html'],
     ['Foto-Wall', 'Alle Aufnahmen als Raster', './wand.html'],
     ['Diashow', 'Vollbild für Beamer und TV', './diashow.html'],
+    ['Einwegkamera', 'Film für das Gästehandy', './film.html'],
+    ['Gesprochene Grüße', 'Stimme statt Zettel', './stimme.html'],
+    ['Zeitlupe', 'Red-Carpet-Clip an der Box', './zeitlupe.html'],
   ] as [string, string, string][]) {
     wege.append(kachel(name, zeile, ziel2));
   }

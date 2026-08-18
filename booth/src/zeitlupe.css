@@ -1,0 +1,134 @@
+/* Zeitlupe an der Box. Querformat, großer Bildschirm, Bedienung im Stehen —
+   näher am Booth als an einer Handyseite. */
+
+body.zeitlupeseite {
+  margin: 0;
+  background: var(--ink);
+  color: var(--hell);
+  font-family: var(--schrift);
+  overflow: hidden;
+  height: 100%;
+  user-select: none;
+}
+
+.zlflaeche {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px clamp(16px, 3vw, 40px) 24px;
+  gap: 6px;
+}
+
+.zlkopf {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 22px;
+}
+
+.zlmarke {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+/* Was die Kamera wirklich liefert. Die Zahl ist keine Diagnose für später,
+   sondern die Antwort auf „wie stark ist die Zeitlupe?" — und sie steht
+   deshalb dort, wo man sie vor dem Auslösen sieht. */
+.zlrate {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hell-still);
+  font-variant-numeric: tabular-nums;
+}
+
+.zlbuehne {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: var(--r-karte-gross);
+  overflow: hidden;
+  background: var(--ink-soft);
+  border: 1px solid var(--linie);
+  display: grid;
+  place-items: center;
+}
+
+.zllive,
+.zltafel,
+.zlabspieler {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: none;
+}
+
+.zlflaeche[data-lage='laeuft'] .zllive,
+.zlflaeche[data-lage='nimmt'] .zllive { display: block; }
+
+.zlflaeche[data-lage='rechnet'] .zltafel { display: block; }
+
+.zlflaeche[data-lage='fertig'] .zlabspieler { display: block; }
+
+/* Solange aufgenommen wird, ist der Rahmen rot — auf einem Booth-Bildschirm
+   aus drei Metern die einzige Rückmeldung, die ankommt. */
+.zlflaeche[data-lage='nimmt'] .zlbuehne {
+  border-color: var(--warn-hell);
+  box-shadow: 0 0 0 3px rgba(255, 130, 113, 0.28);
+}
+
+/* Der mitlaufende Bilderzähler. Er beweist dem Betreiber beim Aufbau, dass
+   die Kamera wirklich liefert — eine Zahl, die langsam hochzählt, heißt
+   „zu wenig Licht", lange bevor der erste Gast davorsteht. */
+.zlzaehler {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--warn-hell);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 26px rgba(11, 11, 13, 0.9);
+}
+
+.zlsagt {
+  margin: 0;
+  padding: 14px 4px 6px;
+  font-size: 17px;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--hell-leise);
+  min-height: 3em;
+}
+
+.zlleiste {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.zlknopf {
+  min-height: var(--ziel);
+  min-width: 200px;
+  font-size: 16px;
+}
+
+/* Zu wenig Bilder je Sekunde: Das ist keine Fehlermeldung, sondern ein
+   Hinweis beim Aufbau — deshalb warnfarben statt still, aber ohne die
+   Aufnahme zu sperren. Manchmal ist eine schwache Zeitlupe die einzige,
+   die der Raum hergibt. */
+.zlrate--schwach {
+  color: var(--warn-hell);
+}

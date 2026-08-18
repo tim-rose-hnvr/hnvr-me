@@ -11,7 +11,7 @@ import './galerie.css';
 import { alle, type Aufnahme } from './speicher';
 import { holeEinstellungen, ladeEinstellungen } from './einstellungen';
 import { amDraht } from './draht';
-import { ARTEN } from './arten';
+import { artname } from './arten';
 
 const wurzel = document.getElementById('galerie');
 
@@ -44,7 +44,10 @@ async function starte(ziel: HTMLElement): Promise<void> {
   // Die Bilder liegen auf der Box und werden von dort geladen — deshalb sieht
   // jedes Gerät im WLAN dieselbe Galerie.
   const adressen = new Map(aufnahmen.map((a) => [a.id, a.url]));
-  const bewegte = new Map(aufnahmen.filter((a) => a.bewegt).map((a) => [a.id, a.url]));
+  /* GIF und Video sind beides „Bewegung", aber nur das GIF läuft in einem
+     Bildelement. Ein gesprochener Gruß braucht `<video>`, sonst steht in der
+     Galerie eine leere Kachel mit einem Herunterladen-Knopf darunter. */
+  const bewegte = new Map(aufnahmen.filter((a) => a.bewegt && !a.video).map((a) => [a.id, a.url]));
   let filter = 'alle';
 
   const kopf = tag('header', 'gkopf');
@@ -73,11 +76,24 @@ async function starte(ziel: HTMLElement): Promise<void> {
       ...sichtbar.map((a, i) => {
         const kachel = tag('figure', 'gkachel');
         const knopf = tag('button', 'gknopfbild');
-        const bild = document.createElement('img');
-        bild.src = adressen.get(a.id) ?? '';
-        bild.alt = '';
-        bild.loading = 'lazy';
-        knopf.append(bild);
+
+        if (a.video) {
+          /* Nur die Metadaten laden: Eine Galerie mit vierzig Grüßen dürfte
+             sonst vierzig Videos gleichzeitig ziehen. Das erste Bild reicht
+             als Kachel, gespielt wird erst in der Großansicht. */
+          const bewegung = document.createElement('video');
+          bewegung.src = adressen.get(a.id) ?? '';
+          bewegung.muted = true;
+          bewegung.playsInline = true;
+          bewegung.preload = 'metadata';
+          knopf.append(bewegung);
+        } else {
+          const bild = document.createElement('img');
+          bild.src = adressen.get(a.id) ?? '';
+          bild.alt = '';
+          bild.loading = 'lazy';
+          knopf.append(bild);
+        }
         knopf.addEventListener('click', () => zeigeGross(sichtbar, i, adressen, bewegte));
 
         const fuss = document.createElement('figcaption');
@@ -104,6 +120,12 @@ async function starte(ziel: HTMLElement): Promise<void> {
           const marke = tag('span', 'gmarke');
           marke.textContent = 'GIF';
           kachel.append(marke);
+        } else if (a.video) {
+          /* Die Marke sagt, dass hier Ton drin ist. Ohne sie sieht ein
+             gesprochener Gruß aus wie ein besonders langweiliges Foto. */
+          const marke = tag('span', 'gmarke');
+          marke.textContent = a.art === 'stimme' ? 'Gruß' : 'Video';
+          kachel.append(marke);
         }
         kachel.append(knopf, fuss);
         return kachel;
@@ -119,9 +141,12 @@ async function starte(ziel: HTMLElement): Promise<void> {
 
   // Filter nur für Arten anbieten, die auch vorkommen.
   const vorhandene = new Set(aufnahmen.map((a) => a.art));
+  /* Aus dem, was WIRKLICH da ist — nicht aus der Liste der Booth-Arten.
+     Sonst fehlte der Filter für alles, was nicht am Booth entstanden ist:
+     Handybilder, Einwegkamera, gesprochene Grüße. */
   const filterarten = [
     { id: 'alle', name: 'Alle' },
-    ...ARTEN.filter((a) => vorhandene.has(a.id)).map((a) => ({ id: a.id, name: a.name })),
+    ...[...vorhandene].sort().map((id) => ({ id, name: artname(id) })),
   ];
 
   filterarten.forEach((a) => {
@@ -151,6 +176,15 @@ function zeigeGross(
   const decke = tag('div', 'glightbox');
   const bild = document.createElement('img');
   bild.alt = '';
+
+  /* Zwei Elemente statt eines: Ein Video in ein `<img>` zu stecken zeigt
+     nichts, und ein `<video>` für jedes Foto hätte Bedienelemente, die dort
+     nichts zu suchen haben. Sichtbar ist immer genau eines. */
+  const bewegung = document.createElement('video');
+  bewegung.className = 'gvideo';
+  bewegung.controls = true;
+  bewegung.playsInline = true;
+  bewegung.hidden = true;
 
   const zurueck = tag('button', 'gpfeil');
   zurueck.textContent = '‹';
@@ -194,7 +228,13 @@ function zeigeGross(
     diashow.textContent = 'Diashow anhalten';
     decke.setAttribute('data-diashow', '');
     takte();
-    uhr = window.setInterval(() => weiter(1), 4000);
+    /* Ein gesprochener Gruß dauert länger als vier Sekunden. Die Diashow
+       wartet deshalb, solange ein Video läuft — sonst schneidet sie jeden
+       Gruß nach einem Satz ab. */
+    uhr = window.setInterval(() => {
+      if (!bewegung.hidden && !bewegung.paused && !bewegung.ended) return;
+      weiter(1);
+    }, 4000);
   };
 
   /* Den Balken bei jedem Bild neu anstoßen. Ohne das Umbrechen läuft die
@@ -209,8 +249,23 @@ function zeigeGross(
   const zeige = () => {
     const a = liste[i];
     if (!a) return;
-    // Gross zeigt die Bewegung, wenn es eine gibt.
-    bild.src = bewegte.get(a.id) ?? adressen.get(a.id) ?? '';
+
+    /* Ein laufender Gruß muss aufhören, wenn weitergeblättert wird — sonst
+       reden zwei Gäste gleichzeitig aus dem Rechner. */
+    bewegung.pause();
+
+    if (a.video) {
+      bewegung.src = adressen.get(a.id) ?? '';
+      bewegung.hidden = false;
+      bild.hidden = true;
+      bild.removeAttribute('src');
+    } else {
+      bewegung.hidden = true;
+      bewegung.removeAttribute('src');
+      bild.hidden = false;
+      // Gross zeigt die Bewegung, wenn es eine gibt.
+      bild.src = bewegte.get(a.id) ?? adressen.get(a.id) ?? '';
+    }
     zaehler.textContent = `${i + 1} von ${liste.length}`;
     takte();
     /* Der Streifen unten führt mit: Wer bei Bild 300 ist, soll ihn nicht
@@ -228,6 +283,7 @@ function zeigeGross(
 
   const beenden = () => {
     stoppeDiashow();
+    bewegung.pause();
     decke.remove();
     document.removeEventListener('keydown', taste);
   };
@@ -266,7 +322,7 @@ function zeigeGross(
   const leiste = tag('div', 'gleiste');
   leiste.append(zaehler, diashow, zu);
 
-  decke.append(balken, zurueck, bild, vor, streifen, leiste);
+  decke.append(balken, zurueck, bild, bewegung, vor, streifen, leiste);
   document.body.append(decke);
   zeige();
   zu.focus();

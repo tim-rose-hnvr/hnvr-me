@@ -50,6 +50,11 @@ async function starte(ziel: HTMLElement): Promise<void> {
       return;
     }
 
+    /* Videodateien bleiben draußen. Ein gesprochener Gruß hat kein Bild,
+       das aus zehn Metern etwas sagt, und Ton hat der Beamer ohnehin nicht —
+       eine stumme Wellenlinie zwischen Gruppenfotos ist kein Beitrag. */
+    aufnahmen = aufnahmen.filter((a) => !a.video);
+
     kopf.zaehler.textContent = `${aufnahmen.length} Aufnahmen`;
     leer.hidden = aufnahmen.length > 0;
 

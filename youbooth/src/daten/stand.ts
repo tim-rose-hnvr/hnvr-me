@@ -78,9 +78,27 @@ export const MODULSTAND: Record<string, Eintrag> = {
       'Mehrere Ausgaben mit eigenem Inhalt, die Moderation vor der Anzeige und ' +
       'der Wechsel mit der Foto-Wall auf demselben Beamer fehlen noch.',
   },
-  einwegkamera: { stand: 'geplant' },
-  'audio-gaestebuch': { stand: 'geplant' },
-  'slow-motion': { stand: 'geplant' },
+  einwegkamera: {
+    stand: 'laeuft',
+    offen:
+      'Filmlänge, Entwicklungszeitpunkt, Look und Nachladen laufen. ' +
+      'Die Moderation vor der Freigabe und eigene Codes je Standort fehlen noch.',
+  },
+  'audio-gaestebuch': {
+    stand: 'laeuft',
+    offen:
+      'Aufnehmen, anhören, verwerfen und die Ausgabe in die Galerie laufen — ' +
+      'Bild und Stimme entstehen in einer Datei. Der Zusammenschnitt als EINE ' +
+      'Datei zum Herunterladen, das Transkript und die Moderation fehlen noch; ' +
+      'nacheinander anhören lassen sich alle Grüße schon in der Galerie.',
+  },
+  'slow-motion': {
+    stand: 'laeuft',
+    offen:
+      'Aufnehmen, verlangsamen, Rahmen und Ausgabe laufen — die Zeitlupe steckt in der Datei, ' +
+      'nicht nur im Abspieler. Wie stark sie ausfällt, hängt an der Kamera; die Seite misst und ' +
+      'sagt es. Windmaschine und Konfettikanone zu triggern fehlt noch.',
+  },
   '360-booth': { stand: 'geplant', offen: 'Braucht Hardware, die wir noch nicht ausliefern.' },
 };
 

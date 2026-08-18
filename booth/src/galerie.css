@@ -305,3 +305,25 @@ body.galerieseite {
     height: 36px;
   }
 }
+
+/* Ein gesprochener Gruß in der Großansicht: Er steht dort, wo sonst das Bild
+   steht, und bringt seine eigenen Bedienelemente mit. */
+.gvideo {
+  max-width: min(92vw, 1100px);
+  max-height: 78vh;
+  border-radius: var(--r-karte-gross);
+  background: var(--ink);
+  display: block;
+}
+
+.gvideo[hidden] { display: none; }
+
+/* In der Kachel bleibt das Video stumm und still — es ist eine Vorschau,
+   kein Abspieler. Es füllt die Kachel wie ein Foto. */
+.gknopfbild video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: var(--ink-soft);
+}

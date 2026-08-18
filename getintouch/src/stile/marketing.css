@@ -545,6 +545,65 @@ td {
   padding: 84px 0 96px;
 }
 
+/* Fuß mit Rubriken — nur auf der Startseite. */
+.fussrubriken {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(auto-fit, minmax(140px, 1fr));
+  gap: 24px 32px;
+  margin-top: 56px;
+  padding-top: 34px;
+  border-top: 2px solid var(--linie);
+}
+
+/* Die erste Spalte darf nicht mitschrumpfen: `1.4fr` geht bis auf null
+   herunter, und dann steht die Wortmarke in der Rubrik daneben. */
+@media (max-width: 720px) {
+  .fussrubriken {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fussrubrik--marke {
+    grid-column: 1 / -1;
+  }
+}
+
+.fussrubrik {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 13.5px;
+}
+
+.fussrubrik b {
+  font-family: var(--anzeige);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vg-leise);
+  margin-bottom: 2px;
+}
+
+.fussrubrik a {
+  color: var(--vg);
+  text-decoration: none;
+}
+
+.fussrubrik a:hover {
+  text-decoration: underline;
+}
+
+.fussrubrik--marke p {
+  max-width: 32ch;
+  color: var(--vg-leise);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.wortmarke--fuss {
+  margin-bottom: 4px;
+}
+
 .fuss {
   border-top: 1px solid var(--linie);
   padding: 26px 0 40px;

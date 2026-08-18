@@ -15,9 +15,18 @@ interface Props {
   beschreibung: string;
   /** Welcher Eintrag der Navigation gerade gilt. */
   hier?: string;
+  /**
+   * Fuß mit Rubriken statt einer Zeile.
+   *
+   * Der Handoff sieht ihn nur auf der Startseite vor, und das ist richtig:
+   * wer schon auf einer Unterseite steht, hat die Navigation im Kopf. Am Ende
+   * der Startseite dagegen ist der Fuß die zweite Chance, überhaupt gefunden
+   * zu werden.
+   */
+  weiterFuss?: boolean;
 }
 
-const { titel, beschreibung, hier } = Astro.props;
+const { titel, beschreibung, hier, weiterFuss } = Astro.props;
 
 const gestaltung = vorlage('signal');
 const stil = Object.entries(cssVariablen(gestaltung))
@@ -30,6 +39,41 @@ const navi = [
   { name: 'Für Teams', ziel: '/teams' },
   { name: 'Preise', ziel: '/preise' },
   { name: 'Marke', ziel: '/marke' },
+];
+
+interface Verweis {
+  name: string;
+  ziel: string;
+  /** Führt aus dem Produkt heraus und öffnet deshalb ein neues Fenster. */
+  extern?: boolean;
+}
+
+const rubriken: { name: string; verweise: Verweis[] }[] = [
+  {
+    name: 'Produkt',
+    verweise: [
+      { name: 'Werkstatt', ziel: '/werkstatt' },
+      { name: 'Designs', ziel: '/designs' },
+      { name: 'Karte & NFC', ziel: '/karte' },
+      { name: 'Preise', ziel: '/preise' },
+    ],
+  },
+  {
+    name: 'Ansehen',
+    verweise: [
+      { name: 'Echte Seite', ziel: '/t/hnvr' },
+      { name: 'Für Teams', ziel: '/teams' },
+      { name: 'Marke', ziel: '/marke' },
+    ],
+  },
+  {
+    name: 'Hersteller',
+    verweise: [
+      { name: MARKE.hersteller.name, ziel: MARKE.hersteller.adresse, extern: true },
+      { name: 'Impressum', ziel: 'https://hnvr.me/impressum', extern: true },
+      { name: 'Datenschutz', ziel: 'https://hnvr.me/datenschutz', extern: true },
+    ],
+  },
 ];
 ---
 
@@ -65,13 +109,51 @@ const navi = [
 
         <slot />
 
+        {
+          weiterFuss && (
+            <div class="fussrubriken">
+              <div class="fussrubrik fussrubrik--marke">
+                <span class="wortmarke wortmarke--fuss">
+                  <Fragment set:html={SIGNET} />
+                  <span>{MARKE.name}</span>
+                </span>
+                <p>{MARKE.anspruch}</p>
+              </div>
+              {rubriken.map((r) => (
+                <div class="fussrubrik">
+                  <b>{r.name}</b>
+                  {r.verweise.map((v) =>
+                    v.extern ? (
+                      <a href={v.ziel} target="_blank" rel="noopener noreferrer">
+                        {v.name}
+                      </a>
+                    ) : (
+                      <a href={v.ziel}>{v.name}</a>
+                    ),
+                  )}
+                </div>
+              ))}
+            </div>
+          )
+        }
+
         <footer class="fuss">
           <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
-          <span>
-            <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
-            ·
-            <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
-          </span>
+          {/* Bei Rubriken stehen Impressum und Datenschutz schon darüber —
+              zweimal dasselbe untereinander sieht nach Versehen aus. */}
+          {
+            !weiterFuss && (
+              <span>
+                <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">
+                  Impressum
+                </a>
+                ·
+                <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">
+                  Datenschutz
+                </a>
+              </span>
+            )
+          }
         </footer>
       </div>
     </div>

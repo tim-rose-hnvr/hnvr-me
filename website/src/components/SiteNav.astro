@@ -35,11 +35,20 @@ const wege = [
       ))}
     </nav>
 
+    {/* Hier stand „Anmelden" und daneben „Kostenlos starten". Beide
+        zeigten auf die Preisseite, und beide versprachen etwas, das es
+        nicht gibt: es gibt kein Konto und keine Anmeldung, weil der
+        Dienst auf keinem öffentlichen Server läuft. Wer auf Anmelden
+        klickte, landete auf einer Preistabelle — für den Leser sieht
+        das aus, als sei der Knopf kaputt.
+
+        Was jetzt dasteht, ist wahr und führt an die Stelle, wo es
+        erklärt wird. Der Anmeldeknopf kommt zurück, wenn es etwas
+        anzumelden gibt. */}
     <span class="kopf-rechts">
-      <a href={weg('/preise')} class="anmelden">Anmelden</a>
       <a href={weg('/preise')} class="btn btn-primary kopf-knopf">
-        <Icon name="scannen" />
-        Kostenlos starten
+        <Icon name="zahlen" />
+        Zurzeit kostenlos
       </a>
     </span>
   </div>
@@ -116,12 +125,6 @@ const wege = [
     gap: 10px;
     align-items: center;
   }
-  .anmelden {
-    font-size: 14.5px;
-    text-decoration: none;
-    color: rgba(32, 30, 29, 0.7);
-  }
-  .anmelden:hover { color: var(--color-text); }
   .kopf-knopf {
     padding: 11px 20px;
     text-decoration: none;
@@ -151,7 +154,6 @@ const wege = [
     .weg { flex: none; }
   }
   @media (max-width: 560px) {
-    .anmelden { display: none; }
     .kopf-knopf { padding: 10px 16px; font-size: 14px; }
   }
 </style>

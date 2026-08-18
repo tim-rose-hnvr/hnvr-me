@@ -33,6 +33,9 @@ const seiten = [
   { id: 'strecken', weg: '/strecken', datei: 'strecken/index.html' },
   { id: 'vorlagen', weg: '/vorlagen', datei: 'vorlagen/index.html' },
   { id: 'preise', weg: '/preise', datei: 'preise/index.html' },
+  { id: 'lesbarkeit', weg: '/lesbarkeit', datei: 'lesbarkeit/index.html' },
+  { id: 'massenanlage', weg: '/massenanlage', datei: 'massenanlage/index.html' },
+  { id: 'schnittstelle', weg: '/schnittstelle', datei: 'schnittstelle/index.html' },
   { id: 'datenschutz', weg: '/datenschutz', datei: 'datenschutz/index.html' },
   { id: 'impressum', weg: '/impressum', datei: 'impressum/index.html' },
 ];
@@ -64,13 +67,23 @@ const lies = (d) => readFileSync(resolve(dist, d), 'utf8');
 // Astro teilt den Stil in einen gemeinsamen Brocken und je Seite einen
 // eigenen. Die eigenen tragen ihre Marke (data-astro-cid-…) und stören
 // sich nicht; doppelt eingebundene werden nur einmal genommen.
+//
+// Zwei Quellen, nicht eine: Astro legt kleine Stilbloecke direkt in den
+// Kopf der Seite statt in eine Datei (inlineStylesheets: 'auto'). Wer
+// nur die <link>-Zeilen einsammelt, baut eine Datei, in der genau die
+// kleineren Seiten ungestaltet sind — und das faellt beim Bauen nicht
+// auf, weil nichts fehlschlaegt.
 const stilwege = [];
+const stilbloecke = new Set();
 for (const s of seiten) {
-  for (const m of lies(s.datei).matchAll(/<link rel="stylesheet" href="([^"]+)"/g)) {
+  const text = lies(s.datei);
+  const kopf = text.slice(0, text.indexOf('<body'));
+  for (const m of kopf.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)) {
     if (!stilwege.includes(m[1])) stilwege.push(m[1]);
   }
+  for (const m of kopf.matchAll(/<style>([\s\S]*?)<\/style>/g)) stilbloecke.add(m[1]);
 }
-let stil = stilwege.map((w) => lies(w.replace(/^\//, ''))).join('\n');
+let stil = [...stilwege.map((w) => lies(w.replace(/^\//, ''))), ...stilbloecke].join('\n');
 stil = stil.replace(/url\((\/(?:schrift|assets)\/[^)]+)\)/g, (_, p) => `url(${datenURI(p)})`);
 
 // ─── Rumpf ──────────────────────────────────────────────────────────

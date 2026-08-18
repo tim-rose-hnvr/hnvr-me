@@ -1,0 +1,386 @@
+---
+import { weg } from '../lib/weg';
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+
+// Diese Seite stand schon einmal online — im alten Entwurf, unter
+// derselben Adresse. Sie wird hier nicht neu erfunden, sondern in die
+// neue Gestaltung übernommen und gegen den Code gehalten.
+//
+// Wichtig: die Grenzwerte unten sind KEINE Werbeaussage. Sie stehen
+// wörtlich so in `pnkt/druck/druck.go` und entscheiden dort über jedes
+// Urteil. Wer eine Zahl hier ändert, ohne sie dort zu ändern, hat zwei
+// Wahrheiten — und das Programm gewinnt.
+//
+// Der Kommentar über `Verfahrensliste` in druck.go sagt dasselbe von
+// der anderen Seite: „Die Grenzwerte stammen aus der veröffentlichten
+// Lesbarkeitsseite von PUNKT."
+
+const verfahren = [
+  { name: 'Nur Bildschirm', mm: '0,20 mm', schluessel: 'bildschirm' },
+  { name: 'Laser- oder Tintendruck, Papier', mm: '0,40 mm', schluessel: 'laser' },
+  { name: 'Offsetdruck', mm: '0,50 mm', schluessel: 'offset' },
+  { name: 'Großformat, Plane, Folie', mm: '0,75 mm', schluessel: 'grossformat' },
+  { name: 'Gravur, Prägung, Textil', mm: '1,00 mm', schluessel: 'gravur' },
+];
+
+const stufen = [
+  { stufe: 'L', anteil: '7 %', wofuer: 'Bildschirm. Für Druck knapp bemessen.' },
+  { stufe: 'M', anteil: '15 %', wofuer: 'Papier — die untere Grenze.' },
+  { stufe: 'Q', anteil: '25 %', wofuer: 'Verpackung, Etikett, alles was knickt.' },
+  { stufe: 'H', anteil: '30 %', wofuer: 'Logo in der Mitte, raue Oberfläche.' },
+];
+
+const grenzen = [
+  {
+    nr: '01',
+    titel: 'Kontrast',
+    marke: 'mindestens 4:1, gerechnet nach WCAG 2.1',
+    text: 'Unter 3:1 gibt es einen Fehler: viele Geräte lesen dann nicht mehr, ' +
+      'besonders bei schrägem Licht. Zwischen 3:1 und 4:1 gibt es eine Warnung — ' +
+      'das trägt bei gutem Licht und sonst nicht.',
+    nachsatz: 'Das trifft fast jede Marke. Ein sattes Signalorange erreicht auf Weiß ' +
+      'oft keine 3:1. Zwei Stufen abgedunkelt sind es über 3,4:1 — bei praktisch ' +
+      'gleicher Wirkung.',
+  },
+  {
+    nr: '02',
+    titel: 'Richtung',
+    marke: 'dunkel auf hell, nie umgekehrt',
+    text: 'Ist der Code heller als sein Hintergrund, ist das ein Fehler und keine ' +
+      'Warnung. Ältere Geräte und Kassenscanner lesen invertierte Codes nicht.',
+    nachsatz: 'Gerechnet wird über die Leuchtdichte nach sRGB — dieselbe Rechnung, ' +
+      'die auch dem Kontrast zugrunde liegt, nicht ein Vergleich der Hexwerte.',
+  },
+  {
+    nr: '03',
+    titel: 'Ruhezone',
+    marke: 'ringsum 4 Module, ISO/IEC 18004',
+    text: 'Ohne diesen Rand findet der Scanner die Positionsmarken nicht sauber. ' +
+      'Weniger als vier Module ergibt einen Fehler.',
+    nachsatz: 'Der häufigste Fehler im Layout: Der Code wird bündig an eine Kante ' +
+      'oder in ein farbiges Feld gesetzt, weil er „sonst so viel Platz frisst". Im ' +
+      'PDF sieht das gut aus, am Aufsteller scannt es nicht. Die Ruhezone ist Teil ' +
+      'des Codes, nicht Weißraum drumherum.',
+  },
+  {
+    nr: '04',
+    titel: 'Modulgröße',
+    marke: 'je Verfahren verschieden — siehe Tabelle',
+    text: 'Die Kantenlänge eines einzelnen Quadrats. Unter dem Wert des Verfahrens ' +
+      'gibt es einen Fehler, innerhalb der ersten 20 Prozent darüber eine Warnung — ' +
+      'saugendes Papier und Tonwertzuwachs fressen genau diese Reserve.',
+    nachsatz: 'Daraus folgt direkt: Je mehr im Code steht, desto größer muss er ' +
+      'gedruckt werden. Ein dynamischer Code hält den Inhalt kurz und den Code klein.',
+  },
+  {
+    nr: '05',
+    titel: 'Fehlerkorrektur gegen Logo',
+    marke: 'Warnung ab 60 % der Reserve',
+    text: 'Gerechnet wird die Fläche, nicht die Kante: ein Logo über einem Viertel ' +
+      'der Kante verdeckt ein Sechzehntel der Fläche. Übersteigt die Fläche die ' +
+      'Stufe, ist es ein Fehler.',
+    nachsatz: 'Diese Reserve ist nicht fürs Logo da, sondern für Kratzer, Falten, ' +
+      'Spiegelungen und Druckfehler. Wer sie ganz ans Logo verfüttert, hat einen ' +
+      'Code, der nur unter Laborbedingungen liest.',
+  },
+  {
+    nr: '06',
+    titel: 'Form der Positionsmarken',
+    marke: 'gesucht wird 1:1:3:1:1',
+    text: 'Die drei Marken in den Ecken sind das, woran ein Scanner den Code ' +
+      'überhaupt findet. Je runder sie werden, desto weiter weicht das Bild von ' +
+      'diesem Verhältnis ab.',
+    nachsatz: 'Wie stark, ist gemessen und nicht geschätzt — siehe unten.',
+  },
+];
+
+// Diese Messung ist der Grund, warum die Warnung zu runden Augenrahmen
+// im Programm steht. 160 Kombinationen aus Modul-, Rahmen- und
+// Kernform, gegengelesen mit OpenCV. Nachzulesen im Kommentar über
+// `switch v.Augenrahmen` in pnkt/druck/druck.go.
+const messung = [
+  { form: 'quadrat', gelesen: '40 von 40', gut: true },
+  { form: 'kissen', gelesen: '40 von 40', gut: true },
+  { form: 'blatt', gelesen: '0 von 40', gut: false },
+  { form: 'rund', gelesen: '0 von 40', gut: false },
+];
+---
+
+<Seite
+  titel="Lesbarkeit im Druck"
+  beschreibung="Sechs Grenzwerte entscheiden, ob ein QR-Code am Messestand scannt — und keinen davon sieht man der Bildschirmvorschau an. Das sind sie, samt Begründung."
+  aktiv=""
+>
+  <section class="spur">
+    <span class="tag tag-accent">
+      <Icon name="geprueft" groesse={16} />
+      Prüfliste
+    </span>
+    <h1 class="titel-seite">Warum ein Code am<br />Messestand nicht scannt</h1>
+    <p class="fliess">
+      Auf dem Bildschirm funktioniert fast jeder QR-Code. Im Druck entscheidet
+      sich das an sechs Größen, und keine davon sieht man der Vorschau an. Das
+      sind die Grenzwerte, nach denen geprüft wird — samt Begründung, damit man
+      sie auch begründet übergehen kann.
+    </p>
+    <div class="knopfreihe">
+      <a href={weg('/werkstatt')} class="btn btn-primary knopf-gross">
+        <Icon name="code" />
+        Zur Werkstatt
+      </a>
+      <a href={weg('/schnittstelle')} class="btn btn-secondary knopf-gross">
+        <Icon name="weiter" />
+        Als Schnittstelle
+      </a>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="grenzen">
+      {grenzen.map((g) => (
+        <article class="card grenze hebt">
+          <div class="card-body">
+            <span class="grenze-nr">{g.nr}</span>
+            <h2 class="grenze-titel">{g.titel}</h2>
+            <p class="fliess-klein">{g.text}</p>
+            <p class="grenze-nachsatz">{g.nachsatz}</p>
+            <span class="grenze-marke">{g.marke}</span>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel">
+      <div class="kicker">Modulgröße je Verfahren</div>
+      <h2 class="titel-panel">Wie klein ein Quadrat werden darf</h2>
+      <p class="fliess-klein tabellen-vorspann">
+        Die kleinste Modulkante, bei der das Verfahren den Code noch trägt.
+        Unterschreitet die Vorgabe den Wert, gibt es einen Fehler; in den ersten
+        20 Prozent darüber eine Warnung.
+      </p>
+      <div class="tabellenrahmen">
+        <table class="table">
+          <thead>
+            <tr><th>Verfahren</th><th>mindestens</th><th>Schlüssel</th></tr>
+          </thead>
+          <tbody>
+            {verfahren.map((v) => (
+              <tr>
+                <td>{v.name}</td>
+                <td class="zahl">{v.mm}</td>
+                <td><code>{v.schluessel}</code></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="fliess-klein hinweis">
+        Für Codes, die an der Kasse gelesen werden sollen, gilt zusätzlich das
+        Maß von GS1: mindestens 0,396 mm und höchstens 0,990 mm je Modul.
+      </p>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="zweispalt">
+      <div class="panel">
+        <div class="kicker">Fehlerkorrektur</div>
+        <h2 class="titel-panel">Was eine Stufe wiederherstellt</h2>
+        <div class="tabellenrahmen">
+          <table class="table">
+            <thead>
+              <tr><th>Stufe</th><th>stellt wieder her</th><th>wofür</th></tr>
+            </thead>
+            <tbody>
+              {stufen.map((s) => (
+                <tr>
+                  <td><b>{s.stufe}</b></td>
+                  <td class="zahl">{s.anteil}</td>
+                  <td>{s.wofuer}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel-dunkel">
+        <div class="kicker kicker-hell">Gemessen, nicht geschätzt</div>
+        <h2 class="titel-panel">Runde Ecken kosten alles</h2>
+        <p class="dunkel-text">
+          160 Kombinationen aus Modul-, Rahmen- und Kernform, jede gedruckt,
+          gerastert und mit OpenCV gegengelesen. Das Ergebnis ist keine
+          Abstufung, sondern eine Kante:
+        </p>
+        <ul class="messliste">
+          {messung.map((m) => (
+            <li class:list={['messzeile', { 'messzeile-schlecht': !m.gut }]}>
+              <code>{m.form}</code>
+              <span class="messwert">{m.gelesen}</span>
+            </li>
+          ))}
+        </ul>
+        <p class="dunkel-text">
+          Verboten wird es trotzdem nicht. Telefonkameras sind nachsichtiger als
+          ein Prüfdecoder, und die Entscheidung gehört dem Gestalter — er bekommt
+          eine Warnung, keine Fehlermeldung.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel abstand">
+      <div class="kicker">Faustregel</div>
+      <h2 class="titel-panel">Leseabstand</h2>
+      <p class="fliess">
+        Kantenlänge ≈ Leseabstand ÷ 10. Eine Messewand, die aus fünf Metern
+        gescannt werden soll, braucht einen Code von 50 cm.
+      </p>
+      <p class="fliess-klein hinweis">
+        Das ist Praxis, keine Norm — sie steht als eigene Funktion im Programm
+        und geht in kein Urteil ein. Wer näher herangeht, darf kleiner drucken.
+      </p>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel-dunkel schluss">
+      <div>
+        <h2 class="titel-panel">Was diese Prüfung nicht ist</h2>
+        <p class="dunkel-text">
+          Sie ersetzt keine Messung nach ISO/IEC 15415 am gedruckten Bogen. Sie
+          sagt voraus, was ein Prüfgerät beanstanden würde — vor dem Druck,
+          nicht danach. Wenn die Auflage liegt, ist ein Fehler nicht mehr zu
+          beheben; das ist der ganze Grund, warum es sie gibt.
+        </p>
+        <div class="knopfreihe">
+          <a href={weg('/werkstatt')} class="btn btn-primary knopf-gross">
+            <Icon name="scannen" />
+            Code prüfen lassen
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Seite>
+
+<style>
+  .grenzen {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .grenze { border-radius: 32px; }
+  .grenze .card-body { padding: 26px 26px 24px; }
+  .grenze-nr {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    color: var(--color-accent-700);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .grenze-titel {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+  }
+  .grenze-nachsatz {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(32, 30, 29, 0.58);
+    margin: 12px 0 0;
+  }
+  .grenze-marke {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--color-accent-700);
+    background: var(--color-accent-100);
+    border-radius: 999px;
+    padding: 6px 14px;
+  }
+
+  .zweispalt {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  .tabellen-vorspann { margin: 0 0 18px; max-width: 46rem; }
+  /* Eine Tabelle darf innen scrollen, die Seite nicht. */
+  .tabellenrahmen { overflow-x: auto; }
+  .table { width: 100%; }
+  .zahl { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  code {
+    font-size: 13px;
+    background: var(--color-neutral-200);
+    border-radius: 6px;
+    padding: 2px 7px;
+  }
+  .hinweis { margin: 16px 0 0; color: rgba(32, 30, 29, 0.6); }
+
+  .dunkel-text {
+    font-size: 15.5px;
+    line-height: 1.65;
+    color: rgba(245, 234, 216, 0.78);
+    margin: 0 0 16px;
+  }
+  .messliste {
+    list-style: none;
+    margin: 0 0 18px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .messzeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    border-radius: 14px;
+    padding: 10px 16px;
+    background: rgba(122, 138, 94, 0.22);
+    font-size: 14px;
+  }
+  .messzeile-schlecht { background: rgba(198, 113, 57, 0.24); }
+  .messzeile code {
+    background: transparent;
+    color: var(--color-bg);
+    padding: 0;
+    font-size: 14px;
+  }
+  .messwert {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--color-bg);
+  }
+
+  .abstand .fliess { max-width: 40rem; }
+
+  .schluss .dunkel-text { max-width: 44rem; }
+  .schluss .knopfreihe { margin-top: 22px; }
+
+  /* Ein Rasterfeld ist von Haus aus mindestens so breit wie sein
+     laengster unumbrechbarer Inhalt — eine Zeile `curl …` oder eine
+     Tabellenzelle mit `nowrap` sprengt sonst die Spalte und damit die
+     Seite. `min-width: 0` gibt das Feld frei; das Scrollen uebernimmt
+     der Rahmen innen. */
+  .grenzen > * { min-width: 0; }
+  .zweispalt > * { min-width: 0; }
+
+  @media (max-width: 1000px) {
+    .grenzen { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 760px) {
+    .grenzen { grid-template-columns: 1fr; }
+    .zweispalt { grid-template-columns: 1fr; }
+  }
+</style>

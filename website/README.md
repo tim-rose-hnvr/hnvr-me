@@ -18,6 +18,17 @@ npm run build         # nach dist/
 | `/strecken` | `strecken.astro` | Trichter mit Röhren, A/B-Ergebnis, Push, Bausteine, Regeln |
 | `/vorlagen` | `vorlagen.astro` | sechs Vorlagen, Team-Panel |
 | `/preise` | `preise.astro` | vier Tarife, „In jedem Tarif", Fragen, Abschluss |
+| `/lesbarkeit` | `lesbarkeit.astro` | sechs Grenzwerte, Verfahrenstabelle, die Messung zu runden Ecken |
+| `/massenanlage` | `massenanlage.astro` | Massenanlage und Serie, Spalten, Inhalt des Archivs |
+| `/schnittstelle` | `schnittstelle.astro` | alle Wege der REST-Schnittstelle, zwei curl-Beispiele |
+
+Die letzten drei standen schon unter derselben Adresse im alten Entwurf
+(`punkt-954d3e9b-hnvrme.wix-site-host.com`). Sie sind hier nicht abgeschrieben,
+sondern gegen `pnkt/` gehalten: jeder Grenzwert steht in `pnkt/druck/druck.go`,
+jede Spalte in `pnkt/charge.go`, jeder Weg in `pnkt/main.go`. An zwei Stellen
+wich der alte Text vom Programm ab — die Spaltenliste der Massenanlage nannte
+Spalten, die nicht gelesen werden, und die Schnittstellenseite nannte Endpunkte
+unter anderen Namen. Es gilt der Code.
 
 Gemeinsam: `layouts/Seite.astro` (Kopf, Fuß, Tokens, Bewegung),
 `components/SiteNav.astro`, `SiteFooter.astro`, `Icon.astro` (alle

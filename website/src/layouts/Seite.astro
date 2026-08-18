@@ -7,7 +7,9 @@ import SiteFooter from '../components/SiteFooter.astro';
 interface Props {
   titel: string;
   beschreibung: string;
-  aktiv?: 'start' | 'werkstatt' | 'strecken' | 'vorlagen' | 'preise';
+  // Leer für Seiten, die in der Wegeleiste nicht vorkommen
+  // (Lesbarkeit, Serie, Schnittstelle, Impressum, Datenschutz).
+  aktiv?: 'start' | 'werkstatt' | 'strecken' | 'vorlagen' | 'preise' | '';
 }
 const { titel, beschreibung, aktiv = 'start' } = Astro.props;
 const kanonisch = new URL(Astro.url.pathname, Astro.site ?? 'https://pnkt.me');

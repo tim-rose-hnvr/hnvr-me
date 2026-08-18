@@ -18,29 +18,38 @@ npm run build      # baut ../website/src, ohne jede Wix-Anmeldung
 npm run release    # liefert aus — braucht Anmeldung, siehe unten
 ```
 
-## Was noch fehlt: die appId
+## Woher die appId stammt
 
-`wix.config.json` trägt zwei Kennungen. Die `siteId` steht drin. Die
-`appId` nicht:
+`wix.config.json` trägt zwei Kennungen. Die `siteId` steht in der
+veröffentlichten Seite. Die `appId` stand nirgends im Repository, und es
+gibt keinen Aufruf, der die eigenen Apps eines Kontos aufzählt — feste,
+öffentliche Kennungen haben nur die von Wix selbst gebauten Apps.
 
-```json
-{ "appId": "HIER-DIE-APP-ID-…", "siteId": "710946fa-e37e-43d7-9f1e-0db6bec22300" }
+Ermittelt wurde sie über die auf einer Site installierten Apps:
+
+```
+GET https://www.wixapis.com/apps-installer-service/v1/app-instances   (je Site)
 ```
 
-Sie entsteht beim Anlegen des Projekts und liegt **nur im Projektordner**,
-aus dem bisher ausgeliefert wurde. Es gibt keinen Weg, sie zu ermitteln:
+Ein von Wix gebautes App steht auf vielen Sites, das eigene Projekt-App
+auf genau einer. Auf „QR Code" waren zwei Kennungen übrig, die Get in
+Touch nicht hat; nach dem Abgleich mit fünf weiteren Sites des Kontos
+blieb eine:
 
-- Die Wix-REST-Schnittstelle kennt keinen Aufruf, der die eigenen Apps
-  aufzählt — nur die von Wix selbst gebauten haben feste, öffentliche
-  Kennungen.
-- `wix` kann einen bestehenden Projektstand nicht herunterladen. Es gibt
-  `npm create @wix/new headless link`, aber das legt eine **neue** Site an,
-  statt sich mit einer bestehenden zu verbinden.
-- Die ausgelieferte Seite gibt sie nicht preis. Nachgesehen: in allen acht
-  Seiten steht genau eine Kennung, und das ist die `siteId`.
+| Kennung | installiert auf |
+|---|---|
+| `78640cbb-…` | QR Code, pdf studio, youbooth.me → kein Projekt-App |
+| **`1af487c5-…`** | **nur QR Code** → das PUNKT-Projekt |
+| `af0cc4c8-…` | nur Get in Touch → Gegenprobe, dessen appId bekannt ist |
 
-`npm run kennung` prüft das und bricht mit dieser Erklärung ab, statt
-einen Bau zu starten, der zwanzig Sekunden später unverständlich endet.
+Die Gegenprobe ist der eigentliche Beweis: die bekannte appId von Get in
+Touch zeigt genau dieselbe Signatur — installiert auf ihrer eigenen Site
+und auf keiner anderen.
+
+`npm run kennung` prüft weiterhin beide Werte. Nicht aus Misstrauen gegen
+diesen Befund, sondern gegen den Fall, dass jemand die Datei leert oder
+auf eine fremde Site zeigen lässt: ein Ausliefern an die falsche Stelle
+merkt man erst, wenn eine fremde Seite ersetzt ist.
 
 ## Ohne die Wix-Anbindung
 

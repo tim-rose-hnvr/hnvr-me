@@ -1,15 +1,23 @@
 /**
  * Prüft, ob die Kennungen in wix.config.json stehen.
  *
- * Die `siteId` ist bekannt — sie steht in der veröffentlichten Seite und
- * im Wix-Konto. Die `appId` nicht: sie entsteht beim Anlegen des
- * Projekts und liegt nur in dessen Ordner. Es gibt keine Schnittstelle,
- * über die man sie abfragen könnte, und das CLI kann einen bestehenden
- * Projektstand nicht herunterladen.
+ * Beide Kennungen stehen. Die `appId` war nicht im Repository und ließ
+ * sich auch nicht direkt abfragen — es gibt keinen Aufruf, der die
+ * eigenen Apps aufzählt. Ermittelt wurde sie über die auf der Site
+ * installierten Apps:
  *
- * Ohne sie bricht diese Prüfung ab, statt einen Bau zu starten, der
- * zwanzig Sekunden später mit einer unverständlichen Meldung endet —
- * oder, schlimmer, an der falschen Stelle landet.
+ *   GET /apps-installer-service/v1/app-instances   (je Site)
+ *
+ * Ein von Wix gebautes App steht auf vielen Sites, das eigene Projekt-App
+ * auf genau einer. Auf „QR Code" blieb nach dem Abgleich mit fünf anderen
+ * Sites des Kontos genau eine Kennung übrig: 1af487c5-…. Gegenprobe mit
+ * Get in Touch, dessen appId bekannt ist — dieselbe Signatur, nur auf
+ * seiner eigenen Site.
+ *
+ * Die Prüfung bleibt trotzdem stehen: sie fängt den Fall ab, dass jemand
+ * die Datei leert oder auf eine fremde Site zeigen lässt. Ein Ausliefern
+ * an die falsche Stelle merkt man erst, wenn eine fremde Seite ersetzt
+ * ist.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -17,6 +25,7 @@ import { resolve } from 'node:path';
 const datei = resolve(import.meta.dirname, '..', 'wix.config.json');
 const config = JSON.parse(readFileSync(datei, 'utf8'));
 const platzhalter = /HIER-DIE-APP-ID/;
+const punktApp = '1af487c5-42a5-445d-89fc-65f1aa40cc32';
 
 if (!config.appId || platzhalter.test(config.appId)) {
   console.error(`

@@ -8,8 +8,10 @@
 #
 # Voraussetzungen:
 #   1. Das Geheimnis WIX_API_KEY (steht bereits, wird von Get in Touch benutzt).
-#   2. Die appId in punkt/wix.config.json. Sie fehlt noch — siehe
-#      punkt/skripte/kennung-pruefen.mjs, das bricht sonst gleich zu Beginn ab.
+#   2. Die Kennungen in punkt/wix.config.json. Beide stehen; woher die
+#      appId stammt, erklaert punkt/README.md. Der erste Schritt prueft
+#      sie, damit ein leeres oder verstelltes Feld nicht in einem Deploy
+#      an der falschen Stelle endet.
 #
 # Was ausgeliefert wird, liegt NICHT in punkt/, sondern in website/src.
 # punkt/ ist nur die Hülle: astro.config.mjs zeigt mit srcDir dorthin.

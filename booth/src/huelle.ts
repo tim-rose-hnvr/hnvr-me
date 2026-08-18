@@ -1,125 +1,112 @@
 /**
- * Bruecke zur Desktop-Huelle.
+ * Brücke zur Box und zur Desktop-Hülle.
  *
- * Im Browser laeuft alles wie bisher; laeuft der Booth in der Tauri-App,
- * legt sie jede Aufnahme zusaetzlich als Datei ab und liefert sie im lokalen
- * Netz aus — das ist der Weg, auf den der QR-Code zeigt.
+ * Vorher lief hier alles über Tauri: Aufnahmen ablegen, drucken, Drucker
+ * auflisten, Adresse erfragen. Das hatte eine Grenze, die im Saal auffällt —
+ * **nur die Desktop-App konnte drucken.** Die Teilen-Station daneben, das
+ * Handy im WLAN und der Browser auf dem zweiten Rechner nicht.
+ *
+ * Seit die Box einen eigenen Server hat, kann sie das alles selbst, und zwar
+ * für jedes Gerät im Netz gleich: `/api/print`, `/api/printers`, `/api/info`.
+ * Dort sitzen auch die Grenzen — Druckkontingent je Event und je Runde. Ein
+ * Knopf, den nur der Booth ausblendet, wäre keine Grenze.
+ *
+ * Übrig bleibt für die Hülle das, was ein Browser nicht kann: Vollbild ohne
+ * Leiste, Autostart, Selbstaktualisierung. Sie meldet sich über `window.hülle`,
+ * das die Vorschaltdatei der Electron-App setzt.
  */
 
-type Aufruf = <T>(befehl: string, daten?: Record<string, unknown>) => Promise<T>;
+/** Beschreibung der Hülle, falls der Booth in ihr läuft. */
+type Huelle = { fassung: string; system: string };
 
-let aufruf: Aufruf | null = null;
-let geprueft = false;
-
-/** Laeuft der Booth in der Desktop-Huelle? */
-export function inHuelle(): boolean {
-  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
-}
-
-async function hole(): Promise<Aufruf | null> {
-  if (geprueft) return aufruf;
-  geprueft = true;
-
-  if (!inHuelle()) return null;
-
-  try {
-    const modul = await import('@tauri-apps/api/core');
-    aufruf = modul.invoke as Aufruf;
-  } catch {
-    aufruf = null;
+declare global {
+  interface Window {
+    youboothHuelle?: Huelle;
   }
-  return aufruf;
 }
 
-/**
- * Legt die Aufnahme als Datei auf der Box ab.
- *
- * ÜBERHOLT: Seit die Box einen eigenen Server hat, legt der die Aufnahmen an
- * (`/api/photos`) und liefert sie im ganzen WLAN aus. Diese Brücke bleibt nur,
- * bis die Desktop-Hülle gewechselt ist — dann verschwindet sie mitsamt dem
- * Rust-Auslieferungsdienst.
- */
-export async function legeAb(
-  kennung: string,
-  blob: Blob,
-  endung: 'jpg' | 'gif' = 'jpg'
-): Promise<string | null> {
-  const rufe = await hole();
-  if (!rufe) return null;
+/** Läuft der Booth in der Desktop-Hülle? */
+export function inHuelle(): boolean {
+  return typeof window !== 'undefined' && !!window.youboothHuelle;
+}
 
-  const daten = Array.from(new Uint8Array(await blob.arrayBuffer()));
+/** Fassung und System der Hülle — für die Einrichtung und die Fehlersuche. */
+export function huellenauskunft(): Huelle | null {
+  return (typeof window !== 'undefined' && window.youboothHuelle) || null;
+}
+
+async function hole<T>(pfad: string, wunsch?: RequestInit): Promise<T | null> {
   try {
-    return await rufe<string>('sichere_aufnahme', { kennung, endung, daten });
+    const antwort = await fetch(pfad, {
+      ...wunsch,
+      headers: { 'Content-Type': 'application/json', ...(wunsch?.headers ?? {}) },
+    });
+    if (!antwort.ok) return null;
+    return (await antwort.json()) as T;
   } catch {
     return null;
   }
 }
 
 /**
- * Adresse, unter der die Box ihre Dateien anbietet — Grundlage des QR-Codes.
- * Leer, wenn der Dienst nicht laeuft oder der Booth im Browser laeuft.
+ * Adresse, unter der die Box ihre Dateien im Netz anbietet — Grundlage des
+ * QR-Codes. Sie kommt von der Box selbst: Sie kennt ihre Adresse im WLAN, der
+ * Browser kennt nur `localhost`, und darauf zeigt kein brauchbarer QR-Code.
  */
 export async function ausgabeAdresse(): Promise<string> {
-  const rufe = await hole();
-  if (!rufe) return '';
-
-  try {
-    return await rufe<string>('ausgabe_adresse');
-  } catch {
-    return '';
-  }
+  const info = await hole<{ base?: string }>('/api/info');
+  return info?.base ?? '';
 }
 
 /**
- * Stand des Fernausloesers: Wie oft wurde im Netz der Box auf „Los" getippt?
- * Ein Zaehler, kein Ereignis — eine verpasste Abfrage verschluckt nichts.
- * Ohne Huelle bleibt es bei 0.
+ * Stand des Fernauslösers: Wie oft wurde im Netz der Box auf „Los" getippt?
+ * Ein Zähler, kein Ereignis — eine verpasste Abfrage verschluckt nichts.
  */
 export async function fernStand(): Promise<number> {
-  const rufe = await hole();
-  if (!rufe) return 0;
-
-  try {
-    return await rufe<number>('fern_stand');
-  } catch {
-    return 0;
-  }
+  const stand = await hole<{ stand?: number }>('/api/fern/auftrag');
+  return stand?.stand ?? 0;
 }
 
-/* ---------- Drucken ueber das Betriebssystem ----------
-   Im Browser bleibt der Druckdialog; in der Huelle druckt die Box selbst,
-   randlos zentriert und ohne Rueckfrage. Auf einer Feier steht niemand am
-   Rechner, der einen Dialog wegklickt. */
+/* ---------- Drucken über die Box ---------- */
 
 export type Druckerauskunft = { drucker: string[]; standard: string | null };
 
 export async function druckerListe(): Promise<Druckerauskunft> {
-  const rufe = await hole();
-  if (!rufe) return { drucker: [], standard: null };
-  try {
-    return await rufe<Druckerauskunft>('drucker_liste');
-  } catch {
-    return { drucker: [], standard: null };
-  }
+  const antwort = await hole<{ printers?: string[]; selected?: string | null }>('/api/printers');
+  return { drucker: antwort?.printers ?? [], standard: antwort?.selected ?? null };
 }
 
 /**
- * Druckt ein Bild ueber die Huelle. Gibt `null` zurueck, wenn es keine Huelle
- * gibt — dann bleibt der Weg ueber den Systemdruckdialog. Ein Fehlertext
- * heisst: Die Huelle war da, der Druck ging schief.
+ * Schickt ein Bild an den Drucker der Box.
+ *
+ * `null` heißt: Die Box ist nicht erreichbar — dann bleibt der Weg über den
+ * Systemdruckdialog. Ein Fehlertext heißt: Sie war da und hat abgelehnt, etwa
+ * weil das Druckkontingent des Events aufgebraucht ist. Der Unterschied ist
+ * wichtig: Im ersten Fall soll der Booth es anders versuchen, im zweiten nicht.
  */
-export async function druckeInHuelle(
-  blob: Blob,
-  drucker: string
+export async function druckeUeberBox(
+  bilddaten: string,
+  runde = ''
 ): Promise<{ gedruckt: true } | { fehler: string } | null> {
-  const rufe = await hole();
-  if (!rufe) return null;
-
-  const daten = Array.from(new Uint8Array(await blob.arrayBuffer()));
+  let antwort: Response;
   try {
-    await rufe<void>('drucke_bild', { daten, drucker, endung: 'jpg' });
-    return { gedruckt: true };
-  } catch (fehler) {
-    return { fehler: String(fehler).slice(0, 200) };
+    antwort = await fetch('/api/print', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: bilddaten, runde }),
+    });
+  } catch {
+    return null;
   }
+
+  if (antwort.ok) return { gedruckt: true };
+
+  const text = await antwort.text().catch(() => '');
+  try {
+    const daten = JSON.parse(text) as { error?: string };
+    if (daten.error) return { fehler: daten.error };
+  } catch {
+    /* kein JSON — dann der nackte Text */
+  }
+  return { fehler: text.slice(0, 200) || `Die Box hat abgelehnt (${antwort.status}).` };
 }

@@ -31,7 +31,6 @@ import {
   sichereAlsDatei,
 } from './ausgabe';
 import { raeumeAuf, sichere, anzahl as gesamtzahl, type Aufnahme } from './speicher';
-import { fernStand, inHuelle } from './huelle';
 import { amDraht, istNeuladen, type Nachricht } from './draht';
 
 type Schritt = 'attract' | 'auswahl' | 'aufnahme' | 'ergebnis' | 'ausgabe';
@@ -55,8 +54,7 @@ export class Booth {
   private weiterUhr: number | null = null;
   private animation: number | null = null;
 
-  /** Fernauslöser: zuletzt gesehener Stand und der QR-Code zur Seite. */
-  private fernZuletzt = -1;
+  /** QR-Code auf die Seite mit dem Fernauslöser. */
   private fernQr = '';
 
   constructor(wurzel: HTMLElement) {
@@ -113,8 +111,6 @@ export class Booth {
       }
     });
 
-    this.beobachteFernausloeser();
-
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') this.zumAttract();
       // Einstellungen: Strg/Cmd + E, danach PIN.
@@ -152,26 +148,6 @@ export class Booth {
     }
 
     if (istNeuladen(n, 'booth') && ruht) location.reload();
-  }
-
-  /**
-   * Fernauslöser: Der Booth fragt den Zähler der Hülle ab. Steigt er, startet
-   * eine Aufnahme — aber nur, wenn gerade niemand mitten in einer steckt.
-   */
-  private beobachteFernausloeser(): void {
-    if (!inHuelle()) return;
-
-    window.setInterval(() => {
-      void fernStand().then((stand) => {
-        if (this.fernZuletzt < 0) {
-          this.fernZuletzt = stand;
-          return;
-        }
-        if (stand <= this.fernZuletzt) return;
-        this.fernZuletzt = stand;
-        if (this.schritt === 'attract' || this.schritt === 'auswahl') void this.starteSerie();
-      });
-    }, 1200);
   }
 
   private async zaehleAuf(): Promise<void> {

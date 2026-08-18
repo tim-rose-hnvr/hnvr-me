@@ -42,8 +42,12 @@ const CAN_PRINT = EDITION === 'desktop';
    läse ein relatives `require` dessen package.json. Zwei verschiedene Dinge
    („welches Programm" und „welche Inhalte") trügen denselben Namen, und
    spätestens beim Update-Vergleich fiele die Box auf die Nase. */
+/* Eine Fassungsnummer für das ganze Programm — die aus `booth/package.json`.
+   Die daneben (`server/package.json`) trägt keine: Sie gibt es nur, damit Node
+   diesen Ordner als CommonJS liest. Stünde dort eine zweite Nummer, liefen sie
+   auseinander, und die Selbstaktualisierung vergliche die falsche. */
 const APP_VERSION = require(
-  path.join(process.env.YOUBOOTH_MITGELIEFERT || __dirname, 'package.json')).version;
+  path.join(process.env.YOUBOOTH_MITGELIEFERT || __dirname, '..', 'package.json')).version;
 /* Beschreibbarer Datenordner: im gepackten Desktop-Build liegt der Code in
    einem schreibgeschützten app.asar – Fotos/Config gehören dann in den
    Nutzerordner (von electron/main.js via YOUBOOTH_DATEN gesetzt). */
@@ -1681,6 +1685,25 @@ app.get('/api/diagnose', requireKey, (req, res) => {
   res.json({ ok: true, text: diagnoseText() });
 });
 
+/* ---------- Fernauslöser für Gäste ----------
+   Bewusst ohne Schlüssel: Wer im WLAN der Box steht und den QR-Code am Screen
+   abfotografiert hat, darf auslösen — das ist der ganze Zweck. Was er NICHT
+   darf, ist etwas einstellen; dafür ist `/api/fern/auftrag` da, und das liegt
+   hinter dem Schlüssel.
+   Die Sperre von drei Sekunden ist keine Sicherheit, sondern Anstand: Ohne sie
+   hält ein Kind den Finger auf dem Knopf und der Booth kommt nicht mehr zur
+   Ruhe. */
+let letzterFernstart = 0;
+app.post('/api/fern/ausloesen', (req, res) => {
+  const jetzt = Date.now();
+  if (jetzt - letzterFernstart < 3000) {
+    return res.status(429).json({ ok: false, error: 'Einen Moment — der Booth läuft schon.' });
+  }
+  letzterFernstart = jetzt;
+  broadcast({ type: 'control', action: 'trigger', target: 'booth', url: null, mode: null });
+  res.json({ ok: true });
+});
+
 /* Einen Auftrag hier und jetzt ausführen – derselbe Code, den die Box auch
    für Aufträge der Zentrale nimmt. Hinter dem Lizenzschlüssel, weil er
    Einstellungen ändern kann. */
@@ -3213,6 +3236,13 @@ app.delete('/api/microsites/:slug', requireKey, (req, res) => {
    davor liegt, entscheidet `/api/microsites/public/:slug` — nicht diese Zeile.
    Beim Bauen entsteht `event.html`; im Entwicklungsbetrieb liegt sie noch
    nicht im `dist`, dann führt der Weg zur Quelle. */
+/* Kurze Adresse für den QR-Code am Screen: /fern */
+app.get('/fern', (req, res) => {
+  const gebaut = path.join(OBERFLAECHE, 'fern.html');
+  if (fs.existsSync(gebaut)) return res.sendFile(gebaut);
+  res.redirect('/fern.html');
+});
+
 app.get('/m/:slug', (req, res) => {
   const gebaut = path.join(OBERFLAECHE, 'event.html');
   if (fs.existsSync(gebaut)) return res.sendFile(gebaut);
@@ -3996,6 +4026,10 @@ server.listen(PORT, '0.0.0.0', () => {
   if (PORT !== PORT_WUNSCH) {
     console.log(`  Hinweis: Port ${PORT_WUNSCH} war belegt, Youbooth läuft auf ${PORT}.`);
   }
+  /* Die Desktop-Hülle startet diesen Prozess und muss wissen, WOHIN sie ihr
+     Fenster zeigen soll. Den Wunschport zu raten reicht nicht: Ist er belegt,
+     weicht die Box aus, und die Hülle stünde vor einer Fehlerseite. */
+  if (typeof process.send === 'function') process.send({ art: 'bereit', port: PORT });
   console.log('──────────────────────────────────────────────');
   console.log('  Youbooth Fotobox läuft!');
   console.log(`  Booth (dieser PC):   http://localhost:${PORT}/`);

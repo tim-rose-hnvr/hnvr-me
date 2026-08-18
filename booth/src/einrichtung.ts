@@ -12,7 +12,7 @@ import './einrichtung.css';
 import { holeEinstellungen, ladeEinstellungen, setzePin, sichereEinstellungen } from './einstellungen';
 import { ARTEN } from './arten';
 import { anzahl, loesche, sichere } from './speicher';
-import { ausgabeAdresse, druckerListe, inHuelle } from './huelle';
+import { ausgabeAdresse, druckerListe, huellenauskunft } from './huelle';
 import { drucke, qrFuer } from './ausgabe';
 
 type Zustand = 'offen' | 'laeuft' | 'gut' | 'schlecht';
@@ -36,9 +36,13 @@ async function starte(ziel: HTMLElement): Promise<void> {
   const titel = document.createElement('h1');
   titel.textContent = 'Installations-Zentrum';
   const zeile = tag('span', 'cmono');
-  zeile.textContent = inHuelle()
-    ? 'Desktop-App · Ablage und Auslieferung stehen bereit'
-    : 'Im Browser · Ablage lokal, Auslieferung erst in der Desktop-App';
+  /* Seit die Box einen Server hat, kann sie alles auch im Browser: ablegen,
+     drucken, ausliefern. Die Hülle bringt nur noch Vollbild, Autostart und
+     Selbstaktualisierung — das gehört hier hin, aber nicht als Warnung. */
+  const huelle = huellenauskunft();
+  zeile.textContent = huelle
+    ? `Desktop-App ${huelle.fassung} · ${huelle.system} · aktualisiert sich selbst`
+    : 'Im Browser · alles läuft, nur Vollbild und Selbstaktualisierung fehlen';
   kopf.append(titel, zeile);
 
   const liste = tag('div', 'eschritte');
@@ -180,9 +184,9 @@ function schrittDruck(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
     wahl.replaceChildren();
     if (!liste.length) {
       const hinweis = tag('span', 'cmono');
-      hinweis.textContent = inHuelle()
-        ? 'Das System meldet keinen Drucker.'
-        : 'Im Browser gibt es keine Druckerliste — dafür die Desktop-Hülle.';
+      /* Die Liste kommt von der Box, nicht vom Browser. Ist sie leer, meldet
+         das Betriebssystem der Box keinen Drucker — egal, wo man gerade sitzt. */
+      hinweis.textContent = 'Die Box meldet keinen Drucker. Kabel, Treiber und Einschalten prüfen.';
       wahl.append(hinweis);
       return;
     }
@@ -240,7 +244,7 @@ function schrittDruck(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
       (ergebnis) => {
         if ('fehler' in ergebnis) {
           melde('schlecht', `Der Drucker meldet: ${ergebnis.fehler}`);
-        } else if (ergebnis.weg === 'huelle') {
+        } else if (ergebnis.weg === 'box') {
           melde('gut', `Prüfblatt an „${e.drucker}" geschickt. Jetzt muss Papier kommen.`);
         } else {
           melde('gut', 'Der Systemdruckdialog ist geöffnet. Kommt kein Dialog, fehlt ein Drucker.');
@@ -308,9 +312,7 @@ function schrittNetz(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
       vorschau.replaceChildren();
       melde(
         'schlecht',
-        inHuelle()
-          ? 'Der Auslieferungsdienst meldet keine Adresse. Läuft der Port schon?'
-          : 'Im Browser gibt es keine Adresse. In der Desktop-App trägt die Box sie selbst ein.'
+        'Die Box meldet keine Adresse im Netz. Hängt sie am WLAN?'
       );
       return;
     }

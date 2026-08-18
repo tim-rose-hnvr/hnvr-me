@@ -32,6 +32,7 @@ export default defineConfig({
         portal: 'portal.html',
         buchen: 'buchen.html',
         event: 'event.html',
+        fern: 'fern.html',
       },
     },
   },

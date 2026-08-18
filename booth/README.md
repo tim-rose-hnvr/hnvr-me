@@ -56,19 +56,32 @@ npm run dev      # daneben Vite auf http://localhost:4400 mit Neuladen beim Tipp
                  #   /einrichtung.html  Installations-Zentrum
                  #   /editor.html       Booth-Editor (Druckvorlagen)
 npm run build    # Oberfläche nach dist/ — danach genügt `npm run server`
-npm run tauri dev    # als Desktop-App (braucht Rust)
-npm run tauri build  # Installationspaket
+npm run huelle   # als Desktop-App (Electron, startet die Box selbst)
+npm run paket    # Installationspaket für das eigene System
 ```
 
-## Windows-Paket
+Weitere Oberflächen, die nicht im Kiosk hängen:
 
-Das Paket baut die GitHub Action `.github/workflows/booth-windows.yml` auf einem Windows-Runner
-(NSIS-Installer und MSI). Auslöser ist jeder Push auf `booth/**`, manuell startbar über
-„Run workflow". Das Ergebnis liegt als Artefakt `youbooth-windows` am Lauf.
+```
+/portal.html   Betreiber-Portal: Buchungen, Kalender, Pakete, Event-Seiten, Tickets
+/buchen.html   öffentliche Buchungsseite für Kunden
+/m/<kennung>   Event-Seite für einen Kunden nach der Feier
+/fern          Fernauslöser für das Handy des Gastes
+```
+
+## Windows-Paket und Selbstaktualisierung
+
+`.github/workflows/paket.yml` baut auf einem Windows-Runner den NSIS-Installer und hängt ihn an
+eine GitHub-Release. Ausgelöst wird das über einen Tag `booth-v<Fassung>` oder von Hand.
+
+Die installierte App sieht danach selbst nach neuen Fassungen — `electron-updater` fragt dieselbe
+Release-Liste ab. Heruntergeladen wird sofort, **eingespielt aber erst beim Beenden**: Ein
+Neustart mitten in einer Feier ist der teuerste Fehler, den eine Selbstaktualisierung machen kann.
+Wer nicht warten will, bekommt einen Knopf dafür.
 
 **Codesigning fehlt noch.** Ohne Zertifikat zeigt Windows SmartScreen beim ersten Start eine
 Warnung. Sobald ein Zertifikat (EV oder OV) vorliegt: als Secret hinterlegen und im Workflow vor
-dem Upload signieren. Für macOS gilt dasselbe mit einem Apple-Developer-Konto (Signieren und
+dem Hochladen signieren. Für macOS gilt dasselbe mit einem Apple-Developer-Konto (Signieren und
 Notarisieren), sonst blockt Gatekeeper.
 
 ## Aufbau
@@ -86,7 +99,12 @@ src/
   vorlagen.ts        Ablage der Vorlagen (eigene, Katalog, die des Betreibers)
   formate.ts         die sieben Papierformate und die Druckschriften
   daten/vorlagen-katalog.json   51 uebernommene Blaetter
-  huelle.ts          Brücke zur Desktop-Hülle (Ablage als Datei, Ausgabe-Adresse)
+  portal.ts          Betreiber-Portal: Buchungen, Kalender, Pakete, Event-Seiten, Tickets
+  buchen.ts          öffentliche Buchungsseite
+  event.ts           Event-Seite für den Kunden nach der Feier
+  fern.ts            Fernauslöser fürs Handy
+  draht.ts           offene Verbindung zur Box (Aufnahmen, Einstellungen, Vorlagen)
+  huelle.ts          Brücke zur Box (Drucken, Adresse) und zur Desktop-Hülle
   arten.ts           die Aufnahmearten
   kamera.ts          Kamera — hier hängt später das DSLR-Tethering
   layout.ts          Blatt, Doppelstreifen, Ausgabeformate
@@ -95,19 +113,19 @@ src/
   speicher.ts        lokale Ablage der Aufnahmen
   einstellungen.ts   Konfiguration der Box
   stil.css           Booth-Optik (dunkel, Ziele ≥ 64 px)
-src-tauri/           Desktop-Hülle (Rust)
+huelle/              Desktop-Hülle (Electron): startet die Box, Vollbild, Selbstaktualisierung
+server/              die Box: Aufnahmen, Einstellungen, Vorlagen, Buchungen, Druck
 ```
 
 ## QR-Download ohne Internet
 
-Die Desktop-Hülle legt jede Aufnahme als Datei ab und liefert sie über einen kleinen HTTP-Server
-im eigenen Netz aus (`src-tauri/src/ausgabe.rs`, Port 8322). Der QR-Code am Screen zeigt auf
-`http://<Adresse der Box>:8322/f/<Kennung>`. Ausgeliefert wird ausschließlich aus dem
-Ablageordner und nur unter `/f/`; Kennungen werden gefiltert, damit von außen kein Pfadwechsel
-möglich ist. Zwei Rust-Tests decken Auslieferung und Ausbruchsversuch ab (`cargo test`).
+Die Box liefert ihre Aufnahmen selbst aus — über denselben Server, der auch die Oberflächen
+zeigt. Der QR-Code am Screen zeigt auf `http://<Adresse der Box>:3377/…`; welche Adresse das ist,
+weiß die Box (`/api/info`), nicht der Browser: Der kennt nur `localhost`, und darauf zeigt kein
+brauchbarer QR-Code.
 
-Im Browser ohne Hülle gibt es keine Adresse — dort bleibt der direkte Weg über „Sichern", und der
-Booth sagt das auch.
+Das gilt im Browser genauso wie in der Desktop-Hülle. Vorher konnte nur die Hülle drucken und
+ausliefern — die Teilen-Station daneben und das Handy im WLAN nicht.
 
 ## Vorlagen
 

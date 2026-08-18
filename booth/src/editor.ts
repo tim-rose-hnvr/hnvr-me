@@ -936,7 +936,7 @@ async function testdruck(): Promise<void> {
   const ergebnis = await drucke(alsBilddaten(bild), aktuell.name, einstellungen.drucker);
   if ('fehler' in ergebnis) return sage('Druck ging nicht: ' + ergebnis.fehler, 'fehler');
   sage(
-    ergebnis.weg === 'huelle'
+    ergebnis.weg === 'box'
       ? `Testdruck an „${einstellungen.drucker}" geschickt.`
       : 'Testdruck an den Systemdruck übergeben.',
     'gut'

@@ -7,7 +7,7 @@
  */
 
 import QRCode from 'qrcode';
-import { druckeInHuelle } from './huelle';
+import { druckeUeberBox } from './huelle';
 
 /** Merkt sich Druckzeitpunkte, um das Stundenlimit zu prüfen. */
 const druckzeiten: number[] = [];
@@ -50,25 +50,23 @@ export function sichereAlsDatei(blob: Blob, dateiname: string): void {
 export async function drucke(
   bilddaten: string,
   beschriftung: string,
-  drucker = ''
-): Promise<{ weg: 'huelle' | 'dialog' } | { fehler: string }> {
+  drucker = '',
+  runde = ''
+): Promise<{ weg: 'box' | 'dialog' } | { fehler: string }> {
   if (drucker) {
-    const blob = await datenAlsBlob(bilddaten);
-    const ergebnis = await druckeInHuelle(blob, drucker);
+    const ergebnis = await druckeUeberBox(bilddaten, runde);
     if (ergebnis && 'gedruckt' in ergebnis) {
       druckzeiten.push(Date.now());
-      return { weg: 'huelle' };
+      return { weg: 'box' };
     }
+    /* Abgelehnt heißt abgelehnt. Wer bei aufgebrauchtem Kontingent auf den
+       Systemdialog ausweicht, hebelt genau die Grenze aus, die im Angebot
+       steht — und der Betreiber erfährt es beim Abrechnen. */
     if (ergebnis && 'fehler' in ergebnis) return ergebnis;
-    // Keine Hülle: weiter mit dem Dialog.
+    // Box nicht erreichbar: weiter mit dem Dialog, damit der Abend läuft.
   }
   druckeUeberDialog(bilddaten, beschriftung);
   return { weg: 'dialog' };
-}
-
-async function datenAlsBlob(bilddaten: string): Promise<Blob> {
-  const antwort = await fetch(bilddaten);
-  return antwort.blob();
 }
 
 /**

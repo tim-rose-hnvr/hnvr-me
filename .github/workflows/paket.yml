@@ -1,0 +1,66 @@
+name: Booth · Installationspaket
+
+# Baut die Desktop-Hülle und hängt sie an eine GitHub-Release. Genau diese
+# Release ist zugleich die Quelle der Selbstaktualisierung: `electron-updater`
+# in der installierten App fragt dieselbe Liste ab. Eine zweite Ablage für
+# Installer gibt es deshalb bewusst nicht — zwei Listen laufen auseinander,
+# und die Box lädt dann die falsche Fassung.
+
+on:
+  push:
+    tags: ['booth-v*']
+  workflow_dispatch:
+    inputs:
+      fassung:
+        description: 'Fassung, z. B. 1.0.0 — leer heißt: die aus booth/package.json'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: booth/package-lock.json
+
+      - name: Abhängigkeiten holen
+        working-directory: booth
+        run: npm ci
+
+      - name: Fassung setzen
+        if: inputs.fassung != ''
+        working-directory: booth
+        run: npm version ${{ inputs.fassung }} --no-git-tag-version --allow-same-version
+
+      - name: Oberfläche bauen
+        working-directory: booth
+        run: npm run build
+
+      # Ohne Codesigning-Zertifikat warnt SmartScreen beim ersten Start.
+      # Sobald eines vorliegt: als Secret hinterlegen und hier setzen
+      # (CSC_LINK, CSC_KEY_PASSWORD) — electron-builder signiert dann selbst.
+      - name: Installer bauen und veröffentlichen
+        working-directory: booth
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win --publish always
+
+      # Auch ohne Release zum Mitnehmen: Wer den Lauf von Hand startet, will
+      # das Ergebnis oft ansehen, bevor eine Release entsteht.
+      - name: Paket am Lauf ablegen
+        uses: actions/upload-artifact@v4
+        with:
+          name: youbooth-windows
+          path: |
+            booth/paket/*.exe
+            booth/paket/*.blockmap
+            booth/paket/latest.yml
+          if-no-files-found: error

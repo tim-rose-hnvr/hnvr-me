@@ -1,0 +1,128 @@
+---
+/**
+ * Der Rahmen der sechs Handoff-Seiten.
+ *
+ * Kopfzeile und Fuß aus `doku/handoff/design/Website-*.dc.html`: Lockup mit
+ * dem Markenplättchen, Navigation `Vorlagen · Karte & NFC · Für Teams ·
+ * Preise · Marke`, rechts „Anmelden" als Textlink und der dunkle Pillenknopf
+ * „Seite bauen".
+ *
+ * Der Fuß hat zwei Fassungen. Die Startseite bekommt den vierspaltigen mit
+ * Rubriken, alle übrigen die schmale Zeile mit den anderen fünf Seiten —
+ * genau so verteilt es der Prototyp.
+ */
+import { MARKE } from '../kern/marke.ts';
+import '../stile/handoff.css';
+
+interface Props {
+  titel: string;
+  beschreibung: string;
+  /** Pfad der aktuellen Seite, für die aktive Markierung in der Navigation. */
+  hier?: string;
+  /** Vierspaltiger Fuß mit Rubriken. Im Handoff nur auf der Startseite. */
+  breiterFuss?: boolean;
+}
+
+const { titel, beschreibung, hier, breiterFuss } = Astro.props;
+
+const NAVI = [
+  { name: 'Vorlagen', ziel: '/vorlagen' },
+  { name: 'Karte & NFC', ziel: '/karte' },
+  { name: 'Für Teams', ziel: '/teams' },
+  { name: 'Preise', ziel: '/preise' },
+  { name: 'Marke', ziel: '/marke' },
+];
+
+/* Der schmale Fuß führt „Start" und alle Seiten außer der eigenen. */
+const fussnavi = [{ name: 'Start', ziel: '/' }, ...NAVI].filter((n) => n.ziel !== hier);
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titel}</title>
+    <meta name="description" content={beschreibung} />
+    <meta name="theme-color" content="#f3f2f2" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={titel} />
+    <meta property="og:description" content={beschreibung} />
+    <meta property="og:image" content="/marke/icon-1024.png" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href="/marke/icon-32.png" sizes="32x32" />
+    <link rel="icon" href="/marke/icon-16.png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="/marke/icon-180.png" />
+    <link rel="stylesheet" href="/schriften/schriften.css" />
+  </head>
+
+  <body>
+    <div class="bahn">
+      <header class="kopf">
+        <a class="lockup" href="/">
+          <img src="/marke/icon-1024.png" alt="" width="34" height="34" />
+          <span>{MARKE.name}</span>
+        </a>
+        <nav class="navi">
+          {NAVI.map((n) => <a href={n.ziel} aria-current={n.ziel === hier ? 'page' : undefined}>{n.name}</a>)}
+        </nav>
+        <div class="schub"></div>
+        <a class="anmelden" href="/eingang">Anmelden</a>
+        <a class="kopfknopf" href="/werkstatt">Seite bauen</a>
+      </header>
+
+      <slot />
+
+      {
+        breiterFuss ? (
+          <footer class="fuss fuss--breit">
+            <div>
+              <span class="lockup">
+                <img src="/marke/icon-1024.png" alt="" width="28" height="28" />
+                <span>{MARKE.name}</span>
+              </span>
+              <p class="fusssatz">{MARKE.anspruch}</p>
+            </div>
+            <div class="fussspalte">
+              <div class="fusstitel">Produkt</div>
+              <a href="/vorlagen">Vorlagen</a>
+              <a href="/karte">Karte &amp; NFC</a>
+              <a href="/preise">Preise</a>
+              <a href="/teams">Whitelabel</a>
+            </div>
+            <div class="fussspalte">
+              <div class="fusstitel">Firma</div>
+              <a href="/marke">Marke</a>
+              <a href="/teams">Für Teams</a>
+              <a href={`mailto:${MARKE.postfach}`}>Kontakt</a>
+            </div>
+            <div class="fussspalte">
+              <div class="fusstitel">Rechtliches</div>
+              <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">
+                Datenschutz
+              </a>
+              <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">
+                Impressum
+              </a>
+              <span class="leise">© {new Date().getFullYear()} viel Liebe Media UG</span>
+            </div>
+          </footer>
+        ) : (
+          <footer class="fuss">
+            <span class="lockup">
+              <img src="/marke/icon-1024.png" alt="" width="26" height="26" />
+              <span>{MARKE.name}</span>
+            </span>
+            <div class="schub" />
+            {fussnavi.map((n) => (
+              <a href={n.ziel}>{n.name}</a>
+            ))}
+            <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">
+              Impressum
+            </a>
+          </footer>
+        )
+      }
+    </div>
+  </body>
+</html>

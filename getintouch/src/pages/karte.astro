@@ -2,131 +2,320 @@
 /**
  * Karte & NFC.
  *
- * Aufbau aus dem Design-Handoff. Von den drei Wegen, die er beschreibt, gibt
- * es heute genau einen: die Visitenkarte samt QR-Code. NFC-Karten und die
- * Anbindung sozialer Kanäle sind entworfen und nicht gebaut.
+ * Nachbau von `doku/handoff/design/Website-Karte.dc.html`: Held mit der roten
+ * NFC-Karte im Puls, drei Wege, vCard-Abschnitt mit Feldschaltern und
+ * Handy-Vorschau, Social-Abschnitt mit Verbindungsliste, Live-Feed und
+ * DM-Weiche, drei Schritte, rotes Querband.
  *
- * Deshalb trägt hier jeder Abschnitt sichtbar, woran man ist — „steht" oder
- * „geplant", in derselben Sprache wie auf der Preisseite. Eine Seite, die
- * NFC-Karten bewirbt, die man nicht bestellen kann, wäre ein Versprechen auf
- * Kosten des Lesers.
+ * Preise stehen im Prototyp in Franken. Hier in Euro, wie überall im Produkt
+ * seit der Umstellung — die Zahl bleibt, die Währung nicht.
  */
-import Marketingrahmen from '../komponenten/Marketingrahmen.astro';
-import { zeichen } from '../kern/zeichen.ts';
+import Handoffrahmen from '../komponenten/Handoffrahmen.astro';
+import Bildplatz from '../komponenten/Bildplatz.astro';
+import { lucide } from '../kern/lucide.ts';
 import { MARKE } from '../kern/marke.ts';
-import '../stile/marketing.css';
+import '../stile/karte.css';
 
 export const prerender = false;
 
 Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
 
-const wege = [
-  {
-    zeichen: 'visitenkarte',
-    ton: 'signal',
-    stand: 'steht',
-    titel: 'Visitenkarte speichern',
-    text: 'Ein Tipp, und du stehst mit Foto im Adressbuch. vCard 3.0 — bewusst nicht die neuere Fassung 4.0, denn die wird auf genau den Geräten unzuverlässig gelesen, auf denen die Karte am häufigsten landet. Am Rechner öffnet sie Outlook oder das Adressbuch.',
-    chips: ['iPhone', 'Android', 'Outlook'],
-  },
-  {
-    zeichen: 'qr',
-    ton: 'ink',
-    stand: 'steht',
-    titel: 'QR-Code drucken',
-    text: 'Als SVG vom Server, scharf in jeder Druckgröße — Aufkleber, Fahrzeug, Schaufenster. Er zeigt auf die Seite, nicht auf die Daten: Nummer, Anschrift und Öffnungszeiten kannst du ändern, ohne neu zu drucken.',
-    chips: ['SVG', 'Fehlerkorrektur M', 'vier Module Ruhezone'],
-  },
-  {
-    zeichen: 'teilen',
-    ton: 'rose',
-    stand: 'geplant',
-    titel: 'Karte zum Antippen',
-    text: 'Eine NFC-Karte trägt eine feste Adresse, das Ziel ist bei uns umstellbar. Das ist der ganze Witz: Wechselst du die Nummer oder willst statt des Profils direkt die Visitenkarte ausliefern, bleibt die Karte in der Tasche dieselbe.',
-    chips: ['nicht bestellbar'],
-  },
-  {
-    zeichen: 'instagram',
-    ton: 'rose',
-    stand: 'geplant',
-    titel: 'Kanäle verbinden',
-    text: 'Instagram, YouTube und LinkedIn anbinden, damit Rolle und Beiträge von selbst aktuell bleiben. Vorsicht dabei: ein eingebetteter Feed lädt von fremden Servern nach — entweder wir spiegeln ihn, oder die Zusage auf der Startseite stimmt nicht mehr.',
-    chips: ['nicht verfügbar'],
-  },
+const titel = `Karte & NFC — ${MARKE.name}`;
+const beschreibung =
+  'Karte, Aufkleber, Widget: einmal antippen, und dein Profil öffnet sich — mit Kontaktdaten zum Speichern und Kanälen, die sich selbst aktuell halten.';
+
+const felder = [
+  { name: 'Name, Rolle, Firma', an: true },
+  { name: 'Mobil & Mail', an: true },
+  { name: 'Studio-Adresse', an: true },
+  { name: 'Privatnummer', an: false },
 ];
 
 const schritte = [
-  { titel: 'Seite bauen', text: 'In der Werkstatt, mit deinen Kontaktwegen und Öffnungszeiten.' },
-  { titel: 'QR-Code holen', text: 'Steht am Fuß deiner Seite, als SVG zum Herunterladen — druckreif in jeder Größe.' },
-  { titel: 'Drucken, wenn der Name steht', text: 'Die Adresse steckt im Code. Erst drucken, wenn sie sicher ist.' },
+  { titel: 'Karte antippen', text: 'Neue Karte ans eigene Handy halten — sie meldet sich in deinem Konto.' },
+  { titel: 'Ziel wählen', text: 'Profil, direkte vCard oder ein einzelner Link — jederzeit umstellbar, ohne neue Karte.' },
+  { titel: 'Weitergeben', text: 'Karte, Sticker am Laptop, Anhänger am Schlüssel. Analytics zählt jede Berührung getrennt.' },
 ];
 ---
 
-<Marketingrahmen
-  titel={`Karte & NFC — ${MARKE.name}`}
-  beschreibung="Visitenkarte fürs Adressbuch und QR-Code zum Drucken — beides steht. NFC-Karten und Social-Anbindung sind geplant."
-  hier="/karte"
->
-  <section class="kopf">
-    <p class="marke">karte & nfc</p>
-    <h1>Vom Handy ins<br />Adressbuch.</h1>
-    <p class="fuehrung">
-      Zwei Wege gibt es heute: die Visitenkarte und den QR-Code. Zwei weitere sind entworfen und noch nicht gebaut —
-      sie stehen hier trotzdem, damit du weißt, was kommt, und sie sind als geplant gekennzeichnet.
-    </p>
+<Handoffrahmen titel={titel} beschreibung={beschreibung} hier="/karte">
+  <!-- Held -->
+  <section class="kheld">
+    <div class="an-rise">
+      <span class="abzeichen">
+        <Fragment set:html={lucide('nfc', 14)} />
+        NFC · vCard · Social
+      </span>
+      <h1 class="h1" style="font-size:56px;line-height:.96;max-width:18ch">Handy dran, Kontakt drin.</h1>
+      <p class="fliess" style="margin-bottom:22px">
+        Deine Karte, dein Aufkleber, dein Handy-Widget: einmal antippen, und dein Profil öffnet sich — mit
+        Kontaktdaten zum Speichern und allen Kanälen, die sich selbst aktuell halten.
+      </p>
+      <div class="knopfreihe" style="gap:11px">
+        <a class="knopf knopf--signal" href={`mailto:${MARKE.postfach}?subject=NFC-Karte`} style="padding:15px 20px;border-radius:24px;font-size:13.5px;box-shadow:0 5px 0 0 var(--color-accent-700)">
+          NFC-Karte bestellen
+          <Fragment set:html={lucide('arrow-right', 15)} />
+        </a>
+        <a class="knopf knopf--rand" href="/werkstatt" style="padding:15px 20px;border-radius:24px;font-size:13.5px">
+          Erst Profil bauen
+        </a>
+      </div>
+      <div class="handle__meta" style="gap:14px;margin-top:16px">
+        <span>Karte ab 19 €</span><span>·</span><span>funktioniert ohne App</span><span>·</span><span>Ziel jederzeit änderbar</span>
+      </div>
+    </div>
+
+    <div class="kbuehne">
+      <span class="puls"></span>
+      <div class="nfckarte">
+        <div class="nfckarte__kopf">
+          <span class="nfckarte__marke">
+            <img src="/marke/icon-1024.png" alt="" width="26" height="26" />
+            <span>{MARKE.name}</span>
+          </span>
+          <Fragment set:html={lucide('nfc', 22)} />
+        </div>
+        <div class="nfckarte__name">Lina Moser</div>
+        <div class="nfckarte__rolle">Fotografin · Zürich</div>
+        <div class="nfckarte__adresse">
+          <span class="nfckarte__punkt"></span>
+          getintouch.me/linamoser
+        </div>
+      </div>
+      <div class="kschwebe an-float">
+        <Fragment set:html={lucide('smartphone-nfc', 17)} />
+        <span>
+          <span class="kschwebe__titel">Profil geöffnet</span>
+          <span class="kschwebe__unter">ohne App, ohne Scan</span>
+        </span>
+      </div>
+    </div>
   </section>
 
-  <section>
-    <div class="koennen">
-      {
-        wege.map((w) => (
-          <div class:list={['kann', w.stand === 'geplant' && 'kann--geplant']}>
-            <span class={`kann__zeichen kann__zeichen--${w.ton}`}>
-              <Fragment set:html={zeichen(w.zeichen)} />
+  <!-- Drei Wege -->
+  <section class="abschnitt" style="padding-bottom:50px">
+    <h2 class="h2" style="margin-bottom:22px;max-width:26ch">Drei Wege, wie du dich weitergibst</h2>
+    <div class="dreier">
+      <div class="karte">
+        <span class="kachel kachel--signal"><Fragment set:html={lucide('nfc', 22)} /></span>
+        <h3 class="h3">NFC antippen</h3>
+        <p class="karteText">
+          Karte, Aufkleber oder Anhänger. Fremdes Handy dran — dein Profil öffnet sich im Browser. Kein Download,
+          kein Scan, kein Login.
+        </p>
+        <div class="chipreihe">
+          <span class="chip">Karte 19 €</span>
+          <span class="chip">Sticker 3er 12 €</span>
+        </div>
+      </div>
+
+      <div class="karte">
+        <span class="kachel kachel--ink"><Fragment set:html={lucide('contact-round', 22)} /></span>
+        <h3 class="h3">vCard speichern</h3>
+        <p class="karteText">
+          Ein Tipp legt dich als Kontakt ins Adressbuch — mit Foto, Rolle, Nummer, Mail, Adresse und Link zurück auf
+          dein Profil.
+        </p>
+        <div class="chipreihe">
+          <span class="chip">.vcf 3.0</span>
+          <span class="chip">iOS &amp; Android</span>
+        </div>
+      </div>
+
+      <div class="karte">
+        <span class="kachel kachel--rose"><Fragment set:html={lucide('share-2', 22)} /></span>
+        <h3 class="h3">Kanäle verbinden</h3>
+        <p class="karteText">
+          Instagram, TikTok, YouTube, LinkedIn, WhatsApp, Spotify. Handles einmal eintragen — Icons, Namen und
+          neueste Beiträge kommen automatisch.
+        </p>
+        <div class="chipreihe">
+          <span class="chip">Auto-Sync</span>
+          <span class="chip">DM-Weiche</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- vCard -->
+  <section class="vcardblock">
+    <div>
+      <p class="kicker" style="font-size:10px;margin-bottom:10px">vCard</p>
+      <h2 class="h2" style="font-size:34px;line-height:1.05;margin-bottom:12px;max-width:20ch">
+        Im Adressbuch, nicht im Screenshot.
+      </h2>
+      <p class="fliess" style="font-size:13.5px;margin-bottom:16px;max-width:44ch">
+        Du entscheidest, welche Felder in die Datei kommen — privat bleibt privat. Änderst du später deine Nummer,
+        sagt dein Profil den gespeicherten Kontakten Bescheid.
+      </p>
+      <div class="schalterliste">
+        {
+          felder.map((f) => (
+            <div class="schalterzeile">
+              <span>{f.name}</span>
+              <span class:list={['schalter', !f.an && 'schalter--aus']}>
+                <span class="schalter__knopf" />
+              </span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="handyaussen">
+      <div class="handy">
+        <div class="handy__leiste">
+          <span>9:41</span>
+          <span class="handy__zeichen">
+            <Fragment set:html={lucide('wifi', 12)} />
+            <Fragment set:html={lucide('battery-full', 14)} />
+          </span>
+        </div>
+        <div class="handy__karte an-pop">
+          <div class="handy__wer">
+            <span class="handy__foto">FOTO</span>
+            <span>
+              <span class="handy__name">Lina Moser</span>
+              <span class="handy__rolle">Fotografin · Studio Hardturm</span>
             </span>
-            <span class:list={['stand', w.stand === 'geplant' && 'stand--geplant']}>{w.stand}</span>
-            <h3>{w.titel}</h3>
-            <p>{w.text}</p>
-            <div class="kann__chips">
-              {w.chips.map((c) => (
-                <span class="chip">{c}</span>
-              ))}
+          </div>
+          <div class="handy__zeilen">
+            <span class="handy__zeile">
+              <Fragment set:html={lucide('phone', 14)} />+41 79 000 00 00
+            </span>
+            <span class="handy__zeile">
+              <Fragment set:html={lucide('mail', 14)} />hallo@linamoser.ch
+            </span>
+            <span class="handy__zeile">
+              <Fragment set:html={lucide('map-pin', 14)} />Hardturmstrasse, Zürich
+            </span>
+          </div>
+          <span class="handy__knopf an-bounce">
+            <Fragment set:html={lucide('download', 16)} />
+            Zu Kontakten hinzufügen
+          </span>
+          <p class="handy__fuss">
+            Speichert eine .vcf — danach bekommst du Updates, wenn Lina Nummer oder Studio wechselt.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social -->
+  <section class="abschnitt" style="padding-bottom:50px">
+    <div class="kopfreihe" style="margin-bottom:20px">
+      <h2 class="h2" style="margin:0;max-width:24ch">Social, das sich selbst pflegt</h2>
+      <span class="meta">12 Kanäle unterstützt</span>
+    </div>
+    <div class="socialgitter">
+      <div class="karte">
+        <p class="kicker" style="font-size:10px;margin-bottom:12px">Verbinden</p>
+        <div class="kanalliste">
+          <div class="kanal kanal--an">
+            <Fragment set:html={lucide('instagram', 17)} />
+            <span class="kanal__text">
+              <span class="kanal__name">Instagram</span>
+              <span class="kanal__unter">@linamoser · Beiträge werden gezogen</span>
+            </span>
+            <span class="kanal__marke">verbunden</span>
+          </div>
+          <div class="kanal kanal--an">
+            <Fragment set:html={lucide('youtube', 17)} />
+            <span class="kanal__text">
+              <span class="kanal__name">YouTube</span>
+              <span class="kanal__unter">Neuestes Video als Karte</span>
+            </span>
+            <span class="kanal__marke">verbunden</span>
+          </div>
+          <div class="kanal kanal--offen">
+            <Fragment set:html={lucide('message-circle', 17)} />
+            <span class="kanal__text">
+              <span class="kanal__name">WhatsApp Business</span>
+              <span class="kanal__unter">Nachrichten direkt in den Chat leiten</span>
+            </span>
+            <span class="kanal__tun">verbinden</span>
+          </div>
+          <div class="kanal kanal--offen">
+            <Fragment set:html={lucide('linkedin', 17)} />
+            <span class="kanal__text">
+              <span class="kanal__name">LinkedIn</span>
+              <span class="kanal__unter">Rolle und Firma automatisch übernehmen</span>
+            </span>
+            <span class="kanal__tun">verbinden</span>
+          </div>
+          <div class="kanal kanal--mehr">
+            <Fragment set:html={lucide('plus', 15)} />
+            TikTok, Spotify, Threads, Pinterest, Behance, Twitch, X, Telegram
+          </div>
+        </div>
+      </div>
+
+      <div class="socialrechts">
+        <div class="karte karte--signalfuss">
+          <div class="kartenkopf">
+            <Fragment set:html={lucide('rss', 17)} />
+            <span>Live-Feed auf deinem Profil</span>
+          </div>
+          <div class="posts">
+            <div class="post">
+              <span class="post__bild"><Bildplatz text="Post" radius={0} hoehe={82} /></span>
+              <span class="post__meta">vor 2 Tagen · 1,2k</span>
+            </div>
+            <div class="post">
+              <span class="post__bild"><Bildplatz text="Post" radius={0} hoehe={82} /></span>
+              <span class="post__meta">vor 5 Tagen · 860</span>
             </div>
           </div>
-        ))
-      }
+          <p class="karteText" style="margin:12px 0 0;font-size:12px">
+            Beiträge aktualisieren sich stündlich. Kein manuelles „neuer Link in Bio" mehr.
+          </p>
+        </div>
+
+        <div class="karte">
+          <div class="kartenkopf" style="margin-bottom:10px">
+            <Fragment set:html={lucide('git-branch', 17)} />
+            <span>DM-Weiche</span>
+          </div>
+          <p class="karteText" style="margin-bottom:12px;font-size:12.5px">
+            Wer aus Instagram kommt, landet auf Instagram-Antwort. Wer aus einer Mail kommt, auf Mail. Der Kanal
+            folgt dem Besucher.
+          </p>
+          <div class="chipreihe">
+            <span class="chip">Instagram → DM</span>
+            <span class="chip">QR → WhatsApp</span>
+            <span class="chip">Web → Mail</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section>
-    <p class="marke">so kommst du zum code</p>
-    <h2>Drei Schritte, keine Bestellung.</h2>
-    <div class="schritte">
+  <!-- Drei Schritte -->
+  <section class="abschnitt" style="padding-bottom:50px">
+    <h2 class="h2" style="font-size:32px;margin-bottom:18px">Karte einrichten: 3 Schritte</h2>
+    <div class="dreier">
       {
         schritte.map((s, i) => (
-          <div class="schritt">
-            <span class="schritt__zahl">{i + 1}</span>
-            <h3>{s.titel}</h3>
-            <p>{s.text}</p>
+          <div class="karte--ruhig">
+            <span class="zahlkreis">{i + 1}</span>
+            <h3 class="h3" style="font-size:18px;margin:13px 0 7px">
+              {s.titel}
+            </h3>
+            <p class="karteText" style="margin:0;font-size:12.5px">
+              {s.text}
+            </p>
           </div>
         ))
       }
     </div>
-    <p class="quelle">
-      Der QR-Code kostet nichts und braucht keine Karte. Wer eine NFC-Karte will, schreibt uns — wir sagen ehrlich,
-      dass es sie noch nicht gibt, und melden uns, wenn es soweit ist.
-    </p>
   </section>
 
-  <section class="banner">
-    <p class="marke">loslegen</p>
-    <h2>Erst die Seite,<br />dann der Druck.</h2>
-    <div class="knopfreihe">
-      <a class="knopf knopf--hell" href="/werkstatt">
-        Seite bauen
-        <Fragment set:html={zeichen('pfeil')} />
-      </a>
-      <a class="knopf knopf--kontur" href={`mailto:${MARKE.postfach}?subject=NFC-Karte`}>Für NFC vormerken</a>
-    </div>
+  <section class="band band--quer">
+    <h2 style="max-width:22ch">Eine Karte, die du nie neu drucken musst.</h2>
+    <a class="knopf knopf--hell" href={`mailto:${MARKE.postfach}?subject=NFC-Karte`}>
+      Karte bestellen
+      <Fragment set:html={lucide('arrow-right', 16)} />
+    </a>
   </section>
-</Marketingrahmen>
+</Handoffrahmen>

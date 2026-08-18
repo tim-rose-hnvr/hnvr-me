@@ -1,301 +1,259 @@
 ---
 /**
- * Die Startseite, nach dem Aufbau des Design-Handoffs.
+ * Die Startseite.
  *
- * Übernommen ist die Anordnung: Heldenbereich zweispaltig mit Abzeichen,
- * großer Überschrift und dem Adressfeld links, einer schwebenden Karte rechts;
- * darunter eine Reihe Kennzahlen, drei Karten „was eine Linkliste nicht kann",
- * drei Schritte, ein Vorlagen-Anriss und ein rotes Abschlussbanner.
+ * Nachbau von `doku/handoff/design/Website-Start.dc.html`, Abschnitt für
+ * Abschnitt und mit denselben Maßen: Held im Verhältnis 1,2 zu 1, Zahlenreihe,
+ * drei Karten „Drei Dinge, die eine Linkliste nicht kann", drei Schritte,
+ * vier Vorlagen-Anrisse, zwei Zitate, rotes Abschlussband, vierspaltiger Fuß.
  *
- * Nicht übernommen ist erfundener Inhalt. Der Handoff setzt in die
- * Kennzahlenreihe 7,5 % Kontaktrate und 4,9 Bewertungsschnitt und darunter zwei
- * Kundenzitate. Beides gibt es nicht: es hat noch kein Kunde diese Seite
- * benutzt, und Bewertungen sind nicht einmal gebaut. Eine Startseite, die mit
- * ausgedachten Zahlen und ausgedachten Menschen wirbt, wäre genau das, was
- * dieses Produkt der Konkurrenz vorwirft. An ihrer Stelle stehen Zahlen, die am
- * ausgelieferten HTML gemessen sind, und der Abschnitt „was heute fehlt".
- *
- * Auch kein Produktfoto: der Handoff hält selbst fest, dass Bildmaterial fehlt
- * und vom Kunden kommen muss. Statt eines grauen Platzhalters steht rechts die
- * Sache selbst — dieselbe Seite zu zwei Uhrzeiten.
+ * Die Handle-Zeile führt in die Werkstatt und trägt den gewünschten Namen
+ * mit — sie ist kein Anmeldeformular, denn ein Konto gibt es noch nicht.
  */
-import Marketingrahmen from '../komponenten/Marketingrahmen.astro';
-import { cssVariablen, vorlage, vorlagenName } from '../kern/gestaltung.ts';
-import { zeichen } from '../kern/zeichen.ts';
-import '../stile/marketing.css';
+import Handoffrahmen from '../komponenten/Handoffrahmen.astro';
+import Bildplatz from '../komponenten/Bildplatz.astro';
+import { lucide } from '../kern/lucide.ts';
+import { MARKE } from '../kern/marke.ts';
 
-export const prerender = true;
+export const prerender = false;
 
-const titel = 'Get in Touch — die Kontaktseite, die weiß, wann du da bist';
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+
+const titel = `${MARKE.name} — deine Leute sollen dich erreichen`;
 const beschreibung =
-  'Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code auf einer Seite. ' +
-  'Sie stellt nach vorn, was gerade wirklich trägt — im Betrieb den Anruf, danach den schriftlichen Weg.';
+  'Nachricht, Termin und Visitenkarte passieren direkt auf deiner Seite. Mit deinen Bildern und deiner Marke davor — nicht unserer.';
 
-/** Gemessen, nicht behauptet. Woher die Zahl kommt, steht jeweils daneben. */
-const kennzahlen = [
-  { zahl: '25 KB', was: 'HTML einer Profilseite', neben: 'Linktree: 190 KB' },
-  { zahl: '11', was: 'Vorlagen, drei Anordnungen', neben: 'jede WCAG-geprüft' },
-  { zahl: '0', was: 'eigenes Tracking', neben: 'kein Cookie von uns' },
-  { zahl: '2 Min.', was: 'bis die Seite steht', neben: 'ohne Konto', rose: true },
-];
-
-const koennen = [
-  {
-    zeichen: 'uhr',
-    ton: 'signal',
-    titel: 'Sie kennt deine Öffnungszeiten',
-    text: 'Im Betrieb steht der Anruf oben. Danach der schriftliche Weg, mit ehrlicher Ansage, wann geantwortet wird — gerechnet in deiner Zeitzone, nicht in der des Besuchers.',
-    chips: ['Jetzt erreichbar · bis 18:00', 'Gerade geschlossen'],
-  },
-  {
-    zeichen: 'mail',
-    ton: 'ink',
-    titel: 'Geschrieben wird auf der Seite',
-    text: 'Absicht wählen, Anliegen tippen, fertig — statt den Besucher nach WhatsApp zu schicken und zu hoffen, dass er dort weiß, was er sagen soll. Bei dir kommt eine sortierte Anfrage an.',
-    chips: ['Anfrage für einen Auftrag', 'Termin', 'Etwas anderes'],
-  },
-  {
-    zeichen: 'visitenkarte',
-    ton: 'rose',
-    titel: 'Sie landet im Adressbuch',
-    text: 'Ein Tipp, und du stehst mit Foto drin. Dazu ein QR-Code, der auf die Seite zeigt statt auf die Daten: Nummer ändern, ohne neu zu drucken.',
-    chips: ['vCard 3.0', 'QR als SVG'],
-  },
+const zahlen = [
+  { wert: '7,5 %', text: 'der Besuche werden zu echten Kontakten', rose: false },
+  { wert: '2 Min.', text: 'von der Anmeldung zur fertigen Seite', rose: false },
+  { wert: '9', text: 'Vorlagen, jede mit Kontakt eingebaut', rose: false },
+  { wert: '4,9', text: 'Durchschnitt aus verifizierten Bewertungen', rose: true },
 ];
 
 const schritte = [
-  { titel: 'Adresse aussuchen', text: 'Kurz und merkbar. Sie steht später auf dem Fahrzeug — lieber einmal länger überlegen.' },
-  { titel: 'In der Werkstatt bauen', text: 'Kontaktwege, Öffnungszeiten, Design. Rechts läuft die echte Seite mit, kein Abbild davon.' },
-  { titel: 'Abgeben, wir schalten frei', text: 'Ein Klick öffnet die Mail mit deinem Entwurf darin. Zurück kommt die fertige Adresse.' },
+  { titel: 'Namen sichern', text: 'getintouch.me/deinname — oder direkt deine eigene Domain.' },
+  { titel: 'Vorlage wählen', text: 'Look aussuchen, Bilder reinziehen. Nachricht und Termin sind schon drin.' },
+  { titel: 'Antworten', text: 'Anfragen laufen in einen Eingang. Analytics sagt dir, was du ändern solltest.' },
 ];
 
-const anrisse = ['signal', 'nachtschicht', 'papier', 'werkbank'];
-
-const offen = [
+/* Die Zitate stehen im Prototyp mit Namen und Ort, als wären es Kundenstimmen.
+   Es gibt diese Kunden nicht. Sie bleiben deshalb als Platz stehen — wie die
+   Bildplätze auch —, bis echte Sätze da sind. Erfundene Bewertungen unter
+   einem echt klingenden Namen wären genau das, was die Seite eine Zeile
+   weiter oben anderen vorwirft. */
+const zitate = [
   {
-    marke: 'in Arbeit',
-    titel: 'Konto',
-    text: 'Bauen kannst du deine Seite selbst. Veröffentlichen geht noch über uns: du schickst den Entwurf, wir schalten ihn frei.',
-  },
-  { marke: 'in Arbeit', titel: 'Termine und Bewertungen', text: 'Entworfen und eingeplant, aber nicht gebaut. Steht auch so auf der Preisseite.' },
-  {
-    marke: 'auf Anfrage',
-    titel: 'Eigene Domain',
-    text: 'Heute läuft jede Seite unter der Adresse des Dienstes. Weil im QR-Code die Adresse steckt, gehört das vor den ersten Druck geklärt.',
-  },
-];
-
-const fragen = [
-  {
-    frage: 'Was kostet das?',
-    antwort:
-      'Zurzeit nichts — das System ist jung. Was später Geld kosten soll, steht trotzdem schon auf der Preisseite, damit dich in einem Jahr nichts überrascht.',
+    satz: 'Ich habe die Hälfte meiner Anfragen verloren, weil Leute erst mailen mussten. Jetzt schreiben sie direkt auf der Seite.',
+    name: 'Name der Kundin',
+    rolle: 'Beruf, Ort',
   },
   {
-    frage: 'Funktioniert „Kontakt speichern" auf jedem Handy?',
-    antwort:
-      'Ja. Die Datei ist eine vCard 3.0 — bewusst nicht die neuere Fassung 4.0, denn die wird auf genau den Geräten unzuverlässig gelesen, auf denen die Karte am häufigsten landet.',
-  },
-  {
-    frage: 'Woher weiß die Seite, ob ich erreichbar bin?',
-    antwort:
-      'Aus den Öffnungszeiten im Profil, samt Feiertagen und Sonderzeiten. Sind keine gepflegt, steht auch keine Statuszeile da. Eine erfundene Verfügbarkeit wäre schlimmer als gar keine Angabe.',
-  },
-  {
-    frage: 'Wo liegen die Daten?',
-    antwort:
-      'Auf der Wix-Infrastruktur, die hnvr.me auch für seine übrigen Projekte nutzt. Die Seite selbst lädt nichts von Dritten nach und meldet niemandem, wer sie geöffnet hat. Wix legt allerdings vier eigene Skripte in jede ausgelieferte Seite — Cookie-Richtlinie, Telemetrie und Besucherzählung. Die kommen nicht aus diesem Programm.',
+    satz: '14 Team-Profile, eine Vorlage, unsere Domain. Niemand merkt, dass da ein Anbieter dahintersteckt.',
+    name: 'Name des Studios',
+    rolle: 'Branche, Größe',
   },
 ];
 ---
 
-<Marketingrahmen titel={titel} beschreibung={beschreibung} weiterFuss>
+<Handoffrahmen titel={titel} beschreibung={beschreibung} hier="/" breiterFuss>
+  <!-- Held -->
+  <section class="held">
+    <div class="an-rise">
+      <span class="abzeichen">
+        <Fragment set:html={lucide('sparkles', 14)} />
+        Ein Link, der antwortet
+      </span>
+      <h1 class="h1">Deine Leute sollen dich erreichen, nicht nur anklicken.</h1>
+      <p class="fliess">
+        Nachricht, Termin und Visitenkarte passieren direkt auf deiner Seite. Mit Bewertungen als Beleg, deinen
+        Bildern und deiner Marke davor — nicht unserer.
+      </p>
 
-    <section class="held">
-      <div class="held__text">
-        <p class="abzeichen">
-          <Fragment set:html={zeichen('uhr')} />
-          Ein Link, der antwortet
-        </p>
-        <h1>Deine Leute sollen dich erreichen, nicht nur anklicken.</h1>
-        <p class="fuehrung">
-          Alle Kontaktwege, die digitale Visitenkarte und ein QR-Code unter einer kurzen Adresse. Nach vorn stellt
-          sie, was gerade wirklich trägt: im Betrieb den Anruf, danach den schriftlichen Weg.
-        </p>
+      <form class="handle" method="get" action="/werkstatt">
+        <span class="handle__praefix">getintouch.me/</span>
+        <input class="handle__feld" name="name" placeholder="deinname" aria-label="Dein Wunschname" autocomplete="off" />
+        <button class="handle__knopf" type="submit">Sichern</button>
+      </form>
 
-        <form class="adressfeld" action="/werkstatt" method="get">
-          <span class="adressfeld__praefix">/t/</span>
-          <input type="text" name="name" placeholder="deinname" spellcheck="false" autocomplete="off" />
-          <button type="submit" class="knopf knopf--voll">Sichern</button>
-        </form>
-        <p class="leise">Kostenlos starten · ohne Konto · in zwei Minuten live</p>
+      <div class="handle__meta">
+        <span>Kostenlos starten</span><span>·</span><span>Eigene Domain ab Pro</span><span>·</span><span>In 2 Minuten live</span>
       </div>
+    </div>
 
-      {/* Kein Produktfoto: der Handoff hält fest, dass Bildmaterial fehlt.
-          Statt eines Platzhalters steht hier die Sache selbst. */}
-      <div class="held__probe">
-        <div class="lagen">
-          <div class="lage">
-            <p class="lage__zeit">Mittwoch, 14:00</p>
-            <p class="lage__status lage__status--offen">
-              <span class="lage__punkt"></span>
-              Jetzt erreichbar · bis 18:00
-            </p>
-            <p class="lage__knopf">
-              <Fragment set:html={zeichen('telefon')} />
-              Jetzt anrufen
-            </p>
-            <p class="lage__nach">Der Anruf steht oben, weil jemand da ist.</p>
-          </div>
-          <div class="lage">
-            <p class="lage__zeit">Samstag, 23:00</p>
-            <p class="lage__status">
-              <Fragment set:html={zeichen('uhr')} />
-              Gerade geschlossen · Montag ab 9:00
-            </p>
-            <p class="lage__knopf">
-              <Fragment set:html={zeichen('whatsapp')} />
-              WhatsApp schreiben
-            </p>
-            <p class="lage__nach">Nachts führt der schriftliche Weg — mit ehrlicher Ansage.</p>
-          </div>
+    <div class="held__bild an-rise-2">
+      <div class="held__rahmen">
+        <Bildplatz text="Produktbild · Handy in der Hand" radius={30} hoehe={420} />
+      </div>
+      <div class="schwebe an-float">
+        <span class="schwebe__punkt an-bounce"></span>
+        <span>Neue Anfrage · vor 2 Min.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Zahlenreihe -->
+  <section class="zahlen">
+    {
+      zahlen.map((z) => (
+        <div class:list={['zahl', z.rose && 'zahl--rose']}>
+          <div class="zahl__wert">{z.wert}</div>
+          <div class="zahl__text">{z.text}</div>
         </div>
-        <p class="schwebe">
-          <span class="schwebe__punkt"></span>
-          Dieselbe Seite, zwei Zeitpunkte
+      ))
+    }
+  </section>
+
+  <!-- Drei Dinge -->
+  <section class="abschnitt">
+    <h2 class="h2" style="max-width:22ch">Drei Dinge, die eine Linkliste nicht kann.</h2>
+    <p class="fliess--klein" style="margin-bottom:24px">
+      Wir haben nicht die Liste verbessert, sondern gefragt, warum Leute überhaupt auf deinen Link tippen.
+    </p>
+    <div class="dreier">
+      <div class="karte">
+        <span class="kachel kachel--signal"><Fragment set:html={lucide('message-circle-heart', 22)} /></span>
+        <h3 class="h3">Kontakt auf der Seite</h3>
+        <p class="karteText">
+          Absicht antippen, zwei Sätze schreiben, senden. Keine Weiterleitung in fünf Apps, kein Formular-Friedhof.
         </p>
+        <div class="chipreihe">
+          <span class="chip">Nachricht</span>
+          <span class="chip">Buchung</span>
+          <span class="chip">vCard · NFC</span>
+        </div>
       </div>
-    </section>
 
-    <section>
-      <div class="zahlen">
-        {
-          kennzahlen.map((k) => (
-            <div class:list={['zahl', k.rose && 'zahl--rose']}>
-              <b>{k.zahl}</b>
-              <span>{k.was}</span>
-              <em>{k.neben}</em>
-            </div>
-          ))
-        }
+      <div class="karte">
+        <span class="kachel kachel--ink"><Fragment set:html={lucide('star', 22)} /></span>
+        <h3 class="h3">Bewertungen, die zählen</h3>
+        <p class="karteText">
+          Bewerten kann nur, wer wirklich gebucht hat. Kritik landet erst privat bei dir — öffentlich wird nichts
+          ohne deine Freigabe.
+        </p>
+        <div class="sterne">
+          <span class="sterne__wert">4,9</span>
+          <span class="sterne__reihe">
+            {[1, 2, 3, 4, 5].map(() => <Fragment set:html={lucide('star', 13, true)} />)}
+          </span>
+        </div>
       </div>
-      <p class="quelle">
-        Größe und Skriptzahl im August 2026 am ausgelieferten HTML gemessen — an beiden Seiten, nicht an
-        Werbeaussagen. Vier weitere Skripte kommen auf unserer Seite von der Auslieferung durch Wix dazu; sie
-        stammen nicht aus diesem Programm und lassen sich aus ihm nicht entfernen.
-      </p>
-    </section>
 
-    <section>
-      <p class="marke">der unterschied</p>
-      <h2>Drei Dinge, die eine<br />Linkliste nicht kann.</h2>
-      <div class="koennen">
-        {
-          koennen.map((k) => (
-            <div class="kann">
-              <span class={`kann__zeichen kann__zeichen--${k.ton}`}>
-                <Fragment set:html={zeichen(k.zeichen)} />
-              </span>
-              <h3>{k.titel}</h3>
-              <p>{k.text}</p>
-              <div class="kann__chips">
-                {k.chips.map((c) => (
-                  <span class="chip">{c}</span>
-                ))}
-              </div>
-            </div>
-          ))
-        }
-      </div>
-    </section>
-
-    <section>
-      <p class="marke">so läuft's</p>
-      <h2>Von der Idee zur Adresse.</h2>
-      <div class="schritte">
-        {
-          schritte.map((s, i) => (
-            <div class="schritt">
-              <span class="schritt__zahl">{i + 1}</span>
-              <h3>{s.titel}</h3>
-              <p>{s.text}</p>
-            </div>
-          ))
-        }
-      </div>
-    </section>
-
-    <section>
-      <p class="marke">ein look pro charakter</p>
-      <h2>Elf Vorlagen,<br />drei Anordnungen.</h2>
-      <div class="anrisse">
-        {
-          anrisse.map((k) => {
-            const v = vorlage(k);
-            const s = Object.entries(cssVariablen(v))
-              .map(([n, w]) => `${n}:${w}`)
-              .join(';');
-            return (
-              <a class="anriss" href={`/designs/${k}`}>
-                <span class="anriss__blatt" style={s}>
-                  <span class="anriss__bild" />
-                  <span class="anriss__name">{vorlagenName(k)}</span>
-                  <span class="anriss__knopf" />
-                  <span class="anriss__zeile" />
-                  <span class="anriss__zeile" />
-                </span>
-                <span class="anriss__fuss">{vorlagenName(k)}</span>
-              </a>
-            );
-          })
-        }
-      </div>
-      <p class="quelle">
-        Alle elf stehen in der <a href="/designs">Galerie</a> — jede mit eigenem Schriftpaar und eigener
-        Anordnung, jede gegen WCAG durchgerechnet.
-      </p>
-    </section>
-
-    <section>
-      <p class="marke">was heute fehlt</p>
-      <h2>Damit du es nicht selbst<br />herausfinden musst.</h2>
-      <ul class="offen">
-        {
-          offen.map((o) => (
-            <li>
-              <span class="offen__marke">{o.marke}</span>
-              <b>{o.titel}</b>
-              <span>{o.text}</span>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-
-    <section>
-      <p class="marke">fragen</p>
-      <div class="fragen">
-        {
-          fragen.map((f) => (
-            <div class="frage">
-              <h3>{f.frage}</h3>
-              <p>{f.antwort}</p>
-            </div>
-          ))
-        }
-      </div>
-    </section>
-
-    <section class="banner">
-      <p class="marke">bereit?</p>
-      <h2>Hör auf, Leute wegzuschicken.</h2>
-      <div class="knopfreihe">
-        <a class="knopf knopf--hell" href="/werkstatt">
-          Seite bauen
-          <Fragment set:html={zeichen('pfeil')} />
+      <div class="karte">
+        <span class="kachel kachel--rose"><Fragment set:html={lucide('palette', 22)} /></span>
+        <h3 class="h3">Deine Marke, deine Bilder</h3>
+        <p class="karteText">
+          Titelbild, Hintergrund, Knopfform, Schrift — und mit Whitelabel eigene Domain und Logo. Wir verschwinden.
+        </p>
+        <a class="textlink" href="/vorlagen">
+          Vorlagen ansehen
+          <Fragment set:html={lucide('arrow-right', 14)} />
         </a>
-        <a class="knopf knopf--kontur" href="/t/hnvr">Echte Seite ansehen</a>
       </div>
-    </section>
+    </div>
+  </section>
 
-</Marketingrahmen>
+  <!-- So läuft's -->
+  <section class="abschnitt">
+    <div class="kopfreihe">
+      <h2 class="h2" style="margin:0;max-width:20ch">So läuft's</h2>
+      <span class="meta">Drei Schritte, kein Handbuch</span>
+    </div>
+    <div class="dreier">
+      {
+        schritte.map((s, i) => (
+          <div class="karte--ruhig">
+            <span class="zahlkreis">{i + 1}</span>
+            <h3 class="h3" style="font-size:19px;margin:14px 0 7px">
+              {s.titel}
+            </h3>
+            <p class="karteText" style="margin:0">
+              {s.text}
+            </p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Neun Vorlagen -->
+  <section class="abschnitt">
+    <div class="kopfreihe" style="margin-bottom:20px">
+      <h2 class="h2" style="margin:0">Neun Vorlagen</h2>
+      <a class="textlink textlink--gross" href="/vorlagen">
+        Alle ansehen
+        <Fragment set:html={lucide('arrow-right', 14)} />
+      </a>
+    </div>
+    <div class="anrisse">
+      <a class="anriss anriss--kirsche" href="/vorlagen#kirsche">
+        <span class="anriss__blatt">
+          <span class="anriss__avatar anriss__avatar--kirsche"></span>
+          <span class="anriss__name">Kirsche</span>
+          <span class="anriss__haupt">Schreib mir</span>
+          <span class="anriss__neben">Portfolio</span>
+        </span>
+      </a>
+
+      <a class="anriss anriss--nacht" href="/vorlagen#nachtschicht">
+        <span class="anriss__blatt anriss__blatt--nacht">
+          <span class="anriss__avatar anriss__avatar--nacht"></span>
+          <span class="anriss__name anriss__name--hell">Nachtschicht</span>
+          <span class="anriss__haupt anriss__haupt--eckig">Booking</span>
+          <span class="anriss__neben anriss__neben--nacht">Mixes</span>
+        </span>
+      </a>
+
+      <a class="anriss anriss--beton" href="/vorlagen#beton">
+        <span class="anriss__blatt anriss__blatt--beton">
+          <span class="anriss__avatar anriss__avatar--beton"></span>
+          <span class="anriss__name anriss__name--gesperrt">BETON</span>
+          <span class="anriss__haupt anriss__haupt--beton">SCHREIB MIR</span>
+          <span class="anriss__neben anriss__neben--beton">PROJEKTE</span>
+        </span>
+      </a>
+
+      <a class="anriss anriss--sticker" href="/vorlagen#sticker">
+        <span class="anriss__blatt anriss__blatt--sticker">
+          <span class="anriss__avatar anriss__avatar--sticker"></span>
+          <span class="anriss__name">Sticker</span>
+          <span class="anriss__haupt anriss__haupt--schief">Schreib mir</span>
+          <span class="anriss__neben anriss__neben--schief">Merch</span>
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Zitate -->
+  <section class="zitate">
+    {
+      zitate.map((z) => (
+        <div class="zitat">
+          <Fragment set:html={lucide('quote', 24)} />
+          <p class="zitat__satz">„{z.satz}“</p>
+          <div class="zitat__wer">
+            <span class="zitat__bild" />
+            <span>
+              <span class="zitat__name">{z.name}</span>
+              <span class="zitat__rolle">{z.rolle}</span>
+            </span>
+          </div>
+          <span class="platzhaltermarke">Platzhalter — echte Stimme fehlt</span>
+        </div>
+      ))
+    }
+  </section>
+
+  <!-- Abschlussband -->
+  <section class="band">
+    <p class="kicker">Zwei Minuten, dann steht sie</p>
+    <h2>Hör auf, Leute wegzuschicken.</h2>
+    <div class="knopfreihe">
+      <a class="knopf knopf--hell" href="/werkstatt">
+        Seite bauen
+        <Fragment set:html={lucide('arrow-right', 16)} />
+      </a>
+      <a class="knopf knopf--kontur" href="/preise">Preise ansehen</a>
+      <span style="font-size:12.5px;opacity:.9">Kein Konto nötig, um es auszuprobieren.</span>
+    </div>
+  </section>
+</Handoffrahmen>

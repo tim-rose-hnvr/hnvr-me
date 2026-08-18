@@ -15,10 +15,10 @@
  */
 import { antwortAdresse } from '../../kern/eingang.ts';
 import { nachrichtenFuer, profilNachSchluessel } from '../../kern/speicher/eingang.ts';
-import { cssVariablen, vorlage } from '../../kern/gestaltung.ts';
 import { zeichen } from '../../kern/zeichen.ts';
-import { MARKE, SIGNET } from '../../kern/marke.ts';
-import '../../stile/marketing.css';
+import { MARKE } from '../../kern/marke.ts';
+import '../../stile/handoff.css';
+import '../../stile/eingang.css';
 
 export const prerender = false;
 
@@ -35,10 +35,6 @@ if (!slug) return new Response('Diese Seite gibt es nicht.', { status: 404, head
 const nachrichten = await nachrichtenFuer(slug);
 const offen = nachrichten.filter((n) => !n.erledigt).length;
 
-const gestaltung = vorlage('signal');
-const stil = Object.entries(cssVariablen(gestaltung))
-  .map(([name, wert]) => `${name}:${wert}`)
-  .join(';');
 
 const zeitpunkt = (d: Date | null) =>
   d
@@ -54,26 +50,26 @@ const zeitpunkt = (d: Date | null) =>
     <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="no-referrer" />
     <title>Eingang · {slug}</title>
-    <meta name="theme-color" content={gestaltung.grund} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#f3f2f2" />
+    <link rel="icon" href="/marke/icon-32.png" sizes="32x32" />
     <link rel="stylesheet" href="/schriften/schriften.css" />
   </head>
 
-  <body style={stil}>
-    <div class="seite">
-      <div class="bahn">
-        <header class="kopfzeile">
-          <span class="wortmarke">
-            <Fragment set:html={SIGNET} />
+  <body>
+    <div class="bahn">
+        <header class="kopf">
+          <span class="lockup">
+            <img src="/marke/icon-1024.png" alt="" width="34" height="34" />
             <span>{MARKE.name}</span>
           </span>
-          <nav class="kopfnavi">
+          <div class="schub"></div>
+          <nav class="navi">
             <a href={`/t/${slug}`}>deine Seite ↗</a>
           </nav>
         </header>
 
-        <section class="kopf">
-          <p class="marke">eingang · {slug}</p>
+        <section class="ekopf">
+          <p class="kicker">eingang · {slug}</p>
           <h1>
             {nachrichten.length === 0
               ? 'Noch nichts da.'
@@ -81,7 +77,7 @@ const zeitpunkt = (d: Date | null) =>
                 ? `${nachrichten.length} Anfragen, alle erledigt.`
                 : `${offen} von ${nachrichten.length} offen.`}
           </h1>
-          <p class="fuehrung">
+          <p class="fliess">
             <b>Dieser Link ist ein Schlüssel.</b> Wer ihn hat, liest deine Anfragen. Nicht weiterschicken, nicht in
             einen Gruppenchat, nicht in eine Signatur — wie ein Türschlüssel, nur leichter zu verlieren.
           </p>
@@ -90,7 +86,7 @@ const zeitpunkt = (d: Date | null) =>
         <section>
           {
             nachrichten.length === 0 ? (
-              <p class="quelle">
+              <p class="karteText">
                 Sobald jemand das Formular auf <a href={`/t/${slug}`}>deiner Seite</a> ausfüllt, steht die Anfrage
                 hier. Prüf am besten einmal selbst, ob der Weg funktioniert.
               </p>
@@ -110,7 +106,7 @@ const zeitpunkt = (d: Date | null) =>
                           <b>{n.name}</b> · {n.antwortweg}
                         </span>
                         {antwort ? (
-                          <a class="knopf knopf--voll" href={antwort}>
+                          <a class="knopf knopf--signal" href={antwort}>
                             <Fragment set:html={zeichen('mail')} />
                             Antworten
                           </a>
@@ -130,7 +126,6 @@ const zeitpunkt = (d: Date | null) =>
           <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
           <span>Nicht indexiert, nicht zwischengespeichert.</span>
         </footer>
-      </div>
     </div>
   </body>
 </html>

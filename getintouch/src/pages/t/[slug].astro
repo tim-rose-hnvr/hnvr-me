@@ -61,7 +61,7 @@ const adresse = new URL(`/t/${profil?.slug ?? slug ?? ''}`, Astro.site ?? Astro.
 
 const titel = profil
   ? [profil.kopf.name, profil.kopf.rolle].filter(Boolean).join(' · ')
-  : 'Hier ist niemand — Get in Touch';
+  : 'Hier ist niemand — getintouch';
 const beschreibung = profil
   ? (profil.kopf.beschreibung?.replace(/\s+/g, ' ').slice(0, 200) ??
     `Alle Kontaktwege von ${profil.kopf.name} auf einer Seite.`)

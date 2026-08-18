@@ -1,0 +1,419 @@
+/* ============================================================
+   Karte & NFC
+   ============================================================
+   Aus `doku/handoff/design/Website-Karte.dc.html`.
+   ============================================================ */
+
+@import './vorlagen.css';
+
+.kheld {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 34px;
+  align-items: center;
+  padding: 30px 0 50px;
+}
+
+.kbuehne {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+}
+
+/* Der Puls hinter der Karte — genau einer je Ansicht, so will es der
+   Markenbaukasten. */
+.puls {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.16;
+  animation: gtRipple 2.6s ease-out infinite;
+}
+
+.nfckarte {
+  position: relative;
+  width: 330px;
+  height: 206px;
+  border-radius: 22px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  padding: 22px;
+  box-shadow: 0 8px 0 0 var(--color-accent-700);
+  transform: rotate(-4deg);
+}
+
+.nfckarte__kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nfckarte__marke {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font: 800 12.5px var(--font-body);
+}
+
+.nfckarte__marke img {
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: var(--color-bg);
+}
+
+.nfckarte__name {
+  margin-top: 34px;
+  font: 800 26px var(--font-body);
+  letter-spacing: -0.03em;
+}
+
+.nfckarte__rolle {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+.nfckarte__adresse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  font: 800 11.5px var(--font-body);
+}
+
+.nfckarte__punkt {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-bg);
+}
+
+.kschwebe {
+  position: absolute;
+  right: -6px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 15px;
+  border-radius: 20px;
+  background: var(--color-bg);
+  box-shadow: 0 5px 0 0 var(--color-neutral-300);
+  color: var(--color-accent);
+}
+
+.kschwebe__titel {
+  display: block;
+  font: 800 11.5px var(--font-body);
+  color: var(--color-text);
+}
+
+.kschwebe__unter {
+  display: block;
+  font-size: 10px;
+  color: var(--ink-55);
+}
+
+/* --- vCard-Abschnitt -------------------------------------- */
+
+.vcardblock {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 22px;
+  padding: 30px;
+  border-radius: 32px;
+  background: var(--color-surface);
+  margin-bottom: 50px;
+  align-items: center;
+}
+
+.schalterliste {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  max-width: 400px;
+}
+
+.schalterzeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 18px;
+  background: var(--color-bg);
+  font: 600 12px var(--font-body);
+}
+
+.schalter {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 10px;
+  background: var(--color-accent);
+  flex: none;
+}
+
+.schalter__knopf {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-bg);
+}
+
+.schalter--aus {
+  background: var(--color-neutral-300);
+}
+
+.schalter--aus .schalter__knopf {
+  right: auto;
+  left: 2px;
+  background: var(--color-neutral-600);
+}
+
+.handyaussen {
+  display: flex;
+  justify-content: center;
+}
+
+.handy {
+  width: 290px;
+  border-radius: 30px;
+  background: var(--color-bg);
+  padding: 16px;
+  box-shadow: 0 7px 0 0 var(--color-neutral-400);
+}
+
+.handy__leiste {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font: 800 10.5px var(--font-body);
+  color: var(--ink-50);
+  padding: 2px 4px 12px;
+}
+
+.handy__zeichen {
+  display: flex;
+  gap: 6px;
+}
+
+.handy__karte {
+  padding: 16px;
+  border-radius: 22px;
+  background: var(--color-accent-100);
+}
+
+.handy__wer {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.handy__foto {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 800 8px var(--font-body);
+  color: var(--ink-45);
+  flex: none;
+}
+
+.handy__name {
+  display: block;
+  font: 800 15px var(--font-body);
+}
+
+.handy__rolle {
+  display: block;
+  font-size: 10.5px;
+  color: var(--ink-60);
+}
+
+.handy__zeilen {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.handy__zeile {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border-radius: 15px;
+  background: var(--color-bg);
+  font-size: 11.5px;
+  color: var(--color-accent);
+}
+
+/* Das Zeichen ist rot, der Text nicht. */
+.handy__zeile {
+  color: var(--color-text);
+}
+
+.handy__zeile svg {
+  color: var(--color-accent);
+}
+
+.handy__knopf {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 13px 15px;
+  border-radius: 20px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: 800 13px var(--font-body);
+  box-shadow: 0 4px 0 0 var(--color-accent-700);
+}
+
+.handy__fuss {
+  font-size: 10px;
+  color: var(--ink-55);
+  margin: 9px 0 0;
+  line-height: 1.5;
+}
+
+/* --- Social ----------------------------------------------- */
+
+.socialgitter {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.socialrechts {
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 18px;
+}
+
+.karte--signalfuss {
+  box-shadow: 0 6px 0 0 var(--color-accent);
+}
+
+.kartenkopf {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+  font: 800 13.5px var(--font-body);
+  color: var(--color-accent);
+}
+
+.kartenkopf span {
+  color: var(--color-text);
+}
+
+.kanalliste {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.kanal {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  border-radius: 18px;
+}
+
+.kanal--an {
+  background: var(--color-surface);
+}
+
+.kanal--offen {
+  border: 2px solid var(--color-neutral-300);
+}
+
+.kanal--mehr {
+  border: 2px dashed var(--color-neutral-400);
+  font-size: 11.5px;
+  color: var(--ink-65);
+}
+
+.kanal__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.kanal__name {
+  display: block;
+  font: 800 12.5px var(--font-body);
+}
+
+.kanal__unter {
+  display: block;
+  font-size: 10.5px;
+  color: var(--ink-60);
+}
+
+.kanal__marke {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 13px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: 800 10px var(--font-body);
+}
+
+.kanal__tun {
+  flex: none;
+  font: 800 10.5px var(--font-body);
+  color: var(--color-accent-700);
+}
+
+.posts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+}
+
+.post {
+  display: block;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.post__bild {
+  display: block;
+  height: 82px;
+}
+
+.post__meta {
+  display: block;
+  padding: 9px 11px;
+  font-size: 10.5px;
+  color: var(--ink-65);
+}
+
+@media (max-width: 980px) {
+  .kheld,
+  .vcardblock,
+  .socialgitter {
+    grid-template-columns: 1fr;
+  }
+
+  .nfckarte {
+    width: 100%;
+    max-width: 330px;
+  }
+}

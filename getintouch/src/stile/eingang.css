@@ -1,0 +1,87 @@
+/* ============================================================
+   Eingang
+   ============================================================
+
+   Die einzige Seite hinter einem Schlüssel. Sie benutzt die Formen des
+   Handoffs, hat aber keine Entsprechung darin — den Eingang gibt es in den
+   Prototypen nur als App-Screen (`6a`), nicht als Website-Seite.
+   ============================================================ */
+
+.ekopf {
+  padding: 30px 0 34px;
+  max-width: 62ch;
+}
+
+.ekopf h1 {
+  font: 800 42px/1 var(--font-heading);
+  letter-spacing: -0.04em;
+  margin: 12px 0 14px;
+}
+
+.anfragen {
+  display: grid;
+  gap: 11px;
+  margin-top: 26px;
+  padding-bottom: 44px;
+}
+
+.anfrage {
+  padding: 18px 20px;
+  border-radius: 24px;
+  background: var(--color-surface);
+}
+
+/* Erledigtes verschwindet nicht, es tritt zurück. */
+.anfrage--erledigt {
+  opacity: 0.55;
+}
+
+.anfrage__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.anfrage__absicht {
+  padding: 5px 11px;
+  border-radius: 15px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: 800 11px var(--font-body);
+}
+
+.anfrage__zeit {
+  font-size: 11.5px;
+  color: var(--ink-55);
+  font-variant-numeric: tabular-nums;
+}
+
+.anfrage__text {
+  margin: 12px 0 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.anfrage__fuss {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--ink-70);
+}
+
+.anfrage__fuss .knopf {
+  padding: 11px 16px;
+  border-radius: 20px;
+  font-size: 12.5px;
+}
+
+.anfrage__hinweis {
+  font-size: 12px;
+  color: var(--ink-55);
+}

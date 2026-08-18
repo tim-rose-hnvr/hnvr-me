@@ -61,6 +61,22 @@ jobs:
       # Ohne Codesigning-Zertifikat warnt SmartScreen beim ersten Start.
       # Sobald eines vorliegt: als Secret hinterlegen und hier setzen
       # (CSC_LINK, CSC_KEY_PASSWORD) — electron-builder signiert dann selbst.
+      # GitHub nimmt eine veröffentlichte Release nur mit einem echten Tag an
+      # („Published releases must have a valid tag", 422). Beim Bau aus einem
+      # Zweig gibt es den noch nicht — also wird er hier gesetzt, aus genau dem
+      # Stand, der gerade gebaut wird. Mit Gewalt, damit ein zweiter Bau
+      # derselben Fassung den Tag mitzieht statt abzubrechen.
+      - name: Tag zur Fassung setzen
+        working-directory: booth
+        shell: bash
+        run: |
+          FASSUNG=$(node -p "require('./package.json').version")
+          echo "Fassung: $FASSUNG"
+          git config user.name "youbooth Paketbau"
+          git config user.email "noreply@youbooth.me"
+          git tag -f "v$FASSUNG"
+          git push -f origin "v$FASSUNG"
+
       - name: Installer bauen und veröffentlichen
         working-directory: booth
         env:

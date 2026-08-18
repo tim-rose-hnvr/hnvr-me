@@ -68,7 +68,8 @@
           ]
         }
       ],
-      "artifactName": "${productName}-Setup-${version}.${ext}"
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "icon": "huelle/mittel/icon.ico"
     },
     "nsis": {
       "oneClick": false,
@@ -89,7 +90,8 @@
         }
       ],
       "category": "public.app-category.photography",
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "icon": "huelle/mittel/icon.png"
     },
     "linux": {
       "target": [
@@ -97,7 +99,8 @@
       ],
       "category": "Graphics",
       "artifactName": "${productName}-${version}.${ext}",
-      "executableName": "youbooth"
+      "executableName": "youbooth",
+      "icon": "huelle/mittel/icon.png"
     }
   }
 }

@@ -1,19 +1,26 @@
 ---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import '../styles/global.css';
 
 /**
- * Cockpit-Anmeldung. Eigenes, schlankes Layout ohne Kopfleiste und Fußzeile —
- * wie im Entwurf: links die Einordnung, rechts das Formular.
+ * Anmeldung zum Konto.
  *
- * OFFEN: Es gibt noch keine Anmeldung im Hintergrund. Das Formular prüft die
- * Eingaben und zeigt einen Hinweis; sobald der Dienst steht, `action` setzen.
+ * Angemeldet wird über Wix — die Website ist ein Wix-Headless-Projekt, und
+ * damit führt Wix den Weg selbst: Google, Facebook oder E-Mail. Wir bauen
+ * weder Kennwortprüfung noch Nutzerverwaltung.
+ *
+ * Das ist ausdrücklich NICHT die Anmeldung an der Box. Die hat ihre eigene,
+ * mit eigenem Kennwort, weil sie in einer Scheune ohne Netz laufen muss.
  */
 
-const kennzahlen = [
-  { wert: '3', text: 'Boxen gekoppelt' },
-  { wert: '137', text: 'Sessions heute' },
-  { wert: '2', text: 'Offene Buchungen' },
-];
+/* Die Kennung des Headless-Kunden steht in `wix.config.json` — gelesen statt
+   getippt, damit sie nicht auseinanderläuft, wenn das Projekt wechselt. */
+const kennung: string = JSON.parse(
+  readFileSync(join(process.cwd(), 'wix.config.json'), 'utf8')
+).appId;
+---
+
 ---
 
 <!doctype html>
@@ -37,22 +44,17 @@ const kennzahlen = [
         </a>
 
         <div class="einordnung__text">
-          <span class="mono mono--amber">Cockpit</span>
-          <h1>Alles, was gerade läuft — in einem Fenster</h1>
+          <span class="mono mono--amber">Konto</span>
+          <h1>Ein Konto für Lizenz, Download und Support</h1>
           <p class="fliess">
-            Boxen und Puls, Moderation, Druck-Queue, Buchungen und Verträge. Dieselbe Anmeldung gilt
-            für die Fernbedienung am Handy.
+            Angemeldet wird über euer Google-Konto oder eure E-Mail — ein weiteres Kennwort
+            braucht niemand.
           </p>
-          <div class="reihe zahlen">
-            {
-              kennzahlen.map((k) => (
-                <span class="zahlkachel">
-                  <b>{k.wert}</b>
-                  <span class="mono mono--hell">{k.text}</span>
-                </span>
-              ))
-            }
-          </div>
+          <p class="fliess">
+            Die Box im Saal hat davon nichts: Sie läuft ohne Internet und hat ihre eigene
+            Anmeldung. Eine, die erst Google fragen muss, sperrt genau dann aus, wenn das WLAN
+            der Scheune aussteigt.
+          </p>
         </div>
 
         <span class="hinweis">
@@ -62,81 +64,44 @@ const kennzahlen = [
       </section>
 
       <section class="formularseite">
-        <form class="anmeldung" novalidate>
-          <h2 class="frei">Anmelden</h2>
+        <div class="anmeldung" data-anmeldung>
+          <h2 class="frei" data-feld="titel">Anmelden</h2>
 
-          <fieldset class="wahl">
-            <legend class="nur-vorlese">Rolle</legend>
-            <input type="radio" id="rolle-betreiber" name="rolle" value="betreiber" checked />
-            <label class="segment" for="rolle-betreiber">Betreiber</label>
-            <input type="radio" id="rolle-kunde" name="rolle" value="kunde" />
-            <label class="segment" for="rolle-kunde">Kunde</label>
-          </fieldset>
-
-          <div class="feld">
-            <label class="nur-vorlese" for="email">E-Mail</label>
-            <input
-              class="eingabe"
-              id="email"
-              name="email"
-              type="email"
-              autocomplete="username"
-              placeholder="E-Mail"
-              required
-            />
-          </div>
-
-          <div class="feld passwortfeld">
-            <label class="nur-vorlese" for="passwort">Passwort</label>
-            <input
-              class="eingabe"
-              id="passwort"
-              name="passwort"
-              type="password"
-              autocomplete="current-password"
-              placeholder="Passwort"
-              required
-            />
-            <button class="zeigen" type="button" data-feld="zeigen" aria-controls="passwort">
-              Anzeigen
+          <div data-feld="wege">
+            <button class="knopf knopf--amber knopf--breit" type="button" data-tue="google">
+              Mit Google anmelden
             </button>
+            <button class="knopf knopf--rahmen knopf--breit" type="button" data-tue="wix">
+              Mit E-Mail anmelden
+            </button>
+            <span class="mono mono--hell">
+              Noch kein Konto? Beim ersten Anmelden entsteht es.
+            </span>
           </div>
 
-          <div class="zeile">
-            <label class="merken">
-              <input type="checkbox" name="merken" />
-              <span class="kasten" aria-hidden="true">✓</span>
-              Angemeldet bleiben
-            </label>
-            <a class="vergessen" href="/kontakt">Passwort vergessen?</a>
+          <div data-feld="konto" hidden>
+            <span class="mono mono--hell">Angemeldet als</span>
+            <b class="kontoname" data-feld="name"></b>
+            <span class="mono" data-feld="mail"></span>
+            <div class="kontowege">
+              <a class="knopf knopf--rahmen knopf--flach" href="/download">Software laden</a>
+              <a class="knopf knopf--rahmen knopf--flach" href="/support">Support</a>
+              <button class="knopf knopf--rahmen knopf--flach" type="button" data-tue="raus">
+                Abmelden
+              </button>
+            </div>
           </div>
-
-          <button class="knopf knopf--amber ins-cockpit" type="submit">Ins Cockpit</button>
 
           <span class="meldung" data-feld="meldung" role="status" hidden></span>
 
           <span class="trenner" aria-hidden="true"></span>
 
-          <span class="mono">Box am Eventort koppeln</span>
-          <div class="kopplung">
-            <label class="nur-vorlese" for="code">Kopplungscode, sechsstellig</label>
-            <input
-              class="eingabe eingabe--code"
-              id="code"
-              name="code"
-              inputmode="numeric"
-              maxlength="6"
-              placeholder="6-stellig"
-            />
-            <button class="knopf knopf--dunkel knopf--flach" type="button" data-feld="koppeln">
-              Koppeln
-            </button>
-          </div>
-          <span class="fussnote">
-            Den Code zeigt das Installations-Zentrum auf der Box. Danach erscheint sie mit Puls im
-            Cockpit.
-          </span>
-        </form>
+          <span class="mono">Box am Eventort einrichten</span>
+          <p class="kleingedruckt">
+            Die Box richtet ihr am Gerät selbst ein — sie fragt beim ersten Start nach Zugang,
+            Firmendaten und Logo. Dieses Konto hier braucht sie dafür nicht.
+          </p>
+        </div>
       </section>
     </main>
 
@@ -148,6 +113,55 @@ const kennzahlen = [
         <a href="/datenschutz">Datenschutz</a>
       </span>
     </footer>
+
+    <script define:vars={{ kennung }}>
+      window.__youboothWix = kennung;
+    </script>
+
+    <script>
+      import { abmelden, angemeldet, melde } from '../lib/wix';
+
+      const wurzel = document.querySelector('[data-anmeldung]');
+      const kennung = window.__youboothWix;
+
+      if (wurzel && kennung) {
+        const wege = wurzel.querySelector('[data-feld="wege"]');
+        const konto = wurzel.querySelector('[data-feld="konto"]');
+        const titel = wurzel.querySelector('[data-feld="titel"]');
+        const meldung = wurzel.querySelector('[data-feld="meldung"]');
+
+        const sage = (text) => {
+          meldung.textContent = text;
+          meldung.hidden = !text;
+        };
+
+        /* Erst nachsehen, ob schon jemand angemeldet ist — sonst zeigt die
+           Seite Anmeldeknöpfe an jemanden, der längst drin ist. */
+        angemeldet(kennung).then((wer) => {
+          if (!wer) return;
+          wege.hidden = true;
+          konto.hidden = false;
+          titel.textContent = 'Willkommen zurück';
+          wurzel.querySelector('[data-feld="name"]').textContent = wer.name;
+          wurzel.querySelector('[data-feld="mail"]').textContent = wer.email;
+        });
+
+        wurzel.addEventListener('click', async (e) => {
+          const knopf = e.target.closest('[data-tue]');
+          if (!knopf) return;
+
+          if (knopf.dataset.tue === 'raus') return abmelden();
+
+          knopf.disabled = true;
+          sage('Einen Moment …');
+          const { fehler } = await melde(kennung, knopf.dataset.tue === 'google' ? 'google' : undefined);
+          if (fehler) {
+            knopf.disabled = false;
+            sage(fehler);
+          }
+        });
+      }
+    </script>
 
     <style>
       .anmeldeseite {

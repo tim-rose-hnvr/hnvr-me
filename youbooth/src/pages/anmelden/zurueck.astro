@@ -1,0 +1,80 @@
+---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import '../../styles/global.css';
+
+/**
+ * Rücksprung von Wix. Hier landet, wer sich gerade bei Google angemeldet hat.
+ *
+ * Die Seite tut genau eine Sache: den Code gegen Zugangsmarken tauschen und
+ * weiterschicken. Sie ist absichtlich fast leer — sie ist eine Durchfahrt,
+ * kein Ort.
+ */
+const kennung: string = JSON.parse(
+  readFileSync(join(process.cwd(), 'wix.config.json'), 'utf8')
+).appId;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Anmeldung wird abgeschlossen · youbooth</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0b0b0d" />
+  </head>
+  <body class="anmeldeseite">
+    <main class="durchfahrt">
+      <span class="mono mono--amber">youbooth</span>
+      <p class="stand" data-feld="stand" role="status">Anmeldung wird abgeschlossen …</p>
+      <a class="knopf knopf--rahmen-hell knopf--flach" data-feld="zurueck" href="/anmelden" hidden>
+        Noch einmal versuchen
+      </a>
+    </main>
+
+    <script define:vars={{ kennung }}>
+      window.__youboothWix = kennung;
+    </script>
+
+    <script>
+      import { nimmZurueck } from '../../lib/wix';
+
+      const stand = document.querySelector('[data-feld="stand"]');
+      const zurueck = document.querySelector('[data-feld="zurueck"]');
+
+      nimmZurueck(window.__youboothWix).then(({ fehler }) => {
+        if (!fehler) {
+          location.replace('/anmelden');
+          return;
+        }
+        stand.textContent = fehler;
+        zurueck.hidden = false;
+      });
+    </script>
+
+    <style>
+      .durchfahrt {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 40px var(--rand);
+        background: var(--ink);
+        color: var(--text-hell);
+        text-align: center;
+      }
+
+      .stand {
+        margin: 0;
+        max-width: 46ch;
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--text-hell-leise);
+      }
+    </style>
+  </body>
+</html>

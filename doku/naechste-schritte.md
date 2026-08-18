@@ -160,6 +160,10 @@ der größte Einzelposten; die Werkstatt hat heute Formulare statt Blöcke.
 2. **Sprache, Währung, Zeitzone** im Wix-Dashboard auf Deutsch, EUR und
    `Europe/Berlin` stellen. Über die API geht es nachweislich nicht — die
    geprüften Wege stehen in `getintouch/VEROEFFENTLICHEN.md`.
+3. **Die Zeile `Sitemap:` in der `robots.txt`** unter SEO-Tools auf
+   `/seitenverzeichnis.xml` umstellen. Wix erzeugt die Datei selbst und zeigt
+   auf `/sitemap.xml` — einen Pfad, den Wix zugleich abfängt und mit 404
+   beantwortet, sodass unser Verzeichnis dort nie erreicht wird.
 
 ---
 

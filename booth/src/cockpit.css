@@ -140,12 +140,19 @@ body.cockpitseite {
   padding-bottom: 12px;
 }
 
-.cbild img {
+.cbild img,
+.cbild video {
   width: 100%;
   aspect-ratio: 2 / 3;
   object-fit: contain;
   background: var(--paper-tief);
   display: block;
+}
+
+/* Ein Video braucht weniger Höhe als ein Streifenabzug — sonst steht ein
+   16:9-Clip in einem hochkanten Rahmen zwischen zwei schwarzen Balken. */
+.cbild video {
+  aspect-ratio: 16 / 9;
 }
 
 .cbild figcaption {

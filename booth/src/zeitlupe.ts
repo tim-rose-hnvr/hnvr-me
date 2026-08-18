@@ -91,7 +91,15 @@ async function starte(ziel: HTMLElement): Promise<void> {
 
   const buehne = tag('div', 'zlbuehne');
   const zaehler = tag('span', 'zlzaehler');
-  buehne.append(video, tafel, abspieler, zaehler);
+  /* Eine leere dunkle Fläche sieht aus wie ein Fehler. Solange die Kamera aus
+     ist, steht deshalb hier, warum nichts zu sehen ist — der Betreiber baut
+     an dieser Stelle auf und soll nicht raten, ob das Gerät kaputt ist. */
+  const ruhe = tag('div', 'zlruhe');
+  ruhe.append(
+    tag('span', 'zlruhe__marke', 'Kamera aus'),
+    tag('p', 'zlruhe__text', 'Der Sucher erscheint, sobald die Kamera läuft.')
+  );
+  buehne.append(video, tafel, abspieler, ruhe, zaehler);
 
   const kopf = tag('header', 'zlkopf');
   kopf.append(tag('span', 'zlmarke', 'Zeitlupe'), tag('span', 'zlrate', ''));

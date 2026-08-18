@@ -429,52 +429,5 @@ import '../styles/global.css';
       }
     </style>
 
-    <script>
-      const formular = document.querySelector<HTMLFormElement>('.anmeldung');
-
-      if (formular) {
-        const passwort = formular.querySelector<HTMLInputElement>('#passwort')!;
-        const email = formular.querySelector<HTMLInputElement>('#email')!;
-        const zeigen = formular.querySelector<HTMLButtonElement>('[data-feld="zeigen"]')!;
-        const meldung = formular.querySelector<HTMLElement>('[data-feld="meldung"]')!;
-        const koppeln = formular.querySelector<HTMLButtonElement>('[data-feld="koppeln"]')!;
-        const code = formular.querySelector<HTMLInputElement>('#code')!;
-
-        zeigen.addEventListener('click', () => {
-          const sichtbar = passwort.type === 'text';
-          passwort.type = sichtbar ? 'password' : 'text';
-          zeigen.textContent = sichtbar ? 'Anzeigen' : 'Verbergen';
-        });
-
-        function sage(text: string) {
-          meldung.textContent = text;
-          meldung.hidden = text === '';
-        }
-
-        formular.addEventListener('submit', (e) => {
-          // Solange kein Anmeldedienst existiert, wird hier abgefangen.
-          e.preventDefault();
-          const mailOk = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email.value.trim());
-          const passOk = passwort.value.length >= 6;
-
-          email.setAttribute('aria-invalid', String(!mailOk));
-          passwort.setAttribute('aria-invalid', String(!passOk));
-
-          if (!mailOk) return sage('Bitte eine vollständige E-Mail-Adresse angeben.');
-          if (!passOk) return sage('Das Passwort ist zu kurz.');
-          sage('Das Cockpit ist noch nicht angebunden — die Anmeldung folgt mit dem Dienst.');
-        });
-
-        koppeln.addEventListener('click', () => {
-          const sauber = code.value.replace(/\D/g, '');
-          if (sauber.length !== 6) {
-            code.setAttribute('aria-invalid', 'true');
-            return sage('Der Kopplungscode hat sechs Ziffern.');
-          }
-          code.removeAttribute('aria-invalid');
-          sage(`Code ${sauber} vorgemerkt — die Kopplung folgt mit dem Dienst.`);
-        });
-      }
-    </script>
   </body>
 </html>

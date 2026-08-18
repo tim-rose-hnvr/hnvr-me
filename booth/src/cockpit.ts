@@ -19,6 +19,7 @@ import {
 } from './einstellungen';
 import { alle, raeumeAuf, type Aufnahme } from './speicher';
 import { druckeInLetzterStunde, qrBild } from './ausgabe';
+import { artname } from './arten';
 import { amDraht } from './draht';
 import { abmelden, verlangeAnmeldung } from './anmeldung';
 
@@ -518,23 +519,39 @@ function aufnahmenbereich(aufnahmen: Aufnahme[], fehler: boolean): HTMLElement {
   const raster = tag('div', 'cbilder');
   aufnahmen.slice(0, 12).forEach((a) => {
     const kachel = tag('figure', 'cbild');
-    const bild = document.createElement('img');
-    bild.src = a.url;
-    bild.alt = '';
-    bild.loading = 'lazy';
+
+    /* Seit gesprochene Grüße und Zeitlupen-Clips in derselben Ablage liegen,
+       ist nicht mehr jede Aufnahme ein Bild. Ein Video in einem `<img>` zeigt
+       nichts — die Kachel bliebe leer, mit einem Sichern-Knopf darunter. */
+    let vorschau: HTMLElement;
+    if (a.video) {
+      const bewegung = document.createElement('video');
+      bewegung.src = a.url;
+      bewegung.muted = true;
+      bewegung.playsInline = true;
+      bewegung.controls = true;
+      bewegung.preload = 'metadata';
+      vorschau = bewegung;
+    } else {
+      const bild = document.createElement('img');
+      bild.src = a.url;
+      bild.alt = '';
+      bild.loading = 'lazy';
+      vorschau = bild;
+    }
 
     const zeile = document.createElement('figcaption');
     zeile.append(
       mono(new Date(a.zeit).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })),
-      mono(a.art)
+      mono(artname(a.art))
     );
 
     const laden = tag('a', 'cknopf cknopf--klein') as HTMLAnchorElement;
-    laden.href = bild.src;
+    laden.href = a.url;
     laden.download = a.id;
     laden.textContent = 'Sichern';
 
-    kachel.append(bild, zeile, laden);
+    kachel.append(vorschau, zeile, laden);
     raster.append(kachel);
   });
 

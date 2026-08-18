@@ -71,7 +71,13 @@ export const MODULSTAND: Record<string, Eintrag> = {
     stand: 'laeuft',
     offen: 'Gesichtsfilter und Sticker kommen noch; aufnehmen und senden geht.',
   },
-  'foto-finder': { stand: 'geplant' },
+  'foto-finder': {
+    stand: 'geplant',
+    offen:
+      'Braucht ein Gesichtsmodell auf der Box — das ist biometrische Verarbeitung ' +
+      'nach Art. 9 DSGVO und eine Entscheidung, die der Betreiber trifft, nicht die Software. ' +
+      'Solange es fehlt, bekommt jeder Gast seine Bilder über den QR-Code an der Box.',
+  },
   slideshow: {
     stand: 'laeuft',
     offen:
@@ -99,7 +105,12 @@ export const MODULSTAND: Record<string, Eintrag> = {
       'nicht nur im Abspieler. Wie stark sie ausfällt, hängt an der Kamera; die Seite misst und ' +
       'sagt es. Windmaschine und Konfettikanone zu triggern fehlt noch.',
   },
-  '360-booth': { stand: 'geplant', offen: 'Braucht Hardware, die wir noch nicht ausliefern.' },
+  '360-booth': {
+    stand: 'geplant',
+    offen:
+      'Braucht Hardware, die wir noch nicht ausliefern: Drehteller, Ausleger und Motorsteuerung. ' +
+      'Die Software dahinter ist die Zeitlupe — die läuft.',
+  },
 };
 
 export function standVon(id: string): Eintrag {

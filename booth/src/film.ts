@@ -71,7 +71,8 @@ async function starte(ziel: HTMLElement): Promise<void> {
   const blitz = tag('span', 'fmblitz');
   const werk = tag('span', 'fmwerk');
   werk.dataset.feld = 'werk';
-  buehne.append(video, blitz, werk);
+  const ruhe = tag('div', 'fmruhe');
+  buehne.append(video, blitz, ruhe, werk);
 
   const kopf = tag('header', 'fmkopf');
   const sagt = tag('p', 'fmsagt');
@@ -83,10 +84,24 @@ async function starte(ziel: HTMLElement): Promise<void> {
 
   /* --- Zeichnen --------------------------------------------------- */
 
+  /** Was in der Bühne steht, solange die Kamera aus ist. */
+  const ruhetext = (): [string, string] => {
+    if (lage === 'holen') return ['Wegwerfkamera', 'Trag deinen Namen ein — dann bekommst du einen Film.'];
+    if (lage === 'voll') return ['Film voll', 'Alle Bilder sind unterwegs ins Labor.'];
+    if (lage === 'fehler') return ['Kamera aus', 'Der Sucher erscheint, sobald die Kamera läuft.'];
+    return ['Kamera aus', `Noch ${film?.uebrig ?? 0} von ${film?.laenge ?? 0} Aufnahmen.`];
+  };
+
   const zeichne = (): void => {
     flaeche.dataset.lage = lage;
     leiste.replaceChildren();
     kopf.replaceChildren();
+
+    const [marke, text] = ruhetext();
+    ruhe.replaceChildren(
+      tag('span', 'fmruhe__marke', marke),
+      tag('p', 'fmruhe__text', text)
+    );
 
     if (film) {
       kopf.append(

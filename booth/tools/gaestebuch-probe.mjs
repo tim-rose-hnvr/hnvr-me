@@ -10,7 +10,7 @@
  */
 
 import { chromium } from 'playwright-core';
-import { BASIS } from './betreiber.mjs';
+import { BASIS, alsBetreiber } from './betreiber.mjs';
 
 let bestanden = 0;
 let gefallen = 0;
@@ -109,6 +109,18 @@ pruefe('Mit Farbnummer und Zeitpunkt',
   JSON.stringify(abgelegt?.[0] ?? null).slice(0, 90));
 pruefe('Und die Nummer liegt im Bereich der Palette',
   Array.isArray(abgelegt) && abgelegt.every((e) => e.farbe === undefined || (e.farbe >= 0 && e.farbe < 5)));
+
+/* Aufräumen. Eine Probe, die bei jedem Lauf einen Gruß mehr an die Wand
+   hängt, macht die Zettelwand des Betreibers nach zehn Läufen unbrauchbar —
+   und die Wand hängt im Saal. */
+const sitzung = await alsBetreiber();
+const meiner = (abgelegt || []).find((e) => e.message === spruch.replace(/[<>]/g, ''));
+if (meiner) {
+  const weg = await sitzung.anDieBox('/api/guestbook/' + encodeURIComponent(meiner.id), {
+    method: 'DELETE',
+  });
+  pruefe('Die Probe räumt ihren Gruß wieder weg', weg.status === 200, String(weg.status));
+}
 
 await browser.close();
 console.log(`\n${bestanden} bestanden, ${gefallen} gefallen\n`);

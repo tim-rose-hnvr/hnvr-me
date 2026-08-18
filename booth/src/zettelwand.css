@@ -32,12 +32,20 @@ body.zettelseite {
 }
 
 /* Auf einer Wand ist derselbe Zettel viel größer als auf dem Handy — die
-   Entfernung ist eine andere. */
+   Entfernung ist eine andere.
+
+   Das Seitenverhältnis ist kein Schmuck: Mit `min-height` allein wurde aus
+   einem Zettel bei drei Spalten auf 1920 Punkten ein Banner von 620 × 220 —
+   das liest sich wie eine Laufschrift, nicht wie ein Zettel. Mit `4 / 3`
+   bleibt die Form gleich, egal wie viele Spalten die Menge gerade ergibt;
+   ein langer Gruß darf trotzdem höher werden, weil Inhalt das Verhältnis
+   überstimmt. */
 .zwraster .gbzettel {
   padding: 1.5vw;
   border-radius: 0.4vw;
   gap: 0.8vw;
-  min-height: 11vw;
+  aspect-ratio: 4 / 3;
+  min-height: 9vw;
 }
 
 .zwraster .gbspruch {

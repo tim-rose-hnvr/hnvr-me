@@ -71,7 +71,11 @@ body.stimmeseite {
   min-height: 3.6em;
 }
 
+/* `flex: none` ist hier kein Feinschliff: Ohne das wächst die Leiste in den
+   freien Platz der Spalte, und mit ihr das Namensfeld — ein Eingabefeld über
+   zweihundert Pixel hoch, in das ein Wort geschrieben wird. */
 .stleiste {
+  flex: none;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -85,6 +89,7 @@ body.stimmeseite {
 }
 
 .stname {
+  flex: none;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -101,6 +106,7 @@ body.stimmeseite {
 
 .steingabe {
   width: 100%;
-  min-height: var(--ziel);
+  height: var(--ziel);
+  flex: none;
   font-size: 17px;
 }

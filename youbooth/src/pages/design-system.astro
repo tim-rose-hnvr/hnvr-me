@@ -90,7 +90,13 @@ const umbrueche = [
     <h2>Typografie</h2>
     <div class="typo">
       <div class="typo__probe">
-        <h1 class="probe">Überschrift 1</h1>
+        <!-- Ein Musterstück, keine Seitenüberschrift: `role="presentation"`
+             nimmt es aus der Gliederung. Sonst hätte diese Seite zwei H1 —
+             und ein Screenreader läse „Überschrift 1" als Titel des
+             Abschnitts. Das Aussehen bleibt das echte, weil das Element
+             das echte bleibt; eine nachgebaute Klasse wäre eine zweite
+             Wahrheit über dieselbe Schriftgröße. -->
+        <h1 class="probe" role="presentation">Überschrift 1</h1>
         <span class="mono mono--hell">Archivo 800 · clamp(38px, 5vw, 72px) · −0.025em · Versalien</span>
       </div>
       <div class="typo__probe">

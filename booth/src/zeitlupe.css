@@ -132,3 +132,42 @@ body.zeitlupeseite {
 .zlrate--schwach {
   color: var(--warn-hell);
 }
+
+/* --- Die ruhende Bühne -------------------------------------------------- */
+
+.zlruhe {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 6%;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(242, 178, 62, 0.12), transparent 60%),
+    var(--ink-soft);
+}
+
+.zlflaeche[data-lage='start'] .zlruhe,
+.zlflaeche[data-lage='fehler'] .zlruhe {
+  display: flex;
+}
+
+.zlruhe__marke {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.zlruhe__text {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--hell-still);
+  max-width: 26ch;
+}

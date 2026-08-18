@@ -39,6 +39,23 @@
   display: none !important;
 }
 
+/* Die hellen Oberflächen (Cockpit, Portal, Buchen, Einrichtung) setzen ihren
+   Grund auf `body`. Der reicht aber nur so weit wie der Inhalt: Darunter und
+   beim Überziehen mit dem Trackpad käme das Dunkel von `html` durch — ein
+   schwarzer Streifen unter einer hellen Seite. Deshalb bekommt die Wurzel
+   denselben Grund, sobald eine helle Seite darin steht. */
+html:has(> body.cockpitseite),
+html:has(> body.buchenseite),
+html:has(> body.einrichtungsseite) {
+  background: var(--paper);
+}
+
+/* Der Editor arbeitet auf seinem eigenen Papierton — er zeigt Druckbilder,
+   und die will man auf dem Weiß sehen, auf dem sie später liegen. */
+html:has(> body.editorseite) {
+  background: var(--v-papier);
+}
+
 html,
 body {
   margin: 0;

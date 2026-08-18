@@ -73,9 +73,30 @@ const kopfzeile = await seite.textContent('#zfassung');
 pruefe('Fassung, Port und Datenordner stehen im Kopf',
   /Fassung .+ · Port \d+ · /.test(kopfzeile || ''), kopfzeile);
 
-/* 3 — Eine Reparatur. `vorlagen` ist die harmloseste: Sie setzt den Katalog
-   auf den Auslieferungsstand und lässt sich sofort nachzählen. */
+/* 3 — Eine Reparatur. `vorlagen` ist die harmloseste: Sie legt fehlende
+   Katalogvorlagen nach und lässt sich sofort nachzählen.
+   Die eigentliche Prüfung ist eine andere: Sie darf NICHTS wegnehmen. Ein
+   Betreiber, der seine Hochzeitsvorlage gebaut hat und dann auf „Reparieren"
+   drückt, darf sie nicht verlieren — unter dieser Beschriftung schon gar
+   nicht. Deshalb wird vorher eine eigene Vorlage angelegt. */
 console.log('\n3 · Reparieren');
+const vorlagenVorher = (await sitzung.anDieBox('/api/templates')).daten;
+const listeVorher = vorlagenVorher.templates ?? vorlagenVorher;
+/* Eine Vorlage, wie sie im Editor entsteht: ein Papierformat, ein Bildfeld.
+   Weniger nimmt die Box zu Recht nicht an. */
+const angelegt = await sitzung.anDieBox('/api/templates', {
+  method: 'POST',
+  body: JSON.stringify({
+    id: 'probe-eigene-vorlage',
+    name: 'Probe: eigene Vorlage',
+    format: listeVorher[0]?.format || 'foto-10x15',
+    art: 'foto',
+    felder: [{ art: 'bild', x: 0.06, y: 0.06, b: 0.88, h: 0.6 }],
+  }),
+});
+pruefe('Eine eigene Vorlage lässt sich anlegen', angelegt.status === 200,
+  `${angelegt.status} ${angelegt.daten?.error || ''}`);
+const eigene = { id: angelegt.daten?.template?.id || 'probe-eigene-vorlage' };
 const vorher = (await sitzung.anDieBox('/api/templates')).daten;
 const antwort = await sitzung.anDieBox('/api/zentrale/reparatur', {
   method: 'POST',
@@ -85,10 +106,16 @@ pruefe('Die Reparatur wird angenommen', antwort.status === 200, String(antwort.s
 pruefe('Sie sagt in einem Satz, was sie getan hat',
   typeof antwort.daten?.text === 'string' && antwort.daten.text.length > 10, antwort.daten?.text);
 const nachher = (await sitzung.anDieBox('/api/templates')).daten;
+const listeNachher = nachher.templates ?? nachher;
 pruefe('Danach liegen wieder alle Vorlagen da',
-  Array.isArray(nachher?.templates ?? nachher) &&
-  (nachher.templates ?? nachher).length >= (vorher.templates ?? vorher).length,
-  `vorher ${(vorher.templates ?? vorher).length}, nachher ${(nachher.templates ?? nachher).length}`);
+  Array.isArray(listeNachher) && listeNachher.length >= (vorher.templates ?? vorher).length,
+  `vorher ${(vorher.templates ?? vorher).length}, nachher ${listeNachher.length}`);
+pruefe('Und die eigene Vorlage ist NICHT weggeräumt worden',
+  listeNachher.some((v) => v.id === eigene.id),
+  listeNachher.filter((v) => /probe/i.test(v.id)).map((v) => v.id).join(', ') || 'weg');
+
+// Die Probe hinterlässt keine eigene Vorlage im Katalog des Betreibers.
+await sitzung.anDieBox('/api/templates/' + encodeURIComponent(eigene.id), { method: 'DELETE' });
 
 const unbekannt = await sitzung.anDieBox('/api/zentrale/reparatur', {
   method: 'POST',

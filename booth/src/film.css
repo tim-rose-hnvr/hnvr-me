@@ -213,9 +213,53 @@ body.filmseite {
   margin: 0 auto;
 }
 
+/* --- Die ruhende Bühne -------------------------------------------------- */
+
+/* Eine leere schwarze Fläche sieht aus wie ein Defekt. Solange die Kamera aus
+   ist, steht hier, was als Nächstes passiert. */
+.fmruhe {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 8%;
+}
+
+.fmflaeche[data-lage='holen'] .fmruhe,
+.fmflaeche[data-lage='bereit'] .fmruhe,
+.fmflaeche[data-lage='voll'] .fmruhe,
+.fmflaeche[data-lage='fehler'] .fmruhe {
+  display: flex;
+}
+
+.fmruhe__marke {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.fmruhe__text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--hell-still);
+  max-width: 24ch;
+}
+
+/* Feste Höhe, nicht `min-height`: In der Spalte darüber ist Platz übrig, und
+   ein Eingabefeld mit `min-height` in einem streckenden Elternteil wächst
+   darin auf zweihundert Pixel — für ein Wort. */
 .fmeingabe {
   width: 100%;
-  min-height: var(--ziel);
+  height: var(--ziel);
+  flex: none;
   text-align: center;
   font-size: 17px;
 }

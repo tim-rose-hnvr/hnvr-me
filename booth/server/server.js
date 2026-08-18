@@ -2019,10 +2019,22 @@ async function durchcheck() {
                 `Ausgewählt ist „${gewaehlt}", angemeldet ist der nicht mehr.`, 'drucker'));
   }
 
-  /* 6 — Vorlagen. Ohne sie kommt aus dem Drucker ein leeres Blatt. */
-  befunde.push(!Array.isArray(templates) || templates.length === 0
-    ? stufe('fehler', 'Vorlagen', 'Es ist keine einzige Vorlage geladen.', 'vorlagen')
-    : stufe('gut', 'Vorlagen', `${templates.length} Vorlagen geladen.`));
+  /* 6 — Vorlagen. Ohne sie kommt aus dem Drucker ein leeres Blatt.
+     Geprueft wird nicht nur „ueberhaupt eine", sondern ob der KATALOG
+     vollstaendig ist: Eine Box, die nach einem missglueckten Update nur noch
+     zwoelf von achtundsiebzig Vorlagen kennt, meldete vorher „gut" — und der
+     Betreiber suchte am Abend die eine, die fehlt. */
+  const fehlendeVorlagen = Array.isArray(templates)
+    ? ALLE_VORLAGEN.filter((v) => !templates.some((t) => t.id === v.id)).length
+    : ALLE_VORLAGEN.length;
+  befunde.push(
+    !Array.isArray(templates) || templates.length === 0
+      ? stufe('fehler', 'Vorlagen', 'Es ist keine einzige Vorlage geladen.', 'vorlagen')
+      : fehlendeVorlagen > 0
+        ? stufe('warnung', 'Vorlagen',
+            `${templates.length} Vorlagen geladen, ${fehlendeVorlagen} aus dem Katalog fehlen.`,
+            'vorlagen')
+        : stufe('gut', 'Vorlagen', `${templates.length} Vorlagen geladen, Katalog vollständig.`));
 
   /* 7 — Betreiber. */
   befunde.push(betreiberAngelegt()
@@ -2117,11 +2129,31 @@ app.post('/api/zentrale/reparatur', async (req, res) => {
     }
 
     if (was === 'vorlagen') {
-      const vorher = templates.length;
-      templates = ALLE_VORLAGEN.slice();
+      /* ERGAENZEN, nicht ersetzen.
+         Vorher stand hier `templates = ALLE_VORLAGEN.slice()` — ein
+         Zuruecksetzen auf den Auslieferungsstand. Das loescht die Vorlage,
+         die der Betreiber fuer seine Hochzeit gebaut hat, und zwar unter der
+         Beschriftung „Reparieren". Eine Reparatur stellt her, was fehlt; sie
+         nimmt nichts weg, was jemand angelegt hat.
+         Eigene Vorlagen behalten deshalb den Vortritt: Wer eine
+         Katalogvorlage bearbeitet und unter derselben Kennung gesichert hat,
+         will sie so, wie er sie gesichert hat. */
+      const vorhandene = new Set(templates.map((v) => v.id));
+      const nachgelegt = ALLE_VORLAGEN.filter((v) => !vorhandene.has(v.id));
+      if (nachgelegt.length === 0) {
+        return res.json({
+          ok: true,
+          text: `Alle ${ALLE_VORLAGEN.length} Katalogvorlagen sind da — nichts nachzulegen.`,
+        });
+      }
+      templates = templates.concat(nachgelegt);
       saveJson(TEMPLATES_FILE, templates);
       broadcast({ type: 'templates', templates });
-      return res.json({ ok: true, text: `Vorlagen zurückgesetzt: ${vorher} → ${templates.length}.` });
+      return res.json({
+        ok: true,
+        text: `${nachgelegt.length} fehlende Katalogvorlagen nachgelegt — jetzt ${templates.length}. `
+          + 'Eigene Vorlagen sind unberührt geblieben.',
+      });
     }
 
     if (was === 'neustart') {

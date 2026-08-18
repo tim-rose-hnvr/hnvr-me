@@ -98,6 +98,21 @@
   /* Ein warmer Ton für Haut und Holz in den Szenen. */
   --z-warm: #c98b7a;
 
+  /* --- Zettelfarben ------------------------------------------------------
+     Die Gästebuch-Zettel sind der eine Ort, an dem Buntheit Inhalt ist und
+     nicht Dekoration: Eine Wand aus fünfzig gleichfarbigen Zetteln liest
+     sich wie eine Liste, nicht wie eine Pinnwand.
+
+     Sie stehen trotzdem hier und nicht im Server. Der vergibt nur eine
+     Nummer von 0 bis 4 — welche Farbe das ist, entscheidet die Gestaltung.
+     Vorher lagen fünf Hexwerte aus einem älteren Stand in `server.js`, und
+     drei davon gehörten in keine Palette dieses Hauses. */
+  --zettel-0: #f2b23e;
+  --zettel-1: #e8836b;
+  --zettel-2: #7f9f7a;
+  --zettel-3: #6f8fb0;
+  --zettel-4: #c98f8f;
+
   /* --- Maß ------------------------------------------------------------- */
   --rand: clamp(20px, 4vw, 56px);
   --breite: 1240px;

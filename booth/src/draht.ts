@@ -20,7 +20,17 @@
 import { einstellungenGeaendert } from './einstellungen';
 import { vorlagenGeaendert } from './vorlagen';
 
-export type Rolle = 'booth' | 'cockpit' | 'wand' | 'galerie' | 'editor' | 'einrichtung';
+/* Wer am Draht hängt. Die Rolle steht in der Adresse, damit der Server
+   gezielt eine Sorte Oberfläche ansprechen kann — „alle Wände neu laden"
+   soll nicht den Booth mitreißen. */
+export type Rolle =
+  | 'booth'
+  | 'cockpit'
+  | 'wand'
+  | 'galerie'
+  | 'editor'
+  | 'einrichtung'
+  | 'gaestebuch';
 
 export type Nachricht = { type: string } & Record<string, unknown>;
 

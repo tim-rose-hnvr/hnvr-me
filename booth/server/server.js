@@ -677,7 +677,7 @@ app.use((req, res, next) => {
 const MODULSEITEN = {
   photowall: ['/wand.html'],
   gallery: ['/galerie.html'],
-  guestbook: ['/guestbook.html', '/voicebook.html'],
+  guestbook: ['/gaestebuch.html', '/zettelwand.html'],
   webcam: ['/cam.html', '/join.html'],
   microsites: ['/microsite.html'],
   slideshow: ['/slideshow.html'],
@@ -2097,7 +2097,7 @@ app.get('/api/info', (req, res) => {
       mosaic: `${base}/wand.html`,
       join: `${base}/join.html`,
       cam: `${base}/cam.html`,
-      guestbook: `${base}/guestbook.html`,
+      guestbook: `${base}/gaestebuch.html`,
       gallery: `${base}/galerie.html`,
       station: `${base}/station.html`,
       admin: `${base}/cockpit.html`,
@@ -3199,7 +3199,12 @@ app.get('/api/survey.csv', requireKey, (req, res) => {
 /* ---------- API: Gästebuch (Text-Grüße der Gäste) ---------- */
 
 const GUESTBOOK_FILE = path.join(CONFIG_DIR, 'guestbook.json');
-const GB_COLORS = ['#ffc857', '#ff5d8f', '#6c5ce7', '#38b6a5', '#ff8c42'];
+/* Der Server vergibt eine NUMMER, keine Farbe. Welche Farbe das ist, steht
+   in `gestaltung/tokens.css` — hier lagen fuenf Hexwerte aus einem aelteren
+   Stand, und drei davon gehoerten in keine Palette dieses Hauses. `color`
+   bleibt als Feld erhalten, damit Eintraege von vorher weiter angezeigt
+   werden. */
+const GB_FARBEN = 5;
 
 app.get('/api/guestbook', (req, res) => { res.set('Access-Control-Allow-Origin', '*'); res.json(loadJson(GUESTBOOK_FILE, [])); });
 
@@ -3212,7 +3217,7 @@ app.post('/api/guestbook', (req, res) => {
     id: 'g_' + crypto.randomBytes(4).toString('hex'),
     name: clean(b.name, 60) || 'Gast',
     message,
-    color: GB_COLORS[Math.floor(Math.random() * GB_COLORS.length)],
+    farbe: Math.floor(Math.random() * GB_FARBEN),
     time: new Date().toISOString(),
   };
   const list = loadJson(GUESTBOOK_FILE, []);

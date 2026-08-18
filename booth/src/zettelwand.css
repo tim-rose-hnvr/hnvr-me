@@ -1,0 +1,104 @@
+/* Die Zettelwand: Vollbild für Beamer und Fernseher. Keine Bedienelemente —
+   wer vorbeigeht, soll lesen, nicht bedienen. */
+
+body.zettelseite {
+  margin: 0;
+  background: var(--ink);
+  color: var(--hell);
+  font-family: var(--schrift);
+  overflow: hidden;
+  height: 100%;
+  user-select: none;
+  cursor: none;
+}
+
+.zwflaeche {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  padding: 3vh 3vw;
+  display: grid;
+  place-items: center;
+}
+
+.zwraster {
+  display: grid;
+  grid-template-columns: repeat(var(--spalten, 3), 1fr);
+  gap: 1.4vw;
+  width: 100%;
+  max-width: 1720px;
+  align-content: center;
+  justify-content: center;
+}
+
+/* Auf einer Wand ist derselbe Zettel viel größer als auf dem Handy — die
+   Entfernung ist eine andere. */
+.zwraster .gbzettel {
+  padding: 1.5vw;
+  border-radius: 0.4vw;
+  gap: 0.8vw;
+  min-height: 11vw;
+}
+
+.zwraster .gbspruch {
+  font-size: clamp(15px, 1.5vw, 30px);
+}
+
+.zwraster .gbvon {
+  font-size: clamp(10px, 0.8vw, 16px);
+}
+
+.zwleer {
+  font-family: var(--mono);
+  font-size: clamp(14px, 1.4vw, 26px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hell-still);
+  text-align: center;
+}
+
+.zwleer[hidden] {
+  display: none;
+}
+
+/* Der frisch geschriebene Zettel, einmal groß: Wer sich gerade umdreht, soll
+   sehen, dass es angekommen ist. */
+.zwbuehne {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(11, 11, 13, 0.88);
+  animation: zwauf 0.4s ease-out;
+}
+
+.zwbuehne[hidden] {
+  display: none;
+}
+
+.zwbuehne .gbzettel {
+  width: min(56vw, 900px);
+  padding: 3vw;
+  border-radius: 0.6vw;
+  gap: 1.4vw;
+}
+
+.zwbuehne .gbspruch {
+  font-size: clamp(24px, 3.4vw, 64px);
+  line-height: 1.25;
+}
+
+.zwbuehne .gbvon {
+  font-size: clamp(12px, 1.2vw, 22px);
+}
+
+@keyframes zwauf {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zwbuehne {
+    animation: none;
+  }
+}

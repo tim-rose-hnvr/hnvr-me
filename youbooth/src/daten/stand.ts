@@ -49,7 +49,10 @@ export const MODULSTAND: Record<string, Eintrag> = {
     offen: 'Moderation vor der Anzeige kommt mit dem Dienst zwischen den Geräten.',
   },
   galerie: { stand: 'laeuft', offen: 'Passwort je Event und eigene Adresse folgen.' },
-  gaestebuch: { stand: 'arbeit', offen: 'Die Box nimmt Einträge entgegen, die Zettelwand fehlt.' },
+  gaestebuch: {
+    stand: 'laeuft',
+    offen: 'Der Ausdruck als Buch für das Paar kommt noch; die Einträge liegen auf der Box.',
+  },
   'event-seiten': {
     stand: 'laeuft',
     offen: 'Ein Logo lässt sich noch nicht hochladen; Farbe, Kennwort und Frist schon.',

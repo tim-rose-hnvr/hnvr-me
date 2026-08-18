@@ -35,6 +35,8 @@ export default defineConfig({
         fern: 'fern.html',
         anmelden: 'anmelden.html',
         zentrale: 'zentrale.html',
+        gaestebuch: 'gaestebuch.html',
+        zettelwand: 'zettelwand.html',
       },
     },
   },

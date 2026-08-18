@@ -1,0 +1,175 @@
+/* Das Gästebuch: die Schreibseite auf Handy und Touch, und die Zettel,
+   die auf beiden gleich aussehen. */
+
+body.gbseite {
+  margin: 0;
+  background: var(--ink);
+  color: var(--hell);
+  font-family: var(--schrift);
+  overflow: auto;
+  height: auto;
+  user-select: auto;
+}
+
+.gbwurzel {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.gbkopf h1 {
+  margin: 0 0 8px;
+  font-size: clamp(28px, 6vw, 40px);
+}
+
+.gbunter {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--hell-leise);
+}
+
+/* --- Formular ----------------------------------------------------------- */
+
+.gbform {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gbzeile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gbmarke {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hell-still);
+}
+
+/* Große Felder: Wer im Halbdunkel mit einem Glas in der Hand tippt, trifft
+   kein 40px hohes Feld. */
+.gbeingabe,
+.gbtext {
+  width: 100%;
+  border-radius: var(--r-knopf);
+  border: 1px solid var(--linie);
+  background: var(--ink-soft);
+  color: var(--hell);
+  font-family: var(--schrift);
+  font-size: 18px;
+  padding: 14px 16px;
+}
+
+.gbeingabe {
+  min-height: var(--ziel);
+}
+
+.gbtext {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.gbeingabe:focus,
+.gbtext:focus {
+  outline: none;
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.2);
+}
+
+.gbzaehler {
+  align-self: flex-end;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--hell-still);
+}
+
+.gbsenden {
+  width: 100%;
+  min-height: var(--ziel);
+}
+
+.gbmeldung {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--r-knopf);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.gbmeldung--gut {
+  background: rgba(23, 177, 135, 0.16);
+  color: var(--hell);
+}
+
+.gbmeldung--fehler {
+  background: rgba(224, 72, 60, 0.16);
+  color: var(--hell);
+}
+
+.gbmeldung[hidden] {
+  display: none;
+}
+
+/* --- Zettel ------------------------------------------------------------- */
+
+.gbbisher[hidden] {
+  display: none;
+}
+
+.gbbishertitel {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.gbliste {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+/* Ein Zettel, wie er an einer Pinnwand hängt: eigene Farbe, leicht gedreht,
+   Text zuerst und der Name darunter. Der Dreh kommt aus der Kennung, nicht
+   aus Zufall — sonst springt die Wand bei jedem Neuzeichnen. */
+.gbzettel {
+  background: var(--zettelfarbe, var(--zettel-0));
+  color: var(--amber-ink);
+  /* Ein Zettel ist eher hoch als breit. Ohne Mindesthöhe wird aus zwei
+     Zeilen Text auf einer Wand ein Banner über den halben Bildschirm. */
+  min-height: 8em;
+  justify-content: space-between;
+  border-radius: 4px;
+  padding: 14px 14px 12px;
+  transform: rotate(var(--dreh, 0deg));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.8);
+}
+
+.gbspruch {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  /* Ausdrücklich, nicht geerbt: Die Grundregel für `p` setzt die helle
+     Schriftfarbe der dunklen Oberflächen. Auf einem gelben Zettel las sich
+     das als blasses Grau. */
+  color: var(--amber-ink);
+}
+
+.gbvon {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}

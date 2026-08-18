@@ -1,0 +1,121 @@
+---
+/**
+ * Für Teams.
+ *
+ * Aufbau aus dem Design-Handoff. Anders als die übrigen Seiten beschreibt
+ * diese ausschließlich Dinge, die es noch nicht gibt — eigene Domain,
+ * gesperrte Markenwerte, gemeinsamer Eingang, Rollen, CSV-Import.
+ *
+ * Deshalb steht das gleich in der ersten Zeile und nicht im Kleingedruckten.
+ * Der Handoff schreibt „Ab 39 CHF / Monat · bis 20 Profile" in den
+ * Heldenbereich, als wäre es buchbar; hier ist es eine Absichtserklärung mit
+ * dem Preis daneben. Wer heute anfragt, soll wissen, dass er auf eine
+ * Warteliste kommt und nicht in einen Bestellvorgang.
+ */
+import Marketingrahmen from '../komponenten/Marketingrahmen.astro';
+import { zeichen } from '../kern/zeichen.ts';
+import { MARKE } from '../kern/marke.ts';
+import '../stile/marketing.css';
+
+export const prerender = false;
+
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+
+const nutzen = [
+  { titel: 'Eigene Domain', text: 'Die Seiten laufen unter eurer Adresse, nicht unter unserer. Im QR-Code steht dann eure.' },
+  { titel: 'Marke gesperrt', text: 'Logo und Farben legt ihr einmal fest, das Team kann sie nicht überschreiben — Reihenfolge und Inhalte bleiben frei.' },
+  { titel: 'Ein Eingang', text: 'Anfragen aus allen Profilen laufen an einer Stelle zusammen und lassen sich zuweisen.' },
+  { titel: 'Rollen und Rechte', text: 'Wer darf veröffentlichen, wer nur bearbeiten. Ohne das wird aus zwanzig Profilen ein Flickenteppich.' },
+  { titel: 'Import über CSV', text: 'Zwanzig Leute nicht einzeln anlegen, sondern eine Liste einlesen.' },
+  { titel: 'Zahlen je Person', text: 'Aufrufe und Kontakte pro Profil — damit sichtbar wird, wo es wirkt.' },
+];
+
+const passt = [
+  { titel: 'Studios & Agenturen', text: 'Jede Person mit eigenem Auftritt, alle unter einer Marke.' },
+  { titel: 'Praxen', text: 'Sprechzeiten je Behandler, Terminwunsch statt Telefonschleife.' },
+  { titel: 'Handwerk', text: 'Monteure mit eigener Nummer auf dem Fahrzeug, Zentrale im Hintergrund.' },
+  { titel: 'Vertrieb', text: 'Karte fürs Gespräch, Anfrage direkt auf der Seite statt im Notizblock.' },
+];
+---
+
+<Marketingrahmen
+  titel={`Für Teams — ${MARKE.name}`}
+  beschreibung="Ein Auftritt fürs ganze Team unter eurer Marke. Entworfen und eingeplant — heute noch nicht buchbar."
+  hier="/teams"
+>
+  <section class="kopf">
+    <p class="marke">für teams</p>
+    <h1>Eure Marke vorne.<br />Wir bleiben unsichtbar.</h1>
+
+    <p class="hinweisband">
+      <Fragment set:html={zeichen('uhr')} />
+      <span>
+        <b>Alles auf dieser Seite ist geplant, nicht gebaut.</b> Es gibt heute keinen Team-Bereich, keine eigene
+        Domain und keinen gemeinsamen Eingang. Wer anfragt, kommt auf eine Warteliste — nicht in einen
+        Bestellvorgang.
+      </span>
+    </p>
+
+    <p class="fuehrung">
+      Zwanzig Profile, ein Logo, eine Domain. Angepeilt sind 39 € im Monat für bis zu zwanzig Profile, Rechnung
+      möglich. Was davon wann kommt, hängt auch daran, wie viele es wirklich brauchen — deshalb steht die Seite schon
+      jetzt.
+    </p>
+
+    <div class="knopfreihe">
+      <a class="knopf knopf--voll" href={`mailto:${MARKE.postfach}?subject=Get%20in%20Touch%20f%C3%BCr%20Teams`}>
+        Auf die Warteliste
+        <Fragment set:html={zeichen('pfeil')} />
+      </a>
+      <a class="knopf" href="/preise">Preise ansehen</a>
+    </div>
+  </section>
+
+  <section>
+    <p class="marke">was dazugehört</p>
+    <h2>Sechs Dinge, die ein<br />Team von uns braucht.</h2>
+    <div class="koennen">
+      {
+        nutzen.map((n) => (
+          <div class="kann kann--geplant">
+            <span class="stand stand--geplant">geplant</span>
+            <h3>{n.titel}</h3>
+            <p>{n.text}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <p class="marke">passt für</p>
+    <h2>Wo das trägt.</h2>
+    <div class="schritte">
+      {
+        passt.map((p) => (
+          <div class="schritt">
+            <h3>{p.titel}</h3>
+            <p>{p.text}</p>
+          </div>
+        ))
+      }
+    </div>
+    <p class="quelle">
+      Bis der Team-Bereich steht, geht der einfache Weg trotzdem: jede Person baut sich in der <a href="/werkstatt">
+        Werkstatt
+      </a> eine Seite, und wir schalten sie frei. Das ist Handarbeit, aber es funktioniert heute.
+    </p>
+  </section>
+
+  <section class="banner">
+    <p class="marke">interesse?</p>
+    <h2>Zwanzig Minuten,<br />dann wisst ihr's.</h2>
+    <div class="knopfreihe">
+      <a class="knopf knopf--hell" href={`mailto:${MARKE.postfach}?subject=Get%20in%20Touch%20f%C3%BCr%20Teams`}>
+        Schreib uns
+        <Fragment set:html={zeichen('mail')} />
+      </a>
+      <a class="knopf knopf--kontur" href="/t/hnvr">Echte Seite ansehen</a>
+    </div>
+  </section>
+</Marketingrahmen>

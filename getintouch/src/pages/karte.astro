@@ -1,0 +1,132 @@
+---
+/**
+ * Karte & NFC.
+ *
+ * Aufbau aus dem Design-Handoff. Von den drei Wegen, die er beschreibt, gibt
+ * es heute genau einen: die Visitenkarte samt QR-Code. NFC-Karten und die
+ * Anbindung sozialer Kanäle sind entworfen und nicht gebaut.
+ *
+ * Deshalb trägt hier jeder Abschnitt sichtbar, woran man ist — „steht" oder
+ * „geplant", in derselben Sprache wie auf der Preisseite. Eine Seite, die
+ * NFC-Karten bewirbt, die man nicht bestellen kann, wäre ein Versprechen auf
+ * Kosten des Lesers.
+ */
+import Marketingrahmen from '../komponenten/Marketingrahmen.astro';
+import { zeichen } from '../kern/zeichen.ts';
+import { MARKE } from '../kern/marke.ts';
+import '../stile/marketing.css';
+
+export const prerender = false;
+
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+
+const wege = [
+  {
+    zeichen: 'visitenkarte',
+    ton: 'signal',
+    stand: 'steht',
+    titel: 'Visitenkarte speichern',
+    text: 'Ein Tipp, und du stehst mit Foto im Adressbuch. vCard 3.0 — bewusst nicht die neuere Fassung 4.0, denn die wird auf genau den Geräten unzuverlässig gelesen, auf denen die Karte am häufigsten landet. Am Rechner öffnet sie Outlook oder das Adressbuch.',
+    chips: ['iPhone', 'Android', 'Outlook'],
+  },
+  {
+    zeichen: 'qr',
+    ton: 'ink',
+    stand: 'steht',
+    titel: 'QR-Code drucken',
+    text: 'Als SVG vom Server, scharf in jeder Druckgröße — Aufkleber, Fahrzeug, Schaufenster. Er zeigt auf die Seite, nicht auf die Daten: Nummer, Anschrift und Öffnungszeiten kannst du ändern, ohne neu zu drucken.',
+    chips: ['SVG', 'Fehlerkorrektur M', 'vier Module Ruhezone'],
+  },
+  {
+    zeichen: 'teilen',
+    ton: 'rose',
+    stand: 'geplant',
+    titel: 'Karte zum Antippen',
+    text: 'Eine NFC-Karte trägt eine feste Adresse, das Ziel ist bei uns umstellbar. Das ist der ganze Witz: Wechselst du die Nummer oder willst statt des Profils direkt die Visitenkarte ausliefern, bleibt die Karte in der Tasche dieselbe.',
+    chips: ['nicht bestellbar'],
+  },
+  {
+    zeichen: 'instagram',
+    ton: 'rose',
+    stand: 'geplant',
+    titel: 'Kanäle verbinden',
+    text: 'Instagram, YouTube und LinkedIn anbinden, damit Rolle und Beiträge von selbst aktuell bleiben. Vorsicht dabei: ein eingebetteter Feed lädt von fremden Servern nach — entweder wir spiegeln ihn, oder die Zusage auf der Startseite stimmt nicht mehr.',
+    chips: ['nicht verfügbar'],
+  },
+];
+
+const schritte = [
+  { titel: 'Seite bauen', text: 'In der Werkstatt, mit deinen Kontaktwegen und Öffnungszeiten.' },
+  { titel: 'QR-Code holen', text: 'Steht am Fuß deiner Seite, als SVG zum Herunterladen — druckreif in jeder Größe.' },
+  { titel: 'Drucken, wenn der Name steht', text: 'Die Adresse steckt im Code. Erst drucken, wenn sie sicher ist.' },
+];
+---
+
+<Marketingrahmen
+  titel={`Karte & NFC — ${MARKE.name}`}
+  beschreibung="Visitenkarte fürs Adressbuch und QR-Code zum Drucken — beides steht. NFC-Karten und Social-Anbindung sind geplant."
+  hier="/karte"
+>
+  <section class="kopf">
+    <p class="marke">karte & nfc</p>
+    <h1>Vom Handy ins<br />Adressbuch.</h1>
+    <p class="fuehrung">
+      Zwei Wege gibt es heute: die Visitenkarte und den QR-Code. Zwei weitere sind entworfen und noch nicht gebaut —
+      sie stehen hier trotzdem, damit du weißt, was kommt, und sie sind als geplant gekennzeichnet.
+    </p>
+  </section>
+
+  <section>
+    <div class="koennen">
+      {
+        wege.map((w) => (
+          <div class:list={['kann', w.stand === 'geplant' && 'kann--geplant']}>
+            <span class={`kann__zeichen kann__zeichen--${w.ton}`}>
+              <Fragment set:html={zeichen(w.zeichen)} />
+            </span>
+            <span class:list={['stand', w.stand === 'geplant' && 'stand--geplant']}>{w.stand}</span>
+            <h3>{w.titel}</h3>
+            <p>{w.text}</p>
+            <div class="kann__chips">
+              {w.chips.map((c) => (
+                <span class="chip">{c}</span>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <p class="marke">so kommst du zum code</p>
+    <h2>Drei Schritte, keine Bestellung.</h2>
+    <div class="schritte">
+      {
+        schritte.map((s, i) => (
+          <div class="schritt">
+            <span class="schritt__zahl">{i + 1}</span>
+            <h3>{s.titel}</h3>
+            <p>{s.text}</p>
+          </div>
+        ))
+      }
+    </div>
+    <p class="quelle">
+      Der QR-Code kostet nichts und braucht keine Karte. Wer eine NFC-Karte will, schreibt uns — wir sagen ehrlich,
+      dass es sie noch nicht gibt, und melden uns, wenn es soweit ist.
+    </p>
+  </section>
+
+  <section class="banner">
+    <p class="marke">loslegen</p>
+    <h2>Erst die Seite,<br />dann der Druck.</h2>
+    <div class="knopfreihe">
+      <a class="knopf knopf--hell" href="/werkstatt">
+        Seite bauen
+        <Fragment set:html={zeichen('pfeil')} />
+      </a>
+      <a class="knopf knopf--kontur" href={`mailto:${MARKE.postfach}?subject=NFC-Karte`}>Für NFC vormerken</a>
+    </div>
+  </section>
+</Marketingrahmen>

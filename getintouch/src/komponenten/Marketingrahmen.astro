@@ -1,0 +1,79 @@
+---
+/**
+ * Der gemeinsame Rahmen der Verkaufsseiten.
+ *
+ * Kopfzeile, Navigation und Fuß standen bis eben in jeder Seite noch einmal.
+ * Bei zwei Seiten geht das durch, bei sechs läuft es auseinander — und genau
+ * das ist auf dieser Seite schon passiert: die Navigation zeigte je nach Seite
+ * etwas anderes. Jetzt steht sie an einer Stelle.
+ */
+import { cssVariablen, vorlage } from '../kern/gestaltung.ts';
+import { MARKE, SIGNET } from '../kern/marke.ts';
+
+interface Props {
+  titel: string;
+  beschreibung: string;
+  /** Welcher Eintrag der Navigation gerade gilt. */
+  hier?: string;
+}
+
+const { titel, beschreibung, hier } = Astro.props;
+
+const gestaltung = vorlage('signal');
+const stil = Object.entries(cssVariablen(gestaltung))
+  .map(([name, wert]) => `${name}:${wert}`)
+  .join(';');
+
+const navi = [
+  { name: 'Designs', ziel: '/designs' },
+  { name: 'Karte & NFC', ziel: '/karte' },
+  { name: 'Für Teams', ziel: '/teams' },
+  { name: 'Preise', ziel: '/preise' },
+  { name: 'Marke', ziel: '/marke' },
+];
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titel}</title>
+    <meta name="description" content={beschreibung} />
+    <meta name="theme-color" content={gestaltung.grund} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={titel} />
+    <meta property="og:description" content={beschreibung} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/schriften/schriften.css" />
+  </head>
+
+  <body style={stil}>
+    <div class="seite">
+      <div class="bahn">
+        <header class="kopfzeile">
+          <a class="wortmarke" href="/">
+            <Fragment set:html={SIGNET} />
+            <span>{MARKE.name}</span>
+          </a>
+          <nav class="kopfnavi">
+            {navi.map((n) => <a href={n.ziel} class:list={[n.ziel === hier && 'kopfnavi--hier']}>{n.name}</a>)}
+          </nav>
+        </header>
+
+        <slot />
+
+        <footer class="fuss">
+          <span>© {new Date().getFullYear()} hnvr.me · viel Liebe Media UG</span>
+          <span>
+            <a href="https://hnvr.me/impressum" target="_blank" rel="noopener noreferrer">Impressum</a>
+            ·
+            <a href="https://hnvr.me/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a>
+          </span>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1281,3 +1281,58 @@ summary:focus-visible {
 .schwebe {
   bottom: 0;
 }
+
+/* --- Stand: steht oder geplant ---------------------------- */
+
+/* Was es noch nicht gibt, sieht auch nicht so aus, als gäbe es das. Kein
+   Kleingedrucktes, sondern eine Marke oben auf der Karte. */
+.stand {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--akzent);
+  color: var(--akzent-text);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.stand--geplant {
+  background: none;
+  border: 1px dashed var(--linie);
+  color: var(--vg-leise);
+}
+
+.kann--geplant {
+  border-style: dashed;
+  background: none;
+}
+
+.hinweisband {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 22px 0 0;
+  padding: 16px 18px;
+  border: 2px solid var(--akzent);
+  border-radius: var(--radius);
+  background: #fff2ef;
+  color: #201e1d;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.hinweisband svg {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  margin-top: 2px;
+  color: #ae1800;
+}
+
+.kopfnavi--hier {
+  color: var(--vg);
+  font-weight: 800;
+}

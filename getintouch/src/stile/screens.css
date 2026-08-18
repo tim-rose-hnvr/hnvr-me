@@ -1418,3 +1418,610 @@
     font-size: 28px;
   }
 }
+
+/* --- 5b Aussehen-Panel ------------------------------------ */
+
+.au__kopf {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 22px;
+  border-bottom: 2px solid var(--color-neutral-300);
+  color: var(--color-accent);
+}
+
+.au__kopf .an__text {
+  color: var(--color-text);
+}
+
+.au__zurueck {
+  padding: 8px 13px;
+  border: 2px solid var(--color-neutral-300);
+  border-radius: 18px;
+  background: transparent;
+  font: 800 11px var(--font-body);
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+
+.au__zurueck:hover {
+  border-color: var(--color-text);
+}
+
+.au__speichern {
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: 800 11px var(--font-body);
+  cursor: pointer;
+  transition: background 0.14s;
+}
+
+.au__speichern:hover {
+  background: var(--color-accent-600);
+}
+
+.au__zwei {
+  display: grid;
+  grid-template-columns: 1fr 268px;
+}
+
+.au__panel {
+  padding: 20px 22px;
+}
+
+.au__bilder {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.au__profilbild {
+  display: flex;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--color-neutral-400);
+  font: 800 8px var(--font-body);
+  letter-spacing: 0.06em;
+  color: var(--ink-45);
+}
+
+.au__titelbild {
+  display: flex;
+  height: 74px;
+  border-radius: 14px;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--color-neutral-400);
+  font: 800 9px var(--font-body);
+  color: var(--ink-45);
+  text-align: center;
+  padding: 0 10px;
+}
+
+.au__label {
+  display: block;
+  font-size: 10px;
+  color: var(--ink-55);
+  margin-top: 6px;
+}
+
+.au__arten {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.au__art {
+  padding: 7px 12px;
+  border-radius: 16px;
+  border: 2px solid var(--color-neutral-300);
+  background: transparent;
+  font: 800 10.5px var(--font-body);
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+
+.au__art:hover {
+  border-color: var(--color-text);
+}
+
+.au__art--hier {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: var(--color-bg);
+}
+
+.au__proben {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.au__probe {
+  height: 52px;
+  border-radius: 12px;
+  border: 2px solid var(--color-neutral-300);
+  background: transparent;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+
+.au__probe:hover {
+  border-color: var(--color-text);
+}
+
+.au__probe--hier {
+  border-color: var(--color-accent);
+}
+
+.au__bildmarke {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  font: 800 8px var(--font-body);
+  letter-spacing: 0.06em;
+  color: var(--ink-45);
+}
+
+.au__probe--rose {
+  background: var(--color-accent-100);
+}
+
+.au__probe--ink {
+  background: var(--color-text);
+}
+
+.au__probe--verlauf {
+  background: linear-gradient(160deg, var(--color-accent), var(--color-accent-700));
+}
+
+/* Muster, nicht Bilder — sie behaupten kein Foto. */
+.au__probe--streifen {
+  background: repeating-linear-gradient(45deg, var(--color-accent-200) 0 7px, var(--color-bg) 7px 14px);
+}
+
+.au__probe--punkte {
+  background: radial-gradient(var(--color-neutral-400) 1.6px, var(--color-bg) 1.7px);
+  background-size: 9px 9px;
+}
+
+.au__schieber {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.au__schiebername {
+  font-size: 11px;
+  color: var(--ink-60);
+  width: 78px;
+}
+
+.au__spur {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-neutral-300);
+  position: relative;
+}
+
+.au__gefuellt {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: var(--color-accent);
+}
+
+.au__griff {
+  position: absolute;
+  top: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 2px solid var(--color-text);
+  transform: translateX(-9px);
+}
+
+.au__wert {
+  font: 800 11px var(--font-body);
+  width: 34px;
+}
+
+.au__formen {
+  display: flex;
+  gap: 9px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.au__form {
+  padding: 11px 14px;
+  border: 2px solid var(--color-neutral-300);
+  background: transparent;
+  font: 800 11px var(--font-body);
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+
+.au__form:hover {
+  border-color: var(--color-text);
+}
+
+/* Die fünf Knopfformen zeigen sich an sich selbst. */
+.au__form--pille {
+  border-radius: 22px;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-bg);
+  box-shadow: 0 4px 0 0 var(--color-accent-700);
+}
+
+.au__form--rund {
+  border-radius: 12px;
+}
+
+.au__form--kante {
+  border-radius: 0;
+}
+
+.au__form--skizze {
+  border-radius: 12px;
+  border-style: dashed;
+  border-color: var(--color-neutral-400);
+}
+
+.au__form--weich {
+  border-radius: 12px;
+  border-color: transparent;
+  background: var(--color-surface);
+}
+
+.au__unten {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.au__stapel {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.au__schrift {
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--color-neutral-300);
+  background: transparent;
+  font: 800 12px var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+
+.au__schrift:hover {
+  border-color: var(--color-text);
+}
+
+.au__schrift--hier {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: var(--color-bg);
+}
+
+.au__schrift--leicht {
+  font-weight: 400;
+}
+
+.au__schrift--versal {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.au__schalterzeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--color-neutral-300);
+  background: transparent;
+  font: 600 11.5px var(--font-body);
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+
+.au__schalterzeile:hover {
+  border-color: var(--color-text);
+}
+
+.au__vorschau {
+  padding: 18px;
+  background: var(--color-surface);
+  border-left: 2px solid var(--color-neutral-300);
+}
+
+.au__vorschaukopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 11px;
+}
+
+.au__geraete {
+  display: flex;
+  gap: 5px;
+  color: var(--color-accent);
+}
+
+.au__blatt {
+  display: block;
+  border-radius: 20px;
+  background: var(--color-accent-100);
+  padding: 18px 16px 20px;
+}
+
+.au__avatar {
+  display: block;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-accent-200);
+  border: 2px solid var(--color-text);
+}
+
+.au__name {
+  display: block;
+  font: 800 16px var(--font-body);
+  margin-top: 10px;
+}
+
+.au__rolle {
+  display: block;
+  font-size: 11px;
+  color: var(--ink-60);
+}
+
+.au__haupt {
+  display: block;
+  margin-top: 14px;
+  padding: 11px 13px;
+  border-radius: 22px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: 800 11.5px var(--font-body);
+  box-shadow: 0 4px 0 0 var(--color-accent-700);
+}
+
+.au__neben {
+  display: block;
+  margin-top: 8px;
+  padding: 11px 13px;
+  border-radius: 22px;
+  border: 2px solid var(--color-text);
+  font: 800 11.5px var(--font-body);
+}
+
+@media (max-width: 780px) {
+  .au__zwei,
+  .au__unten {
+    grid-template-columns: 1fr;
+  }
+
+  .au__vorschau {
+    border-left: 0;
+    border-top: 2px solid var(--color-neutral-300);
+  }
+
+  .au__proben {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* --- 4b Look wechseln ------------------------------------- */
+
+.lw__zwei {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+}
+
+.lw__panel {
+  padding: 18px 22px;
+}
+
+.lw__filter {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.lw__gitter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.lw__karte {
+  position: relative;
+  border-radius: 18px;
+  border: 2px solid var(--color-neutral-300);
+  background: transparent;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.14s, transform 0.16s ease;
+}
+
+.lw__karte:hover {
+  border-color: var(--color-text);
+  transform: translateY(-3px);
+}
+
+.lw__karte--hier {
+  border-color: var(--color-accent);
+}
+
+.lw__haken {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Die Probe zeigt die Formensprache der Vorlage, nicht ihre Farbe allein. */
+.lw__probe {
+  display: block;
+  height: 56px;
+  border-radius: 12px;
+}
+
+.lw__probe--kirsche {
+  background: var(--color-accent-100);
+  border: 2px solid var(--color-accent-200);
+}
+
+.lw__probe--sticker {
+  background: var(--color-accent);
+  border-radius: 58% 42% 47% 53% / 49% 55% 45% 51%;
+  animation: gtBlobA 9s ease-in-out infinite;
+}
+
+.lw__probe--beton {
+  background: var(--color-neutral-200);
+  border-radius: 0;
+}
+
+.lw__probe--nacht {
+  background: var(--color-neutral-900);
+  border-radius: 6px;
+}
+
+.lw__name {
+  display: block;
+  font: 800 12px var(--font-body);
+  margin-top: 9px;
+}
+
+.lw__art {
+  display: block;
+  font-size: 10px;
+  color: var(--ink-55);
+}
+
+.lw__vorschlag {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--color-accent-100);
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  color: var(--color-accent-700);
+}
+
+.lw__vorschlag > span {
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink-78);
+}
+
+.lw__vorschlag b {
+  font-weight: 800;
+}
+
+.lw__blatt {
+  border-radius: 22px;
+  background: var(--color-accent-100);
+  padding: 14px;
+  box-shadow: 0 4px 0 0 var(--color-neutral-300);
+}
+
+.lw__avatar {
+  display: block;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--color-accent-200);
+  border: 2px solid var(--color-text);
+}
+
+.lw__profilname {
+  display: block;
+  font: 800 17px var(--font-body);
+  margin-top: 9px;
+}
+
+.lw__profilrolle {
+  display: block;
+  font-size: 10.5px;
+  color: var(--ink-60);
+}
+
+.lw__haupt {
+  display: block;
+  margin-top: 12px;
+  padding: 11px 13px;
+  border-radius: 20px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: 800 11.5px var(--font-body);
+  box-shadow: 0 3px 0 0 var(--color-accent-700);
+}
+
+.lw__neben {
+  display: block;
+  margin-top: 8px;
+  padding: 11px 13px;
+  border-radius: 20px;
+  border: 2px solid var(--color-text);
+  font: 800 11.5px var(--font-body);
+}
+
+.lw__note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.lw__note b {
+  font: 800 15px var(--font-body);
+}
+
+.lw__note span {
+  font-size: 10px;
+  color: var(--ink-55);
+}
+
+@media (max-width: 780px) {
+  .lw__zwei {
+    grid-template-columns: 1fr;
+  }
+}

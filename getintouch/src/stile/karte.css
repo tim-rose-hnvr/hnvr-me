@@ -145,34 +145,9 @@
   font: 600 12px var(--font-body);
 }
 
-.schalter {
-  position: relative;
-  width: 34px;
-  height: 18px;
-  border-radius: 10px;
-  background: var(--color-accent);
-  flex: none;
-}
 
-.schalter__knopf {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--color-bg);
-}
 
-.schalter--aus {
-  background: var(--color-neutral-300);
-}
 
-.schalter--aus .schalter__knopf {
-  right: auto;
-  left: 2px;
-  background: var(--color-neutral-600);
-}
 
 .handyaussen {
   display: flex;
@@ -426,11 +401,6 @@
 
 .schalterzeile:hover {
   box-shadow: 0 0 0 2px var(--color-neutral-300);
-}
-
-.schalter,
-.schalter__knopf {
-  transition: background 0.16s ease, left 0.16s ease, right 0.16s ease;
 }
 
 .handy__zeile[hidden] {

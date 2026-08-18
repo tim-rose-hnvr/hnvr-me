@@ -1,6 +1,6 @@
 {
   "name": "youbooth-booth",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "youbooth — Fotobox-Software: Booth, Cockpit, Portal und Box-Server",

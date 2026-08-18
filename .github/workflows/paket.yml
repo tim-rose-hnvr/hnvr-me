@@ -61,21 +61,52 @@ jobs:
       # Ohne Codesigning-Zertifikat warnt SmartScreen beim ersten Start.
       # Sobald eines vorliegt: als Secret hinterlegen und hier setzen
       # (CSC_LINK, CSC_KEY_PASSWORD) — electron-builder signiert dann selbst.
-      # GitHub nimmt eine veröffentlichte Release nur mit einem echten Tag an
-      # („Published releases must have a valid tag", 422). Beim Bau aus einem
-      # Zweig gibt es den noch nicht — also wird er hier gesetzt, aus genau dem
-      # Stand, der gerade gebaut wird. Mit Gewalt, damit ein zweiter Bau
-      # derselben Fassung den Tag mitzieht statt abzubrechen.
-      - name: Tag zur Fassung setzen
+      # Zwei Dinge müssen VOR dem Bau stimmen, sonst geht das Veröffentlichen
+      # schief — beides gemessen, nicht vermutet:
+      #
+      #  1. GitHub nimmt eine öffentliche Release nur mit einem echten Tag an
+      #     („Published releases must have a valid tag", 422). Beim Bau aus
+      #     einem Zweig gibt es den noch nicht.
+      #  2. `electron-builder` startet je Datei einen Veröffentlicher. Finden
+      #     die gleichzeitig keine Release, legt JEDER eine an — und zwei
+      #     Releases mit demselben Tag machen die Adresse
+      #     `/releases/download/<tag>/…` mehrdeutig: Sie antwortet mit 404,
+      #     obwohl die Datei da ist. Genau so ist v1.0.1 gelandet.
+      #
+      # Also: Tag setzen, alte Releases zu diesem Tag wegräumen, GENAU EINE
+      # anlegen. Danach hat electron-builder nichts mehr zu entscheiden.
+      - name: Tag und Release vorbereiten
         working-directory: booth
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           FASSUNG=$(node -p "require('./package.json').version")
+          TAG="v$FASSUNG"
+          REPO="${{ github.repository }}"
           echo "Fassung: $FASSUNG"
+
           git config user.name "youbooth Paketbau"
           git config user.email "noreply@youbooth.me"
-          git tag -f "v$FASSUNG"
-          git push -f origin "v$FASSUNG"
+          git tag -f "$TAG"
+          git push -f origin "$TAG"
+
+          # Alle Releases zu diesem Tag entfernen — auch doppelte.
+          for ID in $(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+                        "https://api.github.com/repos/$REPO/releases?per_page=100" \
+                      | node -e "let t='';process.stdin.on('data',d=>t+=d).on('end',()=>console.log(JSON.parse(t).filter(r=>r.tag_name===process.argv[1]).map(r=>r.id).join(' ')))" "$TAG"); do
+            echo "Alte Release $ID entfernen"
+            curl -sS -X DELETE -H "Authorization: Bearer $GH_TOKEN" \
+              "https://api.github.com/repos/$REPO/releases/$ID"
+          done
+
+          echo "Release $TAG anlegen"
+          curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.github.com/repos/$REPO/releases" \
+            -d "{\"tag_name\":\"$TAG\",\"name\":\"youbooth $FASSUNG\",\"draft\":false,\"prerelease\":false,\"body\":\"Installationspaket für Windows. Die installierte App aktualisiert sich danach selbst.\"}" \
+            -o /dev/null -w "  angelegt (%{http_code})\n"
 
       - name: Installer bauen und veröffentlichen
         working-directory: booth

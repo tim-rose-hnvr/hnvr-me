@@ -16,6 +16,7 @@ import {
   pinStimmt,
   sichereEinstellungen,
   sichereGreenscreen,
+  sichereTafeln,
   standardEinstellungen,
 } from './einstellungen';
 import { alsBilddaten, alsBlob, alsDoppelstreifen, zeichneMitVorlage } from './layout';
@@ -1123,6 +1124,110 @@ export class Booth {
       attractstile.append(knopf);
     });
 
+    /* Diashow: Tempo, Bewegung, Rhythmus der Zwischenbilder. */
+    zahl('Diashow: Sekunden je Bild', e.diashow.dauer, (v) => {
+      e.diashow.dauer = Math.min(30, Math.max(3, v));
+    });
+    zahl('Diashow: Tafel nach je … Bildern', e.diashow.jedesTafel, (v) => {
+      e.diashow.jedesTafel = Math.min(20, Math.max(0, v));
+    });
+
+    /* Die Zwischenbilder selbst. Drei Sätze reichen für das, was zwischen
+       den Fotos stehen soll: Menü, Danksagung, nächster Programmpunkt.
+       Bearbeitet wird an der Box, weil dort auch der Beamer hängt. */
+    const tafeln = element('div', 'tafeln');
+    const zeichneTafeln = () => {
+      tafeln.replaceChildren();
+
+      e.tafeln.forEach((t, i) => {
+        const zeile = element('div', 'tafelzeile');
+
+        if (t.art === 'bild') {
+          const vorschau = document.createElement('img');
+          vorschau.className = 'tafelzeile__bild';
+          vorschau.src = t.bild || '';
+          vorschau.alt = '';
+          zeile.append(vorschau);
+        }
+
+        const oben = document.createElement('input');
+        oben.className = 'eingabe';
+        oben.value = (t.art === 'bild' ? t.unterzeile : t.titel) || '';
+        oben.placeholder = t.art === 'bild' ? 'Unterzeile' : 'Titel';
+        oben.addEventListener('input', () => {
+          if (t.art === 'bild') t.unterzeile = oben.value;
+          else t.titel = oben.value;
+        });
+        zeile.append(oben);
+
+        if (t.art === 'text') {
+          const unten = document.createElement('input');
+          unten.className = 'eingabe';
+          unten.value = t.zeile || '';
+          unten.placeholder = 'Zeile darunter';
+          unten.addEventListener('input', () => (t.zeile = unten.value));
+          zeile.append(unten);
+        }
+
+        const dauer = document.createElement('input');
+        dauer.className = 'eingabe eingabe--kurz';
+        dauer.type = 'number';
+        dauer.value = String(t.sekunden);
+        dauer.title = 'Sekunden';
+        dauer.addEventListener('input', () => {
+          t.sekunden = Math.min(60, Math.max(2, Number(dauer.value) || 6));
+        });
+        zeile.append(dauer);
+
+        const weg = element('button', 'chip');
+        weg.textContent = 'Entfernen';
+        weg.addEventListener('click', () => {
+          e.tafeln.splice(i, 1);
+          zeichneTafeln();
+        });
+        zeile.append(weg);
+
+        tafeln.append(zeile);
+      });
+
+      const neueTafel = element('button', 'chip');
+      neueTafel.textContent = 'Tafel mit Text';
+      neueTafel.addEventListener('click', () => {
+        e.tafeln = [
+          ...e.tafeln,
+          { id: `tafel-${e.tafeln.length}-${Date.now().toString(36)}`, art: 'text', sekunden: 6, titel: '', zeile: '' },
+        ];
+        zeichneTafeln();
+      });
+
+      const neuesBild = element('label', 'chip') as HTMLLabelElement;
+      neuesBild.textContent = 'Tafel mit Bild';
+      const bildwahl = document.createElement('input');
+      bildwahl.type = 'file';
+      bildwahl.accept = 'image/*';
+      bildwahl.hidden = true;
+      bildwahl.addEventListener('change', async () => {
+        const gewaehlt = bildwahl.files?.[0];
+        if (!gewaehlt) return;
+        try {
+          const bild = await alsHintergrund(gewaehlt);
+          e.tafeln = [
+            ...e.tafeln,
+            { id: `tafel-${e.tafeln.length}-${Date.now().toString(36)}`, art: 'bild', sekunden: 6, bild, unterzeile: '' },
+          ];
+          zeichneTafeln();
+        } catch {
+          neuesBild.textContent = 'Bild ging nicht';
+        }
+      });
+      neuesBild.append(bildwahl);
+
+      const knoepfe = element('div', 'chips');
+      knoepfe.append(neueTafel, neuesBild);
+      tafeln.append(knoepfe);
+    };
+    zeichneTafeln();
+
     /* Freistellung vor dem Tuch. Der Hintergrund kommt aus einer Datei am
        Gerät — nicht aus dem Netz: Eine Box in einer Scheune hat keins, und
        das Bild soll auch nach dem Abbau noch da sein. */
@@ -1193,6 +1298,8 @@ export class Booth {
       void sichereEinstellungen(e);
       // Die Freistellung geht ihren eigenen Weg — siehe `sichereGreenscreen`.
       void sichereGreenscreen(e.greenscreen).then(() => this.ladeHintergrund());
+      // Die Zwischenbilder ebenso — sie tragen Bilder, siehe `sichereTafeln`.
+      void sichereTafeln(e.tafeln);
       this.einstellungen = e;
       tafel.decke.remove();
       this.zeichne();
@@ -1216,6 +1323,7 @@ export class Booth {
         ['Portal', './portal.html'],
         ['Galerie', './galerie.html'],
         ['Foto-Wall', './wand.html'],
+        ['Diashow', './diashow.html'],
         ['Einrichtung', './einrichtung.html'],
       ] as const
     ).forEach(([name, ziel]) => {
@@ -1238,6 +1346,8 @@ export class Booth {
       kunststile,
       mono('Freistellung'),
       freistellung,
+      mono('Diashow: Zwischenbilder'),
+      tafeln,
       mono('Schalter'),
       schalterreihe,
       sichern,

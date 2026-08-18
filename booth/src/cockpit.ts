@@ -79,6 +79,7 @@ function kopf(box: string, event: string): HTMLElement {
   const rechts = tag('div', 'ckopf__aktionen');
   const wege: { ziel: string; text: string; betont?: boolean }[] = [
     { ziel: './wand.html', text: 'Foto-Wall' },
+    { ziel: './diashow.html', text: 'Diashow' },
     { ziel: './galerie.html', text: 'Galerie' },
     { ziel: './editor.html', text: 'Editor' },
     { ziel: './portal.html', text: 'Portal' },

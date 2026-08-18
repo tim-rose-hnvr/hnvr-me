@@ -72,7 +72,12 @@ export const MODULSTAND: Record<string, Eintrag> = {
     offen: 'Gesichtsfilter und Sticker kommen noch; aufnehmen und senden geht.',
   },
   'foto-finder': { stand: 'geplant' },
-  slideshow: { stand: 'geplant' },
+  slideshow: {
+    stand: 'laeuft',
+    offen:
+      'Mehrere Ausgaben mit eigenem Inhalt, die Moderation vor der Anzeige und ' +
+      'der Wechsel mit der Foto-Wall auf demselben Beamer fehlen noch.',
+  },
   einwegkamera: { stand: 'geplant' },
   'audio-gaestebuch': { stand: 'geplant' },
   'slow-motion': { stand: 'geplant' },

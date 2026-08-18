@@ -77,6 +77,27 @@ export type Einstellungen = {
    * er liegt auf der Box und geht nie ins Netz.
    */
   greenscreen: { an: boolean; farbe: string; toleranz: number; hintergrund: string | null };
+  /** Vollbild-Diashow für Beamer und Fernseher. */
+  diashow: { dauer: number; bewegung: boolean; jedesTafel: number };
+  /** Zwischenbilder der Diashow, zugleich die Werbe-Playlist der Box. */
+  tafeln: Tafel[];
+};
+
+/**
+ * Eine Tafel zwischen den Fotos: entweder ein eigenes Bild mit Unterzeile
+ * oder gesetzter Text. Beides bringt seine eigene Standzeit mit — eine
+ * Danksagung darf länger stehen als ein Hinweis auf das Buffet.
+ */
+export type Tafel = {
+  id: string;
+  art: 'bild' | 'text';
+  sekunden: number;
+  /** Nur bei `bild`. */
+  bild?: string;
+  unterzeile?: string;
+  /** Nur bei `text`. */
+  titel?: string;
+  zeile?: string;
 };
 
 import { EFFEKTE, istEffekt } from './effekte';
@@ -114,6 +135,8 @@ const STANDARD: Einstellungen = {
   firma: '',
   effekte: ALLE_EFFEKTE,
   greenscreen: { an: false, farbe: '#00c800', toleranz: 42, hintergrund: null },
+  diashow: { dauer: 7, bewegung: true, jedesTafel: 5 },
+  tafeln: [],
 };
 
 /* ------------------------------------------------------------------ */
@@ -169,6 +192,16 @@ export function ausBoxstand(roh: Boxstand): Einstellungen {
     logo: feld<string | null>(roh, 'betreiber.logo', null),
     firma: feld(roh, 'betreiber.firma', ''),
     effekte: erlaubteEffekte(feld<unknown>(roh, 'effekte.erlaubt', null)),
+    diashow: {
+      dauer: feld(roh, 'diashow.dauer', STANDARD.diashow.dauer),
+      bewegung: feld(roh, 'diashow.bewegung', STANDARD.diashow.bewegung),
+      jedesTafel: feld(roh, 'diashow.jedesTafel', STANDARD.diashow.jedesTafel),
+    },
+    // Die Playlist ist abgeschaltet? Dann gibt es keine Tafeln — nicht
+    // welche, die niemand sieht.
+    tafeln: feld(roh, 'playlist.enabled', false)
+      ? alsTafeln(feld<unknown>(roh, 'playlist.slides', null))
+      : [],
     greenscreen: {
       an: feld(roh, 'greenscreen.enabled', false),
       farbe: feld(roh, 'greenscreen.key', STANDARD.greenscreen.farbe),
@@ -184,6 +217,38 @@ export function ausBoxstand(roh: Boxstand): Einstellungen {
  * die Stile zeigen; ein Betreiber, der alle abgewählt hat, soll sie
  * loswerden können.
  */
+/**
+ * Die Playlist der Box in unsere Tafeln. Die Box nennt sie `slides` mit
+ * englischen Feldern; hier heißen sie, wie sie auf dem Beamer heißen.
+ * Übersetzt wird an dieser einen Stelle, wie alles andere auch.
+ */
+function alsTafeln(roh: unknown): Tafel[] {
+  if (!Array.isArray(roh)) return [];
+  return roh.flatMap((eintrag, nummer): Tafel[] => {
+    if (!eintrag || typeof eintrag !== 'object') return [];
+    const s = eintrag as Record<string, unknown>;
+    const sekunden = Math.min(60, Math.max(2, Number(s.duration) || 6));
+    const id = typeof s.id === 'string' ? s.id : `tafel-${nummer}`;
+
+    if (s.type === 'image') {
+      const bild = typeof s.image === 'string' ? s.image : '';
+      if (!bild) return [];
+      return [{
+        id,
+        art: 'bild',
+        sekunden,
+        bild,
+        unterzeile: typeof s.caption === 'string' ? s.caption : '',
+      }];
+    }
+
+    const titel = typeof s.title === 'string' ? s.title : '';
+    const zeile = typeof s.subtitle === 'string' ? s.subtitle : '';
+    if (!titel && !zeile) return [];
+    return [{ id, art: 'text', sekunden, titel, zeile }];
+  });
+}
+
 function erlaubteEffekte(roh: unknown): string[] {
   if (!Array.isArray(roh)) return [...ALLE_EFFEKTE];
   return roh.filter((e) => istEffekt(e) && e !== 'ohne');
@@ -210,6 +275,7 @@ export function alsBoxstand(e: Einstellungen): Boxstand {
        dasselbe Bild erneut über die Leitung, ohne dass sich etwas geändert
        hätte. Wer ihn setzt, tut das an der Stelle, an der er ihn auswählt. */
     effekte: { erlaubt: e.effekte },
+    diashow: { ...e.diashow },
     printing: e.druck,
     printer: e.drucker || null,
     druck: {
@@ -325,6 +391,42 @@ export async function sichereGreenscreen(
           key: teil.farbe,
           similarity: teil.toleranz,
           background: teil.hintergrund,
+        },
+      }),
+    });
+    if (!antwort.ok) return false;
+    const daten = (await antwort.json()) as { settings?: Boxstand };
+    if (daten.settings) {
+      stand = ausBoxstand(daten.settings);
+      merke(daten.settings);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Schreibt die Zwischenbilder der Diashow auf die Box — eigener Weg, wie
+ * bei der Freistellung und aus demselben Grund: Eine Bildtafel ist ein
+ * Bild, und das soll nicht bei jedem beliebigen Sichern mitfahren.
+ *
+ * Die Box führt sie als `playlist`; sie sind dieselben Tafeln, die auf den
+ * Werbebildschirmen rotieren. Zwei Listen wären zwei Wahrheiten.
+ */
+export async function sichereTafeln(tafeln: Tafel[]): Promise<boolean> {
+  try {
+    const antwort = await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        playlist: {
+          enabled: tafeln.length > 0,
+          slides: tafeln.map((t) =>
+            t.art === 'bild'
+              ? { id: t.id, type: 'image', duration: t.sekunden, image: t.bild, caption: t.unterzeile || '' }
+              : { id: t.id, type: 'text', duration: t.sekunden, title: t.titel || '', subtitle: t.zeile || '' }
+          ),
         },
       }),
     });

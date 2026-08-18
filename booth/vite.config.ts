@@ -26,6 +26,7 @@ export default defineConfig({
         booth: 'index.html',
         cockpit: 'cockpit.html',
         wand: 'wand.html',
+        diashow: 'diashow.html',
         galerie: 'galerie.html',
         einrichtung: 'einrichtung.html',
         editor: 'editor.html',

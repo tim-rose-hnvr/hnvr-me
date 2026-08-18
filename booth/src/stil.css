@@ -420,6 +420,43 @@ p {
   }
 }
 
+/* --- Zwischenbilder der Diashow ----------------------------------------- */
+
+.tafeln {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Eine Zeile je Tafel: Vorschau, Text, Standzeit, Entfernen. Nebeneinander,
+   nicht untereinander — sonst liest man drei Tafeln nur noch als Liste von
+   Feldern und nicht mehr als drei Tafeln. */
+.tafelzeile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tafelzeile .eingabe {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.tafelzeile .eingabe--kurz {
+  flex: 0 0 96px;
+}
+
+.tafelzeile__bild {
+  width: 64px;
+  height: 40px;
+  border-radius: var(--r-pille);
+  object-fit: cover;
+  flex: none;
+  background: var(--z-dunkel-1);
+}
+
 /* --- Countdown ---------------------------------------------------------- */
 
 .countdown {

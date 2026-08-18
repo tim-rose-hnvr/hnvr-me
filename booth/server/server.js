@@ -310,8 +310,17 @@ const DEFAULT_SETTINGS = {
   textAnim: { enabled: false, style: 'fade', text: 'Sag Cheese!' },
   /* Fotobox-Material (Rahmen/Overlay) auf jede Aufnahme (Bibliothek) */
   material: { id: '' },
-  /* Werbe-Playlist: Slides, die auf Leerlauf-/Werbe-Bildschirmen rotieren */
+  /* Werbe-Playlist: Slides, die auf Leerlauf-/Werbe-Bildschirmen rotieren.
+     Dieselben Tafeln laufen als Zwischenbilder in der Diashow. */
   playlist: { enabled: false, slides: [] },
+  /* Vollbild-Diashow fuer Beamer und Fernseher (`/diashow.html`).
+     `dauer`  — Sekunden je Foto. Unter vier wird es unruhig, ueber zwoelf
+                merkt der Gast nicht mehr, dass sich etwas bewegt.
+     `bewegung` — langsames Zoomen und Wandern (Ken Burns). Auf schwachen
+                Rechnern abschaltbar, dann harte Blenden.
+     `jedesTafel` — nach wie vielen Fotos eine Tafel aus der Playlist
+                dazwischenkommt. 0 heisst: keine Zwischenbilder. */
+  diashow: { dauer: 7, bewegung: true, jedesTafel: 5 },
   /* Kiosk: die App startet im Vollbild direkt im Booth, und das Cockpit ist
      hinter einer PIN. Die PIN wird NICHT im Klartext gespeichert. */
   kiosk: { enabled: false, salz: '', pin: '' },   // pin = Prüfsumme, nie das Kennwort
@@ -1355,7 +1364,7 @@ const EVENT_EINSTELLUNGEN = [
      ans Event — eine Hochzeit spricht anders als eine Firmenfeier, und wie
      viel Papier ein Abend kosten darf, ist eine Frage des Auftrags, nicht
      des Geräts. */
-  'texte', 'druckGrenzen', 'greenscreen', 'survey', 'faceFinder', 'effekte',
+  'texte', 'druckGrenzen', 'greenscreen', 'survey', 'faceFinder', 'effekte', 'diashow',
   /* Seit 1.26: die gestalteten Gäste-Bildschirme. Sie gehören ans Event —
      eine Hochzeit sieht anders aus als ein Messestand, und beides läuft auf
      derselben Box. `front` bleibt für alte Events mit dabei. */
@@ -2757,6 +2766,11 @@ app.put('/api/settings', requireKey, (req, res) => {
   if (b.playlist && typeof b.playlist === 'object') {
     if (typeof b.playlist.enabled === 'boolean') settings.playlist.enabled = b.playlist.enabled;
     if (Array.isArray(b.playlist.slides)) settings.playlist.slides = cleanSlides(b.playlist.slides);
+  }
+  if (b.diashow && typeof b.diashow === 'object') {
+    if (Number.isFinite(b.diashow.dauer)) settings.diashow.dauer = Math.min(30, Math.max(3, Math.round(b.diashow.dauer)));
+    if (typeof b.diashow.bewegung === 'boolean') settings.diashow.bewegung = b.diashow.bewegung;
+    if (Number.isFinite(b.diashow.jedesTafel)) settings.diashow.jedesTafel = Math.min(20, Math.max(0, Math.round(b.diashow.jedesTafel)));
   }
   if (b.greenscreen && typeof b.greenscreen === 'object') {
     const gs = b.greenscreen;

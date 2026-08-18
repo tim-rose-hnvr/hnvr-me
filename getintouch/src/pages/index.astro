@@ -11,9 +11,8 @@
  * mit — sie ist kein Anmeldeformular, denn ein Konto gibt es noch nicht.
  */
 import Handoffrahmen from '../komponenten/Handoffrahmen.astro';
-import Bildplatz from '../komponenten/Bildplatz.astro';
 import { lucide } from '../kern/lucide.ts';
-import { MARKE } from '../kern/marke.ts';
+import { MARKE, zeichenPlaettchen } from '../kern/marke.ts';
 
 export const prerender = false;
 
@@ -30,27 +29,46 @@ const zahlen = [
   { wert: '4,9', text: 'Durchschnitt aus verifizierten Bewertungen', rose: true },
 ];
 
+/* Die neun Vorlagen als Anrisse. Der Prototyp zeigt auf der Startseite vier;
+   im Schieber laufen alle neun, weil daneben „Neun Vorlagen" steht. */
+const anrisse = [
+  { kennung: 'kirsche', name: 'Kirsche', ton: 'kirsche', avatar: 'kirsche', hauptText: 'Schreib mir', nebenText: 'Portfolio' },
+  { kennung: 'nachtschicht', name: 'Nachtschicht', ton: 'nacht', blatt: 'nacht', avatar: 'nacht', hell: true, haupt: 'eckig', neben: 'nacht', hauptText: 'Booking', nebenText: 'Mixes' },
+  { kennung: 'beton', name: 'BETON', ton: 'beton', blatt: 'beton', avatar: 'beton', gesperrt: true, haupt: 'beton', neben: 'beton', hauptText: 'SCHREIB MIR', nebenText: 'PROJEKTE' },
+  { kennung: 'sticker', name: 'Sticker', ton: 'sticker', blatt: 'sticker', avatar: 'sticker', haupt: 'schief', neben: 'schief', hauptText: 'Schreib mir', nebenText: 'Merch' },
+  { kennung: 'papier', name: 'Papier', ton: 'papier', blatt: 'papier', avatar: 'papier', haupt: 'papier', neben: 'papier', hauptText: 'Auftrag', nebenText: 'Skizzen' },
+  { kennung: 'tresen', name: 'Tresen', ton: 'tresen', avatar: 'tresen', hauptText: 'Reservieren', nebenText: 'Karte' },
+  { kennung: 'werkbank', name: 'Werkbank', ton: 'werkbank', blatt: 'beton', avatar: 'werk', haupt: 'werk', neben: 'werk', hauptText: 'Offerte', nebenText: 'Referenzen' },
+  { kennung: 'sprechstunde', name: 'Sprechstunde', ton: 'sprech', avatar: 'sprech', haupt: 'sprech', neben: 'sprech', hauptText: 'Termin buchen', nebenText: 'Zeiten' },
+  { kennung: 'riso', name: 'Riso', ton: 'riso', blatt: 'beton', avatar: 'riso', haupt: 'riso', neben: 'risoOben', hauptText: 'Mitmachen', nebenText: 'Ausgabe' },
+];
+
 const schritte = [
   { titel: 'Namen sichern', text: 'getintouch.me/deinname — oder direkt deine eigene Domain.' },
   { titel: 'Vorlage wählen', text: 'Look aussuchen, Bilder reinziehen. Nachricht und Termin sind schon drin.' },
   { titel: 'Antworten', text: 'Anfragen laufen in einen Eingang. Analytics sagt dir, was du ändern solltest.' },
 ];
 
-/* Die Zitate stehen im Prototyp mit Namen und Ort, als wären es Kundenstimmen.
-   Es gibt diese Kunden nicht. Sie bleiben deshalb als Platz stehen — wie die
-   Bildplätze auch —, bis echte Sätze da sind. Erfundene Bewertungen unter
-   einem echt klingenden Namen wären genau das, was die Seite eine Zeile
-   weiter oben anderen vorwirft. */
+/* Der Prototyp setzt hier zwei Kundenstimmen mit Namen und Ort. Diese Kunden
+   gibt es nicht, und erfundene Bewertungen unter erfundenen Namen sind nach
+   UWG Anhang Nr. 23b eine unlautere Geschäftshandlung — auf einer Seite, die
+   eine Zeile weiter oben mit „verifizierten Bewertungen" wirbt, doppelt
+   unglücklich.
+
+   Also dieselbe Gestaltung, aber als Aussage des Herstellers: erste Person,
+   klar zugeordnet, überprüfbar. Sobald zwei echte Sätze samt Namen vorliegen,
+   werden sie hier eingesetzt und `absender` fällt weg — der Abschnitt ist
+   dann eine gewöhnliche Kundenstimme, ohne dass sich am Aufbau etwas ändert. */
 const zitate = [
   {
-    satz: 'Ich habe die Hälfte meiner Anfragen verloren, weil Leute erst mailen mussten. Jetzt schreiben sie direkt auf der Seite.',
-    name: 'Name der Kundin',
-    rolle: 'Beruf, Ort',
+    satz: 'Wir haben aufgehört, Leute von der Linkliste weiterzuschicken. Wer eine Frage hat, schreibt sie da hin, wo er gerade steht.',
+    name: MARKE.hersteller.name,
+    rolle: 'Hersteller · Hannover',
   },
   {
-    satz: '14 Team-Profile, eine Vorlage, unsere Domain. Niemand merkt, dass da ein Anbieter dahintersteckt.',
-    name: 'Name des Studios',
-    rolle: 'Branche, Größe',
+    satz: 'Eine Kontaktseite, die nicht weiß, ob gerade jemand da ist, ist ein Zettel an der Tür. Deshalb steht die Erreichbarkeit oben.',
+    name: MARKE.hersteller.name,
+    rolle: 'Hersteller · Hannover',
   },
 ];
 ---
@@ -81,8 +99,41 @@ const zitate = [
     </div>
 
     <div class="held__bild an-rise-2">
-      <div class="held__rahmen">
-        <Bildplatz text="Produktbild · Handy in der Hand" radius={30} hoehe={420} />
+      {/*
+        Statt eines Platzhalterbildes das Erzeugnis selbst: eine Profilseite
+        im Handy, die auf die Eingabe links reagiert. Ein Foto könnte hier
+        nichts zeigen, was es nicht schon gibt.
+      */}
+      <div class="geraet">
+        <div class="geraet__leiste">
+          <span>9:41</span>
+          <span class="geraet__zeichen">
+            <Fragment set:html={lucide('wifi', 12)} />
+            <Fragment set:html={lucide('battery-full', 14)} />
+          </span>
+        </div>
+        <div class="geraet__blatt">
+          <span class="geraet__avatar"></span>
+          <span class="geraet__name">Lina Moser</span>
+          <span class="geraet__rolle">Fotografin · Zürich</span>
+          <span class="geraet__adresse">getintouch.me/<b data-handle>deinname</b></span>
+          <span class="geraet__status">
+            <span class="geraet__punkt"></span>
+            Jetzt erreichbar · antwortet meist in 2 Std.
+          </span>
+          <span class="geraet__haupt">
+            <Fragment set:html={lucide('message-circle-heart', 14)} />
+            Schreib mir
+          </span>
+          <span class="geraet__neben">
+            <Fragment set:html={lucide('calendar-heart', 14)} />
+            Termin buchen
+          </span>
+          <span class="geraet__neben">
+            <Fragment set:html={lucide('contact-round', 14)} />
+            Visitenkarte speichern
+          </span>
+        </div>
       </div>
       <div class="schwebe an-float">
         <span class="schwebe__punkt an-bounce"></span>
@@ -92,7 +143,7 @@ const zitate = [
   </section>
 
   <!-- Zahlenreihe -->
-  <section class="zahlen">
+  <section class="zahlen" data-auf>
     {
       zahlen.map((z) => (
         <div class:list={['zahl', z.rose && 'zahl--rose']}>
@@ -104,7 +155,7 @@ const zitate = [
   </section>
 
   <!-- Drei Dinge -->
-  <section class="abschnitt">
+  <section class="abschnitt" data-auf>
     <h2 class="h2" style="max-width:22ch">Drei Dinge, die eine Linkliste nicht kann.</h2>
     <p class="fliess--klein" style="margin-bottom:24px">
       Wir haben nicht die Liste verbessert, sondern gefragt, warum Leute überhaupt auf deinen Link tippen.
@@ -153,7 +204,7 @@ const zitate = [
   </section>
 
   <!-- So läuft's -->
-  <section class="abschnitt">
+  <section class="abschnitt" data-auf>
     <div class="kopfreihe">
       <h2 class="h2" style="margin:0;max-width:20ch">So läuft's</h2>
       <span class="meta">Drei Schritte, kein Handbuch</span>
@@ -176,7 +227,7 @@ const zitate = [
   </section>
 
   <!-- Neun Vorlagen -->
-  <section class="abschnitt">
+  <section class="abschnitt" data-auf>
     <div class="kopfreihe" style="margin-bottom:20px">
       <h2 class="h2" style="margin:0">Neun Vorlagen</h2>
       <a class="textlink textlink--gross" href="/vorlagen">
@@ -184,67 +235,73 @@ const zitate = [
         <Fragment set:html={lucide('arrow-right', 14)} />
       </a>
     </div>
-    <div class="anrisse">
-      <a class="anriss anriss--kirsche" href="/vorlagen#kirsche">
-        <span class="anriss__blatt">
-          <span class="anriss__avatar anriss__avatar--kirsche"></span>
-          <span class="anriss__name">Kirsche</span>
-          <span class="anriss__haupt">Schreib mir</span>
-          <span class="anriss__neben">Portfolio</span>
-        </span>
-      </a>
+    <div class="schieber" data-schieber>
+      <div class="schieber__bahn">
+        {
+          anrisse.map((a) => (
+            <a class:list={['anriss', `anriss--${a.ton}`]} href={`/vorlagen#${a.kennung}`}>
+              <span class:list={['anriss__blatt', a.blatt && `anriss__blatt--${a.blatt}`]}>
+                <span class:list={['anriss__avatar', `anriss__avatar--${a.avatar}`]} />
+                <span class:list={['anriss__name', a.hell && 'anriss__name--hell', a.gesperrt && 'anriss__name--gesperrt']}>
+                  {a.name}
+                </span>
+                <span class:list={['anriss__haupt', a.haupt && `anriss__haupt--${a.haupt}`]}>{a.hauptText}</span>
+                <span class:list={['anriss__neben', a.neben && `anriss__neben--${a.neben}`]}>{a.nebenText}</span>
+              </span>
+              <span class="anriss__lupe">
+                <Fragment set:html={lucide('arrow-right', 15)} />
+                Ansehen
+              </span>
+            </a>
+          ))
+        }
+      </div>
 
-      <a class="anriss anriss--nacht" href="/vorlagen#nachtschicht">
-        <span class="anriss__blatt anriss__blatt--nacht">
-          <span class="anriss__avatar anriss__avatar--nacht"></span>
-          <span class="anriss__name anriss__name--hell">Nachtschicht</span>
-          <span class="anriss__haupt anriss__haupt--eckig">Booking</span>
-          <span class="anriss__neben anriss__neben--nacht">Mixes</span>
+      <div class="schieber__steuer">
+        <button class="schieber__pfeil" type="button" data-zurueck aria-label="Vorige Vorlagen">
+          <Fragment set:html={lucide('arrow-right', 16)} />
+        </button>
+        <span class="schieber__punkte">
+          {
+            anrisse.map((_, i) => (
+              <button
+                class:list={['schieber__punkt', i === 0 && 'schieber__punkt--hier']}
+                type="button"
+                aria-label={`Seite ${i + 1}`}
+              />
+            ))
+          }
         </span>
-      </a>
-
-      <a class="anriss anriss--beton" href="/vorlagen#beton">
-        <span class="anriss__blatt anriss__blatt--beton">
-          <span class="anriss__avatar anriss__avatar--beton"></span>
-          <span class="anriss__name anriss__name--gesperrt">BETON</span>
-          <span class="anriss__haupt anriss__haupt--beton">SCHREIB MIR</span>
-          <span class="anriss__neben anriss__neben--beton">PROJEKTE</span>
-        </span>
-      </a>
-
-      <a class="anriss anriss--sticker" href="/vorlagen#sticker">
-        <span class="anriss__blatt anriss__blatt--sticker">
-          <span class="anriss__avatar anriss__avatar--sticker"></span>
-          <span class="anriss__name">Sticker</span>
-          <span class="anriss__haupt anriss__haupt--schief">Schreib mir</span>
-          <span class="anriss__neben anriss__neben--schief">Merch</span>
-        </span>
-      </a>
+        <button class="schieber__pfeil schieber__pfeil--vor" type="button" data-vor aria-label="Weitere Vorlagen">
+          <Fragment set:html={lucide('arrow-right', 16)} />
+        </button>
+      </div>
     </div>
   </section>
 
   <!-- Zitate -->
-  <section class="zitate">
+  <p class="zitate__kicker">Warum es das gibt · in eigener Sache</p>
+  <section class="zitate" data-auf>
     {
       zitate.map((z) => (
         <div class="zitat">
           <Fragment set:html={lucide('quote', 24)} />
           <p class="zitat__satz">„{z.satz}“</p>
           <div class="zitat__wer">
-            <span class="zitat__bild" />
+            <span class="zitat__bild zitat__bild--marke"><Fragment set:html={zeichenPlaettchen()} /></span>
             <span>
               <span class="zitat__name">{z.name}</span>
               <span class="zitat__rolle">{z.rolle}</span>
             </span>
           </div>
-          <span class="platzhaltermarke">Platzhalter — echte Stimme fehlt</span>
+          <span class="absender">in eigener Sache</span>
         </div>
       ))
     }
   </section>
 
   <!-- Abschlussband -->
-  <section class="band">
+  <section class="band" data-auf>
     <p class="kicker">Zwei Minuten, dann steht sie</p>
     <h2>Hör auf, Leute wegzuschicken.</h2>
     <div class="knopfreihe">

@@ -44,14 +44,38 @@ export const MARKE = {
  *
  * `currentColor` überall: das Zeichen nimmt die Farbe an, in der es steht.
  */
+/**
+ * Das Zeichen als Plättchen — Scheibe und Ring auf farbigem Grund.
+ *
+ * Aus `doku/handoff/brand/icon-1024.png` ausgemessen: beide Formen haben
+ * denselben Radius von 20,5 % der Kantenlänge, die Mitten sitzen bei 38,5 %
+ * und 64,5 %, der Ring ist 8,5 % stark. Der Ring liegt hinten, die Scheibe
+ * davor — deshalb zeigt die Ringöffnung links den Grund und rechts nicht.
+ *
+ * Gezeichnet statt geladen. Die Originaldateien liegen im Projekt
+ * (`doku/handoff/brand/`), aber nicht im ausgelieferten Verzeichnis: es gibt
+ * keine öffentliche Adresse, unter der sich das Logo abholen ließe.
+ *
+ * `grund` ist die Plättchenfarbe, `form` die der beiden Kreise.
+ */
+export function zeichenPlaettchen(grund: string = MARKENFARBEN.akzent, form: string = MARKENFARBEN.grund): string {
+  return (
+    '<svg viewBox="0 0 100 100" class="signet" aria-hidden="true" focusable="false">' +
+    `<rect width="100" height="100" rx="32" fill="${grund}"/>` +
+    `<circle cx="64.5" cy="50" r="20.5" fill="none" stroke="${form}" stroke-width="8.5"/>` +
+    `<circle cx="38.5" cy="50" r="20.5" fill="${form}"/>` +
+    '</svg>'
+  );
+}
+
+/**
+ * Dasselbe Zeichen ohne Plättchen, einfarbig in der Textfarbe.
+ * Für Stellen, an denen der Grund schon farbig ist.
+ */
 export const SIGNET =
-  '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">' +
-  // Die Scheibe, aus der der Ring samt 2,5 Einheiten Luft ausgespart ist. Als
-  // gerechneter Pfad statt als Maske: eine Maske bräuchte eine `id`, und das
-  // Zeichen steht mehrfach auf derselben Seite. Die Bogenenden sind die
-  // Schnittpunkte beider Kreise, auf drei Stellen gerechnet.
-  '<path d="M49.409 32.643A20.5 20.5 0 1 0 49.409 67.357A23 23 0 0 0 49.409 32.643Z" fill="currentColor"/>' +
-  '<circle cx="64.5" cy="50" r="16.25" fill="none" stroke="currentColor" stroke-width="8.5"/></svg>';
+  '<svg viewBox="0 0 100 100" class="signet" aria-hidden="true" focusable="false">' +
+  '<circle cx="64.5" cy="50" r="20.5" fill="none" stroke="currentColor" stroke-width="8.5"/>' +
+  '<circle cx="38.5" cy="50" r="20.5" fill="currentColor"/></svg>';
 
 /** Der Asterisk von hnvr.me. Steht nur noch dort, wo der Hersteller gemeint ist. */
 export const HERSTELLERZEICHEN =

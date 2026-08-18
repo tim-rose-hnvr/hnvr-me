@@ -11,9 +11,8 @@
  * seit der Umstellung — die Zahl bleibt, die Währung nicht.
  */
 import Handoffrahmen from '../komponenten/Handoffrahmen.astro';
-import Bildplatz from '../komponenten/Bildplatz.astro';
 import { lucide } from '../kern/lucide.ts';
-import { MARKE } from '../kern/marke.ts';
+import { MARKE, MARKENFARBEN, zeichenPlaettchen } from '../kern/marke.ts';
 import '../stile/karte.css';
 
 export const prerender = false;
@@ -24,11 +23,14 @@ const titel = `Karte & NFC — ${MARKE.name}`;
 const beschreibung =
   'Karte, Aufkleber, Widget: einmal antippen, und dein Profil öffnet sich — mit Kontaktdaten zum Speichern und Kanälen, die sich selbst aktuell halten.';
 
+/* Die Schalter sind nicht nur gezeichnet: sie legen wirklich um, und die
+   Handy-Vorschau daneben zeigt die Folge. So sieht man, was „privat bleibt
+   privat" heißt, statt es zu lesen. */
 const felder = [
-  { name: 'Name, Rolle, Firma', an: true },
-  { name: 'Mobil & Mail', an: true },
-  { name: 'Studio-Adresse', an: true },
-  { name: 'Privatnummer', an: false },
+  { kennung: 'wer', name: 'Name, Rolle, Firma', an: true },
+  { kennung: 'kontakt', name: 'Mobil & Mail', an: true },
+  { kennung: 'adresse', name: 'Studio-Adresse', an: true },
+  { kennung: 'privat', name: 'Privatnummer', an: false },
 ];
 
 const schritte = [
@@ -70,7 +72,7 @@ const schritte = [
       <div class="nfckarte">
         <div class="nfckarte__kopf">
           <span class="nfckarte__marke">
-            <img src="/marke/icon-1024.png" alt="" width="26" height="26" />
+            <Fragment set:html={zeichenPlaettchen(MARKENFARBEN.grund, MARKENFARBEN.akzent)} />
             <span>{MARKE.name}</span>
           </span>
           <Fragment set:html={lucide('nfc', 22)} />
@@ -93,7 +95,7 @@ const schritte = [
   </section>
 
   <!-- Drei Wege -->
-  <section class="abschnitt" style="padding-bottom:50px">
+  <section class="abschnitt" style="padding-bottom:50px" data-auf>
     <h2 class="h2" style="margin-bottom:22px;max-width:26ch">Drei Wege, wie du dich weitergibst</h2>
     <div class="dreier">
       <div class="karte">
@@ -138,7 +140,7 @@ const schritte = [
   </section>
 
   <!-- vCard -->
-  <section class="vcardblock">
+  <section class="vcardblock" data-auf>
     <div>
       <p class="kicker" style="font-size:10px;margin-bottom:10px">vCard</p>
       <h2 class="h2" style="font-size:34px;line-height:1.05;margin-bottom:12px;max-width:20ch">
@@ -151,12 +153,12 @@ const schritte = [
       <div class="schalterliste">
         {
           felder.map((f) => (
-            <div class="schalterzeile">
+            <button class="schalterzeile" type="button" data-feld={f.kennung} aria-pressed={f.an}>
               <span>{f.name}</span>
               <span class:list={['schalter', !f.an && 'schalter--aus']}>
                 <span class="schalter__knopf" />
               </span>
-            </div>
+            </button>
           ))
         }
       </div>
@@ -172,7 +174,7 @@ const schritte = [
           </span>
         </div>
         <div class="handy__karte an-pop">
-          <div class="handy__wer">
+          <div class="handy__wer" data-zeigt="wer">
             <span class="handy__foto">FOTO</span>
             <span>
               <span class="handy__name">Lina Moser</span>
@@ -180,14 +182,17 @@ const schritte = [
             </span>
           </div>
           <div class="handy__zeilen">
-            <span class="handy__zeile">
+            <span class="handy__zeile" data-zeigt="kontakt">
               <Fragment set:html={lucide('phone', 14)} />+41 79 000 00 00
             </span>
-            <span class="handy__zeile">
+            <span class="handy__zeile" data-zeigt="kontakt">
               <Fragment set:html={lucide('mail', 14)} />hallo@linamoser.ch
             </span>
-            <span class="handy__zeile">
+            <span class="handy__zeile" data-zeigt="adresse">
               <Fragment set:html={lucide('map-pin', 14)} />Hardturmstrasse, Zürich
+            </span>
+            <span class="handy__zeile" data-zeigt="privat" hidden>
+              <Fragment set:html={lucide('phone', 14)} />+41 79 111 11 11 · privat
             </span>
           </div>
           <span class="handy__knopf an-bounce">
@@ -203,7 +208,7 @@ const schritte = [
   </section>
 
   <!-- Social -->
-  <section class="abschnitt" style="padding-bottom:50px">
+  <section class="abschnitt" style="padding-bottom:50px" data-auf>
     <div class="kopfreihe" style="margin-bottom:20px">
       <h2 class="h2" style="margin:0;max-width:24ch">Social, das sich selbst pflegt</h2>
       <span class="meta">12 Kanäle unterstützt</span>
@@ -259,11 +264,11 @@ const schritte = [
           </div>
           <div class="posts">
             <div class="post">
-              <span class="post__bild"><Bildplatz text="Post" radius={0} hoehe={82} /></span>
+              <span class="post__bild post__bild--a"></span>
               <span class="post__meta">vor 2 Tagen · 1,2k</span>
             </div>
             <div class="post">
-              <span class="post__bild"><Bildplatz text="Post" radius={0} hoehe={82} /></span>
+              <span class="post__bild post__bild--b"></span>
               <span class="post__meta">vor 5 Tagen · 860</span>
             </div>
           </div>
@@ -292,7 +297,7 @@ const schritte = [
   </section>
 
   <!-- Drei Schritte -->
-  <section class="abschnitt" style="padding-bottom:50px">
+  <section class="abschnitt" style="padding-bottom:50px" data-auf>
     <h2 class="h2" style="font-size:32px;margin-bottom:18px">Karte einrichten: 3 Schritte</h2>
     <div class="dreier">
       {
@@ -311,7 +316,7 @@ const schritte = [
     </div>
   </section>
 
-  <section class="band band--quer">
+  <section class="band band--quer" data-auf>
     <h2 style="max-width:22ch">Eine Karte, die du nie neu drucken musst.</h2>
     <a class="knopf knopf--hell" href={`mailto:${MARKE.postfach}?subject=NFC-Karte`}>
       Karte bestellen

@@ -4,14 +4,18 @@
  *
  * Kopfzeile und Fuß aus `doku/handoff/design/Website-*.dc.html`: Lockup mit
  * dem Markenplättchen, Navigation `Vorlagen · Karte & NFC · Für Teams ·
- * Preise · Marke`, rechts „Anmelden" als Textlink und der dunkle Pillenknopf
+ * Preise`, rechts „Anmelden" als Textlink und der dunkle Pillenknopf
  * „Seite bauen".
+ *
+ * Das Zeichen wird gezeichnet, nicht geladen: es gibt keine öffentliche
+ * Adresse, unter der sich Logo oder Symbole abholen ließen.
  *
  * Der Fuß hat zwei Fassungen. Die Startseite bekommt den vierspaltigen mit
  * Rubriken, alle übrigen die schmale Zeile mit den anderen fünf Seiten —
  * genau so verteilt es der Prototyp.
  */
-import { MARKE } from '../kern/marke.ts';
+import { MARKE, zeichenPlaettchen } from '../kern/marke.ts';
+import { startbildschirmSymbol } from '../kern/zeichenbilder.ts';
 import '../stile/handoff.css';
 
 interface Props {
@@ -25,12 +29,16 @@ interface Props {
 
 const { titel, beschreibung, hier, breiterFuss } = Astro.props;
 
+/* Das Symbol im Browsertab ist dasselbe gezeichnete Zeichen, nur als
+   Datenadresse — auch dafür liegt keine Datei im Netz. */
+const symbolAdresse = `data:image/svg+xml,${encodeURIComponent(zeichenPlaettchen())}`;
+const startbild = startbildschirmSymbol();
+
 const NAVI = [
   { name: 'Vorlagen', ziel: '/vorlagen' },
   { name: 'Karte & NFC', ziel: '/karte' },
   { name: 'Für Teams', ziel: '/teams' },
   { name: 'Preise', ziel: '/preise' },
-  { name: 'Marke', ziel: '/marke' },
 ];
 
 /* Der schmale Fuß führt „Start" und alle Seiten außer der eigenen. */
@@ -48,19 +56,19 @@ const fussnavi = [{ name: 'Start', ziel: '/' }, ...NAVI].filter((n) => n.ziel !=
     <meta property="og:type" content="website" />
     <meta property="og:title" content={titel} />
     <meta property="og:description" content={beschreibung} />
-    <meta property="og:image" content="/marke/icon-1024.png" />
     <meta name="twitter:card" content="summary" />
-    <link rel="icon" href="/marke/icon-32.png" sizes="32x32" />
-    <link rel="icon" href="/marke/icon-16.png" sizes="16x16" />
-    <link rel="apple-touch-icon" href="/marke/icon-180.png" />
+    <link rel="icon" href={symbolAdresse} type="image/svg+xml" />
+    {startbild && <link rel="apple-touch-icon" href={startbild} />}
     <link rel="stylesheet" href="/schriften/schriften.css" />
+    {/* Ohne Skript darf nichts unsichtbar bleiben — das Einblenden ist Zugabe. */}
+    <noscript><style>[data-auf]{opacity:1;transform:none}</style></noscript>
   </head>
 
   <body>
     <div class="bahn">
       <header class="kopf">
         <a class="lockup" href="/">
-          <img src="/marke/icon-1024.png" alt="" width="34" height="34" />
+          <Fragment set:html={zeichenPlaettchen()} />
           <span>{MARKE.name}</span>
         </a>
         <nav class="navi">
@@ -77,8 +85,8 @@ const fussnavi = [{ name: 'Start', ziel: '/' }, ...NAVI].filter((n) => n.ziel !=
         breiterFuss ? (
           <footer class="fuss fuss--breit">
             <div>
-              <span class="lockup">
-                <img src="/marke/icon-1024.png" alt="" width="28" height="28" />
+              <span class="lockup lockup--fuss">
+                <Fragment set:html={zeichenPlaettchen()} />
                 <span>{MARKE.name}</span>
               </span>
               <p class="fusssatz">{MARKE.anspruch}</p>
@@ -92,7 +100,6 @@ const fussnavi = [{ name: 'Start', ziel: '/' }, ...NAVI].filter((n) => n.ziel !=
             </div>
             <div class="fussspalte">
               <div class="fusstitel">Firma</div>
-              <a href="/marke">Marke</a>
               <a href="/teams">Für Teams</a>
               <a href={`mailto:${MARKE.postfach}`}>Kontakt</a>
             </div>
@@ -109,8 +116,8 @@ const fussnavi = [{ name: 'Start', ziel: '/' }, ...NAVI].filter((n) => n.ziel !=
           </footer>
         ) : (
           <footer class="fuss">
-            <span class="lockup">
-              <img src="/marke/icon-1024.png" alt="" width="26" height="26" />
+            <span class="lockup lockup--fuss">
+              <Fragment set:html={zeichenPlaettchen()} />
               <span>{MARKE.name}</span>
             </span>
             <div class="schub" />
@@ -124,5 +131,10 @@ const fussnavi = [{ name: 'Start', ziel: '/' }, ...NAVI].filter((n) => n.ziel !=
         )
       }
     </div>
+
+    {/* Die Belebung ist Zugabe: ohne sie steht jede Seite vollständig da. */}
+    <script>
+      import '../skripte/belebung.ts';
+    </script>
   </body>
 </html>

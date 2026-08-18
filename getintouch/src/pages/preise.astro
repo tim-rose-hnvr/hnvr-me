@@ -68,9 +68,9 @@ const haken = lucide('check', 15);
       Keine Klick-Limits, keine Werbung auf deiner Seite, kein Vertrag. Monatlich kündbar, jährlich zwei Monate
       günstiger.
     </p>
-    <div class="takt">
-      <span class="takt__hier">Monatlich</span>
-      <span class="takt__aus">Jährlich · 2 Monate gratis</span>
+    <div class="takt" data-takt role="group" aria-label="Abrechnungstakt">
+      <button class="takt__hier" type="button" data-wahl="monat">Monatlich</button>
+      <button class="takt__aus" type="button" data-wahl="jahr">Jährlich · 2 Monate gratis</button>
     </div>
   </section>
 
@@ -83,10 +83,10 @@ const haken = lucide('check', 15);
     </span>
   </p>
 
-  <section class="plaene">
+  <section class="plaene" data-auf>
     <div class="plan">
       <p class="plan__name">Frei</p>
-      <p class="plan__preis"><span>0</span><span class="plan__takt">€ / Monat</span></p>
+      <p class="plan__preis"><span data-monat="0">0</span><span class="plan__takt">€ / Monat</span></p>
       <p class="plan__satz">Für alle, die einfach erreichbar sein wollen.</p>
       <a class="plan__knopf plan__knopf--rand" href="/werkstatt">
         Kostenlos starten<span class="schub"></span>
@@ -103,7 +103,7 @@ const haken = lucide('check', 15);
     <div class="plan plan--hervor">
       <span class="plan__abzeichen">EMPFOHLEN</span>
       <p class="plan__name plan__name--signal">Pro</p>
-      <p class="plan__preis"><span>9</span><span class="plan__takt">€ / Monat</span></p>
+      <p class="plan__preis"><span data-monat="9">9</span><span class="plan__takt">€ / Monat</span></p>
       <p class="plan__satz">Für Freelancer und kleine Betriebe, die Anfragen und Termine wollen.</p>
       <a class="plan__knopf plan__knopf--signal" href="/werkstatt">
         14 Tage testen<span class="schub"></span>
@@ -120,7 +120,7 @@ const haken = lucide('check', 15);
 
     <div class="plan plan--ink">
       <p class="plan__name">Studio · Whitelabel</p>
-      <p class="plan__preis"><span>39</span><span class="plan__takt">€ / Monat</span></p>
+      <p class="plan__preis"><span data-monat="39">39</span><span class="plan__takt">€ / Monat</span></p>
       <p class="plan__satz">Für Teams, Agenturen und Betriebe mit mehreren Personen.</p>
       <a class="plan__knopf plan__knopf--hell" href="/teams">
         Whitelabel ansehen<span class="schub"></span>
@@ -136,7 +136,7 @@ const haken = lucide('check', 15);
     </div>
   </section>
 
-  <section class="abschnitt" style="padding-bottom:44px">
+  <section class="abschnitt" style="padding-bottom:44px" data-auf>
     <h2 class="h2" style="font-size:30px;margin-bottom:18px">Im Detail</h2>
     <div class="tafel">
       <div class="zeile zeile--kopf">
@@ -161,7 +161,7 @@ const haken = lucide('check', 15);
     </div>
   </section>
 
-  <section class="fragen">
+  <section class="fragen" data-auf>
     {
       fragen.map((f) => (
         <div class="frage">
@@ -172,7 +172,7 @@ const haken = lucide('check', 15);
     }
   </section>
 
-  <section class="band band--quer">
+  <section class="band band--quer" data-auf>
     <h2 style="max-width:24ch">Fang frei an. Upgrade, wenn Anfragen kommen.</h2>
     <a class="knopf knopf--hell" href="/werkstatt">
       Seite bauen

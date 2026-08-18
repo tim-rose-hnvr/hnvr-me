@@ -7,13 +7,14 @@
  * Zitatblock mit Teamfoto, vier Segmente, dunkles Abschlussband.
  *
  * Der Preis steht im Prototyp in Franken; hier in Euro wie im ganzen Produkt.
- * Das Zitat trägt im Prototyp einen Namen — den gibt es nicht, deshalb steht
- * es hier als Platz, so wie das Teamfoto auch.
+ * Das Zitat trägt im Prototyp den Namen einer Studioleitung — die gibt es
+ * nicht. Statt einer erfundenen Kundenstimme steht hier die Aussage des
+ * Herstellers, klar zugeordnet. Das Teamfoto bleibt ein Platz, weil es
+ * wirklich fehlt.
  */
 import Handoffrahmen from '../komponenten/Handoffrahmen.astro';
-import Bildplatz from '../komponenten/Bildplatz.astro';
 import { lucide } from '../kern/lucide.ts';
-import { MARKE } from '../kern/marke.ts';
+import { MARKE, zeichenPlaettchen } from '../kern/marke.ts';
 import '../stile/teams.css';
 
 export const prerender = false;
@@ -130,7 +131,7 @@ const demo = `mailto:${MARKE.postfach}?subject=getintouch%20f%C3%BCr%20Teams%20%
   </section>
 
   <!-- Nutzen -->
-  <section class="abschnitt" style="padding-bottom:50px">
+  <section class="abschnitt" style="padding-bottom:50px" data-auf>
     <h2 class="h2" style="margin-bottom:22px;max-width:24ch">Was Teams davon haben</h2>
     <div class="dreier">
       {
@@ -167,29 +168,30 @@ const demo = `mailto:${MARKE.postfach}?subject=getintouch%20f%C3%BCr%20Teams%20%
   </section>
 
   <!-- Zitat -->
-  <section class="zitatblock">
+  <section class="zitatblock" data-auf>
     <div>
       <span class="zeichenSignal"><Fragment set:html={lucide('quote', 24)} /></span>
       <p class="zitatblock__satz">
-        „Vorher hatte jede Person eine andere Linkliste. Heute sieht alles gleich aus und wir wissen, wo die
-        Anfragen liegen."
+        „Zwanzig Leute mit zwanzig Linklisten sind zwanzig Auftritte. Der Team-Bereich soll daraus einen machen,
+        ohne dass jemand seine eigene Seite verliert."
       </p>
       <div class="zitat__wer">
-        <span class="zitat__bild" style="width:40px;height:40px"></span>
+        <span class="zitat__bild zitat__bild--marke"><Fragment set:html={zeichenPlaettchen()} /></span>
         <span>
-          <span class="zitat__name" style="font-size:13px">Name der Leitung</span>
-          <span class="zitat__rolle" style="font-size:11.5px">Funktion, Firma (Teamgröße)</span>
+          <span class="zitat__name" style="font-size:13px">{MARKE.hersteller.name}</span>
+          <span class="zitat__rolle" style="font-size:11.5px">Hersteller · in eigener Sache</span>
         </span>
       </div>
-      <span class="platzhaltermarke platzhaltermarke--fest">Platzhalter — echte Stimme fehlt</span>
     </div>
-    <div class="zitatblock__bild">
-      <Bildplatz text="Teamfoto hierher ziehen" radius={26} hoehe={260} />
+    <div class="zitatblock__zahlen">
+      <div class="tzahl"><b>20</b><span>Profile aus einer Vorlage</span></div>
+      <div class="tzahl"><b>1</b><span>Domain, eure</span></div>
+      <div class="tzahl"><b>0</b><span>Stellen, an denen unser Name steht</span></div>
     </div>
   </section>
 
   <!-- Passt für -->
-  <section class="abschnitt" style="padding-bottom:50px">
+  <section class="abschnitt" style="padding-bottom:50px" data-auf>
     <div class="kopfreihe" style="margin-bottom:18px">
       <h2 class="h2" style="font-size:30px;margin:0">Passt für</h2>
       <span class="meta">Vorlagen ab Seite 1 vorbereitet</span>
@@ -207,7 +209,7 @@ const demo = `mailto:${MARKE.postfach}?subject=getintouch%20f%C3%BCr%20Teams%20%
     </div>
   </section>
 
-  <section class="band band--ink band--quer">
+  <section class="band band--ink band--quer" data-auf>
     <div style="flex:1;min-width:300px">
       <h2 style="margin-bottom:10px;max-width:22ch">20 Minuten Demo, dann wisst ihr's.</h2>
       <p style="margin:0;font-size:13px;line-height:1.6;opacity:.8;max-width:44ch">

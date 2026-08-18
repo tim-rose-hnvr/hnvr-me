@@ -59,12 +59,7 @@
   font: 800 12.5px var(--font-body);
 }
 
-.nfckarte__marke img {
-  width: 26px;
-  height: 26px;
-  border-radius: 9px;
-  background: var(--color-bg);
-}
+
 
 .nfckarte__name {
   margin-top: 34px;
@@ -416,4 +411,32 @@
     width: 100%;
     max-width: 330px;
   }
+}
+
+/* Die Schalterzeilen sind Knöpfe — sie tun wirklich etwas. */
+.schalterzeile {
+  width: 100%;
+  border: 0;
+  font: 600 12px var(--font-body);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow 0.14s;
+}
+
+.schalterzeile:hover {
+  box-shadow: 0 0 0 2px var(--color-neutral-300);
+}
+
+.schalter,
+.schalter__knopf {
+  transition: background 0.16s ease, left 0.16s ease, right 0.16s ease;
+}
+
+.handy__zeile[hidden] {
+  display: none;
+}
+
+.handy__wer[hidden] {
+  display: none;
 }

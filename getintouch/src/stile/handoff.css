@@ -268,10 +268,17 @@ img {
   gap: 11px;
 }
 
-.lockup img {
+/* Das gezeichnete Plättchen tritt an die Stelle der früheren Bilddatei.
+   Der Radius steckt im SVG selbst (rx 32 auf 100), deshalb hier keiner. */
+.lockup .signet {
   width: 34px;
   height: 34px;
-  border-radius: 11px;
+  flex: none;
+}
+
+.lockup--fuss .signet {
+  width: 27px;
+  height: 27px;
 }
 
 .lockup span {
@@ -625,36 +632,6 @@ h3 {
   font: 800 15px var(--font-body);
 }
 
-/* --- Bildplatz -------------------------------------------- */
-
-/* Im Prototyp ein `<image-slot>` zum Hineinziehen. Hier ein Rahmen, der
-   sagt, was hingehört — und der verschwindet, sobald ein Bild da ist. */
-.bildplatz {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  height: 100%;
-  border: 2px dashed var(--color-neutral-400);
-  background: var(--color-neutral-100);
-  color: var(--ink-55);
-  font-size: 12.5px;
-  text-align: center;
-  padding: 20px;
-}
-
-.bildplatz svg {
-  color: var(--color-neutral-500);
-}
-
-.bildplatz img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 /* --- Rotes Abschlussband ---------------------------------- */
 
 .band {
@@ -719,11 +696,7 @@ h3 {
   color: var(--ink-70);
 }
 
-.fuss .lockup img {
-  width: 26px;
-  height: 26px;
-  border-radius: 9px;
-}
+
 
 .fuss .lockup span {
   font: 800 13px var(--font-body);
@@ -738,10 +711,7 @@ h3 {
   padding: 28px 0 40px;
 }
 
-.fuss--breit .lockup img {
-  width: 28px;
-  height: 28px;
-}
+
 
 .fuss--breit .lockup span {
   font: 800 14px var(--font-body);
@@ -835,10 +805,12 @@ summary:focus-visible {
   box-shadow: 0 8px 0 0 var(--color-neutral-300);
 }
 
+/* Sitzt bewusst über der Kante, aber nicht über einem Knopf — sie soll
+   auffallen und nichts verdecken. */
 .schwebe {
   position: absolute;
   left: -22px;
-  bottom: 32px;
+  bottom: -16px;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -1013,6 +985,26 @@ summary:focus-visible {
   background: var(--color-accent);
 }
 
+.anriss--papier {
+  background: var(--color-surface);
+}
+
+.anriss--tresen {
+  background: var(--color-accent-200);
+}
+
+.anriss--werkbank {
+  background: var(--color-neutral-800);
+}
+
+.anriss--sprech {
+  background: var(--color-neutral-100);
+}
+
+.anriss--riso {
+  background: var(--color-accent-700);
+}
+
 .anriss__blatt {
   display: block;
   background: var(--color-bg);
@@ -1031,6 +1023,12 @@ summary:focus-visible {
 
 .anriss__blatt--sticker {
   border-radius: 20px 20px 0 0;
+}
+
+.anriss__blatt--papier {
+  background: var(--color-neutral-100);
+  border-radius: 14px;
+  border: 2px dashed var(--color-neutral-400);
 }
 
 .anriss__avatar {
@@ -1052,6 +1050,32 @@ summary:focus-visible {
 
 .anriss__avatar--beton {
   background: var(--color-neutral-400);
+  border-radius: 0;
+}
+
+.anriss__avatar--papier {
+  background: var(--color-neutral-200);
+  border: 2px dashed var(--color-neutral-500);
+  border-radius: 12px;
+}
+
+.anriss__avatar--tresen {
+  background: var(--color-accent-300);
+}
+
+.anriss__avatar--werk {
+  background: var(--color-neutral-300);
+  border-radius: 0;
+}
+
+.anriss__avatar--sprech {
+  background: var(--color-neutral-200);
+}
+
+.anriss__avatar--riso {
+  width: 26px;
+  height: 38px;
+  background: var(--color-neutral-300);
   border-radius: 0;
 }
 
@@ -1093,6 +1117,25 @@ summary:focus-visible {
   transform: rotate(-1.5deg);
 }
 
+.anriss__haupt--papier {
+  border-radius: 12px;
+  background: var(--color-text);
+}
+
+.anriss__haupt--werk {
+  border-radius: 0;
+}
+
+.anriss__haupt--sprech {
+  border-radius: 10px;
+  background: var(--color-text);
+}
+
+.anriss__haupt--riso {
+  border-radius: 0;
+  background: var(--color-accent-700);
+}
+
 .anriss__neben {
   display: block;
   margin-top: 6px;
@@ -1116,6 +1159,27 @@ summary:focus-visible {
 .anriss__neben--schief {
   margin-top: 8px;
   transform: rotate(1.2deg);
+}
+
+.anriss__neben--papier {
+  border-radius: 12px;
+  border-style: dashed;
+  border-color: var(--color-neutral-500);
+}
+
+.anriss__neben--werk {
+  border-radius: 0;
+}
+
+.anriss__neben--sprech {
+  border-radius: 10px;
+  border: 0;
+  background: var(--color-surface);
+}
+
+.anriss__neben--risoOben {
+  border-radius: 0;
+  border-width: 2px 0;
 }
 
 /* --- Zitate ----------------------------------------------- */
@@ -1168,6 +1232,36 @@ summary:focus-visible {
   color: var(--ink-60);
 }
 
+/* Der Abschnitt spricht in eigener Sache. Das steht dran, damit niemand die
+   Karten für Kundenstimmen hält — sie sehen genauso aus wie welche. */
+.zitate__kicker {
+  font: 800 11.5px var(--font-body);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-45);
+  margin: 0 0 14px;
+}
+
+.absender {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  padding: 5px 10px;
+  border-radius: 14px;
+  background: var(--color-accent-200);
+  font: 800 9.5px var(--font-body);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent-700);
+}
+
+/* Im Fuß der Zitatkarte steht jetzt das Markenplättchen statt eines grauen
+   Kreises — es ist ja der Absender. */
+img.zitat__bild {
+  border-radius: 11px;
+  object-fit: cover;
+}
+
 /* Solange kein echter Satz da ist, sagt die Karte das auch. */
 .platzhaltermarke {
   position: absolute;
@@ -1211,6 +1305,7 @@ summary:focus-visible {
 
   .schwebe {
     left: 8px;
+    bottom: -12px;
   }
 }
 
@@ -1250,5 +1345,333 @@ summary:focus-visible {
 
   .handle__knopf {
     flex: 1;
+  }
+}
+
+/* Das Markenplättchen im Zitatfuß und auf der NFC-Karte. */
+.zitat__bild--marke {
+  display: block;
+  background: none;
+  border-radius: 0;
+}
+
+.zitat__bild--marke .signet {
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+
+.nfckarte__marke .signet {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+
+/* ============================================================
+   Die Profilvorschau im Heldenbereich
+   ============================================================
+   Kein Bild vom Erzeugnis, sondern das Erzeugnis. Sie reagiert auf die
+   Eingabe daneben — was man tippt, steht sofort in der Adresse.
+   ============================================================ */
+
+.geraet {
+  border-radius: 30px;
+  background: var(--color-bg);
+  padding: 16px;
+  box-shadow: 0 8px 0 0 var(--color-neutral-300);
+}
+
+.geraet__leiste {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font: 800 10.5px var(--font-body);
+  color: var(--ink-50);
+  padding: 2px 6px 12px;
+}
+
+.geraet__zeichen {
+  display: flex;
+  gap: 6px;
+}
+
+.geraet__blatt {
+  display: block;
+  padding: 22px 20px 24px;
+  border-radius: 24px;
+  background: var(--color-accent-100);
+}
+
+.geraet__avatar {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-accent-200);
+  border: 2px solid var(--color-text);
+}
+
+.geraet__name {
+  display: block;
+  font: 800 20px var(--font-body);
+  letter-spacing: -0.02em;
+  margin-top: 12px;
+}
+
+.geraet__rolle {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-60);
+  margin-top: 2px;
+}
+
+.geraet__adresse {
+  display: block;
+  font-size: 11.5px;
+  color: var(--ink-50);
+  margin-top: 10px;
+}
+
+.geraet__adresse b {
+  color: var(--color-accent-700);
+}
+
+.geraet__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border-radius: 15px;
+  background: var(--color-bg);
+  font: 800 11px var(--font-body);
+}
+
+/* Genau ein Puls je Ansicht — hier ist er. */
+.geraet__punkt {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex: none;
+}
+
+.geraet__punkt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation: gtRipple 2.4s ease-out infinite;
+}
+
+.geraet__haupt,
+.geraet__neben {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 9px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  font: 800 12px var(--font-body);
+  transition: transform 0.14s ease;
+}
+
+.geraet__haupt {
+  margin-top: 16px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  box-shadow: 0 4px 0 0 var(--color-accent-700);
+}
+
+.geraet__neben {
+  border: 2px solid var(--color-text);
+}
+
+.geraet:hover .geraet__haupt {
+  transform: translateY(-2px);
+}
+
+/* Getönte Flächen statt Platzhalterbildern — sie behaupten kein Foto. */
+.post__bild--a,
+.post__bild--b {
+  display: block;
+  height: 82px;
+}
+
+.post__bild--a {
+  background: linear-gradient(135deg, var(--color-accent-200), var(--color-accent-100));
+}
+
+.post__bild--b {
+  background: linear-gradient(135deg, var(--color-neutral-300), var(--color-neutral-200));
+}
+
+/* ============================================================
+   Schieber
+   ============================================================
+   Wischen geht immer, auch ohne Skript — die Bahn ist eine Scrollfläche mit
+   Fangpunkten. Pfeile, Punkte und Selbstlauf kommen erst dazu.
+   ============================================================ */
+
+.schieber {
+  position: relative;
+}
+
+.schieber__bahn {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 3 * 16px) / 4);
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.schieber__bahn::-webkit-scrollbar {
+  display: none;
+}
+
+.schieber__bahn > * {
+  scroll-snap-align: start;
+}
+
+.schieber .anriss {
+  position: relative;
+}
+
+/* Beim Überfahren schiebt sich der Hinweis herein — er sagt, dass die Kachel
+   ein Ziel hat, und nimmt vorher keinen Platz weg. */
+.anriss__lupe {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 16px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: 800 11px var(--font-body);
+  box-shadow: 0 3px 0 0 var(--color-neutral-400);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  pointer-events: none;
+}
+
+.anriss:hover .anriss__lupe,
+.anriss:focus-visible .anriss__lupe {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.schieber__steuer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.schieber__pfeil {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--color-neutral-300);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color 0.14s, transform 0.14s;
+}
+
+.schieber__pfeil svg {
+  transform: rotate(180deg);
+}
+
+.schieber__pfeil--vor svg {
+  transform: none;
+}
+
+.schieber__pfeil:hover {
+  border-color: var(--color-text);
+}
+
+.schieber__pfeil:active {
+  transform: translateY(2px);
+}
+
+.schieber__punkte {
+  display: flex;
+  gap: 7px;
+}
+
+.schieber__punkt {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-neutral-300);
+  cursor: pointer;
+  transition: background 0.14s, width 0.14s;
+}
+
+.schieber__punkt--hier {
+  width: 22px;
+  border-radius: 5px;
+  background: var(--color-accent);
+}
+
+.schieber__punkt[hidden] {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .schieber__bahn {
+    grid-auto-columns: calc((100% - 16px) / 2);
+  }
+}
+
+@media (max-width: 620px) {
+  .schieber__bahn {
+    grid-auto-columns: 80%;
+  }
+}
+
+/* --- Einblenden beim Scrollen ----------------------------- */
+
+[data-auf] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.auf--da {
+  opacity: 1;
+  transform: none;
+}
+
+/* Ohne Skript darf nichts unsichtbar bleiben. */
+.kein-skript [data-auf] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-auf] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .anriss__lupe {
+    transition: none;
   }
 }

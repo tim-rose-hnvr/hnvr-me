@@ -16,7 +16,7 @@
 import { antwortAdresse } from '../../kern/eingang.ts';
 import { nachrichtenFuer, profilNachSchluessel } from '../../kern/speicher/eingang.ts';
 import { zeichen } from '../../kern/zeichen.ts';
-import { MARKE } from '../../kern/marke.ts';
+import { MARKE, zeichenPlaettchen } from '../../kern/marke.ts';
 import '../../stile/handoff.css';
 import '../../stile/eingang.css';
 
@@ -51,7 +51,7 @@ const zeitpunkt = (d: Date | null) =>
     <meta name="referrer" content="no-referrer" />
     <title>Eingang · {slug}</title>
     <meta name="theme-color" content="#f3f2f2" />
-    <link rel="icon" href="/marke/icon-32.png" sizes="32x32" />
+    <link rel="icon" href={`data:image/svg+xml,${encodeURIComponent(zeichenPlaettchen())}`} type="image/svg+xml" />
     <link rel="stylesheet" href="/schriften/schriften.css" />
   </head>
 
@@ -59,7 +59,7 @@ const zeitpunkt = (d: Date | null) =>
     <div class="bahn">
         <header class="kopf">
           <span class="lockup">
-            <img src="/marke/icon-1024.png" alt="" width="34" height="34" />
+            <Fragment set:html={zeichenPlaettchen()} />
             <span>{MARKE.name}</span>
           </span>
           <div class="schub"></div>

@@ -3,12 +3,15 @@ import { weg } from '../lib/weg';
 import Icon from './Icon.astro';
 
 interface Props {
-  aktiv?: 'start' | 'werkstatt' | 'strecken' | 'vorlagen' | 'preise' | '';
+  aktiv?: 'start' | 'studio' | 'werkstatt' | 'strecken' | 'vorlagen' | 'preise' | '';
 }
 const { aktiv = 'start' } = Astro.props;
 
 const wege = [
-  { id: 'werkstatt', weg: '/werkstatt', name: 'Werkstatt', icon: 'code' as const },
+  // Das Studio steht vorn: es ist die einzige Seite, auf der man etwas
+  // tun kann statt darüber zu lesen.
+  { id: 'studio', weg: '/studio', name: 'Code bauen', icon: 'code' as const },
+  { id: 'werkstatt', weg: '/werkstatt', name: 'Werkstatt', icon: 'geprueft' as const },
   { id: 'strecken', weg: '/strecken', name: 'Strecken', icon: 'strecke' as const },
   { id: 'vorlagen', weg: '/vorlagen', name: 'Vorlagen', icon: 'bogen' as const },
   { id: 'preise', weg: '/preise', name: 'Preise', icon: 'zahlen' as const },

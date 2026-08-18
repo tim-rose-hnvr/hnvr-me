@@ -9,7 +9,7 @@ interface Props {
   beschreibung: string;
   // Leer für Seiten, die in der Wegeleiste nicht vorkommen
   // (Lesbarkeit, Serie, Schnittstelle, Impressum, Datenschutz).
-  aktiv?: 'start' | 'werkstatt' | 'strecken' | 'vorlagen' | 'preise' | '';
+  aktiv?: 'start' | 'studio' | 'werkstatt' | 'strecken' | 'vorlagen' | 'preise' | '';
 }
 const { titel, beschreibung, aktiv = 'start' } = Astro.props;
 const kanonisch = new URL(Astro.url.pathname, Astro.site ?? 'https://pnkt.me');

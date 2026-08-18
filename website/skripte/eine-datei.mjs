@@ -32,6 +32,7 @@ const seiten = [
   { id: 'werkstatt', weg: '/werkstatt', datei: 'werkstatt/index.html' },
   { id: 'strecken', weg: '/strecken', datei: 'strecken/index.html' },
   { id: 'vorlagen', weg: '/vorlagen', datei: 'vorlagen/index.html' },
+  { id: 'studio', weg: '/studio', datei: 'studio/index.html', stattdessen: true },
   { id: 'preise', weg: '/preise', datei: 'preise/index.html' },
   { id: 'lesbarkeit', weg: '/lesbarkeit', datei: 'lesbarkeit/index.html' },
   { id: 'massenanlage', weg: '/massenanlage', datei: 'massenanlage/index.html' },
@@ -42,6 +43,12 @@ const seiten = [
 const nachWeg = new Map(seiten.map((s) => [s.weg, s.id]));
 
 const typen = {
+  // wasm und js sind neu: die Werkstatt bringt den Go-Kern mit. Beides
+  // wandert wie alles andere als Daten-URI in die Datei — ob der
+  // Betrachter WebAssembly ausfuehren darf, entscheidet seine Umgebung;
+  // kann er es nicht, sagt die Seite das im Klartext.
+  '.wasm': 'application/wasm',
+  '.js': 'text/javascript',
   '.woff2': 'font/woff2',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -111,11 +118,34 @@ const riegel = startseite.includes('vorschauriegel')
   ? element(startseite, '<div class="vorschauriegel"', 'div')
   : '';
 
+// Die Werkstatt kommt hier NICHT mit. Sie ist kein Text, sondern ein
+// Programm: sie braucht den nach WebAssembly übersetzten Go-Kern (3,4 MB)
+// und die Skripte, die ihn bedienen. Diese Datei sammelt nur den Inhalt
+// von <main> ein — die Skripte blieben draußen, und die Seite stünde als
+// stummes Gerüst da. Ein Regler, der nichts tut, ist schlimmer als ein
+// ehrlicher Hinweis.
+const ersatzWerkstatt = `
+  <section class="spur">
+    <h1 class="titel-seite">Die Werkstatt fehlt in dieser Datei</h1>
+    <p class="fliess">
+      Sie ist als einzige Seite kein Text, sondern ein Programm: der Kern von
+      pnkt läuft dort im Browser, übersetzt nach WebAssembly, 3,4 MB.
+      Diese Einzeldatei sammelt Seiten ein, keine Programme — deshalb steht
+      hier ein Hinweis und kein Gerüst aus Reglern, die nichts tun.
+    </p>
+    <p class="fliess">
+      Die Werkstatt läuft unter
+      <b>punkt-954d3e9b-hnvrme.wix-site-host.com/studio</b>.
+    </p>
+  </section>`;
+
 const abschnitte = seiten
   .map((s) => {
-    const inhalt = element(lies(s.datei), '<main id="inhalt">', 'main')
-      .replace(/^<main id="inhalt">/, '')
-      .replace(/<\/main>$/, '');
+    const inhalt = s.stattdessen
+      ? ersatzWerkstatt
+      : element(lies(s.datei), '<main id="inhalt">', 'main')
+          .replace(/^<main id="inhalt">/, '')
+          .replace(/<\/main>$/, '');
     return `<section class="blatt" data-blatt="${s.id}" hidden>${inhalt}</section>`;
   })
   .join('\n');

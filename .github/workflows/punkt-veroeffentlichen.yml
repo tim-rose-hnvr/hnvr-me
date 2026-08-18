@@ -131,6 +131,18 @@ jobs:
       # und sie fehlen weiter. Ohne diese Zeile war die erste
       # Auslieferung indexierbar, mit einem Impressum aus Platzhaltern.
       # Wegnehmen, sobald Impressum und Datenschutz stehen.
+      # Der Kern der Werkstatt. Er liegt nicht im Repository — er entsteht
+      # aus pnkt/ und waere sonst eine 3,4-MB-Binaerdatei im Verlauf, die
+      # sich bei jedem Bau aendert. wasm_exec.js kommt aus derselben
+      # Go-Installation und gehoert zu genau dieser Version.
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Kern nach WebAssembly übersetzen
+        run: sh skripte/wasm-bauen.sh
+        working-directory: website
+
       - name: Bauen
         run: npm run build
         env:

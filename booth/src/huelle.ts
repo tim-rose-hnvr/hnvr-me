@@ -65,3 +65,19 @@ export async function ausgabeAdresse(): Promise<string> {
     return '';
   }
 }
+
+/**
+ * Stand des Fernausloesers: Wie oft wurde im Netz der Box auf „Los" getippt?
+ * Ein Zaehler, kein Ereignis — eine verpasste Abfrage verschluckt nichts.
+ * Ohne Huelle bleibt es bei 0.
+ */
+export async function fernStand(): Promise<number> {
+  const rufe = await hole();
+  if (!rufe) return 0;
+
+  try {
+    return await rufe<number>('fern_stand');
+  } catch {
+    return 0;
+  }
+}

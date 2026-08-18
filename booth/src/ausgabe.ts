@@ -85,7 +85,12 @@ export async function qrFuer(
   if (!sauber) return null;
 
   // Die Endung steht in der Adresse: der Dienst liefert genau diese Datei aus.
-  return QRCode.toDataURL(`${sauber}/f/${kennung}.${endung}`, {
+  return qrBild(`${sauber}/f/${kennung}.${endung}`);
+}
+
+/** QR-Code auf eine beliebige Adresse — erzeugt im Gerät, ohne Netz. */
+export function qrBild(adresse: string): Promise<string> {
+  return QRCode.toDataURL(adresse, {
     margin: 1,
     width: 600,
     color: { dark: '#0b0b0d', light: '#ffffff' },

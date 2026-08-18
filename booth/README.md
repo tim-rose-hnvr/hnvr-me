@@ -20,6 +20,7 @@ Desktop-App verpackt — auf Windows und macOS. Die Website dazu liegt in `../yo
 | Kunden-Galerie mit Filter und Großansicht | läuft |
 | Installations-Zentrum mit echter Selbstprüfung | läuft |
 | Booth-Editor: Druckvorlagen entwerfen, Vorschau = Druckbild | läuft |
+| Fernauslöser am Telefon der Gäste, aus dem WLAN der Box | läuft (in der Desktop-Hülle) |
 | Bewegtbild (Boomerang, GIF) als Datei — eigener GIF-Kodierer | läuft |
 | DSLR-Tethering, Drucker-Sonderfunktionen, Freistellung, Cloud | offen, siehe unten |
 
@@ -114,6 +115,17 @@ nicht auf die Rechenzeit. Acht Aufnahmen ergeben 14 Einzelbilder in gut einer ha
 Der QR-Code zeigt bei Boomerang und GIF auf die Bewegung (`/f/<kennung>.gif`), sonst auf das
 Standbild. Der Auslieferungsdienst kennt genau zwei Endungen; alles andere landet als `jpg` in der
 Ablage.
+
+## Fernauslöser
+
+Der Attract sagt „per Fernbedienung am Handy auslösen" — das löst der Auslieferungsdienst ein.
+Unter `/fern` liegt eine Seite mit genau einem Knopf; ein POST auf `/fern/ausloesen` erhöht einen
+Zähler in der Hülle. Der Booth fragt diesen Zähler ab und startet die Aufnahme, wenn er steigt.
+
+Bewusst ein Zähler statt eines Ereignisses: eine verpasste Abfrage verschluckt nichts, und von
+außen lässt sich nichts weiter anstoßen als das Hochzählen einer Zahl. Ausgelöst wird nur aus
+Attract oder Auswahl — wer während einer laufenden Serie tippt, unterbricht niemanden. Der QR zum
+Auslöser steht im Attract, aber nur, wenn die Box den Dienst tatsächlich anbietet.
 
 ## Regeln, die im Code stecken
 

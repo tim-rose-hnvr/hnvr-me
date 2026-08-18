@@ -612,3 +612,20 @@ p {
     animation: none;
   }
 }
+
+/* Fernauslöser: kleiner QR im Attract, nur wenn die Box ihn anbietet. */
+.fern {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.fern img {
+  width: 104px;
+  height: 104px;
+  border-radius: 10px;
+  background: #fff;
+  padding: 6px;
+}

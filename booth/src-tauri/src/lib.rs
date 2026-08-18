@@ -8,7 +8,8 @@
 mod ausgabe;
 
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex};
 
 use tauri::{Manager, State};
 
@@ -17,6 +18,8 @@ use tauri::{Manager, State};
 struct Dienstzustand {
     ordner: Option<PathBuf>,
     adresse: Option<String>,
+    /// Zaehlt die Ausloesungen von der Fernbedienung im Netz der Box.
+    ausloeser: Option<Arc<AtomicU64>>,
 }
 
 /// Legt eine Aufnahme als Datei ab und gibt den Pfad zurueck.
@@ -48,11 +51,27 @@ fn ausgabe_adresse(zustand: State<'_, Mutex<Dienstzustand>>) -> String {
         .unwrap_or_default()
 }
 
+/// Stand des Fernausloesers. Der Booth schaut hier nach; steigt die Zahl,
+/// startet er eine Aufnahme. Ein Zaehler statt eines Ereignisses, damit eine
+/// verpasste Abfrage nichts verschluckt.
+#[tauri::command]
+fn fern_stand(zustand: State<'_, Mutex<Dienstzustand>>) -> u64 {
+    zustand
+        .lock()
+        .ok()
+        .and_then(|z| z.ausloeser.as_ref().map(|a| a.load(Ordering::Relaxed)))
+        .unwrap_or(0)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .manage(Mutex::new(Dienstzustand::default()))
-        .invoke_handler(tauri::generate_handler![sichere_aufnahme, ausgabe_adresse])
+        .invoke_handler(tauri::generate_handler![
+            sichere_aufnahme,
+            ausgabe_adresse,
+            fern_stand
+        ])
         .setup(|app| {
             // Im Saal laeuft der Booth im Vollbild. Zum Einrichten laesst sich
             // das mit F11 wieder aufheben.
@@ -68,15 +87,18 @@ pub fn run() {
 
             // Laeuft der Port schon, startet die Box trotzdem — dann fehlt nur
             // der QR-Weg, und das steht am Screen.
-            let adresse = match ausgabe::starte_dienst(ordner.clone(), ausgabe::PORT) {
-                Ok(port) => Some(ausgabe::netzadresse(port)),
-                Err(_) => None,
-            };
+            let ausloeser = Arc::new(AtomicU64::new(0));
+            let adresse =
+                match ausgabe::starte_dienst(ordner.clone(), ausgabe::PORT, ausloeser.clone()) {
+                    Ok(port) => Some(ausgabe::netzadresse(port)),
+                    Err(_) => None,
+                };
 
             let zustand = app.state::<Mutex<Dienstzustand>>();
             if let Ok(mut z) = zustand.lock() {
                 z.ordner = Some(ordner);
                 z.adresse = adresse;
+                z.ausloeser = Some(ausloeser);
             }
 
             Ok(())

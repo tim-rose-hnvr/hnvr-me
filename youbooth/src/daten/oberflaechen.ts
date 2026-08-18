@@ -118,6 +118,38 @@ export const oberflaechen: Oberflaeche[] = [
     ],
   },
   {
+    id: 'iphone-apps',
+    titel: 'Auslöser am Telefon',
+    kicker: 'Im WLAN der Box',
+    h1: 'Das eigene Telefon als Fernbedienung',
+    sub: 'QR am Screen scannen, ein Knopf, Countdown an der Box. Die Seite kommt aus der Box selbst — keine App, kein Konto, kein Internet.',
+    screenshot: '/assets/app-fernausloeser.png',
+    bildbeschreibung: 'Auslöser-Seite auf einem Telefon neben der Erklärung',
+    koennen: [
+      'Auslösen aus dem WLAN der Box, ohne Installation und ohne Anmeldung',
+      'Ein Ziel von 260 Pixeln — bedienbar mit einer Hand, auch im Halbdunkel',
+      'Nach dem Auslösen 12 Sekunden gesperrt, damit niemand den Countdown zerhackt',
+      'Der QR steht im Attract-Bild, nur wenn die Box den Dienst auch anbietet',
+      'Dieselbe Adresse trägt die Event-Galerie — ansehen und herunterladen am selben Gerät',
+    ],
+    regeln: [
+      {
+        titel: 'Nur eine Zahl',
+        text: 'Von außen lässt sich genau ein Zähler erhöhen, und nur per POST. Die Box schaut selbst nach ihm; sie nimmt keine Befehle entgegen.',
+      },
+      {
+        titel: 'Kein Auslösen mitten in der Aufnahme',
+        text: 'Ausgelöst wird nur aus dem Attract oder der Auswahl. Wer während einer laufenden Serie tippt, unterbricht niemanden.',
+      },
+    ],
+    offen:
+      'Eine App im App Store gibt es nicht — dafür braucht es ein Apple-Developer-Konto und die Verteilung darüber. Live-Vorschau am Telefon, Gäste-Upload und Untertitel brauchen zusätzlich den Dienst zwischen den Geräten.',
+    knoepfe: [
+      { text: 'Kunden-Galerie ansehen', ziel: '/oberflaechen/kunden-galerie' },
+      { text: 'Software laden', ziel: '/download' },
+    ],
+  },
+  {
     id: 'onboarding',
     titel: 'Installations-Zentrum',
     kicker: 'Einrichtung in sechs Schritten',

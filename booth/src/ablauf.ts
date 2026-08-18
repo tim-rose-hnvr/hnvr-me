@@ -15,9 +15,17 @@ import { alsBilddaten, alsBlob, alsDoppelstreifen, zeichneMitVorlage } from './l
 import { alsGif } from './gif';
 import { werteJetzt } from './vorlage';
 import { findeVorlage } from './vorlagen';
-import { darfDrucken, dateiname, drucke, druckeInLetzterStunde, qrFuer, sichereAlsDatei } from './ausgabe';
+import {
+  darfDrucken,
+  dateiname,
+  drucke,
+  druckeInLetzterStunde,
+  qrBild,
+  qrFuer,
+  sichereAlsDatei,
+} from './ausgabe';
 import { alle, neueKennung, raeumeAuf, sichere, anzahl as gesamtzahl } from './speicher';
-import { ausgabeAdresse, legeAb } from './huelle';
+import { ausgabeAdresse, fernStand, inHuelle, legeAb } from './huelle';
 
 type Schritt = 'attract' | 'auswahl' | 'aufnahme' | 'ergebnis' | 'ausgabe';
 
@@ -39,6 +47,10 @@ export class Booth {
   private leerlaufUhr: number | null = null;
   private weiterUhr: number | null = null;
   private animation: number | null = null;
+
+  /** Fernauslöser: zuletzt gesehener Stand und der QR-Code zur Seite. */
+  private fernZuletzt = -1;
+  private fernQr = '';
 
   constructor(wurzel: HTMLElement) {
     this.wurzel = wurzel;
@@ -69,11 +81,21 @@ export class Booth {
     // Läuft der Booth in der Desktop-Hülle, kennt sie die Adresse, unter der
     // die Box ihre Dateien anbietet — der QR-Code braucht dann keine
     // Konfiguration von Hand.
-    void ausgabeAdresse().then((adresse) => {
+    void ausgabeAdresse().then(async (adresse) => {
       if (adresse && !this.einstellungen.ausgabeBasis) {
         this.einstellungen.ausgabeBasis = adresse;
       }
+      const basis = this.einstellungen.ausgabeBasis.trim().replace(/\/$/, '');
+      if (!basis) return;
+      try {
+        this.fernQr = await qrBild(`${basis}/fern`);
+        if (this.schritt === 'attract') this.zeichne();
+      } catch {
+        // Ohne QR bleibt der Screen das Bedienelement.
+      }
     });
+
+    this.beobachteFernausloeser();
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') this.zumAttract();
@@ -83,6 +105,26 @@ export class Booth {
         this.fragePin();
       }
     });
+  }
+
+  /**
+   * Fernauslöser: Der Booth fragt den Zähler der Hülle ab. Steigt er, startet
+   * eine Aufnahme — aber nur, wenn gerade niemand mitten in einer steckt.
+   */
+  private beobachteFernausloeser(): void {
+    if (!inHuelle()) return;
+
+    window.setInterval(() => {
+      void fernStand().then((stand) => {
+        if (this.fernZuletzt < 0) {
+          this.fernZuletzt = stand;
+          return;
+        }
+        if (stand <= this.fernZuletzt) return;
+        this.fernZuletzt = stand;
+        if (this.schritt === 'attract' || this.schritt === 'auswahl') void this.starteSerie();
+      });
+    }, 1200);
   }
 
   private async zaehleAuf(): Promise<void> {
@@ -249,6 +291,16 @@ export class Booth {
       start,
       absatz(this.einstellungen.attractZeile)
     );
+
+    // Der Auslöser fürs Handy: nur zeigen, wenn die Box ihn auch anbietet.
+    if (this.fernQr) {
+      const fern = element('div', 'fern');
+      const bild = document.createElement('img');
+      bild.src = this.fernQr;
+      bild.alt = 'QR-Code zum Auslöser im Netz der Box';
+      fern.append(bild, mono('Auslöser aufs Handy'));
+      flaeche.append(fern);
+    }
 
     // Tippen irgendwo startet ebenfalls — der Screen ist das Bedienelement.
     flaeche.addEventListener('click', (e) => {

@@ -43,9 +43,11 @@ pruefe('Genau 74px hoch', Math.round(kopf.hoehe) === 74, String(kopf.hoehe));
 pruefe('Haftet oben', kopf.haftend === 'sticky', kopf.haftend);
 pruefe('Fläche rgba(11,11,13,.86)', kopf.flaeche.replace(/\s/g, '') === 'rgba(11,11,13,0.86)', kopf.flaeche);
 
-const SOLL = ['System', 'Module', 'Anlässe', 'Vorlagen', 'Vergleich', 'Preise', 'Rechner',
-  'Referenzen', 'Ratgeber', 'Hilfe', 'Partner', 'Team'];
-pruefe('Zwölf Menüpunkte in der Reihenfolge der Spec',
+/* Neun wie im Entwurf. Die Spec-Prosa nennt zwölf; die passen mit ihren
+   eigenen Maßen erst ab 1366px — siehe daten/navigation.ts. */
+const SOLL = ['System', 'Module', 'Anlässe', 'Vorlagen', 'Vergleich', 'Rechner', 'Preise',
+  'Hilfe', 'Über uns'];
+pruefe('Neun Menüpunkte in der Reihenfolge des Entwurfs',
   kopf.punkte.join('|') === SOLL.join('|'), kopf.punkte.join(' · '));
 pruefe('Der aktive Punkt kommt aus dem Pfad', kopf.aktiv.join() === 'Preise', kopf.aktiv.join());
 pruefe('Rechts stehen Anmelden und Kostenlos testen',
@@ -95,7 +97,7 @@ for (const breite of [1600, 1440, 1366, 1280, 1160, 1020, 900, 640, 380]) {
   });
   pruefe(`${breite}px: nichts steht seitlich über`, !messwert.ueber);
   pruefe(`${breite}px: Leiste bleibt 74px`, Math.round(messwert.kopfhoehe) === 74, String(messwert.kopfhoehe));
-  pruefe(`${breite}px: Burger ${breite <= 1365 ? 'da' : 'weg'}`, messwert.burger === (breite <= 1365));
+  pruefe(`${breite}px: Burger ${breite <= 1160 ? 'da' : 'weg'}`, messwert.burger === (breite <= 1160));
   pruefe(`${breite}px: nichts in der Leiste überlappt`, !messwert.ueberlappt, messwert.ueberlappt || '');
   await k.close();
 }

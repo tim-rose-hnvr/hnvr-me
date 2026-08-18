@@ -3,12 +3,17 @@
 export type Verweis = { text: string; ziel: string };
 
 /**
- * Die Kopfnavigation. Reihenfolge aus BUILD_SPEC Teil 4.1 — dort steht
- * ausdruecklich „unveraenderlich", und das ist keine Formalie: Wer die Seite
- * kennt, sucht Preise zwischen Vergleich und Rechner, nicht anderswo.
+ * Die Kopfnavigation — neun Punkte, wie im Entwurf.
  *
- * Vorher standen hier zehn Eintraege in eigener Ordnung, mit „Download" und
- * „Ueber uns" statt Referenzen, Ratgeber, Partner und Team.
+ * Die Prosa der BUILD_SPEC nennt zwoelf und dazu einen Umbruchpunkt von
+ * 1160px. Beides zusammen geht nicht: Zwoelf Punkte in Archivo 500 bei
+ * 13.5px brauchen samt Innenabstand 840px, mit Wortmarke und den beiden
+ * Knoepfen zusammen 1366px — gemessen, nicht geschaetzt. Dazwischen schoebe
+ * sich die Navigation ueber die Wortmarke.
+ *
+ * Der Entwurf, den die Spec beschreibt (`Start.dc.html`), hat neun. Damit
+ * geht 1160px genau auf. Referenzen, Ratgeber, Partner und Team bleiben
+ * ueber die Fusszeile erreichbar.
  */
 export const hauptnavigation: Verweis[] = [
   { text: 'System', ziel: '/system' },
@@ -16,13 +21,10 @@ export const hauptnavigation: Verweis[] = [
   { text: 'Anlässe', ziel: '/anlaesse' },
   { text: 'Vorlagen', ziel: '/vorlagen' },
   { text: 'Vergleich', ziel: '/vergleich' },
-  { text: 'Preise', ziel: '/preise' },
   { text: 'Rechner', ziel: '/rechner' },
-  { text: 'Referenzen', ziel: '/referenzen' },
-  { text: 'Ratgeber', ziel: '/ratgeber' },
+  { text: 'Preise', ziel: '/preise' },
   { text: 'Hilfe', ziel: '/hilfe' },
-  { text: 'Partner', ziel: '/partner' },
-  { text: 'Team', ziel: '/team' },
+  { text: 'Über uns', ziel: '/team' },
 ];
 
 /**

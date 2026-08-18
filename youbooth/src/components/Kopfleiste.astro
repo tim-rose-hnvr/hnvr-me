@@ -227,29 +227,17 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     transition: transform var(--t-transform), opacity var(--t-farbe);
   }
 
-  /* Unter 1365px: Burger statt Leiste.
+  /* Unter 1160px: Burger statt Leiste — der Wert aus der Spec.
 
-     Die Spec nennt 1160px. Das geht mit ihren eigenen Werten nicht auf:
-     Zwoelf Punkte in Archivo 500 bei 13.5px brauchen samt Innenabstand
-     840px, dazu Wortmarke (~190px) und zwei Knoepfe (~270px) — gemessen,
-     nicht geschaetzt. Unterhalb von 1366px schiebt sich die Navigation
-     deshalb ueber die Wortmarke und ueber „Anmelden".
-
-     Der Widerspruch steckt in der Spec selbst: Der Entwurf, den sie
-     beschreibt, hat NEUN Punkte (System · Module · Anlässe · Vorlagen ·
-     Vergleich · Rechner · Preise · Hilfe · Über uns), die Prosa nennt zwoelf.
-     Mit neun passt 1160px genau.
-
-     Hier gilt die Prosa (zwoelf Punkte, Reihenfolge unveraendert) und der
-     Umbruchpunkt weicht auf den gemessenen Wert aus — ueberlappende Schrift
-     waere die schlechtere Abweichung. Sollen es neun werden, kann 1160
-     zurueck.
+     Er geht auf, weil die Navigation neun Punkte hat wie der Entwurf. Mit
+     den zwoelf aus der Spec-Prosa braeuchte sie 1366px; siehe die
+     Begruendung in `daten/navigation.ts`.
 
      Das Panel haengt UNTER der Leiste, nicht in ihr. Vorher lief es ueber
      `flex-wrap` in einer zweiten Zeile mit — das hielt die Leiste nur solange
      auf 74px, wie sie zu war, und schob beim Oeffnen die Seite nach unten.
      Die Spec sagt: feste Hoehe, Panel darunter. */
-  @media (max-width: 1365px) {
+  @media (max-width: 1160px) {
     .burger {
       display: flex;
     }
@@ -372,6 +360,6 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
   /* Wird das Fenster über den Umbruchpunkt hinaus breiter, gibt es kein
      Panel mehr, das offen sein könnte — die Scroll-Sperre bliebe sonst. */
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 1365 && kopf?.hasAttribute('data-offen')) setze(false);
+    if (window.innerWidth > 1160 && kopf?.hasAttribute('data-offen')) setze(false);
   });
 </script>

@@ -422,12 +422,102 @@ label.feld { display: flex; flex-direction: column; gap: 5px; font-size: 12px;
 .hebt { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .hebt:hover { transform: translateY(-5px); }
 
+/* Suchlinie ueber der Vorschau, solange gerechnet wird. Sie sagt genau
+   eines: der Server ist dran. Ein Wartezeichen an der Stelle, an der
+   sich gleich etwas aendert, wird gelesen — eines in der Ecke nicht. */
+.suchlinie {
+  position: absolute; left: 0; right: 0; top: 0; height: 8%;
+  pointer-events: none; z-index: 3;
+  background: linear-gradient(180deg,
+    transparent, color-mix(in srgb, var(--color-accent) 40%, transparent), transparent);
+  animation: sweep 1.1s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+.suchlinie[hidden] { display: none; }
+
+/* Der Ring dreht, solange ein Paket gebaut wird. Kein Fortschritt in
+   Prozent: der Server kennt ihn nicht, und eine erfundene Zahl, die bei
+   90 stehen bleibt, ist schlimmer als keine. */
+.laeuft {
+  display: inline-block; width: 15px; height: 15px; vertical-align: -2px;
+  margin-right: 8px; border-radius: 999px;
+  border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-top-color: currentColor;
+  animation: spinslow 0.9s linear infinite;
+}
+
+/* Das Siegel atmet einmal, wenn das Urteil umschlaegt — nicht bei jedem
+   Tastenanschlag. Ausgeloest wird es im Studio, indem die Klasse neu
+   gesetzt wird; deshalb keine Endlosschleife. */
+.atmet { animation: breathe 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 1; }
+
+/* — Einschub —
+   Faehrt von rechts ein und legt sich vor die Liste, ohne sie zu
+   verlassen. Wer einen Code prueft, will danach den naechsten pruefen;
+   eine eigene Seite kostet jedes Mal den Weg zurueck.
+
+   Grund und Blatt sind zwei Elemente, weil sie zwei verschiedene
+   Bewegungen machen: der Grund blendet auf, das Blatt faehrt. Mit
+   prefers-reduced-motion bleibt nur das Aufblenden. */
+.einschub-grund {
+  position: fixed; inset: 0; z-index: 40;
+  background: color-mix(in srgb, var(--color-text) 38%, transparent);
+  opacity: 0; transition: opacity 0.24s ease;
+}
+.einschub-grund[hidden], .einschub[hidden] { display: none; }
+.einschub-grund.offen { opacity: 1; }
+
+.einschub {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 41;
+  width: min(460px, 100%); display: flex; flex-direction: column;
+  background: var(--color-surface);
+  box-shadow: -18px 0 48px color-mix(in srgb, var(--color-text) 22%, transparent);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow-y: auto;
+}
+.einschub.offen { transform: translateX(0); }
+
+.einschub-kopf {
+  position: sticky; top: 0; z-index: 1;
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 18px 20px 14px; background: var(--color-surface);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+.einschub-kopf h2 {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 20px; letter-spacing: -0.01em; margin: 0; flex: 1;
+}
+.einschub-zu {
+  font: inherit; font-size: 22px; line-height: 1; cursor: pointer;
+  background: none; border: none; color: var(--color-text);
+  padding: 2px 6px; border-radius: 999px;
+}
+.einschub-zu:hover { background: color-mix(in srgb, var(--color-text) 10%, transparent); }
+.einschub-koerper { padding: 16px 20px 28px; display: flex; flex-direction: column; gap: 18px; }
+.einschub-block > h3 {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--color-accent-700); margin: 0 0 8px;
+}
+
+@media (max-width: 560px) {
+  /* Auf dem Telefon ist ein 460-px-Blatt die ganze Breite. Dann faehrt
+     es von unten — das ist die Geste, die dort gelernt ist. */
+  .einschub {
+    width: 100%; top: auto; height: 88vh; border-radius: 22px 22px 0 0;
+    transform: translateY(100%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
   .hebt:hover { transform: none; }
+  /* Der Einschub steht dann sofort da, statt zu fahren. Sichtbar bleibt
+     er — abgeschaltet wird die Bewegung, nicht die Funktion. */
+  .einschub { transition: none !important; }
+  .suchlinie { display: none !important; }
 }
 
 @media (max-width: 760px) {

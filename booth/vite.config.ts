@@ -30,6 +30,7 @@ export default defineConfig({
         einrichtung: 'einrichtung.html',
         editor: 'editor.html',
         portal: 'portal.html',
+        buchen: 'buchen.html',
       },
     },
   },

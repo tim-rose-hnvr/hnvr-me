@@ -1,0 +1,301 @@
+/* Buchungsseite. Sie gehört zum Betreiber, nicht zur Feier — deshalb sieht sie
+   aus wie die Website (Papier, Ink, Amber) und nicht wie der Bildschirm im
+   Saal. Gelesen wird sie meist auf dem Handy, oft abends auf dem Sofa. */
+
+/* `stil.css` legt für den Booth `html, body { height: 100%; overflow: hidden }`
+   auf Ink fest — ein Vollbild, das nicht scrollt. Diese Seite ist ein Dokument
+   und muss scrollen; ohne das Zurücknehmen bricht sie am unteren Rand des
+   Fensters ab, und darunter steht der schwarze Grund des Booths. */
+html {
+  height: auto;
+  overflow: visible;
+  background: #f6f4f1;
+}
+
+body.buchenseite {
+  height: auto;
+  min-height: 100%;
+  background: #f6f4f1;
+  color: #17171c;
+  overflow: visible;
+  user-select: text;
+}
+
+#buchen {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 40px clamp(20px, 5vw, 48px) 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.bmono {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* Amber trägt auf Papier zu wenig Kontrast für Text — dafür die dunkle
+   Schwester, gleiche Familie, lesbar auf Weiß. */
+.bmono--amber { color: #8a5c00; }
+
+.bkopf {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bkopf h1 {
+  font-family: var(--schrift);
+  font-weight: 800;
+  font-size: clamp(32px, 6vw, 50px);
+  line-height: 1.03;
+  letter-spacing: -0.03em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.bfliess {
+  margin: 0;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.62);
+  max-width: 58ch;
+}
+
+.bbereich {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bbereich h2 {
+  font-family: var(--schrift);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.bbereich__kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.bbereich--dank {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-left: 3px solid var(--amber);
+  border-radius: 14px;
+  background: #fff;
+  padding: 26px 28px;
+}
+
+.bhinweis {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.58);
+}
+
+/* --- Pakete -------------------------------------------------------- */
+
+.bpakete {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.bpaket {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  padding: 20px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  cursor: pointer;
+  font-family: var(--schrift);
+  color: #17171c;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bpaket:hover { border-color: rgba(0, 0, 0, 0.3); }
+
+/* Das gewählte Paket trägt einen dicken Rand statt einer Füllung: Der Text
+   darin muss lesbar bleiben, auch auf Amber. */
+.bpaket.an {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 2px var(--amber);
+}
+
+.bpaket__name {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.015em;
+}
+
+.bpaket__preis {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.bpaket__liste {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.62);
+}
+
+.bpaket__liste li { margin-bottom: 3px; }
+
+/* --- Kalender ------------------------------------------------------ */
+
+.bkalender {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.bkalender__wochentag {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.42);
+  text-align: center;
+  padding-bottom: 4px;
+}
+
+.bkalender__leer { display: block; }
+
+.btag {
+  aspect-ratio: 1;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  color: #17171c;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.btag:hover:not(:disabled) { border-color: var(--amber); }
+
+.btag.an {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--amber-ink);
+  font-weight: 700;
+}
+
+/* Vergeben und vergangen sehen gleich aus: Dass ein Tag gesperrt ist, geht
+   den Kunden nichts an. */
+.btag--weg {
+  opacity: 0.3;
+  cursor: default;
+  text-decoration: line-through;
+}
+
+/* --- Formular ------------------------------------------------------ */
+
+.bformular {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.bzeile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bzeile--weit { grid-column: 1 / -1; }
+
+.beingabe {
+  min-height: 50px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #fff;
+  color: #17171c;
+  padding: 12px 14px;
+  font-family: var(--schrift);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.beingabe:focus {
+  outline: none;
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.2);
+}
+
+textarea.beingabe { resize: vertical; }
+
+.bknopf {
+  min-height: 52px;
+  padding: 0 26px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #fff;
+  color: #17171c;
+  font-family: var(--schrift);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  grid-column: 1 / -1;
+  justify-self: start;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.bknopf--amber {
+  background: var(--amber);
+  border-color: transparent;
+  color: var(--amber-ink);
+}
+
+.bknopf--klein {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 15px;
+  grid-column: auto;
+}
+
+.bknopf:disabled { opacity: 0.5; cursor: default; }
+
+.breihe {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bmeldung {
+  margin: 0;
+  font-family: var(--schrift);
+  font-weight: 600;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.bmeldung--fehler { color: #b3382c; }
+.bmeldung--gut { color: #0f7a5e; }
+.bmeldung--still { color: rgba(0, 0, 0, 0.55); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bpaket, .btag, .bknopf { transition: none; }
+}

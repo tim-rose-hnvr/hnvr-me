@@ -188,16 +188,20 @@ function kopf(anfragen: number, offen: number): HTMLElement {
   links.append(titel, mono(`${anfragen} offene Anfragen · ${offen} offene Tickets`));
 
   const rechts = tag('div', 'ckopf__aktionen');
+  /* Die Buchungsseite steht zuerst: Sie ist die Adresse, die der Betreiber
+     weitergibt — an Kunden, auf die eigene Website, in die Signatur. */
   (
     [
+      ['Buchungsseite', './buchen.html'],
       ['Cockpit', './cockpit.html'],
       ['Galerie', './galerie.html'],
       ['Booth öffnen', './index.html'],
     ] as const
   ).forEach(([text, ziel], i) => {
-    const glied = tag('a', `cknopf${i === 2 ? ' cknopf--amber' : ''}`) as HTMLAnchorElement;
+    const glied = tag('a', `cknopf${i === 3 ? ' cknopf--amber' : ''}`) as HTMLAnchorElement;
     glied.href = ziel;
     glied.textContent = text;
+    if (i === 0) glied.target = '_blank';
     rechts.append(glied);
   });
 

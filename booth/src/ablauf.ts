@@ -10,11 +10,17 @@
 import { ARTEN, REGIE, type Art } from './arten';
 import { Kamera, deuteFehler } from './kamera';
 import type { Einstellungen } from './einstellungen';
-import { ladeEinstellungen, sichereEinstellungen, standardEinstellungen } from './einstellungen';
+import {
+  holeEinstellungen,
+  ladeEinstellungen,
+  pinStimmt,
+  sichereEinstellungen,
+  standardEinstellungen,
+} from './einstellungen';
 import { alsBilddaten, alsBlob, alsDoppelstreifen, zeichneMitVorlage } from './layout';
 import { alsGif } from './gif';
 import { bildfelder, werteJetzt } from './vorlage';
-import { findeVorlage } from './vorlagen';
+import { eingestellt, findeVorlage, ladeVorlagen } from './vorlagen';
 import {
   darfDrucken,
   dateiname,
@@ -26,6 +32,7 @@ import {
 } from './ausgabe';
 import { raeumeAuf, sichere, anzahl as gesamtzahl, type Aufnahme } from './speicher';
 import { fernStand, inHuelle } from './huelle';
+import { amDraht, istNeuladen, type Nachricht } from './draht';
 
 type Schritt = 'attract' | 'auswahl' | 'aufnahme' | 'ergebnis' | 'ausgabe';
 
@@ -64,6 +71,11 @@ export class Booth {
   }
 
   async starte(): Promise<void> {
+    /* Erst der Stand der Box, dann das erste Bild. Sonst zeichnet der Booth
+       eine Sekunde lang mit den Vorgaben — Eventname, Laufband und Countdown
+       springen dem Gast vor der Nase um. */
+    await holeEinstellungen();
+    this.einstellungen = ladeEinstellungen();
     this.zeichne();
 
     try {
@@ -73,6 +85,12 @@ export class Booth {
       const gedeutet = deuteFehler(fehler);
       this.zeigeKamerafehler(gedeutet.text);
     }
+
+    // Welche Vorlagen es gibt und welche eingestellt ist, weiß die Box.
+    void ladeVorlagen();
+
+    // Ab hier meldet die Box selbst, wenn sich etwas ändert.
+    amDraht('booth', (n) => this.vonDerBox(n));
 
     // Abgelaufene Aufnahmen räumt die Box beim Start weg.
     void raeumeAuf(this.einstellungen.loeschfristTage).catch(() => undefined);
@@ -105,6 +123,35 @@ export class Booth {
         this.fragePin();
       }
     });
+  }
+
+  /**
+   * Was die Box meldet.
+   *
+   * Der Booth ist die einzige Oberfläche, vor der jemand steht. Deshalb wird
+   * hier nichts unter laufender Aufnahme umgeworfen: Neue Einstellungen und
+   * ein Neuladen greifen erst im Attract, wenn niemand davorsteht. Drei
+   * Sekunden später zu wirken ist verzeihlich, eine Serie mittendrin
+   * abzureißen nicht.
+   */
+  private vonDerBox(n: Nachricht): void {
+    const ruht = this.schritt === 'attract';
+
+    if (n.type === 'settings' || n.type === 'hello') {
+      this.einstellungen = ladeEinstellungen();
+      if (ruht) this.zeichne();
+    }
+
+    // Auslösen vom Handy: derselbe Weg wie der Knopf am Screen.
+    if (
+      n.type === 'control' &&
+      n.action === 'trigger' &&
+      (this.schritt === 'attract' || this.schritt === 'auswahl')
+    ) {
+      void this.starteSerie();
+    }
+
+    if (istNeuladen(n, 'booth') && ruht) location.reload();
   }
 
   /**
@@ -548,7 +595,7 @@ export class Booth {
   private bilderJeSerie(): number {
     if (this.art.bewegt) return this.art.bilder;
     if (this.art.id !== 'streifen') return this.art.bilder;
-    const vorlage = findeVorlage(this.einstellungen.vorlageStreifen, 'streifen');
+    const vorlage = findeVorlage(eingestellt().streifen, 'streifen');
     const felder = bildfelder(vorlage);
     // Doppelstreifen-Vorlagen zeigen dieselbe Serie zweimal: dann ist die
     // halbe Feldzahl die Serie. Sonst so viele Aufnahmen wie Felder.
@@ -636,7 +683,7 @@ export class Booth {
     );
 
     if (this.art.id === 'streifen') {
-      const vorlage = findeVorlage(this.einstellungen.vorlageStreifen, 'streifen');
+      const vorlage = findeVorlage(eingestellt().streifen, 'streifen');
       const streifen = await zeichneMitVorlage(vorlage, this.aufnahmen, werte);
       // Doppeln gilt nur für das schmale 2×6-Blatt: Zwei davon passen auf ein
       // 4×6, das der Cutter mittig trennt. Eine Vorlage, die schon auf 4×6
@@ -649,7 +696,7 @@ export class Booth {
           : streifen;
     } else {
       // Bewegtbild: als Blatt gesichert wird das erste Bild der Serie.
-      const vorlage = findeVorlage(this.einstellungen.vorlageFoto, 'foto');
+      const vorlage = findeVorlage(eingestellt().foto, 'foto');
       this.ergebnis = await zeichneMitVorlage(vorlage, [this.aufnahmen[0]!], werte);
     }
 
@@ -824,20 +871,32 @@ export class Booth {
 
     const meldung = element('span', 'hinweiszeile');
 
-    const pruefe = () => {
-      if (feld.value === this.einstellungen.kioskPin) {
+    /* Geprüft wird auf der Box, nicht hier: Sie kennt nur die gesalzene
+       Prüfsumme und legt nach einem Fehlversuch eine Zwangspause ein. Eine
+       vierstellige Zahl im Browser zu vergleichen hieße, sie im Quelltext
+       jeder Oberfläche mitzuliefern. */
+    let laeuft = false;
+    const pruefe = async () => {
+      if (laeuft) return;
+      laeuft = true;
+      weiter.setAttribute('disabled', 'disabled');
+      meldung.textContent = 'Prüfe …';
+      const antwort = await pinStimmt(feld.value);
+      laeuft = false;
+      weiter.removeAttribute('disabled');
+      if (antwort.ok) {
         tafel.decke.remove();
         this.zeigeEinstellungen();
-      } else {
-        meldung.textContent = 'PIN stimmt nicht.';
-        feld.value = '';
-        feld.focus();
+        return;
       }
+      meldung.textContent = antwort.grund ?? 'PIN stimmt nicht.';
+      feld.value = '';
+      feld.focus();
     };
 
-    weiter.addEventListener('click', pruefe);
+    weiter.addEventListener('click', () => void pruefe());
     feld.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') pruefe();
+      if (e.key === 'Enter') void pruefe();
     });
 
     zeile.append(feld, weiter);
@@ -963,7 +1022,7 @@ export class Booth {
     });
 
     tafel.inhalt.append(
-      mono(`Box ${e.box} · Kiosk-PIN ${e.kioskPin}`),
+      mono(`Box ${e.box} · Kiosk ${e.kioskGesetzt ? 'mit PIN gesperrt' : 'offen'}`),
       mono('Oberflächen'),
       wege,
       ...felder,

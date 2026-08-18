@@ -47,7 +47,12 @@ const APP_VERSION = require(
 /* Beschreibbarer Datenordner: im gepackten Desktop-Build liegt der Code in
    einem schreibgeschützten app.asar – Fotos/Config gehören dann in den
    Nutzerordner (von electron/main.js via YOUBOOTH_DATEN gesetzt). */
-const DATA_DIR = process.env.YOUBOOTH_DATEN || __dirname;
+/* Betriebsdaten liegen NEBEN dem Programm, nicht darin: Einstellungen,
+   Vorlagen, Aufnahmen und der Lizenzschlüssel gehören dem Gerät. Lagen sie im
+   Programmordner, landeten sie in der Versionsverwaltung und im Installer —
+   beides ist einmal passiert. In der Desktop-Hülle zeigt `YOUBOOTH_DATEN` auf
+   den Nutzerordner, denn dort ist das Programm schreibgeschützt. */
+const DATA_DIR = process.env.YOUBOOTH_DATEN || path.join(__dirname, '..', 'daten');
 const PHOTOS_DIR = path.join(DATA_DIR, 'photos');
 const CONFIG_DIR = path.join(DATA_DIR, 'config');
 const DOWNLOADS_DIR = path.join(DATA_DIR, 'downloads');
@@ -109,6 +114,28 @@ const DEFAULT_SETTINGS = {
   /* Der Gast waehlt sein Layout. Aus bleibt aus: Ohne Auswahl laeuft der
      Ablauf wie bisher, ohne Zwischenschritt. */
   auswahl: { aktiv: false, vorlagen: [], sekunden: 12 },
+  /* ---------- Was der Booth in unserer Oberflaeche zusaetzlich braucht ----
+     Bewusst ein eigener Block: Was hier steht, gehoert zur Fuehrung des
+     Gastes durch den Abend, nicht zur Technik der Box. So bleibt beim Lesen
+     erkennbar, welche Einstellung wem gehoert. */
+  booth: {
+    /* Bewegung im Attract: ruhig, pulsender Startknopf oder Laufband. */
+    attractstil: 'laufband',
+    /* Weicher Auftritt beim Schrittwechsel. */
+    uebergang: true,
+    /* Sekunden Leerlauf, bis der Booth zum Attract zurueckspringt. */
+    leerlauf: 45,
+    /* Sekunden bis „Auto-Weiter" im Ergebnis. */
+    autoWeiter: 8,
+    /* Blitz im Ausloesemoment. */
+    blitz: true,
+    /* Nach wie vielen Tagen die Box ihre Aufnahmen wegraeumt. */
+    loeschfristTage: 30,
+  },
+  /* Anzeigename dieser Box in der Kopfleiste. Nicht `brandName` — der gehoert
+     dem White-Label und steht auf den Gaestebildschirmen. */
+  boxName: 'Box #1',
+
   /* Ist der Einrichtungs-Assistent durch? Beim allerersten Start soll der
      Betreiber in fünf Schritten zu einer druckenden Box kommen und nicht in
      einer Einstellungswüste stehen. */
@@ -1493,8 +1520,20 @@ async function fotoInDieWolke(dateiName, mime, puffer, gesichter) {
   }
 }
 
+/* Die PIN-Prüfsumme geht NIE hinaus – auch nicht an den eigenen Rechner.
+   Sonst könnte man sie am Cockpit vorbei offline durchprobieren. */
+const ohnePin = (s) => ({
+  ...s,
+  kiosk: { enabled: !!(s.kiosk && s.kiosk.enabled), gesetzt: !!(s.kiosk && s.kiosk.pin) },
+});
+
 function broadcast(msg) {
-  const data = JSON.stringify(msg);
+  /* Ein Ausgang, eine Regel: Trägt eine Nachricht Einstellungen, geht die
+     PIN-Prüfsumme nicht mit. Der Weg über `/api/settings` war von Anfang an
+     sauber, der über den Draht nicht — und am Draht hängt jedes Gerät im
+     WLAN, das die Adresse kennt. Hier statt an sieben Aufrufstellen, weil
+     die achte sonst irgendwann vergessen wird. */
+  const data = JSON.stringify(msg && msg.settings ? { ...msg, settings: ohnePin(msg.settings) } : msg);
   for (const client of wss.clients) {
     if (client.readyState === 1) client.send(data);
   }
@@ -1797,10 +1836,6 @@ app.get('/api/qr', async (req, res) => {
 
 /* ---------- API: Einstellungen ---------- */
 
-/* Die PIN-Prüfsumme geht NIE hinaus – auch nicht an den eigenen Rechner.
-   Sonst könnte man sie am Cockpit vorbei offline durchprobieren. */
-const ohnePin = (s) => ({ ...s, kiosk: { enabled: !!s.kiosk.enabled, gesetzt: !!s.kiosk.pin } });
-
 app.get('/api/settings', (req, res) => {
   /* 21 Bildschirme lesen hier. Sie sollen sehen, was FÜR DIESE FEIER gilt —
      also Geräteeinstellungen mit den Werten des Events darüber.
@@ -1871,6 +1906,19 @@ app.put('/api/settings', requireKey, (req, res) => {
     if (Number.isFinite(b.druck.maxProStunde)) settings.druck.maxProStunde = Math.min(2000, Math.max(0, Math.round(b.druck.maxProStunde)));
   }
   if (typeof b.printer === 'string' || b.printer === null) settings.printer = b.printer ? String(b.printer).slice(0, 120) : null;
+  if (typeof b.boxName === 'string') settings.boxName = b.boxName.slice(0, 40);
+  if (b.booth && typeof b.booth === 'object') {
+    const z = settings.booth;
+    if (['ruhe', 'puls', 'laufband'].includes(b.booth.attractstil)) z.attractstil = b.booth.attractstil;
+    if (typeof b.booth.uebergang === 'boolean') z.uebergang = b.booth.uebergang;
+    if (typeof b.booth.blitz === 'boolean') z.blitz = b.booth.blitz;
+    /* Grenzen mit Grund: Unter zehn Sekunden Leerlauf springt die Box einem
+       Gast vor der Nase weg, und eine Loeschfrist von null Tagen loeschte die
+       Aufnahme, bevor der Gast sie geladen hat. */
+    if (Number.isFinite(b.booth.leerlauf)) z.leerlauf = Math.min(600, Math.max(10, Math.round(b.booth.leerlauf)));
+    if (Number.isFinite(b.booth.autoWeiter)) z.autoWeiter = Math.min(300, Math.max(2, Math.round(b.booth.autoWeiter)));
+    if (Number.isFinite(b.booth.loeschfristTage)) z.loeschfristTage = Math.min(3650, Math.max(1, Math.round(b.booth.loeschfristTage)));
+  }
   if (COUNTDOWN_STYLES.includes(b.countdownStyle)) settings.countdownStyle = b.countdownStyle;
   if (['grid', 'overlay', 'logo', 'photomosaic'].includes(b.mosaicMode)) settings.mosaicMode = b.mosaicMode;
   if (b.auswahl && typeof b.auswahl === 'object') {
@@ -3778,7 +3826,7 @@ wss.on('connection', (ws, req) => {
   ws.youboothSeit = Date.now();
   ws.lebt = true;
   ws.on('pong', () => { ws.lebt = true; });
-  ws.send(JSON.stringify({ type: 'hello', role, settings }));
+  ws.send(JSON.stringify({ type: 'hello', role, settings: ohnePin(wirksam()) }));
 });
 
 /* ═══════════════ Herzschlag — der teuerste Fehler dieses Projekts ═══════════

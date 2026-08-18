@@ -14,7 +14,8 @@
 
 import './stil.css';
 import './editor.css';
-import { ladeEinstellungen, sichereEinstellungen } from './einstellungen';
+import { holeEinstellungen, ladeEinstellungen } from './einstellungen';
+import { amDraht } from './draht';
 import { Kamera } from './kamera';
 import { alsBilddaten } from './layout';
 import { drucke, qrBild } from './ausgabe';
@@ -43,11 +44,14 @@ import {
 } from './formate';
 import {
   alleVorlagen,
-  eigeneVorlagen,
+  eingestellt,
   istMitgeliefert,
   kopiere,
+  ladeVorlagen,
+  loescheVorlage,
   neueVorlagenKennung,
-  sichereEigene,
+  sichereVorlage,
+  stelleEin,
 } from './vorlagen';
 
 /* --- Bausteine ------------------------------------------------------ */
@@ -157,14 +161,15 @@ function testbilder(): HTMLCanvasElement[] {
 
 /* --- Zustand -------------------------------------------------------- */
 
-let eigene = eigeneVorlagen();
+/* Die Liste liegt auf der Box. Hier steht nur, woran gerade gearbeitet wird —
+   und ob es schon dort angekommen ist. */
 let aktuell: Vorlage = alleVorlagen()[0]!;
 let gewaehlt: string | null = null;
 let muster = testbilder();
 let zubehoer: Zubehoer = LEERES_ZUBEHOER;
 let ungesichert = false;
 
-const einstellungen = ladeEinstellungen();
+let einstellungen = ladeEinstellungen();
 
 const leinwand = el<HTMLCanvasElement>('leinwand');
 const blatt = el<HTMLDivElement>('blatt');
@@ -198,25 +203,39 @@ function sage(text: string, art: 'still' | 'gut' | 'fehler' = 'still'): void {
  * baut der Prüfer sich nicht bei jedem Tastendruck neu auf.
  */
 function aendere(tue: (v: Vorlage) => void, teile: Wunsch = {}): void {
+  let kopiert = false;
   if (istMitgeliefert(aktuell.id)) {
-    const kopieDavon = kopiere(aktuell, `${aktuell.name} (eigene)`);
-    eigene.push(kopieDavon);
-    aktuell = kopieDavon;
-    sage('Mitgelieferte Vorlagen bleiben unverändert — die Änderung liegt jetzt in einer Kopie.');
+    aktuell = kopiere(aktuell, `${aktuell.name} (eigene)`);
+    kopiert = true;
+    sage(
+      'Mitgelieferte Vorlagen bleiben unverändert — die Änderung liegt jetzt in einer Kopie. ' +
+        '„Sichern" legt sie auf der Box ab.'
+    );
   }
   tue(aktuell);
   ungesichert = true;
-  zeichneAlles(teile);
+  // Entsteht eine Kopie, wechselt die Vorlage ihre Identität: Name, Herkunft
+  // und Auswahlliste stimmen dann nicht mehr. Der Kopf muss mit, auch wenn
+  // der Aufrufer ihn ausgenommen hat.
+  zeichneAlles(kopiert ? {} : teile);
 }
 
-function sichereAlles(): boolean {
-  const ergebnis = sichereEigene(eigene);
-  if ('fehler' in ergebnis) {
-    sage(ergebnis.fehler, 'fehler');
+/**
+ * Legt die bearbeitete Vorlage auf der Box ab. Die Box prüft sie noch einmal
+ * und antwortet mit dem Stand, der danach gilt — deshalb wird ihre Antwort
+ * übernommen, statt der eigenen Fassung zu glauben.
+ */
+async function sichereAlles(): Promise<boolean> {
+  try {
+    const abgelegt = await sichereVorlage(aktuell);
+    aktuell = abgelegt;
+    ungesichert = false;
+    zeichneAlles();
+    return true;
+  } catch (fehler) {
+    sage('Die Box hat die Vorlage nicht angenommen: ' + String(fehler).replace('Error: ', ''), 'fehler');
     return false;
   }
-  ungesichert = false;
-  return true;
 }
 
 /* --- Zeichnen ------------------------------------------------------- */
@@ -721,7 +740,7 @@ function baueKopf(): void {
   const gruppen: { name: string; liste: Vorlage[] }[] = [
     { name: 'Eigene Gestaltung', liste: alleVorlagen().filter((v) => istMitgeliefert(v.id) && !v.hintergrund) },
     { name: 'Katalog', liste: alleVorlagen().filter((v) => istMitgeliefert(v.id) && v.hintergrund) },
-    { name: 'Auf dieser Box', liste: eigene },
+    { name: 'Auf dieser Box', liste: standardsUndEigene().filter((v) => !istMitgeliefert(v.id)) },
   ];
   gruppen.forEach((g) => {
     if (!g.liste.length) return;
@@ -770,15 +789,20 @@ function baueKopf(): void {
 
   const fotoHaken = el<HTMLInputElement>('standard-foto');
   const streifenHaken = el<HTMLInputElement>('standard-streifen');
-  fotoHaken.checked = einstellungen.vorlageFoto === aktuell.id;
-  streifenHaken.checked = einstellungen.vorlageStreifen === aktuell.id;
+  fotoHaken.checked = eingestellt().foto === aktuell.id;
+  streifenHaken.checked = eingestellt().streifen === aktuell.id;
   fotoHaken.disabled = aktuell.art !== 'foto';
   streifenHaken.disabled = aktuell.art !== 'streifen';
 }
 
+/**
+ * Alles, was zur Auswahl steht — plus die Vorlage in Arbeit, falls sie noch
+ * nicht auf der Box liegt. Sonst verschwände sie beim ersten Neuzeichnen aus
+ * ihrer eigenen Auswahlliste.
+ */
 function standardsUndEigene(): Vorlage[] {
-  const standards = alleVorlagen().filter((v) => istMitgeliefert(v.id));
-  return [...standards, ...eigene];
+  const liste = alleVorlagen();
+  return liste.some((v) => v.id === aktuell.id) ? liste : [...liste, aktuell];
 }
 
 function waehleVorlage(id: string): void {
@@ -841,7 +865,6 @@ function neueVorlage(): void {
       },
     ],
   };
-  eigene.push(vorlage);
   aktuell = vorlage;
   gewaehlt = null;
   ungesichert = true;
@@ -851,28 +874,28 @@ function neueVorlage(): void {
 }
 
 function kopiereAktuelle(): void {
-  const neu = kopiere(aktuell, `${aktuell.name} (Kopie)`);
-  eigene.push(neu);
-  aktuell = neu;
+  aktuell = kopiere(aktuell, `${aktuell.name} (Kopie)`);
   ungesichert = true;
   zeichneAlles();
   sage('Kopie angelegt.');
 }
 
-function loescheAktuelle(): void {
+async function loescheAktuelle(): Promise<void> {
   if (istMitgeliefert(aktuell.id)) {
     sage('Mitgelieferte Vorlagen lassen sich nicht löschen.', 'fehler');
     return;
   }
   const name = aktuell.name;
-  eigene = eigene.filter((v) => v.id !== aktuell.id);
-  if (einstellungen.vorlageFoto === aktuell.id) einstellungen.vorlageFoto = 'foto-klassisch';
-  if (einstellungen.vorlageStreifen === aktuell.id)
-    einstellungen.vorlageStreifen = 'streifen-klassisch';
-  sichereEinstellungen(einstellungen);
-  sichereAlles();
-  aktuell = standardsUndEigene()[0]!;
+  try {
+    await loescheVorlage(aktuell.id);
+  } catch (fehler) {
+    // Die Box lässt die eingestellte Vorlage nicht löschen — mit gutem Grund:
+    // Sonst stünde der Booth ohne Blatt da.
+    return sage(String(fehler).replace('Error: ', ''), 'fehler');
+  }
+  aktuell = alleVorlagen()[0]!;
   gewaehlt = null;
+  ungesichert = false;
   ladeZubehoerNeu();
   zeichneAlles();
   sage(`„${name}" gelöscht.`);
@@ -897,14 +920,12 @@ async function ausDatei(datei: File): Promise<void> {
       sage(geprueft.fehler, 'fehler');
       return;
     }
-    const neu = { ...geprueft.vorlage, id: neueVorlagenKennung() };
-    eigene.push(neu);
-    aktuell = neu;
+    aktuell = { ...geprueft.vorlage, id: neueVorlagenKennung() };
     gewaehlt = null;
     ungesichert = true;
     ladeZubehoerNeu();
     zeichneAlles();
-    sage(`„${neu.name}" geladen. „Sichern" legt sie auf dieser Box ab.`, 'gut');
+    sage(`„${aktuell.name}" geladen. „Sichern" legt sie auf dieser Box ab.`, 'gut');
   } catch {
     sage('Die Datei enthält kein lesbares JSON.', 'fehler');
   }
@@ -977,12 +998,12 @@ document.querySelectorAll<HTMLButtonElement>('[data-tun]').forEach((k) => {
       case 'kopie':
         return kopiereAktuelle();
       case 'loeschen':
-        return loescheAktuelle();
+        void loescheAktuelle();
+        return;
       case 'sichern':
-        if (sichereAlles()) {
-          zeichneAlles();
-          sage('Vorlagen gesichert.', 'gut');
-        }
+        void sichereAlles().then((gut) => {
+          if (gut) sage(`„${aktuell.name}" liegt auf der Box.`, 'gut');
+        });
         return;
       case 'datei-sichern':
         return alsDatei();
@@ -1070,17 +1091,19 @@ el<HTMLInputElement>('vorlagendatei').addEventListener('change', (e) => {
   if (datei) void ausDatei(datei).finally(() => (feld.value = ''));
 });
 
-function setzeStandard(blattart: 'foto' | 'streifen', an: boolean): void {
+async function setzeStandard(blattart: 'foto' | 'streifen', an: boolean): Promise<void> {
   if (!an) {
     sage('Eine Vorlage muss eingestellt bleiben — wähl stattdessen eine andere aus.');
     zeichneAlles();
     return;
   }
-  // Eingestellt werden kann nur, was auch abgelegt ist.
-  if (!istMitgeliefert(aktuell.id) && !sichereAlles()) return;
-  if (blattart === 'foto') einstellungen.vorlageFoto = aktuell.id;
-  else einstellungen.vorlageStreifen = aktuell.id;
-  sichereEinstellungen(einstellungen);
+  // Eingestellt werden kann nur, was auf der Box liegt.
+  if (ungesichert && !(await sichereAlles())) return;
+  try {
+    await stelleEin(aktuell.id);
+  } catch (fehler) {
+    return sage(String(fehler).replace('Error: ', ''), 'fehler');
+  }
   zeichneAlles();
   sage(
     `„${aktuell.name}" ist jetzt die Vorlage für ${blattart === 'foto' ? 'Fotos' : 'Streifen'}.`,
@@ -1089,10 +1112,10 @@ function setzeStandard(blattart: 'foto' | 'streifen', an: boolean): void {
 }
 
 el<HTMLInputElement>('standard-foto').addEventListener('change', (e) =>
-  setzeStandard('foto', (e.target as HTMLInputElement).checked)
+  void setzeStandard('foto', (e.target as HTMLInputElement).checked)
 );
 el<HTMLInputElement>('standard-streifen').addEventListener('change', (e) =>
-  setzeStandard('streifen', (e.target as HTMLInputElement).checked)
+  void setzeStandard('streifen', (e.target as HTMLInputElement).checked)
 );
 
 window.addEventListener('beforeunload', (e) => {
@@ -1110,9 +1133,34 @@ PLATZHALTER.forEach((p) => {
   platzhalterliste.append(zeile);
 });
 
-// Die eingestellte Vorlage ist der sinnvollste Startpunkt.
-aktuell =
-  standardsUndEigene().find((v) => v.id === einstellungen.vorlageFoto) ?? standardsUndEigene()[0]!;
-ladeZubehoerNeu();
-zeichneAlles();
-sage('Vorschau und Druck nutzen denselben Renderer — was hier steht, kommt so aus dem Drucker.');
+/* Erst den Stand der Box holen, dann zeichnen. Ohne Box wird es der
+   mitgelieferte Katalog — der Editor bleibt bedienbar, nur ohne Sichern. */
+void Promise.all([ladeVorlagen(), holeEinstellungen(true)]).then(([quelle]) => {
+  einstellungen = ladeEinstellungen();
+  aktuell = alleVorlagen().find((v) => v.id === eingestellt().foto) ?? alleVorlagen()[0]!;
+  ladeZubehoerNeu();
+  zeichneAlles();
+  /* Am zweiten Gerät kann jemand dieselbe Liste bearbeiten. Was hier offen ist,
+     wird deshalb nie stillschweigend überschrieben — die Liste zieht nach, das
+     Blatt in Arbeit bleibt stehen. */
+  amDraht('editor', (n) => {
+    if (n.type !== 'templates') return;
+    if (ungesichert) {
+      sage(
+        'Ein anderes Gerät hat die Vorlagen geändert. Hier liegt noch Ungesichertes — beim Sichern gewinnt dieser Stand.',
+        'fehler'
+      );
+      return;
+    }
+    zeichneAlles({ liste: true });
+  });
+
+  if (quelle === 'box') {
+    sage('Vorschau und Druck nutzen denselben Renderer — was hier steht, kommt so aus dem Drucker.');
+  } else {
+    sage(
+      'Die Box antwortet nicht — angezeigt wird der mitgelieferte Katalog. Sichern geht erst wieder, wenn sie da ist.',
+      'fehler'
+    );
+  }
+});

@@ -2,3 +2,12 @@ node_modules/
 dist/
 src-tauri/target/
 .DS_Store
+
+# Betriebsdaten der Box: Einstellungen, Vorlagen, Aufnahmen, Lizenzschlüssel.
+# Sie gehören dem Gerät, nicht dem Programm — und ein Lizenzschlüssel gehört
+# ohnehin in keine Versionsverwaltung.
+daten/
+server/config/
+server/photos/
+server/downloads/
+server/hotfolder/

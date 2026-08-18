@@ -9,7 +9,7 @@
 import './stil.css';
 import './cockpit.css';
 import './einrichtung.css';
-import { ladeEinstellungen, sichereEinstellungen } from './einstellungen';
+import { holeEinstellungen, ladeEinstellungen, setzePin, sichereEinstellungen } from './einstellungen';
 import { ARTEN } from './arten';
 import { anzahl, loesche, sichere } from './speicher';
 import { ausgabeAdresse, druckerListe, inHuelle } from './huelle';
@@ -28,6 +28,8 @@ const wurzel = document.getElementById('einrichtung');
 if (wurzel) void starte(wurzel);
 
 async function starte(ziel: HTMLElement): Promise<void> {
+  // Die Einrichtung stellt das Gerät ein, nicht das laufende Event.
+  await holeEinstellungen(true);
   const einstellungen = ladeEinstellungen();
 
   const kopf = tag('header', 'ekopf');
@@ -58,18 +60,64 @@ function schrittBox(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
   const { rahmen, inhalt, melde } = schritt(1, 'Box und Kiosk-PIN', 'Name der Box und der PIN, hinter dem die Einstellungen liegen.');
 
   const box = feld('Boxname', e.box, (v) => (e.box = v));
-  const pin = feld('Kiosk-PIN', e.kioskPin, (v) => (e.kioskPin = v));
 
-  const sichern = knopf('Sichern', 'cknopf cknopf--amber', () => {
-    if (!/^\d{4,8}$/.test(e.kioskPin)) {
-      melde('schlecht', 'Die PIN braucht vier bis acht Ziffern.');
+  /* Die PIN steht nirgends im Feld: Die Box gibt sie nicht heraus, sie kennt
+     nur ihre gesalzene Prüfsumme. Hier wird eine neue gesetzt oder die alte
+     entfernt — angezeigt wird nur, ob überhaupt eine gilt. */
+  let neuePin = '';
+  const pin = feld('Neue Kiosk-PIN (leer = keine)', '', (v) => (neuePin = v));
+  const pinFeld = pin.querySelector('input');
+  if (pinFeld) {
+    pinFeld.type = 'password';
+    pinFeld.inputMode = 'numeric';
+    pinFeld.placeholder = e.kioskGesetzt ? 'PIN gesetzt — neue eingeben zum Ändern' : 'keine PIN gesetzt';
+  }
+
+  const stand = tag('span', 'cmono');
+  const zeigeStand = () => {
+    // Der geltende Stand kommt von der Box, nicht aus dieser Kopie: `setzePin`
+    // schreibt dorthin, und das Feld hier wüsste sonst nichts davon.
+    stand.textContent = ladeEinstellungen().kioskGesetzt
+      ? 'Kiosk gesperrt — die Einstellungen im Booth brauchen die PIN.'
+      : 'Kiosk offen — jeder Gast kommt an die Einstellungen.';
+  };
+  zeigeStand();
+
+  const sichern = knopf('Sichern', 'cknopf cknopf--amber', async () => {
+    melde('laeuft', 'Sichere …');
+    if (!(await sichereEinstellungen(e))) {
+      melde('schlecht', 'Die Box hat die Einstellungen nicht angenommen.');
       return;
     }
-    sichereEinstellungen(e);
+    // Nur anfassen, wenn wirklich etwas eingegeben wurde — ein leeres Feld
+    // beim reinen Namenswechsel darf die PIN nicht stillschweigend löschen.
+    if (neuePin.trim()) {
+      const antwort = await setzePin(neuePin);
+      if (!antwort.ok) {
+        melde('schlecht', antwort.grund ?? 'Die PIN wurde nicht angenommen.');
+        return;
+      }
+      neuePin = '';
+      if (pinFeld) {
+        pinFeld.value = '';
+        pinFeld.placeholder = 'PIN gesetzt — neue eingeben zum Ändern';
+      }
+    }
+    zeigeStand();
     melde('gut', 'Gesichert.');
   });
 
-  inhalt.append(box, pin, reihe(sichern));
+  const entfernen = knopf('PIN entfernen', 'cknopf', async () => {
+    const antwort = await setzePin('');
+    if (!antwort.ok) {
+      melde('schlecht', antwort.grund ?? 'Die Box antwortet nicht.');
+      return;
+    }
+    zeigeStand();
+    melde('gut', 'Der Kiosk steht jetzt offen.');
+  });
+
+  inhalt.append(box, pin, stand, reihe(sichern, entfernen));
   return rahmen;
 }
 

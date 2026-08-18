@@ -9,17 +9,32 @@
 
 import './stil.css';
 import './cockpit.css';
-import { ladeEinstellungen, sichereEinstellungen } from './einstellungen';
+import { holeEinstellungen, ladeEinstellungen, sichereEinstellungen } from './einstellungen';
 import { alle, raeumeAuf, type Aufnahme } from './speicher';
 import { druckeInLetzterStunde } from './ausgabe';
+import { amDraht } from './draht';
 
 const wurzel = document.getElementById('cockpit');
 
 if (wurzel) {
   void zeichne(wurzel);
+
+  /* Neu zeichnen, wenn die Box etwas meldet — aber nicht, während jemand in
+     einem Feld tippt. Ein Formular unter den Fingern neu aufzubauen löscht
+     die halbe Eingabe. */
+  amDraht('cockpit', (n) => {
+    if (n.type !== 'photo' && n.type !== 'remove' && n.type !== 'settings') return;
+    const aktiv = document.activeElement;
+    if (aktiv instanceof HTMLInputElement || aktiv instanceof HTMLTextAreaElement) return;
+    void zeichne(wurzel);
+  });
 }
 
 async function zeichne(ziel: HTMLElement): Promise<void> {
+  /* Erst den Stand der Box holen: Was das Cockpit hier bearbeitet, gehört dem
+     Gerät — es muss die unvermischten Werte sehen, sonst schriebe ein Sichern
+     die Eventwerte dauerhaft in die Box. */
+  await holeEinstellungen(true);
   const einstellungen = ladeEinstellungen();
   let aufnahmen: Aufnahme[] = [];
   let ablageFehler = false;
@@ -161,9 +176,11 @@ function eventbereich(
 
   const sichern = tag('button', 'cknopf cknopf--amber');
   sichern.textContent = 'Sichern';
-  sichern.addEventListener('click', () => {
-    sichereEinstellungen(einstellungen);
-    void zeichne(ziel);
+  sichern.addEventListener('click', async () => {
+    sichern.textContent = 'Sichere …';
+    const gut = await sichereEinstellungen(einstellungen);
+    sichern.textContent = gut ? 'Sichern' : 'Die Box hat nicht angenommen';
+    if (gut) await zeichne(ziel);
   });
 
   const aufraeumen = tag('button', 'cknopf');

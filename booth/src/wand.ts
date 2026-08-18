@@ -12,9 +12,14 @@
 import './stil.css';
 import './wand.css';
 import { alle, type Aufnahme } from './speicher';
-import { ladeEinstellungen } from './einstellungen';
+import { holeEinstellungen, ladeEinstellungen } from './einstellungen';
+import { amDraht, istNeuladen } from './draht';
 
-const TAKT = 4000;
+/* Der Draht meldet jede neue Aufnahme sofort. Der Takt ist nur der Rückfall
+   für den Fall, dass die Verbindung gerade weg ist — deshalb darf er ruhig
+   sein: Eine Wand, die im Sekundentakt fragt, ist eine Wand, die die Box beim
+   Drucken ausbremst. */
+const TAKT = 15000;
 const GROSS_MS = 4200;
 
 const wurzel = document.getElementById('wand');
@@ -24,6 +29,7 @@ if (wurzel) {
 }
 
 async function starte(ziel: HTMLElement): Promise<void> {
+  await holeEinstellungen();
   const einstellungen = ladeEinstellungen();
   const gezeigt = new Map<string, string>();
   let letzteId = '';
@@ -72,11 +78,28 @@ async function starte(ziel: HTMLElement): Promise<void> {
     }
   };
 
+  const setzeKopf = () => {
+    const jetzt = ladeEinstellungen();
+    kopf.name.textContent = jetzt.event;
+    kopf.zeile.textContent = jetzt.attractTitel;
+  };
+
   await aktualisiere();
   window.setInterval(() => void aktualisiere(), TAKT);
+
+  amDraht('wand', (n) => {
+    if (n.type === 'photo' || n.type === 'remove') void aktualisiere();
+    if (n.type === 'settings' || n.type === 'hello') setzeKopf();
+    // Eine Wand steht stundenlang unbeaufsichtigt am Beamer. Sie darf jederzeit
+    // neu laden — es sitzt niemand davor, dem etwas verlorenginge.
+    if (istNeuladen(n, 'wand')) location.reload();
+  });
 }
 
-function bauKopf(event: string, titel: string): { leiste: HTMLElement; zaehler: HTMLElement } {
+function bauKopf(
+  event: string,
+  titel: string
+): { leiste: HTMLElement; zaehler: HTMLElement; name: HTMLElement; zeile: HTMLElement } {
   const leiste = tag('header', 'wkopf');
 
   const links = tag('div', 'wkopf__text');
@@ -94,7 +117,7 @@ function bauKopf(event: string, titel: string): { leiste: HTMLElement; zaehler: 
   rechts.append(marke, zaehler);
 
   leiste.append(links, rechts);
-  return { leiste, zaehler };
+  return { leiste, zaehler, name, zeile };
 }
 
 /** Zeigt die neueste Aufnahme kurz groß über der Wand. */

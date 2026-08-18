@@ -1,6 +1,17 @@
 /**
- * Einstellungen der Box. Werden lokal gehalten und überleben einen Neustart.
- * Ein Event überschreibt Branding und Texte; die Box selbst behält Technik.
+ * Einstellungen der Box — eine Quelle, nicht zwei.
+ *
+ * Bis hierher lagen sie im `localStorage` der Oberfläche, während der Server
+ * seine eigenen hielt. Zwei Listen derselben Sache laufen auseinander: Wer im
+ * Cockpit den Eventnamen änderte, sah ihn auf dem zweiten Bildschirm nicht.
+ *
+ * Jetzt gilt, was auf der Box steht. Diese Datei ist die Übersetzung zwischen
+ * ihrem Modell (gewachsen, technisch geordnet) und unserer Oberfläche: Was
+ * dort `vorschau.spiegeln` heißt, heißt hier `spiegeln`. Übersetzt wird an
+ * genau einer Stelle, damit die Namen in der Oberfläche unsere bleiben.
+ *
+ * Ohne Server läuft die Box weiter: Der zuletzt gesehene Stand liegt als
+ * Zwischenspeicher daneben. Komfort darf ein Ausfall kosten, Daten nicht.
  */
 
 export type Countdownstil = 'ring' | 'zahl' | 'balken';
@@ -28,37 +39,34 @@ export type Einstellungen = {
   arten: string[];
   spiegeln: boolean;
   blitz: boolean;
-  /** Kennung der Vorlage, die für Einzelbilder gedruckt wird. */
-  vorlageFoto: string;
-  /** Kennung der Vorlage für Streifen. */
-  vorlageStreifen: string;
-  /** Drucken über den Systemdruckdialog anbieten. */
+  /** Drucken anbieten. */
   druck: boolean;
-  /**
-   * Name des Druckers, den die Hülle ansprechen soll. Leer heißt: Druckdialog
-   * des Systems — im Browser gibt es nichts anderes.
-   */
+  /** Drucker, den die Box anspricht. Leer heißt: Druckdialog des Systems. */
   drucker: string;
   doppelstreifen: boolean;
   schnittlinie: boolean;
   /** Höchstzahl Drucke pro Stunde; 0 = ohne Grenze. */
   druckLimitStunde: number;
   loeschfristTage: number;
-  kioskPin: string;
   /**
-   * Basis-Adresse, unter der die Box ihre Dateien im lokalen Netz anbietet.
-   * Der QR-Code zeigt darauf. Solange kein Auslieferungsdienst läuft, bleibt
-   * das Feld leer und der QR wird durch den direkten Download ersetzt.
+   * Kiosk-PIN. Sie steht NICHT mehr hier: Die Box prüft sie selbst
+   * (`/api/kiosk/pin`, gesalzene Prüfsumme, Zwangspause nach Fehlversuchen)
+   * und gibt sie nie heraus. Dieses Feld sagt nur, ob überhaupt eine gesetzt
+   * ist — ohne PIN steht der Kiosk offen, und das soll sichtbar sein.
    */
+  kioskGesetzt: boolean;
+  /** Adresse, unter der die Box ihre Aufnahmen im Netz anbietet. */
   ausgabeBasis: string;
 };
 
+const ZWISCHENSPEICHER = 'youbooth.einstellungen.stand';
+
 const STANDARD: Einstellungen = {
-  box: 'Box #2',
-  event: 'Hochzeit Lena & Jonas',
+  box: 'Box #1',
+  event: 'Youbooth Event',
   attractTitel: 'Ein Bild für die Ewigkeit',
   attractZeile: 'Tippen oder per Fernbedienung am Handy auslösen',
-  laufband: '3 · 2 · 1 · Cheese · Streifen in 13 Sekunden · Fotos nur für dieses Event',
+  laufband: '3 · 2 · 1 · Cheese · Fotos nur für dieses Event',
   countdown: 3,
   countdownstil: 'ring',
   attractstil: 'laufband',
@@ -68,39 +76,229 @@ const STANDARD: Einstellungen = {
   arten: ['foto', 'streifen', 'boomerang', 'gif'],
   spiegeln: true,
   blitz: true,
-  vorlageFoto: 'foto-klassisch',
-  vorlageStreifen: 'streifen-klassisch',
   druck: true,
   drucker: '',
-  doppelstreifen: true,
+  doppelstreifen: false,
   schnittlinie: true,
-  druckLimitStunde: 40,
+  druckLimitStunde: 60,
   loeschfristTage: 30,
-  kioskPin: '4812',
+  kioskGesetzt: false,
   ausgabeBasis: '',
 };
 
-const SCHLUESSEL = 'youbooth.einstellungen';
+/* ------------------------------------------------------------------ */
+/* Übersetzung                                                         */
+/* ------------------------------------------------------------------ */
 
-export function ladeEinstellungen(): Einstellungen {
+/** Die drei Countdown-Stile unserer Oberfläche in der Sprache der Box. */
+const COUNTDOWN_HIN: Record<Countdownstil, string> = { ring: 'ring', zahl: 'pop', balken: 'bar' };
+const COUNTDOWN_HER: Record<string, Countdownstil> = { ring: 'ring', pop: 'zahl', bar: 'balken' };
+
+type Boxstand = Record<string, unknown>;
+
+function feld<T>(quelle: unknown, pfad: string, ersatz: T): T {
+  let stelle: unknown = quelle;
+  for (const teil of pfad.split('.')) {
+    if (!stelle || typeof stelle !== 'object') return ersatz;
+    stelle = (stelle as Record<string, unknown>)[teil];
+  }
+  return (stelle === undefined || stelle === null ? ersatz : stelle) as T;
+}
+
+/** Aus dem Modell der Box unsere Einstellungen. */
+export function ausBoxstand(roh: Boxstand): Einstellungen {
+  const modi = feld<Record<string, boolean>>(roh, 'modes', {});
+  const arten = ['foto', 'streifen', 'boomerang', 'gif'].filter((a) => {
+    const schluessel = a === 'foto' ? 'photo' : a === 'streifen' ? 'strip' : a;
+    return modi[schluessel] !== false;
+  });
+
+  return {
+    box: feld(roh, 'boxName', STANDARD.box),
+    event: feld(roh, 'eventName', STANDARD.event),
+    attractTitel: feld(roh, 'attract.headline', '') || STANDARD.attractTitel,
+    attractZeile: feld(roh, 'attract.hint', '') || STANDARD.attractZeile,
+    laufband: feld(roh, 'ticker.text', '') || STANDARD.laufband,
+    countdown: feld(roh, 'countdown', STANDARD.countdown),
+    countdownstil: COUNTDOWN_HER[feld(roh, 'countdownStyle', 'ring')] ?? 'ring',
+    attractstil: feld(roh, 'booth.attractstil', STANDARD.attractstil),
+    uebergang: feld(roh, 'booth.uebergang', STANDARD.uebergang),
+    leerlauf: feld(roh, 'booth.leerlauf', STANDARD.leerlauf),
+    autoWeiter: feld(roh, 'booth.autoWeiter', STANDARD.autoWeiter),
+    arten: arten.length ? arten : STANDARD.arten,
+    spiegeln: feld(roh, 'vorschau.spiegeln', STANDARD.spiegeln),
+    blitz: feld(roh, 'booth.blitz', STANDARD.blitz),
+    druck: feld(roh, 'printing', STANDARD.druck),
+    drucker: feld<string | null>(roh, 'printer', '') ?? '',
+    doppelstreifen: feld(roh, 'druck.streifenDoppelt', STANDARD.doppelstreifen),
+    schnittlinie: feld(roh, 'druck.schnittlinie', STANDARD.schnittlinie),
+    druckLimitStunde: feld(roh, 'druck.maxProStunde', STANDARD.druckLimitStunde),
+    loeschfristTage: feld(roh, 'booth.loeschfristTage', STANDARD.loeschfristTage),
+    kioskGesetzt: feld(roh, 'kiosk.gesetzt', false),
+    ausgabeBasis: STANDARD.ausgabeBasis,
+  };
+}
+
+/** Und zurück: nur die Felder, die die Box wirklich annimmt. */
+export function alsBoxstand(e: Einstellungen): Boxstand {
+  return {
+    boxName: e.box,
+    eventName: e.event,
+    attract: { headline: e.attractTitel, hint: e.attractZeile },
+    ticker: { enabled: e.attractstil === 'laufband', text: e.laufband },
+    countdown: e.countdown,
+    countdownStyle: COUNTDOWN_HIN[e.countdownstil],
+    modes: {
+      photo: e.arten.includes('foto'),
+      strip: e.arten.includes('streifen'),
+      boomerang: e.arten.includes('boomerang'),
+      gif: e.arten.includes('gif'),
+    },
+    vorschau: { spiegeln: e.spiegeln },
+    printing: e.druck,
+    printer: e.drucker || null,
+    druck: {
+      streifenDoppelt: e.doppelstreifen,
+      schnittlinie: e.schnittlinie,
+      maxProStunde: e.druckLimitStunde,
+    },
+    booth: {
+      attractstil: e.attractstil,
+      uebergang: e.uebergang,
+      leerlauf: e.leerlauf,
+      autoWeiter: e.autoWeiter,
+      blitz: e.blitz,
+      loeschfristTage: e.loeschfristTage,
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Stand halten                                                        */
+/* ------------------------------------------------------------------ */
+
+let stand: Einstellungen = { ...STANDARD };
+
+function merke(roh: Boxstand): void {
   try {
-    const roh = localStorage.getItem(SCHLUESSEL);
-    if (!roh) return { ...STANDARD };
-    // Unbekannte Felder aus älteren Ständen werden ignoriert, fehlende ergänzt.
-    return { ...STANDARD, ...(JSON.parse(roh) as Partial<Einstellungen>) };
+    localStorage.setItem(ZWISCHENSPEICHER, JSON.stringify(roh));
   } catch {
-    return { ...STANDARD };
+    // Ohne Zwischenspeicher läuft die Box weiter, nur ohne Rückfall.
   }
 }
 
-export function sichereEinstellungen(e: Einstellungen): void {
+/**
+ * Holt die Einstellungen von der Box.
+ *
+ * `geraet` heißt: die des Geräts, nicht die eines laufenden Events darüber.
+ * Das Cockpit bearbeitet das Gerät und muss die unvermischten sehen — sonst
+ * schriebe der Betreiber beim nächsten Sichern die Eventwerte in seine Box
+ * und hätte sie nach der Feier für immer.
+ */
+export async function holeEinstellungen(
+  geraet = false
+): Promise<'box' | 'zwischenspeicher' | 'vorgabe'> {
   try {
-    localStorage.setItem(SCHLUESSEL, JSON.stringify(e));
+    const antwort = await fetch('/api/settings' + (geraet ? '?geraet=1' : ''));
+    if (!antwort.ok) throw new Error(String(antwort.status));
+    const roh = (await antwort.json()) as Boxstand;
+    stand = ausBoxstand(roh);
+    merke(roh);
+    return 'box';
   } catch {
-    // Ohne Schreibrecht laeuft die Box weiter, nur ohne Gedaechtnis.
+    try {
+      const gemerkt = localStorage.getItem(ZWISCHENSPEICHER);
+      if (gemerkt) {
+        stand = ausBoxstand(JSON.parse(gemerkt) as Boxstand);
+        return 'zwischenspeicher';
+      }
+    } catch {
+      // dann eben die Vorgaben
+    }
+    return 'vorgabe';
+  }
+}
+
+/** Nachricht der Box, dass sich die Einstellungen geändert haben. */
+export function einstellungenGeaendert(roh: Boxstand): void {
+  stand = ausBoxstand(roh);
+  merke(roh);
+}
+
+/** Der geltende Stand — ohne Warten, damit die Oberfläche zeichnen kann. */
+export function ladeEinstellungen(): Einstellungen {
+  return stand;
+}
+
+/** Schreibt die Einstellungen auf die Box. */
+export async function sichereEinstellungen(e: Einstellungen): Promise<boolean> {
+  stand = { ...e };
+  try {
+    const antwort = await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(alsBoxstand(e)),
+    });
+    if (!antwort.ok) return false;
+    const daten = (await antwort.json()) as { settings?: Boxstand };
+    if (daten.settings) {
+      stand = ausBoxstand(daten.settings);
+      merke(daten.settings);
+    }
+    return true;
+  } catch {
+    return false;
   }
 }
 
 export function standardEinstellungen(): Einstellungen {
   return { ...STANDARD };
+}
+
+/**
+ * Prüft die Kiosk-PIN auf der Box. Die Prüfsumme verlässt den Rechner nie,
+ * und nach einem Fehlversuch legt die Box eine kurze Zwangspause ein —
+ * vierstellige Zahlen sind sonst in Sekunden durchprobiert.
+ */
+export async function pinStimmt(pin: string): Promise<{ ok: boolean; grund?: string }> {
+  try {
+    const antwort = await fetch('/api/kiosk/pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin }),
+    });
+    if (antwort.ok) return { ok: true };
+    if (antwort.status === 429) return { ok: false, grund: 'Zu viele Versuche — kurz warten.' };
+    return { ok: false, grund: 'Falsche PIN.' };
+  } catch {
+    return { ok: false, grund: 'Die Box antwortet nicht.' };
+  }
+}
+
+/**
+ * Setzt oder entfernt die Kiosk-PIN. Sie geht einmal im Klartext an die Box
+ * und wird dort sofort gesalzen gehasht — zurück kommt sie nie. Ein leerer
+ * Wert entfernt sie und macht den Kiosk wieder offen.
+ */
+export async function setzePin(pin: string): Promise<{ ok: boolean; grund?: string }> {
+  const roh = pin.trim();
+  if (roh && !/^\d{4,12}$/.test(roh)) {
+    return { ok: false, grund: 'Die PIN braucht vier bis zwölf Ziffern.' };
+  }
+  try {
+    const antwort = await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kiosk: { pin: roh, enabled: !!roh } }),
+    });
+    if (!antwort.ok) return { ok: false, grund: 'Die Box hat die PIN nicht angenommen.' };
+    const daten = (await antwort.json()) as { settings?: Boxstand };
+    if (daten.settings) {
+      stand = ausBoxstand(daten.settings);
+      merke(daten.settings);
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, grund: 'Die Box antwortet nicht.' };
+  }
 }

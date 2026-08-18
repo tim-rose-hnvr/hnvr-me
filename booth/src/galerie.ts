@@ -9,16 +9,28 @@
 import './stil.css';
 import './galerie.css';
 import { alle, type Aufnahme } from './speicher';
-import { ladeEinstellungen } from './einstellungen';
+import { holeEinstellungen, ladeEinstellungen } from './einstellungen';
+import { amDraht } from './draht';
 import { ARTEN } from './arten';
 
 const wurzel = document.getElementById('galerie');
 
 if (wurzel) {
   void starte(wurzel);
+
+  /* Die Box meldet jede neue Aufnahme. Neu gezeichnet wird aber nur, wenn
+     gerade niemand ein Bild groß ansieht — der Galerie unter den Fingern das
+     Bild wegzuziehen, während sie ein Gast durchblättert, wäre schlimmer als
+     ein paar Sekunden Verzug. */
+  amDraht('galerie', (n) => {
+    if (n.type !== 'photo' && n.type !== 'remove') return;
+    if (document.querySelector('.glightbox')) return;
+    void starte(wurzel);
+  });
 }
 
 async function starte(ziel: HTMLElement): Promise<void> {
+  await holeEinstellungen();
   const einstellungen = ladeEinstellungen();
   let aufnahmen: Aufnahme[] = [];
   let fehler = false;

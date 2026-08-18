@@ -18,7 +18,7 @@
 
 export const DOWNLOADS = {
   "hinweis": "Erzeugt und gepflegt von tools/downloadzentrum.mjs. Der Ablageort ist ein Umweg mit Grund: Die Medienverwaltung nimmt keine .exe an (UNSUPPORTED_FILE_FORMAT), wohl aber .zip. Das ZIP ist OHNE Verdichtung geschrieben, deshalb liegt das Installationsprogramm darin unverändert ab 'versatz'. Der Wegweiser reicht genau diesen Bereich durch — was hier ankommt, ist byte-gleich mit dem, was der Bau erzeugt hat (nachgemessen: SHA-512 stimmt, Kennung MZ).",
-  "aktuell": "1.0.5",
+  "aktuell": "1.0.6",
   "fassungen": {
     "1.0.4": {
       "erschienen": "2026-08-18",
@@ -39,6 +39,16 @@ export const DOWNLOADS = {
         "groesse": 106380527,
         "sha512": "gY7Z9WpJENluzxg8I0T8kIgSOZvGfArNh4Sc2mxA8lOoynHAS0cOoqWN0+M3Xd3FVOR6wi9U7269kCndej6GDw=="
       }
+    },
+    "1.0.6": {
+      "erschienen": "2026-08-18",
+      "windows": {
+        "datei": "youbooth-Setup-1.0.6.exe",
+        "quelle": "https://0ff1e24b-98f7-4727-adcb-f15b39c63ab2.usrfiles.com/archives/d098ab_515e76be569947d1b862eb0bb8c2d7ee.zip",
+        "versatz": 54,
+        "groesse": 106381765,
+        "sha512": "c9tQt29LvJrHEcssoWVI/3bhKYMCrzBfbByzMZjvOprZQJGVANzrlPVhBCqW55ethLJYENkEelCzKx2jPLUbIA=="
+      }
     }
   },
   "neuerungen": {
@@ -53,6 +63,11 @@ export const DOWNLOADS = {
     "1.0.5": [
       "Aktualisierung und Download kommen von youbooth.me — keine fremde Adresse mehr",
       "Alles aus 1.0.4: Start trotz laufender Altfassung, keine hängenden Dienste, 22 gezeichnete Vorlagen"
+    ],
+    "1.0.6": [
+      "Startet auch dann, wenn eine ältere Fassung den Port belegt — und übernimmt sie nicht mehr",
+      "Download und Aktualisierung kommen von youbooth.me",
+      "22 gezeichnete Vorlagen: Blüten, Feuerwerk, Lorbeer, Neon, Art déco"
     ]
   }
 };

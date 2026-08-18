@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import wixHostingAdapter from '@wix/astro-wix-hosting-adapter';
+import wix from '@wix/astro';
 
 /**
  * PUNKT auf Wix-Hosting.
@@ -13,10 +14,11 @@ import wixHostingAdapter from '@wix/astro-wix-hosting-adapter';
  * die, an der man arbeitet. Hier gibt es genau eine Quelle, und dieses
  * Verzeichnis ist nur die Hülle, die Wix zum Ausliefern braucht.
  *
- * `output: 'static'`, weil die Seite je Besucher nichts Eigenes zeigt.
- * Sie fragt nichts ab, sie rechnet nichts — sie liegt fertig da. Das ist
- * auch der schnellste Fall und der einzige, der ohne laufenden Prozess
- * überlebt.
+ * `output: 'server'` wie bei Get in Touch, dem einzigen Projekt hier,
+ * das nachweislich ausliefert. Inhaltlich wäre `'static'` richtiger —
+ * die Seite zeigt je Besucher dasselbe —, aber der Wix-Bau ist an
+ * dieser Stelle nicht erprobt, und ein Deploy ist der falsche Ort für
+ * einen Versuch. Umstellen, wenn einmal etwas steht.
  *
  * Astro 5 — Version 6 unterstützt die Wix-Anbindung nicht. Der Adapter
  * gehört auf den obersten `adapter`-Schlüssel, nicht in `integrations`:
@@ -26,11 +28,19 @@ import wixHostingAdapter from '@wix/astro-wix-hosting-adapter';
 export default defineConfig({
   srcDir: '../website/src',
   publicDir: '../website/public',
-  output: 'static',
+  output: 'server',
   adapter: wixHostingAdapter(),
-  // Ohne die Anbindung `wix()`. Sie bringt CMS, Mitglieder und Warenkorb
-  // mit und verlangt dafuer WIX_CLIENT_ID — die Marketingseite braucht
-  // nichts davon. Was nicht eingebunden ist, kann auch nichts nachladen:
-  // die ausgelieferte Seite bleibt dieselbe, die hier gebaut wird.
+  // Die Anbindung `wix()` muss mit, obwohl die Seite keine einzige
+  // Wix-Funktion benutzt. Ohne sie laesst sich nicht ausliefern:
+  //
+  //   `wix release` verlangt .wix/build-metadata.json, und geschrieben
+  //   wird diese Datei im Hook `astro:build:done` von @wix/astro.
+  //   Ohne die Anbindung baut es sauber durch und `release` bricht ab
+  //   mit „Project build output is missing".
+  //
+  // Der Preis: sie liest beim Bauen WIX_CLIENT_ID. Deshalb steht im
+  // Workflow ein `wix env pull` — der Bau laeuft nicht mehr ohne
+  // Anmeldung. Beides ist nachgesehen und nicht geraten.
+  integrations: [wix()],
   site: process.env.SEITE ?? 'https://punkt-954d3e9b-hnvrme.wix-site-host.com',
 });

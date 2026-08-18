@@ -15,15 +15,15 @@ sonst nur eine halbe Kehrseite hat.
 | | |
 |---|---|
 | Live | https://get-in-tou-35a520f5-hnvrme.wix-site-host.com |
-| Branch | `claude/getintouch-hnvr-rebuild-tpt4l8` |
+| Branch | `claude/new-session-htlw7a` (Vorgabezweig) |
 | Marke | `getintouch/src/kern/marke.ts` — Name, Zeichen, Farben, Postfach |
 | Vorlagen | `getintouch/src/kern/gestaltung.ts` — elf, davon neun aus dem Handoff |
 | Prüfregeln Formular | `getintouch/src/kern/nachricht.ts` |
 | Ausliefern | `getintouch/VEROEFFENTLICHEN.md` |
 
 Öffentliche Profilseite, Erreichbarkeit aus Öffnungszeiten, vCard, QR-Code,
-Nachricht-Baustein, Werkstatt, Galerie, Preisseite, 404. Elf Vorlagen in drei
-Anordnungen. 96 Tests.
+Nachricht-Baustein, Werkstatt, 404 — dazu die sechs Marketingseiten des
+Handoffs. Elf Vorlagen in drei Anordnungen, nach Fach filterbar. 103 Tests.
 
 ---
 
@@ -139,19 +139,24 @@ geöffnet hat" auf der Startseite.
 
 ---
 
-## 6. Marketingseiten und Editor
+## 6. Editor
 
-Vorlagen, Karte & NFC, Für Teams, Marke — Aufbau je Seite steht im Handoff.
-Der Editor mit ziehbaren Bausteinen und Kontextregeln (`6a`) ist der größte
-Einzelposten; die Werkstatt hat heute Formulare statt Blöcke.
+Die sechs Marketingseiten des Handoffs stehen (Start, Vorlagen, Karte & NFC,
+Für Teams, Preise, Marke) — mit sichtbarem „geplant" überall dort, wo eine
+Funktion beschrieben, aber nicht gebaut ist. Kopf, Navigation und Fuß liegen
+in `komponenten/Marketingrahmen.astro`; sie standen vorher fünfmal einzeln da
+und waren dadurch schon einmal auseinandergelaufen.
+
+Offen bleibt der Editor mit ziehbaren Bausteinen und Kontextregeln (`6a`) —
+der größte Einzelposten; die Werkstatt hat heute Formulare statt Blöcke.
 
 ---
 
 ## Zwei Dinge, die nur der Kontoinhaber kann
 
-1. **Den API-Schlüssel widerrufen**, der in der Sitzung vom 17. August im
-   Chatverlauf steht, und einen neuen als Repository-Geheimnis `WIX_API_KEY`
-   hinterlegen.
+1. **Ein Feld `eingangSchluessel`** in der Collection `GetInTouchProfile`
+   anlegen (siehe Abschnitt 1). Ohne das bleibt der Eingang zu — der Code
+   dafür steht.
 2. **Sprache, Währung, Zeitzone** im Wix-Dashboard auf Deutsch, EUR und
    `Europe/Berlin` stellen. Über die API geht es nachweislich nicht — die
    geprüften Wege stehen in `getintouch/VEROEFFENTLICHEN.md`.

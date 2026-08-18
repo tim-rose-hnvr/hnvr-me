@@ -509,6 +509,44 @@ function zeichneGliederung() {
   tafel.append(baue(gliederung, 0));
 }
 
+/* Die Tafel „Dateien" aus dem Handoff: welche Quellen im Arbeitsdokument
+   stecken. Bei einer zusammengeführten Datei ist das die einzige Stelle, an
+   der man sieht, woher welche Seiten kommen. Unten die Ablegefläche, wie
+   gezeichnet. */
+function zeichneDateientafel() {
+  const tafel = $('#tafel-dateien');
+  if (!tafel) return;
+  tafel.innerHTML = '';
+
+  if (!zustand.quellen.size) {
+    tafel.append(el('p', { klasse: 'hinweis', text: 'Noch keine Datei geöffnet.' }));
+    return;
+  }
+
+  for (const quelle of zustand.quellen.values()) {
+    const seiten = zustand.folge.filter((e) => e.quelleId === quelle.id);
+    const karte = el('div', {
+      klasse: 'dateikarte',
+      title: seiten.length ? `Zur ersten Seite aus ${quelle.name}` : 'Keine Seite dieser Datei mehr im Dokument',
+      beiClick: () => { if (seiten.length) zeigeSeite(nummerVon(seiten[0].id)); },
+    },
+      el('div', { klasse: 'dateikarte-name', text: quelle.name }),
+      el('div', { klasse: 'dateikarte-mass mono' },
+        `${seiten.length} von ${quelle.seitenzahl} Seiten · ${groesse(quelle.bytes.byteLength)}`),
+      quelle.warGeschuetzt
+        ? el('div', { klasse: 'dateikarte-mass mono', text: 'WAR KENNWORTGESCHÜTZT' })
+        : null);
+    tafel.append(karte);
+  }
+
+  tafel.append(el('button', {
+    klasse: 'ablegeflaeche',
+    text: 'Weitere Datei anhängen',
+    title: 'Eine weitere Datei an das Arbeitsdokument anhängen',
+    beiClick: () => fuehreAus('datei:anhaengen'),
+  }));
+}
+
 function zeichneSuchtafel() {
   const tafel = $('#tafel-suche');
   const vorherigerWert = $('#suchfeld')?.value ?? suchbegriff();
@@ -577,6 +615,7 @@ async function anmerkungsBericht() {
   const zeilen = ['Anmerkungen zu ' + zustand.name, ''];
   for (const a of anmerkungsListe()) {
     zeilen.push(`Seite ${a.seite} · ${bezeichne(a)}${a.text ? `: ${a.text}` : ''}`);
+    if (a.zitat) zeilen.push(`    „${a.zitat}"`);
   }
   sichereBytes(new TextEncoder().encode(zeilen.join('\n')), vorschlagsname('-anmerkungen').replace(/\.pdf$/i, '.txt'), 'text/plain');
 }
@@ -641,6 +680,9 @@ function zeichneKommentartafel() {
            Zeile. Das trennt sie sichtbar vom Text des Kommentars. */
         el('span', { klasse: 'art-chip', text: bezeichne(a) }),
         el('span', { klasse: 'mono klein leise', text: `S.${nummerVon(a.seiteId)} · ${uhrzeit(a.erstellt)}` })),
+      /* Zitat aus dem Dokument — Serif kursiv mit goldener Kante, wie im
+         Handoff. Es steht über dem Kommentar, weil es der Anlass ist. */
+      a.zitat ? el('p', { klasse: 'faden-zitat', text: `…${a.zitat}…` }) : null,
       a.text ? el('p', { klasse: 'faden-text', text: a.text }) : null,
       ...(a.antworten || []).map((antwort) => el('div', { klasse: 'faden-antwort' },
         el('span', { klasse: 'mono klein leise', text: uhrzeit(antwort.zeit) }),
@@ -1358,11 +1400,25 @@ function zeigeEinstellungen(kategorie = offeneKategorie) {
       beiClick: () => { eintrag.wert = wert; wendeAn(schluessel); zeichneInhalt(); },
     })));
 
+  /* Abzeichen an einer Kategorie wie im Handoff: eine Zahl, die sagt, dass
+     dort etwas offen ist. Sie wird gerechnet, nicht gesetzt — ein Abzeichen,
+     das immer dieselbe Zahl zeigt, ist Zierrat. */
+  const abzeichen = (name) => {
+    if (name === 'OCR & Text') return befunde.leereSeiten.length;
+    if (name === 'Anmerkungen') return zustand.anmerkungen.filter((a) => !a.erledigt).length;
+    if (name === 'Speicher & Privatsphäre') return musterListe().length;
+    return 0;
+  };
+
   for (const name of KATEGORIEN) {
+    const zahl = abzeichen(name);
     liste.append(el('button', {
-      klasse: `einst-kategorie ${name === offeneKategorie ? 'ist-aktiv' : ''}`, text: name,
-      beiClick: () => { offeneKategorie = name; liste.querySelectorAll('.einst-kategorie').forEach((k) => k.classList.toggle('ist-aktiv', k.textContent === name)); zeichneInhalt(); },
-    }));
+      klasse: `einst-kategorie ${name === offeneKategorie ? 'ist-aktiv' : ''}`,
+      daten: { kategorie: name },
+      beiClick: () => { offeneKategorie = name; liste.querySelectorAll('.einst-kategorie').forEach((k) => k.classList.toggle('ist-aktiv', k.dataset.kategorie === name)); zeichneInhalt(); },
+    },
+      el('span', { text: name }),
+      zahl ? el('span', { klasse: 'einst-abzeichen', text: String(zahl) }) : null));
   }
   /* Das Handoff setzt die Fassung unter die Kategorien. Sie steht hier, weil
      es der einzige Ort ist, an dem jemand danach sucht. */
@@ -2228,10 +2284,15 @@ export function starteOberflaeche() {
     $('#huelle').hidden = false;
     $('#empfang').hidden = true;
     zeichneGliederung();
+    zeichneDateientafel();
     zeichneRechteTafel();
     zeichneRechteTafeln();
     aktualisiereFuss();
   });
+  /* Die Dateienliste zeigt, wie viele Seiten je Quelle noch im Dokument
+     stehen — nach jedem Löschen oder Anhängen ist das eine andere Zahl. */
+  hoer('seiten:geaendert', zeichneDateientafel);
+  hoer('dokument:geaendert', zeichneDateientafel);
   hoer('dokument:geaendert', () => {
     ($('#titel-zusatz') || {}).textContent = `${zustand.folge.length} Seiten${zustand.geaendert ? ' · ungesichert' : ''}${zustand.quellen.size > 1 ? ` · ${zustand.quellen.size} Quellen` : ''}`;
     zeichneRechteTafel();

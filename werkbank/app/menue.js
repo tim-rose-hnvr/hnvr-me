@@ -5,6 +5,12 @@
    Anwendung nicht vorhanden — Seiten löschen, Texterkennung, Kennwortschutz,
    Word-Ausgabe, sogar Rückgängig.
 
+   Die Reihenfolge ist die des Handoffs — Datei, Bearbeiten, Ansicht,
+   Werkzeuge, … , Hilfe. Wo die Werkbank mehr kann als das gezeichnete
+   Produkt, stehen die zusätzlichen Menüs dazwischen (Seiten hinter Ansicht,
+   Gehe zu und Schutz vor Hilfe), nicht davor: das Muster wird erweitert,
+   nicht gebrochen.
+
    Die Menüs werden aus dem Befehlsregister gebaut, nicht daneben gepflegt.
    Was in MENUES nicht eingeordnet ist, landet sichtbar unter „Weiteres" —
    ein neuer Befehl kann also nicht unsichtbar bleiben, er kann höchstens
@@ -34,16 +40,16 @@ const MENUES = [
     'text:kopieren', 'text:alleKopieren', T,
     'anmerkungen:loeschen', 'anmerkungen:alleLoeschen',
   ]],
-  ['Seiten', [
-    'seiten:ordnen', T,
-    'seiten:drehenLinks', 'seiten:drehenRechts', 'seiten:verdoppeln', 'seiten:loeschen', T,
-    'seiten:alleWaehlen', 'leere:waehlen', 'seiten:nurAuswahl',
-  ]],
   ['Ansicht', [
     'ansicht:groesser', 'ansicht:kleiner', 'ansicht:breite', 'ansicht:seite', T,
     'ansicht:drehen', T,
     'leiste:umschalten', 'leiste:rechtsUmschalten', 'leiste:seiten', T,
     'ansicht:thema', 'einstellungen',
+  ]],
+  ['Seiten', [
+    'seiten:ordnen', T,
+    'seiten:drehenLinks', 'seiten:drehenRechts', 'seiten:verdoppeln', 'seiten:loeschen', T,
+    'seiten:alleWaehlen', 'leere:waehlen', 'seiten:nurAuswahl',
   ]],
   ['Werkzeuge', [
     'werkzeug:auswahl', T,

@@ -846,9 +846,12 @@ console.log('\n== Menue, Ordnen, Fokus ==');
 
 await ladeBeispiel();
 
-await pruefe('Menueleiste traegt alle acht Menues', async () => {
+await pruefe('Menueleiste traegt alle acht Menues in der Reihenfolge des Handoffs', async () => {
+  /* Das Handoff zeigt Datei, Bearbeiten, Ansicht, Werkzeuge, …, Hilfe. Unsere
+     zusätzlichen Menüs stehen dazwischen, nicht davor — das Muster wird
+     erweitert, nicht gebrochen. */
   const titel = await seite.$$eval('#menueleiste .menue-knopf', (ks) => ks.map((k) => k.textContent));
-  const erwartet = ['Datei', 'Bearbeiten', 'Seiten', 'Ansicht', 'Werkzeuge', 'Gehe zu', 'Schutz', 'Hilfe'];
+  const erwartet = ['Datei', 'Bearbeiten', 'Ansicht', 'Seiten', 'Werkzeuge', 'Gehe zu', 'Schutz', 'Hilfe'];
   if (titel.join('|') !== erwartet.join('|')) throw new Error(titel.join('|'));
   return titel.join(', ');
 });
@@ -1072,11 +1075,12 @@ await pruefe('Reiter schließen lässt die übrigen stehen', async () => {
 await ladeBeispiel();
 
 await pruefe('Rechte Leiste hat vier Reiter, jeder mit Inhalt', async () => {
+  /* Die drei Reiter des Handoffs zuerst, unser vierter dahinter. */
   const namen = await seite.$$eval('#reiter-rechts .reiter-knopf', (k) => k.map((x) => x.textContent));
-  if (namen.join('|') !== 'Hinweise|Kommentare|Felder|Verlauf') throw new Error(namen.join('|'));
+  if (namen.join('|') !== 'Kommentare|Felder|Verlauf|Hinweise') throw new Error(namen.join('|'));
   const inhalte = [];
-  for (const [tafel, id] of [['mitdenken', '#tafel-rechts'], ['anmerkungen', '#tafel-kommentare'],
-    ['felder', '#tafel-felder'], ['verlauf', '#tafel-verlauf']]) {
+  for (const [tafel, id] of [['anmerkungen', '#tafel-kommentare'], ['felder', '#tafel-felder'],
+    ['verlauf', '#tafel-verlauf'], ['mitdenken', '#tafel-rechts']]) {
     await seite.click(`[data-rtafel="${tafel}"].reiter-knopf`);
     await seite.waitForTimeout(350);
     const text = (await seite.textContent(id)).trim();
@@ -1565,6 +1569,91 @@ await pruefe('Der Stapel-Dialog fragt nur, was die Schritte brauchen', async () 
   await seite.keyboard.press('Escape');
   await seite.waitForTimeout(200);
   return `vorher ${zuerst} Zeilen, danach: ${nachher}`;
+});
+
+
+await pruefe('Linke Leiste: vier Reiter, „Dateien" nennt die Quellen', async () => {
+  await ladeBeispiel();
+  const namen = await seite.$$eval('#reiter-links .reiter-knopf', (k) => k.map((x) => x.textContent));
+  if (namen.join('|') !== 'Seiten|Marken|Dateien|Suche') throw new Error(namen.join('|'));
+  await seite.click('[data-tafel="dateien"].reiter-knopf');
+  await seite.waitForTimeout(350);
+  const stand = await seite.evaluate(() => ({
+    karten: document.querySelectorAll('#tafel-dateien .dateikarte').length,
+    text: (document.querySelector('#tafel-dateien .dateikarte')?.textContent || '').replace(/\s+/g, ' '),
+    ablage: !!document.querySelector('#tafel-dateien .ablegeflaeche'),
+  }));
+  if (stand.karten !== 1) throw new Error(`${stand.karten} Karten`);
+  if (!/5 von 5 Seiten/.test(stand.text)) throw new Error(`Karte sagt: ${stand.text}`);
+  if (!stand.ablage) throw new Error('keine Ablegefläche');
+  await seite.click('[data-tafel="miniaturen"].reiter-knopf');
+  await seite.waitForTimeout(250);
+  return stand.text.slice(0, 60);
+});
+
+await pruefe('Kommentarkarte trägt das Zitat aus dem Dokument', async () => {
+  /* Handoff: Art-Chip, Mono-Stelle, darunter das Zitat in Serif-Kursiv mit
+     goldener Kante. Das Zitat ist der markierte Seitentext, nicht der
+     Kommentar — beides sind verschiedene Dinge. */
+  await ladeBeispiel();
+  await seite.evaluate(() => window.werkbank.fuehreAus('werkzeug:auswahl'));
+  const stelle = await seite.evaluate(() => {
+    const s = [...document.querySelectorAll('.textebene span')].find((x) => x.textContent.includes('Auftragnehmer'));
+    if (!s) return null;
+    const r = s.getBoundingClientRect();
+    return { x: r.left, y: r.top + r.height / 2, b: r.width };
+  });
+  if (!stelle) throw new Error('Textstück nicht gefunden');
+  await seite.mouse.move(stelle.x + 2, stelle.y);
+  await seite.mouse.down();
+  await seite.mouse.move(stelle.x + stelle.b - 4, stelle.y, { steps: 8 });
+  await seite.mouse.up();
+  await seite.keyboard.press('h');
+  await seite.waitForTimeout(500);
+
+  await seite.click('[data-rtafel="anmerkungen"].reiter-knopf');
+  await seite.waitForTimeout(400);
+  const karte = await seite.evaluate(() => {
+    const k = document.querySelector('#tafel-kommentare .faden');
+    const zitat = k?.querySelector('.faden-zitat');
+    const chip = k?.querySelector('.art-chip');
+    return {
+      zitat: zitat?.textContent || '',
+      schrift: zitat ? getComputedStyle(zitat).fontFamily : '',
+      neigung: zitat ? getComputedStyle(zitat).fontStyle : '',
+      kante: zitat ? getComputedStyle(zitat).borderLeftColor : '',
+      chip: chip?.textContent || '',
+      chipSchrift: chip ? getComputedStyle(chip).fontFamily : '',
+    };
+  });
+  if (!/Auftragnehmer/.test(karte.zitat)) throw new Error(`Zitat fehlt: „${karte.zitat}"`);
+  if (!/Plex Serif/.test(karte.schrift)) throw new Error(`Zitat in ${karte.schrift}`);
+  if (karte.neigung !== 'italic') throw new Error(`Zitat ist ${karte.neigung}`);
+  if (!/212, 175, 55/.test(karte.kante)) throw new Error(`Kante ist ${karte.kante}`);
+  if (karte.chip !== 'Hervorheben') throw new Error(`Chip sagt „${karte.chip}"`);
+  if (!/Plex Mono/.test(karte.chipSchrift)) throw new Error(`Chip in ${karte.chipSchrift}`);
+  return `„${karte.zitat.slice(0, 40)}…", Chip ${karte.chip}`;
+});
+
+await pruefe('Einstellungen: Abzeichen zeigen, was offen ist', async () => {
+  /* Im Handoff tragen zwei Kategorien eine Zahl. Hier wird sie gerechnet —
+     ein Abzeichen, das immer dieselbe Zahl zeigt, ist Zierrat. */
+  const stand = await seite.evaluate(async () => {
+    window.werkbank.fuehreAus('einstellungen');
+    await new Promise((l) => setTimeout(l, 400));
+    const zeilen = [...document.querySelectorAll('.einst-kategorie')];
+    return zeilen.map((k) => ({
+      name: k.querySelector('span')?.textContent,
+      zahl: k.querySelector('.einst-abzeichen')?.textContent || null,
+    }));
+  });
+  const anmerkungen = stand.find((k) => k.name === 'Anmerkungen');
+  if (anmerkungen?.zahl !== '1') throw new Error(`Anmerkungen zeigt ${anmerkungen?.zahl}`);
+  const ohne = stand.find((k) => k.name === 'Tastenkürzel');
+  if (ohne?.zahl) throw new Error(`Tastenkürzel trägt ein Abzeichen: ${ohne.zahl}`);
+  await seite.keyboard.press('Escape');
+  await seite.waitForTimeout(200);
+  return stand.filter((k) => k.zahl).map((k) => `${k.name} ${k.zahl}`).join(' · ');
 });
 
 

@@ -70,9 +70,24 @@ Zwei Abweichungen vom Handoff, beide mit Grund:
   dunklen Werte sind daraus abgeleitet; der Akzent wird dort zu `#7fd6cd`,
   weil `#0f766e` auf dunklem Grund nicht mehr trägt.
 
+**Der Aufbau ist der des Handoffs, Reiter für Reiter.** Links vier Reiter —
+Seiten, Marken, Dateien, Suche; die ersten drei sind die gezeichneten, „Suche"
+ist unsere Zutat und steht dahinter. Rechts ebenso: Kommentare, Felder,
+Verlauf wie gezeichnet, „Hinweise" als vierter. Die Menüleiste folgt derselben
+Regel — Datei, Bearbeiten, Ansicht, dann unsere Zusätze, am Ende Hilfe. Wo die
+Werkbank mehr kann als das gezeichnete Produkt, wird das Muster erweitert,
+nicht gebrochen.
+
+Auch im Kleinen: die Kommentarkarte trägt den Art-Chip in Mono-Versalien und
+darunter das Zitat aus dem Dokument in Serif-Kursiv mit goldener Kante — das
+Zitat ist der markierte Seitentext, der Kommentar ist das, was jemand
+dazuschreibt. Die Einstellungen tragen Abzeichen an den Kategorien; ihre
+Zahlen werden gerechnet, nicht gesetzt.
+
 Nicht übernommen wurde alles, was einen Server braucht: Avatare, „3 Bearbeiter
-live", gemeinsame Ablage, Signaturanforderungen an Externe. Ein Team-Merkmal,
-das ohne Server nicht geht, wäre in dieser Werkbank eine Attrappe.
+live", gemeinsame Ablage, Signaturanforderungen an Externe, das Menü „Team".
+Ein Team-Merkmal, das ohne Server nicht geht, wäre in dieser Werkbank eine
+Attrappe.
 
 **Schmale Fenster statt zweiter App.** Das Handoff entwirft für das Telefon
 eine eigene iOS-Anwendung. Eine zweite Anwendung wäre der Sonderzweig, den die
@@ -447,7 +462,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 128 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 107 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 110 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/live-pruefen.mjs   #  31 Prüfungen — was der Hoster ausliefert
 ```
 
@@ -504,7 +519,9 @@ Breiten der Chrome auf den Pixel (38/27/46/30, 196/296), die Farben auf den
 Hexwert, dass der Primärknopf akzentfarben ist, dass jeder Werkzeugknopf
 34 px hoch ist und ein Wort trägt, dass im ganzen Fenster kein runder Rahmen
 steht, dass der Dialog den dunklen 42-px-Kopf hat und die Seitenliste
-einspaltig mit 112-px-Karte, Mono-Zahl und Kurztitel ist. Das ist die einzige
+einspaltig mit 112-px-Karte, Mono-Zahl und Kurztitel ist. Dazu die Reiterfolge
+links und rechts, die Dateienliste, das Serif-Zitat mit goldener Kante in der
+Kommentarkarte und die gerechneten Abzeichen in den Einstellungen. Das ist die einzige
 Art, eine Gestaltung zu prüfen, die nicht darauf hinausläuft, zwei
 Bildschirmabzüge nebeneinanderzuhalten — und sie hat einen echten Fehler
 gefunden: `.knopf-voll` stand oberhalb von `.knopf` und wurde von dessen

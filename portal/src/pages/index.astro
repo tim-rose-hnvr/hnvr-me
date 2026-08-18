@@ -1,10 +1,21 @@
 ---
 /* Startseite — die Marketingseite.
-   Der Aufbau folgt einem Gedanken: erst das, was nur sie kann (mitdenken),
-   dann warum sie lokal läuft, dann was sie kann, dann der Unterschied zu den
-   anderen lokalen Werkzeugen, dann der Abgleich mit Acrobat — und am Ende
-   ehrlich, was fehlt. „Läuft lokal" trägt als Argument allein nicht mehr:
-   das sagen inzwischen mehrere.
+
+   **Der Aufbau ist der des Handoffs**, Abschnitt für Abschnitt und in seiner
+   Reihenfolge: Aufmacher, Funktionen, Vergleich (invers), Für die Arbeit,
+   Preise, Fragen, Aufruf, Fuß. Was die Werkbank mehr hat als das gezeichnete
+   Produkt — das Mitdenken, der Abgleich mit Acrobat, die Grenzen, der
+   Prüfstand — steht nicht daneben, sondern in denselben Mustern: Karten im
+   Haarlinienraster, Ablaufkarten, inverse Tabelle.
+
+   Zwei Abschnitte des Handoffs tragen bewusst andere Inhalte:
+   · „Für Teams" wird zu „Für die Arbeit" — vier Schritte am Dokument statt
+     vier Personen, weil es hier keinen Server gibt, über den sie sich
+     abstimmen könnten.
+   · „Preise" wird zu „Kostenlos" — die Kartenform bleibt, die Preise nicht.
+     Ein Zitat einer erfundenen Kundin steht nirgends; an seiner Stelle steht
+     ein Satz, für den wir geradestehen.
+
    Die Zahlen im Abgleich und im Prüfstand stammen aus dem Repository
    (werkbank/README.md) und werden dort gepflegt. */
 import Grundgeruest from '../layouts/Grundgeruest.astro';
@@ -12,7 +23,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
 <Grundgeruest titel="Werkbank — PDF-Arbeit auf Ihrem Gerät">
 <main>
 
-  <section class="spur">
+  <section class="band band-grund" id="oben"><div class="spur">
     <div class="held">
       <div>
         <span class="marke">Werkzeug für PDF</span>
@@ -95,183 +106,236 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       </p>
       </div>
     </div>
-  </section>
+  </div></section>
 
-  <section class="spur">
-    <span class="marke">Der Punkt</span>
-    <h2 class="lauf">Die Arbeit findet auf Ihrem Schreibtisch statt.<br>Die Datei sollte auch dort bleiben.</h2>
-    <div class="lauf">
-      <p>
-        Wer heute ein PDF schwärzt, einen Scan durchsuchbar macht oder ein
-        Formular ausfüllt, lädt die Datei in aller Regel zu einem Anbieter hoch
-        und zahlt monatlich dafür. Bei einem Mietvertrag mag das gehen. Bei
-        einer Personalakte, einem Gutachten oder einem Sitzungsprotokoll ist es
-        eine Entscheidung, die niemand nebenbei treffen sollte.
-      </p>
-      <p>
-        Die Werkbank dreht das um: Sie ist eine Anwendung, die im Browser läuft
-        und nichts sendet. Texterkennung und Verschlüsselung — genau die beiden
-        Stellen, an denen andere hochladen — laufen hier auf demselben Gerät,
-        an dem Sie sitzen. Man kann das Netzwerkkabel ziehen und
-        weiterarbeiten.
-      </p>
+  <!-- 2. Funktionen — Haarlinienraster wie im Handoff: 1 px Fugen auf einer
+       Rasterfarbe, Karten weiß, je Karte Sinnbild-Kachel, Mono-Kennzeichen,
+       Serif-Überschrift, Fließtext. -->
+  <section class="band band-hell" id="funktionen"><div class="spur">
+    <div class="abschnitt-kopf">
+      <h2>Alles, was ein Vertrag durchläuft</h2>
+      <span class="marke">ACHTZEHN WERKZEUGE · EIN FENSTER</span>
     </div>
-  </section>
-
-  <section class="spur">
-    <span class="marke">Was sie kann</span>
-    <h2 class="lauf">Der Alltag, vollständig.</h2>
-    <div class="raster raster-drei">
-      <div class="eintrag">
+    <div class="karten">
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-lesen"><svg viewBox="0 0 16 16"><path d="M3 1.8h6.4L13 5.4v8.8H3z"/><path d="M9.2 2v3.6H13"/></svg></span>
+          <span class="marke">LESEN</span>
+        </div>
         <h3>Lesen und finden</h3>
         <p>Fortlaufender Seitenfluss, Miniaturen, Lesezeichen, Volltextsuche mit
         Groß- und Kleinschreibung und ganzem Wort. Hell und dunkel.</p>
       </div>
-      <div class="eintrag">
-        <h3>Kommentieren</h3>
-        <p>Hervorheben, Unterstreichen, Durchstreichen, Notiz, Freihand, Text,
-        Formen, Stempel — mit Liste, Sprungmarken und Textbericht.</p>
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-anmerken"><svg viewBox="0 0 16 16"><path d="M2 2.6h12v8.4H2z"/><path d="M4.6 11v3.2L7.8 11"/></svg></span>
+          <span class="marke">ANMERKEN</span>
+        </div>
+        <h3>Kommentieren mit Faden</h3>
+        <p>Zehn Werkzeuge, Kommentarfäden mit Antwort und Erledigt-Zustand,
+        Liste, Sprungmarken und Textbericht.</p>
       </div>
-      <div class="eintrag">
-        <h3>Texterkennung</h3>
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-ocr"><svg viewBox="0 0 16 16"><path d="M2 5V2h3M11 2h3v3M14 11v3h-3M5 14H2v-3"/><rect x="5" y="7" width="6" height="1.3"/></svg></span>
+          <span class="marke">OCR</span>
+        </div>
+        <h3>Texterkennung auf dem Gerät</h3>
         <p>Deutsch und Englisch, bis 300 dpi. Der erkannte Text liegt danach
         unsichtbar hinter dem Bild: Scans werden durchsuchbar und kopierbar.</p>
       </div>
-      <div class="eintrag">
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-schutz"><svg viewBox="0 0 16 16"><path d="M2 4.4h12v7.2H2z"/><rect x="4" y="6.6" width="5" height="1.3"/></svg></span>
+          <span class="marke">REDIGIEREN</span>
+        </div>
         <h3>Schwärzen, das hält</h3>
         <p>Die betroffene Seite wird gerastert. Der Text darunter ist danach
         wirklich fort — nicht nur von einem Rechteck verdeckt.</p>
       </div>
-      <div class="eintrag">
-        <h3>Formulare und Unterschrift</h3>
-        <p>Vorhandene Felder aller Arten direkt auf der Seite ausfüllen.
-        Unterschrift zeichnen, tippen oder als Bild laden.</p>
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-formular"><svg viewBox="0 0 16 16"><path d="M2 4h12v8H2z"/><rect x="4.2" y="7.3" width="4.4" height="1.4"/></svg></span>
+          <span class="marke">FORMULAR</span>
+        </div>
+        <h3>Formulare ausfüllen und anlegen</h3>
+        <p>Vorhandene Felder aller Arten direkt auf der Seite ausfüllen. Neue
+        anlegen: Rahmen ziehen, Art wählen — sechs Arten.</p>
       </div>
-      <div class="eintrag">
-        <h3>Text bearbeiten</h3>
-        <p>Auf eine Stelle klicken und neu schreiben. Lage, Größe und Farben
-        werden aus der Seite übernommen.</p>
-      </div>
-      <div class="eintrag">
-        <h3>Seiten ordnen</h3>
-        <p>Ziehen, drehen, löschen, verdoppeln, mehrere Dateien
-        zusammenführen, in Teile zerlegen, Auszüge ausgeben.</p>
-      </div>
-      <div class="eintrag">
-        <h3>Nach Word</h3>
-        <p>Absätze, Überschriften, fette und kursive Stellen, Seitenumbrüche —
-        als <span class="mono">.docx</span> zum Weiterschreiben.</p>
-      </div>
-      <div class="eintrag">
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-signatur"><svg viewBox="0 0 16 16"><path d="M2 10.6c3.4 0 3.6-7 6-7 1.6 0 1 4.4 3 4.4 1.2 0 2-1.2 3-2.6"/><rect x="2" y="13" width="12" height="1.3"/></svg></span>
+          <span class="marke">SIGNATUR</span>
+        </div>
         <h3>Digital unterschreiben</h3>
-        <p>Mit Zertifikat aus einer <span class="mono">.p12</span>, nicht als Bild.
-        Wird die Datei danach geändert, meldet das jeder Betrachter.</p>
+        <p>Mit Zertifikat aus einer <span class="mono">.p12</span> nach
+        PAdES-B-B, nicht als Bild. Wird die Datei danach geändert, meldet das
+        jeder Betrachter.</p>
       </div>
-      <div class="eintrag">
-        <h3>Formulare anlegen</h3>
-        <p>Rahmen ziehen, Art wählen: Text, mehrzeilig, Ankreuz, Auswahl,
-        Option, Unterschriftsfeld.</p>
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-seiten"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5.4"/><rect x="9" y="2" width="5" height="5.4"/><rect x="2" y="8.6" width="5" height="5.4"/><rect x="9" y="8.6" width="5" height="5.4"/></svg></span>
+          <span class="marke">SEITEN</span>
+        </div>
+        <h3>Seiten ordnen</h3>
+        <p>Ziehen, drehen, löschen, verdoppeln, mehrere Dateien zusammenführen,
+        in Teile zerlegen, Auszüge ausgeben.</p>
       </div>
-      <div class="eintrag">
-        <h3>Nach Excel</h3>
-        <p>Tabellen werden erkannt und als <span class="mono">.xlsx</span>
-        ausgegeben — ein Blatt je Seite, Zahlen als Zahlen.</p>
-      </div>
-      <div class="eintrag">
-        <h3>Barrierefreiheit</h3>
-        <p>Prüfung mit Begründung. Sprache, Titel und Feldbeschriftungen setzt
-        die Werkbank; auszeichnen tut sie nicht — das wäre geraten.</p>
-      </div>
-      <div class="eintrag">
-        <h3>Schützen und verkleinern</h3>
-        <p>Kennwort mit AES-256, Rechte für Drucken, Ändern und Kopieren.
-        Verkleinern mit Vorher-Nachher. Reparieren und Vergleichen.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="spur">
-    <span class="marke">Der Unterschied</span>
-    <h2 class="lauf">Sie liest das Dokument, bevor Sie es tun.</h2>
-    <p class="lauf" style="margin-bottom:1.8rem">
-      Nach dem Öffnen sieht die Werkbank sich bis zu sechzig Seiten an und sagt,
-      was ansteht. Jeder Vorschlag nennt seinen Grund, erledigt die Arbeit auf
-      Knopfdruck — und lässt sich wegklicken. Nichts geschieht von selbst.
-    </p>
-    <div class="faelle">
-      <div class="fall">
-        <span class="befund">Befund: kein auswählbarer Text</span>
-        <span class="satz">„Texterkennung liest das Bild und legt den Text unsichtbar dahinter. Danach lässt sich suchen und hervorheben wie in einem gesetzten Dokument."</span>
-        <span class="tat">Text erkennen</span>
-      </div>
-      <div class="fall">
-        <span class="befund">Befund: IBAN, Geburtsdatum, Rufnummer</span>
-        <span class="satz">„Sechs personenbezogene Angaben gefunden. Vor der Weitergabe schwärzen? Die betroffenen Seiten werden gerastert, damit der Text wirklich verschwindet."</span>
-        <span class="tat">Fundstellen zeigen</span>
-      </div>
-      <div class="fall">
-        <span class="befund">Befund: Formular mit leeren Feldern</span>
-        <span class="satz">„Vier Felder offen. Ich springe zum ersten leeren Feld und setze den Schreibpunkt hinein."</span>
-        <span class="tat">Zum ersten Feld</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="spur" id="unterschied-lokal">
-    <span class="marke">Und gegenüber den anderen</span>
-    <h2 class="lauf">„Läuft lokal" sagen inzwischen viele.</h2>
-    <div class="lauf">
-      <p>
-        Es gibt eine Reihe von PDF-Arbeitsplätzen, die auf dasselbe zielen:
-        Lizenz statt Abo, Texterkennung auf dem Gerät, kein Cloud-Zwang. Das
-        ist gut — und es heißt, dass „lokal" als Argument allein nicht mehr
-        reicht. Vier Dinge unterscheiden die Werkbank auch von diesen:
-      </p>
-    </div>
-    <div class="raster raster-zwei">
-      <div class="eintrag">
-        <h3>Sie denkt mit</h3>
-        <p>Andere zeigen Werkzeuge und warten. Die Werkbank liest bis zu
-        sechzig Seiten und macht daraus zwölf begründete Vorschläge — jeder
-        wegklickbar, keiner geschieht von selbst. Das findet sich in keinem
-        vergleichbaren Programm.</p>
-      </div>
-      <div class="eintrag">
-        <h3>Nichts zu installieren</h3>
-        <p>Die anderen sind Programme, die auf den Rechner müssen — mit
-        Rollout, Freigabe und Aktualisierung. Die Werkbank ist eine Adresse.
-        Wer sie öffnet, arbeitet; wer das Netz trennt, arbeitet weiter.</p>
-      </div>
-      <div class="eintrag">
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-export"><svg viewBox="0 0 16 16"><path d="M8 2v7.4M4.6 6.6L8 10l3.4-3.4M2 13.6h12"/></svg></span>
+          <span class="marke">AUSGABE</span>
+        </div>
         <h3>Nach Word und Excel</h3>
         <p>Absätze, Überschriften und Auszeichnungen als
         <span class="mono">.docx</span>; erkannte Tabellen als
-        <span class="mono">.xlsx</span>, mit Zahlen als Zahlen. Das ist der
-        Schritt, der sonst zum nächsten Anbieter führt — und zum Upload.</p>
+        <span class="mono">.xlsx</span>, Zahlen als Zahlen.</p>
       </div>
-      <div class="eintrag">
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-einlesen"><svg viewBox="0 0 16 16"><path d="M8 14V6.6M4.6 9.4L8 6l3.4 3.4M2 2.4h12"/></svg></span>
+          <span class="marke">EINGANG</span>
+        </div>
+        <h3>Aus Word, Excel, Text ein PDF</h3>
+        <p><span class="mono">.docx</span>, <span class="mono">.xlsx</span>,
+        <span class="mono">.csv</span>, <span class="mono">.txt</span> und
+        <span class="mono">.md</span> werden im Browser gelesen und auf A4
+        gesetzt. Ziehen genügt.</p>
+      </div>
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-messen"><svg viewBox="0 0 16 16"><path d="M2 10.6l12-5.2M2.6 8.6v4M13.4 3.4v4"/></svg></span>
+          <span class="marke">MESSEN</span>
+        </div>
+        <h3>Strecken und Flächen</h3>
+        <p>In Millimetern, Metern oder Fuß. Der Maßstab lässt sich an einer
+        bekannten Strecke kalibrieren — rückwirkend für alle Messungen.</p>
+      </div>
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-stapel"><svg viewBox="0 0 16 16"><path d="M2 4h9v9H2z"/><path d="M5 4V1.6h9V11h-2.4"/></svg></span>
+          <span class="marke">STAPEL</span>
+        </div>
+        <h3>Viele Dateien auf einmal</h3>
+        <p>Entschützen, reparieren, Metadaten entfernen, drehen, schützen —
+        über beliebig viele Dateien, mit Bericht im Archiv.</p>
+      </div>
+      <div class="karte">
+        <div class="karte-kopf">
+          <span class="kachel kachel-zugang"><svg viewBox="0 0 16 16"><path d="M8 2.4a2 2 0 1 1 0 3.2M4 14v-3.4c0-1.4 1.8-2.2 4-2.2s4 .8 4 2.2V14"/></svg></span>
+          <span class="marke">ZUGANG</span>
+        </div>
         <h3>Barrierefreiheit mit Begründung</h3>
-        <p>Geprüft wird, was sich prüfen lässt; gesetzt wird nur, was ohne
-        Vermutung zu setzen ist. Automatisch „taggen" tut die Werkbank
-        ausdrücklich nicht — eine geratene Überschriftenebene schadet einem
-        Screenreader mehr, als sie nützt.</p>
+        <p>Prüfung mit Grund. Sprache, Titel und Feldbeschriftungen setzt die
+        Werkbank; auszeichnen tut sie nicht — das wäre geraten.</p>
       </div>
     </div>
-    <p class="lauf klein leise" style="margin-top:1.4rem">
-      Was die anderen können und die Werkbank nicht: gemeinsame Ablagen,
-      Freigabeläufe und „drei Bearbeiter live". Das braucht einen Server, auf
-      dem Ihre Dateien liegen. Genau den gibt es hier nicht — das ist kein
-      Versehen, sondern die Entscheidung.
-    </p>
-  </section>
+  </div></section>
 
-  <section class="invers" id="abgleich"><div class="spur">
-    <span class="marke">Abgleich</span>
-    <h2 class="lauf">Neunundzwanzig Werkzeuge von Acrobat, ehrlich durchgezählt.</h2>
-    <p class="lauf" style="margin-bottom:1.5rem">
-      Kein Vergleich, der nur die eigenen Stärken zeigt. Hier steht auch, was
-      fehlt — und warum.
-    </p>
+  <!-- 3. Für die Arbeit — die Ablaufkarten des Handoffs („Für Teams"), aber
+       am Dokument entlang statt an vier Personen: einen Server, über den sie
+       sich abstimmen, gibt es hier nicht. -->
+  <section class="band band-grund" id="mitdenken"><div class="spur">
+    <div class="abschnitt-kopf">
+      <h2>Ein Dokument, vier Schritte, kein Hochladen</h2>
+    </div>
+    <div class="ablauf">
+      <div class="ablauf-karte">
+        <div class="ablauf-kopf"><span class="marke">SCHRITT 01</span><i></i><span class="raute"></span></div>
+        <h3>Öffnen</h3>
+        <p>PDF hineinziehen — oder eine Word-, Excel- oder Textdatei, dann wird
+        sie zuerst gesetzt. Nichts wird hochgeladen, auch nicht danach.</p>
+        <span class="marke ablauf-fuss">SEKUNDEN · KEINE INSTALLATION</span>
+      </div>
+      <div class="ablauf-karte">
+        <div class="ablauf-kopf"><span class="marke">SCHRITT 02</span><i></i><span class="raute"></span></div>
+        <h3>Lesen lassen</h3>
+        <p>Die Werkbank sieht sich bis zu sechzig Seiten an und sagt, was
+        ansteht: Scan ohne Textebene, offene Pflichtfelder, personenbezogene
+        Angaben. Jeder Hinweis nennt seinen Grund.</p>
+        <span class="marke ablauf-fuss">ZWÖLF REGELN · JEDE WEGKLICKBAR</span>
+      </div>
+      <div class="ablauf-karte">
+        <div class="ablauf-kopf"><span class="marke">SCHRITT 03</span><i></i><span class="raute"></span></div>
+        <h3>Bearbeiten</h3>
+        <p>Kommentieren, schwärzen, Text ändern, Seiten ordnen, Formular
+        ausfüllen, messen. Jeder Schritt zurücknehmbar, jeder mit Namen im
+        Verlauf.</p>
+        <span class="marke ablauf-fuss">83 BEFEHLE · JEDER MIT MAUSWEG</span>
+      </div>
+      <div class="ablauf-karte">
+        <div class="ablauf-kopf"><span class="marke">SCHRITT 04</span><i></i><span class="raute"></span></div>
+        <h3>Abgeben</h3>
+        <p>Unterschreiben, schützen, verkleinern, nach Word oder Excel geben —
+        oder drucken. Was beim Sichern geschieht, steht vorher im Dialog.</p>
+        <span class="marke ablauf-fuss">PADES-B-B · AES-256</span>
+      </div>
+    </div>
+    <blockquote class="aussage">
+      <p>„Eine Anwendung, die den Dienst verweigert, weil ein Server nicht
+      antwortet, wäre das Gegenteil dessen, wofür sie gebaut ist. Deshalb läuft
+      die Werkbank weiter, wenn das Netz weg ist — und deshalb liegt Ihre Datei
+      auch dann noch bei Ihnen."</p>
+      <footer><span class="raute"></span>Aus dem Quelltext, <span class="mono">app/anmeldung.js</span></footer>
+    </blockquote>
+  </div></section>
+
+  <!-- 4. Vergleich — invers, mit der Tabelle aus dem Handoff (1.5fr 118 118). -->
+  <section class="band band-dunkel" id="vergleich"><div class="spur">
+    <div class="vergleich-raster">
+      <div class="vergleich-text">
+        <span class="marke">WARUM ANDERS</span>
+        <h2>Gegen die schweren Suiten — und gegen die leichten</h2>
+        <p>
+          Klassische PDF-Suiten sind über zwanzig Jahre gewachsen: verschachtelte
+          Dialoge, Cloud-Pflicht, Funktionen hinter Stufen. Inzwischen gibt es
+          auch schlanke Programme, die lokal rechnen — „läuft lokal" trägt als
+          Argument allein nicht mehr. Drei Dinge unterscheiden die Werkbank auch
+          von diesen.
+        </p>
+        <div class="punkte">
+          <div class="punktzeile"><span class="raute"></span><span>Sie denkt mit: zwölf begründete Vorschläge aus dem geöffneten Dokument, jeder wegklickbar, keiner geschieht von selbst.</span></div>
+          <div class="punktzeile"><span class="raute"></span><span>Nichts zu installieren. Kein Rollout, keine Freigabe, keine Aktualisierung — eine Adresse.</span></div>
+          <div class="punktzeile"><span class="raute"></span><span>Nach Word und Excel, und aus Word und Excel zurück. Das ist der Schritt, der sonst zum nächsten Anbieter führt.</span></div>
+        </div>
+        <p class="klein leise">
+          Was die anderen können und die Werkbank nicht: gemeinsame Ablagen,
+          Freigabeläufe, „drei Bearbeiter live". Das braucht einen Server, auf
+          dem Ihre Dateien liegen. Genau den gibt es hier nicht — das ist kein
+          Versehen, sondern die Entscheidung.
+        </p>
+      </div>
+      <div class="vergleich-tafel">
+        <div class="vt-kopf">
+          <div class="vt-kriterium">KRITERIUM</div>
+          <div class="vt-uns">WERKBANK</div>
+          <div class="vt-die">SUITE-STANDARD</div>
+        </div>
+        <div class="vt-zeile"><div>Datei verlässt das Gerät</div><div class="vt-uns">nie</div><div class="vt-die">Upload</div></div>
+        <div class="vt-zeile"><div>Installation</div><div class="vt-uns">keine</div><div class="vt-die">Rollout</div></div>
+        <div class="vt-zeile"><div>Texterkennung</div><div class="vt-uns">im Gerät</div><div class="vt-die">im Dienst</div></div>
+        <div class="vt-zeile"><div>Preis</div><div class="vt-uns">0 €</div><div class="vt-die">Abo</div></div>
+        <div class="vt-zeile"><div>Denkt mit</div><div class="vt-uns">12 Regeln</div><div class="vt-die">—</div></div>
+        <div class="vt-zeile"><div>Ohne Netz nutzbar</div><div class="vt-uns">ja</div><div class="vt-die">teilweise</div></div>
+        <div class="vt-zeile"><div>Quelltext einsehbar</div><div class="vt-uns">offen</div><div class="vt-die">nein</div></div>
+        <div class="vt-zeile"><div>Gemeinsame Ablage</div><div class="vt-uns">—</div><div class="vt-die">ja</div></div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- 5. Abgleich mit Acrobat — unser Abschnitt, im Muster des Handoffs
+       (Haarlinienraster für die Bilanz, helle Tabelle darunter). -->
+  <section class="band band-hell" id="abgleich"><div class="spur">
+    <div class="abschnitt-kopf">
+      <h2>Neunundzwanzig Werkzeuge von Acrobat, ehrlich durchgezählt</h2>
+      <span class="marke">KEIN VERGLEICH, DER NUR EIGENE STÄRKEN ZEIGT</span>
+    </div>
+    <div class="bilanz">
+      <div class="zahl betont"><b>22</b><span>ganz vorhanden</span></div>
+      <div class="zahl"><b>5</b><span>teilweise</span></div>
+      <div class="zahl"><b>5</b><span>brauchen Server oder Dienst</span></div>
+      <div class="zahl"><b>2</b><span>bewusst abgelehnt</span></div>
+    </div>
     <div class="tabellenrahmen">
       <table>
         <thead>
@@ -280,157 +344,236 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <tbody>
           <tr><td>PDF exportieren</td><td class="stand ja">ja</td><td class="grund">PDF, Word, Excel, Text, PNG</td></tr>
           <tr><td>Ausfüllen und Signieren</td><td class="stand ja">ja</td><td class="grund">Felder und sichtbare Unterschrift</td></tr>
-          <tr><td>PDF bearbeiten</td><td class="stand teil">teilweise</td><td class="grund">Text bearbeiten ja, Bilder im PDF nein</td></tr>
-          <tr><td>PDF erstellen</td><td class="stand teil">teilweise</td><td class="grund">aus Bildern ja, aus Word nein</td></tr>
+          <tr><td>PDF erstellen</td><td class="stand ja">ja</td><td class="grund">aus Bildern, Word, Excel, CSV, Text, Markdown</td></tr>
+          <tr><td>In PDF konvertieren</td><td class="stand ja">ja</td><td class="grund">Text und Tabellen, kein Layout</td></tr>
+          <tr><td>Objekte messen</td><td class="stand ja">ja</td><td class="grund">Strecke und Fläche, Maßstab kalibrierbar</td></tr>
+          <tr><td>Geführte Aktionen</td><td class="stand ja">ja</td><td class="grund">Stapel über viele Dateien, mit Bericht</td></tr>
           <tr><td>Dateien zusammenführen</td><td class="stand ja">ja</td><td class="grund"></td></tr>
           <tr><td>Seiten verwalten</td><td class="stand ja">ja</td><td class="grund">eigene Ordnen-Ansicht: sortieren, drehen, löschen, teilen</td></tr>
-          <tr><td>Scan &amp; OCR</td><td class="stand teil">teilweise</td><td class="grund">Erkennung ja, Scangerät nein</td></tr>
           <tr><td>PDF-Datei schützen</td><td class="stand ja">ja</td><td class="grund">AES-256, Rechte</td></tr>
           <tr><td>PDF-Datei schwärzen</td><td class="stand ja">ja</td><td class="grund">mit Rasterung</td></tr>
           <tr><td>PDF komprimieren</td><td class="stand ja">ja</td><td class="grund">mit Vorher-Nachher</td></tr>
-          <tr><td>Kommentare hinzufügen</td><td class="stand ja">ja</td><td class="grund">zehn Werkzeuge, Liste, Bericht</td></tr>
+          <tr><td>Kommentare hinzufügen</td><td class="stand ja">ja</td><td class="grund">zehn Werkzeuge, Fäden, Liste, Bericht</td></tr>
           <tr><td>Stempel hinzufügen</td><td class="stand ja">ja</td><td class="grund">Vorlagen, eigener Text, Datum</td></tr>
           <tr><td>Dateien vergleichen</td><td class="stand ja">ja</td><td class="grund">wortweise je Seite</td></tr>
-          <tr><td>In PDF konvertieren</td><td class="stand teil">teilweise</td><td class="grund">Bilder ja, Office nein</td></tr>
-          <tr><td>Suchindex hinzufügen</td><td class="stand teil">teilweise</td><td class="grund">im Dokument ja, über Ordner nein</td></tr>
-          <tr><td>Geführte Aktionen</td><td class="stand teil">teilweise</td><td class="grund">Befehlspalette statt Stapelbetrieb</td></tr>
-          <tr><td>Benutzerdefiniertes Tool</td><td class="stand teil">teilweise</td><td class="grund">jede Fähigkeit ist ein Befehl</td></tr>
           <tr><td>Formular vorbereiten</td><td class="stand ja">ja</td><td class="grund">sechs Feldarten, Rahmen ziehen</td></tr>
           <tr><td>Ein Zertifikat verwenden</td><td class="stand ja">ja</td><td class="grund">PAdES-B-B aus einer .p12; ohne Zeitstempeldienst</td></tr>
+          <tr><td>PDF bearbeiten</td><td class="stand teil">teilweise</td><td class="grund">Text bearbeiten ja, Bilder im PDF nein</td></tr>
+          <tr><td>Scan &amp; OCR</td><td class="stand teil">teilweise</td><td class="grund">Erkennung ja, Scangerät nein</td></tr>
+          <tr><td>Suchindex hinzufügen</td><td class="stand teil">teilweise</td><td class="grund">im Dokument ja, über Ordner nein</td></tr>
           <tr><td>Barrierefreiheit vorbereiten</td><td class="stand teil">teilweise</td><td class="grund">Prüfung, Sprache, Titel, Feldbeschriftungen; auszeichnen nein</td></tr>
+          <tr><td>Benutzerdefiniertes Tool</td><td class="stand teil">teilweise</td><td class="grund">jede Fähigkeit ist ein Befehl</td></tr>
           <tr><td>E-Signaturen anfordern</td><td class="stand nein">nein</td><td class="grund">braucht einen Server</td></tr>
           <tr><td>Zum Kommentieren senden</td><td class="stand nein">nein</td><td class="grund">braucht einen Server</td></tr>
           <tr><td>Diese PDF-Datei übersetzen</td><td class="stand nein">nein</td><td class="grund">braucht einen Dienst</td></tr>
           <tr><td>Diese PDF stilisieren</td><td class="stand nein">nein</td><td class="grund">braucht einen Dienst</td></tr>
           <tr><td>Druckproduktion</td><td class="stand nein">nein</td><td class="grund">Druckvorstufe, Farbauszüge</td></tr>
-          <tr><td>Objekte messen</td><td class="stand nein">nein</td><td class="grund"></td></tr>
-          <tr><td>PDF-Standards anwenden</td><td class="stand nein">nein</td><td class="grund">PDF/A, PDF/X</td></tr>
+          <tr><td>PDF-Standards anwenden</td><td class="stand nein">nein</td><td class="grund">PDF/A braucht ein ICC-Profil und eine Konformitätsprüfung</td></tr>
           <tr><td>Rich Media hinzufügen</td><td class="stand nein">nein</td><td class="grund">bewusst nicht: Video im PDF ist eine Sicherheitslücke mit Abspieltaste</td></tr>
           <tr><td>JavaScript verwenden</td><td class="stand nein">nein</td><td class="grund">bewusst nicht: seit Jahren ein Einfallstor</td></tr>
         </tbody>
       </table>
     </div>
-    <div class="bilanz">
-      <div class="zahl betont"><b>20</b><span>ganz oder teilweise vorhanden</span></div>
-      <div class="zahl"><b>6</b><span>brauchen Server oder Dienst</span></div>
-      <div class="zahl"><b>2</b><span>bewusst abgelehnt</span></div>
-      <div class="zahl"><b>1</b><span>echte Lücke: Druckvorstufe</span></div>
+  </div></section>
+
+  <!-- 6. Preise — die Kartenform des Handoffs, ohne Preise. Drei Wege, einer
+       hervorgehoben; die Zahl darin ist 0 €, und das bleibt so. -->
+  <section class="band band-grund" id="kostenlos"><div class="spur">
+    <div class="abschnitt-kopf">
+      <h2>Kostenlos. Wir wollen nur wissen, wer sie benutzt.</h2>
+      <span class="marke">KEIN ABO · KEINE STUFEN · KEINE ZAHLUNGSDATEN</span>
+    </div>
+    <div class="plaene">
+      <div class="plan ist-betont">
+        <span class="marke plan-marke">EMPFOHLEN</span>
+        <h3>Kostenlos</h3>
+        <div class="plan-preis"><b>0 €</b><span>für immer</span></div>
+        <p>Für alle, die ein PDF vor sich haben und es fertig bekommen wollen.</p>
+        <div class="plan-linie"></div>
+        <ul class="plan-liste">
+          <li>Alle 83 Befehle, keiner hinter einer Stufe</li>
+          <li>Texterkennung, Unterschrift, Schwärzen inbegriffen</li>
+          <li>Eine Anmeldung, keine Zahlungsdaten</li>
+          <li>Ihre Dateien bleiben auf Ihrem Gerät</li>
+        </ul>
+        <a class="plan-knopf" href="/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html">Anmelden und öffnen</a>
+      </div>
+      <div class="plan">
+        <span class="marke plan-marke">SELBST BETREIBEN</span>
+        <h3>Auf eigenem Server</h3>
+        <div class="plan-preis"><b>—</b><span>Ihre Dateien, Ihr Blech</span></div>
+        <p>Für Häuser, die auch die Anwendung im eigenen Netz halten wollen.</p>
+        <div class="plan-linie"></div>
+        <ul class="plan-liste">
+          <li>Ordner kopieren, statischen Server davor — fertig</li>
+          <li>Ohne Anmeldung: die Schranke ist eine Zeile im Kopf</li>
+          <li>Läuft in einem abgeschotteten Netz vollständig</li>
+          <li>Kein Lizenzabruf, kein CDN, keine fremde Schrift</li>
+        </ul>
+        <a class="plan-knopf plan-knopf-still" href="#pruefstand">Wie das geprüft wird</a>
+      </div>
+      <div class="plan">
+        <span class="marke plan-marke">ANGEPASST</span>
+        <h3>Für Ihr Haus</h3>
+        <div class="plan-preis"><b>—</b><span>auf Anfrage</span></div>
+        <p>Eigene Vorlagen, eigene Regeln im Mitdenken, Anbindung an ein
+        vorhandenes System.</p>
+        <div class="plan-linie"></div>
+        <ul class="plan-liste">
+          <li>Eigene Stempel, Vorlagen und Pflichtprüfungen</li>
+          <li>Regeln für Ihre Dokumentarten</li>
+          <li>Ein Programm, keine Sonderzweige — alles wird Merkmal</li>
+          <li>Kontakt: hnvr.me digital</li>
+        </ul>
+        <a class="plan-knopf plan-knopf-still" href="#fragen">Fragen zuerst</a>
+      </div>
     </div>
   </div></section>
 
-  <section class="spur">
-    <span class="marke">Grenzen</span>
-    <h2 class="lauf">Was sie nicht kann, steht hier — nicht im Kleingedruckten.</h2>
-    <div class="grenzen">
-      <div class="grenze">
-        <b>Eine Unterschrift je Datei</b>
-        <span>Signiert wird mit Zertifikat nach PAdES-B-B. Eine zweite Unterschrift über die erste hinweg bräuchte eine inkrementelle Ergänzung — die Werkbank sagt das, statt die erste stillschweigend zu brechen. Kein Zeitstempeldienst, keine Sperrlisten.</span>
+  <!-- 7. Grenzen — unser Abschnitt, im Kartenmuster des Handoffs. -->
+  <section class="band band-hell" id="grenzen"><div class="spur">
+    <div class="abschnitt-kopf">
+      <h2>Was sie nicht kann, steht hier — nicht im Kleingedruckten</h2>
+    </div>
+    <div class="karten">
+      <div class="karte">
+        <h3>Eine Unterschrift je Datei</h3>
+        <p>Signiert wird nach PAdES-B-B. Eine zweite Unterschrift über die
+        erste hinweg bräuchte eine inkrementelle Ergänzung — die Werkbank sagt
+        das, statt die erste stillschweigend zu brechen. Kein Zeitstempeldienst,
+        keine Sperrlisten.</p>
       </div>
-      <div class="grenze">
-        <b>Keine Tabellen nach Word</b>
-        <span>Eine Tabelle wird zu Absätzen, nicht zu einem Word-Raster. Übernommen wird der Aufbau, nicht das Layout.</span>
+      <div class="karte">
+        <h3>Kein Layout beim Einlesen</h3>
+        <p>Aus einer Word-Datei kommen Text, Gliederung und Tabellen — nicht
+        Bilder, Kopfzeilen, Fußnoten, Spalten und Farben. Gesetzt wird in
+        Helvetica auf A4.</p>
       </div>
-      <div class="grenze">
-        <b>Texterkennung irrt</b>
-        <span>Sie nennt ihre Sicherheit in Prozent. Zahlen, Namen und Kennzeichen gehören geprüft.</span>
+      <div class="karte">
+        <h3>Texterkennung irrt</h3>
+        <p>Sie nennt ihre Sicherheit in Prozent. Zahlen, Namen und Kennzeichen
+        gehören geprüft.</p>
       </div>
-      <div class="grenze">
-        <b>Ersetzter Text in Helvetica</b>
-        <span>Die Originalschrift wird nicht nachgebildet. Bei ausgefallenen Schriften sieht man den Unterschied.</span>
+      <div class="karte">
+        <h3>Ersetzter Text in Helvetica</h3>
+        <p>Die Originalschrift wird nicht nachgebildet. Bei ausgefallenen
+        Schriften sieht man den Unterschied.</p>
       </div>
-      <div class="grenze">
-        <b>Kein unbekanntes Kennwort</b>
-        <span>Entschlüsseln geht mit Kennwort. Ohne Kennwort geht es nicht — auch hier nicht.</span>
+      <div class="karte">
+        <h3>Kein unbekanntes Kennwort</h3>
+        <p>Entschlüsseln geht mit Kennwort. Ohne Kennwort geht es nicht — auch
+        hier nicht.</p>
       </div>
-      <div class="grenze">
-        <b>Lesezeichen beim Umbau</b>
-        <span>Sie bleiben erhalten, solange Seitenfolge und Drehung unverändert sind. Beides steht vor dem Sichern im Dialog.</span>
+      <div class="karte">
+        <h3>Lesezeichen beim Umbau</h3>
+        <p>Sie bleiben erhalten, solange Seitenfolge und Drehung unverändert
+        sind. Beides steht vor dem Sichern im Dialog.</p>
       </div>
     </div>
-  </section>
+  </div></section>
 
-  <section class="spur" id="preis">
-    <span class="marke">Preis</span>
-    <h2 class="lauf">Kostenlos. Wir wollen nur wissen, wer sie benutzt.</h2>
-    <div class="lauf">
-      <p>
-        Kein Abo, keine Stufen, keine Zahlungsdaten. Eine Anmeldung genügt —
-        aus einem Grund, der sich schlecht anders lösen lässt: ohne sie wüssten
-        wir nicht, ob die Werkbank jemandem hilft und woran sie klemmt.
-      </p>
-      <p>
-        Was die Anmeldung <strong>nicht</strong> bedeutet: dass Ihre Dateien zu
-        uns kommen. Sie tun es nicht, weder vorher noch nachher. Die Werkbank
-        arbeitet weiter ausschließlich in Ihrem Browser; ziehen Sie das
-        Netzwerkkabel, während Sie arbeiten, und Sie merken keinen Unterschied.
-        Die Anmeldung sagt uns, dass Sie da sind, nicht, was Sie tun.
-      </p>
-      <p class="klein leise">
-        Konten und Kennwörter liegen bei Wix, nicht in einer selbstgebauten
-        Benutzerverwaltung. Und offen gesagt, weil es sonst jemand später für
-        ein Sicherheitsversprechen hält: die Anmeldung ist eine Schranke, keine
-        Zugriffssperre — die Dateien der Anwendung liegen öffentlich, wie bei
-        jeder Web-Anwendung. Sie schützt keine Inhalte, denn es liegen keine
-        bei uns.
-      </p>
-    </div>
-  </section>
-
-  <section class="spur" id="pruefstand">
-    <div class="pruefstand">
-      <span class="marke">Prüfstand</span>
-      <h2>Geprüft wird das Ergebnis, nicht das Versprechen.</h2>
-      <p style="max-width:34rem">
-        Zwei Läufe fahren die Anwendung in einem echten Browser durch: einer
-        prüft, was am Ende in der Datei steht, der andere, ob sich alles bedienen
-        lässt. Beide schlagen auch dann fehl, wenn in der Browserkonsole ein
-        einziger Fehler auftaucht.
-      </p>
-      <div class="zeilen">
-        <div class="zeile"><i>✓</i> geschwärzte Seite trägt keinen auslesbaren Text mehr <em>Datei geprüft</em></div>
-        <div class="zeile"><i>✓</i> gesicherter Scan trägt unsichtbaren, auslesbaren Text <em>Datei geprüft</em></div>
-        <div class="zeile"><i>✓</i> geschützte Datei ohne Kennwort verschlossen, mit Kennwort offen <em>Datei geprüft</em></div>
-        <div class="zeile"><i>✓</i> Formularwert und Stempel stehen in der Ausgabe <em>Datei geprüft</em></div>
-        <div class="zeile"><i>✓</i> Word- und Excel-Datei: Pflichtteile, Absätze, erkannte Tabelle, Zahlen als Zahlen <em>Datei geprüft</em></div>
-        <div class="zeile"><i>✓</i> alle sechs Formularfeldarten stehen im gesicherten PDF <em>Datei geprüft</em></div>
-        <div class="zeile"><i>✓</i> openssl bestätigt die Unterschrift; ein geändertes Byte bricht sie <em>Datei geprüft</em></div>
-        <div class="zeile"><i>✓</i> jedes Werkzeug, jeder Dialog, Tastatur und Zwischenablage <em>Bedienung geprüft</em></div>
-        <div class="zeile"><i>✓</i> 198 Prüfungen, keine offen <em>Stand heute</em></div>
+  <!-- 8. Prüfstand — unser Abschnitt, invers wie der Vergleich. -->
+  <section class="band band-dunkel" id="pruefstand"><div class="spur">
+    <div class="vergleich-raster">
+      <div class="vergleich-text">
+        <span class="marke">PRÜFSTAND</span>
+        <h2>Geprüft wird das Ergebnis, nicht das Versprechen</h2>
+        <p>
+          Drei Läufe: zwei fahren die Anwendung in einem echten Browser durch —
+          einer prüft, was am Ende in der Datei steht, der andere, ob sich alles
+          bedienen lässt. Der dritte holt jede ausgelieferte Datei von der
+          veröffentlichten Adresse und vergleicht die Prüfsumme. Alle schlagen
+          auch dann fehl, wenn in der Browserkonsole ein einziger Fehler steht.
+        </p>
+        <div class="punkte">
+          <div class="punktzeile"><span class="raute"></span><span>openssl bestätigt die Unterschrift — ein geändertes Byte muss sie brechen.</span></div>
+          <div class="punktzeile"><span class="raute"></span><span>Jeder der 83 Befehle wird einmal ausgelöst; keiner darf werfen.</span></div>
+          <div class="punktzeile"><span class="raute"></span><span>Die Gestaltung wird gegen das Handoff nachgemessen: Höhen, Farben, Radien.</span></div>
+        </div>
+      </div>
+      <div class="vergleich-tafel">
+        <div class="vt-kopf">
+          <div class="vt-kriterium">LAUF</div>
+          <div class="vt-uns">PRÜFUNGEN</div>
+          <div class="vt-die">OFFEN</div>
+        </div>
+        <div class="vt-zeile"><div>Ergebnis in der Datei</div><div class="vt-uns">128</div><div class="vt-die">0</div></div>
+        <div class="vt-zeile"><div>Bedienung und Gestaltung</div><div class="vt-uns">107</div><div class="vt-die">0</div></div>
+        <div class="vt-zeile"><div>Veröffentlichte Seite</div><div class="vt-uns">31</div><div class="vt-die">0</div></div>
+        <div class="vt-zeile"><div>Konsolenfehler</div><div class="vt-uns">0</div><div class="vt-die">0</div></div>
       </div>
     </div>
-  </section>
+  </div></section>
 
-  <section class="spur">
-    <span class="marke">Ausprobieren</span>
-    <h2 class="lauf">Öffnen Sie sie mit einer eigenen Datei.</h2>
-    <div class="lauf">
-      <p>
-        Die Werkbank liegt auf dieser Seite und startet im Browserfenster.
-        Ziehen Sie ein PDF hinein — es bleibt auf Ihrem Gerät, auch während
-        Texterkennung und Verschlüsselung laufen. Wer prüfen will, ob das
-        stimmt: Netzwerk trennen und weiterarbeiten.
-      </p>
-      <div class="knopf-reihe" style="margin-top:1.5rem">
-        <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html">Kostenlos anmelden und öffnen</a>
-        <a class="knopf-rand" href="/werkbank/index.html">Schon angemeldet? Direkt öffnen</a>
-      </div>
-    </div>
-
-    <div class="abbinder">
+  <!-- 9. Fragen — Akkordeon wie im Handoff, genau eines offen. Ohne
+       JavaScript: <details name> macht das von sich aus. -->
+  <section class="band band-grund" id="fragen"><div class="spur">
+    <div class="fragen-raster">
       <div>
-        <h3>Kontakt</h3>
-        <p class="leise">hnvr.me digital</p>
+        <h2>Häufige Fragen</h2>
+        <p class="klein leise">Antwort nicht dabei? Schreiben Sie an
+        <strong>hnvr.me digital</strong> — auf Deutsch, von Menschen.</p>
       </div>
-      <div>
-        <h3>Preis</h3>
-        <p class="leise">Keiner. Die Werkbank ist kostenlos — es braucht nur eine Anmeldung, damit wir wissen, wer sie benutzt. Keine Zahlungsdaten, kein Abo, keine Stufen.</p>
-      </div>
-      <div>
-        <h3>Stand</h3>
-        <p class="leise">198 Prüfungen, alle bestanden. Änderungen laufen offen im Repository.</p>
+      <div class="fragen">
+        <details name="frage" open>
+          <summary><span class="marke">01</span><span class="frage-text">Verlässt meine Datei wirklich nie das Gerät?</span></summary>
+          <p>Ja. Es gibt keinen Aufruf, der eine Datei sendet. Texterkennung und
+          Verschlüsselung — die beiden Stellen, an denen andere hochladen —
+          laufen als WebAssembly im selben Browserfenster. Nachprüfbar: Netz
+          trennen und weiterarbeiten.</p>
+        </details>
+        <details name="frage">
+          <summary><span class="marke">02</span><span class="frage-text">Wozu dann eine Anmeldung?</span></summary>
+          <p>Damit wir wissen, ob die Werkbank jemandem hilft und woran sie
+          klemmt. Sie kostet nichts und verlangt keine Zahlungsdaten. Und um es
+          deutlich zu sagen: das ist eine Anmeldeschranke, keine Zugriffssperre
+          — die Dateien der Anwendung liegen öffentlich, wie bei jeder
+          Web-Anwendung. Sie schützt keine Inhalte, denn es liegen keine bei uns.</p>
+        </details>
+        <details name="frage">
+          <summary><span class="marke">03</span><span class="frage-text">Ist die Unterschrift rechtlich gültig?</span></summary>
+          <p>Die Werkbank rechnet eine Signatur nach PAdES-B-B aus Ihrem
+          Zertifikat. Ob sie fortgeschritten oder qualifiziert ist, entscheidet
+          das Zertifikat und sein Aussteller, nicht das Programm. Ohne
+          Zeitstempeldienst ist das Ergebnis -B-B, nicht -B-T.</p>
+        </details>
+        <details name="frage">
+          <summary><span class="marke">04</span><span class="frage-text">Hält das Schwärzen einer forensischen Prüfung stand?</span></summary>
+          <p>Die betroffene Seite wird gerastert — der Text darunter ist danach
+          nicht mehr in der Datei, nicht nur verdeckt. Der Prüflauf liest die
+          gesicherte Datei zurück und schlägt fehl, wenn der geschwärzte Text
+          noch auslesbar ist.</p>
+        </details>
+        <details name="frage">
+          <summary><span class="marke">05</span><span class="frage-text">Was passiert, wenn ich den Reiter schließe?</span></summary>
+          <p>Ungesicherte Änderungen sind fort — es gibt keinen Server, der sie
+          hätte. Beim Schließen eines geänderten Reiters fragt die Werkbank
+          nach. Wer zwischendurch sichert, hat die Datei auf der Platte.</p>
+        </details>
+        <details name="frage">
+          <summary><span class="marke">06</span><span class="frage-text">Kann ich sie im eigenen Netz betreiben?</span></summary>
+          <p>Ja. Der Ordner mit der Anwendung liegt hinter einem beliebigen
+          statischen Server. Kein Lizenzabruf, kein CDN, keine fremde Schrift —
+          sie läuft in einem abgeschotteten Netz vollständig. Ohne die eine
+          Zeile im Kopf gibt es dann auch keine Anmeldung.</p>
+        </details>
       </div>
     </div>
-  </section>
+  </div></section>
+
+  <!-- 10. Aufruf — Akzentfläche, weiß, zwei Knöpfe. -->
+  <section class="band band-akzent" id="oeffnen"><div class="spur aufruf">
+    <div>
+      <h2>Einmal öffnen genügt.</h2>
+      <p>Ziehen Sie ein eigenes PDF hinein. Es bleibt auf Ihrem Gerät, auch
+      während Texterkennung und Verschlüsselung laufen — wer prüfen will, ob das
+      stimmt, trennt das Netz und arbeitet weiter.</p>
+    </div>
+    <div class="knopf-reihe">
+      <a class="knopf-weiss" href="/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html">Kostenlos anmelden und öffnen</a>
+      <a class="knopf-umriss" href="/werkbank/index.html">Schon angemeldet? Direkt öffnen</a>
+    </div>
+  </div></section>
 
 </main>
 </Grundgeruest>

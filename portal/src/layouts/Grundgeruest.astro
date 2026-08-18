@@ -1,9 +1,65 @@
 ---
 /* Grundgerüst jeder Seite: Kopf, Fuß, Stile.
+
+   Kopf und Fuß folgen dem Handoff: Navigationsleiste 56 px in Chromefarbe mit
+   Wortmarke und Mono-Unterzeile, fünf Punkten mit Aufklappmenü beim Überfahren
+   (262 px breit, Zeile aus Bezeichnung und Hinweis), rechts „Anmelden" als
+   Text und ein akzentfarbener Knopf. Der Fuß trägt die Marke, drei
+   Linkspalten mit Mono-Überschriften und eine untere Zeile.
+
+   Die Aufklappmenüs kommen ohne JavaScript aus: sie hängen an :hover und
+   :focus-within, damit sie auch mit der Tastatur erreichbar sind.
+
    Die Anmeldung zeigt auf /api/auth/login — diesen Weg stellt Wix'
    Astro-Integration bereit, sobald das Projekt angehängt ist. */
 const { titel, beschreibung = 'PDF-Arbeit, die auf Ihrem Gerät bleibt. Kein Konto, kein Upload, kein Abo.', anmeldenZeigen = true } = Astro.props;
 import '../styles/werkbank.css';
+
+const wege = [
+  { id: 'funktionen', name: 'Funktionen', weg: '/#funktionen', punkte: [
+    { name: 'Lesen und kommentieren', hinweis: 'Zehn Werkzeuge, Fäden, Bericht', weg: '/#funktionen' },
+    { name: 'Schwärzen und schützen', hinweis: 'Gerastert statt verdeckt, AES-256', weg: '/#funktionen' },
+    { name: 'Unterschreiben', hinweis: 'PAdES-B-B aus Ihrem Zertifikat', weg: '/#funktionen' },
+    { name: 'Word, Excel, Messen, Stapel', hinweis: 'Hinein und hinaus, viele Dateien auf einmal', weg: '/#funktionen' },
+  ] },
+  { id: 'vergleich', name: 'Vergleich', weg: '/#vergleich', punkte: [
+    { name: 'Gegen die Suiten', hinweis: 'Kein Upload, keine Installation, kein Abo', weg: '/#vergleich' },
+    { name: 'Abgleich mit Acrobat', hinweis: 'Neunundzwanzig Werkzeuge, durchgezählt', weg: '/#abgleich' },
+    { name: 'Was sie nicht kann', hinweis: 'Die Grenzen, offen benannt', weg: '/#grenzen' },
+  ] },
+  { id: 'mitdenken', name: 'Für die Arbeit', weg: '/#mitdenken', punkte: [
+    { name: 'Vier Schritte am Dokument', hinweis: 'Öffnen, lesen lassen, bearbeiten, abgeben', weg: '/#mitdenken' },
+    { name: 'Sie denkt mit', hinweis: 'Zwölf begründete Vorschläge, jeder wegklickbar', weg: '/#mitdenken' },
+  ] },
+  { id: 'kostenlos', name: 'Kostenlos', weg: '/#kostenlos', punkte: [
+    { name: 'Kostenlos mit Anmeldung', hinweis: 'Alle Befehle, keine Zahlungsdaten', weg: '/#kostenlos' },
+    { name: 'Auf eigenem Server', hinweis: 'Ordner kopieren, ohne Anmeldung betreiben', weg: '/#kostenlos' },
+    { name: 'Häufige Fragen', hinweis: 'Anmeldung, Signatur, Schwärzen, Betrieb', weg: '/#fragen' },
+  ] },
+  { id: 'pruefstand', name: 'Prüfstand', weg: '/#pruefstand', punkte: [
+    { name: '266 Prüfungen', hinweis: 'Ergebnis, Bedienung, veröffentlichte Seite', weg: '/#pruefstand' },
+    { name: 'Kundenbereich', hinweis: 'Nach der Anmeldung', weg: '/portal' },
+  ] },
+];
+
+const fussspalten = [
+  { titel: 'PRODUKT', links: [
+    { name: 'Funktionen', weg: '/#funktionen' },
+    { name: 'Vergleich', weg: '/#vergleich' },
+    { name: 'Kostenlos', weg: '/#kostenlos' },
+    { name: 'Werkbank öffnen', weg: '/werkbank/index.html' },
+  ] },
+  { titel: 'EHRLICHKEIT', links: [
+    { name: 'Abgleich mit Acrobat', weg: '/#abgleich' },
+    { name: 'Was sie nicht kann', weg: '/#grenzen' },
+    { name: 'Prüfstand', weg: '/#pruefstand' },
+    { name: 'Häufige Fragen', weg: '/#fragen' },
+  ] },
+  { titel: 'ZUGANG', links: [
+    { name: 'Anmelden', weg: '/api/auth/login' },
+    { name: 'Kundenbereich', weg: '/portal' },
+  ] },
+];
 ---
 <!DOCTYPE html>
 <html lang="de">
@@ -26,25 +82,53 @@ import '../styles/werkbank.css';
           <span class="markenzug-unterzeile">hnvr.me digital</span>
         </span>
       </a>
-      <nav class="kopf-wege">
-        <a class="klein" href="/#abgleich">Abgleich</a>
-        <a class="klein" href="/#pruefstand">Prüfstand</a>
-        <a class="klein" href="/portal">Kundenbereich</a>
-        {anmeldenZeigen && <a class="knopf-voll" href="/api/auth/login">Anmelden</a>}
+
+      <nav class="kopf-wege" aria-label="Hauptnavigation">
+        {wege.map((weg) => (
+          <div class="kopf-weg">
+            <a href={weg.weg}>{weg.name}</a>
+            <div class="klappe">
+              {weg.punkte.map((punkt) => (
+                <a href={punkt.weg}>
+                  <span class="klappe-name">{punkt.name}</span>
+                  <span class="klappe-hinweis">{punkt.hinweis}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
       </nav>
+
+      <div class="kopf-rechts">
+        <a class="kopf-still" href="/portal">Kundenbereich</a>
+        {anmeldenZeigen && <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html">Kostenlos öffnen</a>}
+      </div>
     </div>
   </header>
 
   <slot />
 
-  <footer class="invers">
-    <div class="spur fusszeile">
-      <div>
-        <span class="markenzug-wort">Werkbank</span>
-        <p class="klein leise" style="max-width:26rem">PDF-Arbeit auf Ihrem Gerät. Kein Konto, kein Upload, kein Abo.</p>
+  <footer class="fuss">
+    <div class="spur fuss-raster">
+      <div class="fuss-marke">
+        <div class="markenzug">
+          <span class="markenzug-zeichen" aria-hidden="true"></span>
+          <span class="markenzug-wort">Werkbank</span>
+        </div>
+        <p>hnvr.me digital. Gebaut für alle, die ein PDF fertig bekommen
+        müssen, ohne es aus der Hand zu geben.</p>
       </div>
-      <div class="klein leise mono">PDF · OCR · PAdES-B-B · KEIN CLOUD-ZWANG</div>
-      <div class="klein leise">hnvr.me digital</div>
+      {fussspalten.map((spalte) => (
+        <div class="fuss-spalte">
+          <span class="marke">{spalte.titel}</span>
+          {spalte.links.map((link) => <a href={link.weg}>{link.name}</a>)}
+        </div>
+      ))}
+    </div>
+    <div class="spur fuss-zeile">
+      <span class="mono">© 2026 HNVR.ME DIGITAL</span>
+      <span class="mono">PDF · OCR · PADES-B-B · KEIN CLOUD-ZWANG</span>
+      <span class="mono fuss-rechts">LÄUFT VOLLSTÄNDIG IM BROWSER</span>
     </div>
   </footer>
 </body>

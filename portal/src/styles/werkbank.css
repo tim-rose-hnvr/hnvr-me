@@ -108,8 +108,24 @@ body {
 .spur { width: min(var(--spur), 100% - 2.5rem); margin-inline: auto; }
 .lauf { max-width: var(--lauf); }
 
-section { padding: clamp(3rem, 7vw, 5.5rem) 0; border-top: 1px solid var(--linie); }
-section:first-of-type { border-top: 0; }
+/* Das Handoff gliedert die Seite in farbige Bänder über die volle Breite,
+   jedes mit einer Trennlinie darunter — nicht in Abschnitte mit Oberlinie.
+   Die Innenmaße stehen im Handoff: 62–74 px oben, 68–70 px unten. */
+.band { border-bottom: 1px solid var(--linie); }
+.band > .spur { padding: clamp(3rem, 5vw, 3.9rem) 0 clamp(3.2rem, 5.4vw, 4.25rem); }
+.band-grund  { background: var(--grund); }
+.band-hell   { background: var(--flaeche-tief); }
+.band-dunkel { background: var(--chrome-900); color: #DFE4E6; border-bottom-color: #000; }
+.band-akzent { background: var(--tally); color: #fff; border-bottom-color: var(--tally); }
+.band-dunkel h2, .band-akzent h2 { color: #fff; }
+.band-dunkel .leise { color: #A9B4B9; }
+
+/* Abschnittskopf: Serif-Überschrift 31 px und eine Mono-Beifügung daneben. */
+.abschnitt-kopf {
+  display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.abschnitt-kopf h2 { margin-bottom: 0; }
 
 h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
 h1 { font-size: clamp(2.6rem, 7vw, 4.4rem); line-height: 1.02; letter-spacing: -.02em; }
@@ -207,7 +223,6 @@ p:last-child { margin-bottom: 0; }
 }
 .blatt-nummer { font-family: var(--mono); font-size: .6rem; color: var(--tally); }
 .blatt-titel { font-family: var(--serif); font-size: .95rem; font-weight: 600; margin-bottom: 3px; }
-.zeile { display: block; height: 3px; width: 100%; background: #d3d7da; }
 .zeile.hebt { background: rgba(212,175,55,.55); height: 5px; }
 .zeile.schwarz { background: #12181c; height: 5px; }
 .nadel {
@@ -246,24 +261,6 @@ p:last-child { margin-bottom: 0; }
 .eintrag p { font-size: .9375rem; color: var(--tinte-leise); }
 
 /* ---------- Mitdenken ----------------------------------------------------- */
-.faelle { display: grid; gap: 1rem; }
-@media (min-width: 52rem) { .faelle { grid-template-columns: repeat(3, 1fr); } }
-.fall {
-  background: var(--flaeche); border: 1px solid var(--linie);
-  border-radius: 0; padding: 1.1rem 1.2rem;
-  display: flex; flex-direction: column; gap: .5rem;
-}
-.fall .befund {
-  font-family: var(--mono); font-size: .6875rem; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--tinte-leise);
-}
-.fall .satz { font-size: .9375rem; }
-.fall .tat {
-  align-self: flex-start; margin-top: auto;
-  background: var(--tally-grund); color: var(--tally);
-  border-radius: 0; padding: .15rem .5rem;
-  font-size: .75rem; font-weight: 600;
-}
 
 /* ---------- Tabelle ------------------------------------------------------- */
 .tabellenrahmen { overflow-x: auto; border: 1px solid var(--linie); border-radius: 0; background: var(--flaeche); }
@@ -292,25 +289,10 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .zahl.betont b { color: var(--tally); }
 
 /* ---------- Grenzen ------------------------------------------------------- */
-.grenzen { display: grid; gap: .1rem; }
-.grenze { display: grid; gap: .2rem 1.2rem; padding: .9rem 0; border-bottom: 1px solid var(--linie); }
 @media (min-width: 48rem) { .grenze { grid-template-columns: 16rem 1fr; } }
-.grenze b { font-weight: 600; }
-.grenze span { color: var(--tinte-leise); font-size: .9375rem; }
 .grenze:last-child { border-bottom: 0; }
 
 /* ---------- Prüfstand ----------------------------------------------------- */
-.pruefstand {
-  background: var(--tinte); color: var(--grund); border-radius: 0;
-  padding: clamp(1.5rem, 4vw, 2.5rem);
-}
-.pruefstand h2 { color: var(--grund); }
-.pruefstand .marke { color: rgba(235,238,238,.55); }
-.pruefstand p { color: rgba(235,238,238,.75); }
-.zeilen { font-family: var(--mono); font-size: .8125rem; display: grid; gap: .35rem; margin-top: 1.5rem; }
-.zeile { display: flex; flex-wrap: wrap; gap: .2rem .7rem; align-items: baseline; color: rgba(235,238,238,.9); }
-.zeile i { color: #63BFA9; font-style: normal; }
-.zeile em { color: rgba(235,238,238,.5); font-style: normal; margin-left: auto; }
 
 /* ---------- Offen / Abschluss --------------------------------------------- */
 .offen {
@@ -320,18 +302,48 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .offen ul { margin: .6rem 0 0; padding-left: 1.1rem; color: var(--tinte-leise); font-size: .9375rem; }
 .offen li { margin-bottom: .3rem; }
 
-.fusszeile {
-  border-top: 1px solid var(--linie); padding: 2rem 0 3rem;
-  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between;
-  color: var(--tinte-leise); font-size: .875rem;
-}
 
 /* ---------- Wege im Kopf ---------------------------------------------------- */
 .wortmarke { color: inherit; text-decoration: none; }
-.kopf-wege { display: flex; align-items: center; gap: 1rem; }
-.kopf-wege a { color: var(--tinte-leise); text-decoration: none; }
-.kopf-wege a:hover { color: var(--tinte); }
-.kopf-wege a:focus-visible { outline: 2px solid var(--tally); outline-offset: 3px; border-radius: 0; }
+/* Navigation nach dem Handoff: Leiste 56 px, Punkte mit Aufklappmenü beim
+   Überfahren. Kein JavaScript — :hover und :focus-within genügen, und
+   letzteres macht die Menüs mit der Tastatur erreichbar. */
+.kopf-wege { display: flex; align-items: stretch; gap: 0; flex: 1; min-width: 0; }
+.kopf-weg { position: relative; display: flex; align-items: center; border-bottom: 2px solid transparent; }
+.kopf-weg > a {
+  font-size: 12.5px; padding: 0 10px; text-decoration: none; color: #A9B4B9;
+  white-space: nowrap;
+}
+.kopf-weg:hover, .kopf-weg:focus-within { border-bottom-color: var(--tally); }
+.kopf-weg:hover > a, .kopf-weg:focus-within > a { color: #fff; }
+.klappe {
+  position: absolute; left: 0; top: 100%; min-width: 262px; z-index: 50;
+  background: var(--flaeche-tief); border: 1px solid #B9C0C5;
+  box-shadow: 0 18px 40px rgba(18,24,28,.3); padding: 7px 0;
+  visibility: hidden; opacity: 0; transition: opacity .12s;
+}
+.kopf-weg:hover .klappe, .kopf-weg:focus-within .klappe { visibility: visible; opacity: 1; }
+.klappe a {
+  display: flex; flex-direction: column; gap: 2px; padding: 8px 14px;
+  text-decoration: none; border-left: 2px solid transparent;
+}
+.klappe a:hover, .klappe a:focus-visible { background: #E6E9EB; border-left-color: var(--tally); outline: none; }
+.klappe-name { font-size: 12px; font-weight: 500; color: #1E252A; }
+.klappe-hinweis { font-size: 10.5px; line-height: 1.4; color: var(--tinte-leise); }
+
+.kopf-rechts { margin-left: auto; display: flex; align-items: center; gap: 14px; flex: none; }
+.kopf-still { font-size: 12.5px; color: #A9B4B9; text-decoration: none; white-space: nowrap; }
+.kopf-still:hover { color: #fff; }
+.kopf-wege a:focus-visible { outline: 2px solid var(--tally); outline-offset: 2px; }
+
+@media (max-width: 60rem) {
+  .kopf-weg > a { padding: 0 7px; font-size: 11.5px; }
+  .klappe { display: none; }
+  .kopf-still { display: none; }
+}
+@media (max-width: 40rem) {
+  .kopf-wege { display: none; }
+}
 .knopf-still {
   border: 1px solid var(--linie-stark); border-radius: 0;
   padding: .3rem .75rem; font-size: .875rem; color: var(--tinte) !important;
@@ -372,10 +384,6 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .knopf-rand:focus-visible, .knopf-voll:focus-visible { outline: 2px solid var(--tally); outline-offset: 2px; }
 
 /* ---------- Abbinder --------------------------------------------------------- */
-.abbinder { display: grid; gap: 1.5rem 2rem; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--linie); }
-@media (min-width: 44rem) { .abbinder { grid-template-columns: repeat(3, 1fr); } }
-.abbinder h3 { margin-bottom: .3rem; }
-.abbinder p { font-size: .9375rem; }
 
 /* ---------- Handoff-Nachzug: dunkle Nav, kantige Karten, Mono-Marken ----- */
 /* Das Handoff setzt die Navigation auf #1d2327 und macht die Vergleichs-
@@ -419,14 +427,6 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 .marke, .mono, .stempel, .markenzug-unterzeile { font-family: var(--mono); }
 
 /* Die invers gesetzte Vergleichssektion. */
-.invers { background: var(--chrome-900); color: #fff; }
-.invers h2, .invers h3 { color: #fff; }
-.invers .leise, .invers p { color: #c6ced2; }
-.invers table { border-color: var(--chrome-linie); }
-.invers th, .invers td { border-color: var(--chrome-linie); color: #c6ced2; }
-.invers thead th { background: var(--chrome-800); color: var(--chrome-leise); }
-.invers .stand.ja { color: var(--tally-hell); background: rgba(15,118,110,.18); }
-.invers .tabellenrahmen { background: var(--chrome-800); border-color: var(--chrome-linie); }
 .kopf .spur.kopfzeile { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: .7rem; padding-bottom: .7rem; }
 .kopf-wege { display: flex; align-items: center; gap: 1.1rem; }
 .knopf-voll {
@@ -434,6 +434,172 @@ h3 { font-size: 1.06rem; font-weight: 600; }
   padding: .35rem .8rem; text-decoration: none; font-size: .8125rem; font-weight: 500;
 }
 .knopf-voll:hover { background: #0E6B64; color: #fff; }
-.fusszeile { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: flex-start; padding-top: 2.5rem; padding-bottom: 2.5rem; }
-.invers .fusszeile .markenzug-wort { color: #fff; font-family: var(--serif); font-size: 1.05rem; }
 .raster-zwei { grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); }
+
+/* ---------- Muster aus dem Handoff --------------------------------------- */
+
+/* Karten im Haarlinienraster: 1 px Fugen auf der Rasterfarbe, Karten weiß.
+   Handoff: auto-fit minmax(262px, 1fr), gap 1px, Rahmen in derselben Farbe. */
+.karten {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(262px, 1fr));
+  gap: 1px; background: var(--linie); border: 1px solid var(--linie);
+}
+.karte {
+  background: var(--flaeche); padding: 22px 22px 24px;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.karte:hover { background: #FBFCFC; }
+.karte h3 { font-family: var(--serif); font-size: 17px; font-weight: 600; margin: 0; }
+.karte p { font-size: 12.5px; line-height: 1.6; margin: 0; color: var(--tinte-leise); }
+.karte-kopf { display: flex; align-items: center; gap: 10px; }
+.kachel {
+  width: 32px; height: 32px; flex: none; display: grid; place-items: center;
+  background: var(--tally-grund); color: var(--tally);
+}
+.kachel svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+.kachel svg rect { fill: currentColor; stroke: none; }
+
+/* Ablaufkarten (Handoff: „Für Teams"): Mono-Schritt, Linie, Marke, Serif-H3,
+   Text, Mono-Fußzeile, die unten bündig steht. */
+.ablauf {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px;
+}
+.ablauf-karte {
+  background: var(--flaeche); border: 1px solid var(--linie); padding: 20px;
+  display: flex; flex-direction: column; gap: 11px;
+}
+.ablauf-kopf { display: flex; align-items: center; gap: 9px; }
+.ablauf-kopf i { flex: 1; height: 1px; background: #E4E8EA; }
+.ablauf-karte h3 { font-family: var(--serif); font-size: 16px; font-weight: 600; margin: 0; }
+.ablauf-karte p { font-size: 12px; line-height: 1.6; margin: 0; color: var(--tinte-leise); }
+.ablauf-fuss { margin-top: auto; color: #9AA3A8; }
+.raute { width: 8px; height: 8px; flex: none; background: var(--tally); transform: rotate(45deg); }
+
+/* Aussagenblock: weiß, 3 px Akzentkante links, Serif 17 px. Im Handoff steht
+   hier das Zitat einer Kundin — eine erfundene Kundin steht hier nicht. */
+.aussage {
+  margin: 28px 0 0; max-width: 760px;
+  background: var(--flaeche); border: 1px solid var(--linie);
+  border-left: 3px solid var(--tally); padding: 24px 26px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.aussage p { font-family: var(--serif); font-size: 17px; line-height: 1.6; margin: 0; }
+.aussage footer {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 11.5px; color: var(--tinte-leise);
+}
+
+/* Vergleich: links Text, rechts Tafel mit fester Spaltenbreite (Handoff:
+   1.5fr 118 118), unsere Spalte akzentfarben. */
+.vergleich-raster { display: grid; gap: 48px; align-items: start; }
+@media (min-width: 60rem) {
+  .vergleich-raster { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }
+}
+.vergleich-text { display: flex; flex-direction: column; gap: 16px; }
+.vergleich-text h2 { margin: 0; }
+.vergleich-text p { font-size: 13.5px; line-height: 1.7; margin: 0; color: #A9B4B9; }
+.punkte { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
+.punktzeile { display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; line-height: 1.55; color: #C8D0D4; }
+.punktzeile .raute { margin-top: 5px; }
+
+.vergleich-tafel { border: 1px solid #333C41; background: var(--chrome-800); overflow-x: auto; }
+.vt-kopf, .vt-zeile { display: grid; grid-template-columns: minmax(0, 1.5fr) 118px 118px; }
+.vt-kopf { background: #2A3236; border-bottom: 1px solid #333C41; }
+.vt-kopf > div {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .8px;
+  color: var(--chrome-leise); padding: 11px 16px;
+}
+.vt-kopf .vt-uns { color: #fff; background: var(--tally); text-align: center; padding: 11px 12px; }
+.vt-kopf .vt-die { text-align: center; padding: 11px 12px; }
+.vt-zeile { border-bottom: 1px solid var(--chrome-linie); }
+.vt-zeile:last-child { border-bottom: 0; }
+.vt-zeile > div { font-size: 12.5px; padding: 12px 16px; color: #DFE4E6; }
+.vt-zeile .vt-uns {
+  font-family: var(--mono); font-size: 11px; padding: 12px; text-align: center;
+  color: var(--tally-hell); background: rgba(15,118,110,.1);
+}
+.vt-zeile .vt-die {
+  font-family: var(--mono); font-size: 11px; padding: 12px; text-align: center;
+  color: var(--chrome-leise);
+}
+
+/* Pläne: die Kartenform des Handoffs, eine hervorgehoben. */
+.plaene { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; align-items: stretch; }
+.plan {
+  display: flex; flex-direction: column; gap: 11px; padding: 24px;
+  background: var(--flaeche); border: 1px solid var(--linie);
+}
+.plan.ist-betont { border-color: var(--tally); box-shadow: 0 8px 24px rgba(15,118,110,.14); }
+.plan h3 { font-family: var(--serif); font-size: 21px; font-weight: 600; margin: 0; }
+.plan-marke { color: var(--tinte-leise); }
+.plan.ist-betont .plan-marke { color: var(--tally); }
+.plan-preis { display: flex; align-items: baseline; gap: 5px; }
+.plan-preis b { font-family: var(--serif); font-size: 36px; font-weight: 600; letter-spacing: -1px; }
+.plan-preis span { font-size: 11.5px; color: var(--tinte-leise); }
+.plan p { font-size: 12px; line-height: 1.6; margin: 0; color: var(--tinte-leise); }
+.plan-linie { height: 1px; background: #E4E8EA; margin: 2px 0; }
+.plan-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.plan-liste li { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; line-height: 1.5; color: #3F4A51; }
+.plan-liste li::before { content: ''; width: 6px; height: 6px; flex: none; background: var(--tally); margin-top: 5px; }
+.plan-knopf {
+  margin-top: auto; text-align: center; font-size: 12.5px; font-weight: 500;
+  padding: 11px 0; background: var(--tally); color: #fff; text-decoration: none;
+}
+.plan-knopf:hover { background: var(--tally-hover, #0E6B64); color: #fff; }
+.plan-knopf-still {
+  background: var(--flaeche-tief); color: var(--tinte); border: 1px solid var(--linie-stark);
+}
+.plan-knopf-still:hover { background: var(--linie); color: var(--tinte); }
+
+/* Fragen: Akkordeon ohne JavaScript. `name` macht es ausschließend — genau
+   eines ist offen, wie im Handoff. */
+.fragen-raster { display: grid; gap: 48px; align-items: start; }
+@media (min-width: 60rem) {
+  .fragen-raster { grid-template-columns: minmax(0, .62fr) minmax(0, 1.38fr); }
+}
+.fragen { border-top: 1px solid var(--linie); }
+.fragen details { border-bottom: 1px solid var(--linie); padding: 16px 0; }
+.fragen summary {
+  display: flex; align-items: baseline; gap: 12px; cursor: pointer; list-style: none;
+}
+.fragen summary::-webkit-details-marker { display: none; }
+.fragen summary .marke { min-width: 18px; color: var(--tally); }
+.frage-text { font-size: 14px; font-weight: 500; color: #1E252A; flex: 1; }
+.fragen summary::after { content: '+'; font-size: 14px; color: var(--tinte-leise); }
+.fragen details[open] summary::after { content: '−'; }
+.fragen details p {
+  font-family: var(--serif); font-size: 13px; line-height: 1.7;
+  margin: 10px 0 0; padding-left: 30px; color: #4A545B; max-width: 70ch;
+}
+
+/* Aufruf auf der Akzentfläche. */
+.aufruf { display: flex; align-items: center; gap: 34px; flex-wrap: wrap; }
+.aufruf > div:first-child { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 9px; }
+.aufruf h2 { font-size: 29px; margin: 0; }
+.aufruf p { font-size: 13.5px; line-height: 1.6; margin: 0; color: rgba(255,255,255,.85); max-width: 52ch; }
+.knopf-weiss, .knopf-umriss {
+  font-size: 13px; font-weight: 500; padding: 13px 22px; text-decoration: none; display: inline-block;
+}
+.knopf-weiss { background: #fff; color: #0B5C55; }
+.knopf-weiss:hover { background: #EAFAF7; color: #0B5C55; }
+.knopf-umriss { color: #fff; border: 1px solid rgba(255,255,255,.55); }
+.knopf-umriss:hover { border-color: #fff; color: #fff; }
+
+/* Fuß: Marke plus drei Linkspalten, darunter eine Zeile. */
+.fuss { background: var(--chrome-900); color: var(--chrome-leise); }
+.fuss-raster { display: grid; gap: 32px; padding: 40px 0 30px; }
+@media (min-width: 52rem) {
+  .fuss-raster { grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr)); }
+}
+.fuss-marke { display: flex; flex-direction: column; gap: 12px; }
+.fuss-marke p { font-size: 11.5px; line-height: 1.6; margin: 0; max-width: 34ch; }
+.fuss .markenzug-wort { color: #DFE4E6; }
+.fuss-spalte { display: flex; flex-direction: column; gap: 8px; }
+.fuss-spalte .marke { color: #5F6A70; }
+.fuss-spalte a { font-size: 11.5px; color: #A9B4B9; text-decoration: none; }
+.fuss-spalte a:hover { color: #fff; }
+.fuss-zeile {
+  display: flex; gap: 18px; flex-wrap: wrap; padding: 16px 0 34px;
+  border-top: 1px solid var(--chrome-linie); font-size: 9.5px;
+}
+.fuss-rechts { margin-left: auto; }

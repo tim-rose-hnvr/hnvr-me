@@ -27,7 +27,7 @@ skripte/app-einbetten.mjs   legt ../werkbank nach public/werkbank
 
 `npm run build` kopiert vorher `../werkbank` nach `public/werkbank` — damit
 wird die Anwendung mit ausgeliefert und läuft unter `/werkbank/` auf demselben
-Wix-Hosting wie die Marketingseite. **12,2 MB in 240 Dateien**, keine davon
+Wix-Hosting wie die Marketingseite. **11,9 MB in 239 Dateien**, keine davon
 über 3 MB. Mit `node skripte/app-einbetten.mjs --schlank` sind es 8,3 MB —
 dann ohne CJK-Zeichentabellen und ohne englische Texterkennung.
 
@@ -39,8 +39,8 @@ allein ergäbe 404. Dafür stehen in `astro.config.mjs` zwei Umleitungen auf
 `/werkbank/index.html`, damit auch eine von Hand eingegebene Adresse ankommt.
 
 **Nachgemessen an der veröffentlichten Seite** mit
-`node ../werkbank/werkzeuge/live-pruefen.mjs` (31 Prüfungen): alle 241 Dateien
-erreichbar und Byte für Byte gleich der gebauten Fassung (12,18 MB verglichen),
+`node ../werkbank/werkzeuge/live-pruefen.mjs` (31 Prüfungen): alle 239 Dateien
+erreichbar und Byte für Byte gleich der gebauten Fassung (11,92 MB verglichen),
 `.wasm` als `application/wasm`, die Sprachdaten als `application/gzip`, alle
 drei Wege in die Anwendung offen. Dazu wird ins verlinkte Stilblatt gesehen:
 IBM Plex ist eingebunden, ein Verweis auf Google Fonts steht nirgends, der
@@ -50,7 +50,7 @@ nennt einen Abrufer ohne Sitzung ausdrücklich nicht angemeldet, die
 ausgelieferte Anwendung trägt die Schranken-Zeile, und `/api/auth/login` leitet
 auf die Anmeldung von Wix und von dort zurück auf diese Seite. Damit läuft dort
 dieselbe Anwendung, die `pruefen.mjs` und `vollpruefung.mjs` im Browser
-durchgemessen haben — 128 + 107 Prüfungen, darunter Texterkennung,
+durchgemessen haben — 128 + 110 Prüfungen, darunter Texterkennung,
 qpdf-Verschlüsselung, die digitale Unterschrift und ein eigener Abschnitt, der
 die Gestaltung gegen das Handoff nachmisst.
 
@@ -125,11 +125,40 @@ Seite sonst als serverseitig ansieht — ohne Adapter bricht der Bau dann ab.
 
 ## Was auf der Seite steht
 
+**Der Aufbau ist der des Handoffs**, Abschnitt für Abschnitt und in seiner
+Reihenfolge:
+
+| # | Handoff | Werkbank |
+|---|---|---|
+| 1 | Hero | Aufmacher mit dem Fenster: Seitenleiste, Dokument, Kommentare |
+| 2 | Funktionen | zwölf Karten im Haarlinienraster |
+| 3 | Vergleich (invers) | dunkel, Tabelle Werkbank ↔ Suite-Standard |
+| 4 | Für Teams | **Für die Arbeit**: vier Ablaufkarten am Dokument |
+| 5 | Preise | **Kostenlos**: dieselbe Kartenform, 0 € statt Stufen |
+| 6 | FAQ | sechs Fragen als Akkordeon, genau eine offen |
+| 7 | CTA | Akzentfläche mit zwei Knöpfen |
+| 8 | Footer | Marke, drei Linkspalten, untere Zeile |
+
+Dazwischen stehen unsere eigenen Abschnitte — Abgleich mit Acrobat, Grenzen,
+Prüfstand — **in denselben Mustern**, nicht daneben: Haarlinienraster für die
+Karten, inverse Tafel für die Zahlen. Die Navigation trägt fünf Punkte mit
+Aufklappmenü beim Überfahren, wie gezeichnet; sie kommt ohne JavaScript aus
+(`:hover` und `:focus-within`), damit sie auch mit der Tastatur geht.
+
+Zwei Abschnitte tragen bewusst andere Inhalte:
+
+- **„Für Teams" wird „Für die Arbeit".** Vier Schritte am Dokument statt vier
+  Personen — einen Server, über den sie sich abstimmen, gibt es hier nicht.
+- **„Preise" wird „Kostenlos".** Die Kartenform bleibt, die Preise nicht. An
+  der Stelle, an der im Handoff das Zitat einer Kundin steht, steht ein Satz
+  aus unserem Quelltext: eine erfundene Kundin steht hier nirgends.
+
+### Im Einzelnen
+
 - **Was zuerst steht**: dass die Werkbank mitdenkt. „Läuft lokal" trägt als
   Aufmacher nicht mehr — mehrere Wettbewerber werben inzwischen wörtlich damit.
-  Der Abschnitt „Und gegenüber den anderen" nennt vier Punkte, die auch gegen
-  diese tragen (Mitdenken, keine Installation, Word/Excel, Barrierefreiheit)
-  und sagt im selben Atemzug, was die anderen können und die Werkbank nicht.
+  Der Abschnitt „Vergleich" nennt drei Punkte, die auch gegen diese tragen, und
+  sagt im selben Atemzug, was die anderen können und die Werkbank nicht.
 - **Kontakt**: hnvr.me digital.
 - **Preis**: keiner. Die Werkbank kostet nichts, es braucht nur eine
   Anmeldung — das steht so auf der Seite und am Knopf.

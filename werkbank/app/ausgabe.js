@@ -519,7 +519,9 @@ function legeNotizAn(ziel, seite, a, vx, vy) {
       Subtype: 'Text',
       Name: 'Comment',
       Rect: rechteck,
-      Contents: PDFString.of(a.text || ''),
+      /* Der Kommentar, ersatzweise der zitierte Seitentext — sonst stünde in
+         einer hervorgehobenen Stelle nichts, was ein anderer Betrachter zeigt. */
+      Contents: PDFString.of(a.text || a.zitat || ''),
       T: PDFString.of('Werkbank'),
       C: kontext.obj(Object.values(farbeZuAnteilen(a.farbe || '#FFD400'))),
       F: PDFNumber.of(4),

@@ -704,7 +704,10 @@ export function uebernehmeAuswahl(art) {
       quads.push({ x: Math.min(x1, x2), y: Math.min(y1, y2), b: Math.abs(x2 - x1), h: Math.abs(y2 - y1) });
     }
     if (!quads.length) continue;
-    angelegt.push(fuegeAn({ art, seiteId: seitenId, quads, farbe: zustand.farbe, text }));
+    /* Der markierte Text wandert als `zitat` mit, nicht als `text`: im Handoff
+       ist das Zitat der Seitentext in Serif-Kursiv mit goldener Kante, und
+       `text` bleibt frei für das, was jemand dazu schreibt. */
+    angelegt.push(fuegeAn({ art, seiteId: seitenId, quads, farbe: zustand.farbe, zitat: text }));
   }
   auswahl.removeAllRanges();
   if (angelegt.length) sage(`${WERKZEUGE.find((w) => w.id === art).name}: ${angelegt.length === 1 ? 'eine Stelle' : angelegt.length + ' Stellen'}`);

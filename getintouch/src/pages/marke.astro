@@ -2,180 +2,276 @@
 /**
  * Der Markenbaukasten.
  *
- * Aus dem Design-Handoff, Seite „Marke". Sie erklärt das Zeichen, die Farben,
- * die Schrift und die eine Bewegung, die diese Marke ausmacht — und sie tut es
- * an lauffähigen Beispielen, nicht an Bildern davon. Jedes Muster auf dieser
- * Seite ist dasselbe CSS, das auch das Produkt trägt; wird eine Farbe in
- * `kern/marke.ts` geändert, ändert sich hier mit.
+ * Nachbau von `doku/handoff/design/Website-Marke.dc.html`: das Zeichen auf
+ * roter Bühne, beide Lockups, die vier Bewegungen als lauffähige Muster,
+ * App-Icon und Favicons mit Tab- und Homescreen-Attrappe, das Icon-Set,
+ * Farben und Schrift, die Dateiliste.
  *
- * Sie war die erste der Handoff-Seiten, weil sie nichts verspricht, was es
- * nicht gibt. Die übrigen stehen inzwischen auch — mit sichtbarer
- * Kennzeichnung dort, wo eine Funktion noch geplant ist.
+ * Alles auf dieser Seite läuft — es sind keine Bilder von der Marke, sondern
+ * die Marke selbst. Die vier Bewegungen sind dieselben Keyframes, die auch
+ * das Produkt trägt.
  */
-import Marketingrahmen from '../komponenten/Marketingrahmen.astro';
-import { schrift, vorlage } from '../kern/gestaltung.ts';
-import { zeichen } from '../kern/zeichen.ts';
-import { MARKE, MARKENFARBEN, MARKENWERTE, SIGNET } from '../kern/marke.ts';
-import '../stile/marketing.css';
+import Handoffrahmen from '../komponenten/Handoffrahmen.astro';
+import { lucide, type Lucidename } from '../kern/lucide.ts';
+import { MARKE } from '../kern/marke.ts';
+import '../stile/marke.css';
 
 export const prerender = false;
 
 Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
 
-
 const titel = `Marke — ${MARKE.name}`;
-const gestaltung = vorlage('signal');
-
 const beschreibung =
-  'Zeichen, Farben, Schrift und Bewegung von Get in Touch — an lauffähigen Beispielen erklärt, nicht an Bildern davon.';
+  'Zeichen, Bewegungen, Icons, Farben und Schrift von getintouch — an lauffähigen Beispielen erklärt, nicht an Bildern davon.';
 
-const farben = [
-  { name: 'Grund', wert: MARKENFARBEN.grund, zweck: 'Seitenhintergrund und Karten' },
-  { name: 'Fläche', wert: MARKENWERTE.flaeche, zweck: 'ruhige Flächen, zweite Ebene' },
-  { name: 'Ink', wert: MARKENFARBEN.vordergrund, zweck: 'Text, Konturen, dunkle Flächen' },
-  { name: 'Signal', wert: MARKENFARBEN.akzent, zweck: 'die Handlung — und nur sie' },
-  { name: 'Signal tief', wert: MARKENWERTE.signalTief, zweck: 'Standfuß und roter Text auf hell' },
-  { name: 'Rosé', wert: MARKENWERTE.rose, zweck: 'getönte Flächen' },
-  { name: 'Linie', wert: MARKENWERTE.linie, zweck: 'Rahmen und Trenner' },
+const groessen = [
+  { datei: 'icon-1024.png', px: 104, radius: 26, fuss: true, text: '1024 · Store' },
+  { datei: 'icon-180.png', px: 60, radius: 16, fuss: false, text: '180 · iOS' },
+  { datei: 'icon-32.png', px: 32, radius: 7, fuss: false, text: '32 · Tab' },
+  { datei: 'icon-16.png', px: 16, radius: 4, fuss: false, text: '16 · Lesezeichen' },
+  { datei: 'icon-ink-1024.png', px: 60, radius: 16, fuss: false, text: 'Ink · dunkel' },
 ];
 
-const anzeige = schrift(gestaltung.anzeige);
+const iconset: { name: Lucidename; text: string; rot?: boolean; gefuellt?: boolean }[] = [
+  { name: 'message-circle-heart', text: 'Nachricht', rot: true },
+  { name: 'calendar-heart', text: 'Termin' },
+  { name: 'contact-round', text: 'Visitenkarte' },
+  { name: 'qr-code', text: 'QR · NFC' },
+  { name: 'star', text: 'Bewertung', rot: true, gefuellt: true },
+  { name: 'shield-check', text: 'Verifiziert' },
+  { name: 'images', text: 'Bild-Karte' },
+  { name: 'link', text: 'Link' },
+  { name: 'palette', text: 'Aussehen' },
+  { name: 'grid-2x2', text: 'Vorlagen' },
+  { name: 'users-round', text: 'Team' },
+  { name: 'inbox', text: 'Eingang' },
+  { name: 'bar-chart-3', text: 'Analytics' },
+  { name: 'wand-sparkles', text: 'Vorschlag' },
+  { name: 'globe', text: 'Domain' },
+  { name: 'lock', text: 'Privat' },
+];
+
+const farben = [
+  { name: 'Signal', wert: '#ec3013', unter: '#ec3013', flaeche: 'var(--color-accent)' },
+  { name: 'Ink', wert: '#201e1d', unter: '#201e1d', flaeche: 'var(--color-text)' },
+  { name: 'Rosé', wert: '', unter: 'Flächen', flaeche: 'var(--color-accent-100)' },
+  { name: 'Papier', wert: '', unter: 'Karten', flaeche: 'var(--color-surface)' },
+];
+
+const dateien = ['icon-1024.png', 'icon-180.png', 'icon-32.png', 'icon-16.png', 'icon-ink-1024.png'];
 ---
 
-<Marketingrahmen titel={titel} beschreibung={beschreibung} hier="/marke">
+<Handoffrahmen titel={titel} beschreibung={beschreibung} hier="/marke">
+  <section class="mkopf an-rise">
+    <span class="abzeichen">
+      <Fragment set:html={lucide('badge-check', 14)} />
+      Markenbaukasten
+    </span>
+    <h1 class="h1 h1--klein" style="margin:18px 0 14px;max-width:none">Zwei Kreise, die sich berühren.</h1>
+    <p class="fliess" style="margin:0;max-width:none">
+      Das Zeichen ist das Produkt: eine gefüllte Scheibe (du) und ein offener Ring (die anderen), die sich treffen.
+      Es funktioniert bei 16&nbsp;px im Browser-Tab genauso wie auf einem Plakat — weil es nur zwei Formen sind.
+    </p>
+  </section>
 
-    <section class="kopf">
-      <p class="marke">marke</p>
-      <h1>Eine Scheibe,<br />ein Ring, ein Punkt.</h1>
-      <p class="fuehrung">
-        Alles auf dieser Seite läuft — es sind keine Bilder von der Marke, sondern die Marke selbst. Ändert sich
-        eine Farbe im Kern, ändert sie sich hier mit.
-      </p>
-    </section>
-
-    <!-- Zeichen -->
-    <section>
-      <p class="marke">das zeichen</p>
-      <div class="buehne">
-        <Fragment set:html={SIGNET.replace('<svg', '<svg class="buehne__zeichen"')} />
-      </div>
-      <div class="merkmale">
-        <div class="merkmal">
-          <h3>Was es bedeutet</h3>
-          <p>
-            Eine gefüllte Scheibe und ein offener Ring, die sich berühren — du und die anderen. Kein Baum, in dem
-            sich Wege verzweigen: der Punkt ist, dass sich zwei treffen.
-          </p>
-        </div>
-        <div class="merkmal">
-          <h3>Wie es gebaut ist</h3>
-          <p>
-            Kreise mit r&nbsp;=&nbsp;20,5&nbsp;% der Kantenlänge, Mitten bei 38,5&nbsp;% und 64,5&nbsp;%, Ring
-            8,5&nbsp;% stark. Die Lücke ist gerechnet, nicht gezeichnet: sie liegt auf den Schnittpunkten beider
-            Kreise.
-          </p>
-        </div>
-        <div class="merkmal">
-          <h3>Wo es steht</h3>
-          <p>
-            Als Plättchen mit Wortmarke im Kopf jeder Seite, als Abzeichen am Fuß jeder Profilseite, als Symbol im
-            Browsertab und auf dem Startbildschirm. Die Wortmarke immer klein geschrieben.
-          </p>
+  <!-- Zeichen und Lockups -->
+  <section class="zeichenblock">
+    <div class="zbuehne">
+      <span class="zform">
+        <span class="zscheibe"></span>
+        <span class="zring"></span>
+      </span>
+    </div>
+    <div class="lockups">
+      <div class="lockupkarte">
+        <img src="/marke/icon-1024.png" alt="" width="52" height="52" />
+        <div>
+          <div class="lockupkarte__wort">{MARKE.name}</div>
+          <div class="lockupkarte__unter">Hauptlockup · Zeichen + Wortmarke, immer klein geschrieben</div>
         </div>
       </div>
-
-      <div class="groessen">
-        {
-          [96, 48, 32, 16].map((g) => (
-            <span class="groesse">
-              <span class="groesse__feld" style={`width:${g}px;height:${g}px`}>
-                <Fragment set:html={SIGNET} />
-              </span>
-              <span class="groesse__zahl">{g}&nbsp;px</span>
-            </span>
-          ))
-        }
+      <div class="lockupkarte lockupkarte--ink">
+        <img src="/marke/icon-ink-1024.png" alt="" width="52" height="52" />
+        <div>
+          <div class="lockupkarte__wort">{MARKE.name}</div>
+          <div class="lockupkarte__unter">Invers · auf Ink, wenn Rot mit Bildern kollidiert</div>
+        </div>
       </div>
-      <p class="quelle">
-        Geprüft bis 16&nbsp;Pixel und einfarbig auf hellem wie dunklem Grund — es kann neben einem QR-Code auf
-        einem Fahrzeug landen, und dort ist weder Farbe noch Größe garantiert.
-      </p>
-    </section>
+    </div>
+  </section>
 
-    <!-- Farben -->
-    <section>
-      <p class="marke">farben</p>
-      <h2>Rot ist Handlung.<br />Nie Dekoration.</h2>
-      <p class="fuehrung">
-        Pro Ansicht möglichst ein rotes Element — und zwar das, was angetippt werden soll. Wo Rot als Fließtext
-        stehen muss, steht die tiefe Stufe: das helle Signal trägt auf hellem Grund den Kontrast nicht.
-      </p>
-      <div class="farbfelder">
+  <!-- Bewegungen -->
+  <section class="abschnitt" style="padding-bottom:44px">
+    <h2 class="h2" style="font-size:32px;margin-bottom:6px">Animationen</h2>
+    <p class="fliess" style="font-size:13.5px;margin-bottom:20px;max-width:60ch;color:var(--ink-70)">
+      Vier Bewegungen, mehr braucht die App nicht. Alle sind kurz, alle haben eine Bedeutung — Bewegung erzählt hier
+      immer „da ist jemand".
+    </p>
+    <div class="vierer">
+      <div class="spec">
+        <div class="muster muster--signal">
+          <span class="tscheibe"></span>
+          <span class="tring"></span>
+        </div>
+        <div class="spec__name">Berühren</div>
+        <div class="spec__text">Logo-Animation beim Start und beim Laden. 2,6&nbsp;s, ease-in-out, endlos.</div>
+      </div>
+
+      <div class="spec">
+        <div class="muster">
+          <span class="pulswelle"></span>
+          <span class="pulspunkt"></span>
+        </div>
+        <div class="spec__name">Puls</div>
+        <div class="spec__text">Erreichbarkeit und neue Anfragen. Nur ein Punkt pro Screen, sonst flimmert's.</div>
+      </div>
+
+      <div class="spec">
+        <div class="muster">
+          <span class="lader"></span>
+        </div>
+        <div class="spec__name">Laden</div>
+        <div class="spec__text">Nur wenn's länger als 400&nbsp;ms dauert. Sonst wartet man auf ein Rad, das nichts sagt.</div>
+      </div>
+
+      <div class="spec">
+        <div class="muster">
+          <button class="fussknopf an-bounce" type="button">Schreib mir</button>
+        </div>
+        <div class="spec__name">Standfuß</div>
+        <div class="spec__text">Jeder Knopf hat 4–6&nbsp;px Schatten und sinkt beim Drücken ein. Das ist unser Tastgefühl.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Icons und Favicons -->
+  <section class="abschnitt" style="padding-bottom:44px">
+    <h2 class="h2" style="font-size:32px;margin-bottom:20px">App-Icon &amp; Favicons</h2>
+    <div class="faviconblock">
+      <div class="spec">
+        <div class="groessen">
+          {
+            groessen.map((g) => (
+              <div class="groesse">
+                <img
+                  src={`/marke/${g.datei}`}
+                  alt=""
+                  width={g.px}
+                  height={g.px}
+                  style={`border-radius:${g.radius}px${g.fuss ? ';box-shadow:0 5px 0 0 var(--color-neutral-400)' : ''}`}
+                />
+                <div class="groesse__text">{g.text}</div>
+              </div>
+            ))
+          }
+        </div>
+        <p class="karteText" style="margin:18px 0 0;font-size:12.5px">
+          Ab 32&nbsp;px fällt die Wortmarke weg, ab 16&nbsp;px sitzt der Ring 1&nbsp;px dicker — sonst franst er
+          aus. Kein Rand, kein Schlagschatten in der Datei; iOS rundet selbst.
+        </p>
+      </div>
+
+      <div class="attrappen">
+        <div class="spec spec--grau">
+          <p class="kicker" style="font-size:10px;margin-bottom:11px">Im Browser-Tab</p>
+          <div class="tab">
+            <img src="/marke/icon-32.png" alt="" width="16" height="16" />
+            <span class="tab__titel">{MARKE.name} — erreichbar sein</span>
+            <Fragment set:html={lucide('x', 12)} />
+          </div>
+          <div class="tab__leiste"></div>
+        </div>
+
+        <div class="spec spec--ink">
+          <p class="kicker kicker--hell" style="font-size:10px;margin-bottom:12px">Auf dem Homescreen</p>
+          <div class="homescreen">
+            <div class="app">
+              <img src="/marke/icon-180.png" alt="" width="56" height="56" />
+              <div class="app__name">{MARKE.name}</div>
+            </div>
+            <div class="app">
+              <span class="app__leer"></span>
+              <div class="app__name app__name--leise">Mail</div>
+            </div>
+            <div class="app">
+              <span class="app__leer"></span>
+              <div class="app__name app__name--leise">Kalender</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Icon-Set -->
+  <section class="abschnitt" style="padding-bottom:44px">
+    <h2 class="h2" style="font-size:32px;margin-bottom:6px">Icon-Set</h2>
+    <p class="fliess" style="font-size:13.5px;margin-bottom:20px;max-width:60ch;color:var(--ink-70)">
+      Ein Set (Lucide), 2&nbsp;px Strichstärke, drei Größen: 14&nbsp;px in Pillen, 18&nbsp;px in Listen, 22&nbsp;px
+      in Karten-Köpfen. Gefüllt ist nur der Stern in Bewertungen — sonst nichts.
+    </p>
+    <div class="iconset">
+      {
+        iconset.map((i) => (
+          <div class:list={['ico', i.rot && 'ico--rot']}>
+            <Fragment set:html={lucide(i.name, 22, i.gefuellt)} />
+            {i.text}
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Farben und Schrift -->
+  <section class="zweier">
+    <div class="spec">
+      <p class="kicker" style="font-size:10px;margin-bottom:14px">Farben</p>
+      <div class="swatches">
         {
           farben.map((f) => (
-            <div class="farbfeld">
-              <span class="farbfeld__probe" style={`background:${f.wert}`} />
-              <b>{f.name}</b>
-              <code>{f.wert.toUpperCase()}</code>
-              <span>{f.zweck}</span>
+            <div>
+              <span class="swatch" style={`background:${f.flaeche}`} />
+              <div class="swatch__name">{f.name}</div>
+              <div class="swatch__wert">{f.unter}</div>
             </div>
           ))
         }
       </div>
-    </section>
-
-    <!-- Schrift -->
-    <section>
-      <p class="marke">schrift</p>
-      <h2>{anzeige.name}, zwei Gewichte.</h2>
-      <p class="fuehrung">
-        800 für Überschriften, Knöpfe, Zahlen und Labels. 400 für Lauftext. 600 nur für Navigation. Mehr braucht
-        es nicht, und mehr würde nur unentschlossen aussehen.
+      <p class="karteText" style="margin:14px 0 0;font-size:12px">
+        Rot ist Handlung und Status — nie Dekor. Pro Screen ein rotes Element, das man antippen soll.
       </p>
-      <div class="schriftprobe">
-        <p class="schriftprobe__gross">Deine Leute sollen dich erreichen.</p>
-        <p class="schriftprobe__klein">
-          Nicht nur anklicken. Ein Link, der antwortet — mit Öffnungszeiten, Visitenkarte und QR-Code.
-        </p>
+    </div>
+
+    <div class="spec">
+      <p class="kicker" style="font-size:10px;margin-bottom:14px">Schrift</p>
+      <div class="probe__gross">Archivo 800</div>
+      <div class="probe__unter">Überschriften, Knöpfe, Zahlen · Tracking −3 bis −4 %</div>
+      <div class="probe__klein">
+        Archivo 400 für alles Gelesene. Zwei Gewichte, kein drittes — Hierarchie kommt aus Größe und Abstand.
       </div>
-      <p class="quelle">
-        Die Schrift liegt im eigenen Verzeichnis, nicht bei Google. Ein Schriftabruf überträgt die IP-Adresse jedes
-        Besuchers an einen Dritten, und das verträgt sich nicht mit dem, was auf diesen Seiten steht.
-      </p>
-    </section>
-
-    <!-- Standfuß -->
-    <section>
-      <p class="marke">bewegung</p>
-      <h2>Der Standfuß.</h2>
-      <p class="fuehrung">
-        Kein weichgezeichneter Schatten, sondern ein harter Versatz nach unten, der beim Drücken einsinkt. Vier
-        Pixel Fuß, beim Druck einer. Das ist die eine Bewegung, die man an einer Schaltfläche wirklich spürt —
-        probier den Knopf aus.
-      </p>
-      <div class="knopfreihe">
-        <a class="knopf knopf--voll" href="/werkstatt">
-          Seite bauen
-          <Fragment set:html={zeichen('pfeil')} />
-        </a>
-        <a class="knopf" href="/designs">Designs ansehen</a>
+      <div class="probe__chips">
+        <span class="probe__chip">800 · 62/54/38/22</span>
+        <span class="probe__chip probe__chip--leicht">400 · 15/13/11.5</span>
       </div>
-      <p class="quelle">
-        Wer in seinem System „Bewegung reduzieren" eingeschaltet hat, bekommt keine — das gilt hier wie im ganzen
-        Produkt.
-      </p>
-    </section>
+    </div>
+  </section>
 
-    <section class="schluss">
-      <p class="marke">und jetzt</p>
-      <h2>Bau deine Seite.</h2>
-      <div class="knopfreihe">
-        <a class="knopf knopf--voll" href="/werkstatt">
-          Zur Werkstatt
-          <Fragment set:html={zeichen('pfeil')} />
-        </a>
-        <a class="knopf" href="/t/hnvr">Echte Seite ansehen</a>
-      </div>
-    </section>
-
-</Marketingrahmen>
+  <!-- Dateien -->
+  <section class="dateiblock">
+    <h2 class="h2" style="font-size:28px;letter-spacing:-.025em;margin-bottom:8px">Dateien</h2>
+    <p class="karteText" style="margin-bottom:18px;font-size:13px;max-width:56ch">
+      App-Icon und Favicons liegen fertig im Projekt unter <b>public/marke/</b> — vier Größen plus die dunkle
+      Variante. Der vollständige Handoff steht in <b>doku/handoff/</b>.
+    </p>
+    <div class="dateien">
+      {
+        dateien.map((d) => (
+          <a class="datei" href={`/marke/${d}`} download>
+            <Fragment set:html={lucide('image', 15)} />
+            {d}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</Handoffrahmen>

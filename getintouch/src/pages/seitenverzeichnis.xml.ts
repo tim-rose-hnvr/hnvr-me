@@ -34,7 +34,7 @@ export const GET: APIRoute = async ({ site, url }) => {
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     eintrag(new URL('/', basis).toString(), '1.0'),
-    eintrag(new URL('/designs', basis).toString(), '0.6'),
+    eintrag(new URL('/vorlagen', basis).toString(), '0.6'),
     eintrag(new URL('/preise', basis).toString(), '0.7'),
     eintrag(new URL('/marke', basis).toString(), '0.4'),
     eintrag(new URL('/karte', basis).toString(), '0.6'),

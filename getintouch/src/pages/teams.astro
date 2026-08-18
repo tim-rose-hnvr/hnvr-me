@@ -2,120 +2,221 @@
 /**
  * Für Teams.
  *
- * Aufbau aus dem Design-Handoff. Anders als die übrigen Seiten beschreibt
- * diese ausschließlich Dinge, die es noch nicht gibt — eigene Domain,
- * gesperrte Markenwerte, gemeinsamer Eingang, Rollen, CSV-Import.
+ * Nachbau von `doku/handoff/design/Website-Teams.dc.html`: Held mit
+ * Besuchervorschau, sechs Nutzenkarten (drei mit Standfuß, drei ruhig),
+ * Zitatblock mit Teamfoto, vier Segmente, dunkles Abschlussband.
  *
- * Deshalb steht das gleich in der ersten Zeile und nicht im Kleingedruckten.
- * Der Handoff schreibt „Ab 39 CHF / Monat · bis 20 Profile" in den
- * Heldenbereich, als wäre es buchbar; hier ist es eine Absichtserklärung mit
- * dem Preis daneben. Wer heute anfragt, soll wissen, dass er auf eine
- * Warteliste kommt und nicht in einen Bestellvorgang.
+ * Der Preis steht im Prototyp in Franken; hier in Euro wie im ganzen Produkt.
+ * Das Zitat trägt im Prototyp einen Namen — den gibt es nicht, deshalb steht
+ * es hier als Platz, so wie das Teamfoto auch.
  */
-import Marketingrahmen from '../komponenten/Marketingrahmen.astro';
-import { zeichen } from '../kern/zeichen.ts';
+import Handoffrahmen from '../komponenten/Handoffrahmen.astro';
+import Bildplatz from '../komponenten/Bildplatz.astro';
+import { lucide } from '../kern/lucide.ts';
 import { MARKE } from '../kern/marke.ts';
-import '../stile/marketing.css';
+import '../stile/teams.css';
 
 export const prerender = false;
 
 Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
 
-const nutzen = [
-  { titel: 'Eigene Domain', text: 'Die Seiten laufen unter eurer Adresse, nicht unter unserer. Im QR-Code steht dann eure.' },
-  { titel: 'Marke gesperrt', text: 'Logo und Farben legt ihr einmal fest, das Team kann sie nicht überschreiben — Reihenfolge und Inhalte bleiben frei.' },
-  { titel: 'Ein Eingang', text: 'Anfragen aus allen Profilen laufen an einer Stelle zusammen und lassen sich zuweisen.' },
-  { titel: 'Rollen und Rechte', text: 'Wer darf veröffentlichen, wer nur bearbeiten. Ohne das wird aus zwanzig Profilen ein Flickenteppich.' },
-  { titel: 'Import über CSV', text: 'Zwanzig Leute nicht einzeln anlegen, sondern eine Liste einlesen.' },
-  { titel: 'Zahlen je Person', text: 'Aufrufe und Kontakte pro Profil — damit sichtbar wird, wo es wirkt.' },
+const titel = `Für Teams — ${MARKE.name}`;
+const beschreibung =
+  'Eigene Domain, eigenes Logo, eine Vorlage für alle Profile. Anfragen aus allen Profilen laufen in einen gemeinsamen Eingang.';
+
+const gross = [
+  {
+    zeichen: 'globe' as const,
+    ton: 'signal',
+    titel: 'Eigene Domain',
+    text: 'kontakt.eurefirma.de — DNS verifiziert, SSL automatisch. Unser Name steht nirgends.',
+  },
+  {
+    zeichen: 'lock' as const,
+    ton: 'ink',
+    titel: 'Marke gesperrt',
+    text: 'Logo und Farben legt die Leitung fest. Das Team ändert Texte, Bilder und Reihenfolge — nicht die Marke.',
+  },
+  {
+    zeichen: 'inbox' as const,
+    ton: 'rose',
+    titel: 'Ein Eingang',
+    text: 'Anfragen aller Profile in einer Liste, mit Zuweisung und Antwortzeit. Urlaub? Weiterleiten an Kolleg:innen.',
+  },
+];
+
+const klein = [
+  {
+    zeichen: 'file-spreadsheet' as const,
+    titel: 'CSV-Onboarding',
+    text: 'Liste hochladen, 20 Profile stehen mit Einladung — jede Person füllt nur Foto und Text.',
+  },
+  {
+    zeichen: 'shield-check' as const,
+    titel: 'Rollen & Rechte',
+    text: 'Leitung, Redaktion, Person. Wer Bewertungen beantworten darf, entscheidet ihr.',
+  },
+  {
+    zeichen: 'bar-chart-3' as const,
+    titel: 'Zahlen pro Person',
+    text: 'Wer bekommt Anfragen, wo bleiben sie liegen — mit Empfehlung statt Diagramm-Salat.',
+  },
 ];
 
 const passt = [
-  { titel: 'Studios & Agenturen', text: 'Jede Person mit eigenem Auftritt, alle unter einer Marke.' },
-  { titel: 'Praxen', text: 'Sprechzeiten je Behandler, Terminwunsch statt Telefonschleife.' },
-  { titel: 'Handwerk', text: 'Monteure mit eigener Nummer auf dem Fahrzeug, Zentrale im Hintergrund.' },
-  { titel: 'Vertrieb', text: 'Karte fürs Gespräch, Anfrage direkt auf der Seite statt im Notizblock.' },
+  { zeichen: 'camera' as const, titel: 'Studios & Agenturen', text: 'Profile pro Person, ein Look' },
+  { zeichen: 'stethoscope' as const, titel: 'Praxen', text: 'Termin zuerst, Notfall sichtbar' },
+  { zeichen: 'hammer' as const, titel: 'Handwerk', text: 'Offerte anfragen, Referenzen' },
+  { zeichen: 'building-2' as const, titel: 'Vertrieb', text: 'NFC-Karten, vCard, Messe' },
 ];
+
+const demo = `mailto:${MARKE.postfach}?subject=getintouch%20f%C3%BCr%20Teams%20%E2%80%94%20Demo`;
 ---
 
-<Marketingrahmen
-  titel={`Für Teams — ${MARKE.name}`}
-  beschreibung="Ein Auftritt fürs ganze Team unter eurer Marke. Entworfen und eingeplant — heute noch nicht buchbar."
-  hier="/teams"
->
-  <section class="kopf">
-    <p class="marke">für teams</p>
-    <h1>Eure Marke vorne.<br />Wir bleiben unsichtbar.</h1>
-
-    <p class="hinweisband">
-      <Fragment set:html={zeichen('uhr')} />
-      <span>
-        <b>Alles auf dieser Seite ist geplant, nicht gebaut.</b> Es gibt heute keinen Team-Bereich, keine eigene
-        Domain und keinen gemeinsamen Eingang. Wer anfragt, kommt auf eine Warteliste — nicht in einen
-        Bestellvorgang.
+<Handoffrahmen titel={titel} beschreibung={beschreibung} hier="/teams">
+  <!-- Held -->
+  <section class="theld">
+    <div class="an-rise">
+      <span class="abzeichen">
+        <Fragment set:html={lucide('users-round', 14)} />
+        Whitelabel für Teams
       </span>
-    </p>
+      <h1 class="h1" style="font-size:56px;line-height:.96;max-width:18ch">Eure Marke vorne. Wir bleiben unsichtbar.</h1>
+      <p class="fliess" style="margin-bottom:22px">
+        Eigene Domain, eigenes Logo, eine Vorlage für alle Profile. Jede Person im Team hat ihre Seite — Anfragen
+        laufen in einen gemeinsamen Eingang.
+      </p>
+      <div class="knopfreihe" style="gap:11px">
+        <a class="knopf knopf--signal" href={demo} style="padding:15px 20px;border-radius:24px;font-size:13.5px;box-shadow:0 5px 0 0 var(--color-accent-700)">
+          Demo anfragen
+          <Fragment set:html={lucide('arrow-right', 15)} />
+        </a>
+        <a class="knopf knopf--rand" href="/preise" style="padding:15px 20px;border-radius:24px;font-size:13.5px">
+          Preise ansehen
+        </a>
+      </div>
+      <div class="handle__meta" style="gap:14px;margin-top:16px">
+        <span>Ab 39 € / Monat</span><span>·</span><span>bis 20 Profile</span><span>·</span><span>Rechnung möglich</span>
+      </div>
+    </div>
 
-    <p class="fuehrung">
-      Zwanzig Profile, ein Logo, eine Domain. Angepeilt sind 39 € im Monat für bis zu zwanzig Profile, Rechnung
-      möglich. Was davon wann kommt, hängt auch daran, wie viele es wirklich brauchen — deshalb steht die Seite schon
-      jetzt.
-    </p>
-
-    <div class="knopfreihe">
-      <a class="knopf knopf--voll" href={`mailto:${MARKE.postfach}?subject=Get%20in%20Touch%20f%C3%BCr%20Teams`}>
-        Auf die Warteliste
-        <Fragment set:html={zeichen('pfeil')} />
-      </a>
-      <a class="knopf" href="/preise">Preise ansehen</a>
+    <div class="vorschaukasten">
+      <p class="kicker" style="font-size:10px;margin-bottom:12px">So sieht's für Besucher aus</p>
+      <div class="vorschau">
+        <div class="vorschau__kopf">
+          <span class="vorschau__logo"></span>
+          <span class="vorschau__firma">STUDIO HARDTURM</span>
+          <span class="schub"></span>
+          <span class="vorschau__domain">kontakt.studiohardturm.de</span>
+        </div>
+        <div class="vorschau__paar">
+          {
+            [
+              { name: 'Lina Moser', pfad: '/lina' },
+              { name: 'Tim Vogt', pfad: '/tim' },
+            ].map((p) => (
+              <div class="vorschau__person">
+                <span class="vorschau__avatar" />
+                <span class="vorschau__name">{p.name}</span>
+                <span class="vorschau__pfad">{p.pfad}</span>
+                <span class="vorschau__knopf">Schreib mir</span>
+              </div>
+            ))
+          }
+        </div>
+        <div class="vorschau__mehr">12 weitere Profile · alle mit derselben Vorlage</div>
+      </div>
     </div>
   </section>
 
-  <section>
-    <p class="marke">was dazugehört</p>
-    <h2>Sechs Dinge, die ein<br />Team von uns braucht.</h2>
-    <div class="koennen">
+  <!-- Nutzen -->
+  <section class="abschnitt" style="padding-bottom:50px">
+    <h2 class="h2" style="margin-bottom:22px;max-width:24ch">Was Teams davon haben</h2>
+    <div class="dreier">
       {
-        nutzen.map((n) => (
-          <div class="kann kann--geplant">
-            <span class="stand stand--geplant">geplant</span>
-            <h3>{n.titel}</h3>
-            <p>{n.text}</p>
+        gross.map((n) => (
+          <div class="karte">
+            <span class:list={['kachel', 'kachel--klein', `kachel--${n.ton}`]}>
+              <Fragment set:html={lucide(n.zeichen, 21)} />
+            </span>
+            <h3 class="h3" style="font-size:19px;margin:15px 0 7px">
+              {n.titel}
+            </h3>
+            <p class="karteText" style="margin:0">
+              {n.text}
+            </p>
+          </div>
+        ))
+      }
+      {
+        klein.map((n) => (
+          <div class="karte--ruhig" style="padding:26px">
+            <span class="zeichenSignal">
+              <Fragment set:html={lucide(n.zeichen, 20)} />
+            </span>
+            <h3 class="h3" style="font-size:17px;margin:13px 0 7px">
+              {n.titel}
+            </h3>
+            <p class="karteText" style="margin:0;font-size:12.5px">
+              {n.text}
+            </p>
           </div>
         ))
       }
     </div>
   </section>
 
-  <section>
-    <p class="marke">passt für</p>
-    <h2>Wo das trägt.</h2>
-    <div class="schritte">
+  <!-- Zitat -->
+  <section class="zitatblock">
+    <div>
+      <span class="zeichenSignal"><Fragment set:html={lucide('quote', 24)} /></span>
+      <p class="zitatblock__satz">
+        „Vorher hatte jede Person eine andere Linkliste. Heute sieht alles gleich aus und wir wissen, wo die
+        Anfragen liegen."
+      </p>
+      <div class="zitat__wer">
+        <span class="zitat__bild" style="width:40px;height:40px"></span>
+        <span>
+          <span class="zitat__name" style="font-size:13px">Name der Leitung</span>
+          <span class="zitat__rolle" style="font-size:11.5px">Funktion, Firma (Teamgröße)</span>
+        </span>
+      </div>
+      <span class="platzhaltermarke platzhaltermarke--fest">Platzhalter — echte Stimme fehlt</span>
+    </div>
+    <div class="zitatblock__bild">
+      <Bildplatz text="Teamfoto hierher ziehen" radius={26} hoehe={260} />
+    </div>
+  </section>
+
+  <!-- Passt für -->
+  <section class="abschnitt" style="padding-bottom:50px">
+    <div class="kopfreihe" style="margin-bottom:18px">
+      <h2 class="h2" style="font-size:30px;margin:0">Passt für</h2>
+      <span class="meta">Vorlagen ab Seite 1 vorbereitet</span>
+    </div>
+    <div class="vierer">
       {
         passt.map((p) => (
-          <div class="schritt">
-            <h3>{p.titel}</h3>
-            <p>{p.text}</p>
+          <div class="segment">
+            <Fragment set:html={lucide(p.zeichen, 19)} />
+            <span class="segment__titel">{p.titel}</span>
+            <span class="segment__text">{p.text}</span>
           </div>
         ))
       }
     </div>
-    <p class="quelle">
-      Bis der Team-Bereich steht, geht der einfache Weg trotzdem: jede Person baut sich in der <a href="/werkstatt">
-        Werkstatt
-      </a> eine Seite, und wir schalten sie frei. Das ist Handarbeit, aber es funktioniert heute.
-    </p>
   </section>
 
-  <section class="banner">
-    <p class="marke">interesse?</p>
-    <h2>Zwanzig Minuten,<br />dann wisst ihr's.</h2>
-    <div class="knopfreihe">
-      <a class="knopf knopf--hell" href={`mailto:${MARKE.postfach}?subject=Get%20in%20Touch%20f%C3%BCr%20Teams`}>
-        Schreib uns
-        <Fragment set:html={zeichen('mail')} />
-      </a>
-      <a class="knopf knopf--kontur" href="/t/hnvr">Echte Seite ansehen</a>
+  <section class="band band--ink band--quer">
+    <div style="flex:1;min-width:300px">
+      <h2 style="margin-bottom:10px;max-width:22ch">20 Minuten Demo, dann wisst ihr's.</h2>
+      <p style="margin:0;font-size:13px;line-height:1.6;opacity:.8;max-width:44ch">
+        Wir richten mit euch ein Profil ein, verbinden eure Domain und zeigen den gemeinsamen Eingang.
+      </p>
     </div>
+    <a class="knopf knopf--signal" href={demo} style="box-shadow:0 5px 0 0 var(--color-accent-700)">
+      Demo anfragen
+      <Fragment set:html={lucide('arrow-right', 16)} />
+    </a>
   </section>
-</Marketingrahmen>
+</Handoffrahmen>

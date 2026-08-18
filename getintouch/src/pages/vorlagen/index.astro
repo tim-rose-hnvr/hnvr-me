@@ -1,0 +1,324 @@
+---
+/**
+ * Die Vorlagen-Seite.
+ *
+ * Nachbau von `doku/handoff/design/Website-Vorlagen.dc.html`: Kopf mit
+ * Filterpillen, Gitter aus neun Karten, zwei Erklärkarten, rotes Band.
+ *
+ * Jede Karte zeigt eine echte Miniatur des Profils in ihrem Look — im
+ * Prototyp mit einer eigenen Formensprache je Vorlage, und genau die ist der
+ * Punkt der Seite. Deshalb steht hier jede Karte einzeln und nicht eine
+ * Schleife über eine Tabelle: Tresen hat Sprechblasen, Werkbank drei Avatare,
+ * Riso Linien statt Flächen. Das ließe sich nicht ohne Verlust vereinheitlichen.
+ *
+ * „Wählen" führt auf `/vorlagen/<kennung>`, wo dieselbe Vorlage nicht als
+ * Miniatur, sondern an einem vollständigen Profil läuft.
+ */
+import Handoffrahmen from '../../komponenten/Handoffrahmen.astro';
+import { lucide } from '../../kern/lucide.ts';
+import { MARKE } from '../../kern/marke.ts';
+import '../../stile/vorlagen.css';
+
+export const prerender = false;
+
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+
+const titel = `Vorlagen — ${MARKE.name}`;
+const beschreibung =
+  'Neun Vorlagen, jede mit Kontakt, Buchung und Bewertungen eingebaut. Look später jederzeit wechselbar, Inhalte bleiben.';
+
+const faecher = ['Alle 9', 'Creator', 'Musik', 'Studio & Atelier', 'Café & Laden', 'Handwerk', 'Team', 'Praxis'];
+---
+
+<Handoffrahmen titel={titel} beschreibung={beschreibung} hier="/vorlagen">
+  <section class="vkopf an-rise">
+    <h1 class="h1 h1--klein" style="margin:0 0 14px;max-width:22ch">
+      Eine Vorlage für jeden, der erreichbar sein will.
+    </h1>
+    <p class="fliess" style="margin-bottom:22px;max-width:56ch">
+      Wähle einen Look, zieh Foto und Titelbild rein, tausch die Texte. Nachricht, Buchung und Bewertungen sind in
+      jeder Vorlage schon eingebaut — der Look ist später jederzeit wechselbar.
+    </p>
+    <div class="pillen" id="pillen">
+      {
+        faecher.map((f, i) => (
+          <button class:list={['pille', i === 0 && 'pille--hier']} type="button" data-fach={i === 0 ? '' : f}>
+            {f}
+          </button>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="tplgitter" id="gitter">
+    <!-- Kirsche -->
+    <a class="tpl" href="/vorlagen/kirsche" id="kirsche" data-fach="Creator">
+      <span class="tpl__buehne tpl__buehne--kirsche">
+        <span class="tpl__blatt tpl__blatt--kirsche">
+          <span class="mini__avatar mini__avatar--kirsche"></span>
+          <span class="mini__name">Lina Moser</span>
+          <span class="mini__rolle">Fotografin · Zürich</span>
+          <span class="mini__haupt mini__haupt--kirsche">Schreib mir</span>
+          <span class="mini__neben mini__neben--kirsche">Portfolio 2026</span>
+          <span class="mini__neben mini__neben--kirsche">Prints kaufen</span>
+        </span>
+      </span>
+      <span class="tpl__fuss">
+        <span>
+          <span class="tpl__name">Kirsche</span>
+          <span class="tpl__art">Warm, rund, freundlich · Creator</span>
+        </span>
+        <span class="tpl__waehlen">Wählen</span>
+      </span>
+    </a>
+
+    <!-- Nachtschicht -->
+    <a class="tpl" href="/vorlagen/nachtschicht" id="nachtschicht" data-fach="Musik">
+      <span class="tpl__buehne tpl__buehne--nacht">
+        <span class="tpl__blatt tpl__blatt--nacht">
+          <span class="mini__avatar mini__avatar--nacht"></span>
+          <span class="mini__name mini__name--hell">MRKS</span>
+          <span class="mini__rolle mini__rolle--hell">DJ · Berlin</span>
+          <span class="mini__haupt mini__haupt--nacht">Booking anfragen</span>
+          <span class="mini__neben mini__neben--nacht">Nächste Gigs</span>
+          <span class="mini__neben mini__neben--nacht">Mixes</span>
+        </span>
+      </span>
+      <span class="tpl__fuss">
+        <span>
+          <span class="tpl__name">Nachtschicht</span>
+          <span class="tpl__art">Dunkel, laut · Musik</span>
+        </span>
+        <span class="tpl__waehlen">Wählen</span>
+      </span>
+    </a>
+
+    <!-- Beton -->
+    <a class="tpl" href="/vorlagen/beton" id="beton" data-fach="Studio & Atelier">
+      <span class="tpl__buehne tpl__buehne--beton">
+        <span class="tpl__blatt tpl__blatt--beton">
+          <span class="mini__avatar mini__avatar--beton"></span>
+          <span class="mini__name mini__name--gesperrt">M. AMREIN</span>
+          <span class="mini__rolle">ARCHITEKTIN · BASEL</span>
+          <span class="mini__haupt mini__haupt--beton">SCHREIB MIR</span>
+          <span class="mini__neben mini__neben--beton">PROJEKTE</span>
+          <span class="mini__neben mini__neben--beton">BÜRO</span>
+        </span>
+      </span>
+      <span class="tpl__fuss">
+        <span>
+          <span class="tpl__name">Beton</span>
+          <span class="tpl__art">Streng, sachlich · Studio</span>
+        </span>
+        <span class="tpl__waehlen">Wählen</span>
+      </span>
+    </a>
+
+    <!-- Sticker -->
+    <a class="tpl" href="/vorlagen/sticker" id="sticker" data-fach="Creator">
+      <span class="tpl__buehne tpl__buehne--sticker">
+        <span class="tpl__blatt tpl__blatt--sticker">
+          <span class="mini__avatar mini__avatar--blob"></span>
+          <span class="mini__name">Jo &amp; Kim</span>
+          <span class="mini__rolle">Creator · überall</span>
+          <span class="mini__haupt mini__haupt--kirsche mini__schief1">Schreib uns</span>
+          <span class="mini__neben mini__neben--kirsche mini__schief2">Neues Video</span>
+          <span class="mini__neben mini__neben--kirsche mini__schief3">Merch</span>
+        </span>
+      </span>
+      <span class="tpl__fuss">
+        <span>
+          <span class="tpl__name">Sticker</span>
+          <span class="tpl__art">Verspielt, schief · Creator</span>
+        </span>
+        <span class="tpl__waehlen">Wählen</span>
+      </span>
+    </a>
+
+    <!-- Papier -->
+    <a class="tpl" href="/vorlagen/papier" id="papier" data-fach="Studio & Atelier">
+      <span class="tpl__buehne tpl__buehne--papier">
+        <span class="tpl__blatt tpl__blatt--papier">
+          <span class="mini__avatar mini__avatar--papier"></span>
+          <span class="mini__name">Ada Kern</span>
+          <span class="mini__rolle">Illustratorin · Wien</span>
+          <span class="mini__haupt mini__haupt--papier">Auftrag anfragen</span>
+          <span class="mini__neben mini__neben--papier">Skizzenbuch</span>
+          <span class="mini__neben mini__neben--papier">Shop</span>
+        </span>
+      </span>
+      <span class="tpl__fuss">
+        <span>
+          <span class="tpl__name">Papier</span>
+          <span class="tpl__art">Skizzenhaft, leicht · Atelier</span>
+        </span>
+        <span class="tpl__waehlen">Wählen</span>
+      </span>
+    </a>
+
+    <!-- Tresen -->
+    <a class="tpl" href="/vorlagen/tresen" id="tresen" data-fach="Café & Laden">
+      <span class="tpl__buehne tpl__buehne--tresen">
+        <span class="tpl__blatt tpl__blatt--tresen">
+          <span class="mini__zeile">
+            <span class="mini__avatar mini__avatar--tresen"></span>
+            <span class="mini__zeileText">
+              <span class="mini__name mini__name--klein">Café Kreis 4</span>
+              <span class="mini__rolle mini__rolle--winzig">meist offen bis 18 Uhr</span>
+            </span>
+          </span>
+          <span class="blase blase--sie">Hey! Worum geht's?</span>
+          <span class="blase blase--du">Tisch für 4 heute?</span>
+          <span class="mini__chips">
+            <span class="mini__chip">Reservieren</span>
+            <span class="mini__chip">Karte</span>
+          </span>
+        </span>
+      </span>
+      <span class="tpl__fuss">
+        <span>
+          <span class="tpl__name">Tresen</span>
+          <span class="tpl__art">Chat zuerst · Café &amp; Laden</span>
+        </span>
+        <span class="tpl__waehlen">Wählen</span>
+      </span>
+    </a>
+
+    <!-- Werkbank -->
+    <a class="tpl" href="/vorlagen/werkbank" id="werkbank" data-fach="Handwerk">
+      <span class="tpl__buehne tpl__buehne--werkbank">
+        <span class="tpl__blatt tpl__blatt--werkbank">
+          <span class="mini__drei">
+            <span class="mini__avatar mini__avatar--werk"></span>
+            <span class="mini__avatar mini__avatar--werk"></span>
+            <span class="mini__avatar mini__avatar--werk"></span>
+          </span>
+          <span class="mini__name mini__name--klein">Holzwerk Iten</span>
+          <span class="mini__rolle">Schreinerei · 6 Personen</span>
+          <span class="mini__haupt mini__haupt--werk">Offerte anfragen</span>
+          <span class="mini__paar">
+            <span class="mini__neben mini__neben--werk">Referenzen</span>
+            <span class="mini__neben mini__neben--werk">Anfahrt</span>
+          </span>
+        </span>
+      </span>
+      <span class="tpl__fuss">
+        <span>
+          <span class="tpl__name">Werkbank</span>
+          <span class="tpl__art">Robust · Handwerk &amp; Team</span>
+        </span>
+        <span class="tpl__waehlen">Wählen</span>
+      </span>
+    </a>
+
+    <!-- Sprechstunde -->
+    <a class="tpl" href="/vorlagen/sprechstunde" id="sprechstunde" data-fach="Praxis">
+      <span class="tpl__buehne tpl__buehne--sprech">
+        <span class="tpl__blatt tpl__blatt--sprech">
+          <span class="mini__avatar mini__avatar--sprech"></span>
+          <span class="mini__name">Praxis Aare</span>
+          <span class="mini__rolle">Physiotherapie · Bern</span>
+          <span class="mini__haupt mini__haupt--sprech">Termin buchen</span>
+          <span class="mini__neben mini__neben--sprech">Öffnungszeiten</span>
+          <span class="mini__neben mini__neben--sprech">Notfall-Nummer</span>
+        </span>
+      </span>
+      <span class="tpl__fuss">
+        <span>
+          <span class="tpl__name">Sprechstunde</span>
+          <span class="tpl__art">Ruhig, Termin zuerst · Praxis</span>
+        </span>
+        <span class="tpl__waehlen">Wählen</span>
+      </span>
+    </a>
+
+    <!-- Riso -->
+    <a class="tpl" href="/vorlagen/riso" id="riso" data-fach="Team">
+      <span class="tpl__buehne tpl__buehne--riso">
+        <span class="tpl__blatt tpl__blatt--riso">
+          <span class="mini__zeile mini__zeile--unten">
+            <span class="mini__avatar mini__avatar--riso"></span>
+            <span class="mini__zeileText">
+              <span class="mini__name mini__name--klein">Riso Kollektiv</span>
+              <span class="mini__rolle">Leipzig · 11 Leute</span>
+            </span>
+          </span>
+          <span class="mini__haupt mini__haupt--riso">Mitmachen</span>
+          <span class="mini__neben mini__neben--risoOben">Nächste Ausgabe</span>
+          <span class="mini__neben mini__neben--risoUnten">Archiv</span>
+        </span>
+      </span>
+      <span class="tpl__fuss">
+        <span>
+          <span class="tpl__name">Riso</span>
+          <span class="tpl__art">Print-Look · Kollektiv</span>
+        </span>
+        <span class="tpl__waehlen">Wählen</span>
+      </span>
+    </a>
+  </section>
+
+  <p class="pillen__leer" id="pillenLeer" hidden>Für dieses Fach gibt es noch keine Vorlage.</p>
+
+  <section class="zweier">
+    <div class="karte--ruhig" style="padding:28px">
+      <span class="zeichenSignal"><Fragment set:html={lucide('repeat', 22)} /></span>
+      <h3 class="h3" style="font-size:22px;margin:14px 0 8px">Look wechseln, Inhalte behalten</h3>
+      <p class="karteText" style="margin:0">
+        Vorlage tauschen ändert nur das Kleid: Bausteine, Texte, Bilder und Bewertungen bleiben. Rückgängig bis 24
+        Stunden.
+      </p>
+    </div>
+    <div class="karte--ruhig" style="padding:28px">
+      <span class="zeichenSignal"><Fragment set:html={lucide('sliders-horizontal', 22)} /></span>
+      <h3 class="h3" style="font-size:22px;margin:14px 0 8px">Und dann frei anpassen</h3>
+      <p class="karteText" style="margin:0">
+        Hintergrund als Bild, Farbe, Verlauf oder Muster. Fünf Knopfformen, drei Schriftstile, Bewegung ein oder aus.
+      </p>
+    </div>
+  </section>
+
+  <section class="band band--quer">
+    <h2>Nimm eine Vorlage, ändere sie später.</h2>
+    <a class="knopf knopf--hell" href="/werkstatt">
+      Seite bauen
+      <Fragment set:html={lucide('arrow-right', 16)} />
+    </a>
+  </section>
+</Handoffrahmen>
+
+<script>
+  /*
+   * Filtern ohne Nachladen. Neun Karten stehen ohnehin im Dokument.
+   * Ohne Skript bleiben die Pillen wirkungslos, aber alle neun sichtbar —
+   * deshalb sind sie `button` und kein `a`: sie versprechen kein Ziel.
+   */
+  const leiste = document.getElementById('pillen');
+  const gitter = document.getElementById('gitter');
+  const leer = document.getElementById('pillenLeer');
+
+  if (leiste && gitter && leer) {
+    const karten = Array.from(gitter.querySelectorAll<HTMLElement>('.tpl'));
+
+    leiste.addEventListener('click', (e) => {
+      const knopf = (e.target as HTMLElement).closest<HTMLElement>('.pille');
+      if (!knopf) return;
+
+      const fach = knopf.dataset.fach ?? '';
+      for (const p of leiste.querySelectorAll('.pille')) {
+        p.classList.toggle('pille--hier', p === knopf);
+      }
+
+      let sichtbar = 0;
+      for (const k of karten) {
+        /* „Handwerk" und „Team" stehen im Handoff getrennt, treffen aber
+           dieselbe Vorlage — Werkbank ist beides. */
+        const eigen = k.dataset.fach ?? '';
+        const passt = fach === '' || eigen === fach || (fach === 'Team' && eigen === 'Handwerk');
+        k.hidden = !passt;
+        if (passt) sichtbar++;
+      }
+      leer.hidden = sichtbar > 0;
+    });
+  }
+</script>

@@ -1,0 +1,529 @@
+/* ============================================================
+   Vorlagen-Seite
+   ============================================================
+
+   Aus `doku/handoff/design/Website-Vorlagen.dc.html`. Die neun Miniaturen
+   sind der Kern: jede zeigt dieselben Bausteine — Avatar, Name, Rolle,
+   Hauptaktion, zwei Nebenaktionen — in ihrer eigenen Formensprache. Genau
+   daran wählt man eine Vorlage aus, nicht an drei Farbpunkten.
+   ============================================================ */
+
+.vkopf {
+  padding: 30px 0;
+}
+
+.pillen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pille {
+  padding: 9px 15px;
+  border-radius: 22px;
+  border: 2px solid var(--color-neutral-300);
+  background: transparent;
+  font: 800 12px var(--font-body);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+
+.pille:hover {
+  border-color: var(--color-text);
+}
+
+.pille--hier {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: var(--color-bg);
+}
+
+.pillen__leer {
+  margin: 0 0 40px;
+  font-size: 14px;
+  color: var(--ink-60);
+}
+
+.pillen__leer[hidden] {
+  display: none;
+}
+
+.tplgitter {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding-bottom: 50px;
+}
+
+.tpl {
+  display: block;
+  border-radius: 26px;
+  overflow: hidden;
+  background: var(--color-bg);
+  box-shadow: 0 6px 0 0 var(--color-neutral-300);
+  transition: transform 0.18s ease;
+}
+
+.tpl:hover {
+  transform: translateY(-5px);
+  color: inherit;
+}
+
+/* Ein Rasterkind mit `display:block` ignoriert `hidden` sonst. */
+.tpl[hidden] {
+  display: none;
+}
+
+/* Die Bühne — die Farbfläche, auf der das Blatt liegt. */
+.tpl__buehne {
+  display: block;
+  padding: 18px 18px 0;
+}
+
+.tpl__buehne--kirsche {
+  background: var(--color-accent-100);
+}
+
+.tpl__buehne--nacht {
+  background: var(--color-text);
+}
+
+.tpl__buehne--beton {
+  background: var(--color-neutral-200);
+}
+
+.tpl__buehne--sticker {
+  background: var(--color-accent);
+}
+
+.tpl__buehne--papier {
+  background: var(--color-surface);
+}
+
+.tpl__buehne--tresen {
+  background: var(--color-accent-200);
+}
+
+.tpl__buehne--werkbank {
+  background: var(--color-neutral-800);
+}
+
+.tpl__buehne--sprech {
+  background: var(--color-neutral-100);
+}
+
+.tpl__buehne--riso {
+  background: var(--color-accent-700);
+}
+
+/* Das Blatt — die Miniatur des Profils. */
+.tpl__blatt {
+  display: block;
+  background: var(--color-bg);
+  padding: 16px 16px 22px;
+}
+
+.tpl__blatt--kirsche {
+  border-radius: 20px 20px 0 0;
+}
+
+.tpl__blatt--nacht {
+  background: var(--color-neutral-900);
+  border-radius: 14px 14px 0 0;
+}
+
+.tpl__blatt--beton {
+  border-radius: 0;
+}
+
+.tpl__blatt--sticker {
+  border-radius: 22px 22px 0 0;
+}
+
+.tpl__blatt--papier {
+  background: var(--color-neutral-100);
+  border-radius: 16px;
+  border: 2px dashed var(--color-neutral-400);
+}
+
+.tpl__blatt--tresen {
+  border-radius: 22px 22px 0 0;
+}
+
+.tpl__blatt--werkbank {
+  border-radius: 0;
+}
+
+.tpl__blatt--sprech {
+  border-radius: 18px 18px 0 0;
+  border: 2px solid var(--color-neutral-200);
+}
+
+.tpl__blatt--riso {
+  border-radius: 0;
+}
+
+/* --- Die Miniatur ----------------------------------------- */
+
+.mini__avatar {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.mini__avatar--kirsche {
+  background: var(--color-accent-200);
+  border: 2px solid var(--color-text);
+}
+
+.mini__avatar--nacht {
+  background: var(--color-accent);
+}
+
+.mini__avatar--beton {
+  background: var(--color-neutral-400);
+  border-radius: 0;
+}
+
+/* Der Blob: asymmetrischer Radius, der sich langsam verzieht. */
+.mini__avatar--blob {
+  background: var(--color-accent);
+  border-radius: 58% 42% 47% 53% / 49% 55% 45% 51%;
+  animation: gtBlobA 8s ease-in-out infinite;
+}
+
+.mini__avatar--papier {
+  background: var(--color-neutral-200);
+  border: 2px dashed var(--color-neutral-500);
+  border-radius: 14px;
+}
+
+.mini__avatar--tresen {
+  width: 34px;
+  height: 34px;
+  background: var(--color-accent-300);
+}
+
+.mini__avatar--werk {
+  width: 34px;
+  height: 34px;
+  background: var(--color-neutral-300);
+  border-radius: 0;
+}
+
+.mini__avatar--sprech {
+  background: var(--color-neutral-200);
+}
+
+.mini__avatar--riso {
+  width: 32px;
+  height: 46px;
+  background: var(--color-neutral-300);
+  border-radius: 0;
+}
+
+.mini__name {
+  display: block;
+  font: 800 16px var(--font-body);
+  margin-top: 11px;
+}
+
+.mini__name--klein {
+  font-size: 15px;
+}
+
+.mini__name--hell {
+  color: var(--color-bg);
+}
+
+.mini__name--gesperrt {
+  letter-spacing: 0.05em;
+}
+
+.mini__rolle {
+  display: block;
+  font-size: 10.5px;
+  color: var(--ink-55);
+}
+
+.mini__rolle--hell {
+  color: var(--hell-55);
+}
+
+.mini__rolle--winzig {
+  font-size: 10px;
+}
+
+.mini__haupt {
+  display: block;
+  margin-top: 12px;
+  padding: 10px 13px;
+  font: 800 11px var(--font-body);
+}
+
+.mini__neben {
+  display: block;
+  margin-top: 7px;
+  padding: 10px 13px;
+  font: 800 11px var(--font-body);
+}
+
+/* Kirsche und Sticker: runde Pillen, Hauptaktion mit Standfuß. */
+.mini__haupt--kirsche {
+  border-radius: 18px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  box-shadow: 0 3px 0 0 var(--color-accent-700);
+}
+
+.mini__neben--kirsche {
+  border-radius: 18px;
+  border: 2px solid var(--color-text);
+}
+
+/* Nachtschicht: Radius 8, gedämpfte Kontur auf dunkel. */
+.mini__haupt--nacht {
+  border-radius: 8px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.mini__neben--nacht {
+  border-radius: 8px;
+  border: 2px solid var(--hell-35);
+  color: var(--color-bg);
+}
+
+/* Beton: Radius 0, gesperrte Versalien. */
+.mini__haupt--beton {
+  border-radius: 0;
+  background: var(--color-text);
+  color: var(--color-bg);
+  letter-spacing: 0.05em;
+}
+
+.mini__neben--beton {
+  border-radius: 0;
+  border: 2px solid var(--color-text);
+  letter-spacing: 0.05em;
+}
+
+/* Sticker: dieselben Formen wie Kirsche, aber schief. */
+.mini__schief1 {
+  transform: rotate(-1.5deg);
+}
+
+.mini__schief2 {
+  margin-top: 9px;
+  transform: rotate(1.2deg);
+}
+
+.mini__schief3 {
+  margin-top: 9px;
+  transform: rotate(-0.8deg);
+}
+
+/* Papier: gestrichelt, Radius 12. */
+.mini__haupt--papier {
+  border-radius: 12px;
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+.mini__neben--papier {
+  border-radius: 12px;
+  border: 2px dashed var(--color-neutral-500);
+}
+
+/* Tresen: Sprechblasen mit einer eckigen Ecke. */
+.mini__zeile {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.mini__zeile--unten {
+  align-items: flex-end;
+}
+
+.mini__zeileText {
+  flex: 1;
+  min-width: 0;
+}
+
+.mini__zeileText .mini__name {
+  margin-top: 0;
+  font-size: 13px;
+}
+
+.blase {
+  display: block;
+  margin-top: 12px;
+  padding: 11px 13px;
+  font: 400 11px var(--font-body);
+}
+
+.blase--sie {
+  border-radius: 18px 18px 18px 6px;
+  background: var(--color-surface);
+}
+
+.blase--du {
+  margin-top: 7px;
+  margin-left: 28px;
+  border-radius: 18px 18px 6px 18px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.mini__chips {
+  display: flex;
+  gap: 6px;
+  margin-top: 11px;
+}
+
+.mini__chip {
+  padding: 7px 11px;
+  border-radius: 15px;
+  border: 2px solid var(--color-text);
+  font: 800 10px var(--font-body);
+}
+
+/* Werkbank: drei Avatare, Radius 0, zwei Nebenaktionen nebeneinander. */
+.mini__drei {
+  display: flex;
+  gap: 8px;
+}
+
+.mini__paar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.mini__haupt--werk {
+  background: var(--color-accent);
+  color: var(--color-bg);
+  border-radius: 0;
+}
+
+.mini__neben--werk {
+  margin-top: 0;
+  padding: 9px 11px;
+  border: 2px solid var(--color-text);
+  border-radius: 0;
+  font-size: 10px;
+}
+
+/* Sprechstunde: sehr helle Neutrals, Radius 10. */
+.mini__haupt--sprech {
+  border-radius: 10px;
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+.mini__neben--sprech {
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+
+/* Riso: Linien statt Flächen. */
+.mini__haupt--riso {
+  background: var(--color-accent-700);
+  color: var(--color-bg);
+  border-radius: 0;
+}
+
+.mini__neben--risoOben {
+  border-top: 2px solid var(--color-text);
+  border-bottom: 2px solid var(--color-text);
+}
+
+.mini__neben--risoUnten {
+  border-bottom: 2px solid var(--color-text);
+}
+
+/* --- Kartenfuß -------------------------------------------- */
+
+.tpl__fuss {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+}
+
+.tpl__name {
+  display: block;
+  font: 800 15px var(--font-body);
+}
+
+.tpl__art {
+  display: block;
+  font-size: 11px;
+  color: var(--ink-60);
+}
+
+.tpl__waehlen {
+  flex: none;
+  padding: 9px 14px;
+  border-radius: 18px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: 800 11px var(--font-body);
+  box-shadow: 0 3px 0 0 var(--color-accent-700);
+}
+
+.zweier {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding-bottom: 50px;
+}
+
+.zeichenSignal {
+  display: block;
+  color: var(--color-accent);
+}
+
+/* Das quer laufende Band: Überschrift links, Knopf rechts. */
+.band--quer {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+  padding: 40px 34px;
+}
+
+.band--quer h2 {
+  font: 800 38px/1 var(--font-heading);
+  letter-spacing: -0.03em;
+  margin: 0;
+  flex: 1;
+  min-width: 280px;
+  max-width: 20ch;
+}
+
+@media (max-width: 980px) {
+  .tplgitter {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .zweier {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .tplgitter {
+    grid-template-columns: 1fr;
+  }
+
+  .band--quer h2 {
+    font-size: 28px;
+  }
+}

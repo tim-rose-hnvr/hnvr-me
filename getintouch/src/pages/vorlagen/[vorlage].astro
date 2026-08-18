@@ -16,7 +16,7 @@ import { zeichen } from '../../kern/zeichen.ts';
 import { MARKE } from '../../kern/marke.ts';
 
 import { bewerteErreichbarkeit } from '../../kern/erreichbarkeit.ts';
-import { schrift, vorlage, vorlagenName, VORLAGEN } from '../../kern/gestaltung.ts';
+import { schrift, vorlage, vorlagenart, vorlagenName, VORLAGEN } from '../../kern/gestaltung.ts';
 import { ablage } from '../../kern/speicher/index.ts';
 
 export const prerender = false;
@@ -57,20 +57,20 @@ const paar = `${schrift(gestaltung.anzeige).name} + ${schrift(gestaltung.schrift
   titel={`Vorlage ${vorlagenName(kennung)} — ${MARKE.name}`}
   beschreibung={`Die Vorlage ${vorlagenName(kennung)} an einem vollständigen Profil.`}
   gestaltung={gestaltung}
-  adresse={new URL(`/designs/${kennung}`, Astro.site ?? Astro.url).toString()}
+  adresse={new URL(`/vorlagen/${kennung}`, Astro.site ?? Astro.url).toString()}
   indexierbar={false}
 >
   <Profilansicht profil={profil} gestaltung={gestaltung} lage={lage} adresse={adresse} nachrichtZiel={null} />
 
   <nav class="blaetterleiste" aria-label="Vorlagen durchblättern">
-    <a class="blaetterleiste__pfeil" href={`/designs/${vorige.vorlage}`} aria-label={`Vorige Vorlage: ${vorlagenName(vorige.vorlage)}`}>
+    <a class="blaetterleiste__pfeil" href={`/vorlagen/${vorige.vorlage}`} aria-label={`Vorige Vorlage: ${vorlagenName(vorige.vorlage)}`}>
       <Fragment set:html={zeichen('pfeil')} />
     </a>
-    <a class="blaetterleiste__mitte" href="/designs">
+    <a class="blaetterleiste__mitte" href="/vorlagen">
       <b>{vorlagenName(kennung)}</b>
-      <span>{paar} · {stelle + 1} von {VORLAGEN.length}</span>
+      <span title={paar}>{vorlagenart(kennung).charakter} · {stelle + 1} von {VORLAGEN.length}</span>
     </a>
-    <a class="blaetterleiste__pfeil blaetterleiste__pfeil--vor" href={`/designs/${naechste.vorlage}`} aria-label={`Nächste Vorlage: ${vorlagenName(naechste.vorlage)}`}>
+    <a class="blaetterleiste__pfeil blaetterleiste__pfeil--vor" href={`/vorlagen/${naechste.vorlage}`} aria-label={`Nächste Vorlage: ${vorlagenName(naechste.vorlage)}`}>
       <Fragment set:html={zeichen('pfeil')} />
     </a>
   </nav>

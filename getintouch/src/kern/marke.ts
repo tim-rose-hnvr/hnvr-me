@@ -1,5 +1,5 @@
 /**
- * Die Marke — alles, was Get in Touch zu einem eigenen Produkt macht.
+ * Die Marke — alles, was getintouch zu einem eigenen Produkt macht.
  *
  * Diese Datei gibt es, weil das Werkzeug verkauft werden soll. Vorher trug es
  * die Kleider seines Herstellers: hnvrs Asterisk als Signet, hnvrs Hausorange
@@ -17,9 +17,13 @@
  */
 
 export const MARKE = {
-  name: 'Get in Touch',
+  /**
+   * Die Wortmarke wird klein geschrieben und in einem Wort — so steht es im
+   * Markenbaukasten des Handoffs, und so steht sie in jedem Prototyp.
+   */
+  name: 'getintouch',
   /** Was das Produkt in einem Satz ist. Steht im Titel und in der Vorschaukarte. */
-  anspruch: 'Eine Seite, die Menschen erreichbar macht.',
+  anspruch: 'Die Seite hinter deinem Namen — mit Kontakt, Terminen und Bewertungen eingebaut.',
   /** Wohin Entwürfe und Anfragen gehen. */
   postfach: 'hallo@hnvr.me',
   hersteller: { name: 'hnvr.me', adresse: 'https://hnvr.me' },

@@ -1,0 +1,444 @@
+/* ============================================================
+   Markenbaukasten
+   ============================================================
+   Aus `doku/handoff/design/Website-Marke.dc.html`. Die Muster laufen mit
+   denselben Keyframes wie das Produkt — wer eine Bewegung hier ändert,
+   ändert sie überall.
+   ============================================================ */
+
+@import './vorlagen.css';
+
+.mkopf {
+  padding: 30px 0 44px;
+  max-width: 62ch;
+}
+
+.spec {
+  padding: 24px;
+  border-radius: 26px;
+  background: var(--color-surface);
+}
+
+.spec--grau {
+  background: var(--color-neutral-200);
+}
+
+.spec--ink {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+.spec__name {
+  font: 800 14px var(--font-body);
+}
+
+.spec__text {
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink-65);
+  margin-top: 5px;
+}
+
+.kicker--hell {
+  color: var(--hell-50);
+}
+
+/* --- Zeichen ---------------------------------------------- */
+
+.zeichenblock {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 18px;
+  padding-bottom: 44px;
+}
+
+.zbuehne {
+  padding: 36px;
+  border-radius: 32px;
+  background: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+}
+
+.zform {
+  display: flex;
+  align-items: center;
+}
+
+/* Die Überlappung ist gerechnet: 86 px Kreise, −14 px Versatz, Ring 16 px.
+   Genau so steht es im Handoff. */
+.zscheibe {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  margin-right: -14px;
+}
+
+.zring {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  border: 16px solid var(--color-bg);
+}
+
+.lockups {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 18px;
+}
+
+.lockupkarte {
+  padding: 24px;
+  border-radius: 26px;
+  background: var(--color-bg);
+  box-shadow: 0 5px 0 0 var(--color-neutral-300);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.lockupkarte img {
+  border-radius: 17px;
+  flex: none;
+}
+
+.lockupkarte--ink {
+  background: var(--color-text);
+  color: var(--color-bg);
+  box-shadow: none;
+}
+
+.lockupkarte__wort {
+  font: 800 26px var(--font-body);
+  letter-spacing: -0.03em;
+}
+
+.lockupkarte__unter {
+  font-size: 11px;
+  color: var(--ink-55);
+  margin-top: 2px;
+}
+
+.lockupkarte--ink .lockupkarte__unter {
+  color: var(--hell-60);
+}
+
+/* --- Bewegungsmuster -------------------------------------- */
+
+.muster {
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: var(--color-bg);
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.muster--signal {
+  background: var(--color-accent);
+}
+
+.tscheibe {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  margin-right: -6px;
+  animation: gtTouchL 2.6s ease-in-out infinite;
+}
+
+.tring {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 7px solid var(--color-bg);
+  animation: gtTouchR 2.6s ease-in-out infinite;
+}
+
+.pulswelle {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation: gtRipple 1.9s ease-out infinite;
+}
+
+.pulspunkt {
+  position: relative;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.lader {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 6px solid var(--color-neutral-300);
+  border-top-color: var(--color-accent);
+  animation: gtSpinSlow 1s linear infinite;
+}
+
+.fussknopf {
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: 800 13px var(--font-body);
+  box-shadow: 0 5px 0 0 var(--color-accent-700);
+  cursor: pointer;
+  transition: transform 0.13s, box-shadow 0.13s;
+}
+
+.fussknopf:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 0 var(--color-accent-700);
+  animation: none;
+}
+
+/* --- Favicons --------------------------------------------- */
+
+.faviconblock {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 18px;
+}
+
+.groessen {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.groesse {
+  text-align: center;
+}
+
+.groesse__text {
+  font: 600 10px var(--font-body);
+  color: var(--ink-55);
+  margin-top: 8px;
+}
+
+.attrappen {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 18px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 14px 14px 0 0;
+  background: var(--color-bg);
+  max-width: 280px;
+  box-shadow: 0 -2px 0 0 var(--color-neutral-300) inset;
+}
+
+.tab img {
+  border-radius: 4px;
+  flex: none;
+}
+
+.tab__titel {
+  font-size: 11.5px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab svg {
+  color: var(--ink-45);
+}
+
+.tab__leiste {
+  height: 10px;
+  background: var(--color-bg);
+  max-width: 280px;
+}
+
+.homescreen {
+  display: flex;
+  gap: 18px;
+}
+
+.app {
+  text-align: center;
+}
+
+.app img,
+.app__leer {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 15px;
+}
+
+.app__leer {
+  background: var(--color-neutral-800);
+}
+
+.app__name {
+  font: 600 10.5px var(--font-body);
+  color: var(--color-bg);
+  margin-top: 7px;
+}
+
+.app__name--leise {
+  color: var(--hell-50);
+}
+
+/* --- Icon-Set --------------------------------------------- */
+
+.iconset {
+  padding: 22px;
+  border-radius: 28px;
+  background: var(--color-surface);
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 12px;
+}
+
+.ico {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 6px;
+  border-radius: 18px;
+  background: var(--color-bg);
+  font: 600 10px var(--font-body);
+  color: var(--ink-60);
+  text-align: center;
+}
+
+.ico--rot svg {
+  color: var(--color-accent);
+}
+
+/* --- Farben und Schrift ----------------------------------- */
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 11px;
+}
+
+.swatch {
+  display: block;
+  height: 64px;
+  border-radius: 16px;
+}
+
+.swatch__name {
+  font: 800 11px var(--font-body);
+  margin-top: 7px;
+}
+
+.swatch__wert {
+  font-size: 10px;
+  color: var(--ink-55);
+}
+
+.probe__gross {
+  font: 800 40px var(--font-body);
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.probe__unter {
+  font-size: 12px;
+  color: var(--ink-55);
+  margin: 5px 0 14px;
+}
+
+.probe__klein {
+  font: 400 15px/1.6 var(--font-body);
+  max-width: 40ch;
+}
+
+.probe__chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.probe__chip {
+  padding: 6px 11px;
+  border-radius: 14px;
+  background: var(--color-bg);
+  font: 800 11px var(--font-body);
+}
+
+.probe__chip--leicht {
+  font-weight: 600;
+}
+
+/* --- Dateien ---------------------------------------------- */
+
+.dateiblock {
+  padding: 36px 34px;
+  border-radius: 32px;
+  background: var(--color-accent-100);
+  margin-bottom: 44px;
+}
+
+.dateien {
+  display: flex;
+  gap: 11px;
+  flex-wrap: wrap;
+}
+
+.datei {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 15px;
+  border-radius: 20px;
+  background: var(--color-bg);
+  font: 800 12px var(--font-body);
+  box-shadow: 0 3px 0 0 var(--color-neutral-300);
+}
+
+.datei svg {
+  color: var(--color-accent);
+}
+
+.datei:hover {
+  color: var(--color-text);
+}
+
+@media (max-width: 980px) {
+  .zeichenblock,
+  .faviconblock {
+    grid-template-columns: 1fr;
+  }
+
+  .iconset {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .iconset {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .swatches {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

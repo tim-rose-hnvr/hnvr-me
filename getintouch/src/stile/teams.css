@@ -172,3 +172,30 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* An der Stelle des Teamfotos stehen jetzt drei Zahlen. Ein Platzhalter, der
+   nur „hier fehlt ein Foto" sagt, hilft niemandem. */
+.zitatblock__zahlen {
+  display: grid;
+  gap: 11px;
+}
+
+.tzahl {
+  padding: 20px 22px;
+  border-radius: 22px;
+  background: var(--color-bg);
+  box-shadow: 0 4px 0 0 var(--color-neutral-300);
+}
+
+.tzahl b {
+  display: block;
+  font: 800 34px var(--font-body);
+  letter-spacing: -0.03em;
+}
+
+.tzahl span {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-65);
+  margin-top: 3px;
+}

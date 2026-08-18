@@ -36,7 +36,6 @@ export const GET: APIRoute = async ({ site, url }) => {
     eintrag(new URL('/', basis).toString(), '1.0'),
     eintrag(new URL('/vorlagen', basis).toString(), '0.6'),
     eintrag(new URL('/preise', basis).toString(), '0.7'),
-    eintrag(new URL('/marke', basis).toString(), '0.4'),
     eintrag(new URL('/karte', basis).toString(), '0.6'),
     eintrag(new URL('/teams', basis).toString(), '0.5'),
     ...slugs.map((slug) => eintrag(new URL(`/t/${slug}`, basis).toString(), '0.9')),

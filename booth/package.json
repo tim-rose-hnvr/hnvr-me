@@ -55,7 +55,8 @@
       {
         "provider": "github",
         "owner": "tim-rose-hnvr",
-        "repo": "hnvr-me"
+        "repo": "hnvr-me",
+        "releaseType": "release"
       }
     ],
     "win": {

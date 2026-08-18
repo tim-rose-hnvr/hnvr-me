@@ -12,8 +12,17 @@ name: Booth · Installationspaket
 # und die Box lädt dann die falsche Fassung.
 
 on:
+  # Der Tag ist der saubere Auslöser. Daneben der Zweig, auf dem gearbeitet
+  # wird: Ein Tag lässt sich nicht aus jeder Umgebung heraus setzen, und ein
+  # Installer, der nur bei perfekten Bedingungen entsteht, entsteht nie.
+  # `electron-builder` legt die Release zur Fassung aus `booth/package.json`
+  # selbst an — der Tag entsteht dabei, statt vorher gesetzt werden zu müssen.
   push:
     tags: ['v*']
+    branches: ['claude/**']
+    paths:
+      - 'booth/**'
+      - '.github/workflows/paket.yml'
   workflow_dispatch:
     inputs:
       fassung:

@@ -708,6 +708,247 @@ const titel = `Oberflächen — ${MARKE.name}`;
           </div>
         </div>
       </section>
+
+      <!-- 6h Landingpage -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">6h</span>
+          <span class="screen__stand screen__stand--steht">gebaut</span>
+          <span class="screen__satz">
+            Landingpage im runden Stil: eine Behauptung, drei Belege, warmer Abschluss. — Dieselbe Seite steht
+            in voller Größe unter <a href="/">Start</a>; sie hier als 1000-Pixel-Karte zu wiederholen wäre
+            dieselbe Seite zweimal.
+          </span>
+        </div>
+      </section>
+
+      <!-- 5b Aussehen-Panel -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">5b</span>
+          <span class="screen__stand screen__stand--steht">teils gebaut</span>
+          <span class="screen__satz">
+            Das Aussehen-Panel: Bilder, Hintergrund, Knopfform, Schrift, Bewegung — alles live rechts sichtbar. —
+            Hintergrund, Knopfform und Schrift stellt die <a href="/werkstatt">Werkstatt</a> heute schon; die
+            Muster und die Bewegungsschalter noch nicht.
+          </span>
+        </div>
+        <div class="screen__bahn">
+          <div class="karteikarte" style="width:760px;max-width:100%">
+            <div class="au__kopf">
+              <Fragment set:html={lucide('image', 18)} />
+              <div class="an__text">
+                <b style="font-size:15px">Aussehen</b>
+                <span style="font-size:11px">Vorlage „Kirsche" · angepasst</span>
+              </div>
+              <button class="au__zurueck" type="button">Zurücksetzen</button>
+              <button class="au__speichern" type="button">Speichern</button>
+            </div>
+
+            <div class="au__zwei">
+              <div class="au__panel">
+                <p class="sk__rubrik">Bilder</p>
+                <div class="au__bilder">
+                  <div>
+                    <span class="au__profilbild">FOTO</span>
+                    <span class="au__label">Profilbild</span>
+                  </div>
+                  <div style="flex:1">
+                    <span class="au__titelbild">Titelbild ziehen · 1200×420</span>
+                    <span class="au__label">Titelbild</span>
+                  </div>
+                </div>
+
+                <p class="sk__rubrik">Hintergrund</p>
+                <div class="au__arten">
+                  <button class="au__art au__art--hier" type="button">Bild</button>
+                  <button class="au__art" type="button">Farbe</button>
+                  <button class="au__art" type="button">Verlauf</button>
+                  <button class="au__art" type="button">Muster</button>
+                </div>
+                <div class="au__proben">
+                  <button class="au__probe au__probe--hier" type="button"><span class="au__bildmarke">BILD</span></button>
+                  <button class="au__probe au__probe--rose" type="button" aria-label="Rosé"></button>
+                  <button class="au__probe au__probe--ink" type="button" aria-label="Ink"></button>
+                  <button class="au__probe au__probe--verlauf" type="button" aria-label="Verlauf"></button>
+                  <button class="au__probe au__probe--streifen" type="button" aria-label="Streifen"></button>
+                  <button class="au__probe au__probe--punkte" type="button" aria-label="Punkte"></button>
+                </div>
+                <div class="au__schieber">
+                  <span class="au__schiebername">Abdunkeln</span>
+                  <span class="au__spur">
+                    <span class="au__gefuellt" style="width:62%"></span>
+                    <span class="au__griff" style="left:62%"></span>
+                  </span>
+                  <span class="au__wert">62 %</span>
+                </div>
+
+                <p class="sk__rubrik">Knopfform</p>
+                <div class="au__formen">
+                  <button class="au__form au__form--pille" type="button">Pille</button>
+                  <button class="au__form au__form--rund" type="button">Rund</button>
+                  <button class="au__form au__form--kante" type="button">Kante</button>
+                  <button class="au__form au__form--skizze" type="button">Skizze</button>
+                  <button class="au__form au__form--weich" type="button">Weich</button>
+                </div>
+
+                <div class="au__unten">
+                  <div>
+                    <p class="sk__rubrik">Schrift</p>
+                    <div class="au__stapel">
+                      <button class="au__schrift au__schrift--hier" type="button">Archivo · kräftig</button>
+                      <button class="au__schrift au__schrift--leicht" type="button">Archivo · leicht</button>
+                      <button class="au__schrift au__schrift--versal" type="button">Versal · gesperrt</button>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="sk__rubrik">Bewegung</p>
+                    <div class="au__stapel">
+                      {
+                        [
+                          { name: 'Karten federn', an: true },
+                          { name: 'Status pulsiert', an: true },
+                          { name: 'Ticker läuft', an: false },
+                        ].map((s) => (
+                          <button class="au__schalterzeile" type="button" aria-pressed={s.an}>
+                            <span>{s.name}</span>
+                            <span class:list={['schalter', !s.an && 'schalter--aus']}>
+                              <span class="schalter__knopf" />
+                            </span>
+                          </button>
+                        ))
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="au__vorschau">
+                <div class="au__vorschaukopf">
+                  <span class="sk__rubrik" style="margin:0">Vorschau</span>
+                  <span class="au__geraete">
+                    <Fragment set:html={lucide('smartphone', 14)} />
+                    <Fragment set:html={lucide('monitor', 14)} />
+                  </span>
+                </div>
+                <div class="au__blatt">
+                  <span class="au__avatar"></span>
+                  <span class="au__name">Lina Moser</span>
+                  <span class="au__rolle">Fotografin · Zürich</span>
+                  <span class="au__haupt">Schreib mir</span>
+                  <span class="au__neben">Portfolio 2026</span>
+                  <span class="au__neben">Prints kaufen</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4a Vorlagen-Bibliothek -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">4a</span>
+          <span class="screen__stand screen__stand--steht">gebaut</span>
+          <span class="screen__satz">
+            Die Galerie: filtern, hovern, „Übernehmen". Jede Karte zeigt die Vorlage als echte Miniatur, nicht als
+            Farbfleck. — Läuft als <a href="/vorlagen">Vorlagen-Seite</a>, mit denselben neun Miniaturen und
+            derselben Filterleiste. Statt „Übernehmen" führt sie auf die Vorlage am vollen Profil, weil es noch
+            kein Konto gibt, in das sich etwas übernehmen ließe.
+          </span>
+        </div>
+      </section>
+
+      <!-- 4b Look wechseln -->
+      <section class="screen">
+        <div class="screen__marke">
+          <span class="screen__id">4b</span>
+          <span class="screen__stand screen__stand--entwurf">entworfen</span>
+          <span class="screen__satz">
+            Vorlage anwenden: links die Bibliothek, rechts die eigene Seite live. Inhalte bleiben, nur der Look
+            springt um — mit „Zurück zum alten Look".
+          </span>
+        </div>
+        <div class="screen__bahn">
+          <div class="karteikarte" style="width:700px;max-width:100%">
+            <div class="au__kopf">
+              <Fragment set:html={lucide('palette', 18)} />
+              <div class="an__text">
+                <b style="font-size:15px">Look wechseln</b>
+                <span style="font-size:11px">Deine Bausteine und Texte bleiben unverändert.</span>
+              </div>
+              <button class="au__zurueck" type="button">Zurück zum alten Look</button>
+            </div>
+
+            <div class="lw__zwei">
+              <div class="lw__panel">
+                <div class="lw__filter">
+                  <button class="bw__pille bw__pille--hier" type="button">Empfohlen</button>
+                  <button class="bw__pille" type="button">Neu</button>
+                  <button class="bw__pille" type="button">Dunkel</button>
+                  <button class="bw__pille" type="button">Verspielt</button>
+                </div>
+
+                <div class="lw__gitter">
+                  <button class="lw__karte lw__karte--hier" type="button">
+                    <span class="lw__haken"><Fragment set:html={lucide('check', 12)} /></span>
+                    <span class="lw__probe lw__probe--kirsche"></span>
+                    <span class="lw__name">Kirsche</span>
+                    <span class="lw__art">warm, rund</span>
+                  </button>
+                  <button class="lw__karte" type="button">
+                    <span class="lw__probe lw__probe--sticker"></span>
+                    <span class="lw__name">Sticker</span>
+                    <span class="lw__art">verspielt, schief</span>
+                  </button>
+                  <button class="lw__karte" type="button">
+                    <span class="lw__probe lw__probe--beton"></span>
+                    <span class="lw__name">Beton</span>
+                    <span class="lw__art">kantig, sachlich</span>
+                  </button>
+                  <button class="lw__karte" type="button">
+                    <span class="lw__probe lw__probe--nacht"></span>
+                    <span class="lw__name">Nachtschicht</span>
+                    <span class="lw__art">dunkel, laut</span>
+                  </button>
+                </div>
+
+                <div class="lw__vorschlag">
+                  <Fragment set:html={lucide('wand-sparkles', 17)} />
+                  <span>
+                    <b>Vorschlag:</b> Deine meisten Besucher kommen abends vom Handy. „Nachtschicht" mit großem
+                    Kontaktknopf passt dazu — probier's, es ist jederzeit rückgängig.
+                  </span>
+                </div>
+              </div>
+
+              <div class="au__vorschau">
+                <p class="sk__rubrik">Live-Vorschau</p>
+                <div class="lw__blatt">
+                  <span class="lw__avatar"></span>
+                  <span class="lw__profilname">Lina Moser</span>
+                  <span class="lw__profilrolle">Fotografin · antwortet ~2 Std.</span>
+                  <span class="lw__haupt">Schreib mir</span>
+                  <span class="lw__neben">Termin buchen</span>
+                  <span class="lw__neben">Portfolio 2026</span>
+                  <span class="lw__neben">Prints kaufen</span>
+                  <span class="lw__note">
+                    <b>4,9</b>
+                    <span>128 Bewertungen</span>
+                  </span>
+                </div>
+                <button class="sk__knopf" style="margin-top:14px;padding:13px 15px;font-size:12.5px" type="button">
+                  <Fragment set:html={lucide('check', 15)} />
+                  „Kirsche" übernehmen
+                </button>
+                <p class="wl__unter" style="margin-top:9px;line-height:1.5">
+                  Wirkt sofort für alle Besucher. Rückgängig bis 24 Std.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </body>
 </html>

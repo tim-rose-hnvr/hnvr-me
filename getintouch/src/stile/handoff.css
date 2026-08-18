@@ -1675,3 +1675,42 @@ img.zitat__bild {
     transition: none;
   }
 }
+
+/* --- Kippschalter -----------------------------------------
+   Steht im vCard-Abschnitt und im Aussehen-Panel, deshalb hier und nicht in
+   einer der beiden Seitendateien. */
+
+.schalter {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 10px;
+  background: var(--color-accent);
+  flex: none;
+}
+
+.schalter__knopf {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-bg);
+}
+
+.schalter--aus {
+  background: var(--color-neutral-300);
+}
+
+.schalter--aus .schalter__knopf {
+  right: auto;
+  left: 2px;
+  background: var(--color-neutral-600);
+}
+
+/* Das Umlegen ist sichtbar, nicht abrupt. */
+.schalter,
+.schalter__knopf {
+  transition: background 0.16s ease, left 0.16s ease, right 0.16s ease;
+}

@@ -447,7 +447,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 128 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 102 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 107 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/live-pruefen.mjs   #  31 Prüfungen — was der Hoster ausliefert
 ```
 
@@ -488,6 +488,16 @@ Menüleiste jeden Befehl trägt, dass ein Menü sichtbar aufklappt und nicht von
 der Leiste beschnitten wird, dass die Ordnen-Ansicht per Ziehen sortiert und
 Löschen zurücknehmbar bleibt, und dass der Fokus die richtigen Seiten mit den
 richtigen Nummern zeigt.
+
+**Jeder Befehl wird einmal ausgelöst** — alle 83 —, und keiner darf werfen
+oder einen Konsolenfehler hinterlassen. Das prüft nicht, *was* ein Befehl tut
+(das steht in den Abschnitten daneben), sondern dass keiner ins Leere greift,
+wenn sich an einem anderen Modul etwas ändert. Dazu gehen vier Fälle die neuen
+Dialoge bis zum Ergebnis durch: der Stapel läuft über zwei Dateien und gibt
+ein Archiv mit stimmendem Bericht heraus, „Maßstab setzen" rechnet 200 Punkte
+auf 8 m und „zurücksetzen" wieder auf 70,6 mm, eine Zeile in der Messungsliste
+springt zur Messung, und „Datei wählen" im Einlesen-Dialog macht aus einer
+.docx ein geöffnetes Dokument im eigenen Reiter.
 
 Ein eigener Abschnitt misst die **Gestaltung gegen das Handoff**: Höhen und
 Breiten der Chrome auf den Pixel (38/27/46/30, 196/296), die Farben auf den

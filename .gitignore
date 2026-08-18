@@ -21,3 +21,6 @@ website/pnkt-me.html
 
 .DS_Store
 *.log
+
+# Der Wix-Bau legt seinen Zwischenstand hier ab.
+punkt/.wix/

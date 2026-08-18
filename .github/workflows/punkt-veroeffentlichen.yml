@@ -1,0 +1,121 @@
+# PUNKT veröffentlichen
+#
+# Liefert die Marketingseite auf die bestehende Wix-Site „QR Code"
+# (710946fa-e37e-43d7-9f1e-0db6bec22300, punkt-954d3e9b-hnvrme.wix-site-host.com).
+#
+# Läuft nur auf Knopfdruck, nie von allein — ein Deploy ersetzt hier eine
+# veröffentlichte Seite und soll eine Entscheidung sein.
+#
+# Voraussetzungen:
+#   1. Das Geheimnis WIX_API_KEY (steht bereits, wird von Get in Touch benutzt).
+#   2. Die appId in punkt/wix.config.json. Sie fehlt noch — siehe
+#      punkt/skripte/kennung-pruefen.mjs, das bricht sonst gleich zu Beginn ab.
+#
+# Was ausgeliefert wird, liegt NICHT in punkt/, sondern in website/src.
+# punkt/ ist nur die Hülle: astro.config.mjs zeigt mit srcDir dorthin.
+# Zwei Kopien derselben Seite laufen auseinander.
+#
+# Was dabei verschwindet: /studio, /zentrale, /lesbarkeit, /massenanlage
+# und /schnittstelle des alten Standes werden ersetzt. Die letzten drei
+# sind im neuen Entwurf nachgebaut, die ersten beiden nicht — sie sind
+# die Anwendung, und die läuft inzwischen im Go-Programm unter pnkt/.
+
+name: PUNKT veröffentlichen
+
+on:
+  workflow_dispatch:
+    inputs:
+      grund:
+        description: Warum wird veröffentlicht?
+        required: false
+        default: Neuer Stand
+
+permissions:
+  contents: read
+
+jobs:
+  veroeffentlichen:
+    name: Bauen und ausliefern
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: punkt
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Zuerst, vor allem anderen: ohne appId endet der Lauf hier — nach
+      # zehn Sekunden und mit einem Satz, der sagt, was zu tun ist.
+      - name: Kennungen prüfen
+        run: node skripte/kennung-pruefen.mjs
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: punkt/package-lock.json
+
+      - name: Abhängigkeiten
+        run: npm ci
+
+      # `wix login --api-key` nimmt den Schlüssel entgegen, fällt in einer
+      # Umgebung ohne Terminal aber trotzdem auf die Anmeldung per Gerätecode
+      # zurück und wartet dort bis zum Zeitablauf (CLI 1.1.237). Deshalb wird
+      # die Datei geschrieben, die das CLI nach erfolgreicher Anmeldung selbst
+      # anlegt — gleiche Felder, gleiche Stelle. Gleicher Kniff wie bei
+      # Get in Touch; fällt weg, sobald --api-key ohne Terminal durchläuft.
+      - name: Anmelden
+        env:
+          WIX_API_KEY: ${{ secrets.WIX_API_KEY }}
+        run: |
+          if [ -z "$WIX_API_KEY" ]; then
+            echo "::error::Das Geheimnis WIX_API_KEY fehlt."
+            exit 1
+          fi
+          konto=$(curl -sS --fail "https://www.wixapis.com/accounts/v1/accounts/my_account" \
+                    -H "Authorization: $WIX_API_KEY")
+          mkdir -p ~/.wix/auth
+          WIX_API_KEY="$WIX_API_KEY" KONTO="$konto" node --input-type=module -e '
+            import { writeFileSync } from "node:fs";
+            import { homedir } from "node:os";
+            import { resolve } from "node:path";
+            const { account } = JSON.parse(process.env.KONTO);
+            writeFileSync(
+              resolve(homedir(), ".wix/auth/api-key.json"),
+              JSON.stringify({
+                token: process.env.WIX_API_KEY,
+                accountId: account.accountId,
+                userInfo: { userId: account.accountOwner, email: account.slug },
+              }),
+              { mode: 0o600 },
+            );
+          '
+          npx wix whoami
+
+      # Kein `wix env pull`: die Seite bindet die Wix-Anbindung nicht ein
+      # und braucht deshalb weder WIX_CLIENT_ID noch ein Client-Geheimnis.
+      # Was nicht eingebunden ist, kann auch nichts nachladen.
+
+      - name: Bauen
+        run: npm run build
+
+      - name: Ausliefern
+        run: npm run release
+
+      - name: Erreichbarkeit nachsehen
+        run: |
+          basis="${{ vars.PUNKT_URL || 'https://punkt-954d3e9b-hnvrme.wix-site-host.com' }}"
+          fehler=0
+          for pfad in "" "/werkstatt" "/strecken" "/vorlagen" "/preise" \
+                      "/lesbarkeit" "/massenanlage" "/schnittstelle" \
+                      "/datenschutz" "/impressum"; do
+            code=$(curl -sSL -o /dev/null -w '%{http_code}' "$basis$pfad" || echo 000)
+            echo "$code  $pfad"
+            [ "$code" = "200" ] || fehler=1
+          done
+          # Die Schrift muss mitkommen. Fehlt sie, sieht die Seite auf den
+          # ersten Blick richtig aus und setzt in Wahrheit die Systemschrift.
+          code=$(curl -sSL -o /dev/null -w '%{http_code}' "$basis/schrift/caprasimo-400-latin.woff2" || echo 000)
+          echo "$code  /schrift/caprasimo-400-latin.woff2"
+          [ "$code" = "200" ] || fehler=1
+          exit $fehler

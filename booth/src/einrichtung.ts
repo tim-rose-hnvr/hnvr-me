@@ -14,6 +14,7 @@ import { ARTEN } from './arten';
 import { anzahl, loesche, sichere } from './speicher';
 import { ausgabeAdresse, druckerListe, huellenauskunft } from './huelle';
 import { drucke, qrFuer } from './ausgabe';
+import { verlangeAnmeldung } from './anmeldung';
 
 type Zustand = 'offen' | 'laeuft' | 'gut' | 'schlecht';
 
@@ -28,6 +29,8 @@ const wurzel = document.getElementById('einrichtung');
 if (wurzel) void starte(wurzel);
 
 async function starte(ziel: HTMLElement): Promise<void> {
+  if (!(await verlangeAnmeldung())) return;
+
   // Die Einrichtung stellt das Gerät ein, nicht das laufende Event.
   await holeEinstellungen(true);
   const einstellungen = ladeEinstellungen();

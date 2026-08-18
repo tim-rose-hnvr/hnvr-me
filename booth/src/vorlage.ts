@@ -181,7 +181,12 @@ function ladeBild(quelle: string): Promise<HTMLImageElement | null> {
 export async function ladeZubehoer(
   v: Vorlage,
   werte: Werte,
-  qrBild?: (inhalt: string) => Promise<string>
+  qrBild?: (inhalt: string) => Promise<string>,
+  /* Das Logo des Betreibers. Es springt ein, wenn die Vorlage ein Logofeld
+     hat, aber keins hinterlegt — der übliche Fall bei den mitgelieferten
+     Blättern. Sonst müsste der Betreiber sein Zeichen in 55 Vorlagen einzeln
+     eintragen, und beim Markenwechsel 55-mal wieder heraus. */
+  ersatzLogo?: string | null
 ): Promise<Zubehoer> {
   const zubehoer: Zubehoer = { hintergrund: null, zuFeld: new Map() };
 
@@ -197,7 +202,7 @@ export async function ladeZubehoer(
 
   for (const feld of v.felder) {
     if (feld.art === 'logo') {
-      const quelle = feld.quelle || v.logo;
+      const quelle = feld.quelle || v.logo || ersatzLogo || '';
       if (quelle) {
         arbeiten.push(
           ladeBild(quelle).then((b) => {

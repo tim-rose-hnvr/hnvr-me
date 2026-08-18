@@ -13,6 +13,7 @@ import { holeEinstellungen, ladeEinstellungen, sichereEinstellungen } from './ei
 import { alle, raeumeAuf, type Aufnahme } from './speicher';
 import { druckeInLetzterStunde } from './ausgabe';
 import { amDraht } from './draht';
+import { abmelden, verlangeAnmeldung } from './anmeldung';
 
 const wurzel = document.getElementById('cockpit');
 
@@ -31,7 +32,10 @@ if (wurzel) {
 }
 
 async function zeichne(ziel: HTMLElement): Promise<void> {
-  /* Erst den Stand der Box holen: Was das Cockpit hier bearbeitet, gehört dem
+  /* Die Tür zuerst: Das Cockpit zeigt Kundennamen und Zähler des Betreibers. */
+  if (!(await verlangeAnmeldung())) return;
+
+  /* Dann den Stand der Box: Was das Cockpit hier bearbeitet, gehört dem
      Gerät — es muss die unvermischten Werte sehen, sonst schriebe ein Sichern
      die Eventwerte dauerhaft in die Box. */
   await holeEinstellungen(true);
@@ -87,6 +91,11 @@ function kopf(box: string, event: string): HTMLElement {
     glied.textContent = w.text;
     rechts.append(glied);
   });
+
+  const raus = tag('button', 'cknopf');
+  raus.textContent = 'Abmelden';
+  raus.addEventListener('click', () => void abmelden());
+  rechts.append(raus);
 
   leiste.append(links, rechts);
   return leiste;

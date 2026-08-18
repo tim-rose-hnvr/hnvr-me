@@ -16,17 +16,20 @@
  */
 
 import { chromium } from 'playwright-core';
+import { BASIS, alsBetreiber, angemeldeterKontext } from './betreiber.mjs';
 
-const BASIS = process.env.YOUBOOTH_BASIS || 'http://localhost:3377';
 const meldungen = [];
 const sage = (gut, text) => { meldungen.push((gut ? 'OK   ' : 'FEHL ') + text); if (!gut) process.exitCode = 1; };
 
 // --- 1. PIN setzen und prüfen ------------------------------------------
-await fetch(BASIS + '/api/settings', {
-  method: 'PUT', headers: { 'Content-Type': 'application/json' },
+/* Einstellungen ändern darf nur der Betreiber — das prüft die Anmelde-Probe;
+   hier geht es um den Draht. */
+const sitzung = await alsBetreiber();
+await sitzung.anDieBox('/api/settings', {
+  method: 'PUT',
   body: JSON.stringify({ kiosk: { pin: '4711', enabled: true } }),
 });
-const stand = await (await fetch(BASIS + '/api/settings')).json();
+const stand = (await sitzung.anDieBox('/api/settings')).daten;
 sage(stand.kiosk.gesetzt === true && stand.kiosk.pin === undefined && stand.kiosk.salz === undefined,
   'PIN gesetzt, Prüfsumme kommt nicht über /api/settings heraus');
 
@@ -39,7 +42,7 @@ sage(richtig.status === 200, 'Richtige PIN wird angenommen (' + richtig.status +
 const browser = await chromium.launch({ ...(process.env.YOUBOOTH_CHROMIUM ? { executablePath: process.env.YOUBOOTH_CHROMIUM } : {}), args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] });
 
 // --- 2. Draht: kommt die Prüfsumme über den WebSocket heraus? ----------
-const horcher = await browser.newContext();
+const horcher = await angemeldeterKontext(browser, sitzung);
 const lauscher = await horcher.newPage();
 await lauscher.goto(BASIS + '/cockpit.html');
 const hallo = await lauscher.evaluate(() => new Promise((fertig) => {
@@ -51,12 +54,12 @@ sage(!/"salz"|"pin":"[0-9a-f]{16,}/.test(hallo), 'Der WebSocket gibt weder Salz 
 sage(/"gesetzt":true/.test(hallo), 'Der WebSocket sagt nur, DASS eine PIN gilt');
 
 // --- 3. Zwei Geräte: Cockpit ändert, Wand zieht nach -------------------
-const beamer = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+const beamer = await browser.newContext({ viewport: { width: 1920, height: 1080 } });   // Beamer: ohne Anmeldung, wie im Saal
 const wand = await beamer.newPage();
 await wand.goto(BASIS + '/wand.html');
 await wand.waitForSelector('.wkopf h1');
 
-const laptop = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const laptop = await angemeldeterKontext(browser, sitzung, { viewport: { width: 1440, height: 900 } });
 const cockpit = await laptop.newPage();
 await cockpit.goto(BASIS + '/cockpit.html');
 await cockpit.waitForSelector('.ceingabe');
@@ -88,7 +91,10 @@ for (let i = 0; i < 25; i++) {
 sage(sichtbar, 'Neue Aufnahme erscheint auf der Wand, ohne dass jemand neu lädt');
 
 // --- 5. PIN wieder entfernen, damit die Box offen bleibt ---------------
-await fetch(BASIS + '/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kiosk: { pin: '', enabled: false } }) });
+await sitzung.anDieBox('/api/settings', {
+  method: 'PUT',
+  body: JSON.stringify({ kiosk: { pin: '', enabled: false } }),
+});
 
 await browser.close();
 console.log(meldungen.join('\n'));

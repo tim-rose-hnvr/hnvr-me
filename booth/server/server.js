@@ -293,6 +293,16 @@ const DEFAULT_SETTINGS = {
   /* Kiosk: die App startet im Vollbild direkt im Booth, und das Cockpit ist
      hinter einer PIN. Die PIN wird NICHT im Klartext gespeichert. */
   kiosk: { enabled: false, salz: '', pin: '' },   // pin = Prüfsumme, nie das Kennwort
+  /* Der Betreiber. Solange hier kein Kennwort steht, ist die Box frisch und
+     jeder im Netz darf sie einrichten — danach nie wieder ohne Anmeldung.
+     Cockpit und Portal zeigen Kundennamen, Adressen und Telefonnummern; im
+     Gäste-WLAN einer Feier ist das sonst offen wie ein Aushang. */
+  betreiber: {
+    name: '', email: '', salz: '', kennwort: '',   // kennwort = Prüfsumme, nie das Kennwort
+    firma: '', strasse: '', plz: '', ort: '', land: 'Deutschland',
+    telefon: '', web: '', steuernummer: '',
+    logo: null,                                    // dataURL, für White-Label
+  },
   /* Bildquelle: eingebaute Webcam im Browser oder Spiegelreflex über
      digiCamControl (eigenes Windows-Programm, HTTP auf Port 5513). */
   kamera: { quelle: 'webcam', url: 'http://localhost:5513' },
@@ -521,12 +531,61 @@ function isLocal(req) {
   return true;
 }
 
-/* Schreibzugriffe: am Gerät selbst frei, von extern nur mit Lizenz-Schlüssel */
+/* ---------- Anmeldung des Betreibers ----------
+   Die Sitzungen liegen im Arbeitsspeicher: Ein Neustart der Box meldet alle
+   ab. Das ist gewollt — nach einem Neustart steht meist jemand anderes davor,
+   und eine Anmeldung, die einen Stromausfall überlebt, ist keine.
+
+   Das Kennwort wird nie gespeichert, nur eine gesalzene Prüfsumme über
+   100 000 Runden PBKDF2. Reines SHA-256 wie bei der Kiosk-PIN reicht hier
+   nicht: Eine PIN ist vierstellig und ohnehin nur gegen Neugier; ein Kennwort
+   schützt Kundendaten und muss ein gestohlenes settings.json überstehen. */
+const SITZUNGEN = new Map();                // marke -> { seit, bis }
+const SITZUNGSDAUER = 12 * 60 * 60 * 1000;  // ein langer Veranstaltungstag
+
+function kennwortPruefsumme(kennwort, salz) {
+  return crypto.pbkdf2Sync(String(kennwort), String(salz), 100000, 32, 'sha256').toString('hex');
+}
+
+function sitzungAnlegen() {
+  const marke = crypto.randomBytes(24).toString('hex');
+  SITZUNGEN.set(marke, { seit: Date.now(), bis: Date.now() + SITZUNGSDAUER });
+  return marke;
+}
+
+function sitzungGueltig(marke) {
+  const s = marke && SITZUNGEN.get(marke);
+  if (!s) return false;
+  if (Date.now() > s.bis) { SITZUNGEN.delete(marke); return false; }
+  return true;
+}
+
+function markeAusAnfrage(req) {
+  const roh = req.headers.cookie || '';
+  const treffer = roh.match(/(?:^|;\s*)youbooth_sitzung=([a-f0-9]{48})/);
+  return treffer ? treffer[1] : '';
+}
+
+/** Ist überhaupt schon ein Betreiber angelegt? Vorher ist die Box offen. */
+const betreiberAngelegt = () => !!(settings.betreiber && settings.betreiber.kennwort);
+
+/** Angemeldet — oder die Box ist noch frisch und wartet auf ihre Einrichtung. */
+function istBetreiber(req) {
+  if (!betreiberAngelegt()) return true;
+  return sitzungGueltig(markeAusAnfrage(req));
+}
+
+/* Schreibzugriffe: mit Anmeldung, mit Lizenz-Schlüssel — oder am Gerät selbst,
+   solange die Box noch niemandem gehört */
 function requireKey(req, res, next) {
-  if (isLocal(req)) return next();
+  /* Reihenfolge mit Absicht: Die Anmeldung zuerst, danach der Schlüssel für
+     Maschinen, und erst zuletzt „steht am Gerät" — und das nur, solange die
+     Box noch niemandem gehört. Vorher genügte es, im selben WLAN zu sein. */
+  if (sitzungGueltig(markeAusAnfrage(req))) return next();
   const k = req.get('x-youbooth-key') || req.query.key;
   if (k === license.key) return next();
-  res.status(401).json({ error: 'Ungültiger oder fehlender Lizenz-Schlüssel' });
+  if (!betreiberAngelegt() && isLocal(req)) return next();
+  res.status(401).json({ error: 'Nicht angemeldet' });
 }
 
 /* ---------- Statistiken (pro Tag, persistiert) ---------- */
@@ -1544,10 +1603,17 @@ async function fotoInDieWolke(dateiName, mime, puffer, gesichter) {
 
 /* Die PIN-Prüfsumme geht NIE hinaus – auch nicht an den eigenen Rechner.
    Sonst könnte man sie am Cockpit vorbei offline durchprobieren. */
-const ohnePin = (s) => ({
-  ...s,
-  kiosk: { enabled: !!(s.kiosk && s.kiosk.enabled), gesetzt: !!(s.kiosk && s.kiosk.pin) },
-});
+const ohnePin = (s) => {
+  const b = s.betreiber || {};
+  const { salz, kennwort, ...betreiberOffen } = b;
+  return {
+    ...s,
+    kiosk: { enabled: !!(s.kiosk && s.kiosk.enabled), gesetzt: !!(s.kiosk && s.kiosk.pin) },
+    /* Firmendaten und Logo dürfen hinaus — sie stehen ohnehin auf jedem Abzug
+       und in jeder Rechnung. Salz und Prüfsumme nie. */
+    betreiber: { ...betreiberOffen, angelegt: !!b.kennwort },
+  };
+};
 
 function broadcast(msg) {
   /* Ein Ausgang, eine Regel: Trägt eine Nachricht Einstellungen, geht die
@@ -1874,6 +1940,171 @@ app.get('/api/qr', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+/* ---------- API: Anmeldung des Betreibers ---------- */
+
+/* Wer bin ich, und ist diese Box schon eingerichtet? Bewusst ohne Schutz:
+   Genau diese Frage stellt jede Oberfläche, bevor sie weiß, ob sie den
+   Anmeldeschirm oder ihren Inhalt zeigen soll. */
+app.get('/api/betreiber', (req, res) => {
+  const b = settings.betreiber || {};
+  res.json({
+    angelegt: betreiberAngelegt(),
+    angemeldet: sitzungGueltig(markeAusAnfrage(req)),
+    name: b.name || '',
+    email: b.email || '',
+    firma: b.firma || '',
+  });
+});
+
+/* Ersteinrichtung: das eine Mal, an dem ein Kennwort ohne Anmeldung gesetzt
+   werden darf — und nur vom Gerät selbst. Wer im Gäste-WLAN steht, soll sich
+   nicht zum Betreiber einer fremden Box machen können. */
+app.post('/api/betreiber/einrichten', (req, res) => {
+  if (betreiberAngelegt()) {
+    return res.status(409).json({ error: 'Diese Box hat schon einen Betreiber.' });
+  }
+  if (!isLocal(req)) {
+    return res.status(403).json({ error: 'Die Ersteinrichtung geht nur am Gerät selbst.' });
+  }
+  const b = req.body || {};
+  const name = rClean(b.name, 80);
+  const email = rClean(b.email, 120);
+  const kennwort = String(b.kennwort || '');
+
+  if (!name || !email) return res.status(400).json({ error: 'Name und E-Mail sind Pflicht.' });
+  /* Zehn Zeichen, nicht acht. Das hier hält eine Kundenkartei, und die
+     Zwangspause unten hilft nur gegen Versuche über die Leitung — nicht gegen
+     jemanden, der die settings.json mitnimmt. */
+  if (kennwort.length < 10) {
+    return res.status(400).json({ error: 'Das Kennwort braucht mindestens zehn Zeichen.' });
+  }
+
+  const salz = crypto.randomBytes(16).toString('hex');
+  settings.betreiber = {
+    ...settings.betreiber,
+    name, email, salz,
+    kennwort: kennwortPruefsumme(kennwort, salz),
+  };
+  saveJson(SETTINGS_FILE, settings);
+  console.log(`Betreiber eingerichtet: ${name} <${email}>`);
+
+  const marke = sitzungAnlegen();
+  setzeSitzungskeks(res, marke);
+  res.json({ ok: true });
+});
+
+/* Nach einem Fehlversuch eine Zwangspause. Ohne sie probiert ein Skript im
+   selben WLAN eine Kennwortliste in Minuten durch. */
+let anmeldeSperreBis = 0;
+
+app.post('/api/anmelden', (req, res) => {
+  if (!betreiberAngelegt()) {
+    return res.status(409).json({ error: 'Diese Box ist noch nicht eingerichtet.' });
+  }
+  if (Date.now() < anmeldeSperreBis) {
+    return res.status(429).json({ error: 'Zu viele Versuche. Einen Moment warten.' });
+  }
+
+  const b = settings.betreiber;
+  const email = rClean((req.body || {}).email, 120).toLowerCase();
+  const kennwort = String((req.body || {}).kennwort || '');
+  const summe = kennwortPruefsumme(kennwort, b.salz);
+
+  /* Beide Vergleiche laufen immer, und der Kennwortvergleich zeitgleich:
+     Sonst verrät die Antwortzeit, ob es die E-Mail überhaupt gibt. */
+  const emailStimmt = email === String(b.email || '').toLowerCase();
+  const kennwortStimmt =
+    summe.length === String(b.kennwort).length &&
+    crypto.timingSafeEqual(Buffer.from(summe), Buffer.from(String(b.kennwort)));
+
+  if (!emailStimmt || !kennwortStimmt) {
+    anmeldeSperreBis = Date.now() + 3000;
+    // Eine Auskunft für beide Fälle: Welches der beiden falsch war, geht
+    // niemanden etwas an, der es nicht ohnehin weiß.
+    return res.status(403).json({ error: 'E-Mail oder Kennwort stimmt nicht.' });
+  }
+
+  setzeSitzungskeks(res, sitzungAnlegen());
+  res.json({ ok: true });
+});
+
+app.post('/api/abmelden', (req, res) => {
+  const marke = markeAusAnfrage(req);
+  if (marke) SITZUNGEN.delete(marke);
+  res.setHeader('Set-Cookie', 'youbooth_sitzung=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax');
+  res.json({ ok: true });
+});
+
+/* Firmendaten und Logo — das, was auf Abzügen, Angeboten und Event-Seiten
+   erscheint. Hinter der Anmeldung, weil es zum Betreiber gehört. */
+app.put('/api/betreiber', requireKey, (req, res) => {
+  const b = req.body || {};
+  const alt = settings.betreiber || {};
+  const t = (wert, laenge, ersatz) =>
+    typeof wert === 'string' ? rClean(wert, laenge) : (ersatz || '');
+
+  settings.betreiber = {
+    ...alt,
+    name: t(b.name, 80, alt.name),
+    email: t(b.email, 120, alt.email),
+    firma: t(b.firma, 120, alt.firma),
+    strasse: t(b.strasse, 120, alt.strasse),
+    plz: t(b.plz, 10, alt.plz),
+    ort: t(b.ort, 80, alt.ort),
+    land: t(b.land, 60, alt.land) || 'Deutschland',
+    telefon: t(b.telefon, 40, alt.telefon),
+    web: t(b.web, 200, alt.web),
+    steuernummer: t(b.steuernummer, 40, alt.steuernummer),
+    /* Das Logo darf ausdrücklich gelöscht werden (`null`), aber nicht durch
+       eine leere Anfrage verschwinden — sonst kostet ein Tippfehler im
+       Formular das Markenzeichen auf jedem Abzug. */
+    logo:
+      b.logo === null
+        ? null
+        : typeof b.logo === 'string' && b.logo.startsWith('data:image/') && b.logo.length < 2_000_000
+          ? b.logo
+          : alt.logo || null,
+  };
+  saveJson(SETTINGS_FILE, settings);
+  broadcast({ type: 'settings', settings });
+  res.json({ ok: true, betreiber: ohnePin(settings).betreiber });
+});
+
+/* Kennwort ändern: nur angemeldet, und nur mit dem alten. */
+app.post('/api/betreiber/kennwort', requireKey, (req, res) => {
+  const b = settings.betreiber || {};
+  const altes = String((req.body || {}).alt || '');
+  const neues = String((req.body || {}).neu || '');
+  const summe = kennwortPruefsumme(altes, b.salz);
+  const stimmt =
+    summe.length === String(b.kennwort).length &&
+    crypto.timingSafeEqual(Buffer.from(summe), Buffer.from(String(b.kennwort)));
+
+  if (!stimmt) return res.status(403).json({ error: 'Das bisherige Kennwort stimmt nicht.' });
+  if (neues.length < 10) {
+    return res.status(400).json({ error: 'Das neue Kennwort braucht mindestens zehn Zeichen.' });
+  }
+
+  const salz = crypto.randomBytes(16).toString('hex');
+  settings.betreiber = { ...b, salz, kennwort: kennwortPruefsumme(neues, salz) };
+  saveJson(SETTINGS_FILE, settings);
+  /* Alle anderen Sitzungen fallen — wer das Kennwort ändert, will meistens
+     genau das: jemanden aussperren. */
+  SITZUNGEN.clear();
+  setzeSitzungskeks(res, sitzungAnlegen());
+  res.json({ ok: true });
+});
+
+function setzeSitzungskeks(res, marke) {
+  /* Kein `Secure`: Die Box läuft im Saal über http im eigenen WLAN, und ein
+     Keks mit `Secure` käme dort nie an. `HttpOnly` und `SameSite=Lax` gelten
+     trotzdem — sie kosten nichts und schließen die häufigsten Löcher. */
+  res.setHeader(
+    'Set-Cookie',
+    `youbooth_sitzung=${marke}; Path=/; Max-Age=${Math.floor(SITZUNGSDAUER / 1000)}; HttpOnly; SameSite=Lax`
+  );
+}
 
 /* ---------- API: Einstellungen ---------- */
 

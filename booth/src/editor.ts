@@ -16,6 +16,7 @@ import './stil.css';
 import './editor.css';
 import { holeEinstellungen, ladeEinstellungen } from './einstellungen';
 import { amDraht } from './draht';
+import { verlangeAnmeldung } from './anmeldung';
 import { Kamera } from './kamera';
 import { alsBilddaten } from './layout';
 import { drucke, qrBild } from './ausgabe';
@@ -822,7 +823,7 @@ let ladelauf = 0;
 function ladeZubehoerNeu(): void {
   const lauf = ++ladelauf;
   zubehoer = LEERES_ZUBEHOER;
-  void ladeZubehoer(aktuell, musterwerte(), qrBild)
+  void ladeZubehoer(aktuell, musterwerte(), qrBild, einstellungen.logo)
     .then((z) => {
       // Ein älterer Lauf darf einen neueren nicht überschreiben: Wer schnell
       // durch die Vorlagen blättert, sähe sonst den Hintergrund von vorhin.
@@ -1135,7 +1136,12 @@ PLATZHALTER.forEach((p) => {
 
 /* Erst den Stand der Box holen, dann zeichnen. Ohne Box wird es der
    mitgelieferte Katalog — der Editor bleibt bedienbar, nur ohne Sichern. */
-void Promise.all([ladeVorlagen(), holeEinstellungen(true)]).then(([quelle]) => {
+/* Der Editor schreibt die Vorlagen der Box — also hinter der Tür. */
+void verlangeAnmeldung()
+  .then((stand) => (stand ? Promise.all([ladeVorlagen(), holeEinstellungen(true)]) : null))
+  .then((ergebnis) => {
+  if (!ergebnis) return;
+  const [quelle] = ergebnis;
   einstellungen = ladeEinstellungen();
   aktuell = alleVorlagen().find((v) => v.id === eingestellt().foto) ?? alleVorlagen()[0]!;
   ladeZubehoerNeu();

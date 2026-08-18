@@ -10,22 +10,18 @@
  */
 
 import { chromium } from 'playwright-core';
+import { BASIS, alsBetreiber } from './betreiber.mjs';
 
-const BASIS = process.env.YOUBOOTH_BASIS || 'http://localhost:3377';
 const meldungen = [];
 const sage = (gut, text) => {
   meldungen.push((gut ? 'OK   ' : 'FEHL ') + text);
   if (!gut) process.exitCode = 1;
 };
 
-const anDieBox = async (pfad, wunsch) => {
-  const a = await fetch(BASIS + pfad, {
-    ...wunsch,
-    headers: { 'Content-Type': 'application/json', ...(wunsch?.headers ?? {}) },
-  });
-  const text = await a.text();
-  return { status: a.status, text, daten: text ? JSON.parse(text) : null };
-};
+/* Anlegen und Löschen tut der Betreiber; die Event-Seite selbst prüft die
+   Probe danach als Gast — ohne Sitzung, wie ein Kunde. */
+const sitzung = await alsBetreiber();
+const anDieBox = sitzung.anDieBox;
 
 /* --- Drei Seiten anlegen: offen, mit Kennwort, abgelaufen ------------ */
 

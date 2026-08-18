@@ -10,22 +10,18 @@
  */
 
 import { chromium } from 'playwright-core';
+import { BASIS, alsBetreiber, angemeldeterKontext } from './betreiber.mjs';
 
-const BASIS = process.env.YOUBOOTH_BASIS || 'http://localhost:3377';
 const meldungen = [];
 const sage = (gut, text) => {
   meldungen.push((gut ? 'OK   ' : 'FEHL ') + text);
   if (!gut) process.exitCode = 1;
 };
 
-const anDieBox = async (pfad, wunsch) => {
-  const a = await fetch(BASIS + pfad, {
-    ...wunsch,
-    headers: { 'Content-Type': 'application/json', ...(wunsch?.headers ?? {}) },
-  });
-  const text = await a.text();
-  return { status: a.status, daten: text ? JSON.parse(text) : null };
-};
+/* Angemeldet — ohne Sitzung gibt die Box seit der Anmeldung nichts mehr
+   heraus, und genau das soll sie auch nicht. */
+const sitzung = await alsBetreiber();
+const anDieBox = sitzung.anDieBox;
 
 /* --- Vorbereitung: ein buchbares Paket ------------------------------ */
 
@@ -65,7 +61,8 @@ sage(anfrage.status === 200, 'Buchungsanfrage angenommen (' + anfrage.status + '
 const browser = await chromium.launch({
   ...(process.env.YOUBOOTH_CHROMIUM ? { executablePath: process.env.YOUBOOTH_CHROMIUM } : {}),
 });
-const seite = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
+const kontext = await angemeldeterKontext(browser, sitzung, { viewport: { width: 1400, height: 1000 } });
+const seite = await kontext.newPage();
 const seitenfehler = [];
 seite.on('pageerror', (e) => seitenfehler.push(String(e).slice(0, 200)));
 

@@ -19,6 +19,9 @@
 import './stil.css';
 import './buchen.css';
 
+/** Nur das, was diese Seite von den Einstellungen der Box braucht. */
+type Boxmarke = { betreiber?: { logo?: string | null; firma?: string } };
+
 type Paket = {
   id: string;
   name: string;
@@ -31,6 +34,8 @@ type Paket = {
 
 /** Der Stand der Seite. Ein Ort, damit nichts auseinanderläuft. */
 const stand = {
+  logo: null as string | null,
+  firma: '',
   pakete: [] as Paket[],
   gesperrt: [] as string[],
   belegt: [] as string[],
@@ -51,10 +56,15 @@ async function starte(ziel: HTMLElement): Promise<void> {
   stand.monat.setHours(0, 0, 0, 0);
 
   try {
-    const [pakete, frei] = await Promise.all([
+    const [pakete, frei, box] = await Promise.all([
       hole<Paket[]>('/api/packages'),
       hole<{ blocked: string[]; booked: string[] }>('/api/availability'),
+      /* Marke des Betreibers. Diese Seite bekommt sein Kunde zu sehen, nicht
+         unserer — deshalb steht hier sein Zeichen und sein Name. */
+      hole<Boxmarke>('/api/settings').catch(() => ({}) as Boxmarke),
     ]);
+    stand.logo = box.betreiber?.logo ?? null;
+    stand.firma = box.betreiber?.firma ?? '';
     // Vom eigenen Gerät liefert die Box auch abgeschaltete Pakete mit. Hier
     // zählt aber die Sicht des Kunden — sonst bucht jemand ein Paket, das der
     // Betreiber gerade nicht anbietet.
@@ -112,8 +122,17 @@ function zeichne(ziel: HTMLElement): void {
 
 function kopf(): HTMLElement {
   const bereich = tag('header', 'bkopf');
+
+  if (stand.logo) {
+    const bild = document.createElement('img');
+    bild.className = 'blogo';
+    bild.src = stand.logo;
+    bild.alt = stand.firma || '';
+    bereich.append(bild);
+  }
+
   const marke = tag('span', 'bmono bmono--amber');
-  marke.textContent = 'Anfrage';
+  marke.textContent = stand.firma || 'Anfrage';
   const titel = document.createElement('h1');
   titel.textContent = 'Termin anfragen';
   const zeile = tag('p', 'bfliess');

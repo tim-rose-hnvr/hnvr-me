@@ -33,6 +33,7 @@ export default defineConfig({
         buchen: 'buchen.html',
         event: 'event.html',
         fern: 'fern.html',
+        anmelden: 'anmelden.html',
       },
     },
   },

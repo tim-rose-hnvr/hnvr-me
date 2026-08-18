@@ -1,0 +1,209 @@
+/* Anmeldung. Eine Karte auf dunklem Grund — dieselbe Fläche, die der Booth
+   zeigt, damit man sieht: Das ist dieselbe Box, nur die Tür davor. */
+
+/* `stil.css` legt für den Booth ein Vollbild fest, das nicht scrollt. Die
+   Einrichtung ist ein langes Formular — ohne dieses Zurücknehmen bricht sie am
+   unteren Fensterrand ab, und das Logofeld ist nicht erreichbar. */
+html {
+  height: auto;
+  overflow: visible;
+}
+
+body {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+#anmelden {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px clamp(18px, 5vw, 48px);
+}
+
+.akarte {
+  width: min(620px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(28px, 5vw, 44px);
+  border-radius: 18px;
+  border: 1px solid var(--linie-dunkel, rgba(244, 242, 238, 0.14));
+  background: var(--ink-soft, #17171c);
+}
+
+.akarte h1 {
+  font-family: var(--schrift);
+  font-weight: 800;
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.amono {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-hell-still, rgba(244, 242, 238, 0.5));
+}
+
+.amono--amber { color: var(--amber, #f2b23e); }
+
+.afliess {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--text-hell-leise, rgba(244, 242, 238, 0.62));
+}
+
+.aformular {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 6px;
+}
+
+/* Abschnittsmarken und alles Breite über die volle Zeile — sonst rutscht die
+   Überschrift „Firma" neben ein Eingabefeld und gehört zu nichts. */
+.aunterschrift,
+.alogo,
+.aknopf {
+  grid-column: 1 / -1;
+}
+
+.aunterschrift {
+  border-top: 1px solid var(--linie-dunkel, rgba(244, 242, 238, 0.14));
+  padding-top: 16px;
+  margin-top: 4px;
+}
+
+.aformular > .aunterschrift:first-child {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.azeile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aeingabe {
+  min-height: 50px;
+  border-radius: 10px;
+  border: 1px solid var(--linie-dunkel-stark, rgba(244, 242, 238, 0.25));
+  background: rgba(244, 242, 238, 0.05);
+  color: var(--text-hell, #f4f2ee);
+  padding: 0 14px;
+  font-family: var(--schrift);
+  font-size: 16px;
+}
+
+.aeingabe:focus {
+  outline: none;
+  border-color: var(--amber, #f2b23e);
+  box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.2);
+}
+
+.aknopf {
+  min-height: 52px;
+  padding: 0 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid var(--linie-dunkel-stark, rgba(244, 242, 238, 0.25));
+  background: transparent;
+  color: var(--text-hell, #f4f2ee);
+  font-family: var(--schrift);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.aknopf--amber {
+  background: var(--amber, #f2b23e);
+  border-color: transparent;
+  color: var(--amber-ink, #141008);
+}
+
+.aknopf--klein {
+  min-height: 42px;
+  font-size: 13.5px;
+  grid-column: auto;
+  justify-self: start;
+}
+
+.aknopf:disabled { opacity: 0.5; cursor: default; }
+
+.ameldung {
+  margin: 0;
+  min-height: 1.4em;
+  font-family: var(--schrift);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-hell-leise, rgba(244, 242, 238, 0.62));
+}
+
+.ameldung--fehler { color: #ff8271; }
+
+/* --- Logo ---------------------------------------------------------- */
+
+.alogo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* Karierter Grund: Auf einer einfarbigen Fläche sieht man nicht, ob ein Logo
+   transparent ist — und genau das entscheidet, ob es auf dem Abzug taugt. */
+.alogo__buehne {
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px dashed var(--linie-dunkel-stark, rgba(244, 242, 238, 0.25));
+  background-color: rgba(244, 242, 238, 0.04);
+  background-image:
+    linear-gradient(45deg, rgba(244, 242, 238, 0.06) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(244, 242, 238, 0.06) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(244, 242, 238, 0.06) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(244, 242, 238, 0.06) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  padding: 14px;
+}
+
+.alogo__buehne img {
+  max-height: 92px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.ahinweis {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-hell-still, rgba(244, 242, 238, 0.5));
+}
+
+.anur-vorlese {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

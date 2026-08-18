@@ -57,6 +57,14 @@ export type Einstellungen = {
   kioskGesetzt: boolean;
   /** Adresse, unter der die Box ihre Aufnahmen im Netz anbietet. */
   ausgabeBasis: string;
+  /**
+   * Das Zeichen des Betreibers, bei der Einrichtung hinterlegt. Es steht auf
+   * jedem Blatt, das ein Logofeld hat und keins mitbringt — und auf der
+   * Buchungs- und Event-Seite. Eine Quelle, ein Wechsel.
+   */
+  logo: string | null;
+  /** Firmenname für Fußzeilen und Angebote. */
+  firma: string;
 };
 
 const ZWISCHENSPEICHER = 'youbooth.einstellungen.stand';
@@ -84,6 +92,8 @@ const STANDARD: Einstellungen = {
   loeschfristTage: 30,
   kioskGesetzt: false,
   ausgabeBasis: '',
+  logo: null,
+  firma: '',
 };
 
 /* ------------------------------------------------------------------ */
@@ -136,6 +146,8 @@ export function ausBoxstand(roh: Boxstand): Einstellungen {
     loeschfristTage: feld(roh, 'booth.loeschfristTage', STANDARD.loeschfristTage),
     kioskGesetzt: feld(roh, 'kiosk.gesetzt', false),
     ausgabeBasis: STANDARD.ausgabeBasis,
+    logo: feld<string | null>(roh, 'betreiber.logo', null),
+    firma: feld(roh, 'betreiber.firma', ''),
   };
 }
 

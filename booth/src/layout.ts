@@ -6,6 +6,7 @@
  */
 
 import { FORMATE, formatVon } from './formate';
+import { ladeEinstellungen } from './einstellungen';
 import { ladeZubehoer, zeichneVorlage, type Vorlage, type Werte } from './vorlage';
 import { qrBild } from './ausgabe';
 
@@ -23,7 +24,10 @@ export async function zeichneMitVorlage(
   bilder: HTMLCanvasElement[],
   werte: Werte
 ): Promise<HTMLCanvasElement> {
-  const zubehoer = await ladeZubehoer(v, werte, qrBild);
+  /* Das Zeichen des Betreibers springt ein, wo die Vorlage keins mitbringt.
+     Es hier zu holen statt beim Aufrufer heißt: Jeder Weg zum Papier — Booth,
+     Doppelstreifen, Testdruck — bekommt es, ohne dass jemand daran denkt. */
+  const zubehoer = await ladeZubehoer(v, werte, qrBild, ladeEinstellungen().logo);
   return zeichneVorlage(v, bilder, werte, zubehoer);
 }
 

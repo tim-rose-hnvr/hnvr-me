@@ -11,22 +11,18 @@
  */
 
 import { chromium } from 'playwright-core';
+import { BASIS, alsBetreiber } from './betreiber.mjs';
 
-const BASIS = process.env.YOUBOOTH_BASIS || 'http://localhost:3377';
 const meldungen = [];
 const sage = (gut, text) => {
   meldungen.push((gut ? 'OK   ' : 'FEHL ') + text);
   if (!gut) process.exitCode = 1;
 };
 
-const anDieBox = async (pfad, wunsch) => {
-  const a = await fetch(BASIS + pfad, {
-    ...wunsch,
-    headers: { 'Content-Type': 'application/json', ...(wunsch?.headers ?? {}) },
-  });
-  const text = await a.text();
-  return { status: a.status, daten: text ? JSON.parse(text) : null };
-};
+/* Vorbereiten und Nachsehen tut hier der Betreiber — die Buchungsseite
+   selbst bleibt bewusst ohne Anmeldung, sie ist für Kunden. */
+const sitzung = await alsBetreiber();
+const anDieBox = sitzung.anDieBox;
 
 const alsSchluessel = (d) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

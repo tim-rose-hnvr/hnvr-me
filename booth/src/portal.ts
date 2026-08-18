@@ -17,6 +17,7 @@ import './stil.css';
 import './cockpit.css';
 import './portal.css';
 import { amDraht } from './draht';
+import { abmelden, verlangeAnmeldung } from './anmeldung';
 
 /* ------------------------------------------------------------------ */
 /* Modelle — genau die Felder, die der Server schickt                  */
@@ -137,6 +138,10 @@ const wurzel = document.getElementById('portal');
 if (wurzel) void starte(wurzel);
 
 async function starte(ziel: HTMLElement): Promise<void> {
+  /* Die Tür zuerst: Hier stehen Namen, Anschriften und Telefonnummern von
+     Kunden. Im Gäste-WLAN einer Feier wäre das ein Aushang. */
+  if (!(await verlangeAnmeldung())) return;
+
   await lade();
   zeichne(ziel);
 
@@ -231,6 +236,11 @@ function kopf(anfragen: number, offen: number): HTMLElement {
     if (i === 0) glied.target = '_blank';
     rechts.append(glied);
   });
+
+  const raus = tag('button', 'cknopf');
+  raus.textContent = 'Abmelden';
+  raus.addEventListener('click', () => void abmelden());
+  rechts.append(raus);
 
   leiste.append(links, rechts);
   return leiste;

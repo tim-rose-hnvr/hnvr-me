@@ -299,3 +299,13 @@ textarea.beingabe { resize: vertical; }
 @media (prefers-reduced-motion: reduce) {
   .bpaket, .btag, .bknopf { transition: none; }
 }
+
+/* Das Zeichen des Betreibers steht über allem — seine Kunden lesen diese
+   Seite, nicht unsere. */
+.blogo {
+  max-height: 64px;
+  max-width: 220px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 4px;
+}

@@ -1,4 +1,5 @@
 ---
+import { vorlagenzahlen } from '../daten/vorlagenzahlen';
 import Marketing from '../layouts/Marketing.astro';
 
 /**
@@ -71,7 +72,7 @@ const zeilen: Zeile[] = [
   {
     thema: 'kosten',
     kriterium: 'Vorlagen',
-    uns: '55 Vorlagen, 7 Formate, ohne Aufpreis',
+    uns: `${vorlagenzahlen.gesamt} Vorlagen, 7 Formate, ohne Aufpreis`,
     kauf: 'Einzelkauf ab 15 $ je Design',
     cloud: '80 Designs im Abo',
     detail:

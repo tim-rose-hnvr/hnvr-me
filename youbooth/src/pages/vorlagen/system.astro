@@ -1,4 +1,5 @@
 ---
+import { vorlagenzahlen } from '../../daten/vorlagenzahlen';
 import Marketing from '../../layouts/Marketing.astro';
 import { vorlagen, anlaesseDerVorlagen, formatname, bibliothek } from '../../daten/vorlagen';
 
@@ -57,11 +58,11 @@ const sammlungen = [
 
 <Marketing
   titel="Vorlagen-Prinzip"
-  beschreibung="55 Druckvorlagen: fertig gesetzt mit Schriftmischung, Rändern, Datumszeile und Logo-Slot — Bildflächen sind markiert."
+  beschreibung={`${vorlagenzahlen.gesamt} Druckvorlagen: fertig gesetzt mit Schriftmischung, Rändern, Datumszeile und Logo-Slot — Bildflächen sind markiert.`}
 >
   <section class="hero">
     <div class="hero__text">
-      <span class="mono mono--amber">55 Druckvorlagen</span>
+      <span class="mono mono--amber">{vorlagenzahlen.gesamt} Druckvorlagen</span>
       <h1>Einzelbild zuerst. Streifen, wenn's Streifen sein soll.</h1>
       <p class="fliess">
         Sieben ausgearbeitete Layouts fürs Einzelbild, dazu 48 für Streifenserien. Alle Vorlagen

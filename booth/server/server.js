@@ -679,7 +679,9 @@ const MODULE = [
 function modulFrei(id) {
   const p = settings.lizenz && settings.lizenz.produkte;
   if (!Array.isArray(p) || !p.length || p.includes('all')) return true;
-  return p.includes(id);
+  /* Beide Schreibweisen zaehlen — eine Lizenz von vor der Zusammenlegung
+     fuehrt `photowall`, eine neue `foto-wall`, gemeint ist dasselbe Modul. */
+  return p.includes(id) || p.some((x) => produktSchluessel(x) === produktSchluessel(id));
 }
 
 /** Für Konsole und Cockpit: was ist gebucht, was nicht. */
@@ -3408,10 +3410,25 @@ const PLANS = ['start', 'pro', 'whitelabel'];
 /* Die Modulliste liegt in `produkte.js` – sie wird auch vom Bauskript
    der Marketing-Site gelesen, damit es keine zweite Fassung gibt. */
 const PRODUCTS = require('./produkte');
-const PRODUCT_IDS = PRODUCTS.map(p => p.id);
+/* Zwei Kennungen je Modul, und beide muessen gelten:
+   `id` ist die alte englische, die in bereits ausgestellten Lizenzen steht;
+   `kennung` die gemeinsame aus `gestaltung/module.json`, die auch die Website
+   benutzt. Wer nur eine davon annimmt, sperrt entweder alte Kunden aus oder
+   versteht neue Lizenzen nicht. */
+const PRODUCT_IDS = PRODUCTS.flatMap(p => [p.id, p.kennung]).filter(Boolean);
+
+/** Uebersetzt beide Schreibweisen auf die alte — darauf pruefen die Module. */
+function produktSchluessel(x) {
+  const treffer = PRODUCTS.find(p => p.id === x || p.kennung === x);
+  return treffer ? treffer.id : null;
+}
+
 function cleanProducts(v) {
   if (v === 'all' || (Array.isArray(v) && v.includes('all'))) return ['all'];
-  if (Array.isArray(v)) { const p = v.filter(x => PRODUCT_IDS.includes(x)); return p.length ? p : ['all']; }
+  if (Array.isArray(v)) {
+    const p = [...new Set(v.map(produktSchluessel).filter(Boolean))];
+    return p.length ? p : ['all'];
+  }
   return ['all'];
 }
 app.get('/api/products', (req, res) => res.json(PRODUCTS));

@@ -1,4 +1,5 @@
 ---
+import { vorlagenzahlen } from '../daten/vorlagenzahlen';
 import Marketing from '../layouts/Marketing.astro';
 import { Bildflaeche } from '../bausteine';
 import Bildplatz from '../components/Bildplatz.astro';
@@ -41,8 +42,8 @@ const wege = [
 
 const laufendeWege = wege.filter((w) => w.stand === 'laeuft').length;
 
-const vorlagenzahlen = [
-  { wert: '55', text: 'Vorlagen' },
+const kennzahlen = [
+  { wert: String(vorlagenzahlen.gesamt), text: 'Vorlagen' },
   { wert: '48', text: 'Streifen' },
   { wert: '7', text: 'Einzelbild' },
 ];
@@ -204,7 +205,8 @@ const betrieb = [
     <div class="designer__text">
       <h2>Designer, Vorlagen, eure Marke</h2>
       <p class="fliess">
-        55 Druckvorlagen sind dabei — 48 für Streifenserien, 7 fürs Einzelbild, auf sieben
+        {vorlagenzahlen.gesamt} Druckvorlagen sind dabei — {vorlagenzahlen.streifen} für Streifenserien,
+        {vorlagenzahlen.foto} fürs Einzelbild, auf sieben
         Papierformaten. Der Druck-Designer und der
         Bildschirm-Designer arbeiten mit demselben Layout-Modell: Bildfelder, Textfelder,
         Logo-Slots. White-Label ersetzt Logo, Attract-Text und Laufband, sodass Gäste nur eure Marke
@@ -212,7 +214,7 @@ const betrieb = [
       </p>
       <div class="reihe zahlenreihe">
         {
-          vorlagenzahlen.map((z) => (
+          kennzahlen.map((z) => (
             <span class="zahlchip">
               <b>{z.wert}</b>
               <span class="mono mono--still">{z.text}</span>

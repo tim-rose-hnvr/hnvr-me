@@ -1,3 +1,5 @@
+import { vorlagenzahlen } from './vorlagenzahlen';
+
 /**
  * Die Oberflächen der Software, die es tatsächlich schon gibt.
  * Screenshots stammen aus der laufenden Anwendung, nicht aus einem Entwurf.
@@ -49,7 +51,7 @@ export const oberflaechen: Oberflaeche[] = [
       },
     ],
     offen:
-      'Mitgeliefert sind 55 Vorlagen auf sieben Papierformaten. Acht weitere aus dem Katalog fehlen mit Absicht: Sie tragen einen alten Produktnamen als Pixel im Hintergrund — eine Vorlage, die den falschen Namen auf den Abzug eines Gastes druckt, ist kein Layout, sondern ein Rückruf. Noch nicht da sind der Bildschirm-Designer, freie Schriften über die sechs Druckschriften hinaus und die Vorlagen-Bibliothek über mehrere Boxen hinweg.',
+      `Mitgeliefert sind ${vorlagenzahlen.gesamt} Vorlagen auf sieben Papierformaten. Acht weitere aus dem Katalog fehlen mit Absicht: Sie tragen einen alten Produktnamen als Pixel im Hintergrund — eine Vorlage, die den falschen Namen auf den Abzug eines Gastes druckt, ist kein Layout, sondern ein Rückruf. Noch nicht da sind der Bildschirm-Designer, freie Schriften über die sechs Druckschriften hinaus und die Vorlagen-Bibliothek über mehrere Boxen hinweg.`,
     knoepfe: [
       { text: 'Vorlagen-System ansehen', ziel: '/vorlagen/system' },
       { text: 'Software laden', ziel: '/download' },

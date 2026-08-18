@@ -5,17 +5,24 @@ import Bildplatz from '../components/Bildplatz.astro';
 import BoxSchema from '../components/BoxSchema.astro';
 import Icon from '../components/Icon.astro';
 import { basismodul, zusatzmodule } from '../daten/module';
+/* Die Vorlagen werden gezählt, nicht behauptet: Es ist derselbe Katalog, den
+   die Box beim Einrichten bekommt. Hier stand „55", während im Katalog schon
+   77 lagen — eine Zahl, die man einmal tippt, stimmt genau bis zur nächsten
+   Änderung. */
+import vorlagenkatalog from '../../../booth/vorlagen-katalog.json';
+
+const vorlagenzahl = vorlagenkatalog.length;
 import Standmarke from '../components/Standmarke.astro';
 import { standVon } from '../daten/stand';
 
 const kennzahlen = [
-  { wert: '13', text: 'Module einzeln zubuchbar' },
+  { wert: String(zusatzmodule.length), text: 'Module einzeln zubuchbar' },
   { wert: '4', text: 'Aufnahmearten' },
   { wert: '3', text: 'Wege zum Gast' },
-  { wert: '55', text: 'Druckvorlagen' },
+  { wert: String(vorlagenzahl), text: 'Druckvorlagen' },
 ];
 
-const laufband = '3 · 2 · 1 · Cheese · Streifen in 13 Sekunden · 55 Vorlagen · 7 Papierformate';
+const laufband = `3 · 2 · 1 · Cheese · Streifen in 13 Sekunden · ${vorlagenzahl} Vorlagen · 7 Papierformate`;
 
 const aufbau = [
   'Systemkamera mit USB-Tethering, Live-View auf dem Screen',

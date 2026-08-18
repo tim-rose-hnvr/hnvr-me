@@ -1,0 +1,112 @@
+{
+  "_": "Die 14 Module. Eine Quelle für Website, Cockpit und Preisrechner — BUILD_SPEC Teil 5.11 und Abnahmekriterium 6. Vorher gab es zwei Listen: die Website kannte 14 Module mit deutschen Kennungen, die Software 13 mit englischen. Die Einwegkamera fehlte dort ganz, und vier Namen lauteten anders. `alt` ist die alte Kennung der Software — sie bleibt, damit bereits ausgestellte Lizenzen weiter gelten.",
+  "module": [
+    {
+      "id": "fotobox",
+      "alt": "booth",
+      "name": "Komplette Fotobox",
+      "preis": 39,
+      "icon": "box"
+    },
+    {
+      "id": "foto-wall",
+      "alt": "photowall",
+      "name": "Live-Foto-Wall",
+      "preis": 19,
+      "icon": "wand"
+    },
+    {
+      "id": "foto-finder",
+      "alt": "selfiefinder",
+      "name": "Selfie-Foto-Finder",
+      "preis": 15,
+      "icon": "suche"
+    },
+    {
+      "id": "galerie",
+      "alt": "gallery",
+      "name": "Event-Galerie & QR",
+      "preis": 12,
+      "icon": "galerie"
+    },
+    {
+      "id": "gaestebuch",
+      "alt": "guestbook",
+      "name": "Digitales Gästebuch",
+      "preis": 12,
+      "icon": "stift"
+    },
+    {
+      "id": "web-kamera",
+      "alt": "webcam",
+      "name": "Web-Sofortbild-Kamera",
+      "preis": 15,
+      "icon": "selfie"
+    },
+    {
+      "id": "einwegkamera",
+      "alt": "disposable",
+      "name": "Einwegkamera-Modus",
+      "preis": 15,
+      "icon": "film"
+    },
+    {
+      "id": "event-seiten",
+      "alt": "microsites",
+      "name": "Event-Seiten",
+      "preis": 19,
+      "icon": "netz"
+    },
+    {
+      "id": "slideshow",
+      "alt": "slideshow",
+      "name": "Beamer-Slideshow",
+      "preis": 12,
+      "icon": "video"
+    },
+    {
+      "id": "effekt-studio",
+      "alt": "fxstudio",
+      "name": "Effekt-Studio",
+      "preis": 15,
+      "icon": "funke"
+    },
+    {
+      "id": "audio-gaestebuch",
+      "alt": "voicebook",
+      "name": "Audio-Gästebuch",
+      "preis": 12,
+      "icon": "mikro"
+    },
+    {
+      "id": "slow-motion",
+      "alt": "slowmo",
+      "name": "Slow-Motion Booth",
+      "preis": 15,
+      "icon": "zeit"
+    },
+    {
+      "id": "vermietung",
+      "alt": "rental",
+      "name": "Vermietung & Buchung",
+      "preis": 25,
+      "icon": "kalender"
+    },
+    {
+      "id": "360-booth",
+      "alt": "spin360",
+      "name": "360°-Booth",
+      "preis": 19,
+      "icon": "kreis"
+    }
+  ],
+  "bibliothek": {
+    "_": "Größe der Vorlagenbibliothek. Steht auf der Website und im Cockpit — deshalb hier und nicht zweimal.",
+    "gesamt": 240,
+    "sammlungen": {
+      "hochzeit": 64,
+      "saison": 45,
+      "firmen": 26
+    }
+  }
+}

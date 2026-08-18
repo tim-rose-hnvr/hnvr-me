@@ -1,4 +1,5 @@
 ---
+import { vorlagenzahlen } from '../daten/vorlagenzahlen';
 import Marketing from '../layouts/Marketing.astro';
 import Icon from '../components/Icon.astro';
 import { DOWNLOADS } from '../../wix-server/downloads.mjs';
@@ -125,7 +126,7 @@ const dateien = [
       <span class="mono mono--amber">Download · v{version}</span>
       <h1>Herunterladen, installieren, läuft</h1>
       <p class="fliess">
-        Ein Paket, und die Box ist vollständig: Booth, Cockpit, Portal, Druck und die 55 Vorlagen.
+        Ein Paket, und die Box ist vollständig: Booth, Cockpit, Portal, Druck und die {vorlagenzahlen.gesamt} Vorlagen.
         Kein Konto nötig, kein Internet im Saal — und neue Fassungen holt sie sich selbst.
       </p>
       <div class="zahlenzeile">

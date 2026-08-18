@@ -1,3 +1,5 @@
+import { vorlagenzahlen } from './vorlagenzahlen';
+
 /**
  * Inhalte der 14 Modulseiten, aus den Entwuerfen uebernommen.
  * Preis, Titel und Icon stehen in module.ts — hier steht, was die Seite erzaehlt.
@@ -39,7 +41,7 @@ export const modulseiten: Modulseite[] = [
     vertiefungTitel: 'Kiosk, aus dem niemand herausfällt',
     vertiefungText: 'Die Oberfläche läuft im Vollbild, geschützt per PIN. Nach 45 Sekunden Leerlauf springt sie zurück in den Wartebildschirm — der nächste Gast findet immer den Startzustand.',
     punkte: ['Kamera per USB-Tethering, Hotfolder oder Webcam', 'Systemdruck: was das Betriebssystem kennt, kennt die Box', 'Fernsteuerung am Handy für Auslösen, Pause und Moderation', 'Selbstprüfung meldet Papier, Tinte und Speicher, bevor es klemmt'],
-    wissen: [{ titel: '55 Vorlagen inklusive', text: 'Fotoformat und Streifen, jederzeit im Designer umbaubar.' }, { titel: 'Läuft offline', text: 'QR-Download über den eigenen Hotspot, Upload später.' }, { titel: 'Je Box lizenziert', text: 'Zusatzmodule gelten danach kontoweit für alle Boxen.' }, { titel: 'Ohne Vertrag', text: 'Monatlich kündbar, Saisonpause möglich.' }],
+    wissen: [{ titel: `${vorlagenzahlen.gesamt} Vorlagen inklusive`, text: 'Fotoformat und Streifen, jederzeit im Designer umbaubar.' }, { titel: 'Läuft offline', text: 'QR-Download über den eigenen Hotspot, Upload später.' }, { titel: 'Je Box lizenziert', text: 'Zusatzmodule gelten danach kontoweit für alle Boxen.' }, { titel: 'Ohne Vertrag', text: 'Monatlich kündbar, Saisonpause möglich.' }],
     faelle: [{ kennung: 'Hochzeit · 140 Gäste', titel: '137 Sessions, 212 Drucke', text: 'Ohne WLAN im Saal, Uploads liefen am Folgetag nach.' }, { kennung: 'Feste Installation', titel: '99,4 % Laufzeit', text: 'Leerlauf-Modus, Kiosk-PIN, Bezahlung vor dem Druck.' }],
     schluss: 'Fangt mit der Basis an',
     schlussZeile: '14 Tage vollständig testen, ohne Kreditkarte.',

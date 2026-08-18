@@ -1,8 +1,28 @@
 /**
  * Die 14 Module: die Basis plus 13 zubuchbare.
- * Eine Quelle fuer Startseite, Moduluebersicht und Preiskonfigurator —
- * Preise und Texte stehen nur hier.
+ *
+ * Name und Preis kommen aus `gestaltung/module.json` — derselben Datei, aus
+ * der auch die Software ihre Modulliste baut. BUILD_SPEC Teil 5.11 und
+ * Abnahmekriterium 6 verlangen das: „Preise, Modulnamen und
+ * Bibliotheksgroessen existieren genau einmal."
+ *
+ * Vorher standen sie hier UND in `booth/server/produkte.js`, und die beiden
+ * Listen waren schon auseinander: Die Software kannte nur 13 Module — die
+ * Einwegkamera fehlte ganz —, benutzte englische Kennungen und vier andere
+ * Namen. Hier bleiben nur die Texte, die es nur auf der Website gibt.
  */
+
+import gestaltung from '../../../gestaltung/module.json';
+
+const NAMEN = new Map(gestaltung.module.map((m) => [m.id, m]));
+
+/** Holt Name und Preis aus der gemeinsamen Quelle. Fehlt die Kennung dort,
+    ist das ein Fehler im Datenstand und kein Fall fuer einen Ersatzwert. */
+function ausQuelle(id: string): { name: string; preis: number } {
+  const treffer = NAMEN.get(id);
+  if (!treffer) throw new Error(`Modul "${id}" steht nicht in gestaltung/module.json`);
+  return { name: treffer.name, preis: treffer.preis };
+}
 
 export type Modul = {
   id: string;
@@ -21,9 +41,9 @@ export type Modul = {
 
 export const basismodul = {
   id: 'fotobox',
-  titel: 'Komplette Fotobox',
-  icon: 'box',
-  preis: 39,
+    titel: ausQuelle('fotobox').name,
+    icon: 'box',
+    preis: ausQuelle('fotobox').preis,
   kennung: 'Pro Monat · je Box-Lizenz',
   text: 'Booth mit vier Aufnahmearten — Foto, Streifen, Boomerang, GIF —, Sofortdruck über den Systemdruck, Kiosk-Betrieb mit PIN, Einstellungen am Screen, Cockpit und Druck-Designer. Video, Boxen-Puls über mehrere Geräte und der Bildschirm-Designer sind eingeplant.',
   kurz: 'Booth, Sofortdruck und Cockpit — die Basis, auf der jedes weitere Modul aufsetzt.',
@@ -33,9 +53,9 @@ export const basismodul = {
 export const zusatzmodule: Modul[] = [
   {
     id: 'foto-wall',
-    titel: 'Live-Foto-Wall',
+    titel: ausQuelle('foto-wall').name,
     icon: 'wand',
-    preis: 19,
+    preis: ausQuelle('foto-wall').preis,
     kennung: 'Beamer · TV',
     text: 'Fotos live auf Beamer & TV. Moderation vorschaltbar, Layout und Tempo einstellbar, läuft parallel zum Booth.',
     kurz: 'Fotos live auf Beamer & TV',
@@ -43,9 +63,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'foto-finder',
-    titel: 'Selfie-Foto-Finder',
+    titel: ausQuelle('foto-finder').name,
     icon: 'gesicht',
-    preis: 15,
+    preis: ausQuelle('foto-finder').preis,
     kennung: 'Handy',
     text: 'Gäste finden ihre Bilder per Selfie. Einwilligung vorab, Suchbild wird nach dem Treffer verworfen.',
     kurz: 'Eigene Fotos per Gesicht finden',
@@ -53,9 +73,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'galerie',
-    titel: 'Event-Galerie & QR',
+    titel: ausQuelle('galerie').name,
     icon: 'qr',
-    preis: 12,
+    preis: ausQuelle('galerie').preis,
     kennung: 'Web',
     text: 'Alle Bilder eines Events zum Ansehen und Herunterladen, mit Löschfrist und optionalem Passwort.',
     kurz: 'Teilen & Herunterladen',
@@ -63,9 +83,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'gaestebuch',
-    titel: 'Digitales Gästebuch',
+    titel: ausQuelle('gaestebuch').name,
     icon: 'gaestebuch',
-    preis: 12,
+    preis: ausQuelle('gaestebuch').preis,
     kennung: 'Booth · Wand',
     text: 'Grüße als Live-Zettelwand: Text und Bild am Screen, danach als PDF für das Paar.',
     kurz: 'Grüße als Live-Zettelwand',
@@ -73,9 +93,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'web-kamera',
-    titel: 'Web-Sofortbild-Kamera',
+    titel: ausQuelle('web-kamera').name,
     icon: 'wolke',
-    preis: 15,
+    preis: ausQuelle('web-kamera').preis,
     kennung: 'Browser',
     text: 'Fotobox im Browser, ohne Hardware. Gut für Testphasen, Homeoffice-Events und Aktionen mit vielen Standorten.',
     kurz: 'Fotobox im Browser, ohne Hardware',
@@ -83,9 +103,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'einwegkamera',
-    titel: 'Einwegkamera-Modus',
+    titel: ausQuelle('einwegkamera').name,
     icon: 'foto',
-    preis: 15,
+    preis: ausQuelle('einwegkamera').preis,
     kennung: 'Handy · QR',
     text: 'Jedes Gästehandy wird zum Film mit begrenzten Aufnahmen: kein Löschen, keine Vorschau, entwickelt wird erst nach dem Event.',
     kurz: 'Handy wird zum Film mit 24 Bildern',
@@ -93,9 +113,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'event-seiten',
-    titel: 'Event-Seiten',
+    titel: ausQuelle('event-seiten').name,
     icon: 'galerie',
-    preis: 19,
+    preis: ausQuelle('event-seiten').preis,
     kennung: 'Web',
     text: 'Gebrandete Microsites pro Event: Ablauf, Galerie-Link, Hashtag, Upload für Gäste.',
     kurz: 'Gebrandete Microsite pro Event',
@@ -103,9 +123,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'slideshow',
-    titel: 'Beamer-Slideshow',
+    titel: ausQuelle('slideshow').name,
     icon: 'slideshow',
-    preis: 12,
+    preis: ausQuelle('slideshow').preis,
     kennung: 'Beamer',
     text: 'Vollbild-Diashow für Pausen und Empfang, mit eigenen Zwischenbildern und Musikhinweis.',
     kurz: 'Vollbild-Diashow für Pausen',
@@ -113,9 +133,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'effekt-studio',
-    titel: 'Effekt-Studio',
+    titel: ausQuelle('effekt-studio').name,
     icon: 'effekt',
-    preis: 15,
+    preis: ausQuelle('effekt-studio').preis,
     kennung: 'Booth',
     text: 'Kunststile und KI-Hintergründe, Freistellung auch ohne Greenscreen — pro Event auswählbar.',
     kurz: 'Kunststile & KI-Hintergrund',
@@ -123,9 +143,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'audio-gaestebuch',
-    titel: 'Audio-Gästebuch',
+    titel: ausQuelle('audio-gaestebuch').name,
     icon: 'chat',
-    preis: 12,
+    preis: ausQuelle('audio-gaestebuch').preis,
     kennung: 'Booth',
     text: 'Gesprochene Grüße werden als Video mit Standbild und Stimme abgelegt.',
     kurz: 'Gesprochene Grüße als Video',
@@ -133,9 +153,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'slow-motion',
-    titel: 'Slow-Motion Booth',
+    titel: ausQuelle('slow-motion').name,
     icon: 'video',
-    preis: 15,
+    preis: ausQuelle('slow-motion').preis,
     kennung: 'Booth',
     text: 'Red-Carpet-Zeitlupe mit Dauerlicht — Clips direkt teilbar, ohne Schnitt.',
     kurz: 'Red-Carpet-Zeitlupe mit Dauerlicht',
@@ -143,9 +163,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: 'vermietung',
-    titel: 'Vermietung & Buchung',
+    titel: ausQuelle('vermietung').name,
     icon: 'kalender',
-    preis: 25,
+    preis: ausQuelle('vermietung').preis,
     kennung: 'Web · Büro',
     text: 'Öffentliche Buchungsseite mit Kalender, Paketen, Konto, Vertrag und Zahlungsstand.',
     kurz: 'Buchungsseite, Kalender, Pakete',
@@ -153,9 +173,9 @@ export const zusatzmodule: Modul[] = [
   },
   {
     id: '360-booth',
-    titel: '360°-Booth',
+    titel: ausQuelle('360-booth').name,
     icon: 'boomerang',
-    preis: 19,
+    preis: ausQuelle('360-booth').preis,
     kennung: 'Hardware',
     text: 'Rundum-Clip mit Arm und Plattform, inklusive Vorlagen für Übergänge und Musikbetten.',
     kurz: 'Rundum-Clip mit Arm und Plattform',

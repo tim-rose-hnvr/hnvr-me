@@ -50,10 +50,13 @@ export const MODULSTAND: Record<string, Eintrag> = {
   },
   galerie: { stand: 'laeuft', offen: 'Passwort je Event und eigene Adresse folgen.' },
   gaestebuch: { stand: 'arbeit', offen: 'Die Box nimmt Einträge entgegen, die Zettelwand fehlt.' },
-  'event-seiten': { stand: 'arbeit', offen: 'Seiten werden ausgeliefert, der Baukasten dazu fehlt.' },
+  'event-seiten': {
+    stand: 'laeuft',
+    offen: 'Ein Logo lässt sich noch nicht hochladen; Farbe, Kennwort und Frist schon.',
+  },
   vermietung: {
-    stand: 'arbeit',
-    offen: 'Verfügbarkeit, Anfragen, Pakete und Tickets liegen auf der Box; die Ansicht dafür entsteht.',
+    stand: 'laeuft',
+    offen: 'Vertrag und Zahlungsstand fehlen noch — Anfrage, Kalender, Pakete und Tickets laufen.',
   },
   'effekt-studio': { stand: 'arbeit', offen: 'Der Anschluss steht, die Auswahl am Screen fehlt.' },
   'web-kamera': { stand: 'arbeit', offen: 'Aufnahmen von fremden Geräten kommen an, die Gastseite fehlt.' },

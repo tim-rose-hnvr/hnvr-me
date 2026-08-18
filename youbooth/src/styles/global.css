@@ -2,9 +2,11 @@
    Seitenspezifisches bleibt in der jeweiligen .astro-Datei (scoped). */
 
 @import '@fontsource-variable/archivo';
+/* Genau zwei Schriften, genau die Schnitte aus Teil 2. IBM Plex Mono 700 lag
+   hier und wurde nirgends gebraucht — jede geladene Datei kostet den Saal
+   Ladezeit und den Betreiber Geduld. */
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
-@import '@fontsource/ibm-plex-mono/700.css';
 @import './tokens.css';
 
 *,
@@ -46,31 +48,40 @@ svg {
 
 /* --- T1: Archivo fett, eng, Versalien ---------------------------------- */
 
-/* Gewicht und Laufweite folgen dem gerenderten Entwurf: dort setzt sich die
-   spezifischere Regel des T1-Overrides durch, also 800 und -.025em — nicht die
-   900/-.035em aus der Handoff-Tabelle. */
+/* T1, genau nach Teil 2 der Spec — je Rang ein eigenes Gewicht und eine
+   eigene Laufweite.
+
+   Hier stand vorher fuer alle drei 800/-.025em, mit der Begruendung, im
+   gerenderten Entwurf setze sich der `!important`-Block am Dateiende durch.
+   Das ist genau der Block, den die Spec NICHT nachzubauen verlangt: Er ist
+   ein nachtraeglicher Typo-Wechsel ueber der alten Serif-Typografie. Gilt die
+   Tabelle. */
 h1,
 h2,
 h3 {
   margin: 0;
   font-family: var(--schrift);
-  font-weight: 800;
-  letter-spacing: -0.025em;
   text-transform: uppercase;
   text-wrap: balance;
 }
 
 h1 {
+  font-weight: 900;
+  letter-spacing: -0.035em;
   line-height: 0.94;
   font-size: clamp(38px, 5vw, 72px);
 }
 
 h2 {
+  font-weight: 900;
+  letter-spacing: -0.03em;
   line-height: 0.96;
-  font-size: clamp(30px, 3.6vw, 46px);
+  font-size: clamp(30px, 3.6vw, 48px);
 }
 
 h3 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
   line-height: 1;
   font-size: clamp(20px, 2vw, 26px);
 }

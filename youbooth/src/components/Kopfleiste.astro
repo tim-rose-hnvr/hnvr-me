@@ -7,7 +7,7 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
 
 <header class="kopf">
   <a class="marke" href="/">
-    <img src="/assets/youbooth-mark.svg" alt="" width="30" height="30" />
+    <img src="/assets/youbooth-mark.svg" alt="" width="28" height="28" />
     <span class="wortmarke">youbooth<em>.me</em></span>
   </a>
 
@@ -21,18 +21,25 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     <i></i><i></i><i></i>
   </button>
 
-  <nav class="links" id="hauptnavigation" aria-label="Hauptnavigation">
-    {
-      hauptnavigation.map((v) => (
-        <a href={v.ziel} class={istAktiv(v.ziel) ? 'on' : ''} aria-current={istAktiv(v.ziel) ? 'page' : undefined}>
-          {v.text}
-        </a>
-      ))
-    }
-  </nav>
-  <div class="rechts">
-    <a class="ghost" href="/anmelden">Anmelden</a>
-    <a class="cta" href="/kontakt">14 Tage testen</a>
+  <!-- Navigation und Knoepfe liegen in einer Huelle. Auf breiten Schirmen ist
+       sie `display: contents` und damit nicht vorhanden — die Leiste ordnet
+       ihre Kinder selbst. Unter 1160px wird dieselbe Huelle zum Panel unter
+       der Leiste. Ohne sie muessten zwei getrennte Kaesten in der Hoehe
+       aufeinander abgestimmt werden, und das ginge nur mit Messen im Skript. -->
+  <div class="huelle" id="hauptnavigation">
+    <nav class="links" aria-label="Hauptnavigation">
+      {
+        hauptnavigation.map((v) => (
+          <a href={v.ziel} class={istAktiv(v.ziel) ? 'on' : ''} aria-current={istAktiv(v.ziel) ? 'page' : undefined}>
+            {v.text}
+          </a>
+        ))
+      }
+    </nav>
+    <div class="rechts">
+      <a class="ghost" href="/anmelden">Anmelden</a>
+      <a class="cta" href="/kontakt">Kostenlos testen</a>
+    </div>
   </div>
 
 </header>
@@ -48,11 +55,16 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     border-bottom: 1px solid var(--linie-dunkel-zart);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: clamp(16px, 2.2vw, 38px);
     padding: 0 var(--rand);
-    min-height: 74px;
+    /* Feste Hoehe, kein Umbruch: Die Leiste ist 74px hoch, Punkt. Mit
+       `flex-wrap` konnte sie bei zwoelf Eintraegen in eine zweite Zeile
+       rutschen und die Seite darunter verschieben — unterhalb von 1160px
+       uebernimmt stattdessen der Burger. */
+    height: var(--kopfhoehe);
+    flex-wrap: nowrap;
     color: var(--text-hell);
-    flex-wrap: wrap;
     box-shadow: var(--schatten-kopf);
   }
 
@@ -92,7 +104,7 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
 
   .wortmarke em {
     font-family: var(--mono);
-    font-weight: 600;
+    font-weight: 500;
     font-size: 12.5px;
     font-style: normal;
     letter-spacing: 0.02em;
@@ -100,12 +112,18 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     transform: translateY(-1px);
   }
 
+  .huelle {
+    display: contents;
+  }
+
   .links {
     display: flex;
     align-items: center;
-    gap: clamp(4px, 0.9vw, 12px);
+    justify-content: center;
+    gap: clamp(2px, 0.5vw, 8px);
     flex: 1 1 auto;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: 0;
   }
 
   .links a {
@@ -209,30 +227,73 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     transition: transform var(--t-transform), opacity var(--t-farbe);
   }
 
+  /* Unter 1160px: Burger statt Leiste.
+
+     Das Panel haengt UNTER der Leiste, nicht in ihr. Vorher lief es ueber
+     `flex-wrap` in einer zweiten Zeile mit — das hielt die Leiste nur solange
+     auf 74px, wie sie zu war, und schob beim Oeffnen die Seite nach unten.
+     Die Spec sagt: feste Hoehe, Panel darunter. */
   @media (max-width: 1160px) {
     .burger {
       display: flex;
     }
 
+    .huelle {
+      position: absolute;
+      top: var(--kopfhoehe);
+      left: 0;
+      right: 0;
+      display: none;
+      flex-direction: column;
+      padding: 10px var(--rand) 18px;
+      background: rgba(11, 11, 13, 0.96);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border-top: 1px solid var(--linie-dunkel-zart);
+      border-bottom: 1px solid var(--linie-dunkel-zart);
+      box-shadow: var(--schatten-kopf);
+      max-height: calc(100dvh - var(--kopfhoehe));
+      overflow-y: auto;
+    }
+
+    .kopf[data-offen] .huelle {
+      display: flex;
+    }
+
     .links {
-      order: 5;
-      flex: 1 1 100%;
       flex-direction: column;
       align-items: stretch;
-      gap: 2px;
-      display: none;
-      padding: 10px 0 18px;
-      border-top: 1px solid var(--linie-dunkel-zart);
+      gap: 0;
     }
 
     .links a {
-      padding: 15px 12px;
+      padding: 13px 12px;
       font-size: 16px;
-      border-radius: var(--r-knopf);
+      border-radius: var(--r-pille);
+      border-top: 1px solid var(--linie-dunkel-zart);
     }
 
-    .kopf[data-offen] .links {
-      display: flex;
+    .links a:first-child {
+      border-top: 0;
+    }
+
+    /* Beide Knoepfe stehen im Panel und werden dort breit — vorher fiel
+       „Anmelden" auf schmalen Geraeten ganz weg, und genau den Weg sucht
+       jemand, der die Software schon gekauft hat. */
+    .rechts {
+      margin-left: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding-top: 14px;
+      margin-top: 4px;
+      border-top: 1px solid var(--linie-dunkel-zart);
+    }
+
+    .ghost,
+    .cta {
+      justify-content: center;
+      width: 100%;
     }
 
     .kopf[data-offen] .burger i:nth-child(1) {
@@ -245,14 +306,6 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
 
     .kopf[data-offen] .burger i:nth-child(3) {
       transform: translateY(-6.5px) rotate(-45deg);
-    }
-
-    .rechts {
-      order: 3;
-    }
-
-    .ghost {
-      display: none;
     }
   }
 
@@ -272,13 +325,37 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
 </style>
 
 <script>
+  /* Drei Dinge verlangt die Spec neben dem Umschalten, und alle drei sind
+     Dinge, deren Fehlen man erst merkt, wenn man daran haengenbleibt:
+     Escape schliesst, ein Seitenwechsel schliesst, und solange das Panel
+     offen ist, scrollt die Seite darunter nicht weg. */
   const kopf = document.querySelector<HTMLElement>('.kopf');
   const burger = kopf?.querySelector<HTMLButtonElement>('.burger');
 
-  burger?.addEventListener('click', () => {
-    const offen = kopf!.hasAttribute('data-offen');
-    kopf!.toggleAttribute('data-offen', !offen);
-    burger.setAttribute('aria-expanded', String(!offen));
-    burger.setAttribute('aria-label', offen ? 'Menü öffnen' : 'Menü schließen');
+  function setze(offen: boolean): void {
+    if (!kopf || !burger) return;
+    kopf.toggleAttribute('data-offen', offen);
+    burger.setAttribute('aria-expanded', String(offen));
+    burger.setAttribute('aria-label', offen ? 'Menü schließen' : 'Menü öffnen');
+    document.body.style.overflow = offen ? 'hidden' : '';
+  }
+
+  burger?.addEventListener('click', () => setze(!kopf!.hasAttribute('data-offen')));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && kopf?.hasAttribute('data-offen')) {
+      setze(false);
+      burger?.focus();
+    }
+  });
+
+  /* Ein Klick auf einen Menüpunkt führt weiter — das Panel darf dann nicht
+     über der neuen Seite stehen bleiben. */
+  kopf?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setze(false)));
+
+  /* Wird das Fenster über den Umbruchpunkt hinaus breiter, gibt es kein
+     Panel mehr, das offen sein könnte — die Scroll-Sperre bliebe sonst. */
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1160 && kopf?.hasAttribute('data-offen')) setze(false);
   });
 </script>

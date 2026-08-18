@@ -2,46 +2,83 @@
 
 export type Verweis = { text: string; ziel: string };
 
-/** Reihenfolge wie in den Entwuerfen. */
+/**
+ * Die Kopfnavigation. Reihenfolge aus BUILD_SPEC Teil 4.1 — dort steht
+ * ausdruecklich „unveraenderlich", und das ist keine Formalie: Wer die Seite
+ * kennt, sucht Preise zwischen Vergleich und Rechner, nicht anderswo.
+ *
+ * Vorher standen hier zehn Eintraege in eigener Ordnung, mit „Download" und
+ * „Ueber uns" statt Referenzen, Ratgeber, Partner und Team.
+ */
 export const hauptnavigation: Verweis[] = [
   { text: 'System', ziel: '/system' },
   { text: 'Module', ziel: '/module' },
   { text: 'Anlässe', ziel: '/anlaesse' },
   { text: 'Vorlagen', ziel: '/vorlagen' },
   { text: 'Vergleich', ziel: '/vergleich' },
-  { text: 'Rechner', ziel: '/rechner' },
   { text: 'Preise', ziel: '/preise' },
+  { text: 'Rechner', ziel: '/rechner' },
+  { text: 'Referenzen', ziel: '/referenzen' },
+  { text: 'Ratgeber', ziel: '/ratgeber' },
   { text: 'Hilfe', ziel: '/hilfe' },
-  { text: 'Über uns', ziel: '/team' },
-  { text: 'Download', ziel: '/download' },
+  { text: 'Partner', ziel: '/partner' },
+  { text: 'Team', ziel: '/team' },
 ];
 
+/**
+ * Die Fusszeile: vier Spalten, benannt wie in Teil 4.2 — Produkt, Anlässe,
+ * Hilfe, Unternehmen. Die Kontaktadresse steht nicht als fuenfte Spalte hier,
+ * sondern unten in der Rechtszeile, ebenfalls nach Spec.
+ */
 export const fusszeile: { titel: string; verweise: Verweis[] }[] = [
   {
     titel: 'Produkt',
     verweise: [
       { text: 'System', ziel: '/system' },
       { text: 'Module', ziel: '/module' },
-      { text: 'Vorlagen', ziel: '/vorlagen/system' },
       { text: 'Vorlagen-Galerie', ziel: '/vorlagen' },
-      { text: 'Download', ziel: '/download' },
-      { text: 'Design-System', ziel: '/design-system' },
+      { text: 'Vorlagen-Prinzip', ziel: '/vorlagen/system' },
       { text: 'Preise', ziel: '/preise' },
-      { text: 'Referenzen', ziel: '/referenzen' },
+      { text: 'Rechner', ziel: '/rechner' },
+      { text: 'Vergleich', ziel: '/vergleich' },
+      { text: 'Download', ziel: '/download' },
     ],
   },
   {
-    titel: 'Für Betreiber',
+    titel: 'Anlässe',
     verweise: [
-      { text: 'Vermietung', ziel: '/fuer-vermieter' },
-      { text: 'Cockpit-Login', ziel: '/anmelden' },
-      { text: 'Installation', ziel: '/support' },
-      { text: 'Support & Tickets', ziel: '/support' },
+      { text: 'Hochzeit', ziel: '/anlaesse/hochzeit' },
+      { text: 'Firmenevent', ziel: '/anlaesse/firmenevent' },
+      { text: 'Geburtstag', ziel: '/anlaesse/geburtstag' },
+      { text: 'Abiball', ziel: '/anlaesse/abiball' },
+      { text: 'Weihnachtsfeier', ziel: '/anlaesse/weihnachtsfeier' },
+      { text: 'Silvester', ziel: '/anlaesse/silvester' },
+    ],
+  },
+  {
+    titel: 'Hilfe',
+    verweise: [
+      { text: 'Hilfe-Center', ziel: '/hilfe' },
+      { text: 'Ratgeber', ziel: '/ratgeber' },
+      { text: 'Support', ziel: '/support' },
+      { text: 'Kontakt', ziel: '/kontakt' },
+      { text: 'Anmelden', ziel: '/anmelden' },
+    ],
+  },
+  {
+    titel: 'Unternehmen',
+    verweise: [
+      { text: 'Team', ziel: '/team' },
+      { text: 'Referenzen', ziel: '/referenzen' },
+      { text: 'Für Vermieter', ziel: '/fuer-vermieter' },
+      { text: 'Partnerprogramm', ziel: '/partner' },
+      { text: 'Design-System', ziel: '/design-system' },
+      { text: 'Impressum', ziel: '/impressum' },
+      { text: 'Datenschutz', ziel: '/datenschutz' },
+      { text: 'AGB', ziel: '/agb' },
     ],
   },
 ];
-
-/** Alle Routen, die die Entwuerfe vorsehen — Grundlage fuer die Platzhalterseiten. */
 export const geplanteRouten: { pfad: string; titel: string; quelle: string }[] = [
   { pfad: '/anlaesse', titel: 'Anlässe', quelle: 'Anlaesse.dc.html' },
   { pfad: '/anlaesse/hochzeit', titel: 'Hochzeit', quelle: 'Anlass Hochzeit.dc.html' },

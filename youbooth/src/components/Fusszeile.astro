@@ -28,29 +28,27 @@ const jahr = 2026;
       ))
     }
 
-    <div class="spalte">
-      <span class="mono mono--hell">Kontakt</span>
-      <a href="/kontakt">Demo anfragen</a>
-      <a href="mailto:hallo@youbooth.me">hallo@youbooth.me</a>
-      <span class="still">Mo–Fr 9–18 Uhr</span>
-    </div>
   </div>
 
+  <!-- Vier Spalten, nicht fünf. Die Kontaktadresse stand hier als eigene
+       Spalte; nach Teil 4.2 gehört sie in die Abschlusszeile — links das
+       Recht, rechts die Post. -->
   <div class="recht">
-    <span>© {jahr} youbooth</span>
-    <span class="rechtslinks">
+    <span class="rechtszeile">
+      © {jahr} youbooth
       <a href="/impressum">Impressum</a>
       <a href="/datenschutz">Datenschutz</a>
       <a href="/agb">AGB</a>
     </span>
+    <a class="post" href="mailto:hallo@youbooth.me">hallo@youbooth.me</a>
   </div>
 </footer>
 
 <style>
   .fuss {
     background: var(--ink);
-    color: var(--text-hell);
-    padding: 52px var(--rand) 34px;
+    color: var(--text-hell-leise);
+    padding: 72px var(--rand) 44px;
     display: flex;
     flex-direction: column;
     gap: 34px;
@@ -118,8 +116,8 @@ const jahr = 2026;
   }
 
   .recht {
-    border-top: 1px solid var(--linie-dunkel-zart);
-    padding-top: 22px;
+    border-top: 1px solid var(--linie-dunkel);
+    padding-top: 20px;
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
@@ -132,9 +130,18 @@ const jahr = 2026;
     color: var(--text-hell-fein);
   }
 
-  .rechtslinks {
+  .rechtszeile {
     display: flex;
+    flex-wrap: wrap;
     gap: 20px;
+  }
+
+  .post {
+    color: var(--text-hell-leise) !important;
+  }
+
+  .post:hover {
+    color: var(--text-hell) !important;
   }
 
   .recht a {

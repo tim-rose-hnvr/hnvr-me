@@ -80,11 +80,11 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           FASSUNG=$(node -p "require('./package.json').version")
           TAG="v$FASSUNG"
-          REPO="${{ github.repository }}"
           echo "Fassung: $FASSUNG"
 
           git config user.name "youbooth Paketbau"
@@ -101,12 +101,39 @@ jobs:
               "https://api.github.com/repos/$REPO/releases/$ID"
           done
 
-          echo "Release $TAG anlegen"
-          curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" \
+          # Der Rumpf wird von Node erzeugt, nicht im Shell-String
+          # zusammengeklebt. Der handgeschriebene JSON-Text hat mit dem
+          # Umlaut in „für" eine 400 ausgelöst — und weil danach niemand
+          # hinsah, lud der nächste Schritt in eine Release, die es nicht
+          # gab: dreimal 404, Lauf trotzdem grün. Beides ist hier behoben.
+          node -e "
+            const [tag, fassung] = process.argv.slice(1);
+            process.stdout.write(JSON.stringify({
+              tag_name: tag,
+              name: 'youbooth ' + fassung,
+              draft: false,
+              prerelease: false,
+              body: 'Installationspaket fuer Windows. Die installierte App aktualisiert sich danach selbst.',
+            }));
+          " "$TAG" "$FASSUNG" > release.json
+
+          ANTWORT=$(curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" \
             -H "Content-Type: application/json" \
+            -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/$REPO/releases" \
-            -d "{\"tag_name\":\"$TAG\",\"name\":\"youbooth $FASSUNG\",\"draft\":false,\"prerelease\":false,\"body\":\"Installationspaket für Windows. Die installierte App aktualisiert sich danach selbst.\"}" \
-            -o /dev/null -w "  angelegt (%{http_code})\n"
+            --data-binary @release.json)
+          rm -f release.json
+
+          echo "$ANTWORT" | node -e "
+            let t=''; process.stdin.on('data',d=>t+=d).on('end',()=>{
+              let a={}; try { a = JSON.parse(t); } catch {}
+              if (!a.id) {
+                console.error('Release nicht angelegt: ' + t.slice(0, 500));
+                process.exit(1);
+              }
+              console.log('Release angelegt, Nummer ' + a.id);
+            });
+          "
 
       # Gebaut, aber NICHT von electron-builder veröffentlicht: Es startet je
       # Datei einen Veröffentlicher, und die legen gemeinsam mehr als eine
@@ -121,15 +148,15 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           FASSUNG=$(node -p "require('./package.json').version")
           TAG="v$FASSUNG"
-          REPO="${{ github.repository }}"
 
           ID=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
                  "https://api.github.com/repos/$REPO/releases/tags/$TAG" \
-               | node -e "let t='';process.stdin.on('data',d=>t+=d).on('end',()=>console.log(JSON.parse(t).id))")
+               | node -e "let t='';process.stdin.on('data',d=>t+=d).on('end',()=>{const a=JSON.parse(t); if(!a.id){console.error('Keine Release zu '+process.argv[1]);process.exit(1);} console.log(a.id);})" "$TAG")
           echo "Release $TAG hat die Nummer $ID"
 
           # `latest.yml` zuletzt: Erst wenn sie liegt, sieht eine installierte
@@ -138,13 +165,19 @@ jobs:
           for DATEI in paket/*.exe paket/*.blockmap paket/latest.yml; do
             [ -f "$DATEI" ] || continue
             NAME=$(basename "$DATEI")
-            echo "  $NAME"
-            curl -sS -X POST \
+            CODE=$(curl -sS -X POST \
               -H "Authorization: Bearer $GH_TOKEN" \
               -H "Content-Type: application/octet-stream" \
               --data-binary "@$DATEI" \
               "https://uploads.github.com/repos/$REPO/releases/$ID/assets?name=$NAME" \
-              -o /dev/null -w "    hochgeladen (%{http_code})\n"
+              -o /dev/null -w "%{http_code}")
+            echo "  $NAME — $CODE"
+            # Ein grüner Lauf ohne Dateien ist schlimmer als ein roter: Die
+            # Download-Seite zeigt dann auf eine Adresse, die 404 antwortet.
+            case "$CODE" in
+              2*) ;;
+              *) echo "Hochladen von $NAME fehlgeschlagen ($CODE)"; exit 1 ;;
+            esac
           done
 
       # Auch ohne Release zum Mitnehmen: Wer den Lauf von Hand startet, will

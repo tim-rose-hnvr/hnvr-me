@@ -1,0 +1,420 @@
+---
+import { weg } from '../lib/weg';
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+
+/**
+ * Der Serien-Assistent — Bildschirm 3b aus dem Handoff.
+ *
+ * „Spalte wählen, Ziel-Muster setzen, fertig. Jeder Code behält sein
+ * eigenes Ziel — das Design bleibt eins."
+ *
+ * Läuft wie die Werkstatt im Browser: dieselbe WebAssembly, dieselbe
+ * Prüfung, dasselbe Ausschießen. Die Tabelle wird nicht hochgeladen,
+ * das Archiv entsteht auf diesem Rechner.
+ *
+ * Was der Entwurf zeigt und hier fehlt, steht unten auf der Seite:
+ * das Anlegen dynamischer Codes braucht einen Server.
+ */
+
+// Die Zentrale gibt es nur, wo eine Laufzeit antwortet. Auf der
+// statischen Fassung waere der Verweis tot — der Wegepruefer hat ihn
+// zu Recht beanstandet.
+const dynamisch = import.meta.env.PUBLIC_DYNAMISCH === '1';
+
+const beispiel = `Tisch,Bereich
+1,Innen
+2,Innen
+3,Innen
+4,Terrasse Süd
+5,Terrasse Süd
+6,Terrasse Nord`;
+---
+
+<Seite
+  titel="Serie"
+  beschreibung="Aus einer Tabelle 24 Codes und den fertigen Druckbogen — im Browser, ohne dass die Tabelle den Rechner verlässt."
+  aktiv=""
+>
+  <section class="spur kopf">
+    <div>
+      <span class="tag tag-accent-2">
+        <Icon name="bogen" groesse={16} />
+        Serie
+      </span>
+      <h1 class="titel-seite" style="margin:14px 0 12px">24 Codes, ein Design, ein Bogen</h1>
+      <p class="fliess">
+        Spalte wählen, Ziel-Muster setzen, fertig. Jeder Code behält sein eigenes
+        Ziel — das Design bleibt eins. Die Tabelle verlässt diesen Rechner nicht.
+      </p>
+    </div>
+    <div class="stand" id="stand" role="status">
+      <span class="stand-punkt"></span>
+      <span id="standtext">Kern wird geladen …</span>
+    </div>
+  </section>
+
+  <section class="spur werkbank">
+    <div class="tafel">
+      <div class="tafel-kopf"><span>1 · Tabelle</span><span id="tabellenstand" class="zahl"></span></div>
+      <div class="tafel-koerper">
+        <div class="knopfreihe" style="margin:0">
+          <button type="button" class="btn btn-secondary" id="waehlen">CSV-Datei wählen</button>
+          <button type="button" class="btn btn-ghost" id="beispiel">Beispiel einsetzen</button>
+          <input type="file" id="datei" accept=".csv,text/csv,text/plain" hidden />
+        </div>
+        <label class="feld">…oder hier einfügen
+          <textarea class="eingabe" id="csv" rows="7" spellcheck="false" placeholder={beispiel}></textarea>
+        </label>
+        <p class="hinweis">
+          Semikolon und Komma werden beide erkannt — deutsche Tabellenprogramme
+          schreiben Semikolon, und wer aus Excel exportiert, weiß davon nichts.
+        </p>
+      </div>
+
+      <div class="tafel-kopf"><span>2 · Ziel-Muster</span></div>
+      <div class="tafel-koerper">
+        <label class="feld">Muster
+          <input class="eingabe" id="muster" value="https://example.de/tisch/{Tisch}" spellcheck="false" />
+        </label>
+        <p class="hinweis" id="spaltenhinweis">
+          Spaltennamen in geschweiften Klammern werden eingesetzt. Das Muster wird
+          gegen die Kopfzeile geprüft, <b>bevor</b> eine einzige Zeile umgesetzt wird.
+        </p>
+        <div class="paar">
+          <label class="feld">Beschriftung aus Spalte
+            <select class="eingabe" id="namespalte"><option value="">— keine —</option></select>
+          </label>
+          <label class="feld">Breite je Code
+            <input class="eingabe" id="breite" type="number" min="8" max="300" value="40" />
+          </label>
+        </div>
+      </div>
+
+      <div class="tafel-kopf"><span>3 · Bogen</span></div>
+      <div class="tafel-koerper">
+        <div class="paar">
+          <label class="feld">Blatt
+            <select class="eingabe" id="blatt"></select>
+          </label>
+          <label class="feld">Verfahren
+            <select class="eingabe" id="verfahren"></select>
+          </label>
+        </div>
+        <div class="paar">
+          <label class="feld">Anschnitt in mm
+            <input class="eingabe" id="anschnitt" type="number" min="0" max="10" step="0.5" value="3" />
+          </label>
+          <label class="feld">Abstand in mm
+            <input class="eingabe" id="abstand" type="number" min="0" max="30" step="0.5" value="4" />
+          </label>
+        </div>
+        <label class="ankreuz">
+          <input type="checkbox" id="marken" checked />
+          Schnittmarken in der Passerfarbe „All“
+        </label>
+        <p class="hinweis">
+          Die Marken liegen außerhalb des Anschnitts und stehen in der
+          Passerfarbe — schwarz allein käme nur in der Schwarzplatte an.
+        </p>
+      </div>
+    </div>
+
+    <div class="tafel">
+      <div class="tafel-kopf"><span>Vorschau</span><span id="aufteilung" class="zahl"></span></div>
+      <div class="tafel-koerper">
+        <div id="meldung"></div>
+        <div class="tabellenrahmen">
+          <table class="table" id="posten">
+            <thead><tr><th>Zeile</th><th>Beschriftung</th><th>Ziel</th></tr></thead>
+            <tbody><tr><td colspan="3" class="leer">Noch keine Tabelle geladen.</td></tr></tbody>
+          </table>
+        </div>
+        <div class="knopfreihe" style="margin-top:6px">
+          <button type="button" class="btn btn-primary knopf-gross" id="erzeugen" disabled>
+            <Icon name="bogen" />
+            Archiv erzeugen
+          </button>
+        </div>
+        <p class="hinweis">
+          Im Archiv: die ausgeschossenen Bogen als PDF, jedes Stück einzeln als
+          SVG und PDF, ein Bericht mit Note und Befunden je Zeile, und eine
+          Liesmich für die Druckerei.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel-dunkel">
+      <h2 class="titel-panel">Zwei Regeln, die hier gelten</h2>
+      <div class="regelpaar">
+        <div>
+          <h3 class="regel-titel">Erst prüfen, dann einsetzen</h3>
+          <p class="dunkel-text">
+            Das Muster wird gegen die Kopfzeile gehalten, bevor eine einzige Zeile
+            umgesetzt wird. Ein vertippter Spaltenname darf nicht 24 Codes ergeben,
+            in denen wörtlich <code>&#123;Tsich&#125;</code> steht.
+          </p>
+        </div>
+        <div>
+          <h3 class="regel-titel">Kein Stück wird kleiner gerechnet</h3>
+          <p class="dunkel-text">
+            Der Bogen verkleinert nichts, damit mehr daraufpasst. Passen die Stücke
+            nicht, werden es mehr Bogen. Die Modulgröße ist eine Druckentscheidung
+            und keine Platzfrage.
+          </p>
+        </div>
+      </div>
+      <p class="dunkel-text" style="margin-top:6px">
+        Diese Codes sind <b>statisch</b>: das Ziel steht im Muster. Dynamische
+        Codes, deren Ziel man später tauschen kann, brauchen eine Adresse, die
+        jemand beantwortet — {dynamisch ? <a href={weg('/zentrale')}>die Zentrale</a> : <b>die Zentrale</b>} führt
+        sie, angelegt werden sie dort.
+      </p>
+    </div>
+  </section>
+</Seite>
+
+<script is:inline src={weg('/wasm/wasm_exec.js')}></script>
+
+<script>
+  const e = (id) => document.getElementById(id);
+  const WASMWEG = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/wasm/pnkt.wasm';
+  let bereit = false;
+  let letzteVorschau = null;
+
+  function standSetzen(text, art) {
+    e('standtext').textContent = text;
+    e('stand').dataset.art = art || '';
+  }
+
+  async function kernLaden() {
+    const go = new Go();
+    try {
+      const antwort = await fetch(WASMWEG);
+      if (!antwort.ok) throw new Error('HTTP ' + antwort.status);
+      const teil = await WebAssembly.instantiate(await antwort.arrayBuffer(), go.importObject);
+      go.run(teil.instance);
+      bereit = true;
+      standSetzen('Kern geladen — läuft in diesem Browser', 'gut');
+      listenFuellen();
+      rechnen();
+    } catch (fehler) {
+      standSetzen('Der Kern ließ sich nicht laden: ' + fehler.message, 'schlecht');
+    }
+  }
+
+  function listenFuellen() {
+    e('verfahren').innerHTML = JSON.parse(pnktVerfahren())
+      .map((v) => '<option value="' + v.schluessel + '"' + (v.schluessel === 'offset' ? ' selected' : '') +
+        '>' + v.name + '</option>').join('');
+    e('blatt').innerHTML = JSON.parse(pnktBlaetter())
+      .map((b) => '<option value="' + b.schluessel + '"' + (b.schluessel === 'a4' ? ' selected' : '') +
+        '>' + b.name + ' · ' + b.breiteMm + ' × ' + b.hoeheMm + ' mm</option>').join('');
+  }
+
+  function wunsch() {
+    return {
+      csv: e('csv').value,
+      muster: e('muster').value,
+      namespalte: e('namespalte').value,
+      breiteMm: Number(e('breite').value) || 40,
+      stufe: 'M',
+      verfahren: e('verfahren').value,
+      blatt: e('blatt').value,
+      anschnittMm: Number(e('anschnitt').value),
+      abstandMm: Number(e('abstand').value),
+      marken: e('marken').checked,
+      stil: {},
+    };
+  }
+
+  function melde(text, art) {
+    e('meldung').innerHTML = text
+      ? '<div class="meldung ' + (art || 'schlecht') + '">' + text + '</div>'
+      : '';
+  }
+
+  function rechnen() {
+    if (!bereit) return;
+    if (!e('csv').value.trim()) {
+      e('posten').querySelector('tbody').innerHTML =
+        '<tr><td colspan="3" class="leer">Noch keine Tabelle geladen.</td></tr>';
+      e('tabellenstand').textContent = '';
+      e('aufteilung').textContent = '';
+      e('erzeugen').disabled = true;
+      melde('');
+      return;
+    }
+
+    const d = JSON.parse(pnktSerieVorschau(JSON.stringify(wunsch())));
+    if (d.fehler) {
+      melde(d.fehler);
+      e('erzeugen').disabled = true;
+      e('aufteilung').textContent = '';
+      return;
+    }
+    letzteVorschau = d;
+
+    // Spaltenliste nachziehen, ohne die Auswahl zu verlieren.
+    const gewaehlt = e('namespalte').value;
+    e('namespalte').innerHTML = '<option value="">— keine —</option>' +
+      (d.spalten || []).map((s) => '<option' + (s === gewaehlt ? ' selected' : '') + '>' + s + '</option>').join('');
+
+    e('tabellenstand').textContent = d.zeilen + (d.zeilen === 1 ? ' Zeile' : ' Zeilen');
+    const schlecht = (d.posten || []).filter((p) => p.fehler);
+    melde(schlecht.length
+      ? schlecht.length + (schlecht.length === 1 ? ' Zeile geht nicht durch: ' : ' Zeilen gehen nicht durch: ') +
+        schlecht.slice(0, 3).map((p) => 'Zeile ' + p.nr + ' — ' + p.fehler).join(' · ')
+      : (d.doppelte || []).length
+        ? 'Doppelte Ziele: ' + d.doppelte.map((x) => x[0] + ' (Zeilen ' + x[1].join(', ') + ')').join(' · ') +
+          '. Zwei Aufsteller mit demselben Code sind später nicht zu unterscheiden.'
+        : '', schlecht.length ? 'schlecht' : 'warnung');
+
+    e('posten').querySelector('tbody').innerHTML = (d.posten || [])
+      .slice(0, 40)
+      .map((p) =>
+        '<tr' + (p.fehler ? ' class="krumm"' : '') + '>' +
+          '<td class="zahl">' + p.nr + '</td>' +
+          '<td>' + (p.name || '—') + '</td>' +
+          '<td class="ziel">' + (p.fehler ? '<b>' + p.fehler + '</b>' : p.ziel) + '</td>' +
+        '</tr>').join('') +
+      ((d.posten || []).length > 40
+        ? '<tr><td colspan="3" class="leer">… ' + (d.posten.length - 40) + ' weitere Zeilen</td></tr>'
+        : '');
+
+    if (d.aufteilung) {
+      const a = d.aufteilung;
+      e('aufteilung').textContent =
+        d.brauchbar + ' Stück · ' + a.proBogen + ' je Bogen (' + a.spalten + ' × ' + a.reihen + ') · ' +
+        a.bogen + (a.bogen === 1 ? ' Bogen' : ' Bogen');
+    } else {
+      e('aufteilung').textContent = '';
+    }
+    e('erzeugen').disabled = !d.brauchbar;
+  }
+
+  e('erzeugen').addEventListener('click', () => {
+    if (!bereit || !letzteVorschau) return;
+    const knopf = e('erzeugen');
+    const alt = knopf.innerHTML;
+    knopf.disabled = true;
+    knopf.innerHTML = '<span class="laeuft"></span>wird erzeugt …';
+    // Ein Umbruch, damit der Ring sichtbar wird, bevor der Kern rechnet:
+    // WebAssembly blockiert den Faden, und ohne diese Pause sähe man
+    // den Knopf nie sich ändern.
+    setTimeout(() => {
+      try {
+        const d = JSON.parse(pnktSeriePaket(JSON.stringify(wunsch())));
+        if (d.fehler) { melde(d.fehler); return; }
+        const roh = atob(d.zip);
+        const feld = new Uint8Array(roh.length);
+        for (let i = 0; i < roh.length; i++) feld[i] = roh.charCodeAt(i);
+        const weg2 = URL.createObjectURL(new Blob([feld], { type: 'application/zip' }));
+        const anker = document.createElement('a');
+        anker.href = weg2;
+        anker.download = 'pnkt-serie.zip';
+        anker.click();
+        setTimeout(() => URL.revokeObjectURL(weg2), 4000);
+        melde(d.brauchbar + ' Codes erzeugt, das Archiv liegt in den Downloads.', 'gut');
+      } catch (fehler) {
+        melde('Beim Erzeugen ist etwas schiefgegangen: ' + fehler.message);
+      } finally {
+        knopf.disabled = false;
+        knopf.innerHTML = alt;
+      }
+    }, 30);
+  });
+
+  e('waehlen').addEventListener('click', () => e('datei').click());
+  e('datei').addEventListener('change', async () => {
+    const datei = e('datei').files[0];
+    if (!datei) return;
+    e('csv').value = await datei.text();
+    rechnen();
+  });
+  e('beispiel').addEventListener('click', () => {
+    e('csv').value = `Tisch,Bereich
+1,Innen
+2,Innen
+3,Innen
+4,Terrasse Süd
+5,Terrasse Süd
+6,Terrasse Nord`;
+    e('muster').value = 'https://example.de/tisch/{Tisch}';
+    rechnen();
+  });
+
+  let uhr = null;
+  for (const id of ['csv', 'muster', 'namespalte', 'breite', 'blatt', 'verfahren',
+                    'anschnitt', 'abstand', 'marken']) {
+    const feld = e(id);
+    const art = feld.tagName === 'SELECT' || feld.type === 'checkbox' ? 'change' : 'input';
+    feld.addEventListener(art, () => {
+      clearTimeout(uhr);
+      uhr = setTimeout(rechnen, 200);
+    });
+  }
+
+  kernLaden();
+</script>
+
+<style is:global>
+  .kopf { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+  .stand {
+    display: flex; align-items: center; gap: 10px; font-size: 13.5px;
+    background: var(--color-surface); border-radius: 999px; padding: 9px 18px;
+    color: rgba(32, 30, 29, 0.7);
+  }
+  .stand-punkt { width: 9px; height: 9px; border-radius: 999px; background: var(--color-neutral-400); flex: none; }
+  .stand[data-art='gut'] .stand-punkt { background: var(--color-accent-2); }
+  .stand[data-art='schlecht'] .stand-punkt { background: #a82e23; }
+
+  .werkbank { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  .werkbank > * { min-width: 0; }
+  .tafel { background: var(--color-surface); border-radius: 32px; overflow: hidden; }
+  .tafel-kopf {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 16px 22px; font-size: 11px; font-weight: 600; letter-spacing: 0.09em;
+    text-transform: uppercase; color: var(--color-accent-700);
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+  }
+  .tafel-kopf:first-child { border-top: none; }
+  .tafel-koerper { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+
+  .feld { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: rgba(32, 30, 29, 0.62); }
+  .eingabe {
+    font: inherit; font-size: 15px; font-weight: 400; color: var(--color-text);
+    background: var(--color-bg);
+    border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
+    border-radius: 14px; padding: 11px 14px; width: 100%;
+  }
+  textarea.eingabe { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; resize: vertical; }
+  .eingabe:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+  .paar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .paar > * { min-width: 0; }
+  .ankreuz { display: flex; align-items: center; gap: 9px; font-size: 14px; }
+
+  .tabellenrahmen { overflow-x: auto; max-height: 340px; overflow-y: auto; }
+  .table { width: 100%; }
+  .table .zahl { font-variant-numeric: tabular-nums; }
+  .table .ziel { overflow-wrap: anywhere; font-size: 13px; }
+  .krumm { color: #a82e23; }
+  .leer { text-align: center; color: rgba(32, 30, 29, 0.55); padding: 22px 0; }
+
+  .meldung { border-radius: 16px; padding: 12px 16px; font-size: 14px; line-height: 1.5; }
+  .meldung.gut { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
+  .meldung.warnung { background: var(--color-accent-200); color: var(--color-accent-800); }
+  .meldung.schlecht { background: #f7e7e5; color: #a82e23; }
+
+  .regelpaar { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+  .regel-titel { font-family: var(--font-heading); font-size: 20px; margin: 0 0 8px; }
+  .dunkel-text { font-size: 15px; line-height: 1.65; color: rgba(245, 234, 216, 0.78); margin: 0; }
+  .dunkel-text a { color: var(--color-accent-400); }
+  .hinweis { font-size: 13px; line-height: 1.55; color: rgba(32, 30, 29, 0.6); margin: 0; }
+
+  @media (max-width: 900px) {
+    .werkbank, .regelpaar { grid-template-columns: 1fr; }
+  }
+</style>

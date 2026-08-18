@@ -35,6 +35,7 @@ import (
 	"syscall/js"
 
 	"pnkt.me/pnkt/ausgabe"
+	"pnkt.me/pnkt/bogen"
 	"pnkt.me/pnkt/druck"
 	"pnkt.me/pnkt/gs1"
 	"pnkt.me/pnkt/inhalt"
@@ -264,6 +265,20 @@ func verfahren(js.Value, []js.Value) any {
 	return string(roh)
 }
 
+// blaetter nennt die Bogenformate samt Mass — damit die Auswahlliste
+// aus derselben Quelle kommt wie das Ausschiessen.
+func blaetter(js.Value, []js.Value) any {
+	liste := make([]map[string]any, 0, len(bogen.Blattliste))
+	for _, b := range bogen.Blattliste {
+		liste = append(liste, map[string]any{
+			"schluessel": b.Schluessel, "name": b.Name,
+			"breiteMm": b.BreiteMm, "hoeheMm": b.HoeheMm,
+		})
+	}
+	roh, _ := json.Marshal(liste)
+	return string(roh)
+}
+
 func heraus(a antwort) string {
 	roh, err := json.Marshal(a)
 	if err != nil {
@@ -276,6 +291,9 @@ func main() {
 	js.Global().Set("pnktRendern", js.FuncOf(rendern))
 	js.Global().Set("pnktInhalt", js.FuncOf(inhaltBauen))
 	js.Global().Set("pnktVerfahren", js.FuncOf(verfahren))
+	js.Global().Set("pnktSerieVorschau", js.FuncOf(serienVorschau))
+	js.Global().Set("pnktSeriePaket", js.FuncOf(serienPaket))
+	js.Global().Set("pnktBlaetter", js.FuncOf(blaetter))
 	// Die Seite wartet auf dieses Zeichen, bevor sie den ersten Code
 	// rechnet — sonst ruft sie eine Funktion, die es noch nicht gibt.
 	js.Global().Set("pnktBereit", true)

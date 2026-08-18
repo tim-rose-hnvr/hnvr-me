@@ -33,6 +33,7 @@ const seiten = [
   { id: 'strecken', weg: '/strecken', datei: 'strecken/index.html' },
   { id: 'vorlagen', weg: '/vorlagen', datei: 'vorlagen/index.html' },
   { id: 'studio', weg: '/studio', datei: 'studio/index.html', stattdessen: true },
+  { id: 'serie', weg: '/serie', datei: 'serie/index.html', stattdessen: true },
   { id: 'preise', weg: '/preise', datei: 'preise/index.html' },
   { id: 'system', weg: '/system', datei: 'system/index.html' },
   { id: 'lesbarkeit', weg: '/lesbarkeit', datei: 'lesbarkeit/index.html' },
@@ -127,16 +128,16 @@ const riegel = startseite.includes('vorschauriegel')
 // ehrlicher Hinweis.
 const ersatzWerkstatt = `
   <section class="spur">
-    <h1 class="titel-seite">Die Werkstatt fehlt in dieser Datei</h1>
+    <h1 class="titel-seite">Diese Seite fehlt in der Einzeldatei</h1>
     <p class="fliess">
-      Sie ist als einzige Seite kein Text, sondern ein Programm: der Kern von
-      pnkt läuft dort im Browser, übersetzt nach WebAssembly, 3,4 MB.
+      Werkstatt und Serie sind kein Text, sondern ein Programm: der Kern von
+      pnkt läuft dort im Browser, übersetzt nach WebAssembly, 4 MB.
       Diese Einzeldatei sammelt Seiten ein, keine Programme — deshalb steht
       hier ein Hinweis und kein Gerüst aus Reglern, die nichts tun.
     </p>
     <p class="fliess">
-      Die Werkstatt läuft unter
-      <b>punkt-954d3e9b-hnvrme.wix-site-host.com/studio</b>.
+      Werkstatt und Serie laufen unter
+      <b>punkt-954d3e9b-hnvrme.wix-site-host.com</b> unter /studio und /serie.
     </p>
   </section>`;
 

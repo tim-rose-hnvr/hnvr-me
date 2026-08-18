@@ -14,10 +14,11 @@ import vorlagenkatalog from '../../../booth/vorlagen-katalog.json';
 const vorlagenzahl = vorlagenkatalog.length;
 import Standmarke from '../components/Standmarke.astro';
 import { standVon } from '../daten/stand';
+import { laufendeArten } from '../daten/aufnahmearten';
 
 const kennzahlen = [
   { wert: String(zusatzmodule.length), text: 'Module einzeln zubuchbar' },
-  { wert: '4', text: 'Aufnahmearten' },
+  { wert: String(laufendeArten), text: 'Aufnahmearten' },
   { wert: '3', text: 'Wege zum Gast' },
   { wert: String(vorlagenzahl), text: 'Druckvorlagen' },
 ];

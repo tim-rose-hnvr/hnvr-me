@@ -6,6 +6,7 @@ import Bildplatz from '../components/Bildplatz.astro';
 import Icon from '../components/Icon.astro';
 import Standmarke from '../components/Standmarke.astro';
 import { STANDTEXTE } from '../daten/stand';
+import { aufnahmearten, laufendeArten } from '../daten/aufnahmearten';
 
 const oberflaechen = [
   { text: 'Animationen ansehen', ziel: '/oberflaechen/booth-animationen', haupt: true },
@@ -19,15 +20,6 @@ const oberflaechen = [
 
 /* Vier laufen, Video ist eingeplant. Die Marke steht an der Kachel, weil hier
    entschieden wird, ob eine Box das Gewünschte kann. */
-const aufnahmearten = [
-  { icon: 'foto', titel: 'Foto', text: 'Ein Bild, Countdown wählbar, direkt druckbar', stand: 'laeuft' },
-  { icon: 'streifen', titel: 'Streifen', text: 'Drei Bilder, Doppelstreifen mit Schnittlinie', stand: 'laeuft' },
-  { icon: 'boomerang', titel: 'Boomerang', text: 'Kurze Sequenz vor und zurück', stand: 'laeuft' },
-  { icon: 'gif', titel: 'GIF', text: 'Bilderzahl, Tempo und Pingpong einstellbar', stand: 'laeuft' },
-  { icon: 'video', titel: 'Video', text: 'Bis 30 Sekunden mit Ton, für Grüße', stand: 'geplant' },
-] as const;
-
-const laufendeArten = aufnahmearten.filter((a) => a.stand === 'laeuft').length;
 
 const wege = [
   { icon: 'druck', titel: 'Sofortdruck', text: 'Systemdruck, Doppelstreifen, Stundenlimit', hervor: true, stand: 'laeuft' },
@@ -78,7 +70,34 @@ const animationen = [
   },
 ];
 
-const betrieb = [
+/* Die technische Kette, die BUILD_SPEC 5.2 verlangt: Aufbau, Kiosk und PIN,
+   Offline, Fernsteuerung, Update, Selbstprüfung, Datenhaltung. Vier davon
+   fehlten hier — die Seite erzählte, was das System KANN, nicht, wie es
+   läuft. Genau das ist aber die Frage, die ein Vermieter vor dem Kauf hat. */
+const technik = [
+  {
+    icon: 'foto',
+    titel: 'Aufbau: Kamera, Drucker, Netz',
+    text:
+      'Systemkamera per USB oder Webcam, ein Sofortdrucker über den Systemdruck, ein Netz für ' +
+      'Handys der Gäste. Mehr braucht die Box nicht — und alles drei darf schon vorhanden sein.',
+  },
+  {
+    icon: 'qr',
+    titel: 'Kiosk und PIN',
+    text:
+      'Der Booth läuft im Vollbild ohne Leiste, damit niemand versehentlich herausfällt. Hinter ' +
+      'den Einstellungen liegt eine PIN. Sie wird gesalzen und als Prüfsumme gespeichert; die Box ' +
+      'gibt sie über keine Schnittstelle heraus, auch nicht an das eigene Cockpit.',
+  },
+  {
+    icon: 'wolke',
+    titel: 'Offline zuerst',
+    text:
+      'Die Box arbeitet ohne Internet vollständig: aufnehmen, drucken, Galerie über den eigenen ' +
+      'Hotspot. Was nach draußen soll, wartet in einer Schlange und geht los, sobald wieder Netz ' +
+      'da ist. Kein Abend hängt an einer Leitung.',
+  },
   {
     icon: 'statistik',
     titel: 'Puls statt Rätselraten',
@@ -90,9 +109,19 @@ const betrieb = [
     text: 'Auslösen, pausieren, Testdruck, Queue leeren, Screen sperren — vom Cockpit oder vom Handy.',
   },
   {
-    icon: 'wolke',
-    titel: 'Update kontrolliert',
-    text: 'Neue Versionen und Inhalte gehen über die Leitung, werden aber von euch angestoßen.',
+    icon: 'ticket',
+    titel: 'Selbstprüfung vor dem Abend',
+    text:
+      'Die Zentrale prüft neun Dinge auf einmal: Datenordner, Platz, Anschluss, hängende Dienste ' +
+      'einer früheren Fassung, Drucker, Vorlagen, Betreiber, Lizenz und ob eine neue Fassung ' +
+      'bereitliegt. Wo etwas zu tun ist, steht der Handgriff daneben — nicht nur der Befund.',
+  },
+  {
+    icon: 'galerie',
+    titel: 'Update über die Leitung',
+    text:
+      'Neue Fassungen lädt die Box selbst, spielt sie aber erst beim Beenden ein. Ein Neustart ' +
+      'mitten in einer Feier ist der teuerste Fehler, den eine Selbstaktualisierung machen kann.',
   },
   {
     icon: 'galerie',
@@ -106,10 +135,14 @@ const betrieb = [
   },
   {
     icon: 'einstellungen',
-    titel: 'Datenschutz eingebaut',
-    text: 'Löschfrist pro Event, Selfie-Suchbild wird verworfen, Hinweis für Gäste im Attract.',
+    titel: 'Datenhaltung und Löschfristen',
+    text:
+      'Aufnahmen liegen auf der Box, nicht in einer Cloud. Je Event eine Löschfrist, danach ist ' +
+      'weg was weg soll. Das Suchbild des Foto-Finders wird nach dem Treffer verworfen, und im ' +
+      'Attract steht ein Hinweis für die Gäste.',
   },
 ];
+
 ---
 
 <Marketing
@@ -269,10 +302,10 @@ const betrieb = [
   </section>
 
   <section class="abschnitt">
-    <h2>Betrieb und Fernsteuerung</h2>
+    <h2>Betrieb, Netz und Daten</h2>
     <div class="raster raster--3">
       {
-        betrieb.map((b) => (
+        technik.map((b) => (
           <article class="karte">
             <Icon name={b.icon} groesse={22} />
             <span class="display display--klein">{b.titel}</span>
@@ -286,8 +319,8 @@ const betrieb = [
   <section class="abschnitt abschnitt--tief schluss">
     <span class="display display--gross">Systemanforderungen und Installation</span>
     <div class="reihe knopfreihe">
-      <a class="knopf knopf--amber knopf--gross" href="/support">Zum Support-Bereich</a>
-      <a class="knopf knopf--rahmen-hell knopf--gross" href="/kontakt">Demo anfragen</a>
+      <a class="knopf knopf--amber" href="/download">Software laden</a>
+      <a class="knopf knopf--rahmen-hell" href="/hilfe">Hilfe-Center</a>
     </div>
   </section>
 </Marketing>

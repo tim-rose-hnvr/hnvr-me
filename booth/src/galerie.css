@@ -1,0 +1,185 @@
+/* Kunden-Galerie: dunkel wie die Gäste-Oberflächen, große Ziele fürs Handy. */
+
+body.galerieseite {
+  background: var(--ink);
+  overflow: auto;
+  user-select: text;
+}
+
+#galerie {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px clamp(18px, 4vw, 48px) 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.gkopf {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gkopf h1 {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.02;
+}
+
+.gmono {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hell-still);
+}
+
+.gfilter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.gchip {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--r-kreis);
+  border: 1px solid var(--linie);
+  background: transparent;
+  color: var(--hell-leise);
+  font-family: var(--schrift);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.gchip.an {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--amber-ink);
+}
+
+.graster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.gkachel {
+  margin: 0;
+  background: var(--ink-soft);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.gknopfbild {
+  border: none;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  display: block;
+}
+
+.gkachel img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.gkachel figcaption {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gknopf {
+  min-height: 44px;
+  border-radius: 10px;
+  background: var(--amber);
+  color: var(--amber-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.gleer {
+  padding: 40px 0;
+  font-size: 17px;
+  color: var(--hell-still);
+}
+
+/* Lightbox */
+.glightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(11, 11, 13, 0.94);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+}
+
+.glightbox img {
+  max-width: min(86vw, 900px);
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.gpfeil {
+  min-width: 64px;
+  min-height: 64px;
+  border-radius: var(--r-kreis);
+  border: 1px solid var(--linie);
+  background: rgba(23, 23, 28, 0.9);
+  color: var(--hell);
+  font-size: 34px;
+  line-height: 1;
+  cursor: pointer;
+  flex: none;
+}
+
+.gleiste {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.gschliessen {
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 10px;
+  border: 1px solid var(--linie);
+  background: transparent;
+  color: var(--hell);
+  font-family: var(--schrift);
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .gpfeil {
+    min-width: 52px;
+    min-height: 52px;
+    font-size: 28px;
+  }
+}

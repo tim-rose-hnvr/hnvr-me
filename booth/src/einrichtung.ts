@@ -1,0 +1,382 @@
+/**
+ * Installations-Zentrum: die sechs Schritte, bevor die Box läuft.
+ *
+ * Jeder Schritt prüft etwas Echtes — Kamera, Druckweg, Ablage, Ausgabe-Adresse
+ * — statt nur einen Haken zu setzen. Was nicht geprüft werden kann, sagt das
+ * offen.
+ */
+
+import './stil.css';
+import './cockpit.css';
+import './einrichtung.css';
+import { ladeEinstellungen, sichereEinstellungen } from './einstellungen';
+import { ARTEN } from './arten';
+import { anzahl, neueKennung, sichere } from './speicher';
+import { ausgabeAdresse, inHuelle } from './huelle';
+import { drucke, qrFuer } from './ausgabe';
+
+type Zustand = 'offen' | 'laeuft' | 'gut' | 'schlecht';
+
+const wurzel = document.getElementById('einrichtung');
+if (wurzel) void starte(wurzel);
+
+async function starte(ziel: HTMLElement): Promise<void> {
+  const einstellungen = ladeEinstellungen();
+
+  const kopf = tag('header', 'ekopf');
+  const titel = document.createElement('h1');
+  titel.textContent = 'Installations-Zentrum';
+  const zeile = tag('span', 'cmono');
+  zeile.textContent = inHuelle()
+    ? 'Desktop-App · Ablage und Auslieferung stehen bereit'
+    : 'Im Browser · Ablage lokal, Auslieferung erst in der Desktop-App';
+  kopf.append(titel, zeile);
+
+  const liste = tag('div', 'eschritte');
+  ziel.replaceChildren(kopf, liste);
+
+  liste.append(
+    schrittBox(einstellungen),
+    schrittKamera(),
+    schrittDruck(),
+    schrittArten(einstellungen),
+    schrittNetz(einstellungen),
+    await schrittPruefung(einstellungen)
+  );
+}
+
+// --- Schritte -----------------------------------------------------------
+
+function schrittBox(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
+  const { rahmen, inhalt, melde } = schritt(1, 'Box und Kiosk-PIN', 'Name der Box und der PIN, hinter dem die Einstellungen liegen.');
+
+  const box = feld('Boxname', e.box, (v) => (e.box = v));
+  const pin = feld('Kiosk-PIN', e.kioskPin, (v) => (e.kioskPin = v));
+
+  const sichern = knopf('Sichern', 'cknopf cknopf--amber', () => {
+    if (!/^\d{4,8}$/.test(e.kioskPin)) {
+      melde('schlecht', 'Die PIN braucht vier bis acht Ziffern.');
+      return;
+    }
+    sichereEinstellungen(e);
+    melde('gut', 'Gesichert.');
+  });
+
+  inhalt.append(box, pin, reihe(sichern));
+  return rahmen;
+}
+
+function schrittKamera(): HTMLElement {
+  const { rahmen, inhalt, melde } = schritt(
+    2,
+    'Kamera',
+    'Freigabe erteilen, Gerät wählen, Testbild ansehen. Ohne Kamera nimmt die Box nichts auf.'
+  );
+
+  const video = document.createElement('video');
+  video.className = 'evideo';
+  video.playsInline = true;
+  video.muted = true;
+
+  const geraete = tag('div', 'cmono');
+  geraete.textContent = 'Noch nicht geprüft';
+
+  const pruefe = knopf('Kamera prüfen', 'cknopf cknopf--amber', async () => {
+    melde('laeuft', 'Frage die Kamera an …');
+    try {
+      const strom = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      video.srcObject = strom;
+      await video.play();
+
+      const alleGeraete = await navigator.mediaDevices.enumerateDevices();
+      const kameras = alleGeraete.filter((g) => g.kind === 'videoinput');
+      geraete.textContent = `${kameras.length} Kamera${kameras.length === 1 ? '' : 's'} gefunden`;
+
+      melde('gut', `Live-Bild steht: ${video.videoWidth}×${video.videoHeight}`);
+    } catch (fehler) {
+      const name = fehler instanceof Error ? fehler.name : '';
+      melde(
+        'schlecht',
+        name === 'NotAllowedError'
+          ? 'Die Freigabe wurde abgelehnt. Im Browser oder Betriebssystem erteilen.'
+          : 'Keine Kamera erreichbar. Kabel prüfen, andere Programme schließen.'
+      );
+    }
+  });
+
+  inhalt.append(reihe(pruefe), geraete, video);
+  return rahmen;
+}
+
+function schrittDruck(): HTMLElement {
+  const { rahmen, inhalt, melde } = schritt(
+    3,
+    'Drucker',
+    'Der Druck läuft über den Systemdruck. Erst im Betriebssystem testen, dann hier.'
+  );
+
+  const testdruck = knopf('Testdruck auslösen', 'cknopf cknopf--amber', () => {
+    // Ein einfaches Prüfblatt statt einer Aufnahme.
+    const flaeche = document.createElement('canvas');
+    flaeche.width = 1200;
+    flaeche.height = 1800;
+    const stift = flaeche.getContext('2d');
+    if (!stift) {
+      melde('schlecht', 'Zeichenfläche nicht verfügbar.');
+      return;
+    }
+
+    stift.fillStyle = '#ffffff';
+    stift.fillRect(0, 0, 1200, 1800);
+    stift.strokeStyle = '#17171c';
+    stift.lineWidth = 6;
+    stift.strokeRect(40, 40, 1120, 1720);
+    stift.fillStyle = '#17171c';
+    stift.font = '800 74px Archivo, system-ui, sans-serif';
+    stift.textAlign = 'center';
+    stift.fillText('youbooth', 600, 820);
+    stift.font = "500 34px 'IBM Plex Mono', ui-monospace, monospace";
+    stift.fillText('TESTDRUCK 10 × 15', 600, 900);
+    stift.fillText(new Date().toLocaleString('de-DE'), 600, 960);
+
+    drucke(flaeche.toDataURL('image/jpeg', 0.92), 'youbooth Testdruck');
+    melde('gut', 'Der Systemdruckdialog ist geöffnet. Kommt kein Dialog, fehlt ein Drucker.');
+  });
+
+  inhalt.append(reihe(testdruck));
+  return rahmen;
+}
+
+function schrittArten(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
+  const { rahmen, inhalt, melde } = schritt(
+    4,
+    'Aufnahmearten',
+    'Angeboten wird am Screen nur, was hier eingeschaltet ist.'
+  );
+
+  const chips = tag('div', 'creihe');
+  ARTEN.forEach((a) => {
+    const knopfEl = tag('button', e.arten.includes(a.id) ? 'cknopf cknopf--amber' : 'cknopf');
+    knopfEl.textContent = a.name;
+    knopfEl.addEventListener('click', () => {
+      const an = e.arten.includes(a.id);
+      e.arten = an ? e.arten.filter((x) => x !== a.id) : [...e.arten, a.id];
+      knopfEl.className = an ? 'cknopf' : 'cknopf cknopf--amber';
+      if (e.arten.length === 0) {
+        melde('schlecht', 'Mindestens eine Aufnahmeart muss eingeschaltet sein.');
+      } else {
+        sichereEinstellungen(e);
+        melde('gut', `${e.arten.length} Arten aktiv.`);
+      }
+    });
+    chips.append(knopfEl);
+  });
+
+  inhalt.append(chips);
+  return rahmen;
+}
+
+function schrittNetz(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
+  const { rahmen, inhalt, melde } = schritt(
+    5,
+    'Ausgabe im lokalen Netz',
+    'Der QR-Code am Screen zeigt auf diese Adresse. In der Desktop-App trägt die Box sie selbst ein.'
+  );
+
+  const adresse = feld('Ausgabe-Adresse', e.ausgabeBasis, (v) => (e.ausgabeBasis = v));
+  const vorschau = tag('div', 'eqr');
+
+  const pruefe = knopf('Adresse holen und QR prüfen', 'cknopf cknopf--amber', async () => {
+    melde('laeuft', 'Frage die Hülle …');
+    const gemeldet = await ausgabeAdresse();
+    if (gemeldet) {
+      e.ausgabeBasis = gemeldet;
+      const feldEl = adresse.querySelector('input');
+      if (feldEl) feldEl.value = gemeldet;
+    }
+
+    sichereEinstellungen(e);
+
+    const bild = await qrFuer(e.ausgabeBasis, 'probe');
+    if (!bild) {
+      vorschau.replaceChildren();
+      melde(
+        'schlecht',
+        inHuelle()
+          ? 'Der Auslieferungsdienst meldet keine Adresse. Läuft der Port schon?'
+          : 'Im Browser gibt es keine Adresse. In der Desktop-App trägt die Box sie selbst ein.'
+      );
+      return;
+    }
+
+    const img = document.createElement('img');
+    img.src = bild;
+    img.alt = 'QR-Probe';
+    vorschau.replaceChildren(img);
+    melde('gut', `QR zeigt auf ${e.ausgabeBasis}/f/…`);
+  });
+
+  inhalt.append(adresse, reihe(pruefe), vorschau);
+  return rahmen;
+}
+
+async function schrittPruefung(e: ReturnType<typeof ladeEinstellungen>): Promise<HTMLElement> {
+  const { rahmen, inhalt, melde } = schritt(
+    6,
+    'Selbstprüfung',
+    'Ein Durchlauf über Kamera, Ablage, Ausgabe und Speicher — so wie vor jedem Event.'
+  );
+
+  const ergebnisse = tag('div', 'epruefung');
+
+  const los = knopf('Selbstprüfung starten', 'cknopf cknopf--amber', async () => {
+    ergebnisse.replaceChildren();
+    melde('laeuft', 'Prüfe …');
+    let schlecht = 0;
+
+    // Kamera
+    try {
+      const strom = await navigator.mediaDevices.getUserMedia({ video: true });
+      strom.getTracks().forEach((s) => s.stop());
+      ergebnisse.append(befund('Kamera', true, 'erreichbar'));
+    } catch {
+      ergebnisse.append(befund('Kamera', false, 'nicht erreichbar'));
+      schlecht++;
+    }
+
+    // Ablage: eine Probe schreiben und wieder mitzählen
+    try {
+      const vorher = await anzahl();
+      const probe = new Blob([new Uint8Array([255, 216, 255])], { type: 'image/jpeg' });
+      await sichere({
+        id: `probe-${neueKennung()}`,
+        zeit: Date.now(),
+        art: 'probe',
+        event: e.event,
+        blob: probe,
+      });
+      const nachher = await anzahl();
+      const ok = nachher > vorher;
+      ergebnisse.append(befund('Ablage', ok, ok ? 'beschreibbar' : 'schreibt nicht'));
+      if (!ok) schlecht++;
+    } catch {
+      ergebnisse.append(befund('Ablage', false, 'nicht erreichbar'));
+      schlecht++;
+    }
+
+    // Ausgabe-Adresse
+    const adresse = e.ausgabeBasis || (await ausgabeAdresse());
+    ergebnisse.append(
+      befund('Ausgabe', Boolean(adresse), adresse || 'keine Adresse — QR-Weg fehlt')
+    );
+
+    // Speicherplatz
+    try {
+      const platz = await navigator.storage?.estimate?.();
+      if (platz?.quota) {
+        const freiMb = Math.round(((platz.quota - (platz.usage ?? 0)) / 1024 / 1024) * 10) / 10;
+        const ok = freiMb > 200;
+        ergebnisse.append(befund('Speicher', ok, `${freiMb} MB frei`));
+        if (!ok) schlecht++;
+      } else {
+        ergebnisse.append(befund('Speicher', true, 'nicht messbar'));
+      }
+    } catch {
+      ergebnisse.append(befund('Speicher', true, 'nicht messbar'));
+    }
+
+    // Aufnahmearten
+    const artenOk = e.arten.length > 0;
+    ergebnisse.append(
+      befund('Aufnahmearten', artenOk, artenOk ? `${e.arten.length} aktiv` : 'keine aktiv')
+    );
+    if (!artenOk) schlecht++;
+
+    melde(
+      schlecht === 0 ? 'gut' : 'schlecht',
+      schlecht === 0
+        ? 'Alles bereit. Die Box kann laufen.'
+        : `${schlecht} Punkt${schlecht === 1 ? '' : 'e'} braucht noch Aufmerksamkeit.`
+    );
+  });
+
+  inhalt.append(reihe(los), ergebnisse);
+  return rahmen;
+}
+
+// --- Bausteine ----------------------------------------------------------
+
+function schritt(
+  nummer: number,
+  name: string,
+  beschreibung: string
+): { rahmen: HTMLElement; inhalt: HTMLElement; melde: (z: Zustand, text: string) => void } {
+  const rahmen = tag('section', 'eschritt');
+
+  const kopf = tag('div', 'eschritt__kopf');
+  const zahl = tag('span', 'eschritt__nummer');
+  zahl.textContent = String(nummer);
+
+  const text = tag('div', 'eschritt__text');
+  const titel = document.createElement('h2');
+  titel.textContent = name;
+  const unter = tag('p', 'chinweis');
+  unter.textContent = beschreibung;
+  text.append(titel, unter);
+
+  const meldung = tag('span', 'emeldung');
+
+  kopf.append(zahl, text, meldung);
+
+  const inhalt = tag('div', 'eschritt__inhalt');
+  rahmen.append(kopf, inhalt);
+
+  const melde = (z: Zustand, t: string) => {
+    meldung.textContent = t;
+    meldung.dataset.zustand = z;
+  };
+
+  return { rahmen, inhalt, melde };
+}
+
+function befund(name: string, gut: boolean, text: string): HTMLElement {
+  const zeile = tag('span', 'ebefund');
+  const lampe = tag('span', gut ? 'elampe elampe--gut' : 'elampe elampe--schlecht');
+  const marke = tag('b', 'ebefund__name');
+  marke.textContent = name;
+  const wert = tag('span', 'cmono');
+  wert.textContent = text;
+  zeile.append(lampe, marke, wert);
+  return zeile;
+}
+
+function feld(marke: string, wert: string, setze: (v: string) => void): HTMLElement {
+  const zeile = tag('label', 'czeile');
+  const beschriftung = tag('span', 'cmono');
+  beschriftung.textContent = marke;
+  const eingabe = document.createElement('input');
+  eingabe.className = 'ceingabe';
+  eingabe.value = wert;
+  eingabe.addEventListener('input', () => setze(eingabe.value));
+  zeile.append(beschriftung, eingabe);
+  return zeile;
+}
+
+function knopf(text: string, klasse: string, tue: () => void | Promise<void>): HTMLElement {
+  const el = tag('button', klasse);
+  el.textContent = text;
+  el.addEventListener('click', () => void tue());
+  return el;
+}
+
+function reihe(...kinder: HTMLElement[]): HTMLElement {
+  const el = tag('div', 'creihe');
+  el.append(...kinder);
+  return el;
+}
+
+function tag(name: string, klasse: string): HTMLElement {
+  const el = document.createElement(name);
+  el.className = klasse;
+  return el;
+}

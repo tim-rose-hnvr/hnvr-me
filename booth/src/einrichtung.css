@@ -1,0 +1,170 @@
+/* Installations-Zentrum: hell wie das Cockpit, Schritt für Schritt. */
+
+body.einrichtungsseite {
+  background: #f6f4f1;
+  color: #17171c;
+  overflow: auto;
+  user-select: text;
+}
+
+#einrichtung {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px clamp(20px, 4vw, 48px) 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.ekopf {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+}
+
+.ekopf h1 {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  font-size: clamp(28px, 3.2vw, 42px);
+}
+
+.eschritte {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eschritt {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eschritt__kopf {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.eschritt__nummer {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: #17171c;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 15px;
+  flex: none;
+}
+
+.eschritt__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.eschritt h2 {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 21px;
+}
+
+.eschritt__inhalt {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-left: 54px;
+}
+
+.emeldung {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: right;
+  max-width: 260px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.emeldung[data-zustand='gut'] {
+  color: #0f7a5e;
+}
+
+.emeldung[data-zustand='schlecht'] {
+  color: #a5291f;
+}
+
+.emeldung[data-zustand='laeuft'] {
+  color: #8a6512;
+}
+
+.evideo {
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  background: #17171c;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.eqr img {
+  width: 180px;
+  height: 180px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+}
+
+.epruefung {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ebefund {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.ebefund__name {
+  min-width: 120px;
+  font-weight: 600;
+}
+
+.elampe {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: none;
+}
+
+.elampe--gut {
+  background: #17b187;
+}
+
+.elampe--schlecht {
+  background: #e0483c;
+}
+
+@media (max-width: 640px) {
+  .eschritt__inhalt {
+    padding-left: 0;
+  }
+}

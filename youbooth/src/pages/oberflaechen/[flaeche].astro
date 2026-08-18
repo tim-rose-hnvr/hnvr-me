@@ -1,0 +1,146 @@
+---
+import Marketing from '../../layouts/Marketing.astro';
+import Bildplatz from '../../components/Bildplatz.astro';
+import { oberflaechen } from '../../daten/oberflaechen';
+
+/** Eine Vorlage für die Oberflächen, die es in der Software schon gibt. */
+export function getStaticPaths() {
+  return oberflaechen.map((o) => ({ params: { flaeche: o.id }, props: { o } }));
+}
+
+const { o } = Astro.props;
+const andere = oberflaechen.filter((x) => x.id !== o.id);
+---
+
+<Marketing titel={o.titel} beschreibung={o.sub}>
+  <section class="hero">
+    <span class="mono mono--amber">{o.kicker}</span>
+    <h1>{o.h1}</h1>
+    <p class="fliess">{o.sub}</p>
+    <div class="reihe knopfreihe">
+      {
+        o.knoepfe.map((k, i) => (
+          <a
+            class:list={['knopf', 'knopf--mittel', i === 0 ? 'knopf--amber' : 'knopf--rahmen-hell']}
+            href={k.ziel}
+          >
+            {k.text}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="abschnitt abschnitt--eng">
+    <span class="mono">Screenshot aus der laufenden Software</span>
+    <div class="schuss">
+      <Bildplatz
+        motiv={`Screenshot: ${o.titel}`}
+        src={o.screenshot}
+        alt={o.bildbeschreibung}
+        format="16 / 10"
+        radius={16}
+        laden="eager"
+      />
+    </div>
+    <span class="mono mono--still">
+      Das Kamerabild darin ist das Testbild des Systems — im Betrieb steht dort euer Live-Bild.
+    </span>
+  </section>
+
+  <section class="abschnitt">
+    <h2>Was sie kann</h2>
+    <ul class="punkte gross">
+      {o.koennen.map((k) => <li>{k}</li>)}
+    </ul>
+  </section>
+
+  <section class="abschnitt abschnitt--dunkel">
+    <h2>Was sie bewusst nicht tut</h2>
+    <div class="raster raster--2">
+      {
+        o.regeln.map((r) => (
+          <article class="karte karte--dunkel karte--gross">
+            <span class="display display--klein">{r.titel}</span>
+            <span class="karte__text">{r.text}</span>
+          </article>
+        ))
+      }
+    </div>
+    <p class="fliess offen"><strong>Noch offen:</strong> {o.offen}</p>
+  </section>
+
+  <section class="abschnitt abschnitt--eng">
+    <div class="abschnitt-kopf">
+      <h2>Weitere Oberflächen</h2>
+      <a class="pfeil" href="/oberflaechen/fotobox-system">Booth-Flow ansehen →</a>
+    </div>
+    <div class="raster raster--3">
+      {
+        andere.map((a) => (
+          <a class="karte weiter" href={`/oberflaechen/${a.id}`}>
+            <span class="mono">{a.kicker}</span>
+            <span class="display display--klein">{a.titel}</span>
+            <span class="karte__text">{a.sub}</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</Marketing>
+
+<style>
+  .hero {
+    background: var(--ink);
+    color: var(--text-hell);
+    padding: 56px var(--rand);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 4vw, 54px);
+  }
+
+  .hero .fliess {
+    color: var(--text-hell-leise);
+    max-width: 660px;
+  }
+
+  .knopfreihe {
+    gap: 12px;
+  }
+
+  .schuss {
+    max-width: 1000px;
+    border-radius: var(--r-karte-gross);
+    overflow: hidden;
+    box-shadow: var(--schatten-hoch);
+  }
+
+  .punkte.gross li {
+    font-size: 16.5px;
+    line-height: 1.6;
+  }
+
+  .offen {
+    max-width: 720px;
+    color: var(--text-hell-leise);
+  }
+
+  .offen strong {
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  .weiter {
+    text-decoration: none;
+    transition: border-color var(--t-farbe), transform var(--t-transform);
+  }
+
+  .weiter:hover {
+    border-color: var(--amber);
+    transform: translateY(-2px);
+  }
+</style>

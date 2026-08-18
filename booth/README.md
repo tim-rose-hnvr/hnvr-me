@@ -13,9 +13,12 @@ Desktop-App verpackt — auf Windows und macOS. Die Website dazu liegt in `../yo
 | Aufnahme sichern (lokal, vor jeder Ausgabe) | läuft |
 | Druck über den Systemdruckdialog | läuft |
 | Datei sichern | läuft |
-| QR-Code | erzeugt, zeigt auf die Ausgabe-Adresse der Box — der lokale Auslieferungsdienst fehlt noch |
+| QR-Code und lokale Auslieferung über den Hotspot der Box | läuft (in der Desktop-Hülle) |
 | Einstellungen mit Kiosk-PIN | läuft |
 | Leerlauf-Rückkehr, Auto-Weiter, Druck-Stundenlimit, Löschfrist | läuft |
+| Foto-Wall für Beamer und TV | läuft |
+| Kunden-Galerie mit Filter und Großansicht | läuft |
+| Installations-Zentrum mit echter Selbstprüfung | läuft |
 | Bewegtbild (Boomerang, GIF) | Aufnahme und Vorschau laufen; die Videodatei fehlt noch |
 | DSLR-Tethering, Drucker-Sonderfunktionen, Freistellung, Cloud | offen, siehe unten |
 
@@ -24,6 +27,10 @@ Desktop-App verpackt — auf Windows und macOS. Die Website dazu liegt in `../yo
 ```bash
 npm install
 npm run dev      # Booth im Browser auf http://localhost:4400
+                 #   /cockpit.html      Betreiber-Ansicht
+                 #   /wand.html         Foto-Wall für Beamer
+                 #   /galerie.html      Kunden-Galerie
+                 #   /einrichtung.html  Installations-Zentrum
 npm run build    # Weboberfläche nach dist/
 npm run tauri dev    # als Desktop-App (braucht Rust)
 npm run tauri build  # Installationspaket
@@ -44,8 +51,13 @@ Notarisieren), sonst blockt Gatekeeper.
 
 ```
 src/
-  haupt.ts           Einstieg
+  haupt.ts           Einstieg des Booths
   ablauf.ts          Zustandsmaschine und Oberfläche des Booths
+  cockpit.ts         Betreiber-Ansicht
+  wand.ts            Foto-Wall
+  galerie.ts         Kunden-Galerie
+  einrichtung.ts     Installations-Zentrum
+  huelle.ts          Brücke zur Desktop-Hülle (Ablage als Datei, Ausgabe-Adresse)
   arten.ts           die Aufnahmearten
   kamera.ts          Kamera — hier hängt später das DSLR-Tethering
   layout.ts          Canvas-Renderer: Foto, Streifen, Doppelstreifen
@@ -55,6 +67,17 @@ src/
   stil.css           Booth-Optik (dunkel, Ziele ≥ 64 px)
 src-tauri/           Desktop-Hülle (Rust)
 ```
+
+## QR-Download ohne Internet
+
+Die Desktop-Hülle legt jede Aufnahme als Datei ab und liefert sie über einen kleinen HTTP-Server
+im eigenen Netz aus (`src-tauri/src/ausgabe.rs`, Port 8322). Der QR-Code am Screen zeigt auf
+`http://<Adresse der Box>:8322/f/<Kennung>`. Ausgeliefert wird ausschließlich aus dem
+Ablageordner und nur unter `/f/`; Kennungen werden gefiltert, damit von außen kein Pfadwechsel
+möglich ist. Zwei Rust-Tests decken Auslieferung und Ausbruchsversuch ab (`cargo test`).
+
+Im Browser ohne Hülle gibt es keine Adresse — dort bleibt der direkte Weg über „Sichern", und der
+Booth sagt das auch.
 
 ## Regeln, die im Code stecken
 
@@ -77,9 +100,6 @@ src-tauri/           Desktop-Hülle (Rust)
   Oberfläche anzufassen. Ohne Kamera am Kabel lässt sich das nicht verlässlich schreiben.
 - **Drucker-Sonderfunktionen.** Randlos, Doppelstreifen-Schnitt und Materialstand hängen am
   Treiber des jeweiligen Sofortdruckers. Der generische Systemdruck steht.
-- **QR-Auslieferung.** Der QR-Code zeigt auf `<Ausgabe-Adresse>/f/<Kennung>`. Damit er trägt,
-  braucht die Box einen kleinen lokalen Dateiserver im eigenen Hotspot — der ist der nächste
-  Schritt in der Desktop-Hülle.
 - **Bewegtbild als Datei.** Boomerang und GIF werden aufgenommen und am Screen animiert gezeigt;
   für die Datei fehlt die Kodierung (GIF oder WebM).
 - **Freistellung ohne Greenscreen, Effekt-Studio, Cloud-Galerie, Lizenzserver.**

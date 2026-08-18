@@ -3,6 +3,7 @@ import Marketing from '../layouts/Marketing.astro';
 import { geplanteRouten } from '../daten/navigation';
 import { anlaesse } from '../daten/anlaesse';
 import { modulseiten } from '../daten/modulseiten';
+import { oberflaechen } from '../daten/oberflaechen';
 
 /**
  * Platzhalter fuer die Routen, die die Entwuerfe vorsehen, die aber noch nicht
@@ -26,6 +27,7 @@ export function getStaticPaths() {
   // Pfade aus dynamischen Routen kennt der Glob nicht — hier nachtragen.
   anlaesse.forEach((a) => vorhanden.add(`/anlaesse/${a.id}`));
   modulseiten.forEach((m) => vorhanden.add(`/module/${m.id}`));
+  oberflaechen.forEach((o) => vorhanden.add(`/oberflaechen/${o.id}`));
 
   return geplanteRouten
     .filter((r) => !vorhanden.has(r.pfad))

@@ -2,7 +2,8 @@
 import Marketing from '../../layouts/Marketing.astro';
 import { Bildflaeche } from '../../bausteine';
 import Standmarke from '../../components/Standmarke.astro';
-import { standNachTitel } from '../../daten/stand';
+import { standVon } from '../../daten/stand';
+import { basismodul, zusatzmodule } from '../../daten/module';
 import Bildplatz from '../../components/Bildplatz.astro';
 import HeroDeko from '../../components/HeroDeko.astro';
 import { anlaesse, preishinweis } from '../../daten/anlaesse';
@@ -14,6 +15,8 @@ import { anlaesse, preishinweis } from '../../daten/anlaesse';
 export function getStaticPaths() {
   return anlaesse.map((a) => ({ params: { anlass: a.id }, props: { anlass: a } }));
 }
+
+const alleModule = [basismodul, ...zusatzmodule];
 
 const { anlass } = Astro.props;
 const andere = anlaesse.filter((a) => a.id !== anlass.id);
@@ -72,15 +75,19 @@ const farbwelt = [
       <h2>Passende Module</h2>
       <div class="modulraster">
         {
-          anlass.module.map(([titel, zeile]) => (
-            <article class="karte modulkarte">
-              <span class="modulkarte__titel">
-                {titel}
-                {standNachTitel(titel) && <Standmarke stand={standNachTitel(titel)!.stand} />}
-              </span>
-              <span class="modulkarte__zeile">{zeile}</span>
-            </article>
-          ))
+          anlass.module.map((eintrag) => {
+            const modul = alleModule.find((m) => m.id === eintrag.id)!;
+            return (
+              <a class="karte karte--klickbar modulkarte" href={modul.pfad}>
+                <span class="modulkarte__titel">
+                  {modul.titel}
+                  <Standmarke stand={standVon(modul.id).stand} />
+                </span>
+                <span class="modulkarte__zeile">{eintrag.warum}</span>
+                <span class="modulkarte__preis mono">ab {modul.preis} €</span>
+              </a>
+            );
+          })
         }
       </div>
     </div>
@@ -353,6 +360,12 @@ const farbwelt = [
     font-weight: 600;
     font-size: 14.5px;
     color: var(--text);
+  }
+
+  .modulkarte__preis {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-still);
   }
 
   .modulkarte__zeile {

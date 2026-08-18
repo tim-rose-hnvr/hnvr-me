@@ -4,6 +4,7 @@ import { Bildflaeche } from '../../bausteine';
 import Bildplatz from '../../components/Bildplatz.astro';
 import Icon from '../../components/Icon.astro';
 import ModulSzene from '../../components/ModulSzene.astro';
+import Einwegdemo from '../../components/Einwegdemo.astro';
 import { alleModule } from '../../daten/module';
 import { modulseiten } from '../../daten/modulseiten';
 import Standmarke from '../../components/Standmarke.astro';
@@ -66,6 +67,24 @@ const stand = standVon(modul.id);
 
     <ModulSzene art={seite.szene} titel={modul.titel} />
   </section>
+
+  {
+    /* Ein Modul lässt sich nicht erklären, sondern nur ausprobieren:
+       „Kein Vorschaubild" klingt nach einer fehlenden Funktion, solange man
+       es liest. Deshalb bekommt die Einwegkamera eine spielbare Demo — und
+       zwar als eigener Abschnitt, nicht als Beiwerk in der schmalen
+       Hero-Spalte. BUILD_SPEC 5.3 zählt die Demo als dritten Teil jeder
+       Modulseite, 5.10 beschreibt diese hier im Einzelnen. */
+    modul.id === 'einwegkamera' && (
+      <section class="abschnitt demoflaeche">
+        <div class="abschnitt-kopf">
+          <h2>Einmal selbst durchknipsen</h2>
+          <span class="mono mono--still">Wie am Tisch, nur ohne Film zum Wegwerfen</span>
+        </div>
+        <Einwegdemo />
+      </section>
+    )
+  }
 
   {
     seite.screenshot && (
@@ -186,6 +205,13 @@ const stand = standVon(modul.id);
 </Marketing>
 
 <style>
+  /* Die Demo ist ein Gerät, kein Textblock: über die volle Inhaltsbreite
+     gezogen sähe sie aus wie ein Formular. */
+  .demoflaeche :global(.demo) {
+    max-width: 620px;
+    width: 100%;
+  }
+
   /* Der Hinweis steht im Hero, nicht im Fußbereich: Wer bis dorthin liest,
      hat die Kaufentscheidung schon gefällt. */
   .standhinweis {

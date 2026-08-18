@@ -25,7 +25,12 @@ export type Anlass = {
   ctaText: string;
   deko: Deko;
   paket: string[];
-  module: [string, string][];
+  /* Kennungen aus `module.ts`, nicht abgetippte Titel: Der Name steht in der
+     gemeinsamen Quelle, hier steht nur, WARUM das Modul zu diesem Abend passt
+     — und die Kennung, damit die Karte auch dorthin führt. Vorher standen
+     hier Titel als Text; sie waren weder verlinkt noch konnten sie einer
+     Umbenennung folgen. */
+  module: { id: string; warum: string }[];
   faq: [string, string][];
   schluss: string;
 };
@@ -54,10 +59,10 @@ export const anlaesse: Anlass[] = [
       'Galerie 30 Tage, Löschfrist inklusive',
     ],
     module: [
-      ['Digitales Gästebuch', 'Grüße als Zettelwand, danach als Buch'],
-      ['Event-Galerie & QR', 'Alle Bilder ohne Nachfragen beim Paar'],
-      ['Selfie-Foto-Finder', 'Jeder findet seine eigenen Fotos'],
-      ['Live-Foto-Wall', 'Bilder auf dem Beamer im Saal'],
+      { id: 'gaestebuch', warum: 'Grüße als Zettelwand, danach als Buch' },
+      { id: 'galerie', warum: 'Alle Bilder ohne Nachfragen beim Paar' },
+      { id: 'foto-finder', warum: 'Jeder findet seine eigenen Fotos' },
+      { id: 'foto-wall', warum: 'Bilder auf dem Beamer im Saal' },
     ],
     faq: [
       ['Braucht die Box WLAN?', 'Nein. QR-Download läuft über den eigenen Hotspot, Uploads gehen später raus.'],
@@ -89,10 +94,10 @@ export const anlaesse: Anlass[] = [
       'Auswertung je Tag als PDF',
     ],
     module: [
-      ['Effekt-Studio', 'Standdesign als Hintergrund, ohne Set'],
-      ['Event-Seiten', 'Microsite mit Galerie und Kontakt'],
-      ['Slow-Motion Booth', 'Red-Carpet-Clips für den Feed'],
-      ['Beamer-Slideshow', 'Endlosschleife am Stand'],
+      { id: 'effekt-studio', warum: 'Standdesign als Hintergrund, ohne Set' },
+      { id: 'event-seiten', warum: 'Microsite mit Galerie und Kontakt' },
+      { id: 'slow-motion', warum: 'Red-Carpet-Clips für den Feed' },
+      { id: 'slideshow', warum: 'Endlosschleife am Stand' },
     ],
     faq: [
       ['Dürfen wir die Bilder verwenden?', 'Nur mit Einwilligung — die Box holt sie am Screen ein und protokolliert sie.'],
@@ -124,10 +129,10 @@ export const anlaesse: Anlass[] = [
       'Galerie am Tag danach',
     ],
     module: [
-      ['Effekt-Studio', 'Kunststile und KI-Hintergründe'],
-      ['Live-Foto-Wall', 'Bilder laufen im Raum mit'],
-      ['Audio-Gästebuch', 'Gesprochene Glückwünsche'],
-      ['Event-Galerie & QR', 'Download für alle Gäste'],
+      { id: 'effekt-studio', warum: 'Kunststile und KI-Hintergründe' },
+      { id: 'foto-wall', warum: 'Bilder laufen im Raum mit' },
+      { id: 'audio-gaestebuch', warum: 'Gesprochene Glückwünsche' },
+      { id: 'galerie', warum: 'Download für alle Gäste' },
     ],
     faq: [
       ['Auch für Kinder?', 'Ja — große Ziele, einfache Auswahl, Seifenblasen- und Ballon-Screens.'],
@@ -159,10 +164,10 @@ export const anlaesse: Anlass[] = [
       'Galerie mit Passwort',
     ],
     module: [
-      ['Live-Foto-Wall', 'Mosaik ergibt die Jahreszahl'],
-      ['Selfie-Foto-Finder', '200 Gäste finden ihre Bilder'],
-      ['Slow-Motion Booth', 'Hutwurf in Zeitlupe'],
-      ['Event-Seiten', 'Ablauf und Galerie an einem Ort'],
+      { id: 'foto-wall', warum: 'Mosaik ergibt die Jahreszahl' },
+      { id: 'foto-finder', warum: '200 Gäste finden ihre Bilder' },
+      { id: 'slow-motion', warum: 'Hutwurf in Zeitlupe' },
+      { id: 'event-seiten', warum: 'Ablauf und Galerie an einem Ort' },
     ],
     faq: [
       ['Reicht eine Box für 200 Gäste?', 'Meist ja — bei Andrang lohnt eine zweite in der Nähe der Bar.'],
@@ -194,10 +199,10 @@ export const anlaesse: Anlass[] = [
       'Löschfrist nach Absprache',
     ],
     module: [
-      ['Beamer-Slideshow', 'Zwischenbilder für Programmpunkte'],
-      ['Digitales Gästebuch', 'Grüße an Kollegen im Ausland'],
-      ['Event-Galerie & QR', 'Interner Link, kein offenes Netz'],
-      ['Effekt-Studio', 'Winterhintergründe ohne Greenscreen'],
+      { id: 'slideshow', warum: 'Zwischenbilder für Programmpunkte' },
+      { id: 'gaestebuch', warum: 'Grüße an Kollegen im Ausland' },
+      { id: 'galerie', warum: 'Interner Link, kein offenes Netz' },
+      { id: 'effekt-studio', warum: 'Winterhintergründe ohne Greenscreen' },
     ],
     faq: [
       ['Datenschutz im Unternehmen?', 'Passwort, Löschfrist und Einwilligung sind einstellbar und dokumentiert.'],
@@ -229,10 +234,10 @@ export const anlaesse: Anlass[] = [
       'Galerie am Neujahrstag',
     ],
     module: [
-      ['Slow-Motion Booth', 'Konfetti in Zeitlupe'],
-      ['Live-Foto-Wall', 'Wand füllt die Tanzfläche'],
-      ['360°-Booth', 'Rundum-Clip zum Jahreswechsel'],
-      ['Event-Galerie & QR', 'Download ohne Anmeldung'],
+      { id: 'slow-motion', warum: 'Konfetti in Zeitlupe' },
+      { id: 'foto-wall', warum: 'Wand füllt die Tanzfläche' },
+      { id: '360-booth', warum: 'Rundum-Clip zum Jahreswechsel' },
+      { id: 'galerie', warum: 'Download ohne Anmeldung' },
     ],
     faq: [
       ['Hält die Box Andrang aus?', 'Sessions dauern unter zwei Minuten, die Druck-Queue puffert Spitzen.'],

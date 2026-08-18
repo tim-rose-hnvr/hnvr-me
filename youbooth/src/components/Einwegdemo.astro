@@ -1,0 +1,370 @@
+---
+/**
+ * Die spielbare Einwegkamera — BUILD_SPEC 5.10.
+ *
+ * Von allen vierzehn Modulen ist dieses das einzige, das man nicht erklären
+ * kann. „Kein Vorschaubild" klingt nach einer fehlenden Funktion, solange
+ * man es liest; wer einmal abgedrückt hat und nichts passiert, versteht es
+ * in einer Sekunde. Deshalb steht hier eine Demo und kein Screenshot.
+ *
+ * Der Witz muss dabei erhalten bleiben: Auslösen zeigt einen Blitz und ein
+ * Zählwerk, das eins runtergeht — **kein Bild**. Erst „Entwickeln" bringt die
+ * Abzüge, alle auf einmal, mit Nummer, Datum und Uhrzeit.
+ *
+ * Ohne JavaScript bleibt der Zustand stehen, in dem die Seite ausgeliefert
+ * wird: Film mit 24 Aufnahmen, nichts abgedrückt. Der Text daneben erklärt
+ * die Sache dann allein.
+ */
+---
+
+<div class="demo" data-einwegdemo>
+  <div class="demo__kopf">
+    <span class="mono mono--amber">Zum Ausprobieren</span>
+    <div class="demo__laengen" role="group" aria-label="Filmlänge">
+      <button class="chip" type="button" data-laenge="12" aria-pressed="false">12</button>
+      <button class="chip" type="button" data-laenge="24" aria-pressed="true">24</button>
+      <button class="chip" type="button" data-laenge="36" aria-pressed="false">36</button>
+    </div>
+  </div>
+
+  <div class="demo__kamera">
+    <span class="demo__blitz" data-blitz aria-hidden="true"></span>
+    <span class="demo__loecher" aria-hidden="true"></span>
+
+    <div class="demo__zaehler">
+      <span class="demo__zahl" data-zaehler>24</span>
+      <span class="mono">Aufnahmen übrig</span>
+    </div>
+
+    <span class="demo__loecher" aria-hidden="true"></span>
+
+    <button class="demo__ausloeser" type="button" data-ausloesen>
+      <span class="demo__ring"></span>
+      <span class="demo__wort">Abdrücken</span>
+    </button>
+
+    <p class="demo__sagt" role="status" data-sagt>
+      Kein Vorschaubild. Genau das ist der Witz.
+    </p>
+  </div>
+
+  <div class="demo__fuss">
+    <button class="knopf knopf--amber knopf--klein" type="button" data-entwickeln disabled>
+      Film entwickeln
+    </button>
+    <button class="knopf knopf--rahmen knopf--klein" type="button" data-neu>Neuer Film</button>
+  </div>
+
+  <div class="demo__labor" data-labor hidden>
+    <span class="mono">Entwickelt</span>
+    <div class="demo__abzuege" data-abzuege></div>
+  </div>
+</div>
+
+<style>
+  .demo {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: var(--r-karte-gross);
+    box-shadow: var(--schatten-karte);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .demo__kopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .demo__laengen {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* Der Kamerakörper: dunkel, mit Perforation oben und unten wie ein Film. */
+  .demo__kamera {
+    position: relative;
+    background: var(--ink);
+    border-radius: var(--r-chip);
+    padding: 26px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    overflow: hidden;
+  }
+
+  .demo__loecher {
+    display: block;
+    width: 100%;
+    height: 10px;
+    background-image: radial-gradient(circle at 6px 5px, var(--z-dunkel-5) 3px, transparent 3.5px);
+    background-size: 18px 10px;
+    opacity: 0.9;
+  }
+
+  .demo__zaehler {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .demo__zahl {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--amber);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .demo__zaehler .mono {
+    color: var(--text-hell-fein);
+  }
+
+  .demo__ausloeser {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    border-radius: var(--r-kreis);
+    border: 0;
+    background: var(--amber);
+    color: var(--amber-ink);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform var(--t-transform), box-shadow var(--t-transform);
+    box-shadow: var(--schatten-cta);
+  }
+
+  .demo__ausloeser:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  .demo__ausloeser:active:not(:disabled) {
+    transform: translateY(1px) scale(0.97);
+  }
+
+  .demo__ausloeser:disabled {
+    background: var(--z-dunkel-5);
+    color: var(--text-hell-fein);
+    box-shadow: none;
+    cursor: default;
+  }
+
+  .demo__ausloeser:focus-visible {
+    outline: 2px solid var(--weiss);
+    outline-offset: 3px;
+  }
+
+  .demo__wort {
+    font-family: var(--schrift);
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .demo__ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: var(--r-kreis);
+    border: 1px solid rgba(242, 178, 62, 0.35);
+  }
+
+  .demo__sagt {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--text-hell-leise);
+    min-height: 2.6em;
+    max-width: 34ch;
+  }
+
+  /* Der Blitz: einmal weiß über alles, dann weg. Kein Dauerleuchten — es
+     soll an eine Kamera erinnern, nicht an einen Alarm. */
+  .demo__blitz {
+    position: absolute;
+    inset: 0;
+    background: var(--weiss);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .demo__blitz[data-an] {
+    animation: blitzen 0.36s ease-out;
+  }
+
+  @keyframes blitzen {
+    0% { opacity: 0.92; }
+    100% { opacity: 0; }
+  }
+
+  .demo__fuss {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .demo__labor {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .demo__abzuege {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px;
+  }
+
+  /* Ein Abzug: weißer Rand unten, wie bei einem Sofortbild. Das Bild selbst
+     ist eine Fläche — es gibt keins, und eines zu erfinden wäre gelogen.
+
+     `:global`, weil diese drei Elemente erst im Browser entstehen. Astro
+     bindet Stile an ein Attribut, das es beim Bauen setzt; was das Skript
+     später erzeugt, trägt es nicht. Ohne `:global` waren die Abzüge
+     unsichtbar — sie standen da, ganz ohne Fläche. */
+  :global(.abzug) {
+    background: var(--weiss);
+    border: 1px solid var(--linie);
+    border-radius: 4px;
+    padding: 5px 5px 22px;
+    position: relative;
+    animation: einflug 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+  }
+
+  :global(.abzug__bild) {
+    display: block;
+    aspect-ratio: 3 / 2;
+    border-radius: 2px;
+    background: linear-gradient(135deg, var(--z-hell-4), var(--z-hell-2));
+  }
+
+  :global(.abzug__zeile) {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    bottom: 5px;
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: 0.06em;
+    color: var(--text-fein);
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  @media (max-width: 640px) {
+    .demo__zahl {
+      font-size: 44px;
+    }
+  }
+</style>
+
+<script>
+  const wurzel = document.querySelector<HTMLElement>('[data-einwegdemo]');
+
+  if (wurzel) {
+    const zaehler = wurzel.querySelector<HTMLElement>('[data-zaehler]')!;
+    const knopf = wurzel.querySelector<HTMLButtonElement>('[data-ausloesen]')!;
+    const blitz = wurzel.querySelector<HTMLElement>('[data-blitz]')!;
+    const sagt = wurzel.querySelector<HTMLElement>('[data-sagt]')!;
+    const entwickeln = wurzel.querySelector<HTMLButtonElement>('[data-entwickeln]')!;
+    const neu = wurzel.querySelector<HTMLButtonElement>('[data-neu]')!;
+    const labor = wurzel.querySelector<HTMLElement>('[data-labor]')!;
+    const abzuege = wurzel.querySelector<HTMLElement>('[data-abzuege]')!;
+    const laengen = [...wurzel.querySelectorAll<HTMLButtonElement>('[data-laenge]')];
+
+    let filmlaenge = 24;
+    let abgedrueckt = 0;
+    let entwickelt = false;
+
+    /* Was der Zustand gerade sagt. Ein Satz je Lage — nicht drei, sonst liest
+       ihn niemand. */
+    function satz(): string {
+      if (entwickelt) return 'Alle Bilder auf einmal, mit Nummer und Uhrzeit. Vorher hat sie niemand gesehen.';
+      if (abgedrueckt === 0) return 'Kein Vorschaubild. Genau das ist der Witz.';
+      if (abgedrueckt >= filmlaenge) return 'Film voll. Jetzt entwickeln — vorher gibt es nichts zu sehen.';
+      if (abgedrueckt === 1) return 'Nichts passiert? Doch: eine Aufnahme weniger. Ansehen geht erst am Ende.';
+      return `${abgedrueckt} von ${filmlaenge} belichtet.`;
+    }
+
+    function zeichne(): void {
+      zaehler.textContent = String(filmlaenge - abgedrueckt);
+      knopf.disabled = abgedrueckt >= filmlaenge || entwickelt;
+      entwickeln.disabled = abgedrueckt === 0 || entwickelt;
+      sagt.textContent = satz();
+      laengen.forEach((l) => {
+        const an = Number(l.dataset.laenge) === filmlaenge;
+        l.classList.toggle('on', an);
+        l.setAttribute('aria-pressed', String(an));
+        /* Während ein Film läuft, lässt sich die Länge nicht mehr ändern —
+           sonst wäre der Zähler eine Anzeige ohne Bedeutung. */
+        l.disabled = abgedrueckt > 0 && !entwickelt;
+      });
+    }
+
+    knopf.addEventListener('click', () => {
+      if (abgedrueckt >= filmlaenge) return;
+      abgedrueckt++;
+      blitz.removeAttribute('data-an');
+      /* Neu anstoßen: Ohne das Umbrechen läuft die Animation beim zweiten
+         Druck nicht noch einmal. */
+      void blitz.offsetWidth;
+      blitz.setAttribute('data-an', '');
+      zeichne();
+    });
+
+    entwickeln.addEventListener('click', () => {
+      entwickelt = true;
+      const jetzt = new Date();
+      abzuege.replaceChildren(
+        ...Array.from({ length: abgedrueckt }, (_, i) => {
+          const a = document.createElement('span');
+          a.className = 'abzug';
+          a.style.animationDelay = `${Math.min(i, 12) * 40}ms`;
+          const bild = document.createElement('span');
+          bild.className = 'abzug__bild';
+          const zeile = document.createElement('span');
+          zeile.className = 'abzug__zeile';
+          const nr = document.createElement('span');
+          nr.textContent = String(i + 1).padStart(2, '0');
+          const zeit = document.createElement('span');
+          zeit.textContent = jetzt.toLocaleDateString('de-DE');
+          zeile.append(nr, zeit);
+          a.append(bild, zeile);
+          return a;
+        })
+      );
+      labor.hidden = false;
+      zeichne();
+    });
+
+    neu.addEventListener('click', () => {
+      abgedrueckt = 0;
+      entwickelt = false;
+      labor.hidden = true;
+      abzuege.replaceChildren();
+      zeichne();
+    });
+
+    laengen.forEach((l) =>
+      l.addEventListener('click', () => {
+        filmlaenge = Number(l.dataset.laenge);
+        abgedrueckt = 0;
+        entwickelt = false;
+        labor.hidden = true;
+        abzuege.replaceChildren();
+        zeichne();
+      })
+    );
+
+    zeichne();
+  }
+</script>

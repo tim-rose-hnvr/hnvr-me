@@ -112,12 +112,43 @@ export const modulseiten: Modulseite[] = [
     knoepfe: [{ text: 'Kostenlos testen', ziel: '/kontakt' }, { text: 'Film selbst durchknipsen', ziel: '#demo' }],
     merkmale: ['Keine App', 'Keine Vorschau', 'Alle Bilder bei euch'],
     screenshot: null,
-    ablaufTitel: '{{ laborTitel }}',
-    ablauf: [],
+    ablaufTitel: 'So läuft ein Film',
+    ablauf: [
+      {
+        titel: 'Film holen',
+        text: 'QR-Code am Tisch scannen, Name eintippen, fertig. Keine App, kein Konto — die Seite öffnet sich im Browser und merkt sich den Film auf dem Gerät.',
+      },
+      {
+        titel: 'Knipsen, ohne zu schauen',
+        text: 'Auslösen, Blitz, Zählwerk eins runter. Kein Vorschaubild, kein Löschen, kein zweiter Versuch. Ist der Film voll, ist er voll.',
+      },
+      {
+        titel: 'Entwickeln',
+        text: 'Zum eingestellten Zeitpunkt kommen alle Bilder auf einmal — mit Nummer, Datum und Uhrzeit, wie vom Labor. Vorher sieht sie niemand, auch der Gast nicht.',
+      },
+    ],
     vertiefungTitel: 'Warum das funktioniert',
-    vertiefungText: '',
+    vertiefungText:
+      'Weil das Fehlende der Reiz ist. Wer jedes Bild sofort sieht, macht dasselbe Bild dreimal und behält das dritte — und am Ende gleichen sich alle. Wer nicht nachsehen kann, drückt einmal ab und wendet sich wieder dem Abend zu. Was am nächsten Tag ankommt, ist unschärfer, schiefer und deutlich näher an dem, was wirklich los war. Dieselbe Wette hat die Wegwerfkamera auf jeder Hochzeitstafel gewonnen, nur ohne das Warten auf den Drogeriemarkt.',
     punkte: ['Filmlänge pro Gast: 12, 24 oder 36 Aufnahmen — nachladbar auf Wunsch', 'Entwicklungszeitpunkt: sofort, um Mitternacht, am Tag danach oder von Hand', 'Look: Kleinbild-Korn, Datumsstempel, Blitz-Anmutung oder ganz neutral', 'Moderation: alles automatisch freigeben oder vorher durchsehen', 'Ausgabe: in die Event-Galerie, auf die Foto-Wall, in die Mosaik-Wand oder in den Druck'],
-    wissen: [],
+    wissen: [
+      {
+        titel: 'Die Gäste brauchen Netz',
+        text: 'Anders als der Booth läuft dieses Modul auf fremden Handys. Ohne WLAN oder Mobilfunk kommt kein Bild an. Der Hotspot der Box reicht für den Saal, nicht für den Parkplatz.',
+      },
+      {
+        titel: 'Ein Film gehört einem Gerät',
+        text: 'Wer sein Handy weggibt, gibt seinen Film weg. Das ist so gewollt — sonst wäre es eine Galerie mit Zähler.',
+      },
+      {
+        titel: 'Die Bilder liegen bei euch',
+        text: 'Jede Aufnahme geht sofort auf die Box, nicht in eine Cloud. Der Gast sieht sie erst nach der Entwicklung; ihr könnt vorher moderieren.',
+      },
+      {
+        titel: 'Erklären hilft',
+        text: 'Ohne einen Satz am Tisch drückt der erste Gast zweimal und wundert sich. Ein Aufsteller mit „Kein Nachschauen — genau das ist der Witz" spart die Hälfte der Rückfragen.',
+      },
+    ],
     faelle: [{ kennung: 'Hochzeit · 140 Gäste', titel: '1.870 Aufnahmen', text: '78 Gäste haben ihren Film benutzt, im Schnitt 24 von 24 Bildern. Entwickelt am Sonntag um 10 Uhr — der Galerie-Link wurde 640-mal geöffnet.' }, { kennung: 'Firmenfeier · 3 Standorte', titel: 'Ein Film, drei Städte', text: 'Jeder Standort bekam eigene QR-Codes, alle Bilder liefen in eine gemeinsame Entwicklung — montags als Rundmail.' }],
     schluss: 'Film ausprobieren',
     schlussZeile: '14 Tage vollständig testen, ohne Kreditkarte.',

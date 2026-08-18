@@ -1,0 +1,319 @@
+---
+import { weg } from '../lib/weg';
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+
+// Übernommen aus dem alten Stand, aber nicht wörtlich: dort standen
+// Spalten in der Tabelle, die das Programm nicht liest (typ, utm_*,
+// farbe, hintergrund, modulform, kuerzel). Was hier steht, ist gegen
+// `pnkt/charge.go` und `pnkt/serienweg.go` geprüft — jede Zeile lässt
+// sich dort wiederfinden.
+//
+// Es sind zwei verschiedene Wege, und der Unterschied ist der Grund,
+// warum beide existieren: die Massenanlage nimmt fertige Ziele, die
+// Serie nimmt ein Muster und setzt ein.
+
+const spalten = [
+  { spalte: 'ziel', pflicht: true, bedeutung: 'Wohin der Code führt. Ohne diese Spalte bricht der Aufruf ab.', beispiel: 'https://example.de/aktion' },
+  { spalte: 'name', pflicht: false, bedeutung: 'Bezeichnung in der Zentrale und im Dateinamen.', beispiel: 'Plakat Bahnhof' },
+  { spalte: 'gtin', pflicht: false, bedeutung: 'Artikelnummer. Gedruckt wird dann der GS1 Digital Link statt des Kurzwegs.', beispiel: '4006381333931' },
+  { spalte: 'charge', pflicht: false, bedeutung: 'Chargennummer, wird in den Digital Link aufgenommen.', beispiel: 'L-2026-04' },
+  { spalte: 'ordner', pflicht: false, bedeutung: 'Ablagefach in der Zentrale.', beispiel: 'Frühjahr 2026' },
+];
+
+const stellschrauben = [
+  { name: 'breite', standard: '40', text: 'Kantenlänge je Code in Millimetern.' },
+  { name: 'stufe', standard: 'M', text: 'Fehlerkorrektur: L, M, Q oder H.' },
+  { name: 'verfahren', standard: 'offset', text: 'Entscheidet über die kleinste zulässige Modulgröße.' },
+  { name: 'anlegen', standard: 'aus', text: 'Mit 1 entstehen dynamische Codes, deren Ziel später änderbar bleibt.' },
+];
+
+const paket = [
+  { datei: 'einzeln/', text: 'Jedes Stück für sich — SVG und PDF, bei der Massenanlage zusätzlich EPS.' },
+  { datei: 'bogen-01.pdf', text: 'Ausgeschossen zum Drucken und Schneiden. Nur bei der Serie.' },
+  { datei: 'bericht.csv', text: 'Je Zeile: Kürzel, Note, Modulgröße, druckreif ja oder nein, und die Befunde im Klartext.' },
+  { datei: 'LIESMICH.txt', text: 'Stückzahl, Maß, Bogenaufteilung, Anschnitt. Damit die Druckerei nicht nachfragen muss.' },
+];
+---
+
+<Seite
+  titel="Serie & Massenanlage"
+  beschreibung="Eine Tabelle hinein, ein Archiv heraus: jede Zeile wird ein Code, jeder Code kommt als Datei — dazu ein Bericht, der festhält, welche Zeile nicht druckreif ist."
+  aktiv=""
+>
+  <section class="spur">
+    <span class="tag tag-accent-2">
+      <Icon name="bogen" groesse={16} />
+      Serie
+    </span>
+    <h1 class="titel-seite">Eine Tabelle hinein,<br />ein Archiv heraus</h1>
+    <p class="fliess">
+      Für Seriennummern, Filialen, Tischnummern, Etiketten einer ganzen Charge.
+      Jede Zeile wird ein Code, jeder Code kommt als Datei heraus — dazu ein
+      Bericht, der festhält, welche Zeile nicht durchgegangen ist und warum.
+    </p>
+    <div class="knopfreihe">
+      <a href={weg('/werkstatt')} class="btn btn-primary knopf-gross">
+        <Icon name="code" />
+        Zur Werkstatt
+      </a>
+      <a href={weg('/lesbarkeit')} class="btn btn-secondary knopf-gross">
+        <Icon name="geprueft" />
+        Was geprüft wird
+      </a>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="zwei-wege">
+      <article class="panel">
+        <div class="kicker">Weg 1 — Massenanlage</div>
+        <h2 class="titel-panel">Du hast die Ziele schon</h2>
+        <p class="fliess-klein">
+          Eine Spalte mit fertigen Adressen, eine Zeile je Code. Das ist der
+          Fall bei Etiketten mit Artikelnummer, bei Filialen mit eigener Seite,
+          bei allem, was aus einem anderen System kommt.
+        </p>
+        <pre class="tabelle-probe"><code>name,ziel,ordner
+Plakat Bahnhof,https://example.de/aktion,Frühjahr
+Etikett Kaffee,https://example.de/kaffee,Produkte</code></pre>
+        <p class="fussnote">
+          Semikolon und Komma werden beide erkannt. Deutsche Tabellenprogramme
+          schreiben Semikolon, und wer aus Excel exportiert, weiß davon nichts.
+        </p>
+      </article>
+
+      <article class="panel">
+        <div class="kicker">Weg 2 — Serie mit Muster</div>
+        <h2 class="titel-panel">Du hast nur die Nummern</h2>
+        <p class="fliess-klein">
+          Wer 24 Tischcodes braucht, hat selten eine Spalte mit 24 fertigen
+          Adressen. Er hat eine Spalte <code>Tisch</code> mit den Zahlen 1 bis
+          24 und im Kopf die Regel. Genau diese Regel wird eingesetzt.
+        </p>
+        <pre class="tabelle-probe"><code>Muster:  https://example.de/t&#123;Tisch&#125;
+
+Tisch,Bereich
+1,Innen
+2,Innen
+3,Terrasse Süd</code></pre>
+        <p class="fussnote">
+          Das Muster wird gegen die Kopfzeile gehalten, <b>bevor</b> eine
+          einzige Zeile umgesetzt wird. Ein vertippter Spaltenname darf nicht 24
+          Codes ergeben, in denen wörtlich <code>&#123;Tsich&#125;</code> steht.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel">
+      <div class="kicker">Spalten, die gelesen werden</div>
+      <h2 class="titel-panel">Fünf, mehr nicht</h2>
+      <p class="fliess-klein tabellen-vorspann">
+        Unbekannte Spalten stören nicht — sie werden übergangen. Bei der Serie
+        darf jede Spalte im Muster vorkommen, auch <code>Bereich</code>.
+      </p>
+      <div class="tabellenrahmen">
+        <table class="table">
+          <thead>
+            <tr><th>Spalte</th><th>Bedeutung</th><th>Beispiel</th></tr>
+          </thead>
+          <tbody>
+            {spalten.map((s) => (
+              <tr>
+                <td class="spaltenname">
+                  <code>{s.spalte}</code>
+                  {s.pflicht && <span class="pflicht">Pflicht</span>}
+                </td>
+                <td>{s.bedeutung}</td>
+                <td class="beispiel">{s.beispiel}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="zweispalt">
+      <div class="panel">
+        <div class="kicker">Stellschrauben</div>
+        <h2 class="titel-panel">Was du mitgibst</h2>
+        <div class="tabellenrahmen">
+          <table class="table">
+            <thead>
+              <tr><th>Angabe</th><th>Vorgabe</th><th>Wirkung</th></tr>
+            </thead>
+            <tbody>
+              {stellschrauben.map((s) => (
+                <tr>
+                  <td><code>{s.name}</code></td>
+                  <td class="zahl">{s.standard}</td>
+                  <td>{s.text}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="fussnote">
+          Ohne <code>anlegen</code> entstehen statische Codes: das Ziel steht
+          dann fest im Muster und lässt sich nie mehr ändern — dafür
+          funktionieren sie ohne jeden Server, für immer.
+        </p>
+      </div>
+
+      <div class="panel">
+        <div class="kicker">Was im Archiv liegt</div>
+        <h2 class="titel-panel">Vier Dinge</h2>
+        <ul class="paketliste">
+          {paket.map((p) => (
+            <li>
+              <code>{p.datei}</code>
+              <span>{p.text}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel-dunkel">
+      <h2 class="titel-panel">Zwei Regeln, die im Code stehen</h2>
+      <div class="regelpaar">
+        <div>
+          <h3 class="regel-titel">Kein Stück wird kleiner gerechnet</h3>
+          <p class="dunkel-text">
+            Der Bogen verkleinert nichts, damit mehr daraufpasst. Passen die
+            Stücke nicht, werden es mehr Bogen. Die Modulgröße ist eine
+            Druckentscheidung und keine Platzfrage — wer sie dem Layout opfert,
+            bekommt eine Auflage, die nicht scannt.
+          </p>
+        </div>
+        <div>
+          <h3 class="regel-titel">Nichts verschwindet still</h3>
+          <p class="dunkel-text">
+            Eine Zeile, die nicht durchgeht — leeres Ziel, doppeltes Ziel,
+            unlesbare Angabe — landet im Bericht mit Begründung, statt
+            wegzufallen. Wer 400 Codes anlegt, sieht sich keine 400 Dateien
+            einzeln an; er liest den Bericht.
+          </p>
+        </div>
+      </div>
+      <div class="knopfreihe">
+        <a href={weg('/schnittstelle')} class="btn btn-primary knopf-gross">
+          <Icon name="weiter" />
+          Als Schnittstelle aufrufen
+        </a>
+      </div>
+    </div>
+  </section>
+</Seite>
+
+<style>
+  .zwei-wege,
+  .zweispalt {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  .tabelle-probe {
+    background: var(--color-neutral-200);
+    border-radius: 18px;
+    padding: 16px 18px;
+    margin: 18px 0 14px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .tabelle-probe code { background: transparent; padding: 0; font-size: 13px; }
+
+  .tabellen-vorspann { margin: 0 0 18px; max-width: 46rem; }
+  .tabellenrahmen { overflow-x: auto; }
+  .table { width: 100%; }
+  .zahl { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .spaltenname { white-space: nowrap; }
+  .beispiel { color: rgba(32, 30, 29, 0.6); font-size: 14px; }
+  .pflicht {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent-700);
+    background: var(--color-accent-100);
+    border-radius: 999px;
+    padding: 3px 8px;
+  }
+
+  code {
+    font-size: 13px;
+    background: var(--color-neutral-200);
+    border-radius: 6px;
+    padding: 2px 7px;
+  }
+
+  .fussnote {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(32, 30, 29, 0.6);
+    margin: 14px 0 0;
+  }
+
+  .paketliste {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .paketliste li {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: rgba(32, 30, 29, 0.72);
+  }
+  .paketliste code { align-self: flex-start; }
+
+  .regelpaar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 26px;
+    margin-top: 6px;
+  }
+  .regel-titel {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .dunkel-text {
+    font-size: 15px;
+    line-height: 1.65;
+    color: rgba(245, 234, 216, 0.78);
+    margin: 0;
+  }
+
+  /* Ein Rasterfeld ist von Haus aus mindestens so breit wie sein
+     laengster unumbrechbarer Inhalt — eine Zeile `curl …` oder eine
+     Tabellenzelle mit `nowrap` sprengt sonst die Spalte und damit die
+     Seite. `min-width: 0` gibt das Feld frei; das Scrollen uebernimmt
+     der Rahmen innen. */
+  .zwei-wege > * { min-width: 0; }
+  .zweispalt > * { min-width: 0; }
+  .regelpaar > * { min-width: 0; }
+
+  @media (max-width: 860px) {
+    .zwei-wege,
+    .zweispalt,
+    .regelpaar { grid-template-columns: 1fr; }
+  }
+</style>

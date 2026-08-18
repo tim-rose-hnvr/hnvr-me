@@ -159,6 +159,7 @@ a.knopf.stark:hover{background:var(--color-accent-600);border-color:var(--color-
       <div class="tafel">
         <div class="tafel-kopf"><span>Vorschau</span><span id="masse"></span></div>
         <div class="vorschau">
+          <div class="suchlinie" id="suchlinie" hidden></div>
           <img id="bild" alt="Vorschau des Codes">
           <div class="vergleich" id="vergleich" hidden><img id="vergleichbild" alt=""></div>
           <span class="vergleichschip" id="vergleichschip" hidden></span>
@@ -464,8 +465,37 @@ async function datei(format) {
 }
 
 let letzteURLs = [];
+
+// Die Suchlinie erscheint erst nach 180 ms. Bei jedem Tastenanschlag
+// aufzublitzen waere Unruhe, kein Hinweis — die meisten Rechnungen sind
+// vorher fertig.
+let linienUhr = null;
+function linieAn(){
+  clearTimeout(linienUhr);
+  linienUhr = setTimeout(() => { e("suchlinie").hidden = false; }, 180);
+}
+function linieAus(){
+  clearTimeout(linienUhr);
+  e("suchlinie").hidden = true;
+}
+
+// Das Siegel atmet einmal, wenn das Urteil umschlaegt. Beim Umschalten
+// derselben Klasse laeuft keine Animation neu an; deshalb wird sie
+// entfernt, ein Umbruch erzwungen und sie neu gesetzt.
+let letztesUrteil = "";
+function siegelSchlaegtUm(pruefung){
+  if (pruefung === letztesUrteil) return;
+  letztesUrteil = pruefung;
+  const siegel = e("urteil").firstElementChild;
+  if (!siegel) return;
+  siegel.classList.remove("atmet");
+  void siegel.offsetWidth;
+  siegel.classList.add("atmet");
+}
+
 async function zeichnen() {
   e("logo-wert").textContent = Math.round(Number(e("logo").value)*100) + " %%";
+  linieAn();
 
   const antwort = await fetch("/api/v1/rendern",
     {method:"POST", body: JSON.stringify({...wunsch("svg"), alsJson:true})});
@@ -473,12 +503,15 @@ async function zeichnen() {
   if (d.fehler) {
     e("urteil").innerHTML = '<span class="urteil u-kritisch">nicht baubar</span>';
     e("befunde").innerHTML = '<div class="befund fehler"><b>'+d.fehler+'</b></div>';
+    siegelSchlaegtUm("kritisch");
+    linieAus();
     return;
   }
   const u = d.urteil;
   e("urteil").innerHTML = '<span class="urteil u-'+d.pruefung+'">'+
     (d.pruefung==="gut" ? "druckreif" : d.pruefung==="achtung" ? "achtung" : "so nicht drucken")+
     ' · Note '+u.note+'</span>';
+  siegelSchlaegtUm(d.pruefung);
   e("befunde").innerHTML = (u.befunde||[]).map(b =>
     '<div class="befund '+b.schwere+'"><b>'+b.text+'</b>'+(b.rat||"")+'</div>').join("");
   e("zahlen").innerHTML =
@@ -498,6 +531,7 @@ async function zeichnen() {
   const url = URL.createObjectURL(svg);
   letzteURLs.push(url);
   e("bild").src = url;
+  linieAus();
   e("a-svg").href = url;
 
   // Der Aufsteller ist eine fertige Karte und keine Ausgabe desselben

@@ -108,20 +108,22 @@ h1{font-family:var(--font-heading);font-size:1.5rem;letter-spacing:-.02em;margin
     <div id="liste"></div>
   </div>
 
-  <div class="tafel" id="verlauffeld" style="margin-top:1.1rem" hidden>
-    <div class="tafel-kopf">
-      <span>Verlauf · <b id="verlaufname"></b></span>
-      <span><span id="verlaufstand"></span>
-        <button type="button" id="verlaufzu" class="zumachen">schließen</button></span>
-    </div>
-    <div id="verlaufliste"></div>
-  </div>
-
   <div class="tafel" id="passfeld" style="margin-top:1.1rem" hidden>
     <div class="tafel-kopf"><span>Produktpässe</span><span id="passstand"></span></div>
     <div id="passliste"></div>
   </div>
 </main>
+
+<div class="einschub-grund" id="einschubgrund" hidden></div>
+<aside class="einschub" id="einschub" role="dialog" aria-modal="true"
+       aria-labelledby="einschubtitel" hidden>
+  <div class="einschub-kopf">
+    <h2 id="einschubtitel"></h2>
+    <button type="button" class="einschub-zu" id="einschubzu"
+            aria-label="Schließen">&times;</button>
+  </div>
+  <div class="einschub-koerper" id="einschubkoerper"></div>
+</aside>
 
 <script>
 const e = (id) => document.getElementById(id);
@@ -207,7 +209,13 @@ function zeigeOrdner(stand){
   e("ordner").innerHTML = html;
 }
 
+// Die geholten Codes bleiben nach Kennung greifbar. Es gibt keinen Weg,
+// der einen einzelnen Code liest — und es braucht auch keinen: die Liste
+// hat ihn gerade mitgebracht.
+let bekannteCodes = new Map();
+
 function zeigeListe(codes){
+  bekannteCodes = new Map(codes.map(c => [c.id, c]));
   if (!codes.length){
     e("liste").innerHTML = '<div class="leer">Nichts gefunden.</div>';
     return;
@@ -221,12 +229,7 @@ function zeigeListe(codes){
       '<td>' + sicher(c.ordner || "—") + '</td>' +
       '<td><span class="ziel">' + sicher(c.gtin ? ("GTIN " + c.gtin + " → " + (c.ziel||"")) : c.ziel) + '</span></td>' +
       '<td><div class="tun">' +
-        '<button type="button" data-tun="ordner" data-id="' + sicher(c.id) + '" ' +
-          'data-wert="' + sicher(c.ordner || "") + '">Ordner</button>' +
-        '<button type="button" data-tun="fassungen" data-id="' + sicher(c.id) + '" ' +
-          'data-name="' + sicher(c.name || c.kuerzel) + '">Verlauf</button>' +
-        '<button type="button" class="weg" data-tun="loeschen" data-id="' + sicher(c.id) + '" ' +
-          'data-kuerzel="' + sicher(c.kuerzel) + '">Löschen</button>' +
+        '<button type="button" data-tun="einschub" data-id="' + sicher(c.id) + '">Ansehen</button>' +
       '</div></td></tr>';
   }
   e("liste").innerHTML = html + '</tbody></table>';
@@ -283,106 +286,200 @@ e("ordner").addEventListener("click", (ev) => {
   laden();
 });
 
-e("liste").addEventListener("click", async (ev) => {
+e("liste").addEventListener("click", (ev) => {
   const b = ev.target.closest("button");
-  if (!b) return;
+  if (!b || b.dataset.tun !== "einschub") return;
+  einschubAuf(b.dataset.id, b);
+});
+
+// --- Einschub -----------------------------------------------------------
+//
+// Ein Code wird angetippt, das Blatt faehrt von rechts ein und zeigt
+// alles zu ihm: Ziel, Zahlen, Verlauf, und was man damit tun kann. Die
+// Liste bleibt stehen. Wer einen Code prueft, prueft danach den
+// naechsten — eine eigene Seite kostet jedes Mal den Weg zurueck.
+//
+// Der Verlauf steckt darin, nicht mehr als eigener Kasten: die Ablage
+// haengt nur an, jede Aenderung ist ein neuer Satz. Diese Geschichte
+// braucht man genau dann, wenn jemand fragt, wohin ein Code im Maerz
+// gezeigt hat — also waehrend man diesen einen Code ansieht.
+
+let einschubID = "";
+let einschubRueckkehr = null; // wohin der Tastaturfokus danach gehoert
+
+function einschubOffen(){ return !e("einschub").hidden; }
+
+async function einschubAuf(id, ausloeser){
+  const c = bekannteCodes.get(id);
+  if (!c) return;
+  einschubID = id;
+  einschubRueckkehr = ausloeser || null;
+
+  e("einschubtitel").textContent = c.name || c.kuerzel;
+  e("einschubkoerper").innerHTML = '<div class="leer">wird geholt …</div>';
+
+  e("einschubgrund").hidden = false;
+  e("einschub").hidden = false;
+  // Ein Umbruch zwischen "da" und "offen", sonst faengt der Uebergang
+  // beim Endwert an und es faehrt nichts.
+  void e("einschub").offsetWidth;
+  e("einschubgrund").classList.add("offen");
+  e("einschub").classList.add("offen");
+  e("einschubzu").focus();
+
+  // Beides zugleich holen; scheitert eines, faellt nicht alles aus.
+  const [stand, fassungen] = await Promise.all([
+    ruf("/api/v1/codes/" + encodeURIComponent(id) + "/statistik").catch(() => null),
+    ruf("/api/v1/codes/" + encodeURIComponent(id) + "/fassungen").catch(() => null),
+  ]);
+  if (einschubID !== id) return; // inzwischen woanders
+  e("einschubkoerper").innerHTML = einschubInhalt(c, stand, fassungen);
+}
+
+function einschubZu(){
+  if (!einschubOffen()) return;
+  e("einschubgrund").classList.remove("offen");
+  e("einschub").classList.remove("offen");
+  einschubID = "";
+  // Erst nach der Fahrt aus dem Baum nehmen, sonst springt es weg
+  // statt zu fahren. Ohne Bewegung ist die Dauer 0 und es passiert
+  // sofort — auch das ist richtig.
+  const dauer = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 300;
+  setTimeout(() => {
+    if (einschubID) return; // zwischenzeitlich neu geoeffnet
+    e("einschub").hidden = true;
+    e("einschubgrund").hidden = true;
+  }, dauer);
+  if (einschubRueckkehr && document.contains(einschubRueckkehr)) einschubRueckkehr.focus();
+  einschubRueckkehr = null;
+}
+
+function einschubInhalt(c, stand, fassungen){
+  const tage = stand || [];
+  const scans = tage.reduce((summe, t) => summe + (t.gesamt || 0), 0);
+  const weiter = tage.reduce((summe, t) => summe + ((t.zaehler || {})["schritt:weiter"] || 0), 0);
+  const letzter = tage.map(t => t.tag).sort().pop() || "—";
+
+  let html = "";
+
+  html += '<div class="einschub-block"><h3>Ziel</h3>' +
+    '<p class="ziel" style="max-width:none">' + sicher(c.ziel || "—") + '</p>' +
+    '<p class="hinweis">Kurzweg <b>/r/' + sicher(c.kuerzel) + '</b>' +
+    (c.ordner ? ' · Ordner <b>' + sicher(c.ordner) + '</b>' : ' · ohne Ordner') +
+    (c.gtin ? ' · GTIN <b>' + sicher(c.gtin) + '</b>' : '') + '</p></div>';
+
+  html += '<div class="einschub-block"><h3>Zahlen</h3>' +
+    '<p class="zahl">' + scans + (scans === 1 ? ' Scan' : ' Scans') +
+    ' · ' + weiter + ' mal weitergegangen · zuletzt ' + sicher(letzter) + '</p>' +
+    (scans === 0
+      ? '<p class="hinweis">Noch nichts gezählt. Gezählt wird der Aufruf des Kurzwegs — ' +
+        'eine Vorschau zählt nicht mit.</p>'
+      : '<p class="hinweis">Weiter reicht die Messung nicht: sobald jemand auf einer ' +
+        'fremden Seite ist, hört sie auf.</p>') + '</div>';
+
+  html += '<div class="einschub-block"><h3>Verlauf</h3>' + einschubFassungen(fassungen) + '</div>';
+
+  html += '<div class="einschub-block"><h3>Tun</h3><div class="tun" style="justify-content:flex-start">' +
+    '<a class="knopf" href="/r/' + encodeURIComponent(c.kuerzel) + '/vorschau" ' +
+      'target="_blank" rel="noopener">Ziel ansehen</a>' +
+    '<button type="button" data-tun="ordner">Ordner</button>' +
+    '<button type="button" class="weg" data-tun="loeschen">Löschen</button>' +
+    '</div><p class="hinweis">Die Vorschau zeigt das Ziel, ohne hinzugehen und ohne zu zählen.</p></div>';
+
+  return html;
+}
+
+function einschubFassungen(fassungen){
+  if (!fassungen || !fassungen.length) return '<p class="hinweis">Kein Verlauf lesbar.</p>';
+  // Neueste oben: danach sucht man zuerst.
+  const umgekehrt = fassungen.slice().reverse();
+  const jetzt = umgekehrt[0].fassung;
+  const stand = (f) => JSON.stringify([f.ziel, f.name || "", f.ordner || ""]);
+  const giltStand = stand(umgekehrt[0]);
+
+  let html = '<table class="liste"><thead><tr><th>Fassung</th><th>Wann</th>' +
+             '<th>Ziel</th><th></th></tr></thead><tbody>';
+  for (const f of umgekehrt){
+    const gilt = f.fassung === jetzt;
+    // Eine aeltere Fassung kann denselben Stand tragen wie die geltende
+    // — etwa direkt nach einem Zurueckholen. Dann gibt es nichts zu
+    // holen, und ein Knopf, der nur 409 ergibt, ist eine Falle.
+    const gleich = !gilt && stand(f) === giltStand;
+    html += '<tr>' +
+      '<td class="einsilbig">' + f.fassung + (gilt ? ' <span class="zahl">gilt</span>' : '') + '</td>' +
+      '<td>' + sicher(String(f.geaendert || f.erstellt).slice(0, 16).replace("T", " ")) + '</td>' +
+      '<td><span class="ziel">' + sicher(f.ziel) + '</span></td>' +
+      '<td><div class="tun">' + (gilt ? '' : (gleich
+        ? '<span class="zahl">gleicher Stand</span>'
+        : '<button type="button" data-tun="holen" data-fassung="' + f.fassung + '" ' +
+          'data-ziel="' + sicher(f.ziel) + '">Zurückholen</button>')) +
+      '</div></td></tr>';
+  }
+  return html + '</tbody></table>';
+}
+
+e("einschubkoerper").addEventListener("click", async (ev) => {
+  const b = ev.target.closest("button");
+  if (!b || !einschubID) return;
+  const c = bekannteCodes.get(einschubID);
+  if (!c) return;
   try {
     if (b.dataset.tun === "ordner"){
-      const name = prompt("In welchen Ordner? Leer lassen heißt: kein Ordner.", b.dataset.wert);
+      const name = prompt("In welchen Ordner? Leer lassen heißt: kein Ordner.", c.ordner || "");
       if (name === null) return;
-      await ruf("/api/v1/codes/" + encodeURIComponent(b.dataset.id), "PATCH", {ordner: name});
-    }
-    if (b.dataset.tun === "fassungen"){
-      await zeigeFassungen(b.dataset.id, b.dataset.name);
+      await ruf("/api/v1/codes/" + encodeURIComponent(c.id), "PATCH", {ordner: name});
+      const id = c.id;
+      await laden();
+      await einschubAuf(id, einschubRueckkehr);
       return;
     }
     if (b.dataset.tun === "loeschen"){
-      const sicherheit = prompt(
-        "Löschen entfernt das Ziel. Das Kürzel " + b.dataset.kuerzel +
+      const antwort = prompt(
+        "Löschen entfernt das Ziel. Das Kürzel " + c.kuerzel +
         " bleibt dauerhaft reserviert und wird nie erneut vergeben — " +
         "ein gedruckter Code zeigt danach auf eine Hinweisseite.\n\n" +
         "Zum Bestätigen das Kürzel eintippen:");
-      if (sicherheit === null) return;
-      if (sicherheit.trim().toLowerCase() !== b.dataset.kuerzel.toLowerCase()){
+      if (antwort === null) return;
+      if (antwort.trim().toLowerCase() !== c.kuerzel.toLowerCase()){
         melde("Kürzel stimmt nicht — nichts gelöscht.");
         return;
       }
-      await ruf("/api/v1/codes/" + encodeURIComponent(b.dataset.id), "DELETE");
+      await ruf("/api/v1/codes/" + encodeURIComponent(c.id), "DELETE");
+      einschubZu();
+      laden();
+      return;
     }
-    laden();
-  } catch (fehler) {
-    melde(fehler.message);
-  }
-});
-
-// --- Verlauf eines Codes -------------------------------------------------
-//
-// Die Ablage haengt nur an: jede Aenderung ist ein neuer Satz. Die
-// Geschichte eines gedruckten Codes steht damit ohnehin auf der Platte
-// — sie war bloss nicht sichtbar. Genau die braucht man, wenn jemand
-// fragt, wohin ein Code im Maerz gezeigt hat.
-let verlaufCode = "";
-
-async function zeigeFassungen(id, name){
-  verlaufCode = id;
-  e("verlauffeld").hidden = false;
-  e("verlaufname").textContent = name;
-  e("verlaufliste").innerHTML = '<div class="leer">wird geholt …</div>';
-  try {
-    const fassungen = await ruf("/api/v1/codes/" + encodeURIComponent(id) + "/fassungen") || [];
-    // Neueste oben: danach sucht man zuerst.
-    const umgekehrt = fassungen.slice().reverse();
-    const jetzt = umgekehrt.length ? umgekehrt[0].fassung : 0;
-    let html = '<table class="liste"><thead><tr><th>Fassung</th><th>Wann</th>' +
-               '<th>Ziel</th><th>Name</th><th></th></tr></thead><tbody>';
-    const stand = (f) => JSON.stringify([f.ziel, f.name || "", f.ordner || ""]);
-    const gilt_stand = umgekehrt.length ? stand(umgekehrt[0]) : "";
-    for (const f of umgekehrt){
-      const gilt = f.fassung === jetzt;
-      // Eine aeltere Fassung kann denselben Stand tragen wie die
-      // geltende — etwa direkt nach einem Zurueckholen. Dann gibt es
-      // nichts zu holen, und ein Knopf, der nur 409 ergibt, ist eine
-      // Falle. Der Server lehnt es ohnehin ab; hier steht der Grund.
-      const gleich = !gilt && stand(f) === gilt_stand;
-      html += '<tr>' +
-        '<td class="einsilbig">' + f.fassung +
-          (gilt ? ' <span class="zahl">gilt</span>' : '') + '</td>' +
-        '<td>' + sicher(String(f.geaendert || f.erstellt).slice(0, 16).replace("T", " ")) + '</td>' +
-        '<td><span class="ziel">' + sicher(f.ziel) + '</span></td>' +
-        '<td>' + sicher(f.name || "—") + '</td>' +
-        '<td><div class="tun">' + (gilt ? '' : (gleich
-          ? '<span class="zahl">gleicher Stand</span>'
-          : '<button type="button" data-tun="holen" data-fassung="' + f.fassung + '" ' +
-            'data-ziel="' + sicher(f.ziel) + '">Zurückholen</button>')) +
-        '</div></td></tr>';
+    if (b.dataset.tun === "holen"){
+      if (!confirm("Fassung " + b.dataset.fassung + " zurückholen?\n\n" +
+                   "Das Ziel wird wieder " + b.dataset.ziel + ".\n" +
+                   "Überschrieben wird nichts: es entsteht eine neue Fassung, " +
+                   "und der bisherige Stand bleibt im Verlauf stehen.")) return;
+      await ruf("/api/v1/codes/" + encodeURIComponent(c.id) +
+                "/fassungen/" + encodeURIComponent(b.dataset.fassung), "POST");
+      const id = c.id;
+      await laden();
+      await einschubAuf(id, einschubRueckkehr);
+      return;
     }
-    e("verlaufliste").innerHTML = html + '</tbody></table>';
-    e("verlaufstand").textContent = fassungen.length +
-      (fassungen.length === 1 ? " Fassung" : " Fassungen");
-  } catch (fehler) {
-    e("verlaufliste").innerHTML = "";
-    melde(fehler.message);
-  }
-}
-
-e("verlaufliste").addEventListener("click", async (ev) => {
-  const b = ev.target.closest("button");
-  if (!b || b.dataset.tun !== "holen" || !verlaufCode) return;
-  if (!confirm("Fassung " + b.dataset.fassung + " zurückholen?\n\n" +
-               "Das Ziel wird wieder " + b.dataset.ziel + ".\n" +
-               "Überschrieben wird nichts: es entsteht eine neue Fassung, " +
-               "und der bisherige Stand bleibt im Verlauf stehen.")) return;
-  try {
-    await ruf("/api/v1/codes/" + encodeURIComponent(verlaufCode) +
-              "/fassungen/" + encodeURIComponent(b.dataset.fassung), "POST");
-    await zeigeFassungen(verlaufCode, e("verlaufname").textContent);
-    laden();
   } catch (fehler) { melde(fehler.message); }
 });
 
-e("verlaufzu").addEventListener("click", () => {
-  e("verlauffeld").hidden = true;
-  verlaufCode = "";
+e("einschubzu").addEventListener("click", einschubZu);
+e("einschubgrund").addEventListener("click", einschubZu);
+
+// Der Fokus bleibt im Blatt, solange es offen ist. Ohne das laeuft die
+// Tabulatortaste hinter den Grund und man bedient blind eine Liste, die
+// man nicht sieht.
+document.addEventListener("keydown", (ev) => {
+  if (!einschubOffen()) return;
+  if (ev.key === "Escape"){ einschubZu(); return; }
+  if (ev.key !== "Tab") return;
+  const greifbar = e("einschub").querySelectorAll(
+    "a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex='-1'])");
+  if (!greifbar.length) return;
+  const erster = greifbar[0], letzter = greifbar[greifbar.length - 1];
+  if (ev.shiftKey && document.activeElement === erster){ ev.preventDefault(); letzter.focus(); }
+  else if (!ev.shiftKey && document.activeElement === letzter){ ev.preventDefault(); erster.focus(); }
 });
 
 // Tippen loest nicht bei jedem Anschlag eine Anfrage aus.

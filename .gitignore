@@ -16,5 +16,11 @@ dist/
 .env.*
 !.env.example
 
+# Ergebnis von `npm run eine-datei` — 4 MB, entsteht aus dist/.
+website/pnkt-me.html
+
 .DS_Store
 *.log
+
+# Der Wix-Bau legt seinen Zwischenstand hier ab.
+punkt/.wix/

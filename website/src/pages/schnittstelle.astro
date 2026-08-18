@@ -1,0 +1,358 @@
+---
+import { weg } from '../lib/weg';
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+
+// Diese Seite ist die einzige im Marketingbereich, die man beim Lesen
+// nachprüfen kann — jeder Weg unten steht in `pnkt/main.go`, und ob er
+// einen Schlüssel braucht, steht dort an derselben Zeile
+// (`d.mitSchluessel(schreibend, …)`).
+//
+// Deshalb keine erfundenen Endpunkte und keine, die „bald kommen".
+// Eine Schnittstellenbeschreibung, die etwas nennt, das 404 gibt, ist
+// schlimmer als gar keine: sie kostet den Leser eine Stunde, bevor er
+// merkt, dass nicht er den Fehler gemacht hat.
+
+type Zugang = 'offen' | 'lesen' | 'schreiben';
+
+const gruppen: { titel: string; text: string; wege: { art: string; pfad: string; zweck: string; zugang: Zugang }[] }[] = [
+  {
+    titel: 'Ohne Schlüssel',
+    text: 'Codes erzeugen und Ziele prüfen geht ohne Konto. Wer nur eine Datei braucht, braucht keine Anmeldung.',
+    wege: [
+      { art: 'GET', pfad: '/api/v1/typen', zweck: 'Alle Inhaltstypen samt Formularaufbau', zugang: 'offen' },
+      { art: 'POST', pfad: '/api/v1/rendern', zweck: 'Code erzeugen — SVG, PDF oder EPS', zugang: 'offen' },
+      { art: 'POST', pfad: '/api/v1/inhalt', zweck: 'Aus Feldern die Nutzlast bauen (vCard, WLAN, GiroCode …)', zugang: 'offen' },
+      { art: 'GET', pfad: '/api/v1/druckpruefung', zweck: 'Vorgabe beurteilen, ohne etwas zu erzeugen', zugang: 'offen' },
+      { art: 'GET', pfad: '/api/v1/gs1', zweck: 'GS1 Digital Link aus GTIN und Charge bauen', zugang: 'offen' },
+      { art: 'GET', pfad: '/api/v1/vorlagen', zweck: 'Vorlagen für Landeseiten', zugang: 'offen' },
+      { art: 'GET', pfad: '/api/v1/vorlage.csv', zweck: 'Beispieltabelle für die Massenanlage', zugang: 'offen' },
+    ],
+  },
+  {
+    titel: 'Codes',
+    text: 'Der Kern. Ein dynamischer Code behält sein Kürzel für immer — geändert wird nur, wohin es zeigt.',
+    wege: [
+      { art: 'GET', pfad: '/api/v1/codes', zweck: 'Auflisten (suche, ordner, limit, versatz)', zugang: 'lesen' },
+      { art: 'POST', pfad: '/api/v1/codes', zweck: 'Anlegen', zugang: 'schreiben' },
+      { art: 'PATCH', pfad: '/api/v1/codes/{id}', zweck: 'Ziel, Regeln, Name, Zustand ändern', zugang: 'schreiben' },
+      { art: 'DELETE', pfad: '/api/v1/codes/{id}', zweck: 'Löschen — das Kürzel bleibt reserviert', zugang: 'schreiben' },
+      { art: 'GET', pfad: '/api/v1/ordner', zweck: 'Ordner samt Anzahl', zugang: 'lesen' },
+      { art: 'GET', pfad: '/api/v1/codes/{id}/fassungen', zweck: 'Alle früheren Stände lesen', zugang: 'lesen' },
+      { art: 'POST', pfad: '/api/v1/codes/{id}/fassungen/{nr}', zweck: 'Einen Stand zurückholen — als neue Fassung', zugang: 'schreiben' },
+      { art: 'GET', pfad: '/api/v1/codes/{id}/entwuerfe', zweck: 'Aufgehobene Gestaltungen', zugang: 'lesen' },
+      { art: 'POST', pfad: '/api/v1/codes/{id}/entwuerfe', zweck: 'Gestaltung sichern', zugang: 'schreiben' },
+    ],
+  },
+  {
+    titel: 'Landeseite',
+    text: 'Statt einer fremden Adresse eine kleine Seite, die aus dem Server kommt und nichts nachlädt.',
+    wege: [
+      { art: 'GET', pfad: '/api/v1/codes/{id}/seite', zweck: 'Seite lesen', zugang: 'lesen' },
+      { art: 'PUT', pfad: '/api/v1/codes/{id}/seite', zweck: 'Seite setzen', zugang: 'schreiben' },
+      { art: 'DELETE', pfad: '/api/v1/codes/{id}/seite', zweck: 'Seite entfernen', zugang: 'schreiben' },
+      { art: 'POST', pfad: '/api/v1/seite/pruefen', zweck: 'Entwurf prüfen, ohne ihn zu setzen', zugang: 'offen' },
+      { art: 'POST', pfad: '/api/v1/seite/vorschau', zweck: 'Entwurf als HTML zurückbekommen', zugang: 'offen' },
+    ],
+  },
+  {
+    titel: 'Serie und Druck',
+    text: 'Tabelle hinein, Archiv heraus. Die Vorschau sagt vorher, was entstehen würde.',
+    wege: [
+      { art: 'POST', pfad: '/api/v1/serie/vorschau', zweck: 'Muster gegen die Kopfzeile halten, Ziele zeigen', zugang: 'lesen' },
+      { art: 'POST', pfad: '/api/v1/serie', zweck: 'Serie anlegen — ZIP mit Bogen, Einzeldateien, Bericht', zugang: 'schreiben' },
+      { art: 'POST', pfad: '/api/v1/massenanlage', zweck: 'CSV mit fertigen Zielen hinein, ZIP heraus', zugang: 'schreiben' },
+      { art: 'GET', pfad: '/qr.svg · /qr.pdf · /qr.eps', zweck: 'Einen Code direkt als Datei', zugang: 'offen' },
+      { art: 'GET', pfad: '/aufsteller.pdf', zweck: 'Fertige Karte — A7, A6, A5 oder 10 × 10 cm', zugang: 'offen' },
+    ],
+  },
+  {
+    titel: 'Zahlen und Protokoll',
+    text: 'Gezählt wird der Scan und der Knopfdruck auf der Landeseite. Weiter reicht die Messung nicht, und weiter wird auch nichts behauptet.',
+    wege: [
+      { art: 'GET', pfad: '/api/v1/zahlen', zweck: 'Übersicht über alle Codes (tage=30)', zugang: 'lesen' },
+      { art: 'GET', pfad: '/api/v1/codes/{id}/statistik', zweck: 'Auswertung eines Codes', zugang: 'lesen' },
+      { art: 'GET', pfad: '/api/v1/codes/{id}/protokoll', zweck: 'Wer hat wann was geändert', zugang: 'lesen' },
+    ],
+  },
+  {
+    titel: 'Produktpass',
+    text: 'Für Etiketten mit GTIN. Der gedruckte Code ist dann ein GS1 Digital Link und kein Kurzweg.',
+    wege: [
+      { art: 'GET', pfad: '/api/v1/pass', zweck: 'Hinterlegte Pässe', zugang: 'lesen' },
+      { art: 'PUT', pfad: '/api/v1/pass', zweck: 'Pass setzen', zugang: 'schreiben' },
+      { art: 'DELETE', pfad: '/api/v1/pass/{gtin}', zweck: 'Pass zurückziehen', zugang: 'schreiben' },
+      { art: 'POST', pfad: '/api/v1/pass/pruefen', zweck: 'Entwurf prüfen', zugang: 'offen' },
+    ],
+  },
+  {
+    titel: 'Kurzwege',
+    text: 'Was der Gast aufruft. Diese Wege sind offen — sie stehen auf dem Papier.',
+    wege: [
+      { art: 'GET', pfad: '/r/{kürzel}', zweck: 'Weiterleitung, zählt den Scan', zugang: 'offen' },
+      { art: 'GET', pfad: '/r/{kürzel}/vorschau', zweck: 'Ziel anzeigen, ohne hinzugehen und ohne zu zählen', zugang: 'offen' },
+      { art: 'GET', pfad: '/r/{kürzel}/weiter', zweck: 'Knopf der Landeseite — eigener Zähler, nicht als Scan', zugang: 'offen' },
+      { art: 'GET', pfad: '/01/{gtin}', zweck: 'GS1 Digital Link — Pass oder hinterlegtes Ziel', zugang: 'offen' },
+      { art: 'GET', pfad: '/p/{gtin}', zweck: 'Produktpass als Seite', zugang: 'offen' },
+    ],
+  },
+];
+
+const zugangsname: Record<Zugang, string> = {
+  offen: 'offen',
+  lesen: 'Schlüssel',
+  schreiben: 'Schlüssel, schreibend',
+};
+
+const beispielRendern = `curl -X POST https://pnkt.me/api/v1/rendern \\
+  -H 'content-type: application/json' \\
+  -d '{
+    "text": "https://example.de/aktion",
+    "format": "pdf",
+    "breiteMm": 60,
+    "verfahren": "offset",
+    "stufe": "Q",
+    "stil": {
+      "modulform": "weich",
+      "augenrahmen": "kissen",
+      "vordergrund": "#8c491a",
+      "hintergrund": "#f5ead8",
+      "ruhezone": 4
+    }
+  }' --output code.pdf`;
+
+const beispielCode = `# Schlüssel holen — einmal, aus Konto und Passwort
+curl -X POST https://pnkt.me/api/v1/schluessel \\
+  -H 'content-type: application/json' \\
+  -d '{"mail":"du@example.de","passwort":"…","name":"Kasse"}'
+
+# Code anlegen
+curl -X POST https://pnkt.me/api/v1/codes \\
+  -H 'x-punkt-schluessel: pk_live_…' \\
+  -H 'content-type: application/json' \\
+  -d '{"name":"Plakat Bahnhof","ziel":"https://example.de/fruehjahr",
+       "ordner":"Frühjahr 2026"}'
+
+# Ziel ändern — das gedruckte Muster bleibt gleich
+curl -X PATCH https://pnkt.me/api/v1/codes/{id} \\
+  -H 'x-punkt-schluessel: pk_live_…' \\
+  -H 'content-type: application/json' \\
+  -d '{"ziel":"https://example.de/sommer"}'`;
+---
+
+<Seite
+  titel="Schnittstelle"
+  beschreibung="REST ohne Umschweife: JSON hinein, JSON oder Datei heraus. Vier Wege brauchen überhaupt keinen Schlüssel — Codes erzeugen geht ohne Konto."
+  aktiv=""
+>
+  <section class="spur">
+    <span class="tag tag-accent">
+      <Icon name="weiter" groesse={16} />
+      REST
+    </span>
+    <h1 class="titel-seite">JSON hinein,<br />Datei heraus</h1>
+    <p class="fliess">
+      Der Schlüssel aus der Zentrale gehört in den Kopf
+      <code>x-punkt-schluessel</code>. Ein Schlüssel, der nur lesen darf, wird
+      bei schreibenden Aufrufen mit 403 abgewiesen — nicht stillschweigend
+      ignoriert.
+    </p>
+    <div class="knopfreihe">
+      <a href={weg('/massenanlage')} class="btn btn-primary knopf-gross">
+        <Icon name="bogen" />
+        Serie und Massenanlage
+      </a>
+      <a href={weg('/lesbarkeit')} class="btn btn-secondary knopf-gross">
+        <Icon name="geprueft" />
+        Grenzwerte der Prüfung
+      </a>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel-dunkel kopfzeilen">
+      <div>
+        <div class="kicker kicker-hell">Anfrage</div>
+        <code class="kopf">x-punkt-schluessel</code>
+        <p class="dunkel-text">
+          Trägt den Schlüssel. Fehlt er oder stimmt er nicht, kommt 401 mit
+          einer Begründung im Klartext.
+        </p>
+      </div>
+      <div>
+        <div class="kicker kicker-hell">Antwort</div>
+        <code class="kopf">x-punkt-pruefung</code>
+        <p class="dunkel-text">
+          Trägt das Urteil der Lesbarkeitsprüfung — auch beim Binärabruf, wo im
+          Rumpf ein PDF steht und kein JSON.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {gruppen.map((g) => (
+    <section class="spur">
+      <div class="panel">
+        <h2 class="titel-panel">{g.titel}</h2>
+        <p class="fliess-klein gruppentext">{g.text}</p>
+        <div class="tabellenrahmen">
+          <table class="table">
+            <thead>
+              <tr><th>Methode</th><th>Pfad</th><th>Zweck</th><th>Zugang</th></tr>
+            </thead>
+            <tbody>
+              {g.wege.map((w) => (
+                <tr>
+                  <td><span class:list={['art', `art-${w.art.toLowerCase()}`]}>{w.art}</span></td>
+                  <td class="pfad"><code>{w.pfad}</code></td>
+                  <td>{w.zweck}</td>
+                  <td>
+                    <span class:list={['zugang', `zugang-${w.zugang}`]}>
+                      {zugangsname[w.zugang]}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  ))}
+
+  <section class="spur">
+    <div class="beispiele">
+      <article class="panel">
+        <div class="kicker">Ohne Konto</div>
+        <h2 class="titel-panel">Ein PDF erzeugen</h2>
+        <p class="fliess-klein">
+          Das Ergebnis sind echte Vektorpfade in Millimetermaß — kein
+          eingebettetes Bild, das die Druckerei zurückweist.
+        </p>
+        <pre class="code-block"><code>{beispielRendern}</code></pre>
+      </article>
+
+      <article class="panel">
+        <div class="kicker">Mit Schlüssel</div>
+        <h2 class="titel-panel">Anlegen und umleiten</h2>
+        <p class="fliess-klein">
+          Der zweite Aufruf ist der Grund für das ganze System: das Ziel ändert
+          sich, das gedruckte Muster nicht.
+        </p>
+        <pre class="code-block"><code>{beispielCode}</code></pre>
+      </article>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel-dunkel">
+      <h2 class="titel-panel">Was die Schnittstelle nicht tut</h2>
+      <p class="dunkel-text breit">
+        Sie verschickt keine E-Mail, setzt kein Zählpixel auf fremden Seiten und
+        ruft nichts von fremden Servern ab. Was gezählt wird, sind zwei Dinge:
+        der Aufruf eines Kurzwegs und der Knopfdruck auf einer Landeseite. Sobald
+        jemand auf eine fremde Seite geht, hört die Messung auf — alles Weitere
+        wäre geraten.
+      </p>
+    </div>
+  </section>
+</Seite>
+
+<style>
+  .kopfzeilen {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  .kopf {
+    display: inline-block;
+    font-size: 15px;
+    background: rgba(245, 234, 216, 0.14);
+    color: var(--color-bg);
+    border-radius: 10px;
+    padding: 7px 13px;
+    margin-bottom: 12px;
+  }
+  .dunkel-text {
+    font-size: 15px;
+    line-height: 1.65;
+    color: rgba(245, 234, 216, 0.78);
+    margin: 0;
+  }
+  .dunkel-text.breit { max-width: 46rem; }
+
+  .gruppentext { margin: 0 0 18px; max-width: 46rem; }
+  .tabellenrahmen { overflow-x: auto; }
+  .table { width: 100%; }
+  .pfad { white-space: nowrap; }
+
+  code {
+    font-size: 13px;
+    background: var(--color-neutral-200);
+    border-radius: 6px;
+    padding: 2px 7px;
+  }
+
+  .art {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+    padding: 4px 10px;
+    background: var(--color-neutral-200);
+    color: var(--color-neutral-800);
+  }
+  /* Lesend und schreibend unterscheiden sich in der Farbe, nicht nur im
+     Wort — eine Tabelle mit 40 Zeilen liest niemand Wort für Wort. */
+  .art-get { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
+  .art-post,
+  .art-put,
+  .art-patch { background: var(--color-accent-200); color: var(--color-accent-800); }
+  .art-delete { background: var(--color-neutral-300); color: var(--color-neutral-900); }
+
+  .zugang {
+    font-size: 12.5px;
+    white-space: nowrap;
+    color: rgba(32, 30, 29, 0.6);
+  }
+  .zugang-offen { color: var(--color-accent-2-800); font-weight: 600; }
+  .zugang-schreiben { color: var(--color-accent-700); font-weight: 600; }
+
+  .beispiele {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+  .code-block {
+    background: var(--color-text);
+    color: var(--color-bg);
+    border-radius: 22px;
+    padding: 20px 22px;
+    margin: 18px 0 0;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+  .code-block code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 12.5px;
+    white-space: pre;
+  }
+
+  /* Ein Rasterfeld ist von Haus aus mindestens so breit wie sein
+     laengster unumbrechbarer Inhalt — eine Zeile `curl …` oder eine
+     Tabellenzelle mit `nowrap` sprengt sonst die Spalte und damit die
+     Seite. `min-width: 0` gibt das Feld frei; das Scrollen uebernimmt
+     der Rahmen innen. */
+  .kopfzeilen > * { min-width: 0; }
+  .beispiele > * { min-width: 0; }
+
+  @media (max-width: 900px) {
+    .kopfzeilen,
+    .beispiele { grid-template-columns: 1fr; }
+  }
+</style>

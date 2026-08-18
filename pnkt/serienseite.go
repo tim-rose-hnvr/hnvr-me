@@ -442,7 +442,10 @@ e("erzeugen").addEventListener("click", async () => {
 
   e("erzeugen").disabled = true;
   const alt = e("erzeugen").textContent;
-  e("erzeugen").textContent = "wird erzeugt …";
+  // Der Ring dreht, solange der Server das Paket baut. Bei vierhundert
+  // Codes dauert das mehrere Sekunden, und ein Knopf, der nur den Text
+  // wechselt, sieht in dieser Zeit aus wie ein haengender Knopf.
+  e("erzeugen").innerHTML = '<span class="laeuft"></span>wird erzeugt …';
   try {
     const a = await fetch("/api/v1/serie?" + frage(), {
       method: "POST",

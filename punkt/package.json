@@ -1,0 +1,28 @@
+{
+  "name": "punkt-wix",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PUNKT — die Marketingseite als Wix-Headless-Projekt. Die Quellen liegen in ../website und werden nicht kopiert.",
+  "scripts": {
+    "kennung": "node skripte/kennung-pruefen.mjs",
+    "dev": "wix dev",
+    "build": "wix build",
+    "preview": "wix preview",
+    "release": "wix release",
+    "env": "wix env",
+    "wix": "wix",
+    "prebuild": "node skripte/kennung-pruefen.mjs"
+  },
+  "dependencies": {
+    "astro": "^5.18.2"
+  },
+  "devDependencies": {
+    "@wix/astro": "^2.39.0",
+    "@wix/astro-wix-hosting-adapter": "^2.0.0",
+    "@wix/cli": "^1.1.92"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}

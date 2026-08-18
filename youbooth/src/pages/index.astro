@@ -73,9 +73,11 @@ const offline = [
   'Updates über die Leitung, aber nie automatisch mitten im Event',
 ];
 
-// Sechs Module als Vorgeschmack — Reihenfolge wie im Entwurf.
-const gezeigt = ['foto-wall', 'foto-finder', 'gaestebuch', 'galerie', 'effekt-studio', 'vermietung'];
-const modulkacheln = gezeigt.map((id) => zusatzmodule.find((m) => m.id === id)!);
+/* Alle Module, nicht eine Auswahl. BUILD_SPEC 5.1 §7 verlangt das Raster
+   über alle vierzehn — hier standen sechs „als Vorgeschmack". Ein Besucher,
+   der sein Modul nicht sieht, hält es für nicht vorhanden; der Weg über
+   „Alle 14 ansehen" ist ein Klick, den er nicht macht. */
+const modulkacheln = zusatzmodule;
 
 const zielgruppen = [
   {
@@ -114,8 +116,8 @@ const zielgruppen = [
         Marke — und modular, damit ihr nur zahlt, was ihr wirklich einsetzt.
       </p>
       <div class="reihe reihe--knoepfe">
-        <a class="knopf knopf--amber knopf--gross" href="/kontakt">14 Tage kostenlos testen</a>
-        <a class="knopf knopf--rahmen-hell knopf--gross" href="/system">System ansehen</a>
+        <a class="knopf knopf--amber" href="/kontakt">Kostenlos testen</a>
+        <a class="knopf knopf--rahmen-hell" href="/system">System ansehen</a>
       </div>
       <span class="mono mono--hell">Ab 39 €/Mon. · monatlich kündbar · keine Hardware-Bindung</span>
     </div>
@@ -198,7 +200,7 @@ const zielgruppen = [
   <section class="abschnitt abschnitt--dunkel aufbau">
     <div class="aufbau__text">
       <span class="mono mono--amber">So sieht eine Fotobox aus</span>
-      <h2>Kamera, Screen, Licht, Drucker — so ist eine Box aufgebaut</h2>
+      <h2>So sieht eine Fotobox aus</h2>
       <p class="fliess">
         Egal ob Shell-Box auf Stativ, Spiegel-Box oder RGB-Säule: die Software erwartet immer
         Kamera, Touchscreen, Licht und optional einen Drucker. Hardware kauft ihr da, wo ihr wollt.
@@ -338,8 +340,8 @@ const zielgruppen = [
       </span>
     </div>
     <div class="reihe reihe--knoepfe">
-      <a class="knopf knopf--amber knopf--gross" href="/kontakt">Konto anlegen</a>
-      <a class="knopf knopf--rahmen-hell knopf--gross" href="/preise">Preise ansehen</a>
+      <a class="knopf knopf--amber" href="/kontakt">Konto anlegen</a>
+      <a class="knopf knopf--rahmen-hell" href="/preise">Preise ansehen</a>
     </div>
   </section>
 </Marketing>

@@ -75,6 +75,17 @@
 </script>
 
 <style is:global>
+  /* Gedruckt wird alles, was auf der Seite steht — auch das, was noch nie im
+     Blick war. Ohne diese Regel druckt jemand, der die Preisseite mitnehmen
+     will, drei Zeilen und danach weißes Papier: Was unterhalb des Fensters
+     lag, ist noch durchsichtig. */
+  @media print {
+    html.bewegt .auf-warten {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+
   /* Nur unter der Marke, die das Skript setzt: Ohne JavaScript bleibt alles
      sichtbar, statt für immer durchsichtig zu sein. */
   html.bewegt .auf-warten {

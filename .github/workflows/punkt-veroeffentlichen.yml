@@ -55,10 +55,25 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: punkt/package-lock.json
+          cache-dependency-path: |
+            punkt/package-lock.json
+            website/package-lock.json
 
       - name: Abhängigkeiten
         run: npm ci
+
+      # Auch die Abhängigkeiten von website/, obwohl dort nichts gebaut
+      # wird. Grund: srcDir zeigt dorthin, und Vite liest beim Übersetzen
+      # die tsconfig.json neben den Quellen. Die erweitert
+      # `astro/tsconfigs/strict` — das wird aus website/node_modules
+      # aufgelöst, nicht aus punkt/node_modules.
+      #
+      # Lokal fällt das nie auf, weil dort schon installiert ist. In CI
+      # bricht der Bau ab mit „Cannot find module
+      # astro/tsconfigs/strict/tsconfig.json".
+      - name: Abhängigkeiten der Quellen
+        run: npm ci
+        working-directory: website
 
       # `wix login --api-key` nimmt den Schlüssel entgegen, fällt in einer
       # Umgebung ohne Terminal aber trotzdem auf die Anmeldung per Gerätecode

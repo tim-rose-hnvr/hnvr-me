@@ -1010,6 +1010,7 @@ export class Booth {
       [
         ['Cockpit', './cockpit.html'],
         ['Editor', './editor.html'],
+        ['Portal', './portal.html'],
         ['Galerie', './galerie.html'],
         ['Foto-Wall', './wand.html'],
         ['Einrichtung', './einrichtung.html'],

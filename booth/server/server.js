@@ -2816,6 +2816,10 @@ app.post('/api/bookings', (req, res) => {
   bookings.unshift(booking);
   saveJson(BOOKINGS_FILE, bookings.slice(0, 1000));
   recordStat('booking');
+  /* Das Portal des Betreibers hängt am Draht. Ohne diese Zeile sieht er die
+     Anfrage erst beim nächsten Neuladen — und eine Anfrage, die einen Tag
+     unbeantwortet liegt, ist meist eine verlorene. */
+  broadcast({ type: 'buchung', buchung: { id: booking.id, name, date, status: booking.status } });
   console.log(`📅 Neue Buchungsanfrage: ${name}, ${date} ${start}–${end}, Paket ${pkg.name}`);
   res.json({ ok: true, booking: { id: booking.id, status: booking.status } });
 });
@@ -3091,6 +3095,7 @@ app.post('/api/tickets', (req, res) => {
   };
   const list = loadJson(TICKETS_FILE, []);
   list.unshift(ticket);
+  broadcast({ type: 'ticket', ticket: { id: ticket.id, subject, status: ticket.status } });
   saveJson(TICKETS_FILE, list.slice(0, 2000));
   console.log(`🎫 Neues Support-Ticket ${ticket.id}: ${subject} (${name})`);
   res.json({ ok: true, id: ticket.id, token: ticket.token });

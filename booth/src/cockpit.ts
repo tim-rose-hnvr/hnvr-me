@@ -77,6 +77,7 @@ function kopf(box: string, event: string): HTMLElement {
     { ziel: './wand.html', text: 'Foto-Wall' },
     { ziel: './galerie.html', text: 'Galerie' },
     { ziel: './editor.html', text: 'Editor' },
+    { ziel: './portal.html', text: 'Portal' },
     { ziel: './einrichtung.html', text: 'Einrichtung' },
     { ziel: './index.html', text: 'Booth öffnen', betont: true },
   ];

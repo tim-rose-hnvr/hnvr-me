@@ -29,6 +29,7 @@ export default defineConfig({
         galerie: 'galerie.html',
         einrichtung: 'einrichtung.html',
         editor: 'editor.html',
+        portal: 'portal.html',
       },
     },
   },

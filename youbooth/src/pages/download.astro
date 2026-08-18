@@ -1,8 +1,7 @@
 ---
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import Marketing from '../layouts/Marketing.astro';
 import Icon from '../components/Icon.astro';
+import { DOWNLOADS } from '../../wix-server/downloads.mjs';
 
 /**
  * Download-Portal.
@@ -12,15 +11,24 @@ import Icon from '../components/Icon.astro';
  * `electron-builder` den Installer benennt. Stand sie hier von Hand, zeigte
  * die Seite irgendwann auf eine Datei, die es nicht gibt.
  */
-const version: string = JSON.parse(
-  readFileSync(join(process.cwd(), '..', 'booth', 'package.json'), 'utf8')
-).version;
+/* Was tatsächlich zum Herunterladen bereitliegt, steht im Downloadzentrum —
+   nicht im Quelltext der Box. Die beiden können auseinanderlaufen: Eine
+   frisch gebaute Fassung ist erst dann eine Fassung, wenn sie auch abgelegt
+   ist. Die Seite zeigt deshalb, was da ist, und nicht, was gerade gebaut
+   wurde. */
+const version: string = DOWNLOADS.aktuell;
+const stand = DOWNLOADS.fassungen[version];
+const windows = stand?.windows;
+const megabyte = windows ? Math.round(windows.groesse / 1048576) : null;
+const neuerungen: string[] = DOWNLOADS.neuerungen?.[version] ?? [];
 
-/* Die Release ist zugleich die Quelle der Selbstaktualisierung: Die
-   installierte App fragt dieselbe Liste ab. Eine zweite Ablage für Installer
-   gäbe es damit nicht — zwei Listen laufen auseinander. */
-const releases = 'https://github.com/tim-rose-hnvr/hnvr-me/releases';
-const datei = (name: string) => `${releases}/download/v${version}/${name}`;
+/* Alles kommt von youbooth.me. Der Wegweiser (`wix-server/entry.mjs`)
+   beantwortet `/dl/…` selbst — dieselbe Adresse, die auch die installierte
+   Box zum Aktualisieren abfragt. Eine zweite Ablage gibt es bewusst nicht:
+   Zwei Listen derselben Sache laufen auseinander, und dann lädt die Box eine
+   Fassung, die die Seite gar nicht anbietet. */
+const datei = (name: string) => `/dl/${name}`;
+const alleFassungen = '/download#fassungen';
 
 const plattformen = [
   {
@@ -28,7 +36,7 @@ const plattformen = [
     name: 'Windows',
     marke: 'Installer',
     text: 'Windows 10 oder 11, 64 Bit. Bringt die Box mit — Aufnahmen, Cockpit, Portal und Druck laufen ohne weitere Installation.',
-    zeilen: [`V${version} · EXE`, 'Systemdruck · Vollbild · aktualisiert sich selbst'],
+    zeilen: [`V${version} · EXE${megabyte ? ` · ${megabyte} MB` : ''}`, 'Systemdruck · Vollbild · aktualisiert sich selbst'],
     knopf: 'Für Windows laden',
     ziel: datei(`youbooth-Setup-${version}.exe`),
     bereit: true,
@@ -39,8 +47,8 @@ const plattformen = [
     marke: 'Kommt',
     text: 'Gebaut wird dasselbe Paket, nur noch nicht veröffentlicht: Ohne Apple-Konto zum Signieren und Notarisieren blockt Gatekeeper den Start.',
     zeilen: ['Apple Silicon und Intel', 'CUPS-Druck · Vollbild'],
-    knopf: 'Alle Fassungen ansehen',
-    ziel: releases,
+    knopf: 'Was schon da ist',
+    ziel: alleFassungen,
     bereit: false,
   },
   {
@@ -49,8 +57,8 @@ const plattformen = [
     marke: 'Kommt',
     text: 'AppImage aus demselben Bau. Wird veröffentlicht, sobald wir es auf einer echten Box durchgemessen haben.',
     zeilen: ['AppImage · x64', 'CUPS-Druck'],
-    knopf: 'Alle Fassungen ansehen',
-    ziel: releases,
+    knopf: 'Was schon da ist',
+    ziel: alleFassungen,
     bereit: false,
   },
   {
@@ -65,21 +73,21 @@ const plattformen = [
   },
 ];
 
-const neuerungen = [
-  'Betreiber-Portal: Buchungen, Kalender, Pakete, Event-Seiten und Tickets an einer Stelle',
-  'Öffentliche Buchungsseite — belegte Tage sind gar nicht erst anklickbar',
-  'Event-Seiten für Kunden, mit Kennwort und Ablaufdatum',
-  'Foto-Wall, Galerie und Cockpit zeigen denselben Stand, auf jedem Gerät im WLAN',
-  '55 Druckvorlagen auf sieben Papierformaten, im Editor umbaubar',
-];
+/* Die Neuerungen stehen im Downloadzentrum, nicht hier — eine Liste je
+   Fassung, gepflegt an derselben Stelle wie die Datei selbst. Sie hier
+   abzuschreiben hieße, sie zweimal zu pflegen, und dann steht auf der Seite
+   irgendwann etwas anderes als in der Fassung, die man lädt.
 
-/* Ältere Fassungen stehen an einer Stelle, und die ist die Release-Liste
-   selbst. Sie hier abzuschreiben hieße, sie zweimal zu pflegen. */
+   Ältere Fassungen kommen aus demselben Verzeichnis: alles, was nicht die
+   aktuelle ist, absteigend. */
+const aeltere = Object.entries(DOWNLOADS.fassungen)
+  .filter(([f]) => f !== version)
+  .sort((a, b) => b[0].localeCompare(a[0], undefined, { numeric: true }));
 
 const dateien = [
   {
     kennung: 'Vorlagen',
-    titel: '55 Layouts',
+    titel: '77 Layouts',
     text: 'Liegen im Installationspaket. Der Editor auf der Box baut daraus eigene — nichts nachzuladen.',
     knopf: 'Galerie ansehen',
     ziel: '/vorlagen',
@@ -140,8 +148,10 @@ const dateien = [
       >
         Für Windows laden
       </a>
-      <span class="holen__zeile mono" data-feld="zeile">V{version} · EXE · 64 Bit</span>
-      <a class="pfeil pfeil--klein" href={releases}>Alle Fassungen und Systeme →</a>
+      <span class="holen__zeile mono" data-feld="zeile">
+        V{version} · EXE · 64 Bit{megabyte ? ` · ${megabyte} MB` : ''}
+      </span>
+      <a class="pfeil pfeil--klein" href={alleFassungen}>Alle Fassungen und Systeme →</a>
     </div>
   </section>
 
@@ -188,7 +198,27 @@ const dateien = [
           {neuerungen.map((n) => <li>{n}</li>)}
         </ul>
       </article>
-      <a class="pfeil pfeil--klein" href={releases}>Alle Fassungen mit Änderungen →</a>
+      <a class="pfeil pfeil--klein" href="/dl/stand.json">Was das Downloadzentrum gerade führt →</a>
+      <div id="fassungen" class="fassungen">
+        <span class="mono">Ältere Fassungen</span>
+        {
+          aeltere.length === 0 ? (
+            <p class="fassungen__leer">
+              V{version} ist die erste veröffentlichte Fassung. Ältere gibt es nicht — was hier
+              stünde, wäre erfunden.
+            </p>
+          ) : (
+            <ul class="fassungen__liste">
+              {aeltere.map(([f, eintrag]) => (
+                <li>
+                  <a href={datei(eintrag.windows.datei)}>V{f} für Windows</a>
+                  <span class="mono">{eintrag.erschienen}</span>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
     </div>
 
     <div class="spalte spalte--schmal">
@@ -450,6 +480,38 @@ const dateien = [
   .spalte--schmal {
     flex: 1 1 320px;
     min-width: min(300px, 100%);
+  }
+
+  .fassungen {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--linie-dunkel);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .fassungen__leer {
+    margin: 0;
+    color: var(--text-hell-fein);
+    font-size: 14px;
+    max-width: 46ch;
+  }
+
+  .fassungen__liste {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fassungen__liste li {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: baseline;
   }
 
   .versionskopf {

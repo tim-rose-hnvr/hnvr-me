@@ -1,6 +1,6 @@
 {
   "name": "youbooth-booth",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "type": "module",
   "description": "youbooth — Fotobox-Software: Booth, Cockpit, Portal und Box-Server",
@@ -53,10 +53,9 @@
     },
     "publish": [
       {
-        "provider": "github",
-        "owner": "tim-rose-hnvr",
-        "repo": "hnvr-me",
-        "releaseType": "release"
+        "provider": "generic",
+        "url": "https://youbooth.me/dl/",
+        "channel": "latest"
       }
     ],
     "win": {

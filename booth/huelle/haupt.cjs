@@ -304,6 +304,16 @@ function erlaubeKamera() {
 /* Selbstaktualisierung                                              */
 /* ---------------------------------------------------------------- */
 
+/**
+ * Woher die neue Fassung kommt: von youbooth.me.
+ *
+ * Die Adresse steht in `package.json` unter `build.publish` und landet beim
+ * Verpacken als `app-update.yml` neben dem Programm. Sie zeigt bewusst auf
+ * die eigene Domain und nicht auf die Ablage, in der die Datei zufällig
+ * liegt: Der Ablageort darf sich ändern, ohne dass jede installierte Box
+ * daran hängen bleibt — der Wegweiser auf youbooth.me führt dann eben
+ * woandershin.
+ */
 function pruefeAktualisierung() {
   let updater;
   try {

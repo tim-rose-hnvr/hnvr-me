@@ -34,6 +34,123 @@
  *    dem Fehler.
  */
 
+/* ---------------------------------------------------------------- */
+/* Das Downloadzentrum                                                */
+/* ---------------------------------------------------------------- */
+
+import { DOWNLOADS as downloads } from './downloads.mjs';
+
+/**
+ * `/dl/…` liefert die Installationsprogramme — von youbooth.me, nicht von
+ * einer fremden Adresse. Wer die Software holt, soll nicht beim ersten Klick
+ * erfahren, wo sie zufällig liegt.
+ *
+ * Der Umweg dahin ist gemessen, nicht gewählt: Die Medienverwaltung nimmt
+ * keine `.exe` an —
+ *
+ *   UNSUPPORTED_FILE_FORMAT · Unsupported file extension exe
+ *
+ * `.zip` nimmt sie. Und weil das ZIP OHNE Verdichtung geschrieben ist, liegt
+ * das Installationsprogramm darin unverändert ab einem festen Byte. Die
+ * Auslieferung beherrscht Bereichsanfragen (gemessen: 206, byte-gleich), also
+ * holt dieser Wegweiser genau diesen Bereich und reicht ihn durch. Am Ende
+ * kommt beim Betreiber dasselbe an, was der Bau erzeugt hat — nachgeprüft
+ * über SHA-512 und die Kennung `MZ`.
+ *
+ * `latest.yml` entsteht hier aus denselben Angaben. Zwei Listen derselben
+ * Sache laufen auseinander; eine Box, die auf eine Fassung zeigt, die es
+ * nicht gibt, lädt ins Leere.
+ */
+async function ausDemDownloadzentrum(request, pfad) {
+  const name = decodeURIComponent(pfad.slice('/dl/'.length));
+
+  if (name === 'latest.yml' || name === '' || name === 'stand.json') {
+    const fassung = downloads.aktuell;
+    const w = downloads.fassungen[fassung]?.windows;
+    if (!w) return nichtGefunden('Keine Fassung hinterlegt.');
+
+    if (name === 'stand.json') {
+      return new Response(
+        JSON.stringify({
+          aktuell: fassung,
+          erschienen: downloads.fassungen[fassung].erschienen,
+          windows: { datei: w.datei, groesse: w.groesse, adresse: `/dl/${w.datei}` },
+          neuerungen: downloads.neuerungen?.[fassung] ?? [],
+        }),
+        { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=300' } }
+      );
+    }
+
+    // Genau das Format, das `electron-updater` erwartet.
+    const yml =
+      `version: ${fassung}\n` +
+      `files:\n` +
+      `  - url: ${w.datei}\n` +
+      `    sha512: ${w.sha512}\n` +
+      `    size: ${w.groesse}\n` +
+      `path: ${w.datei}\n` +
+      `sha512: ${w.sha512}\n` +
+      `releaseDate: '${downloads.fassungen[fassung].erschienen}T00:00:00.000Z'\n`;
+    return new Response(yml, {
+      headers: {
+        'content-type': 'text/yaml; charset=utf-8',
+        // Kurz: Eine neue Fassung soll nicht stundenlang unsichtbar bleiben.
+        'cache-control': 'public, max-age=120',
+      },
+    });
+  }
+
+  const eintrag = Object.values(downloads.fassungen)
+    .map((f) => f.windows)
+    .find((w) => w && w.datei === name);
+  if (!eintrag) return nichtGefunden('Diese Datei gibt es nicht.');
+
+  /* Eine Bereichsanfrage des Anrufers wird auf das ZIP umgerechnet.
+     `electron-updater` lädt Aktualisierungen stückweise — ohne diese
+     Umrechnung bekäme es den falschen Ausschnitt. */
+  const gewuenscht = request.headers.get('range');
+  let von = 0;
+  let bis = eintrag.groesse - 1;
+  let teilweise = false;
+  if (gewuenscht) {
+    const treffer = /^bytes=(\d*)-(\d*)$/.exec(gewuenscht.trim());
+    if (treffer) {
+      teilweise = true;
+      if (treffer[1]) {
+        von = Number(treffer[1]);
+        if (treffer[2]) bis = Math.min(Number(treffer[2]), eintrag.groesse - 1);
+      } else if (treffer[2]) {
+        von = Math.max(0, eintrag.groesse - Number(treffer[2]));
+      }
+    }
+  }
+  if (von > bis || von >= eintrag.groesse) {
+    return new Response('Bereich außerhalb der Datei', {
+      status: 416,
+      headers: { 'content-range': `bytes */${eintrag.groesse}` },
+    });
+  }
+
+  const antwort = await fetch(eintrag.quelle, {
+    headers: { range: `bytes=${eintrag.versatz + von}-${eintrag.versatz + bis}` },
+  });
+  if (!antwort.ok && antwort.status !== 206) {
+    return nichtGefunden('Die Datei ist gerade nicht erreichbar.');
+  }
+
+  const kopf = {
+    'content-type': 'application/octet-stream',
+    'content-length': String(bis - von + 1),
+    'content-disposition': `attachment; filename="${eintrag.datei}"`,
+    'accept-ranges': 'bytes',
+    // Eine Fassung ändert sich nie — nur eine neue kommt dazu.
+    'cache-control': 'public, max-age=31536000, immutable',
+  };
+  if (teilweise) kopf['content-range'] = `bytes ${von}-${bis}/${eintrag.groesse}`;
+
+  return new Response(antwort.body, { status: teilweise ? 206 : 200, headers: kopf });
+}
+
 /** Hat der Weg eine Dateiendung? Dann ist keine Seite gemeint. */
 const istDatei = (pfad) => /\.[a-z0-9]+$/i.test(pfad);
 
@@ -47,6 +164,16 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
     const pfad = url.pathname;
+
+    /* Das Downloadzentrum vor allem anderen: Es liefert Dateien, und die
+       Regel gleich darunter würde jede Datei als „gibt es nicht" abtun. */
+    if (pfad === '/dl' || pfad.startsWith('/dl/')) {
+      try {
+        return await ausDemDownloadzentrum(request, pfad === '/dl' ? '/dl/' : pfad);
+      } catch {
+        return nichtGefunden('Das Downloadzentrum antwortet gerade nicht.');
+      }
+    }
 
     // Dateien beantwortet die statische Schicht. Kommt eine hier an, gibt es
     // sie nicht — dann ist 404 richtig und keine HTML-Seite.

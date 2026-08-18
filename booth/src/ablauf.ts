@@ -24,8 +24,8 @@ import {
   qrFuer,
   sichereAlsDatei,
 } from './ausgabe';
-import { alle, neueKennung, raeumeAuf, sichere, anzahl as gesamtzahl } from './speicher';
-import { ausgabeAdresse, fernStand, inHuelle, legeAb } from './huelle';
+import { raeumeAuf, sichere, anzahl as gesamtzahl, type Aufnahme } from './speicher';
+import { fernStand, inHuelle } from './huelle';
 
 type Schritt = 'attract' | 'auswahl' | 'aufnahme' | 'ergebnis' | 'ausgabe';
 
@@ -39,8 +39,8 @@ export class Booth {
   private art: Art = ARTEN[0]!;
   private aufnahmen: HTMLCanvasElement[] = [];
   private ergebnis: HTMLCanvasElement | null = null;
-  /** Bewegtbild zur laufenden Aufnahme, sobald es kodiert ist. */
-  private bewegtbild: Blob | null = null;
+  /** Bewegtbild zur laufenden Aufnahme, sobald es auf der Box liegt. */
+  private bewegtbild: Aufnahme | null = null;
   private ergebnisKennung = '';
   private sitzungen = 0;
 
@@ -81,7 +81,7 @@ export class Booth {
     // Läuft der Booth in der Desktop-Hülle, kennt sie die Adresse, unter der
     // die Box ihre Dateien anbietet — der QR-Code braucht dann keine
     // Konfiguration von Hand.
-    void ausgabeAdresse().then(async (adresse) => {
+    void boxAdresse().then(async (adresse) => {
       if (adresse && !this.einstellungen.ausgabeBasis) {
         this.einstellungen.ausgabeBasis = adresse;
       }
@@ -653,25 +653,18 @@ export class Booth {
       this.ergebnis = await zeichneMitVorlage(vorlage, [this.aufnahmen[0]!], werte);
     }
 
-    this.ergebnisKennung = neueKennung();
+    this.ergebnisKennung = '';
     this.bewegtbild = null;
 
     try {
-      const blob = await alsBlob(this.ergebnis);
-      await sichere({
-        id: this.ergebnisKennung,
-        zeit: Date.now(),
-        art: this.art.id,
-        event: this.einstellungen.event,
-        blob,
-      });
-      // In der Desktop-Hülle zusätzlich als Datei — nur so kann der
-      // Auslieferungsdienst sie über den QR-Code herausgeben.
-      void legeAb(this.ergebnisKennung, blob);
+      // Die Box vergibt den Namen — sie legt die Datei an, und ab da ist der
+      // Name die Kennung für QR-Code, Wand und Galerie.
+      const abgelegt = await sichere(alsBilddaten(this.ergebnis), this.art.id);
+      this.ergebnisKennung = abgelegt.id;
       void this.zaehleAuf();
       // Das Bewegtbild kommt danach: Es dauert länger, und der Gast soll sein
       // Bild sehen, ohne darauf zu warten.
-      if (this.art.bewegt) void this.baueBewegtbild(this.ergebnisKennung, this.aufnahmen.slice());
+      if (this.art.bewegt) void this.baueBewegtbild(this.aufnahmen.slice());
     } catch {
       // Sichern fehlgeschlagen: die Aufnahme bleibt trotzdem am Screen,
       // damit der Gast sein Bild bekommt.
@@ -686,7 +679,8 @@ export class Booth {
    * Kodiert die Serie als GIF und legt sie zur Aufnahme dazu. Läuft nach dem
    * Sichern des Blattes; schlägt es fehl, bleibt das Blatt unberührt.
    */
-  private async baueBewegtbild(kennung: string, rahmen: HTMLCanvasElement[]): Promise<void> {
+  private async baueBewegtbild(rahmen: HTMLCanvasElement[]): Promise<void> {
+    const gehoert = this.ergebnisKennung;
     try {
       const bewegt = await alsGif(rahmen, {
         breite: 480,
@@ -694,12 +688,13 @@ export class Booth {
         pingpong: true,
       });
 
-      const stand = (await alle()).find((a) => a.id === kennung);
-      if (stand) await sichere({ ...stand, bewegt: bewegt.blob });
-      void legeAb(kennung, bewegt.blob, 'gif');
+      // Das GIF ist eine eigene Aufnahme auf der Box, kein Anhängsel des
+      // Blattes: So sieht es die Galerie, die Wand und jedes Handy im WLAN —
+      // und der QR-Code kann direkt darauf zeigen.
+      const abgelegt = await sichere(await alsDatenadresse(bewegt.blob), this.art.id);
 
-      if (this.ergebnisKennung === kennung) {
-        this.bewegtbild = bewegt.blob;
+      if (this.ergebnisKennung === gehoert) {
+        this.bewegtbild = abgelegt;
         // Nur nachzeichnen, wenn der Gast noch bei seiner Aufnahme steht.
         if (this.schritt === 'ergebnis' || this.schritt === 'ausgabe') this.zeichne();
       }
@@ -740,17 +735,23 @@ export class Booth {
     sichereAlsDatei(blob, dateiname(this.art.id, this.ergebnisKennung));
   }
 
+  /** Holt eine Datei von der Box und gibt sie dem Gerät zum Sichern. */
+  private async hole(url: string, name: string): Promise<void> {
+    const antwort = await fetch(url);
+    sichereAlsDatei(await antwort.blob(), name);
+  }
+
   private sichereBewegtbild(): void {
     if (!this.bewegtbild) return;
-    sichereAlsDatei(this.bewegtbild, dateiname(this.art.id, this.ergebnisKennung, 'gif'));
+    void this.hole(this.bewegtbild.url, this.bewegtbild.id);
   }
 
   // --- Überlagerungen ---------------------------------------------------
 
   private async zeigeQr(): Promise<void> {
     // Bei Boomerang und GIF will der Gast die Bewegung, nicht das Standbild.
-    const endung = this.art.bewegt && this.bewegtbild ? 'gif' : 'jpg';
-    const adresse = await qrFuer(this.einstellungen.ausgabeBasis, this.ergebnisKennung, endung);
+    const datei = (this.art.bewegt && this.bewegtbild?.id) || this.ergebnisKennung;
+    const adresse = await qrFuer(this.einstellungen.ausgabeBasis, datei);
 
     if (!adresse) {
       this.zeigeMeldung(
@@ -976,6 +977,32 @@ export class Booth {
       zuruecksetzen
     );
   }
+}
+
+/**
+ * Unter welcher Adresse die Box im Netz erreichbar ist. Sie weiß es selbst —
+ * der QR-Code am Screen muss auf sie zeigen, nicht auf `localhost`, sonst
+ * öffnet das Handy des Gastes seine eigene Maschine.
+ */
+async function boxAdresse(): Promise<string> {
+  try {
+    const antwort = await fetch('/api/info');
+    if (!antwort.ok) return '';
+    const info = (await antwort.json()) as { base?: string };
+    return info.base ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/** Blob als Datenadresse — so nimmt die Box sie über die Schnittstelle an. */
+function alsDatenadresse(blob: Blob): Promise<string> {
+  return new Promise((fertig, fehler) => {
+    const leser = new FileReader();
+    leser.onload = () => fertig(String(leser.result));
+    leser.onerror = () => fehler(new Error('Bild nicht lesbar'));
+    leser.readAsDataURL(blob);
+  });
 }
 
 // --- kleine Helfer ------------------------------------------------------

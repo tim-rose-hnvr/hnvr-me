@@ -110,7 +110,7 @@ function aufnahmenbereich(aufnahmen: Aufnahme[], fehler: boolean): HTMLElement {
   aufnahmen.slice(0, 12).forEach((a) => {
     const kachel = tag('figure', 'cbild');
     const bild = document.createElement('img');
-    bild.src = URL.createObjectURL(a.blob);
+    bild.src = a.url;
     bild.alt = '';
     bild.loading = 'lazy';
 
@@ -122,7 +122,7 @@ function aufnahmenbereich(aufnahmen: Aufnahme[], fehler: boolean): HTMLElement {
 
     const laden = tag('a', 'cknopf cknopf--klein') as HTMLAnchorElement;
     laden.href = bild.src;
-    laden.download = `youbooth-${a.id}.jpg`;
+    laden.download = a.id;
     laden.textContent = 'Sichern';
 
     kachel.append(bild, zeile, laden);

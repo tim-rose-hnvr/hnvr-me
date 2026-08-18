@@ -26,7 +26,10 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const HIER = path.dirname(fileURLToPath(import.meta.url));
-const ZIEL = path.join(HIER, '..', 'src', 'daten', 'vorlagen-katalog.json');
+/* Eine Datei, zwei Leser: Der Server liefert sie aus, die Oberfläche baut sie
+   ein. Deshalb liegt sie neben beiden und nicht in `src/`. */
+const ZIEL = path.join(HIER, '..', 'vorlagen-katalog.json');
+const EIGENE = path.join(HIER, 'vorlagen-eigene.json');
 
 const paketPfad = process.argv[2];
 const serverPfad = process.argv[3];
@@ -205,7 +208,13 @@ if (serverPfad && existsSync(serverPfad)) {
    dann aus unserem Code, nicht als Bilddatei mit eingebranntem Text. */
 const AUSGESCHLOSSEN = /^eigen-/;
 const weggelassen = paket.filter((t) => AUSGESCHLOSSEN.test(t.id));
-const katalog = paket.filter((t) => !AUSGESCHLOSSEN.test(t.id)).map(uebernehmeVorlage);
+/* Unsere vier eigenen Blätter stehen von Hand daneben — sie sind Inhalt, kein
+   Werkzeug, und sollen versioniert sein wie der übrige Katalog. */
+const eigene = JSON.parse(readFileSync(EIGENE, 'utf8'));
+const katalog = [
+  ...eigene,
+  ...paket.filter((t) => !AUSGESCHLOSSEN.test(t.id)).map(uebernehmeVorlage),
+];
 
 /* --- Prüfen --------------------------------------------------------- */
 
@@ -238,7 +247,8 @@ writeFileSync(ZIEL, JSON.stringify(katalog, null, 1) + '\n');
 const formate = {};
 katalog.forEach((v) => (formate[v.format] = (formate[v.format] || 0) + 1));
 
-console.log('Übernommen: ' + katalog.length + ' Vorlagen');
+console.log('Katalog: ' + katalog.length + ' Vorlagen (' + eigene.length + ' eigene, '
+  + (katalog.length - eigene.length) + ' übernommen)');
 console.log('Formate:    ' + Object.entries(formate).map(([k, n]) => k + ' ' + n).join(' · '));
 console.log('Felder:     ' + katalog.reduce((s, v) => s + v.felder.length, 0));
 console.log('Eingebaute im Server gefunden: ' + eingebaut.length + ' (bewusst nicht übernommen)');

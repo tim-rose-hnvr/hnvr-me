@@ -1,103 +1,98 @@
 /**
- * Ablage der Aufnahmen auf der Box.
+ * Ablage der Aufnahmen — auf der Box, nicht im Browser.
  *
- * Grundsatz aus dem Produktversprechen: Eine Aufnahme ist gesichert, bevor
- * irgendetwas anderes passiert — Netz, Druck und Upload kommen danach.
- * Im Browser liegt sie in IndexedDB, in der Desktop-Hülle später als Datei.
+ * Bis hierher lagen die Bilder in IndexedDB. Das hatte eine Grenze, die man
+ * erst im Saal merkt: **Nur derselbe Browser auf demselben Rechner sah sie.**
+ * Foto-Wall am Beamer, Galerie auf dem Handy, Teilen-Station neben der Box —
+ * alles andere sind eigene Geräte im WLAN, und für die war die Ablage
+ * unsichtbar.
+ *
+ * Jetzt liegen die Aufnahmen als Dateien auf der Box und werden über deren
+ * Server ausgeliefert. Damit sehen alle Geräte dasselbe, und ein Neustart des
+ * Browsers verliert nichts.
+ *
+ * Grundsatz aus dem Produktversprechen bleibt: Eine Aufnahme ist gesichert,
+ * bevor irgendetwas anderes passiert — Druck, Teilen und Wand kommen danach.
  */
 
 export type Aufnahme = {
+  /** Dateiname auf der Box; zugleich die Kennung für QR und Download. */
   id: string;
+  /** Adresse zum Anzeigen und Herunterladen. */
+  url: string;
   /** Zeitpunkt in Millisekunden seit 1970. */
   zeit: number;
+  /** Aufnahmeart, aus dem Dateinamen gelesen. */
   art: string;
-  event: string;
-  blob: Blob;
-  /** Bewegtbild als GIF, wenn die Aufnahmeart eines hergibt. */
-  bewegt?: Blob;
+  /** Bewegtbild (GIF) statt Standbild. */
+  bewegt: boolean;
 };
 
-const DATENBANK = 'youbooth';
-const LAGER = 'aufnahmen';
+type Rohaufnahme = { name: string; url: string; time: number; type: string };
 
-let offen: Promise<IDBDatabase> | null = null;
-
-function db(): Promise<IDBDatabase> {
-  if (offen) return offen;
-
-  offen = new Promise((fertig, fehler) => {
-    const anfrage = indexedDB.open(DATENBANK, 1);
-
-    anfrage.onupgradeneeded = () => {
-      const daten = anfrage.result;
-      if (!daten.objectStoreNames.contains(LAGER)) {
-        const lager = daten.createObjectStore(LAGER, { keyPath: 'id' });
-        lager.createIndex('zeit', 'zeit');
-      }
-    };
-
-    anfrage.onsuccess = () => fertig(anfrage.result);
-    anfrage.onerror = () => fehler(anfrage.error ?? new Error('Ablage nicht verfügbar'));
-  });
-
-  return offen;
+/**
+ * Die Aufnahmeart steckt im Dateinamen: `youbooth_<zeit>_<art>_<zufall>.jpg`.
+ * Kein zweites Verzeichnis, keine Datenbank daneben — wer den Ordner kopiert,
+ * kopiert auch die Zuordnung mit.
+ */
+function deute(roh: Rohaufnahme): Aufnahme {
+  const teile = roh.name.split('_');
+  const art = teile.length >= 4 ? teile[2]! : 'foto';
+  return {
+    id: roh.name,
+    url: roh.url,
+    zeit: roh.time,
+    art,
+    bewegt: /\.(gif|webm|mp4)$/i.test(roh.name),
+  };
 }
 
-export function neueKennung(): string {
-  // Zeitstempel voran, damit die Reihenfolge auch im Dateinamen stimmt.
-  const zufall = Math.random().toString(36).slice(2, 8);
-  return `${Date.now().toString(36)}-${zufall}`;
+async function hole<T>(pfad: string, wunsch?: RequestInit): Promise<T> {
+  const antwort = await fetch(pfad, wunsch);
+  if (!antwort.ok) {
+    const text = await antwort.text().catch(() => '');
+    throw new Error(`${antwort.status} ${text.slice(0, 120)}`);
+  }
+  return (await antwort.json()) as T;
 }
 
-export async function sichere(aufnahme: Aufnahme): Promise<void> {
-  const daten = await db();
-  await new Promise<void>((fertig, fehler) => {
-    const vorgang = daten.transaction(LAGER, 'readwrite');
-    vorgang.objectStore(LAGER).put(aufnahme);
-    vorgang.oncomplete = () => fertig();
-    vorgang.onerror = () => fehler(vorgang.error ?? new Error('Konnte nicht sichern'));
+/**
+ * Sichert eine Aufnahme auf der Box und gibt sie zurück — mit dem Namen, den
+ * die Box vergeben hat. Der ist ab da die Kennung für QR-Code und Datei.
+ */
+export async function sichere(
+  bilddaten: string,
+  art: string
+): Promise<Aufnahme> {
+  const antwort = await hole<{ ok: boolean; photo: Rohaufnahme }>('/api/photos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image: bilddaten, mode: art, source: 'booth' }),
   });
+  return deute(antwort.photo);
 }
 
 export async function alle(): Promise<Aufnahme[]> {
-  const daten = await db();
-  return new Promise((fertig, fehler) => {
-    const vorgang = daten.transaction(LAGER, 'readonly');
-    const anfrage = vorgang.objectStore(LAGER).getAll();
-    anfrage.onsuccess = () => fertig((anfrage.result as Aufnahme[]).sort((a, b) => b.zeit - a.zeit));
-    anfrage.onerror = () => fehler(anfrage.error ?? new Error('Konnte nicht lesen'));
-  });
+  const liste = await hole<Rohaufnahme[]>('/api/photos');
+  return liste.map(deute);
 }
 
 export async function anzahl(): Promise<number> {
-  const daten = await db();
-  return new Promise((fertig, fehler) => {
-    const vorgang = daten.transaction(LAGER, 'readonly');
-    const anfrage = vorgang.objectStore(LAGER).count();
-    anfrage.onsuccess = () => fertig(anfrage.result);
-    anfrage.onerror = () => fehler(anfrage.error ?? new Error('Konnte nicht zählen'));
-  });
+  return (await alle()).length;
 }
 
-/** Löscht Aufnahmen, deren Löschfrist abgelaufen ist. */
+export async function loesche(id: string): Promise<void> {
+  await fetch('/api/photos/' + encodeURIComponent(id), { method: 'DELETE' });
+}
+
+/**
+ * Löscht Aufnahmen, deren Löschfrist abgelaufen ist. Läuft beim Start des
+ * Booths — was den Gästen versprochen wurde, muss ohne Zutun passieren.
+ */
 export async function raeumeAuf(fristTage: number): Promise<number> {
+  if (!(fristTage > 0)) return 0;
   const grenze = Date.now() - fristTage * 24 * 60 * 60 * 1000;
-  const daten = await db();
-
-  return new Promise((fertig, fehler) => {
-    let geloescht = 0;
-    const vorgang = daten.transaction(LAGER, 'readwrite');
-    const zeiger = vorgang.objectStore(LAGER).index('zeit').openCursor(IDBKeyRange.upperBound(grenze));
-
-    zeiger.onsuccess = () => {
-      const stelle = zeiger.result;
-      if (!stelle) return;
-      stelle.delete();
-      geloescht++;
-      stelle.continue();
-    };
-
-    vorgang.oncomplete = () => fertig(geloescht);
-    vorgang.onerror = () => fehler(vorgang.error ?? new Error('Aufräumen fehlgeschlagen'));
-  });
+  const alt = (await alle()).filter((a) => a.zeit < grenze);
+  for (const a of alt) await loesche(a.id);
+  return alt.length;
 }

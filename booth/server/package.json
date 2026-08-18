@@ -1,0 +1,7 @@
+{
+  "name": "youbooth-server",
+  "private": true,
+  "//": "Eigene package.json aus einem einzigen Grund: Das Wurzelpaket ist ein ES-Modul (Vite, TypeScript), dieser Server ist CommonJS. Node richtet sich nach der nächstgelegenen package.json — so laufen beide Welten nebeneinander, ohne 4000 Zeilen umzuschreiben.",
+  "type": "commonjs",
+  "main": "server.js"
+}

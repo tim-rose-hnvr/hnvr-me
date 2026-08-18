@@ -29,12 +29,10 @@ async function starte(ziel: HTMLElement): Promise<void> {
     fehler = true;
   }
 
-  const adressen = new Map(aufnahmen.map((a) => [a.id, URL.createObjectURL(a.blob)]));
-  // Bewegtbilder liegen neben dem Blatt — in der Kachel bleibt das Standbild,
-  // damit nicht zwanzig Animationen gleichzeitig laufen.
-  const bewegte = new Map(
-    aufnahmen.filter((a) => a.bewegt).map((a) => [a.id, URL.createObjectURL(a.bewegt!)])
-  );
+  // Die Bilder liegen auf der Box und werden von dort geladen — deshalb sieht
+  // jedes Gerät im WLAN dieselbe Galerie.
+  const adressen = new Map(aufnahmen.map((a) => [a.id, a.url]));
+  const bewegte = new Map(aufnahmen.filter((a) => a.bewegt).map((a) => [a.id, a.url]));
   let filter = 'alle';
 
   const kopf = tag('header', 'gkopf');
@@ -79,7 +77,7 @@ async function starte(ziel: HTMLElement): Promise<void> {
 
         const laden = tag('a', 'gknopf') as HTMLAnchorElement;
         laden.href = adressen.get(a.id) ?? '';
-        laden.download = `youbooth-${a.id}.jpg`;
+        laden.download = a.id;
         laden.textContent = 'Herunterladen';
 
         fuss.append(zeitzeile, laden);
@@ -87,7 +85,7 @@ async function starte(ziel: HTMLElement): Promise<void> {
         if (bewegte.has(a.id)) {
           const gif = tag('a', 'gknopf gknopf--zweit') as HTMLAnchorElement;
           gif.href = bewegte.get(a.id)!;
-          gif.download = `youbooth-${a.id}.gif`;
+          gif.download = a.id;
           gif.textContent = 'GIF';
           fuss.append(gif);
 

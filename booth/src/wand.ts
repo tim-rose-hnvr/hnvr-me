@@ -53,7 +53,7 @@ async function starte(ziel: HTMLElement): Promise<void> {
       .reverse()
       .forEach((a) => {
         if (gezeigt.has(a.id)) return;
-        const adresse = URL.createObjectURL(a.blob);
+        const adresse = a.url;
         gezeigt.set(a.id, adresse);
 
         const kachel = tag('figure', 'wkachel');
@@ -68,7 +68,7 @@ async function starte(ziel: HTMLElement): Promise<void> {
     const neueste = aufnahmen[0];
     if (neueste && neueste.id !== letzteId) {
       letzteId = neueste.id;
-      zeigeGross(buehne, gezeigt.get(neueste.id) ?? URL.createObjectURL(neueste.blob));
+      zeigeGross(buehne, neueste.url);
     }
   };
 

@@ -33,7 +33,11 @@ async function hole(): Promise<Aufruf | null> {
 
 /**
  * Legt die Aufnahme als Datei auf der Box ab.
- * Gibt den Pfad zurueck oder null, wenn es keine Huelle gibt.
+ *
+ * ÜBERHOLT: Seit die Box einen eigenen Server hat, legt der die Aufnahmen an
+ * (`/api/photos`) und liefert sie im ganzen WLAN aus. Diese Brücke bleibt nur,
+ * bis die Desktop-Hülle gewechselt ist — dann verschwindet sie mitsamt dem
+ * Rust-Auslieferungsdienst.
  */
 export async function legeAb(
   kennung: string,

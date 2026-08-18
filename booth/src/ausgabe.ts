@@ -113,16 +113,13 @@ export function druckeUeberDialog(bilddaten: string, beschriftung: string): void
  * anbietet. Ohne konfigurierte Basis-Adresse gibt es keinen sinnvollen QR —
  * dann bleibt der direkte Download.
  */
-export async function qrFuer(
-  basis: string,
-  kennung: string,
-  endung: 'jpg' | 'gif' = 'jpg'
-): Promise<string | null> {
+export async function qrFuer(basis: string, datei: string): Promise<string | null> {
   const sauber = basis.trim().replace(/\/$/, '');
   if (!sauber) return null;
 
-  // Die Endung steht in der Adresse: der Dienst liefert genau diese Datei aus.
-  return qrBild(`${sauber}/f/${kennung}.${endung}`);
+  // Die Box liefert ihre Aufnahmen unter `/photos/` aus. Der Dateiname trägt
+  // schon die Endung — bei Boomerang und GIF zeigt der Code auf die Bewegung.
+  return qrBild(`${sauber}/photos/${encodeURIComponent(datei)}`);
 }
 
 /** QR-Code auf eine beliebige Adresse — erzeugt im Gerät, ohne Netz. */

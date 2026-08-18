@@ -1,5 +1,251 @@
 [
  {
+  "id": "foto-klassisch",
+  "name": "Klassik Foto",
+  "format": "hoch-4x6",
+  "art": "foto",
+  "aufnahmen": 1,
+  "papier": "#f6f4f1",
+  "tinte": "#17171c",
+  "akzent": "#6b6355",
+  "felder": [
+   {
+    "id": "f1",
+    "art": "bild",
+    "x": 0.05,
+    "y": 0.0333,
+    "b": 0.9,
+    "h": 0.45
+   },
+   {
+    "id": "f2",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.5171111111111112,
+    "b": 0.88,
+    "h": 0.035777777777777776,
+    "text": "{event}",
+    "groesse": 46,
+    "gewicht": 800,
+    "schrift": "anzeige",
+    "ausrichtung": "mitte"
+   },
+   {
+    "id": "f3",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.5684444444444444,
+    "b": 0.88,
+    "h": 0.017111111111111108,
+    "text": "{datum}",
+    "groesse": 22,
+    "gewicht": 500,
+    "schrift": "mono",
+    "ausrichtung": "mitte",
+    "versalien": true,
+    "farbe": "rgba(0,0,0,0.45)"
+   }
+  ]
+ },
+ {
+  "id": "foto-rand",
+  "name": "Randlos mit Balken",
+  "format": "hoch-4x6",
+  "art": "foto",
+  "aufnahmen": 1,
+  "papier": "#0b0b0d",
+  "tinte": "#f6f4f1",
+  "akzent": "#f2b23e",
+  "felder": [
+   {
+    "id": "g1",
+    "art": "bild",
+    "x": 0,
+    "y": 0,
+    "b": 1,
+    "h": 0.82
+   },
+   {
+    "id": "g2",
+    "art": "flaeche",
+    "x": 0,
+    "y": 0.82,
+    "b": 1,
+    "h": 0.18,
+    "farbe": "#0b0b0d"
+   },
+   {
+    "id": "g3",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8547777777777777,
+    "b": 0.88,
+    "h": 0.04044444444444444,
+    "text": "{event}",
+    "groesse": 52,
+    "gewicht": 800,
+    "schrift": "anzeige",
+    "ausrichtung": "mitte",
+    "versalien": true,
+    "farbe": "#f6f4f1"
+   },
+   {
+    "id": "g4",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.9264444444444445,
+    "b": 0.88,
+    "h": 0.017111111111111108,
+    "text": "{datum} · {zeit}",
+    "groesse": 22,
+    "gewicht": 500,
+    "schrift": "mono",
+    "ausrichtung": "mitte",
+    "versalien": true,
+    "farbe": "#f2b23e"
+   }
+  ]
+ },
+ {
+  "id": "streifen-klassisch",
+  "name": "Klassik Streifen",
+  "format": "streifen-2x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#f6f4f1",
+  "tinte": "#17171c",
+  "akzent": "#6b6355",
+  "felder": [
+   {
+    "id": "s1",
+    "art": "bild",
+    "x": 0.0567,
+    "y": 0.0189,
+    "b": 0.8867,
+    "h": 0.2546
+   },
+   {
+    "id": "s2",
+    "art": "bild",
+    "x": 0.0567,
+    "y": 0.2846,
+    "b": 0.8867,
+    "h": 0.2546
+   },
+   {
+    "id": "s3",
+    "art": "bild",
+    "x": 0.0567,
+    "y": 0.5502,
+    "b": 0.8867,
+    "h": 0.2546
+   },
+   {
+    "id": "s4",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8481666666666666,
+    "b": 0.88,
+    "h": 0.025666666666666664,
+    "text": "{event}",
+    "groesse": 33,
+    "gewicht": 800,
+    "schrift": "anzeige",
+    "ausrichtung": "mitte"
+   },
+   {
+    "id": "s5",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.9007777777777778,
+    "b": 0.88,
+    "h": 0.012444444444444444,
+    "text": "{datum}",
+    "groesse": 16,
+    "gewicht": 500,
+    "schrift": "mono",
+    "ausrichtung": "mitte",
+    "versalien": true,
+    "farbe": "rgba(0,0,0,0.45)"
+   }
+  ]
+ },
+ {
+  "id": "streifen-dunkel",
+  "name": "Nacht Streifen",
+  "format": "streifen-2x6",
+  "art": "streifen",
+  "aufnahmen": 3,
+  "papier": "#0b0b0d",
+  "tinte": "#f6f4f1",
+  "akzent": "#f2b23e",
+  "felder": [
+   {
+    "id": "d1",
+    "art": "bild",
+    "x": 0.05,
+    "y": 0.0222,
+    "b": 0.9,
+    "h": 0.2528
+   },
+   {
+    "id": "d2",
+    "art": "bild",
+    "x": 0.05,
+    "y": 0.2917,
+    "b": 0.9,
+    "h": 0.2528
+   },
+   {
+    "id": "d3",
+    "art": "bild",
+    "x": 0.05,
+    "y": 0.5611,
+    "b": 0.9,
+    "h": 0.2528
+   },
+   {
+    "id": "d4",
+    "art": "flaeche",
+    "x": 0.05,
+    "y": 0.8361,
+    "b": 0.9,
+    "h": 0.0044,
+    "farbe": "#f2b23e"
+   },
+   {
+    "id": "d5",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.8705555555555555,
+    "b": 0.88,
+    "h": 0.024888888888888887,
+    "text": "{event}",
+    "groesse": 32,
+    "gewicht": 800,
+    "schrift": "anzeige",
+    "ausrichtung": "mitte",
+    "versalien": true,
+    "farbe": "#f6f4f1"
+   },
+   {
+    "id": "d6",
+    "art": "text",
+    "x": 0.06,
+    "y": 0.9211666666666667,
+    "b": 0.88,
+    "h": 0.011666666666666667,
+    "text": "{datum} · {box}",
+    "groesse": 15,
+    "gewicht": 500,
+    "schrift": "mono",
+    "ausrichtung": "mitte",
+    "versalien": true,
+    "farbe": "rgba(246,244,241,0.6)"
+   }
+  ]
+ },
+ {
   "id": "v-after-party-photo-booth-template-017-4x6-01",
   "name": "After Party 017 · 4x6 01",
   "format": "hoch-4x6",

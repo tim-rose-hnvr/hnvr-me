@@ -1,0 +1,202 @@
+{
+  "eventName": "Youbooth Event",
+  "tagline": "youbooth.me",
+  "countdown": 3,
+  "countdownStyle": "ring",
+  "modes": {
+    "photo": true,
+    "strip": true,
+    "boomerang": true,
+    "gif": true,
+    "video": false
+  },
+  "gif": {
+    "bilder": 6,
+    "msProBild": 180,
+    "pingpong": true
+  },
+  "aktionen": {
+    "liste": [
+      "nochmal",
+      "drucken",
+      "teilen"
+    ],
+    "gross": "teilen"
+  },
+  "hashtag": {
+    "enabled": false,
+    "quelle": "mastodon",
+    "tag": "",
+    "instanz": "mastodon.social",
+    "token": "",
+    "igNutzerId": "",
+    "endpunkt": "",
+    "intervallSek": 180,
+    "moderation": true,
+    "autoDruck": false,
+    "maxProStunde": 30
+  },
+  "update": {
+    "pruefen": true,
+    "url": "https://pic-me-app-7c4cb979-hnvrme.wix-site-host.com/version.json"
+  },
+  "fernwartung": {
+    "erlaubt": true,
+    "letzter": ""
+  },
+  "auswahl": {
+    "aktiv": false,
+    "vorlagen": [],
+    "sekunden": 12
+  },
+  "eingerichtet": false,
+  "vorschau": {
+    "spiegeln": true,
+    "drehen": 0
+  },
+  "profile": {
+    "enabled": false,
+    "liste": []
+  },
+  "active": {
+    "strip": "streifen-klassisch",
+    "single": "foto-klassisch"
+  },
+  "brandName": "Youbooth",
+  "whitelabel": false,
+  "logo": null,
+  "attract": {
+    "headline": "",
+    "hint": "BERÜHREN ZUM STARTEN"
+  },
+  "ticker": {
+    "enabled": false,
+    "text": ""
+  },
+  "mosaicMode": "grid",
+  "mosaicTarget": null,
+  "mosaicCols": 40,
+  "mosaicStrength": 0.55,
+  "mosaicSticker": false,
+  "printing": true,
+  "texte": {},
+  "druckGrenzen": {
+    "proRunde": 0,
+    "proEvent": 0,
+    "beiGrenze": "hinweis"
+  },
+  "druck": {
+    "streifenDoppelt": false,
+    "schnittlinie": true,
+    "maxProStunde": 60
+  },
+  "printer": null,
+  "cloud": {
+    "enabled": false,
+    "url": "",
+    "key": "",
+    "secret": ""
+  },
+  "melden": {
+    "enabled": false,
+    "url": "https://pic-me-app-7c4cb979-hnvrme.wix-site-host.com/api/box/melden",
+    "key": "",
+    "puls": 3,
+    "fotos": false
+  },
+  "offer": {
+    "print": true,
+    "qr": true,
+    "whatsapp": true,
+    "mail": true,
+    "sms": true,
+    "native": true,
+    "gallery": true,
+    "guestUpload": true
+  },
+  "front": null,
+  "bildschirme": {
+    "attract": null,
+    "auswahl": null,
+    "ergebnis": null,
+    "teilen": null
+  },
+  "survey": {
+    "enabled": false,
+    "consent": {
+      "enabled": false,
+      "text": ""
+    },
+    "questions": [],
+    "unterschrift": false,
+    "imDruck": {
+      "frage": "",
+      "unterschrift": false
+    }
+  },
+  "greenscreen": {
+    "enabled": false,
+    "ki": false,
+    "key": "#00c800",
+    "similarity": 42,
+    "background": null
+  },
+  "intro": true,
+  "faceFinder": {
+    "enabled": false,
+    "showHint": true,
+    "consent": true,
+    "consentText": ""
+  },
+  "arFilters": {
+    "enabled": false
+  },
+  "aiArt": {
+    "enabled": false,
+    "endpoint": "",
+    "key": ""
+  },
+  "hotfolder": {
+    "enabled": false,
+    "addToGallery": true
+  },
+  "voice": {
+    "enabled": false
+  },
+  "textAnim": {
+    "enabled": false,
+    "style": "fade",
+    "text": "Sag Cheese!"
+  },
+  "material": {
+    "id": ""
+  },
+  "playlist": {
+    "enabled": false,
+    "slides": []
+  },
+  "kiosk": {
+    "enabled": false,
+    "salz": "",
+    "pin": ""
+  },
+  "kamera": {
+    "quelle": "webcam",
+    "url": "http://localhost:5513"
+  },
+  "https": {
+    "enabled": false,
+    "port": 3378
+  },
+  "wand": {
+    "zeigen": {
+      "marke": true,
+      "logo": true,
+      "gross": true,
+      "qr": true,
+      "laufband": true,
+      "fortschritt": true
+    },
+    "ueberschrift": ""
+  }
+}

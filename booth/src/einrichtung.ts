@@ -11,11 +11,18 @@ import './cockpit.css';
 import './einrichtung.css';
 import { ladeEinstellungen, sichereEinstellungen } from './einstellungen';
 import { ARTEN } from './arten';
-import { anzahl, neueKennung, sichere } from './speicher';
+import { anzahl, loesche, sichere } from './speicher';
 import { ausgabeAdresse, druckerListe, inHuelle } from './huelle';
 import { drucke, qrFuer } from './ausgabe';
 
 type Zustand = 'offen' | 'laeuft' | 'gut' | 'schlecht';
+
+/* Ein gültiges 1×1-JPEG als Schreibprobe — kleiner geht es nicht, und es muss
+   ein echtes Bild sein: Die Box nimmt nur Bilddaten an. */
+const PROBEBILD =
+  'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsL' +
+  'DBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAAB' +
+  'AAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==';
 
 const wurzel = document.getElementById('einrichtung');
 if (wurzel) void starte(wurzel);
@@ -295,19 +302,14 @@ async function schrittPruefung(e: ReturnType<typeof ladeEinstellungen>): Promise
       schlecht++;
     }
 
-    // Ablage: eine Probe schreiben und wieder mitzählen
+    // Ablage: eine Probe wirklich schreiben, zählen — und wieder wegräumen.
+    // Eine Prüfung, die Spuren hinterlässt, füllt über Monate die Galerie.
     try {
       const vorher = await anzahl();
-      const probe = new Blob([new Uint8Array([255, 216, 255])], { type: 'image/jpeg' });
-      await sichere({
-        id: `probe-${neueKennung()}`,
-        zeit: Date.now(),
-        art: 'probe',
-        event: e.event,
-        blob: probe,
-      });
+      const probe = await sichere(PROBEBILD, 'probe');
       const nachher = await anzahl();
       const ok = nachher > vorher;
+      await loesche(probe.id).catch(() => undefined);
       ergebnisse.append(befund('Ablage', ok, ok ? 'beschreibbar' : 'schreibt nicht'));
       if (!ok) schlecht++;
     } catch {

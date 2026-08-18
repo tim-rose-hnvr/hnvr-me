@@ -1,18 +1,19 @@
 /**
  * Ablage der Vorlagen.
  *
- * Drei Töpfe, in dieser Reihenfolge sichtbar:
- *   · unsere vier eigenen (im Code, `eigeneStandards`)
- *   · der übernommene Katalog (`daten/vorlagen-katalog.json`, 59 Blätter)
- *   · die des Betreibers (lokal gesichert)
+ * Zwei Töpfe:
+ *   · der mitgelieferte Katalog (`vorlagen-katalog.json`, 55 Blätter — vier
+ *     eigene und 51 übernommene). Dieselbe Datei liest der Server, wenn er
+ *     eine frische Box einrichtet: eine Quelle, kein Abgleich zweier Listen.
+ *   · die Vorlagen des Betreibers (lokal gesichert)
  *
- * Die ersten beiden sind unveränderlich — sie kommen aus dem Programm und
- * bleiben, wie sie sind. Wer eine davon bearbeitet, bekommt eine Kopie. So ist
- * der Weg zurück immer offen, auch nach einer verunglückten Nacht am Editor.
+ * Der Katalog ist unveränderlich — er kommt aus dem Programm und bleibt, wie
+ * er ist. Wer eine davon bearbeitet, bekommt eine Kopie. So ist der Weg zurück
+ * immer offen, auch nach einer verunglückten Nacht am Editor.
  */
 
-import katalogRoh from './daten/vorlagen-katalog.json';
-import { eigeneStandards, pruefeVorlage, type Formatschluessel, type Vorlage } from './vorlage';
+import katalogRoh from '../vorlagen-katalog.json';
+import { pruefeVorlage, type Formatschluessel, type Vorlage } from './vorlage';
 
 const SCHLUESSEL = 'youbooth.vorlagen';
 
@@ -26,7 +27,7 @@ const KATALOG: Vorlage[] = (katalogRoh as unknown[]).flatMap((roh) => {
   return 'vorlage' in geprueft ? [geprueft.vorlage] : [];
 });
 
-const MITGELIEFERT: Vorlage[] = [...eigeneStandards(), ...KATALOG];
+const MITGELIEFERT: Vorlage[] = KATALOG;
 const MITGELIEFERT_IDS = new Set(MITGELIEFERT.map((v) => v.id));
 
 export function mitgelieferteVorlagen(): Vorlage[] {

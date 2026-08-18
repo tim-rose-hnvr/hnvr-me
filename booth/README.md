@@ -28,18 +28,34 @@ Desktop-App verpackt — auf Windows und macOS. Die Website dazu liegt in `../yo
 | Bewegtbild (Boomerang, GIF) als Datei — eigener GIF-Kodierer | läuft |
 | DSLR-Tethering, Drucker-Sonderfunktionen, Freistellung, Cloud | offen, siehe unten |
 
+## Aufbau in zwei Teilen
+
+Die Box besteht aus **einem Server** und **einer Oberfläche**.
+
+Der Server (`server/`) stammt aus der Fassung 1.30 und ist der Teil, der ohne
+ihn nicht geht: Er hält Einstellungen, Vorlagen und Aufnahmen als Dateien,
+liefert sie im WLAN aus und verteilt Ereignisse über WebSocket. **Deshalb sehen
+Foto-Wall am Beamer, Galerie auf dem Handy und die Teilen-Station dieselben
+Bilder** — vorher lagen sie in IndexedDB und waren nur in genau einem Browser
+sichtbar.
+
+Die Oberfläche (`src/`) ist unsere: unser Gestaltungssystem, unsere Seiten,
+TypeScript und Vite. Gebaut landet sie in `dist/`, und der Server liefert sie
+aus.
+
 ## Starten
 
 ```bash
 npm install
-npm run dev      # Booth im Browser auf http://localhost:4400
+npm run server   # die Box auf http://localhost:3377 (liefert dist/ aus)
+npm run dev      # daneben Vite auf http://localhost:4400 mit Neuladen beim Tippen
                  #   im Kiosk führen die Einstellungen (PIN) zu allen Oberflächen
                  #   /cockpit.html      Betreiber-Ansicht
                  #   /wand.html         Foto-Wall für Beamer
                  #   /galerie.html      Kunden-Galerie
                  #   /einrichtung.html  Installations-Zentrum
                  #   /editor.html       Booth-Editor (Druckvorlagen)
-npm run build    # Weboberfläche nach dist/
+npm run build    # Oberfläche nach dist/ — danach genügt `npm run server`
 npm run tauri dev    # als Desktop-App (braucht Rust)
 npm run tauri build  # Installationspaket
 ```

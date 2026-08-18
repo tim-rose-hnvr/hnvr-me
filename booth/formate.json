@@ -1,0 +1,65 @@
+{
+  "streifen-2x6": {
+    "name": "Streifen 2×6″",
+    "kurz": "5 × 15 cm",
+    "breite": 600,
+    "hoehe": 1800,
+    "mmBreite": 50,
+    "mmHoehe": 150,
+    "rand": 15
+  },
+  "postkarte-4x6": {
+    "name": "Postkarte 4×6″ quer",
+    "kurz": "15 × 10 cm",
+    "breite": 1800,
+    "hoehe": 1200,
+    "mmBreite": 150,
+    "mmHoehe": 100,
+    "rand": 15
+  },
+  "hoch-4x6": {
+    "name": "Postkarte 4×6″ hoch",
+    "kurz": "10 × 15 cm",
+    "breite": 1200,
+    "hoehe": 1800,
+    "mmBreite": 100,
+    "mmHoehe": 150,
+    "rand": 15
+  },
+  "quadrat-4x4": {
+    "name": "Quadrat 4×4″",
+    "kurz": "10 × 10 cm",
+    "breite": 1200,
+    "hoehe": 1200,
+    "mmBreite": 100,
+    "mmHoehe": 100,
+    "rand": 15
+  },
+  "gross-5x7": {
+    "name": "Groß 5×7″",
+    "kurz": "13 × 18 cm",
+    "breite": 1500,
+    "hoehe": 2100,
+    "mmBreite": 127,
+    "mmHoehe": 178,
+    "rand": 15
+  },
+  "magnet": {
+    "name": "Magnet 2,5×3,5″",
+    "kurz": "6 × 9 cm",
+    "breite": 750,
+    "hoehe": 1050,
+    "mmBreite": 64,
+    "mmHoehe": 89,
+    "rand": 12
+  },
+  "lesezeichen": {
+    "name": "Lesezeichen 2×7″",
+    "kurz": "5 × 18 cm",
+    "breite": 600,
+    "hoehe": 2100,
+    "mmBreite": 50,
+    "mmHoehe": 178,
+    "rand": 15
+  }
+}

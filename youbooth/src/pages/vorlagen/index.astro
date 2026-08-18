@@ -1,17 +1,23 @@
 ---
 import Marketing from '../../layouts/Marketing.astro';
-import Vorlagenblatt from '../../components/Vorlagenblatt.astro';
-import { vorlagen, anlaesseDerVorlagen, formate, bibliothek } from '../../daten/vorlagen';
+import {
+  vorlagen,
+  anlaesseDerVorlagen,
+  formateDerVorlagen,
+  formatname,
+  bibliothek,
+} from '../../daten/vorlagen';
 
 /**
- * Vorlagen-Galerie. Anlass und Format kombinieren sich mit UND.
- * Alle sechzehn Beispiele stehen im Markup, gefiltert wird im Browser.
+ * Vorlagen-Galerie. Jedes Blatt hier ist ein echter Abzug aus dem Katalog,
+ * gezeichnet vom selben Renderer, der auch druckt — kein Nachbau. Anlass und
+ * Format kombinieren sich mit UND, gefiltert wird im Browser.
  */
 
 const kennzahlen = [
-  `${bibliothek.gesamt} Designs in der Bibliothek`,
-  `${vorlagen.length} Beispiele hier`,
-  '4 Formate je Design',
+  `${bibliothek.gesamt} Vorlagen mitgeliefert`,
+  `${bibliothek.streifen} Streifen · ${bibliothek.einzelbild} Einzelbild`,
+  `${bibliothek.formate} Papierformate belegt, 7 möglich`,
   'Eigene Layouts auf Zuruf',
 ];
 ---
@@ -22,10 +28,11 @@ const kennzahlen = [
 >
   <section class="hero">
     <span class="mono mono--amber">Vorlagen-Galerie · alles inklusive</span>
-    <h1>Aufwendige Designs, ohne Aufpreis</h1>
+    <h1>Alle {bibliothek.gesamt} Vorlagen, ohne Aufpreis</h1>
     <p class="fliess">
-      Kein Store, keine Einzelkäufe: jedes Design gehört zur Lizenz und kommt als Set — Fotoformat,
-      Streifen, 4er-Raster und Screen-Variante. Filter unten klicken, Kombination sofort sehen.
+      Kein Store, keine Einzelkäufe: Was hier steht, liegt auf jeder Box. Und es sind echte
+      Abzüge — gezeichnet von demselben Renderer, der auf das Papier druckt. Filter unten
+      klicken, Kombination sofort sehen.
     </p>
     <div class="zahlenzeile">
       {kennzahlen.map((k) => <span class="mono mono--hell">{k}</span>)}
@@ -39,8 +46,8 @@ const kennzahlen = [
       </button>
       {
         anlaesseDerVorlagen.map((a) => (
-          <button class="chip" type="button" data-anlass={a} aria-pressed="false">
-            {a}
+          <button class="chip" type="button" data-anlass={a.name} aria-pressed="false">
+            {a.name} <span class="chip__zahl">{a.zahl}</span>
           </button>
         ))
       }
@@ -51,16 +58,16 @@ const kennzahlen = [
         Alle Formate
       </button>
       {
-        formate.map((f) => (
-          <button class="chip" type="button" data-format={f} aria-pressed="false">
-            {f}
+        formateDerVorlagen.map((f) => (
+          <button class="chip" type="button" data-format={f.schluessel} aria-pressed="false">
+            {f.name} <span class="chip__zahl">{f.zahl}</span>
           </button>
         ))
       }
 
       <span class="filter__rechts">
         <span class="mono" data-feld="treffer" role="status">
-          {vorlagen.length} von {vorlagen.length} Beispielen · Bibliothek {bibliothek.gesamt}
+          {vorlagen.length} von {vorlagen.length} Vorlagen
         </span>
         <button class="chip" type="button" data-feld="zuruecksetzen">Zurücksetzen</button>
       </span>
@@ -71,8 +78,8 @@ const kennzahlen = [
         <span class="mono">Kein Treffer</span>
         <h2 class="frei">Nichts in dieser Kombination</h2>
         <span class="leerkarte__text">
-          Wir bauen Layouts auch auf Zuruf — schickt Farben, Schrift und Logo, alle vier Formate
-          kommen zurück.
+          Wir bauen Layouts auch auf Zuruf — schickt Farben, Schrift und Logo, das Blatt kommt
+          in jedem der sieben Formate zurück.
         </span>
         <a class="pfeil pfeil--klein" href="/kontakt">Layout anfragen →</a>
       </article>
@@ -84,41 +91,62 @@ const kennzahlen = [
               class="vorlage"
               data-vorlage
               data-anlass-wert={v.anlass}
-              data-formate={v.formate.join('|')}
+              data-format-wert={v.format}
               style={`--verzug:${(Math.min(i, 12) * 0.04).toFixed(2)}s`}
             >
-              <Vorlagenblatt vorlage={v} />
+              <div class="vorlage__blatt">
+                <img
+                  src={v.bild}
+                  width={v.breite}
+                  height={v.hoehe}
+                  alt={`Vorlage ${v.name}, ${formatname(v.format)}`}
+                  loading={i < 6 ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
+              </div>
               <div class="vorlage__fuss">
                 <span class="vorlage__name">{v.name}</span>
                 <span class="mono">
-                  {v.anlass} · {v.merkmal}
+                  {v.anlass} · {v.art === 'streifen' ? `${v.aufnahmen} Aufnahmen` : 'Einzelbild'}
                 </span>
                 <div class="marken">
                   <span class="marke marke--inklusive">Inklusive</span>
-                  {v.formate.map((f) => (
-                    <span class="marke">{f}</span>
-                  ))}
+                  <span class="marke">{formatname(v.format)}</span>
                 </div>
               </div>
             </article>
           ))
         }
       </div>
+
+      <p class="platzhalterhinweis">
+        Die Personen auf den Blättern sind Platzhalter, keine Aufnahmen. Alles andere — Ränder,
+        Schriftmischung, Datumszeile, Beschnitt — ist das, was der Drucker ausgibt.
+      </p>
+
     </div>
   </div>
 
   <section class="abschnitt abschnitt--dunkel">
     <h2>Sammlungen nach Anlass</h2>
     <p class="fliess">
-      Zahlen beziehen sich auf die vollständige Bibliothek im Konto — oben seht ihr
-      {vorlagen.length} Beispiele daraus.
+      Die Zahlen sind gezählt, nicht geschätzt: So viele Blätter liegen zu jedem Anlass auf der
+      Box. Was fehlt, bauen wir dazu.
     </p>
     <div class="raster raster--schmal">
       {
-        bibliothek.sammlungen.map((s) => (
+        anlaesseDerVorlagen.map((a) => (
           <article class="sammlung">
-            <span class="sammlung__titel">{s.titel}</span>
-            <span class="sammlung__text">{s.text}</span>
+            <span class="sammlung__titel">
+              {a.name} · {a.zahl}
+            </span>
+            <span class="sammlung__text">
+              {vorlagen
+                .filter((v) => v.anlass === a.name)
+                .map((v) => formatname(v.format))
+                .filter((f, i, alle) => alle.indexOf(f) === i)
+                .join(' · ')}
+            </span>
           </article>
         ))
       }
@@ -255,6 +283,44 @@ const kennzahlen = [
     animation: einfliegen 0.45s ease-out both var(--verzug);
   }
 
+  /* Die Blätter haben sieben verschiedene Seitenverhältnisse — vom Streifen
+     1:3 bis zum Quadrat. Sie in eine gemeinsame Kachelhöhe zu zwingen, hieße
+     strecken oder beschneiden; beides zeigt etwas, das so nie gedruckt wird.
+     Also feste Bühnenhöhe, Blatt zentriert, Rest bleibt Fläche. */
+  .vorlage__blatt {
+    background: #efece7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    min-height: 260px;
+  }
+
+  .vorlage__blatt img {
+    max-width: 100%;
+    max-height: 240px;
+    width: auto;
+    height: auto;
+    border-radius: 3px;
+    box-shadow: var(--schatten-hoch);
+  }
+
+  .chip__zahl {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 10px;
+    opacity: 0.55;
+    margin-left: 4px;
+  }
+
+  .platzhalterhinweis {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-still);
+    max-width: 640px;
+    margin: 0;
+  }
+
   .vorlage__fuss {
     padding: 16px 18px 18px;
     display: flex;
@@ -362,7 +428,6 @@ const kennzahlen = [
   if (galerie) {
     const zustand = { anlass: 'alle', format: 'alle' };
     const gesamt = galerie.querySelectorAll('[data-vorlage]').length;
-    const bibliothek = 240;
 
     function zeichne() {
       let treffer = 0;
@@ -371,7 +436,7 @@ const kennzahlen = [
         const anlassPasst =
           zustand.anlass === 'alle' || karte.dataset.anlassWert === zustand.anlass;
         const formatPasst =
-          zustand.format === 'alle' || karte.dataset.formate!.split('|').includes(zustand.format);
+          zustand.format === 'alle' || karte.dataset.formatWert === zustand.format;
         const passt = anlassPasst && formatPasst;
         karte.hidden = !passt;
         if (passt) treffer++;
@@ -382,7 +447,7 @@ const kennzahlen = [
 
       const trefferfeld = galerie!.querySelector<HTMLElement>('[data-feld="treffer"]');
       if (trefferfeld) {
-        trefferfeld.textContent = `${treffer} von ${gesamt} Beispielen · Bibliothek ${bibliothek}`;
+        trefferfeld.textContent = `${treffer} von ${gesamt} Vorlagen`;
       }
 
       (['anlass', 'format'] as const).forEach((art) => {

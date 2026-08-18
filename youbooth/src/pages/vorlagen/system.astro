@@ -1,34 +1,31 @@
 ---
 import Marketing from '../../layouts/Marketing.astro';
-import Layoutvorschau from '../../components/Layoutvorschau.astro';
+import { vorlagen, anlaesseDerVorlagen, formatname, bibliothek } from '../../daten/vorlagen';
 
 /**
  * Das Vorlagen-Prinzip: woraus ein Layout besteht und welche Grundformen
  * mitgeliefert werden. Die Beispiele sind CSS-Zeichnungen, keine Bilder.
  */
 
-const fotoformate = [
-  { variante: 'klassik', name: 'Klassik Serif', format: '10×15 · Hochzeit', zeilen: ['Lena & Jonas', '15 · 08 · 2026'] },
-  { variante: 'mono', name: 'Dark Mono', format: '10×15 · Firmenevent', zeilen: ['Sommerfest', '2026'], dunkel: true },
-  { variante: 'randlos', name: 'Randlos mit Banderole', format: '13×18', zeilen: ['Lena & Jonas', 'Gut Hügelhof'] },
-  { variante: 'split', name: 'Split mit Textpanel', format: '10×15 · Logo-Slot', zeilen: ['Danke, dass ihr da wart', '15.08.2026'] },
-  { variante: 'passepartout', name: 'Passepartout warm', format: '10×15', zeilen: ['Hochzeit · Herne', ''] },
-  { variante: 'film', name: 'Filmkante', format: '10×15 · Retro', zeilen: ['36', 'Rolle 36'] },
-  { variante: 'collage', name: 'Collage 3 + Titel', format: '10×15', zeilen: ['Abiball', '2026'] },
-  { variante: 'monogramm', name: 'Monogramm', format: '13×18', zeilen: ['L&J', '15.08.2026'] },
-  { variante: 'banderole', name: 'Banderole Akzent', format: '15×20 · Logo', zeilen: ['Firmenfeier 2026', ''] },
-  { variante: 'postkarte', name: 'Postkarte zum Schreiben', format: '10×15', zeilen: ['Gruß an das Paar', ''] },
-  { variante: 'datum', name: 'Datum oben, Satz unten', format: '10×15', zeilen: ['wir haben geheiratet', '15. August 2026'] },
-  { variante: 'seitenleiste', name: 'Seitenleiste vertikal', format: '10×15 · Messe', zeilen: ['Messe 2026', ''] },
-];
+/* Beispiele aus dem Katalog, nicht nachgebaut: dieselben Bilddateien wie in
+   der Galerie. Wer hier ein Blatt sieht und es auf der Box sucht, findet es
+   unter demselben Namen. */
+const einzelbilder = vorlagen.filter((v) => v.art === 'foto');
 
-const streifen = [
-  { name: 'Streifen 3 hell', bilder: 3, zeilen: ['Lena & Jonas', '15.08.2026'] },
-  { name: 'Streifen 3 dunkel', bilder: 3, zeilen: ['Sommerfest 2026', ''], dunkel: true },
-  { name: 'Streifen 4 randlos', bilder: 4, zeilen: ['', ''] },
-  { name: 'Retro 2 + Banderole', bilder: 2, zeilen: ['Photo Automat', ''] },
-  { name: 'Minimal mit Logo', bilder: 3, zeilen: ['Herne', ''] },
-];
+/* Sechs Streifen mit möglichst verschiedener Bilderzahl — eine Reihe, in der
+   dreimal dasselbe Raster steht, zeigt nichts. */
+const streifen = (() => {
+  const gesehen = new Set<number>();
+  const erste = vorlagen.filter((v) => {
+    if (v.art !== 'streifen' || gesehen.has(v.aufnahmen)) return false;
+    gesehen.add(v.aufnahmen);
+    return true;
+  });
+  const rest = vorlagen.filter((v) => v.art === 'streifen' && !erste.includes(v));
+  return [...erste, ...rest].slice(0, 6);
+})();
+
+const weitereStreifen = bibliothek.streifen - streifen.length;
 
 const bausteine = [
   {
@@ -49,28 +46,27 @@ const bausteine = [
   },
 ];
 
+/* Gezählt, nicht behauptet: Die Zeile unter dem Titel ist dieselbe Zahl, die
+   die Galerie filtert. */
 const sammlungen = [
-  { text: 'Fotoformat · 17' },
-  { text: 'Streifen · 65' },
-  { text: 'Hochzeit' },
-  { text: 'Firmenevent' },
-  { text: 'Geburtstag' },
-  { text: 'Minimal' },
+  { text: `Einzelbild · ${bibliothek.einzelbild}` },
+  { text: `Streifen · ${bibliothek.streifen}` },
+  ...anlaesseDerVorlagen.map((a) => ({ text: `${a.name} · ${a.zahl}` })),
 ];
 ---
 
 <Marketing
   titel="Vorlagen-Prinzip"
-  beschreibung="82 Druckvorlagen: fertig gesetzt mit Schriftmischung, Rändern, Datumszeile und Logo-Slot — Bildflächen sind markiert."
+  beschreibung="55 Druckvorlagen: fertig gesetzt mit Schriftmischung, Rändern, Datumszeile und Logo-Slot — Bildflächen sind markiert."
 >
   <section class="hero">
     <div class="hero__text">
-      <span class="mono mono--amber">82 Druckvorlagen</span>
-      <h1>Fotoformat zuerst. Streifen, wenn's Streifen sein soll.</h1>
+      <span class="mono mono--amber">55 Druckvorlagen</span>
+      <h1>Einzelbild zuerst. Streifen, wenn's Streifen sein soll.</h1>
       <p class="fliess">
-        Zehn ausgearbeitete Layouts im Fotoformat, dazu die klassischen Streifen. Alle Vorlagen sind
-        fertig gesetzt: Schriftmischung, Ränder, Datumszeile, Logo-Slot. Bildflächen sind markiert —
-        dort landet die Aufnahme.
+        Sieben ausgearbeitete Layouts fürs Einzelbild, dazu 48 für Streifenserien. Alle Vorlagen
+        sind fertig gesetzt: Schriftmischung, Ränder, Datumszeile, Logo-Slot. Bildflächen sind
+        markiert — dort landet die Aufnahme.
       </p>
       <div class="reihe knopfreihe">
         <a class="knopf knopf--amber knopf--mittel" href="/kontakt">Vorlagen testen</a>
@@ -81,36 +77,45 @@ const sammlungen = [
       <div class="sammlungen">
         {sammlungen.map((s) => <span class="mono mono--hell">{s.text}</span>)}
       </div>
-      <span class="mono mono--hell">10×15 · 13×18 · 15×20 · 5×15 Streifen</span>
+      <span class="mono mono--hell">
+        5×15 Streifen · 10×15 · 15×10 · 10×10 · 13×18 · 6×9 Magnet · 5×18 Lesezeichen
+      </span>
     </div>
 
     <div class="hero__blatt">
-      <Layoutvorschau
-        variante="klassik"
-        format="10×15"
-        zeilen={['Lena & Jonas', '15 · 08 · 2026', 'L & J']}
+      <img
+        src={einzelbilder[0].bild}
+        width={einzelbilder[0].breite}
+        height={einzelbilder[0].hoehe}
+        alt={`Vorlage ${einzelbilder[0].name}, ${formatname(einzelbilder[0].format)}`}
+        loading="eager"
+        decoding="async"
       />
     </div>
   </section>
 
   <section class="abschnitt">
     <div class="abschnitt-kopf">
-      <h2>Fotoformat — zwölf fertige Layouts</h2>
+      <h2>Einzelbild — {einzelbilder.length} fertige Layouts</h2>
       <span class="mono mono--still">Bildfeld markiert · Text und Logo austauschbar</span>
     </div>
     <div class="blattraster">
       {
-        fotoformate.map((f) => (
+        einzelbilder.map((f) => (
           <figure class="vorschau">
-            <Layoutvorschau
-              variante={f.variante}
-              format={f.format}
-              zeilen={f.zeilen}
-              dunkel={f.dunkel}
-            />
+            <div class="vorschau__blatt">
+              <img
+                src={f.bild}
+                width={f.breite}
+                height={f.hoehe}
+                alt={`Vorlage ${f.name}, ${formatname(f.format)}`}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
             <figcaption>
               <span class="vorschau__name">{f.name}</span>
-              <span class="mono">{f.format}</span>
+              <span class="mono">{formatname(f.format)}</span>
             </figcaption>
           </figure>
         ))
@@ -121,31 +126,36 @@ const sammlungen = [
   <section class="abschnitt abschnitt--dunkel">
     <div class="abschnitt-kopf">
       <h2>Streifen — der Klassiker</h2>
-      <span class="mono mono--hell">65 Layouts · Doppelstreifen mit Schnittlinie</span>
+      <span class="mono mono--hell">
+        {bibliothek.streifen} Layouts · Doppelstreifen mit Schnittlinie
+      </span>
     </div>
     <div class="streifenraster">
       {
         streifen.map((s) => (
           <figure class="vorschau">
-            <Layoutvorschau
-              variante="streifen"
-              format="5×15"
-              zeilen={s.zeilen}
-              dunkel={s.dunkel}
-              bilder={s.bilder}
-              seitenverhaeltnis="1 / 3"
-            />
+            <div class="vorschau__blatt vorschau__blatt--dunkel">
+              <img
+                src={s.bild}
+                width={s.breite}
+                height={s.hoehe}
+                alt={`Vorlage ${s.name}, ${formatname(s.format)}`}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
             <figcaption>
               <span class="vorschau__name vorschau__name--hell">{s.name}</span>
+              <span class="mono mono--hell">{s.aufnahmen} Aufnahmen</span>
             </figcaption>
           </figure>
         ))
       }
       <figure class="vorschau weitere">
-        <span class="weitere__zahl">60</span>
+        <span class="weitere__zahl">{weitereStreifen}</span>
         <span class="mono mono--hell">weitere Streifen</span>
         <span class="weitere__text">
-          Zwei-, drei- und vierteilig, hell und dunkel, mit und ohne Rand — alle im Konto.
+          Zwei-, drei- und vierteilig, hell und dunkel, mit und ohne Rand — alle auf jeder Box.
         </span>
       </figure>
     </div>
@@ -186,17 +196,22 @@ const sammlungen = [
     <div class="designerfeld">
       <span class="mono">Im Designer</span>
       <div class="werte">
-        <span class="wert"><span>Format</span><b>10×15 quer</b></span>
-        <span class="wert"><span>Bildfelder</span><b>1</b></span>
-        <span class="wert"><span>Textfelder</span><b>2</b></span>
+        <span class="wert">
+          <span>Format</span>
+          <b>{formatname(einzelbilder[1].format)}</b>
+        </span>
+        <span class="wert"><span>Bildfelder</span><b>{einzelbilder[1].aufnahmen}</b></span>
+        <span class="wert"><span>Papierformate</span><b>7</b></span>
         <span class="wert"><span>Logo-Slot</span><b>optional</b></span>
       </div>
       <div class="designerfeld__blatt">
-        <Layoutvorschau
-          variante="klassik"
-          format="10×15"
-          zeilen={['Lena & Jonas', '15 · 08 · 2026']}
-          seitenverhaeltnis="4 / 3"
+        <img
+          src={einzelbilder[1].bild}
+          width={einzelbilder[1].breite}
+          height={einzelbilder[1].hoehe}
+          alt={`Vorlage ${einzelbilder[1].name} im Designer`}
+          loading="lazy"
+          decoding="async"
         />
       </div>
       <span class="mono">Als Haus-Standard speichern</span>
@@ -207,8 +222,8 @@ const sammlungen = [
     <div class="schluss__text">
       <span class="display">Eigenes Layout, das wir für euch aufbauen?</span>
       <span class="beiwort">
-        Farben, Schrift und Logo schicken — alle vier Formate kommen in zwei Werktagen zurück, ohne
-        Aufpreis.
+        Farben, Schrift und Logo schicken — das Blatt kommt in jedem der sieben Formate zurück,
+        in zwei Werktagen, ohne Aufpreis.
       </span>
     </div>
     <div class="reihe knopfreihe">
@@ -274,6 +289,40 @@ const sammlungen = [
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     gap: 24px;
+  }
+
+  .vorschau__blatt {
+    background: #efece7;
+    border-radius: var(--r-karte);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    min-height: 230px;
+  }
+
+  .vorschau__blatt--dunkel {
+    background: rgba(244, 242, 238, 0.06);
+  }
+
+  /* Sieben Papierformate, sieben Seitenverhältnisse. Auf eine gemeinsame
+     Kachelhöhe gezwungen wäre jedes zweite Blatt gestreckt — und gestreckt
+     druckt es nie. Also Höhe begrenzen, Breite folgen lassen. */
+  .vorschau__blatt img {
+    max-width: 100%;
+    max-height: 210px;
+    width: auto;
+    height: auto;
+    border-radius: 3px;
+    box-shadow: var(--schatten-hoch);
+  }
+
+  .hero__blatt img,
+  .designerfeld__blatt img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: var(--schatten-hoch);
   }
 
   .vorschau {

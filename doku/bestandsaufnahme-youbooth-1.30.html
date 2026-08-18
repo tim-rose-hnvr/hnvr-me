@@ -1,68 +1,76 @@
 <title>Bestandsaufnahme youbooth 1.30</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 
 <style>
-  /* Gestaltung folgt dem Entwurf „Nachtschicht" aus DESIGN-nachtschicht.md:
-     Nachtblau statt Schwarz, zwei Akzente mit Zuständigkeit — Blitz (warm,
-     alles Körperliche: Befunde, Belege) und Strom (kühl, alles Strukturelle).
-     Dunkel zuerst, weil das Cockpit dunkel ist; helle Fassung vollständig
-     durchgezogen, damit die Seite auf jedem Grund steht. */
+  /* Gestaltung: unser Haussystem (youbooth/src/styles/tokens.css), nicht das
+     der eingelesenen Fassung. Ein Akzent (Amber), zwei Grundflächen (Ink und
+     Paper), Zustandsfarben nur, wo sie einen Zustand bezeichnen — nie zur
+     Zierde. Schrift ist Archivo für alles Gesetzte und IBM Plex Mono für
+     alles, was aus einer Maschine kommt: Pfade, Zahlen, Belege.
+
+     Hell zuerst, weil dieses Blatt gelesen und gedruckt wird. Die dunkle
+     Fassung ist vollständig durchgezogen, damit es auf jedem Grund steht. */
   :root {
-    --grund: #0a0f1c;
-    --erhoben: #111a2e;
-    --tiefer: #070b15;
-    --linie: rgba(125, 151, 255, 0.18);
-    --linie-stark: rgba(125, 151, 255, 0.34);
-    --schrift: #e9edf7;
-    --leise: #97a3c2;
-    --blitz: #ffc857;
-    --strom: #7d97ff;
-    --fehler: #ff7a6b;
-    --gut: #5cc98d;
-    --achtung: #ffb454;
-    --marke-blitz: rgba(255, 200, 87, 0.14);
-    --marke-strom: rgba(125, 151, 255, 0.14);
-    --schatten: 0 18px 44px rgba(0, 0, 0, 0.45);
+    --grund: #f6f4f1;
+    --erhoben: #ffffff;
+    --tiefer: #efece7;
+    --linie: rgba(0, 0, 0, 0.09);
+    --linie-stark: rgba(0, 0, 0, 0.15);
+    --schrift: #17171c;
+    --leise: rgba(0, 0, 0, 0.58);
+    --amber: #f2b23e;
+    /* Amber trägt auf Papier zu wenig Kontrast für Text — dafür die dunkle
+       Schwester, gleiche Familie, lesbar auf Weiß. */
+    --amber-text: #8a5c00;
+    --link: #a8412f;
+    --fehler: #b3382c;
+    --gut: #10795c;
+    --achtung: #8a5c00;
+    --marke-amber: rgba(242, 178, 62, 0.16);
+    --marke-still: rgba(0, 0, 0, 0.05);
+    --schatten: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
 
-  @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) {
-      --grund: #f7f8fb;
-      --erhoben: #ffffff;
-      --tiefer: #eef1f7;
-      --linie: rgba(24, 40, 88, 0.16);
-      --linie-stark: rgba(24, 40, 88, 0.3);
-      --schrift: #131a2b;
-      --leise: #556180;
-      --blitz: #9a6b00;
-      --strom: #3a54c4;
-      --fehler: #b3382c;
-      --gut: #1f7a4d;
-      --achtung: #8a5a00;
-      --marke-blitz: rgba(154, 107, 0, 0.12);
-      --marke-strom: rgba(58, 84, 196, 0.1);
-      --schatten: 0 14px 34px rgba(24, 40, 88, 0.12);
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --grund: #0b0b0d;
+      --erhoben: #17171c;
+      --tiefer: #121216;
+      --linie: rgba(244, 242, 238, 0.12);
+      --linie-stark: rgba(244, 242, 238, 0.25);
+      --schrift: #f4f2ee;
+      --leise: rgba(244, 242, 238, 0.62);
+      --amber: #f2b23e;
+      --amber-text: #f2b23e;
+      --link: #e78a72;
+      --fehler: #ff8271;
+      --gut: #3fd0a6;
+      --achtung: #f2b23e;
+      --marke-amber: rgba(242, 178, 62, 0.14);
+      --marke-still: rgba(244, 242, 238, 0.07);
+      --schatten: 0 18px 40px -28px rgba(0, 0, 0, 0.9);
     }
   }
 
-  :root[data-theme="light"] {
-    --grund: #f7f8fb;
-    --erhoben: #ffffff;
-    --tiefer: #eef1f7;
-    --linie: rgba(24, 40, 88, 0.16);
-    --linie-stark: rgba(24, 40, 88, 0.3);
-    --schrift: #131a2b;
-    --leise: #556180;
-    --blitz: #9a6b00;
-    --strom: #3a54c4;
-    --fehler: #b3382c;
-    --gut: #1f7a4d;
-    --achtung: #8a5a00;
-    --marke-blitz: rgba(154, 107, 0, 0.12);
-    --marke-strom: rgba(58, 84, 196, 0.1);
-    --schatten: 0 14px 34px rgba(24, 40, 88, 0.12);
+  :root[data-theme="dark"] {
+    --grund: #0b0b0d;
+    --erhoben: #17171c;
+    --tiefer: #121216;
+    --linie: rgba(244, 242, 238, 0.12);
+    --linie-stark: rgba(244, 242, 238, 0.25);
+    --schrift: #f4f2ee;
+    --leise: rgba(244, 242, 238, 0.62);
+    --amber: #f2b23e;
+    --amber-text: #f2b23e;
+    --link: #e78a72;
+    --fehler: #ff8271;
+    --gut: #3fd0a6;
+    --achtung: #f2b23e;
+    --marke-amber: rgba(242, 178, 62, 0.14);
+    --marke-still: rgba(244, 242, 238, 0.07);
+    --schatten: 0 18px 40px -28px rgba(0, 0, 0, 0.9);
   }
 
   * { box-sizing: border-box; }
@@ -71,9 +79,9 @@
     margin: 0;
     background: var(--grund);
     color: var(--schrift);
-    font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
+    font-family: Archivo, 'Archivo Variable', system-ui, -apple-system, sans-serif;
     font-size: 17px;
-    line-height: 1.62;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -96,18 +104,17 @@
   .marke {
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-size: 12px;
+    font-weight: 500;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--blitz);
+    color: var(--amber-text);
   }
 
   h1 {
-    font-family: Fraunces, Georgia, serif;
-    font-optical-sizing: auto;
-    font-weight: 600;
-    font-size: clamp(34px, 6vw, 56px);
-    line-height: 1.04;
-    letter-spacing: -0.02em;
+    font-weight: 800;
+    font-size: clamp(34px, 6vw, 58px);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
     margin: 0;
     text-wrap: balance;
   }
@@ -130,43 +137,41 @@
 
   /* --- Abschnitte ------------------------------------------------- */
 
-  section {
-    padding-top: 56px;
-  }
+  section { padding-top: 56px; }
 
   .eyebrow {
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-size: 11.5px;
+    font-weight: 500;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--strom);
+    color: var(--leise);
     margin: 0 0 10px;
   }
 
   h2 {
-    font-family: Fraunces, Georgia, serif;
-    font-weight: 600;
-    font-size: clamp(25px, 3.4vw, 33px);
-    line-height: 1.15;
-    letter-spacing: -0.015em;
+    font-weight: 700;
+    font-size: clamp(25px, 3.4vw, 34px);
+    line-height: 1.12;
+    letter-spacing: -0.022em;
     margin: 0 0 18px;
     text-wrap: balance;
   }
 
   h3 {
-    font-family: 'Public Sans', system-ui, sans-serif;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 18px;
     line-height: 1.35;
+    letter-spacing: -0.01em;
     margin: 0 0 6px;
   }
 
   p { max-width: 72ch; margin: 0 0 16px; }
   p.weit { max-width: none; }
 
-  a { color: var(--strom); text-underline-offset: 3px; }
+  a { color: var(--link); text-underline-offset: 3px; }
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--blitz);
+    outline: 2px solid var(--amber);
     outline-offset: 3px;
   }
 
@@ -174,8 +179,8 @@
 
   code, .pfad {
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
-    font-size: 0.88em;
-    background: var(--marke-strom);
+    font-size: 0.86em;
+    background: var(--marke-still);
     border-radius: 5px;
     padding: 1px 5px;
   }
@@ -189,9 +194,10 @@
   .rahmen {
     overflow-x: auto;
     border: 1px solid var(--linie);
-    border-radius: 12px;
+    border-radius: 14px;
     background: var(--erhoben);
     margin-bottom: 22px;
+    box-shadow: var(--schatten);
   }
 
   table {
@@ -225,16 +231,16 @@
 
   .befund {
     border: 1px solid var(--linie);
-    border-left: 3px solid var(--blitz);
-    border-radius: 10px;
+    border-left: 3px solid var(--amber);
+    border-radius: 14px;
     background: var(--erhoben);
     padding: 20px 22px;
     margin-bottom: 16px;
     box-shadow: var(--schatten);
   }
 
-  .befund--doku { border-left-color: var(--strom); }
-  .befund--alt { border-left-color: var(--leise); }
+  .befund--doku { border-left-color: var(--linie-stark); }
+  .befund--alt { border-left-color: var(--linie-stark); }
 
   .befund__kopf {
     display: flex;
@@ -249,7 +255,7 @@
     font-size: 10.5px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    padding: 3px 8px;
+    padding: 3px 9px;
     border-radius: 999px;
     border: 1px solid var(--linie-stark);
     color: var(--leise);
@@ -257,7 +263,7 @@
   }
 
   .chip--belegt { color: var(--fehler); border-color: currentColor; }
-  .chip--doku { color: var(--strom); border-color: currentColor; }
+  .chip--doku { color: var(--leise); }
   .chip--kosmetik { color: var(--achtung); border-color: currentColor; }
 
   .befund p { margin-bottom: 10px; }
@@ -267,7 +273,7 @@
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-size: 12.5px;
     color: var(--leise);
-    border-top: 1px dashed var(--linie);
+    border-top: 1px dashed var(--linie-stark);
     padding-top: 10px;
     margin-top: 12px;
     overflow-x: auto;
@@ -285,9 +291,10 @@
 
   .karte {
     border: 1px solid var(--linie);
-    border-radius: 10px;
+    border-radius: 14px;
     background: var(--erhoben);
     padding: 16px 18px;
+    box-shadow: var(--schatten);
   }
 
   .karte h3 { margin-bottom: 4px; }
@@ -310,9 +317,9 @@
   }
 
   .hinweis {
-    border-left: 3px solid var(--blitz);
-    background: var(--marke-blitz);
-    border-radius: 0 10px 10px 0;
+    border-left: 3px solid var(--amber);
+    background: var(--marke-amber);
+    border-radius: 0 14px 14px 0;
     padding: 16px 20px;
     margin: 24px 0;
   }
@@ -778,14 +785,12 @@ server.js:37    const CAN_PRINT = EDITION === 'desktop';</p>
     </div>
 
     <p>
-      Bei der <strong>Website</strong> liegt es anders, aber nicht besser: Es gibt sie
-      jetzt dreimal. Die Seiten in <span class="pfad">public/*.html</span>, aus denen
+      Bei der <strong>Website</strong> lag es anders, aber nicht besser: Es gab sie
+      dreimal. Die Seiten in <span class="pfad">public/*.html</span>, aus denen
       <span class="pfad">build-wix.py</span> die Wix-Site erzeugt. Die Astro-App, die
-      laut Arbeitsliste noch den alten Entwurf trägt. Und
-      <span class="pfad">hnvr-me/youbooth</span> mit 50 Routen und 15 608 Zeilen in einer
-      dritten Gestaltungsrichtung — Papierweiß und Amber, während „Nachtschicht"
-      Nachtblau mit zwei Akzenten festlegt (<span class="pfad">#0a0f1c</span>,
-      <span class="pfad">--blitz #ffc857</span>, <span class="pfad">--strom #7d97ff</span>).
+      laut Arbeitsliste noch den alten Entwurf trug. Und
+      <span class="pfad">hnvr-me/youbooth</span> mit 50 Routen in unserem Haussystem —
+      Papierweiß, Ink und Amber, Archivo und IBM Plex Mono.
     </p>
     <p>
       Dein eigener Grundsatz Nummer vier sagt dazu alles: <em>Eine Quelle je Sache.
@@ -794,19 +799,94 @@ server.js:37    const CAN_PRINT = EDITION === 'desktop';</p>
   </section>
 
   <section>
-    <p class="eyebrow">Vorschlag</p>
+    <p class="eyebrow">Entscheidung</p>
+    <h2>Was daraus geworden ist</h2>
+
+    <p>
+      Die Empfehlung dieses Papiers war, <span class="pfad">booth/</span> nicht
+      weiterzubauen. Entschieden wurde etwas Drittes, und es ist das bessere: <strong>Der
+      Rumpf von 1.30 wird übernommen, die Oberfläche bleibt unsere.</strong> Nicht zwei
+      Fotoboxen nebeneinander, sondern eine — mit dem Server, der sich in Sälen bewährt
+      hat, und dem Gesicht, das zur Marke gehört.
+    </p>
+
+    <p>Was das konkret hieß:</p>
+
+    <div class="karten">
+      <div class="karte">
+        <h3>Server statt Browserspeicher</h3>
+        <p>
+          <span class="pfad">server/server.js</span> aus 1.30 ist ab jetzt der Rumpf:
+          Aufnahmen, Einstellungen und Vorlagen liegen auf der Box, nicht in
+          <span class="pfad">IndexedDB</span> und <span class="pfad">localStorage</span>
+          eines einzelnen Browsers.
+        </p>
+      </div>
+      <div class="karte">
+        <h3>Eine Quelle je Sache</h3>
+        <p>
+          Sieben Papierformate in <span class="pfad">formate.json</span>, 55 Vorlagen in
+          <span class="pfad">vorlagen-katalog.json</span> — beides lesen Oberfläche und
+          Server aus derselben Datei.
+        </p>
+      </div>
+      <div class="karte">
+        <h3>Gestaltung: unsere</h3>
+        <p>
+          Kein Nachtblau, kein zweiter Akzent. Ink, Paper, Amber; Archivo und IBM Plex
+          Mono — als Schriftdateien auf der Box, ohne Abruf nach außen. Auch dieses
+          Blatt ist danach neu gesetzt.
+        </p>
+      </div>
+      <div class="karte">
+        <h3>Draht statt Nachfragen</h3>
+        <p>
+          <span class="pfad">src/draht.ts</span>: Die Box meldet neue Aufnahmen und
+          geänderte Einstellungen von selbst. Wand am Beamer, Galerie am Handy und
+          Cockpit am Laptop zeigen denselben Stand.
+        </p>
+      </div>
+    </div>
+
+    <div class="befund">
+      <div class="befund__kopf">
+        <h3>Von 78 Vorlagen sind 55 übernommen</h3>
+        <span class="chip chip--belegt">belegt</span>
+      </div>
+      <p>
+        Acht der 78 tragen den alten Produktnamen als Pixel im Hintergrund-PNG —
+        nachgezählt, nicht vermutet. Eine Vorlage, die den falschen Namen auf den Abzug
+        eines Gastes druckt, ist keine Vorlage, sondern ein Rückruf. Sie sind draußen;
+        die übrigen wurden auf unser Feldmodell umgerechnet und einzeln gegen den
+        laufenden Server gezeichnet.
+      </p>
+      <p class="beleg">tools/vorlagen-durchsehen.mjs → 55 Vorlagen gezeichnet, 55 ohne Mangel</p>
+    </div>
+
+    <div class="befund">
+      <div class="befund__kopf">
+        <h3>Die Kiosk-PIN ging über den Draht hinaus</h3>
+        <span class="chip chip--belegt">gefunden und behoben</span>
+      </div>
+      <p>
+        <span class="pfad">/api/settings</span> streifte Salz und Prüfsumme sauber ab —
+        der WebSocket nicht. Jedes Gerät im WLAN, das die Adresse kannte, bekam beides
+        bei der Begrüßung. Das Abstreifen sitzt jetzt im Ausgang selbst statt an sieben
+        Aufrufstellen, damit die achte es nicht wieder vergisst.
+      </p>
+      <p class="beleg">tools/draht-probe.mjs → 7 Prüfungen, alle grün</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Offen</p>
     <h2>Woran ich als Nächstes arbeiten würde</h2>
     <ol>
-      <li><strong>Die drei Code-Befunde beheben.</strong> Zusammen ein überschaubarer Eingriff, und der macOS-Druck macht die Aussage „Windows und macOS" erst wahr. Dazu je eine Prüfung in <span class="pfad">tools/quelltext-pruefen.mjs</span>, damit sie nicht zurückkommen — genau so, wie du es dort schon hältst.</li>
-      <li><strong>Die Papiere auf 1.30 nachziehen.</strong> Kasse raus, macOS-Druck ehrlich benennen, Versionsstände vereinheitlichen, 78 statt 82. Das kostet eine Stunde und rettet den Wert der Dokumente: Sie sind gut, weil sie geprüft sind.</li>
-      <li><strong>Eine Entscheidung zur Website</strong> — welche der drei überlebt. Danach kann ich die anderen beiden darauf zurückführen, statt dass alle drei gepflegt werden müssen.</li>
-      <li><strong>Danach die Lücken</strong>, in der Reihenfolge der ersten Liste oben: Serienbild, gemeinsame Steuerung, Hautglättung, Wasserzeichen-Stufe.</li>
+      <li><strong>Die drei Code-Befunde beheben</strong>, soweit sie den übernommenen Rumpf betreffen — der macOS-Druck macht die Aussage „Windows und macOS" erst wahr. Dazu je eine Prüfung in <span class="pfad">tools/quelltext-pruefen.mjs</span>, damit sie nicht zurückkommen.</li>
+      <li><strong>Die Papiere nachziehen.</strong> 55 Vorlagen statt 82, sieben Formate, Druck auf beiden Systemen, Wand und Galerie über Geräte hinweg. Die Dokumente sind gut, weil sie geprüft sind — das bleiben sie nur, wenn sie mitwandern.</li>
+      <li><strong>Die Hülle.</strong> Electron statt Tauri; <span class="pfad">huelle.legeAb</span> und <span class="pfad">src-tauri/src/ausgabe.rs</span> sind seit dem Umzug auf den Server gegenstandslos und als solche markiert.</li>
+      <li><strong>Danach die Lücken</strong>, in der Reihenfolge der Liste oben: Serienbild, gemeinsame Steuerung, Hautglättung, Wasserzeichen-Stufe.</li>
     </ol>
-    <p>
-      Was ich <em>nicht</em> vorschlage: <span class="pfad">booth/</span> weiterbauen. Jede
-      Stunde dort ist eine Stunde, die 1.30 nicht bekommt — und am Ende stünden zwei
-      Fotoboxen, von denen die schlechtere gepflegt wird.
-    </p>
   </section>
 
   <hr>

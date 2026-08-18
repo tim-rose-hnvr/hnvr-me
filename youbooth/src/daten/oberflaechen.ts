@@ -41,7 +41,7 @@ export const oberflaechen: Oberflaeche[] = [
     regeln: [
       {
         titel: 'Mitgeliefertes bleibt heil',
-        text: 'Die vier mitgelieferten Vorlagen sind schreibgeschützt. Die erste Änderung legt eine Kopie an, damit der Weg zurück auch um drei Uhr nachts offen ist.',
+        text: 'Die mitgelieferten Vorlagen sind schreibgeschützt. Die erste Änderung legt eine Kopie an, damit der Weg zurück auch um drei Uhr nachts offen ist.',
       },
       {
         titel: 'Kein Blatt ohne Bildfeld',
@@ -49,7 +49,7 @@ export const oberflaechen: Oberflaeche[] = [
       },
     ],
     offen:
-      'Mitgeliefert sind heute vier Vorlagen, nicht die 82 aus dem Katalog — die übrigen entstehen mit demselben Modell. Ebenso fehlen noch der Bildschirm-Designer, freie Schriften über die zwei Systemschriften hinaus und die Vorlagen-Bibliothek über mehrere Boxen hinweg.',
+      'Mitgeliefert sind 55 Vorlagen auf sieben Papierformaten. Acht weitere aus dem Katalog fehlen mit Absicht: Sie tragen einen alten Produktnamen als Pixel im Hintergrund — eine Vorlage, die den falschen Namen auf den Abzug eines Gastes druckt, ist kein Layout, sondern ein Rückruf. Noch nicht da sind der Bildschirm-Designer, freie Schriften über die sechs Druckschriften hinaus und die Vorlagen-Bibliothek über mehrere Boxen hinweg.',
     knoepfe: [
       { text: 'Vorlagen-System ansehen', ziel: '/vorlagen/system' },
       { text: 'Software laden', ziel: '/download' },

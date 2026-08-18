@@ -44,6 +44,8 @@ function dynamischeWege() {
     hooks: {
       'astro:config:setup': ({ injectRoute }) => {
         injectRoute({ pattern: '/r/[kuerzel]', entrypoint: './dynamisch/weiterleitung.ts' });
+        injectRoute({ pattern: '/anmelden', entrypoint: './dynamisch/anmelden.astro' });
+        injectRoute({ pattern: '/zentrale', entrypoint: './dynamisch/zentrale.astro' });
       },
     },
   };

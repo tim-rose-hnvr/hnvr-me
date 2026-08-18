@@ -153,6 +153,11 @@ jobs:
           # mit VORSCHAU=1, ausgelieferte Seite ohne noindex.
           PUBLIC_VORSCHAU: '1'
           VORSCHAU: '1'
+          # Nur hier gibt es eine Laufzeit, die /anmelden und /zentrale
+          # beantwortet. Die statische Fassung zeigt den Knopf deshalb
+          # nicht — ein Anmeldeknopf, der 404 gibt, war der Anfang
+          # dieser ganzen Runde.
+          PUBLIC_DYNAMISCH: '1'
 
       - name: Ausliefern
         run: npm run release

@@ -1,0 +1,113 @@
+---
+/**
+ * Anmelden.
+ *
+ * Der Knopf, der monatelang auf eine Preistabelle zeigte und deshalb zu
+ * Recht als kaputt galt. Jetzt tut er, was er verspricht.
+ *
+ * Ein Formular, kein JavaScript: die Anmeldung ist der eine Vorgang,
+ * der auch dann funktionieren muss, wenn sonst nichts lädt. Post,
+ * Redirect, Get — ein Neuladen meldet niemanden zweimal an.
+ */
+import Seite from '../../website/src/layouts/Seite.astro';
+import Icon from '../../website/src/components/Icon.astro';
+import { anmelden, ausweisKeks, sitzungAus } from './konto.ts';
+
+export const prerender = false;
+
+let fehler = '';
+
+// Wer schon angemeldet ist, hat hier nichts zu suchen.
+const schon = await sitzungAus(Astro.request.headers);
+if (schon) return Astro.redirect('/zentrale', 302);
+
+if (Astro.request.method === 'POST') {
+  const felder = await Astro.request.formData();
+  const mail = String(felder.get('mail') ?? '').trim();
+  const passwort = String(felder.get('passwort') ?? '');
+
+  if (!mail || !passwort) {
+    fehler = 'Bitte beides ausfüllen.';
+  } else {
+    try {
+      const angemeldet = await anmelden(mail, passwort);
+      if (angemeldet) {
+        return new Response(null, {
+          status: 303,
+          headers: { location: '/zentrale', 'set-cookie': ausweisKeks(angemeldet.ausweis) },
+        });
+      }
+      // Eine Meldung für beide Fälle. Wer „Adresse unbekannt" von
+      // „Passwort falsch" unterscheiden kann, kann Konten abzählen.
+      fehler = 'Adresse oder Passwort stimmt nicht.';
+    } catch (e) {
+      console.error('[pnkt] Anmeldung fehlgeschlagen:', e);
+      fehler = 'Die Anmeldung ist gerade nicht erreichbar. Bitte gleich noch einmal.';
+    }
+  }
+}
+---
+
+<Seite
+  titel="Anmelden"
+  beschreibung="Anmeldung zur Zentrale: Codes verwalten, Ziele umhängen, Zahlen ansehen."
+  aktiv=""
+>
+  <section class="spur schmal">
+    <span class="tag tag-accent">
+      <Icon name="team" groesse={16} />
+      Zentrale
+    </span>
+    <h1 class="titel-seite" style="margin:14px 0 12px">Anmelden</h1>
+    <p class="fliess">
+      Für die Zentrale: Codes verwalten, Ziele umhängen, Zahlen ansehen. Zum
+      Bauen eines Codes brauchst du das nicht — die
+      <a href="/studio">Werkstatt</a> läuft ohne Konto.
+    </p>
+
+    {fehler && <div class="warnung">{fehler}</div>}
+
+    <form method="post" class="tafel">
+      <div class="tafel-koerper">
+        <label class="feld">E-Mail
+          <input class="eingabe" type="email" name="mail" autocomplete="username" required />
+        </label>
+        <label class="feld">Passwort
+          <input class="eingabe" type="password" name="passwort" autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="btn btn-primary knopf-gross">
+          <Icon name="weiter" />
+          Anmelden
+        </button>
+        <p class="hinweis">
+          Es gibt hier keine Selbstregistrierung. Konten legt bis auf Weiteres
+          die Hausverwaltung an — solange die Einführungsphase läuft, ist das
+          eine Nachricht wert und kein Formular.
+        </p>
+      </div>
+    </form>
+  </section>
+</Seite>
+
+<style is:global>
+  .schmal { max-width: 34rem; }
+  .warnung {
+    background: #f7e7e5; color: #a82e23;
+    border-radius: 20px; padding: 14px 18px; margin: 18px 0 0;
+    font-size: 15px; line-height: 1.55;
+  }
+  .tafel { background: var(--color-surface); border-radius: 32px; margin-top: 22px; }
+  .tafel-koerper { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .feld {
+    display: flex; flex-direction: column; gap: 6px;
+    font-size: 12.5px; font-weight: 600; color: rgba(32, 30, 29, 0.62);
+  }
+  .eingabe {
+    font: inherit; font-size: 16px; font-weight: 400; color: var(--color-text);
+    background: var(--color-bg);
+    border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
+    border-radius: 14px; padding: 12px 14px; width: 100%;
+  }
+  .eingabe:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+  .hinweis { font-size: 13px; line-height: 1.55; color: rgba(32, 30, 29, 0.6); margin: 0; }
+</style>

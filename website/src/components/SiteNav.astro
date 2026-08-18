@@ -7,6 +7,13 @@ interface Props {
 }
 const { aktiv = 'start' } = Astro.props;
 
+// „Anmelden" gibt es nur dort, wo eine Laufzeit antwortet. Auf der
+// statischen Fassung — GitHub Pages, Einzeldatei — führte der Knopf ins
+// Leere, und genau das war die Beschwerde, mit der diese Runde anfing.
+// PUBLIC_, damit Vite den Wert beim Bauen einsetzt: bei SSR würde die
+// Zeile sonst erst beim Aufruf ausgewertet, auf dem fremden Server.
+const dynamisch = import.meta.env.PUBLIC_DYNAMISCH === '1';
+
 const wege = [
   // Das Studio steht vorn: es ist die einzige Seite, auf der man etwas
   // tun kann statt darüber zu lesen.
@@ -49,6 +56,7 @@ const wege = [
         erklärt wird. Der Anmeldeknopf kommt zurück, wenn es etwas
         anzumelden gibt. */}
     <span class="kopf-rechts">
+      {dynamisch && <a href={weg('/anmelden')} class="anmelden">Anmelden</a>}
       <a href={weg('/preise')} class="btn btn-primary kopf-knopf">
         <Icon name="zahlen" />
         Zurzeit kostenlos
@@ -128,6 +136,13 @@ const wege = [
     gap: 10px;
     align-items: center;
   }
+  .anmelden {
+    font-size: 14.5px;
+    text-decoration: none;
+    color: rgba(32, 30, 29, 0.7);
+    white-space: nowrap;
+  }
+  .anmelden:hover { color: var(--color-text); }
   .kopf-knopf {
     padding: 11px 20px;
     text-decoration: none;

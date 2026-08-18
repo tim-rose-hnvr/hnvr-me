@@ -81,3 +81,41 @@ export async function fernStand(): Promise<number> {
     return 0;
   }
 }
+
+/* ---------- Drucken ueber das Betriebssystem ----------
+   Im Browser bleibt der Druckdialog; in der Huelle druckt die Box selbst,
+   randlos zentriert und ohne Rueckfrage. Auf einer Feier steht niemand am
+   Rechner, der einen Dialog wegklickt. */
+
+export type Druckerauskunft = { drucker: string[]; standard: string | null };
+
+export async function druckerListe(): Promise<Druckerauskunft> {
+  const rufe = await hole();
+  if (!rufe) return { drucker: [], standard: null };
+  try {
+    return await rufe<Druckerauskunft>('drucker_liste');
+  } catch {
+    return { drucker: [], standard: null };
+  }
+}
+
+/**
+ * Druckt ein Bild ueber die Huelle. Gibt `null` zurueck, wenn es keine Huelle
+ * gibt — dann bleibt der Weg ueber den Systemdruckdialog. Ein Fehlertext
+ * heisst: Die Huelle war da, der Druck ging schief.
+ */
+export async function druckeInHuelle(
+  blob: Blob,
+  drucker: string
+): Promise<{ gedruckt: true } | { fehler: string } | null> {
+  const rufe = await hole();
+  if (!rufe) return null;
+
+  const daten = Array.from(new Uint8Array(await blob.arrayBuffer()));
+  try {
+    await rufe<void>('drucke_bild', { daten, drucker, endung: 'jpg' });
+    return { gedruckt: true };
+  } catch (fehler) {
+    return { fehler: String(fehler).slice(0, 200) };
+  }
+}

@@ -34,6 +34,11 @@ export type Einstellungen = {
   vorlageStreifen: string;
   /** Drucken über den Systemdruckdialog anbieten. */
   druck: boolean;
+  /**
+   * Name des Druckers, den die Hülle ansprechen soll. Leer heißt: Druckdialog
+   * des Systems — im Browser gibt es nichts anderes.
+   */
+  drucker: string;
   doppelstreifen: boolean;
   schnittlinie: boolean;
   /** Höchstzahl Drucke pro Stunde; 0 = ohne Grenze. */
@@ -66,6 +71,7 @@ const STANDARD: Einstellungen = {
   vorlageFoto: 'foto-klassisch',
   vorlageStreifen: 'streifen-klassisch',
   druck: true,
+  drucker: '',
   doppelstreifen: true,
   schnittlinie: true,
   druckLimitStunde: 40,

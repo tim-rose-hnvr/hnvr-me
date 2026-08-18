@@ -1,11 +1,13 @@
 /**
  * Ausgabewege: sichern, drucken, QR.
  *
- * Der Druck läuft über den Systemdruckdialog — das ist der Weg, den das
- * Produktversprechen nennt: „was das Betriebssystem kennt, kennt die Box".
+ * Gedruckt wird über das Betriebssystem — „was das Betriebssystem kennt,
+ * kennt die Box". In der Desktop-Hülle mit gewähltem Drucker geht das ohne
+ * Dialog und randlos zentriert; im Browser bleibt der Druckdialog.
  */
 
 import QRCode from 'qrcode';
+import { druckeInHuelle } from './huelle';
 
 /** Merkt sich Druckzeitpunkte, um das Stundenlimit zu prüfen. */
 const druckzeiten: number[] = [];
@@ -35,10 +37,45 @@ export function sichereAlsDatei(blob: Blob, dateiname: string): void {
 }
 
 /**
+ * Drucken. Zwei Wege, und der bessere gewinnt:
+ *
+ *  1. In der Desktop-Hülle mit gewähltem Drucker: Die Box druckt selbst,
+ *     randlos zentriert, ohne Dialog. Auf einer Feier steht niemand am
+ *     Rechner, der ein Fenster wegklickt.
+ *  2. Sonst der Systemdruckdialog über ein eigenes Fenster.
+ *
+ * Gezählt wird in beiden Fällen — die Stundengrenze schützt das Papier,
+ * unabhängig davon, welcher Weg gegangen wurde.
+ */
+export async function drucke(
+  bilddaten: string,
+  beschriftung: string,
+  drucker = ''
+): Promise<{ weg: 'huelle' | 'dialog' } | { fehler: string }> {
+  if (drucker) {
+    const blob = await datenAlsBlob(bilddaten);
+    const ergebnis = await druckeInHuelle(blob, drucker);
+    if (ergebnis && 'gedruckt' in ergebnis) {
+      druckzeiten.push(Date.now());
+      return { weg: 'huelle' };
+    }
+    if (ergebnis && 'fehler' in ergebnis) return ergebnis;
+    // Keine Hülle: weiter mit dem Dialog.
+  }
+  druckeUeberDialog(bilddaten, beschriftung);
+  return { weg: 'dialog' };
+}
+
+async function datenAlsBlob(bilddaten: string): Promise<Blob> {
+  const antwort = await fetch(bilddaten);
+  return antwort.blob();
+}
+
+/**
  * Druck über den Systemdialog: Das Bild wird in ein eigenes Fenster gelegt,
  * auf Seitengröße gesetzt und gedruckt. Ohne Ränder, damit der Abzug stimmt.
  */
-export function drucke(bilddaten: string, beschriftung: string): void {
+export function druckeUeberDialog(bilddaten: string, beschriftung: string): void {
   druckzeiten.push(Date.now());
 
   const rahmen = document.createElement('iframe');

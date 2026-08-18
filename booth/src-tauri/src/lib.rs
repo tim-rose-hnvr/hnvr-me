@@ -6,6 +6,7 @@
 //! aus dem WLAN der Box laden — ohne Internet.
 
 mod ausgabe;
+mod drucken;
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -41,6 +42,30 @@ fn sichere_aufnahme(
         .map_err(|e| e.to_string())
 }
 
+/// Welche Drucker das System kennt — plus der Standarddrucker.
+#[tauri::command]
+fn drucker_liste() -> serde_json::Value {
+    serde_json::json!({ "drucker": drucken::liste(), "standard": drucken::standard() })
+}
+
+/// Druckt ein Bild randlos zentriert auf dem gewaehlten Drucker.
+#[tauri::command]
+fn drucke_bild(
+    zustand: State<'_, Mutex<Dienstzustand>>,
+    daten: Vec<u8>,
+    drucker: String,
+    endung: Option<String>,
+) -> Result<(), String> {
+    let ordner = {
+        let gesperrt = zustand.lock().map_err(|_| "Zustand nicht lesbar".to_string())?;
+        gesperrt
+            .ordner
+            .clone()
+            .ok_or_else(|| "Ablageordner steht nicht bereit".to_string())?
+    };
+    drucken::drucke(&ordner, &daten, &drucker, endung.as_deref().unwrap_or("jpg"))
+}
+
 /// Adresse, auf die der QR-Code zeigt. Leer, wenn der Dienst nicht laeuft.
 #[tauri::command]
 fn ausgabe_adresse(zustand: State<'_, Mutex<Dienstzustand>>) -> String {
@@ -70,7 +95,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             sichere_aufnahme,
             ausgabe_adresse,
-            fern_stand
+            fern_stand,
+            drucker_liste,
+            drucke_bild
         ])
         .setup(|app| {
             // Im Saal laeuft der Booth im Vollbild. Zum Einrichten laesst sich

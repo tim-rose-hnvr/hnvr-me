@@ -12,7 +12,7 @@ import './einrichtung.css';
 import { ladeEinstellungen, sichereEinstellungen } from './einstellungen';
 import { ARTEN } from './arten';
 import { anzahl, neueKennung, sichere } from './speicher';
-import { ausgabeAdresse, inHuelle } from './huelle';
+import { ausgabeAdresse, druckerListe, inHuelle } from './huelle';
 import { drucke, qrFuer } from './ausgabe';
 
 type Zustand = 'offen' | 'laeuft' | 'gut' | 'schlecht';
@@ -38,7 +38,7 @@ async function starte(ziel: HTMLElement): Promise<void> {
   liste.append(
     schrittBox(einstellungen),
     schrittKamera(),
-    schrittDruck(),
+    schrittDruck(einstellungen),
     schrittArten(einstellungen),
     schrittNetz(einstellungen),
     await schrittPruefung(einstellungen)
@@ -108,12 +108,53 @@ function schrittKamera(): HTMLElement {
   return rahmen;
 }
 
-function schrittDruck(): HTMLElement {
+function schrittDruck(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
   const { rahmen, inhalt, melde } = schritt(
     3,
     'Drucker',
-    'Der Druck läuft über den Systemdruck. Erst im Betriebssystem testen, dann hier.'
+    'In der Desktop-Hülle druckt die Box selbst — randlos, ohne Dialog. Im Browser bleibt der Druckdialog des Systems.'
   );
+
+  // Die Druckerliste kommt vom Betriebssystem, nicht aus einer Eingabe: Ein
+  // getippter Druckername ist ein Tippfehler, der erst um 19 Uhr auffällt.
+  const wahl = tag('div', 'creihe');
+  const stand = tag('span', 'cmono');
+  stand.textContent = e.drucker ? `Gewählt: ${e.drucker}` : 'Kein Drucker gewählt';
+
+  const zeichneWahl = (liste: string[], standard: string | null) => {
+    wahl.replaceChildren();
+    if (!liste.length) {
+      const hinweis = tag('span', 'cmono');
+      hinweis.textContent = inHuelle()
+        ? 'Das System meldet keinen Drucker.'
+        : 'Im Browser gibt es keine Druckerliste — dafür die Desktop-Hülle.';
+      wahl.append(hinweis);
+      return;
+    }
+    liste.forEach((name) => {
+      const k = tag('button', e.drucker === name ? 'cknopf cknopf--amber' : 'cknopf');
+      k.textContent = name + (name === standard ? ' · Standard' : '');
+      k.addEventListener('click', () => {
+        e.drucker = e.drucker === name ? '' : name;
+        sichereEinstellungen(e);
+        stand.textContent = e.drucker ? `Gewählt: ${e.drucker}` : 'Kein Drucker gewählt';
+        zeichneWahl(liste, standard);
+      });
+      wahl.append(k);
+    });
+  };
+
+  void druckerListe().then(({ drucker, standard }) => {
+    zeichneWahl(drucker, standard);
+    // Ohne eigene Wahl den Standarddrucker übernehmen — er ist die beste
+    // Vermutung, und sie steht sichtbar da, statt still zu gelten.
+    if (!e.drucker && standard && drucker.includes(standard)) {
+      e.drucker = standard;
+      sichereEinstellungen(e);
+      stand.textContent = `Gewählt: ${standard} (Standard des Systems)`;
+      zeichneWahl(drucker, standard);
+    }
+  });
 
   const testdruck = knopf('Testdruck auslösen', 'cknopf cknopf--amber', () => {
     // Ein einfaches Prüfblatt statt einer Aufnahme.
@@ -139,11 +180,21 @@ function schrittDruck(): HTMLElement {
     stift.fillText('TESTDRUCK 10 × 15', 600, 900);
     stift.fillText(new Date().toLocaleString('de-DE'), 600, 960);
 
-    drucke(flaeche.toDataURL('image/jpeg', 0.92), 'youbooth Testdruck');
-    melde('gut', 'Der Systemdruckdialog ist geöffnet. Kommt kein Dialog, fehlt ein Drucker.');
+    melde('laeuft', 'Das Prüfblatt geht an den Drucker …');
+    void drucke(flaeche.toDataURL('image/jpeg', 0.92), 'youbooth Testdruck', e.drucker).then(
+      (ergebnis) => {
+        if ('fehler' in ergebnis) {
+          melde('schlecht', `Der Drucker meldet: ${ergebnis.fehler}`);
+        } else if (ergebnis.weg === 'huelle') {
+          melde('gut', `Prüfblatt an „${e.drucker}" geschickt. Jetzt muss Papier kommen.`);
+        } else {
+          melde('gut', 'Der Systemdruckdialog ist geöffnet. Kommt kein Dialog, fehlt ein Drucker.');
+        }
+      }
+    );
   });
 
-  inhalt.append(reihe(testdruck));
+  inhalt.append(wahl, stand, reihe(testdruck));
   return rahmen;
 }
 

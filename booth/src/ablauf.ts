@@ -453,10 +453,14 @@ export class Booth {
     if (this.einstellungen.druck) {
       const erlaubt = darfDrucken(this.einstellungen.druckLimitStunde);
       wege.append(
-        this.weg('Drucken', erlaubt ? 'Systemdruck' : 'Stundenlimit erreicht', erlaubt, () => {
-          if (this.ergebnis) drucke(alsBilddaten(this.ergebnis), this.einstellungen.event);
-          this.zeichne();
-        })
+        this.weg(
+          'Drucken',
+          erlaubt
+            ? this.einstellungen.drucker || 'Systemdruck'
+            : 'Stundenlimit erreicht',
+          erlaubt,
+          () => void this.druckeErgebnis()
+        )
       );
     }
 
@@ -707,6 +711,27 @@ export class Booth {
   private geheZuAusgabe(): void {
     this.stoppeWeiter();
     this.geheZu('ausgabe');
+  }
+
+  /**
+   * Druckt das Ergebnis. Geht es schief, erfährt der Gast es — ein Knopf, der
+   * nichts tut, ist auf einer Feier schlimmer als eine Absage.
+   */
+  private async druckeErgebnis(): Promise<void> {
+    if (!this.ergebnis) return;
+    const ergebnis = await drucke(
+      alsBilddaten(this.ergebnis),
+      this.einstellungen.event,
+      this.einstellungen.drucker
+    );
+    if ('fehler' in ergebnis) {
+      this.zeigeMeldung(
+        'Druck ging nicht',
+        `Der Drucker „${this.einstellungen.drucker}" meldet: ${ergebnis.fehler} — ` +
+          'Das Bild ist gesichert und lässt sich über „Sichern" oder den QR-Code mitnehmen.'
+      );
+    }
+    this.zeichne();
   }
 
   private async sichereDatei(): Promise<void> {

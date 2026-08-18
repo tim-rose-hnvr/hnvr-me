@@ -9,9 +9,12 @@ Desktop-App verpackt — auf Windows und macOS. Die Website dazu liegt in `../yo
 |---|---|
 | Booth-Ablauf (Attract → Auswahl → Countdown → Aufnahme → Ergebnis → Ausgabe) | läuft |
 | Kamera über die Systemkamera/Webcam | läuft |
-| Layout-Renderer: Foto, Streifen, Doppelstreifen mit Schnittlinie | läuft |
+| Sieben Papierformate bei 300 dpi, eine Quelle für Booth und Editor | läuft |
+| 55 Druckvorlagen (4 eigene, 51 aus dem Katalog) mit Hintergrundbildern | läuft |
+| Layout-Renderer: Bildfeld, Text, Fläche, Logo, Bilddatei, QR — mit Drehung | läuft |
+| Doppelstreifen mit Schnittlinie (nur beim 2×6-Blatt) | läuft |
 | Aufnahme sichern (lokal, vor jeder Ausgabe) | läuft |
-| Druck über den Systemdruckdialog | läuft |
+| Druck über das Betriebssystem — randlos, ohne Dialog (Windows und macOS) | läuft |
 | Datei sichern | läuft |
 | QR-Code und lokale Auslieferung über den Hotspot der Box | läuft (in der Desktop-Hülle) |
 | Einstellungen mit Kiosk-PIN | läuft |
@@ -64,7 +67,9 @@ src/
   einrichtung.ts     Installations-Zentrum
   editor.ts          Booth-Editor
   vorlage.ts         Vorlagenmodell und Renderer — hier entsteht jedes Druckbild
-  vorlagen.ts        Ablage der Vorlagen
+  vorlagen.ts        Ablage der Vorlagen (eigene, Katalog, die des Betreibers)
+  formate.ts         die sieben Papierformate und die Druckschriften
+  daten/vorlagen-katalog.json   51 uebernommene Blaetter
   huelle.ts          Brücke zur Desktop-Hülle (Ablage als Datei, Ausgabe-Adresse)
   arten.ts           die Aufnahmearten
   kamera.ts          Kamera — hier hängt später das DSLR-Tethering
@@ -90,10 +95,38 @@ Booth sagt das auch.
 
 ## Vorlagen
 
-Eine Vorlage beschreibt ein Blatt (`foto` 10×15 cm, `streifen` 5×15 cm) und die Felder darauf:
-Bildfelder, Textfelder, Flächen, Logo. Feldkoordinaten sind Anteile des Blattes, im Editor als
-Millimeter angezeigt; gerechnet wird auf 300 dpi. Texte tragen Platzhalter (`{event}`, `{datum}`,
-`{zeit}`, `{box}`, `{nummer}`), die beim Druck gefüllt werden.
+Eine Vorlage beschreibt ein Blatt und die Felder darauf: Bildfelder, Textfelder, Flächen, Logo,
+Bilddateien, QR-Codes — jedes mit Drehung, Schatten, Rahmen und runden Ecken. Feldkoordinaten sind
+Anteile des Blattes, im Editor als Millimeter angezeigt; gerechnet wird auf 300 dpi. Texte tragen
+Platzhalter (`{event}`, `{datum}`, `{zeit}`, `{box}`, `{nummer}`), die beim Druck gefüllt werden.
+
+Sieben Papierformate stehen einmal in `formate.ts` und werden von Booth und Editor gelesen —
+Streifen 2×6, Postkarte 4×6 quer und hoch, Quadrat 4×4, Groß 5×7, Magnet, Lesezeichen. Die Maße an
+zwei Stellen zu halten war in der Vorfassung teuer: Bei 41 von 78 Vorlagen rechnete der Editor mit
+einem anderen Blatt als der Druck.
+
+Wie viele Aufnahmen eine Serie hat, entscheidet die **Vorlage**, nicht die Aufnahmeart. Ein Blatt
+mit vier Bildfeldern bekommt vier Aufnahmen.
+
+### Der Katalog
+
+51 Vorlagen kommen aus der Fassung 1.30 (`tools/vorlagen-uebernehmen.mjs`), samt Hintergrundbildern
+und den drei Druckschriften als woff2 auf der Box. Acht dort selbst gezeichnete Blätter fehlen
+bewusst: In ihre Hintergrundbilder ist der alte Produktname eingebrannt — ein Werkzeug kann Dateien
+umbenennen, keine Pixel. Sie kommen wieder, wenn sie in unserer Gestaltung neu entstehen.
+
+`node tools/vorlagen-durchsehen.mjs` zeichnet bei laufendem `npm run dev` jede einzelne Vorlage und
+prüft: Hintergrund da, jedes Bildfeld trägt ein Foto, jeder Text auf dem Blatt.
+
+## Drucken
+
+In der Desktop-Hülle druckt die Box selbst — randlos zentriert, ohne Dialog: Auf einer Feier steht
+niemand am Rechner, der ein Fenster wegklickt. Unter Windows über `System.Drawing.Printing`, unter
+macOS und Linux über CUPS (`lp -o fit-to-page`). Der Drucker wird im Installations-Zentrum aus der
+Liste des Betriebssystems gewählt, nicht getippt.
+
+Im Browser bleibt der Systemdruckdialog. Schlägt der Druck fehl, sagt die Box es dem Gast und
+nennt den Grund des Druckers — ein Knopf, der nichts tut, ist schlimmer als eine Absage.
 
 Der Booth kennt keine festen Layouts mehr — er rendert die eingestellte Vorlage. Der Editor
 zeichnet die Vorschau mit demselben Renderer, deshalb ist sie kein Bild von etwas Ähnlichem,
@@ -159,8 +192,8 @@ Menü.
 - **DSLR-Tethering.** Die Schnittstelle in `kamera.ts` (`starte`, `standbild`, `stoppe`) ist so
   geschnitten, dass ein nativer Weg (gphoto2, Canon EDSDK, Nikon SDK) dahinter passt, ohne die
   Oberfläche anzufassen. Ohne Kamera am Kabel lässt sich das nicht verlässlich schreiben.
-- **Drucker-Sonderfunktionen.** Randlos, Doppelstreifen-Schnitt und Materialstand hängen am
-  Treiber des jeweiligen Sofortdruckers. Der generische Systemdruck steht.
+- **Drucker-Sonderfunktionen.** Materialstand und der Schnitt im Gerät hängen am Treiber des
+  jeweiligen Sofortdruckers. Randlos-zentriert steht, für Windows und macOS.
 - **Bewegtbild als Video.** GIF steht; WebM oder MP4 wären kleiner und schärfer, hängen aber am
   Codec des jeweiligen Systems (MediaRecorder). Für den Gast am Handy reicht GIF.
 - **Vorlagen-Katalog.** Mitgeliefert sind vier Vorlagen, nicht die 82 aus dem Katalog der

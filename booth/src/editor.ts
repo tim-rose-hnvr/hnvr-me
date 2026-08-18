@@ -910,10 +910,16 @@ async function ausDatei(datei: File): Promise<void> {
   }
 }
 
-function testdruck(): void {
+async function testdruck(): Promise<void> {
   const bild = zeichneVorlage(aktuell, muster, musterwerte(), zubehoer);
-  drucke(alsBilddaten(bild), aktuell.name);
-  sage('Testdruck an den Systemdruck übergeben.');
+  const ergebnis = await drucke(alsBilddaten(bild), aktuell.name, einstellungen.drucker);
+  if ('fehler' in ergebnis) return sage('Druck ging nicht: ' + ergebnis.fehler, 'fehler');
+  sage(
+    ergebnis.weg === 'huelle'
+      ? `Testdruck an „${einstellungen.drucker}" geschickt.`
+      : 'Testdruck an den Systemdruck übergeben.',
+    'gut'
+  );
 }
 
 async function kamerabildAlsMuster(): Promise<void> {
@@ -983,7 +989,8 @@ document.querySelectorAll<HTMLButtonElement>('[data-tun]').forEach((k) => {
       case 'datei-laden':
         return el<HTMLInputElement>('vorlagendatei').click();
       case 'testdruck':
-        return testdruck();
+        void testdruck();
+        return;
       case 'muster-testbild':
         muster = testbilder();
         zeichneAlles();

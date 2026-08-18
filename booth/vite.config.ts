@@ -34,6 +34,7 @@ export default defineConfig({
         event: 'event.html',
         fern: 'fern.html',
         anmelden: 'anmelden.html',
+        zentrale: 'zentrale.html',
       },
     },
   },

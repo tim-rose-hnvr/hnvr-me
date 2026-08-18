@@ -1,0 +1,293 @@
+/* Die Zentrale: hell wie Cockpit und Einrichtung, dichter als die Website.
+   BUILD_SPEC Teil 6.2 — gleiche Tokens, `paper` als Grundfläche, Mono für
+   alle Zahlen und Zustände. */
+
+body.zentraleseite {
+  margin: 0;
+  background: var(--paper);
+  color: var(--text);
+  font-family: var(--schrift);
+  overflow: auto;
+  height: auto;
+  user-select: auto;
+}
+
+.zwurzel {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 24px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* --- Kopf --------------------------------------------------------------- */
+
+.zkopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--linie);
+}
+
+/* Der Datenordner ist ein langer Pfad. Ohne Grenze schiebt er die rechte
+   Seite in die nächste Zeile — sichtbar an einem „Abmelden", das plötzlich
+   unter dem Titel steht. */
+.zkopf > div:first-child {
+  min-width: 0;
+  flex: 1 1 340px;
+}
+
+#zfassung {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 8px;
+}
+
+.zkopf h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  line-height: 0.94;
+}
+
+.zmono {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-still);
+}
+
+.zkopfrechts {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* --- Abschnitt ---------------------------------------------------------- */
+
+.zblock {
+  background: var(--weiss);
+  border: 1px solid var(--linie);
+  border-radius: var(--r-karte);
+  box-shadow: var(--schatten-karte);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.zblock > h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.zzeile {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* --- Befunde ------------------------------------------------------------ */
+
+.zbefunde {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.zbefund {
+  display: grid;
+  grid-template-columns: 14px minmax(140px, 190px) 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 0;
+  border-top: 1px solid var(--linie);
+}
+
+.zbefund:first-child {
+  border-top: 0;
+}
+
+/* Der Punkt trägt die Farbe, nicht der Text: `ok` und `warn` sind Zustände,
+   keine Dekoration — und ein ganzer Satz in Rot liest sich als Panik. */
+.zampel {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-kreis);
+  background: var(--ok);
+}
+
+.zampel--warnung {
+  background: var(--amber);
+}
+
+.zampel--fehler {
+  background: var(--warn);
+}
+
+.ztitel {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ztext {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-leise);
+}
+
+.zbefund--laeuft {
+  opacity: 0.45;
+}
+
+@media (max-width: 720px) {
+  .zbefund {
+    grid-template-columns: 14px 1fr;
+    row-gap: 4px;
+  }
+
+  .ztext,
+  .zbefund > .zknopfplatz {
+    grid-column: 2;
+  }
+}
+
+/* --- Knöpfe ------------------------------------------------------------- */
+
+.zknopf {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--r-knopf);
+  border: 1px solid var(--linie-stark);
+  background: var(--weiss);
+  color: var(--text);
+  font-family: var(--schrift);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-farbe), border-color var(--t-farbe);
+}
+
+.zknopf:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.zknopf:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.zknopf:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.zknopf--amber {
+  background: var(--amber);
+  border-color: transparent;
+  color: var(--amber-ink);
+  box-shadow: var(--schatten-cta);
+}
+
+.zknopf--amber:hover:not(:disabled) {
+  background: var(--amber);
+  transform: translateY(-1px);
+  box-shadow: var(--schatten-cta-hover);
+}
+
+.zknopf--gross {
+  height: 44px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+
+/* --- Kacheln ------------------------------------------------------------ */
+
+.zraster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.zkachel {
+  border: 1px solid var(--linie);
+  border-radius: var(--r-chip);
+  padding: 13px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--weiss);
+  transition: transform var(--t-transform), box-shadow var(--t-transform);
+}
+
+.zkachel:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--schatten-hoch);
+}
+
+.zkachelname {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.zkachelzeile {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-still);
+}
+
+/* Ein Modul, das nicht gebucht ist, wird nicht versteckt — sonst sucht der
+   Betreiber es. Es steht da und sagt, dass es fehlt. */
+.zkachel--zu {
+  opacity: 0.55;
+}
+
+/* --- Meldung ------------------------------------------------------------ */
+
+.zmeldung {
+  font-size: 13.5px;
+  line-height: 1.5;
+  padding: 11px 14px;
+  border-radius: var(--r-chip);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.zmeldung--gut {
+  background: rgba(23, 177, 135, 0.12);
+}
+
+.zmeldung--fehler {
+  background: rgba(224, 72, 60, 0.12);
+}
+
+.zmeldung[hidden] {
+  display: none;
+}
+
+/* --- Fuß ---------------------------------------------------------------- */
+
+.zfuss {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+}

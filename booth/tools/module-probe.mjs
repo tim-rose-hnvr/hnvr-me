@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { execSync } from 'node:child_process';
 
 const WURZEL = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const require = createRequire(import.meta.url);
@@ -82,7 +83,37 @@ pruefe('Kein Preis steht dort noch als Zahl', hartkodiert.length === 0, hartkodi
 const titelHart = [...websiteText.matchAll(/^\s*titel: '([^']+)',/gm)].map((m) => m[1]);
 pruefe('Kein Name steht dort noch als Text', titelHart.length === 0, titelHart.join(', '));
 
-console.log('\n4 · Alte Lizenzen gelten weiter');
+console.log('\n4 · Auch die Modulübersicht der Box');
+/* `/api/module` führte eine dritte Liste: sieben Module mit eigenen Namen
+   („Online-Galerie", „Diashow"). In der Zentrale las sich das so, als hätte
+   der Betreiber sieben Module gekauft. */
+const serverText = readFileSync(path.join(WURZEL, 'booth', 'server', 'server.js'), 'utf8');
+pruefe('MODULE wird aus produkte.js gebaut',
+  /const MODULE = require\('\.\/produkte'\)/.test(serverText));
+/* Gesucht wird nach den Namen der dritten Liste, nicht nach jedem `name:` —
+   `{ id: 'self', name: 'Diese Box' }` beschreibt die Box selbst und ist kein
+   Modul. */
+const alteNamen = ['Online-Galerie', 'Diashow', 'Sofortbild-Kamera'];
+const uebrig = alteNamen.filter((n) => serverText.includes(`'${n}'`));
+pruefe('Keiner der eigenen Modulnamen ist übrig', uebrig.length === 0, uebrig.join(', '));
+
+const nachAussen = JSON.parse(
+  execSync('curl -s http://localhost:3377/api/module', { encoding: 'utf8' }) || '{}'
+);
+if (Array.isArray(nachAussen.module)) {
+  pruefe('/api/module nennt vierzehn Module', nachAussen.module.length === 14,
+    String(nachAussen.module.length));
+  const abweichend = nachAussen.module.filter((m) => {
+    const q = quelle.module.find((x) => x.id === m.kennung);
+    return !q || q.name !== m.name;
+  });
+  pruefe('/api/module nennt sie wie die Quelle', abweichend.length === 0,
+    abweichend.map((m) => m.name).join(', '));
+} else {
+  console.log('  – Keine laufende Box zum Abfragen (nur Dateiprüfung)');
+}
+
+console.log('\n5 · Alte Lizenzen gelten weiter');
 const alteKennungen = ['booth', 'photowall', 'selfiefinder', 'gallery', 'guestbook', 'webcam',
   'microsites', 'slideshow', 'fxstudio', 'voicebook', 'slowmo', 'rental', 'spin360'];
 const verloren = alteKennungen.filter((a) => !software.some((m) => m.id === a));

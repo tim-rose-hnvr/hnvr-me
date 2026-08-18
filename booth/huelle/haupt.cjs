@@ -22,6 +22,19 @@ const fs = require('node:fs');
 /* Der Wunschport. Ist er belegt, weicht die Box aus und sagt uns über den
    Nachrichtenkanal, wo sie gelandet ist — geraten wird hier nichts. */
 const PORT_WUNSCH = Number(process.env.PORT || 3377);
+
+/* Womit die Hülle aufmacht: der Zentrale, nicht dem Booth.
+   Wer gerade installiert hat, will zuerst wissen, ob Drucker, Kamera und Netz
+   stehen, will sich anmelden und die Lizenz eintragen — und erst danach den
+   Booth öffnen. Vorher sprang die Box sofort in den Booth und ins Vollbild;
+   dort gibt es keine Leiste und keinen sichtbaren Weg zurück.
+
+   `adresse` bleibt dabei die HERKUNFT ohne Pfad. Sie ist nicht nur das Ziel
+   beim Öffnen, sondern auch der Maßstab für zwei Prüfungen weiter unten:
+   welche Links nach außen gehören und wer die Kamera bekommen darf. Stünde
+   hier ein Pfad, wäre der Booth unter `/index.html` plötzlich „fremd" — und
+   bekäme keine Kamera mehr. */
+const STARTSEITE = '/zentrale.html';
 let adresse = `http://127.0.0.1:${PORT_WUNSCH}`;
 
 /* Betriebsdaten gehören NICHT ins Programmverzeichnis: Unter Windows liegt es
@@ -244,7 +257,7 @@ function baueFenster() {
     return { action: 'allow' };
   });
 
-  void fenster.loadURL(adresse);
+  void fenster.loadURL(adresse + STARTSEITE);
   fenster.on('closed', () => (fenster = null));
 }
 

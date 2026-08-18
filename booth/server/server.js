@@ -665,15 +665,34 @@ app.use((req, res, next) => {
    Schaden beim Kunden, kein Verkaufsargument.
 
    Voreinstellung ist `['all']`. Wer heute läuft, merkt von alledem nichts. */
-const MODULE = [
-  { id: 'photowall',   name: 'Live-Foto-Wall',      seiten: ['/wand.html'] },
-  { id: 'gallery',     name: 'Online-Galerie',      seiten: ['/galerie.html'] },
-  { id: 'guestbook',   name: 'Digitales Gästebuch', seiten: ['/guestbook.html', '/voicebook.html'] },
-  { id: 'webcam',      name: 'Sofortbild-Kamera',   seiten: ['/cam.html', '/join.html'] },
-  { id: 'microsites',  name: 'Event-Seiten',        seiten: ['/microsite.html'] },
-  { id: 'slideshow',   name: 'Diashow',             seiten: ['/slideshow.html'] },
-  { id: 'selfiefinder', name: 'Selfie-Foto-Finder', seiten: ['/finder.html'] },
-];
+/* Welche Seite zu welchem Modul gehoert. DAS ist die oertliche Information —
+   die Namen sind es nicht.
+
+   Hier stand eine dritte Modulliste mit eigenen Namen: „Online-Galerie",
+   „Diashow", „Sofortbild-Kamera". Sie waren weder die der Website noch die
+   von `produkte.js`, und sie zeigte nur sieben Module statt vierzehn. In der
+   Zentrale las sich das dann so, als haette der Betreiber sieben Module
+   gekauft. Namen kommen jetzt aus `gestaltung/module.json`, ueber
+   `produkte.js`. */
+const MODULSEITEN = {
+  photowall: ['/wand.html'],
+  gallery: ['/galerie.html'],
+  guestbook: ['/guestbook.html', '/voicebook.html'],
+  webcam: ['/cam.html', '/join.html'],
+  microsites: ['/microsite.html'],
+  slideshow: ['/slideshow.html'],
+  selfiefinder: ['/finder.html'],
+};
+
+/* Sieben der vierzehn Module haben eine eigene Seite, die gesperrt werden
+   kann. Die uebrigen wirken IM Booth (Aufnahmearten, Effekte, Druck) — sie
+   stehen trotzdem in der Liste, sonst fehlten sie in der Uebersicht. */
+const MODULE = require('./produkte').map((p) => ({
+  id: p.id,
+  kennung: p.kennung,
+  name: p.name,
+  seiten: MODULSEITEN[p.id] || [],
+}));
 
 /** Ist das Modul gebucht? Ohne Lizenz und bei `all` gilt: ja. */
 function modulFrei(id) {
@@ -686,7 +705,13 @@ function modulFrei(id) {
 
 /** Für Konsole und Cockpit: was ist gebucht, was nicht. */
 function modulStand() {
-  return MODULE.map((m) => ({ id: m.id, name: m.name, frei: modulFrei(m.id), seiten: m.seiten }));
+  return MODULE.map((m) => ({
+    id: m.id,
+    kennung: m.kennung,
+    name: m.name,
+    frei: modulFrei(m.id),
+    seiten: m.seiten,
+  }));
 }
 
 const SEITE_ZU_MODUL = new Map();

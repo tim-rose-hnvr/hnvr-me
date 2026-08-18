@@ -17,7 +17,15 @@
  */
 
 /** Beschreibung der Hülle, falls der Booth in ihr läuft. */
-type Huelle = { fassung: string; system: string };
+type Huelle = {
+  fassung: string;
+  system: string;
+  /* Vollbild auf Zuruf. Die Box startet im Fenster — für den Abend gehört sie
+     ins Vollbild, für die Einrichtung nicht. Im Browser fehlen die beiden
+     Zeilen; dann schaltet der Betreiber selbst um. */
+  vollbild?: (an: boolean) => Promise<boolean>;
+  istVollbild?: () => Promise<boolean>;
+};
 
 declare global {
   interface Window {

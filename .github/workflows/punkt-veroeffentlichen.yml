@@ -109,9 +109,22 @@ jobs:
           '
           npx wix whoami
 
-      # Kein `wix env pull`: die Seite bindet die Wix-Anbindung nicht ein
-      # und braucht deshalb weder WIX_CLIENT_ID noch ein Client-Geheimnis.
-      # Was nicht eingebunden ist, kann auch nichts nachladen.
+      # Die Anbindung @wix/astro liest beim Bauen WIX_CLIENT_ID und
+      # weitere Projektwerte. Lokal stehen sie in .env.local, das zu Recht
+      # nicht im Repository liegt — es enthält ein Client-Geheimnis. Hier
+      # werden sie nach der Anmeldung von Wix geholt.
+      #
+      # Der erste Anlauf lief ohne die Anbindung und damit ohne diesen
+      # Schritt. Er baute sauber durch und scheiterte beim Ausliefern:
+      #
+      #   ✖ Project build output is missing.
+      #   ⚠ ".wix/build-metadata.json" build output file is missing.
+      #
+      # Nachgesehen im CLI: `wix release` verlangt diese Datei, und
+      # geschrieben wird sie im Hook `astro:build:done` von @wix/astro.
+      # Ohne die Anbindung entsteht sie nie.
+      - name: Projektwerte holen
+        run: npx wix env pull
 
       - name: Bauen
         run: npm run build

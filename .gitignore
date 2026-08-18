@@ -9,3 +9,6 @@ youbooth/.wix/
 
 # Örtlicher Kram des Wrangler-Werkzeugs, entsteht beim Bauen für Wix.
 youbooth/.wrangler/
+
+# Gebaute Installationspakete — entstehen aus dem Quelltext, gehören nicht ins Repo.
+booth/paket/

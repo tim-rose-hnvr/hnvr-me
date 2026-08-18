@@ -110,7 +110,12 @@ const DEFAULT_SETTINGS = {
      verschluckt den Fehlschlag. Jede installierte Box prüft seit jeher ins
      Leere. Deshalb hier eine eigene, sichtbare Prüfung gegen die Seite, die
      tatsächlich steht. */
-  update: { pruefen: true, url: ZENTRALE + '/version.json' },
+  /* Die Box prüft NICHT mehr selbst auf neue Fassungen. Das macht die
+     Desktop-Hülle über die Release-Liste, und zwei Quellen für dieselbe Sache
+     laufen auseinander: Gemessen am 18.08. meldete die Box „Neue Fassung
+     1.29.0" gegen ihre eigene 1.0.0 — die alte Zentrale kennt unsere Zählung
+     nicht. Wer eine eigene Verteilstelle betreibt, schaltet es wieder ein. */
+  update: { pruefen: false, url: '' },
   /* Darf der Hersteller aus der Ferne helfen (Diagnose, Einstellung, Neustart)?
      Voreingestellt ja – Support ist Teil des Produkts –, aber der Betreiber
      kann es im Cockpit abschalten, und jeder Eingriff steht im Protokoll. */
@@ -465,6 +470,17 @@ function einstellungenMischen(standard, gespeichert) {
 }
 
 let settings = einstellungenMischen(DEFAULT_SETTINGS, loadJson(SETTINGS_FILE, {}));
+
+/* Einmalige Bereinigung: Boxen, die schon liefen, tragen die alte Zentrale als
+   Update-Adresse in ihrer `settings.json`. Die Vorgabe daneben zu ändern
+   reicht dann nicht — die gespeicherte Zeile gewinnt, und die Box meldete
+   weiter „Neue Fassung 1.29.0" gegen ihre eigene 1.0.0. Aktualisiert wird
+   über die Desktop-Hülle; eine eigene Verteilstelle bleibt eintragbar. */
+if (typeof settings.update.url === 'string' && /pic-me-app|youbooth\.me\/version\.json/.test(settings.update.url)) {
+  settings.update = { pruefen: false, url: '' };
+  saveJson(SETTINGS_FILE, settings);
+  console.log('Update-Adresse der alten Zentrale entfernt — aktualisiert wird über die Desktop-Hülle.');
+}
 /* Mitgeliefertes Vorlagenpaket (aus gekauften Vorlagen umgesetzt). Liegt als
    eigene Datei neben dem Programm, damit die Liste im Code lesbar bleibt und
    ein Nachliefern kein Code-Update braucht. */
@@ -901,9 +917,11 @@ function neuer(a, b) {
 
 async function updatePruefen() {
   if (!settings.update.pruefen || typeof fetch !== 'function') return;
+  // Ohne eingetragene Adresse gibt es nichts zu fragen — und geraten wird nicht.
+  if (!/^https?:\/\//i.test(String(settings.update.url || ''))) return;
   try {
     const feed = /^https?:\/\//i.test(String(settings.update.url || ''))
-      ? settings.update.url : ZENTRALE + '/version.json';
+      ? settings.update.url : '';
     const res = await fetch(feed, { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const d = await res.json();

@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "description": "youbooth — Fotobox-Software: Booth, Cockpit, Portal und Box-Server",
+  "author": {
+    "name": "youbooth",
+    "email": "hallo@youbooth.me"
+  },
   "scripts": {
     "dev": "vite",
     "server": "node server/server.js",
@@ -91,7 +95,8 @@
         "AppImage"
       ],
       "category": "Graphics",
-      "artifactName": "${productName}-${version}.${ext}"
+      "artifactName": "${productName}-${version}.${ext}",
+      "executableName": "youbooth"
     }
   }
 }

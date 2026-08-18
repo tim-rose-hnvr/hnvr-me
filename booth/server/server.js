@@ -1806,6 +1806,248 @@ app.post('/api/fern/auftrag', requireKey, (req, res) => {
   }
 });
 
+/* ---------- Die Zentrale: Durchcheck und Reparatur ----------
+
+   Warum das hier steht und nicht in der Oberfläche: Ein Durchcheck, der im
+   Browser läuft, kann genau das prüfen, was der Browser sieht — und das ist
+   fast nichts. Ob der Datenordner beschreibbar ist, ob noch eine alte Box auf
+   dem Nachbarport klebt, ob überhaupt ein Drucker angemeldet ist: das weiß
+   nur der Prozess auf dem Rechner.
+
+   Jede Prüfung liefert dieselbe Form: eine Stufe (gut/warnung/fehler), einen
+   Satz in Klartext und — wenn es etwas zu tun gibt — den Namen einer
+   Reparatur. Ein Befund ohne Handgriff ist für den Betreiber vor einer
+   wartenden Gesellschaft wertlos. */
+
+function stufe(art, titel, text, reparatur) {
+  const b = { art, titel, text };
+  if (reparatur) b.reparatur = reparatur;
+  return b;
+}
+
+/* Antwortet auf dem Port eine Box? Dieselbe Frage, die auch die Hülle
+   stellt — hier, um eine hängende Altfassung zu FINDEN. */
+function frageBoxAufPort(port, sekunden = 1) {
+  return new Promise((fertig) => {
+    const uhr = setTimeout(() => { anfrage.destroy(); fertig(null); }, sekunden * 1000);
+    const anfrage = require('http').get(
+      { host: '127.0.0.1', port, path: '/api/version', timeout: sekunden * 1000 },
+      (antwort) => {
+        let text = '';
+        antwort.on('data', (t) => { text += t; if (text.length > 8192) anfrage.destroy(); });
+        antwort.on('end', () => {
+          clearTimeout(uhr);
+          try { const d = JSON.parse(text); fertig(d && d.version ? String(d.version) : null); }
+          catch (e) { fertig(null); }
+        });
+      });
+    anfrage.on('error', () => { clearTimeout(uhr); fertig(null); });
+    anfrage.on('timeout', () => anfrage.destroy());
+  });
+}
+
+async function durchcheck() {
+  const befunde = [];
+
+  /* 1 — Der Datenordner. Ohne ihn ist jede Aufnahme des Abends verloren, und
+     zwar erst dann, wenn sie schon gemacht ist. */
+  try {
+    fs.mkdirSync(PHOTOS_DIR, { recursive: true });
+    const probe = path.join(DATA_DIR, '.schreibprobe');
+    fs.writeFileSync(probe, 'x');
+    fs.unlinkSync(probe);
+    befunde.push(stufe('gut', 'Datenordner', `Beschreibbar: ${DATA_DIR}`));
+  } catch (e) {
+    befunde.push(stufe('fehler', 'Datenordner',
+      `Nicht beschreibbar: ${DATA_DIR} (${e.message}). Aufnahmen könnten verloren gehen.`,
+      'datenordner'));
+  }
+
+  /* 2 — Platz. 100 Aufnahmen mit Streifen und Abzug sind schnell ein
+     Gigabyte; ein volles Laufwerk mitten in der Feier ist der teuerste
+     Ausfall, den es hier gibt. */
+  try {
+    const st = fs.statfsSync ? fs.statfsSync(DATA_DIR) : null;
+    if (st) {
+      const freiGb = (st.bavail * st.bsize) / 1073741824;
+      befunde.push(freiGb < 1
+        ? stufe('fehler', 'Speicherplatz', `Nur noch ${freiGb.toFixed(1)} GB frei. Das reicht für keinen Abend.`, 'aufraeumen')
+        : freiGb < 5
+          ? stufe('warnung', 'Speicherplatz', `${freiGb.toFixed(1)} GB frei. Für einen langen Abend knapp.`, 'aufraeumen')
+          : stufe('gut', 'Speicherplatz', `${freiGb.toFixed(0)} GB frei.`));
+    }
+  } catch (e) { /* auf manchen Systemen nicht abfragbar — dann eben nicht */ }
+
+  /* 3 — Der Port. Läuft die Box nicht auf dem Wunschport, ist das kein
+     Fehler, aber der Betreiber sollte es wissen: QR-Codes und Lesezeichen
+     zeigen dann woandershin. */
+  befunde.push(PORT === PORT_WUNSCH
+    ? stufe('gut', 'Anschluss', `Port ${PORT}, wie vorgesehen.`)
+    : stufe('warnung', 'Anschluss',
+        `Die Box läuft auf Port ${PORT} statt ${PORT_WUNSCH} — dort war etwas anderes.`));
+
+  /* 4 — Reste früherer Fassungen. GENAU DAS hat einen Betreiber einen Abend
+     gekostet: Ein Dienst der alten Fassung hielt den Port, die neue Box
+     verabschiedete sich höflich, und das Fenster meldete „startet nicht". */
+  const reste = [];
+  for (let p = PORT_WUNSCH; p <= PORT_WUNSCH + 10; p++) {
+    if (p === PORT) continue;
+    const fassung = await frageBoxAufPort(p);
+    if (fassung) reste.push({ port: p, fassung });
+  }
+  befunde.push(reste.length === 0
+    ? stufe('gut', 'Doppelte Dienste', 'Es läuft genau eine Box.')
+    : stufe('warnung', 'Doppelte Dienste',
+        `Es antwortet noch ${reste.map((r) => `Fassung ${r.fassung} auf Port ${r.port}`).join(', ')}. `
+        + 'Das ist meist ein Rest einer früheren Installation.',
+        'reste'));
+
+  /* 5 — Drucker. Dieselbe Abfrage wie `/api/printers`, nur hier abgewartet. */
+  if (!CAN_PRINT) {
+    befunde.push(stufe('warnung', 'Drucker', 'Diese Fassung druckt nicht — sie läuft ohne Programmhülle.'));
+  } else {
+    const drucker = await new Promise((fertig) => {
+      execFile('powershell', ['-NoProfile', '-Command', 'Get-Printer | Select-Object -ExpandProperty Name'],
+        { timeout: 15000 }, (fehler, ausgabe) => {
+          if (fehler) return fertig(null);
+          fertig(String(ausgabe).split(/\r?\n/).map((z) => z.trim()).filter(Boolean));
+        });
+    });
+    const gewaehlt = settings.printer || '';
+    befunde.push(drucker === null
+      ? stufe('warnung', 'Drucker', 'Die Druckerabfrage antwortet nicht. Aufnehmen geht, drucken vielleicht nicht.')
+      : drucker.length === 0
+        ? stufe('warnung', 'Drucker', 'Es ist kein Drucker angemeldet. Aufnehmen geht, drucken nicht.')
+        : !gewaehlt
+          ? stufe('warnung', 'Drucker', `${drucker.length} Drucker gefunden, aber keiner ausgewählt.`, 'drucker')
+          : drucker.includes(gewaehlt)
+            ? stufe('gut', 'Drucker', `Ausgewählt: ${gewaehlt}`)
+            : stufe('fehler', 'Drucker',
+                `Ausgewählt ist „${gewaehlt}", angemeldet ist der nicht mehr.`, 'drucker'));
+  }
+
+  /* 6 — Vorlagen. Ohne sie kommt aus dem Drucker ein leeres Blatt. */
+  befunde.push(!Array.isArray(templates) || templates.length === 0
+    ? stufe('fehler', 'Vorlagen', 'Es ist keine einzige Vorlage geladen.', 'vorlagen')
+    : stufe('gut', 'Vorlagen', `${templates.length} Vorlagen geladen.`));
+
+  /* 7 — Betreiber. */
+  befunde.push(betreiberAngelegt()
+    ? stufe('gut', 'Betreiber', `Eingerichtet: ${settings.betreiber.email}`)
+    : stufe('warnung', 'Betreiber', 'Noch kein Betreiber eingerichtet. Portal und Einstellungen sind gesperrt.'));
+
+  /* 8 — Lizenz. */
+  const liz = settings.lizenz || null;
+  befunde.push(liz && liz.key
+    ? stufe('gut', 'Lizenz', `Aktiv${liz.plan ? ` · ${liz.plan}` : ''}.`)
+    : stufe('warnung', 'Lizenz', 'Keine Lizenz hinterlegt. Die Box läuft, gebuchte Module fehlen.'));
+
+  /* 9 — Kommt eine neue Fassung durch? Nur eine Frage, kein Download. */
+  try {
+    const steuer = new AbortController();
+    const uhr = setTimeout(() => steuer.abort(), 5000);
+    const r = await fetch('https://youbooth.me/dl/latest.yml', { signal: steuer.signal });
+    clearTimeout(uhr);
+    const text = await r.text();
+    const dort = (text.match(/^version:\s*(.+)$/m) || [])[1];
+    befunde.push(!dort
+      ? stufe('warnung', 'Aktualisierung', 'Das Downloadzentrum antwortet, nennt aber keine Fassung.')
+      : dort.trim() === APP_VERSION
+        ? stufe('gut', 'Aktualisierung', `Diese Box ist auf dem neuesten Stand (${APP_VERSION}).`)
+        : stufe('warnung', 'Aktualisierung',
+            `Hier läuft ${APP_VERSION}, bereit liegt ${dort.trim()}.`, 'aktualisieren'));
+  } catch (e) {
+    befunde.push(stufe('warnung', 'Aktualisierung',
+      'youbooth.me ist gerade nicht erreichbar. Im Saal ist das normal und harmlos.'));
+  }
+
+  return {
+    fassung: APP_VERSION,
+    port: PORT,
+    datenordner: DATA_DIR,
+    zeitpunkt: new Date().toISOString(),
+    befunde,
+  };
+}
+
+app.get('/api/zentrale/check', async (req, res) => {
+  try {
+    res.json(await durchcheck());
+  } catch (e) {
+    res.status(500).json({ error: 'Der Durchcheck ist gescheitert: ' + e.message });
+  }
+});
+
+/* Reparaturen. Jede tut GENAU eine Sache und sagt in einem Satz, was sie
+   getan hat — „behoben" allein ist keine Auskunft. Nur vom Gerät selbst:
+   Wer davorsteht, darf reparieren; wer im WLAN sitzt, nicht. */
+app.post('/api/zentrale/reparatur', async (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Reparieren geht nur am Booth-PC.' });
+  const was = String((req.body || {}).was || '');
+
+  try {
+    if (was === 'datenordner') {
+      fs.mkdirSync(PHOTOS_DIR, { recursive: true });
+      fs.mkdirSync(CONFIG_DIR, { recursive: true });
+      return res.json({ ok: true, text: `Ordner angelegt: ${DATA_DIR}` });
+    }
+
+    if (was === 'reste') {
+      /* Die höfliche Bitte zuerst. Fassungen vor 1.0.4 kennen sie nicht —
+         dann bleibt nur der Hinweis, denn einen fremden Prozess ungefragt
+         abzuschießen ist auf einem Rechner, der auch anderes tut, falsch. */
+      const beendet = [];
+      const hartnaeckig = [];
+      for (let p = PORT_WUNSCH; p <= PORT_WUNSCH + 10; p++) {
+        if (p === PORT) continue;
+        const fassung = await frageBoxAufPort(p);
+        if (!fassung) continue;
+        const ok = await new Promise((fertig) => {
+          const a = require('http').request(
+            { host: '127.0.0.1', port: p, path: '/api/beenden', method: 'POST', timeout: 3000 },
+            (antwort) => { antwort.resume(); antwort.on('end', () => fertig(antwort.statusCode === 200)); });
+          a.on('error', () => fertig(false));
+          a.on('timeout', () => { a.destroy(); fertig(false); });
+          a.end();
+        });
+        (ok ? beendet : hartnaeckig).push(`${fassung} auf Port ${p}`);
+      }
+      const text = [
+        beendet.length ? `Beendet: ${beendet.join(', ')}.` : '',
+        hartnaeckig.length
+          ? `Nicht erreicht: ${hartnaeckig.join(', ')} — diese Fassung kennt den Weg noch nicht. `
+            + 'Ein Neustart des Rechners räumt sie sicher weg.'
+          : '',
+        !beendet.length && !hartnaeckig.length ? 'Es lief nichts weiter — nichts zu tun.' : '',
+      ].filter(Boolean).join(' ');
+      return res.json({ ok: !hartnaeckig.length, text });
+    }
+
+    if (was === 'vorlagen') {
+      const vorher = templates.length;
+      templates = ALLE_VORLAGEN.slice();
+      saveJson(TEMPLATES_FILE, templates);
+      broadcast({ type: 'templates', templates });
+      return res.json({ ok: true, text: `Vorlagen zurückgesetzt: ${vorher} → ${templates.length}.` });
+    }
+
+    if (was === 'neustart') {
+      /* Nur, wenn eine Hülle da ist, die uns wieder startet. Sonst wäre der
+         Knopf ein Ausschalter mit falscher Beschriftung. */
+      if (typeof process.send !== 'function') {
+        return res.status(400).json({ error: 'Ohne Programmhülle würde die Box nicht wieder hochkommen.' });
+      }
+      res.json({ ok: true, text: 'Die Box startet neu. Einen Moment.' });
+      setTimeout(() => process.exit(0), 250);
+      return;
+    }
+
+    return res.status(400).json({ error: `Unbekannte Reparatur: ${was}` });
+  } catch (e) {
+    return res.status(500).json({ error: 'Die Reparatur ist gescheitert: ' + e.message });
+  }
+});
+
 /* ---------- API: Infos & QR ---------- */
 
 app.get('/api/info', (req, res) => {

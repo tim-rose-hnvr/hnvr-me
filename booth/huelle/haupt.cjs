@@ -13,7 +13,7 @@
  *   3. Selbstaktualisierung, aber nie mitten in einer Feier
  */
 
-const { app, BrowserWindow, dialog, session, shell, powerSaveBlocker } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, session, shell, powerSaveBlocker } = require('electron');
 const { fork } = require('node:child_process');
 const { sucheLaufendeBox, ersterFreierPort, wieStarten } = require('./finden.cjs');
 const path = require('node:path');
@@ -181,6 +181,15 @@ function warteAufBox(sekunden = 45) {
 /* Das Fenster                                                       */
 /* ---------------------------------------------------------------- */
 
+/* Die Oberfläche darf das Vollbild schalten — mehr nicht. Sie sagt „jetzt
+   läuft der Abend", die Hülle setzt es um. */
+ipcMain.handle('huelle:vollbild', (_ereignis, an) => {
+  if (!fenster) return false;
+  fenster.setFullScreen(!!an);
+  return fenster.isFullScreen();
+});
+ipcMain.handle('huelle:ist-vollbild', () => (fenster ? fenster.isFullScreen() : false));
+
 function baueFenster() {
   fenster = new BrowserWindow({
     width: 1440,
@@ -198,9 +207,29 @@ function baueFenster() {
     },
   });
 
+  /* Im FENSTER starten, nicht im Vollbild.
+     Vorher sprang die Box beim Öffnen sofort ins Vollbild — mitten in der
+     Einrichtung, wo man noch Drucker wählt, Vorlagen ansieht und zwischen
+     Programmen wechselt, ist das eine Falle: Es gibt keine Leiste, keinen
+     sichtbaren Weg zurück, und der Betreiber sitzt fest.
+
+     Vollbild ist der Zustand für den ABEND, nicht für die Vorbereitung. Es
+     kommt deshalb auf Zuruf: F11, oder aus der Oberfläche heraus. */
   fenster.once('ready-to-show', () => {
     fenster.show();
-    fenster.setFullScreen(true);
+  });
+
+  /* F11 ist das, was jeder ohne Anleitung probiert. Escape führt zurück —
+     auch das erwartet man, und ohne Leiste gibt es sonst keinen Weg. */
+  fenster.webContents.on('before-input-event', (ereignis, eingabe) => {
+    if (eingabe.type !== 'keyDown') return;
+    if (eingabe.key === 'F11') {
+      fenster.setFullScreen(!fenster.isFullScreen());
+      ereignis.preventDefault();
+    } else if (eingabe.key === 'Escape' && fenster.isFullScreen()) {
+      fenster.setFullScreen(false);
+      ereignis.preventDefault();
+    }
   });
 
   /* Der Bildschirm darf während einer Feier nicht schlafen gehen. */

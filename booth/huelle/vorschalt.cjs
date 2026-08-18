@@ -7,10 +7,16 @@
  * nicht anrichten.
  */
 
-const { contextBridge } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('youboothHuelle', {
   fassung: process.env.npm_package_version || require('../package.json').version,
   system:
     process.platform === 'win32' ? 'Windows' : process.platform === 'darwin' ? 'macOS' : 'Linux',
+
+  /* Vollbild auf Zuruf. Die Box startet im Fenster — für den Abend gehört sie
+     ins Vollbild, für die Einrichtung nicht. Beides muss die Oberfläche
+     auslösen können, sonst bliebe nur F11, und das findet nicht jeder. */
+  vollbild: (an) => ipcRenderer.invoke('huelle:vollbild', an),
+  istVollbild: () => ipcRenderer.invoke('huelle:ist-vollbild'),
 });

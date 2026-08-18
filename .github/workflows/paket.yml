@@ -108,11 +108,44 @@ jobs:
             -d "{\"tag_name\":\"$TAG\",\"name\":\"youbooth $FASSUNG\",\"draft\":false,\"prerelease\":false,\"body\":\"Installationspaket für Windows. Die installierte App aktualisiert sich danach selbst.\"}" \
             -o /dev/null -w "  angelegt (%{http_code})\n"
 
-      - name: Installer bauen und veröffentlichen
+      # Gebaut, aber NICHT von electron-builder veröffentlicht: Es startet je
+      # Datei einen Veröffentlicher, und die legen gemeinsam mehr als eine
+      # Release an. Hochgeladen wird deshalb unten, in die eine, die oben
+      # entstanden ist.
+      - name: Installer bauen
         working-directory: booth
+        run: npx electron-builder --win --publish never
+
+      - name: Dateien an die Release hängen
+        working-directory: booth
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win --publish always
+        run: |
+          set -euo pipefail
+          FASSUNG=$(node -p "require('./package.json').version")
+          TAG="v$FASSUNG"
+          REPO="${{ github.repository }}"
+
+          ID=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+                 "https://api.github.com/repos/$REPO/releases/tags/$TAG" \
+               | node -e "let t='';process.stdin.on('data',d=>t+=d).on('end',()=>console.log(JSON.parse(t).id))")
+          echo "Release $TAG hat die Nummer $ID"
+
+          # `latest.yml` zuletzt: Erst wenn sie liegt, sieht eine installierte
+          # Box die neue Fassung — und dann muss die Datei schon da sein, auf
+          # die sie zeigt. Andersherum lädt sie ins Leere.
+          for DATEI in paket/*.exe paket/*.blockmap paket/latest.yml; do
+            [ -f "$DATEI" ] || continue
+            NAME=$(basename "$DATEI")
+            echo "  $NAME"
+            curl -sS -X POST \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary "@$DATEI" \
+              "https://uploads.github.com/repos/$REPO/releases/$ID/assets?name=$NAME" \
+              -o /dev/null -w "    hochgeladen (%{http_code})\n"
+          done
 
       # Auch ohne Release zum Mitnehmen: Wer den Lauf von Hand startet, will
       # das Ergebnis oft ansehen, bevor eine Release entsteht.

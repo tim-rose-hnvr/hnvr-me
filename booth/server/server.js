@@ -46,8 +46,13 @@ const CAN_PRINT = EDITION === 'desktop';
    Die daneben (`server/package.json`) trägt keine: Sie gibt es nur, damit Node
    diesen Ordner als CommonJS liest. Stünde dort eine zweite Nummer, liefen sie
    auseinander, und die Selbstaktualisierung vergliche die falsche. */
-const APP_VERSION = require(
-  path.join(process.env.YOUBOOTH_MITGELIEFERT || __dirname, '..', 'package.json')).version;
+const APP_VERSION =
+  /* In der Desktop-Hülle kommt die Fassung von dort: Sie kennt sie ohnehin,
+     und im gepackten Programm liegt die `package.json` in einem Archiv, aus
+     dem dieser Prozess nicht lesen kann — genau daran ist der erste Windows-
+     Installer gescheitert. Ohne Hülle bleibt der Weg über die Datei. */
+  process.env.YOUBOOTH_FASSUNG ||
+  require(path.join(process.env.YOUBOOTH_MITGELIEFERT || __dirname, '..', 'package.json')).version;
 /* Beschreibbarer Datenordner: im gepackten Desktop-Build liegt der Code in
    einem schreibgeschützten app.asar – Fotos/Config gehören dann in den
    Nutzerordner (von electron/main.js via YOUBOOTH_DATEN gesetzt). */

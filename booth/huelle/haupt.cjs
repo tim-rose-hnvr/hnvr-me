@@ -16,6 +16,7 @@
 const { app, BrowserWindow, dialog, session, shell, powerSaveBlocker } = require('electron');
 const { fork } = require('node:child_process');
 const path = require('node:path');
+const fs = require('node:fs');
 
 /* Der Wunschport. Ist er belegt, weicht die Box aus und sagt uns über den
    Nachrichtenkanal, wo sie gelandet ist — geraten wird hier nichts. */
@@ -37,8 +38,35 @@ let beendet = false;
 /* Die Box                                                           */
 /* ---------------------------------------------------------------- */
 
+/* Was die Box beim Start von sich gibt. Landet im Fehlerfenster und in der
+   Datei daneben — ein Betreiber vor einer wartenden Gesellschaft kann mit
+   „antwortet nicht" nichts anfangen, mit der Zeile aus dem Protokoll schon. */
+let protokoll = [];
+
+function merke(zeile) {
+  protokoll.push(String(zeile).trimEnd());
+  if (protokoll.length > 80) protokoll.shift();
+}
+
+/**
+ * Wo liegt der Server?
+ *
+ * Neben der Hülle, als gewöhnliche Datei. Das Programm wird bewusst OHNE
+ * `asar` gepackt — das Archiv hätte hier nichts gebracht und vier Fehler
+ * gekostet: Ein Kindprozess kann nicht daraus starten, und wenn man den
+ * Serverordner daneben auspackt, sucht er seine Abhängigkeiten, seine
+ * `package.json` und seine `formate.json` an Stellen, die es im Archiv gibt
+ * und daneben nicht. Genau daran ist der erste Windows-Installer gescheitert.
+ *
+ * Verheimlichen ließe sich damit ohnehin nichts: Der Quelltext ist offen.
+ */
+function serverPfad() {
+  return path.join(__dirname, '..', 'server', 'server.js');
+}
+
 function starteBox() {
-  const skript = path.join(__dirname, '..', 'server', 'server.js');
+  const skript = serverPfad();
+  merke(`Starte ${skript}`);
 
   server = fork(skript, [], {
     env: {
@@ -46,14 +74,28 @@ function starteBox() {
       YOUBOOTH_DATEN: DATEN,
       YOUBOOTH_OBERFLAECHE: path.join(__dirname, '..', 'dist'),
       PORT: String(PORT_WUNSCH),
+      // Damit der Server nicht in ein Archiv greifen muss, um zu wissen,
+      // welche Fassung er ist.
+      YOUBOOTH_FASSUNG: app.getVersion(),
       // Ohne das startet Electron eine zweite Fensteranwendung statt Node.
       ELECTRON_RUN_AS_NODE: '1',
     },
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
   });
 
-  server.stdout?.on('data', (d) => process.stdout.write('[Box] ' + d));
-  server.stderr?.on('data', (d) => process.stderr.write('[Box] ' + d));
+  server.stdout?.on('data', (d) => {
+    process.stdout.write('[Box] ' + d);
+    merke(d);
+  });
+  server.stderr?.on('data', (d) => {
+    process.stderr.write('[Box] ' + d);
+    merke(d);
+  });
+
+  /* Kann der Prozess gar nicht erst starten, gibt es kein `exit`, sondern
+     `error` — und ohne diesen Zuhörer stirbt die Hülle mit einer nackten
+     Ausnahme. */
+  server.on('error', (fehler) => merke('Start fehlgeschlagen: ' + fehler.message));
 
   server.on('message', (nachricht) => {
     if (nachricht && nachricht.art === 'bereit') {
@@ -67,10 +109,13 @@ function starteBox() {
 
   /* Stirbt die Box mitten in einer Feier, ist Neustarten das einzig
      Richtige — die Aufnahmen liegen auf der Platte, der Abend läuft weiter. */
-  server.on('exit', (code) => {
+  server.on('exit', (code, signal) => {
     if (beendet) return;
-    console.error(`[Hülle] Die Box ist beendet worden (${code}). Neustart in 2 s.`);
-    setTimeout(starteBox, 2000);
+    merke(`Die Box ist beendet worden (Code ${code}${signal ? ', Signal ' + signal : ''}).`);
+    console.error('[Hülle] Neustart in 2 s.');
+    /* Nur neu starten, solange das Fenster steht. Stürzt sie beim Start immer
+       wieder, dreht sich sonst eine Schleife, die niemand sieht. */
+    if (fenster) setTimeout(starteBox, 2000);
   });
 }
 
@@ -78,7 +123,7 @@ function starteBox() {
  * Wartet auf die Meldung der Box. Kommt sie nicht, ist etwas grundsätzlich
  * kaputt — dann ein Fenster mit einem Satz statt eines Stapelaufrufs.
  */
-function warteAufBox(sekunden = 30) {
+function warteAufBox(sekunden = 45) {
   return new Promise((fertig, scheitern) => {
     const uhr = setTimeout(() => {
       meldeBereit = null;
@@ -212,10 +257,28 @@ if (!app.requestSingleInstanceLock()) {
     try {
       await warteAufBox();
     } catch (fehler) {
+      /* Das Protokoll gehört neben die Daten, nicht ins Programmverzeichnis:
+         Dort darf nicht geschrieben werden, und genau dann wird es gebraucht. */
+      let abgelegt = '';
+      try {
+        fs.mkdirSync(DATEN, { recursive: true });
+        abgelegt = path.join(DATEN, 'start-fehler.log');
+        fs.writeFileSync(
+          abgelegt,
+          `youbooth ${app.getVersion()} · ${new Date().toISOString()}\n` +
+            `${process.platform} ${process.arch} · Node ${process.versions.node}\n\n` +
+            protokoll.join('\n') + '\n'
+        );
+      } catch {
+        /* Wenn nicht einmal das geht, bleibt der Text im Fenster. */
+      }
+
       dialog.showErrorBox(
         'Die Box startet nicht',
-        'Der Dienst der Box hat nicht geantwortet. Läuft schon eine zweite Fassung, ' +
-          'oder sind die Ports ab ' + PORT_WUNSCH + ' alle belegt?'
+        'Der Dienst der Box hat nicht geantwortet.\n\n' +
+          'Was er zuletzt gesagt hat:\n' +
+          (protokoll.slice(-12).join('\n') || '(nichts)') +
+          (abgelegt ? `\n\nVollständig in:\n${abgelegt}` : '')
       );
       app.quit();
       return;

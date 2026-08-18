@@ -1,27 +1,20 @@
 ---
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import '../styles/global.css';
 
 /**
  * Anmeldung zum Konto.
  *
- * Angemeldet wird über Wix — die Website ist ein Wix-Headless-Projekt, und
- * damit führt Wix den Weg selbst: Google, Facebook oder E-Mail. Wir bauen
- * weder Kennwortprüfung noch Nutzerverwaltung.
+ * Hier stand kurzzeitig eine Anmeldung über Wix mit Google-Knopf. Sie ist
+ * wieder heraus: Der Weg braucht eine freigeschaltete Rücksprungadresse in
+ * den Headless-Einstellungen, und eine Anmeldung, die beim ersten Klick in
+ * eine Fehlermeldung läuft, ist schlimmer als eine, die es nicht gibt.
  *
- * Das ist ausdrücklich NICHT die Anmeldung an der Box. Die hat ihre eigene,
- * mit eigenem Kennwort, weil sie in einer Scheune ohne Netz laufen muss.
+ * Was bleibt, ist die Wahrheit: Ein Konto über mehrere Boxen hinweg gibt es
+ * noch nicht. Die Box wird am Gerät selbst eingerichtet und hat ihre eigene
+ * Anmeldung — die läuft, und sie läuft ohne Internet.
  */
-
-/* Die Kennung des Headless-Kunden steht in `wix.config.json` — gelesen statt
-   getippt, damit sie nicht auseinanderläuft, wenn das Projekt wechselt. */
-const kennung: string = JSON.parse(
-  readFileSync(join(process.cwd(), 'wix.config.json'), 'utf8')
-).appId;
 ---
 
----
 
 <!doctype html>
 <html lang="de">
@@ -64,43 +57,30 @@ const kennung: string = JSON.parse(
       </section>
 
       <section class="formularseite">
-        <div class="anmeldung" data-anmeldung>
-          <h2 class="frei" data-feld="titel">Anmelden</h2>
+        <div class="anmeldung">
+          <h2 class="frei">Es gibt noch kein Konto</h2>
 
-          <div data-feld="wege">
-            <button class="knopf knopf--amber knopf--breit" type="button" data-tue="google">
-              Mit Google anmelden
-            </button>
-            <button class="knopf knopf--rahmen knopf--breit" type="button" data-tue="wix">
-              Mit E-Mail anmelden
-            </button>
-            <span class="mono mono--hell">
-              Noch kein Konto? Beim ersten Anmelden entsteht es.
-            </span>
-          </div>
-
-          <div data-feld="konto" hidden>
-            <span class="mono mono--hell">Angemeldet als</span>
-            <b class="kontoname" data-feld="name"></b>
-            <span class="mono" data-feld="mail"></span>
-            <div class="kontowege">
-              <a class="knopf knopf--rahmen knopf--flach" href="/download">Software laden</a>
-              <a class="knopf knopf--rahmen knopf--flach" href="/support">Support</a>
-              <button class="knopf knopf--rahmen knopf--flach" type="button" data-tue="raus">
-                Abmelden
-              </button>
-            </div>
-          </div>
-
-          <span class="meldung" data-feld="meldung" role="status" hidden></span>
+          <p class="kleingedruckt">
+            Ein Konto über mehrere Boxen hinweg — Lizenzen, Cloud-Galerie, Puls aller Boxen —
+            entsteht mit dem Dienst dazwischen. Solange es ihn nicht gibt, wäre eine Anmeldung
+            hier eine Tür ohne Raum dahinter.
+          </p>
 
           <span class="trenner" aria-hidden="true"></span>
 
-          <span class="mono">Box am Eventort einrichten</span>
+          <span class="mono">Was heute schon geht</span>
           <p class="kleingedruckt">
-            Die Box richtet ihr am Gerät selbst ein — sie fragt beim ersten Start nach Zugang,
-            Firmendaten und Logo. Dieses Konto hier braucht sie dafür nicht.
+            Die Box richtet ihr am Gerät selbst ein: Sie fragt beim ersten Start nach Zugang,
+            Firmendaten und Logo, und danach kommt niemand mehr ohne Anmeldung an Cockpit und
+            Portal. Diese Anmeldung braucht kein Internet — eine, die erst Google fragen müsste,
+            sperrte genau dann aus, wenn das WLAN der Scheune aussteigt.
           </p>
+
+          <div class="kontowege">
+            <a class="knopf knopf--amber knopf--flach" href="/download">Software laden</a>
+            <a class="knopf knopf--rahmen knopf--flach" href="/support">Support</a>
+            <a class="knopf knopf--rahmen knopf--flach" href="/kontakt">Kontakt</a>
+          </div>
         </div>
       </section>
     </main>
@@ -113,55 +93,6 @@ const kennung: string = JSON.parse(
         <a href="/datenschutz">Datenschutz</a>
       </span>
     </footer>
-
-    <script define:vars={{ kennung }}>
-      window.__youboothWix = kennung;
-    </script>
-
-    <script>
-      import { abmelden, angemeldet, melde } from '../lib/wix';
-
-      const wurzel = document.querySelector('[data-anmeldung]');
-      const kennung = window.__youboothWix;
-
-      if (wurzel && kennung) {
-        const wege = wurzel.querySelector('[data-feld="wege"]');
-        const konto = wurzel.querySelector('[data-feld="konto"]');
-        const titel = wurzel.querySelector('[data-feld="titel"]');
-        const meldung = wurzel.querySelector('[data-feld="meldung"]');
-
-        const sage = (text) => {
-          meldung.textContent = text;
-          meldung.hidden = !text;
-        };
-
-        /* Erst nachsehen, ob schon jemand angemeldet ist — sonst zeigt die
-           Seite Anmeldeknöpfe an jemanden, der längst drin ist. */
-        angemeldet(kennung).then((wer) => {
-          if (!wer) return;
-          wege.hidden = true;
-          konto.hidden = false;
-          titel.textContent = 'Willkommen zurück';
-          wurzel.querySelector('[data-feld="name"]').textContent = wer.name;
-          wurzel.querySelector('[data-feld="mail"]').textContent = wer.email;
-        });
-
-        wurzel.addEventListener('click', async (e) => {
-          const knopf = e.target.closest('[data-tue]');
-          if (!knopf) return;
-
-          if (knopf.dataset.tue === 'raus') return abmelden();
-
-          knopf.disabled = true;
-          sage('Einen Moment …');
-          const { fehler } = await melde(kennung, knopf.dataset.tue === 'google' ? 'google' : undefined);
-          if (fehler) {
-            knopf.disabled = false;
-            sage(fehler);
-          }
-        });
-      }
-    </script>
 
     <style>
       .anmeldeseite {

@@ -1,6 +1,6 @@
 {
   "name": "youbooth-booth",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "youbooth — Fotobox-Software: Booth, Cockpit, Portal und Box-Server",
@@ -101,6 +101,7 @@
       "artifactName": "${productName}-${version}.${ext}",
       "executableName": "youbooth",
       "icon": "huelle/mittel/icon.png"
-    }
+    },
+    "asar": false
   }
 }

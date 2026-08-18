@@ -316,7 +316,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Werkzeugzeile ----------------------------------------------- */
 .werkzeugzeile {
-  display: flex; align-items: center; gap: 4px;
+  display: flex; align-items: center; gap: 2px;
   padding: 0 0 0 8px;
   background: var(--flaeche-hoch);
   border-bottom: 1px solid var(--linie-stark);
@@ -335,14 +335,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .werkzeug .sinnbild { width: 15px; height: 15px; }
 .werkzeug-trenner {
-  width: 1px; height: 24px; background: var(--linie-stark);
-  margin-right: 9px; padding-right: 0; flex: none;
+  width: 1px; height: 24px; background: #DBDFE2;
+  margin: 0 9px; flex: none;
 }
 /* Die rechte Gruppe bleibt erreichbar, auch wenn die Zeile scrollt. */
 .werkzeug-rechts {
   position: sticky; right: 0; margin-left: auto; flex: none;
-  display: flex; align-items: center; gap: 4px;
-  padding: 0 8px 0 12px; background: var(--flaeche-hoch);
+  display: flex; align-items: center; gap: 2px;
+  padding: 0 8px 0 6px; background: var(--flaeche-hoch);
   box-shadow: -12px 0 12px -6px rgba(0,0,0,.10);
 }
 
@@ -446,10 +446,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Handoff: 26 px Luft um die Seite, unten 34. Ohne diesen Rand klebt das
    Blatt an den Leisten und die Bühne ist nicht mehr zu sehen — dann wirkt die
    Anwendung wie ein Textfenster, nicht wie ein Leuchttisch. */
+/* Handoff: 26 px Luft um die Seite, unten 34. Und ausdrücklich `margin: 0
+   auto` statt `align-items: center` — bei einer Seite, die breiter ist als
+   die Bühne, schiebt das Zentrieren den linken Rand aus dem Bild, und was
+   dort steht, ist nicht mehr erreichbar. Mit `auto` liegt der Überhang
+   rechts und lässt sich scrollen. */
 .spur {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 18px; padding: 26px 26px 34px; min-height: 100%;
+  display: block; padding: 26px 26px 34px; min-height: 100%;
 }
+.spur > * { margin: 0 auto 18px; }
+.spur > *:last-child { margin-bottom: 0; }
 
 .blatt {
   position: relative;
@@ -749,9 +755,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
    Schutz-Dialog braucht noch eine eigene Form. */
 .schutz-spalte { border: 1px solid var(--linie); padding: .5rem; max-height: 55vh; overflow: auto; font-family: var(--mono); font-size: .75rem; white-space: pre-wrap; }
 
-@media (max-width: 60rem) {
-  .rumpf { grid-template-columns: 1fr; }
-  .leiste { display: none; }
+/* Diese Regel versteckte beide Leisten unter 960 px vollständig — ein
+   Überbleibsel aus der Zeit vor den Schubfächern. Sie hat den Vergleich mit
+   dem Mockup verfälscht: dessen Aufnahme ist 924 px breit und zeigt beide
+   Leisten. Der Umbruch liegt jetzt allein bei 900 px, und dort werden die
+   Leisten zu Schubfächern, statt zu verschwinden.
+
+   Was bleibt: die Wörter neben den Sinnbildern der Titelleiste. */
+@media (max-width: 52rem) {
   .nur-breit { display: none; }
 }
 @media print { .kopf, .fuss, .leiste, .meldungen { display: none !important; } }
@@ -995,13 +1006,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .fuss-mitte { min-width: 0; }
 .fuss > * { min-width: 0; }
 
-@media (max-width: 1180px) {
-  :root { --leiste-rechts: 260px; }
-}
+/* Die rechte Leiste war unter 1180 px auf 260 px geschrumpft. Das Handoff
+   kennt nur 296 — und zeigt sie bei 944 px Fensterbreite in voller Breite:
+   196 + 452 Bühne + 296. Ein schmaler gemachtes Panel war eine Bequemlichkeit,
+   die den Entwurf verlässt. */
 
-/* Unter 980 px treten die Leisten aus dem Raster heraus und legen sich als
-   Schubfächer über die Bühne. Sonst bliebe für das Blatt nichts übrig. */
-@media (max-width: 980px) {
+/* Unter 900 px treten die Leisten aus dem Raster heraus und legen sich als
+   Schubfächer über die Bühne. Sonst bliebe für das Blatt nichts übrig.
+   Darüber stehen sie nebeneinander — bei 944 px wie in der Mockup-Aufnahme:
+   196 links, 296 rechts, der Rest Bühne. */
+@media (max-width: 900px) {
   .rumpf { grid-template-columns: 1fr; position: relative; }
   .leiste {
     position: absolute; top: 0; bottom: 0; z-index: 30;

@@ -1950,7 +1950,7 @@ function bearbeiteNotiz(id) {
   const feld = el('textarea', { klasse: 'feld', rows: '5', stil: { width: '100%' }, placeholder: 'Notiz …' });
   feld.value = anmerkung.text || '';
   zeigeDialog({
-    titel: 'Notiz',
+    titel: 'Kommentar',
     rumpf: el('div', {}, feld),
     knoepfe: [
       { beschriftung: 'Löschen', gefahr: true, tun: () => entferne(id) },

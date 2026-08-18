@@ -9,20 +9,24 @@ import { zustand, kennung, melde, sage, el, svgEl, merkeSchritt } from './kern.j
 import { nummerVon } from './dokument.js';
 import { beschriftung as messwert } from './messen.js';
 
+/* Die Namen sind die des Handoffs — Markieren, Kommentar, Redigieren,
+   Signieren —, nicht unsere eigenen Wörter. Sie stehen auf den Knöpfen, im
+   Menü und in der Kommentarkarte; wer den Entwurf neben die Anwendung legt,
+   soll dieselben Wörter lesen. Nur die Kennungen bleiben, wie sie waren. */
 export const WERKZEUGE = [
   { id: 'auswahl',      name: 'Auswahl',       kuerzel: 'V', zeichen: 'M4 3l7 17 2-7 7-2z' },
-  { id: 'hervor',       name: 'Hervorheben',   kuerzel: 'H', zeichen: 'M3 20h18M6 16l9-9 3 3-9 9H6z' },
+  { id: 'hervor',       name: 'Markieren',     kuerzel: 'H', zeichen: 'M3 20h18M6 16l9-9 3 3-9 9H6z' },
   { id: 'unterstrich',  name: 'Unterstreichen',kuerzel: 'U', zeichen: 'M6 4v7a6 6 0 0 0 12 0V4M5 20h14' },
   { id: 'durchstrich',  name: 'Durchstreichen',kuerzel: 'D', zeichen: 'M4 12h16M7 6h10M7 18h10' },
-  { id: 'notiz',        name: 'Notiz',         kuerzel: 'N', zeichen: 'M4 4h16v11H9l-5 5z' },
+  { id: 'notiz',        name: 'Kommentar',    kuerzel: 'N', zeichen: 'M4 4h16v11H9l-5 5z' },
   { id: 'freihand',     name: 'Freihand',      kuerzel: 'F', zeichen: 'M3 17c4 0 4-10 8-10s4 10 8 10' },
   { id: 'text',         name: 'Text',          kuerzel: 'T', zeichen: 'M5 5h14M12 5v14M9 19h6' },
   { id: 'rechteck',     name: 'Rechteck',      kuerzel: 'R', zeichen: 'M4 5h16v14H4z' },
   { id: 'ellipse',      name: 'Ellipse',       kuerzel: 'E', zeichen: 'M12 5c4.4 0 8 3.1 8 7s-3.6 7-8 7-8-3.1-8-7 3.6-7 8-7z' },
   { id: 'pfeil',        name: 'Pfeil',         kuerzel: 'P', zeichen: 'M4 20L20 4M20 4h-7M20 4v7' },
   { id: 'ersetzen',     name: 'Text bearbeiten', kuerzel: 'B', zeichen: 'M4 20h7M14 4l6 6-9 9H5v-6z' },
-  { id: 'schwaerzen',   name: 'Schwärzen',     kuerzel: 'S', zeichen: 'M4 8h16v8H4zM4 4h16' },
-  { id: 'unterschrift', name: 'Unterschrift',  kuerzel: 'G', zeichen: 'M3 18c3 0 5-12 8-12s2 9 4 9 2-3 6-3' },
+  { id: 'schwaerzen',   name: 'Redigieren',   kuerzel: 'S', zeichen: 'M4 8h16v8H4zM4 4h16' },
+  { id: 'unterschrift', name: 'Signieren',    kuerzel: 'G', zeichen: 'M3 18c3 0 5-12 8-12s2 9 4 9 2-3 6-3' },
   { id: 'stempel',      name: 'Stempel',       kuerzel: 'Z', zeichen: 'M5 20h14M7 16h10V9l-3-5H10L7 9z' },
   { id: 'bereich',      name: 'Bereich kopieren', kuerzel: 'M', zeichen: 'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4' },
   { id: 'feld',         name: 'Formularfeld anlegen', kuerzel: 'K', zeichen: 'M3 7h18v10H3zM7 10h6' },

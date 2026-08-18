@@ -31,22 +31,13 @@ export function baueMiniaturen() {
   miniaturen.clear();
   beobachter?.disconnect();
 
-  /* Der Weg in die große Ansicht steht hier, nicht nur im Menü: wer Seiten
-     sortieren will, sucht bei den Seiten. */
-  behaelter.append(el('button', {
-    klasse: 'knopf seiten-ordnen-knopf', text: 'Seiten ordnen …',
-    title: 'Alle Seiten groß nebeneinander — sortieren, löschen, drehen (Strg+Umschalt+O)',
-    beiClick: () => melde('befehl', 'seiten:ordnen'),
-  }));
+  /* Im Handoff trägt die Seitenleiste nur die Liste — die Werkzeuge fürs
+     Sortieren stehen in der Aktionsleiste des Seitenrasters, das über den
+     Knopf „Seiten" in der Werkzeugzeile aufgeht. Zwei Zeilen Knöpfe über den
+     Miniaturen schoben die Liste nach unten und machten aus einer Übersicht
+     eine Schaltwand.
 
-  const kopf = el('div', { klasse: 'seiten-kopf' },
-    el('button', { klasse: 'knopf knopf-klein', text: 'Alle', beiClick: () => { zustand.folge.forEach((e) => zustand.gewaehlteSeiten.add(e.id)); melde('auswahl:geaendert'); } }),
-    el('button', { klasse: 'knopf knopf-klein', text: 'Keine', beiClick: () => { zustand.gewaehlteSeiten.clear(); melde('auswahl:geaendert'); } }),
-    el('button', { klasse: 'knopf knopf-klein', text: '↺', title: 'Gewählte Seiten links drehen', 'aria-label': 'Links drehen', beiClick: () => drehe(-90) }),
-    el('button', { klasse: 'knopf knopf-klein', text: '↻', title: 'Gewählte Seiten rechts drehen', 'aria-label': 'Rechts drehen', beiClick: () => drehe(90) }),
-    el('button', { klasse: 'knopf knopf-klein', text: '⧉', title: 'Gewählte Seiten verdoppeln', 'aria-label': 'Verdoppeln', beiClick: verdopple }),
-    el('button', { klasse: 'knopf knopf-klein knopf-gefahr', text: '✕', title: 'Gewählte Seiten löschen', 'aria-label': 'Löschen', beiClick: loesche }));
-  behaelter.append(kopf);
+     Erreichbar bleibt alles: Menü „Seiten", Werkzeugzeile, Tastenkürzel. */
 
   gitter = el('div', { klasse: 'miniaturen' });
   behaelter.append(gitter);

@@ -29,7 +29,10 @@ export const zustand = {
   },
   strichstaerke: 2,
   schriftgroesse: 12,
-  zoom: 'breite',
+  /* Voreinstellung wie im Handoff: eine feste Größe, keine Anpassung an die
+     Fensterbreite. Die Seite soll auf der Bühne stehen, nicht sie ausfüllen —
+     „Breite" macht aus einem Leuchttisch ein Textfenster. */
+  zoom: 1,
   zoomWert: 1,
   ansichtDrehung: 0,
   aktuelleSeite: 1,

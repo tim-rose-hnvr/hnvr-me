@@ -41,6 +41,24 @@ Dokumentreitern und akzentfarbenem Primärknopf, Menüleiste 27 px,
 Werkzeugzeile 46 px, dann Bühne mit den beiden Leisten (196 px links, 296 px
 rechts), unten Statusleiste 30 px.
 
+**Die Seite steht auf der Bühne, sie füllt sie nicht.** 100 % heißt hier, was
+im Handoff steht: die Seite ist 720 px breit („Breite 720px × zoom/100"), und
+das ist die Voreinstellung — nicht „auf Fensterbreite". Der Unterschied ist
+kein Detail: mit „Breite" wird aus dem Leuchttisch ein Textfenster, die
+Bühnenfarbe verschwindet und die Schrift wird doppelt so groß wie gezeichnet.
+Ist die Seite breiter als die Bühne, liegt der Überhang rechts (`margin: 0
+auto`, nicht zentriert) — sonst wäre der linke Rand aus dem Bild geschoben und
+nicht mehr erreichbar.
+
+**Beide Leisten stehen bis 900 px nebeneinander.** Die Mockup-Aufnahme ist
+924 px breit und zeigt 196 links, 452 Bühne, 296 rechts. Zwei alte Regeln
+standen dem im Weg: eine versteckte beide Leisten schon unter 960 px, eine
+schrumpfte die rechte unter 1180 px auf 260 px. Beide sind fort.
+
+**Die Beschriftungen sind die des Handoffs** — Markieren, Kommentar,
+Redigieren, Signieren —, nicht unsere eigenen Wörter. Wer den Entwurf neben
+die Anwendung legt, soll dasselbe lesen.
+
 **Die Werkzeugzeile trägt die vier Gruppen des Handoffs**, jeder Knopf 34 px
 hoch mit Sinnbild *und* Wort: Auswahl/Text · Hervorheben/Notiz/Schwärzen ·
 Formularfeld/Unterschrift · Seiten/Vergleichen/Dokument, dazu „Mehr" für die
@@ -462,7 +480,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 128 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 110 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 113 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/live-pruefen.mjs   #  31 Prüfungen — was der Hoster ausliefert
 ```
 

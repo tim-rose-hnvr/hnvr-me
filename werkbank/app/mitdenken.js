@@ -255,7 +255,7 @@ function alleVorschlaege() {
     liste.push({
       id: 'kniff-hervor',
       titel: 'Kniff: Text markieren genügt',
-      text: 'Mit H auf das Hervorheben schalten, dann reicht das Markieren mit der Maus. Mit V wieder zurück zur Auswahl.',
+      text: 'Mit H auf „Markieren" schalten, dann reicht das Ziehen mit der Maus. Mit V wieder zurück zur Auswahl.',
       knopf: 'Merken',
       befehl: null,
       gewicht: 10,

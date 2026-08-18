@@ -154,7 +154,7 @@ function baueMenue(titel, ids) {
   return huelle;
 }
 
-/* „Werkzeug: Hervorheben" heißt im Menü „Werkzeuge" schlicht „Hervorheben". */
+/* „Werkzeug: Markieren" heißt im Menü „Werkzeuge" schlicht „Markieren". */
 function kurzName(befehl) {
   return befehl.name.replace(/^Werkzeug: /, '');
 }

@@ -51,6 +51,13 @@ function setzeWerkzeugKlasse() {
   spur.classList.toggle('werkzeug-ersetzen', zustand.werkzeug === 'ersetzen');
 }
 
+/* Das Handoff setzt die Seite bei 100 % auf 720 px Breite („Breite 720px ×
+   zoom/100"). Ein PDF-Punkt ist 1/72 Zoll; bei Maßstab 1 wäre eine A4-Seite
+   595 px breit und stünde verloren auf der Bühne. 100 % heißt hier deshalb:
+   die Seite ist so breit wie im Entwurf gezeichnet. Alle Prozentwerte im
+   Auswahlfeld beziehen sich darauf. */
+const BEZUGSBREITE = 720;
+
 /** Maßstab für einen Eintrag unter der aktuellen Zoom-Einstellung. */
 function maszstab(basisBreite, basisHoehe) {
   /* 52 = zweimal 26 px Rand der Spur, wie im Handoff; unten 34 statt 26,
@@ -60,7 +67,7 @@ function maszstab(basisBreite, basisHoehe) {
   const platzHoehe = buehne.clientHeight - 60;
   if (zustand.zoom === 'breite') return Math.max(0.1, platzBreite / basisBreite);
   if (zustand.zoom === 'seite') return Math.max(0.1, Math.min(platzBreite / basisBreite, platzHoehe / basisHoehe));
-  return Number(zustand.zoom) || 1;
+  return (Number(zustand.zoom) || 1) * (BEZUGSBREITE / basisBreite);
 }
 
 export async function baueNeu({ haltePosition = false } = {}) {

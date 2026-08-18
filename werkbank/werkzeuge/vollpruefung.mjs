@@ -118,12 +118,19 @@ await pruefe('Zoom: ganze Seite', async () => {
   if (h > 900) throw new Error('Blatt passt nicht in die Höhe: ' + Math.round(h));
   return `${Math.round(h)} px hoch`;
 });
-await pruefe('Zoom: 200 %', async () => {
+await pruefe('Zoom: 100 % ist die Bezugsbreite des Handoffs, 200 % das Doppelte', async () => {
+  /* Das Handoff setzt die Seite bei 100 % auf 720 px („Breite 720px ×
+     zoom/100"). Bei Maßstab 1 wäre eine A4-Seite 595 px breit und stünde
+     verloren auf der Bühne — die Prozentwerte beziehen sich deshalb auf 720. */
+  await seite.selectOption('#feld-zoom', '1');
+  await seite.waitForTimeout(900);
+  const hundert = await seite.evaluate(() => document.querySelector('.blatt').getBoundingClientRect().width);
+  if (Math.abs(hundert - 720) > 6) throw new Error('bei 100 %: ' + Math.round(hundert));
   await seite.selectOption('#feld-zoom', '2');
   await seite.waitForTimeout(900);
-  const b = await seite.evaluate(() => document.querySelector('.blatt').getBoundingClientRect().width);
-  if (Math.abs(b - 595 * 2) > 6) throw new Error('Breite ' + Math.round(b));
-  return `${Math.round(b)} px breit`;
+  const doppelt = await seite.evaluate(() => document.querySelector('.blatt').getBoundingClientRect().width);
+  if (Math.abs(doppelt - 1440) > 8) throw new Error('bei 200 %: ' + Math.round(doppelt));
+  return `${Math.round(hundert)} px / ${Math.round(doppelt)} px`;
 });
 await pruefe('Zoom: Breite', async () => {
   await seite.selectOption('#feld-zoom', 'breite');
@@ -431,11 +438,17 @@ await pruefe('Alle Anmerkungen löschen', async () => {
 /* --- Seiten --------------------------------------------------------------- */
 console.log('\n== Seiten ==');
 await pruefe('Alle Seiten wählen / keine', async () => {
+  /* Über das Menü, nicht über Knöpfe in der Seitenleiste: die trägt seit dem
+     Abgleich mit dem Mockup nur noch die Liste. */
   await seite.click('[data-tafel="miniaturen"].reiter-knopf');
-  await seite.click('.seiten-kopf button:has-text("Alle")');
+  await seite.evaluate(() => window.werkbank.fuehreAus('seiten:alleWaehlen'));
   await seite.waitForTimeout(300);
   const alle = await seite.evaluate(() => window.werkbank.zustand.gewaehlteSeiten.size);
-  await seite.click('.seiten-kopf button:has-text("Keine")');
+  await seite.evaluate(async () => {
+    const { melde } = await import('./app/kern.js');
+    window.werkbank.zustand.gewaehlteSeiten.clear();
+    melde('auswahl:geaendert');
+  });
   await seite.waitForTimeout(300);
   const keine = await seite.evaluate(() => window.werkbank.zustand.gewaehlteSeiten.size);
   if (alle !== 5 || keine !== 0) throw new Error(`${alle}/${keine}`);
@@ -1321,6 +1334,64 @@ await pruefe('Die Farben sind die aus dem Handoff', async () => {
   return `Chrome ${farben.kopf} · Bühne ${farben.buehne} · Papier ${farben.blatt}`;
 });
 
+await pruefe('Die Bühne ist zu sehen — die Seite steht darauf, füllt sie nicht', async () => {
+  /* Der auffälligste Unterschied zum Mockup war nicht eine Farbe, sondern die
+     Voreinstellung des Zooms: „Breite" blies die Seite auf die ganze Bühne,
+     und aus dem Leuchttisch wurde ein Textfenster. Gemessen wird deshalb, was
+     man sieht — wie viel Bühne links und rechts der Seite bleibt. */
+  await ladeBeispiel();
+  const lage = await seite.evaluate(() => {
+    const blatt = document.querySelector('.blatt').getBoundingClientRect();
+    const buehne = document.querySelector('#buehne').getBoundingClientRect();
+    return {
+      blattBreite: Math.round(blatt.width),
+      buehneBreite: Math.round(buehne.width),
+      randLinks: Math.round(blatt.left - buehne.left),
+      zoom: String(window.werkbank.zustand.zoom),
+    };
+  });
+  if (lage.zoom !== '1') throw new Error(`Voreinstellung ist „${lage.zoom}"`);
+  if (Math.abs(lage.blattBreite - 720) > 6) throw new Error(`Seite ${lage.blattBreite} px statt 720`);
+  if (lage.randLinks < 26) throw new Error(`nur ${lage.randLinks} px Bühne links`);
+  return `Seite ${lage.blattBreite} px auf ${lage.buehneBreite} px Bühne, ${lage.randLinks} px Rand`;
+});
+
+await pruefe('Bei der Fensterbreite des Mockups stehen beide Leisten', async () => {
+  /* Die Mockup-Aufnahme ist 924 px breit und zeigt beide Leisten: links 196,
+     rechts 296. Unser Umbruchpunkt lag darüber — bei dieser Breite klappten
+     beide Leisten weg, und der Vergleich verglich zwei verschiedene Dinge. */
+  await seite.setViewportSize({ width: 944, height: 700 });
+  await seite.waitForTimeout(900);
+  const lage = await seite.evaluate(() => {
+    const l = document.querySelector('.leiste-links').getBoundingClientRect();
+    const r = document.querySelector('.leiste-rechts').getBoundingClientRect();
+    const b = document.querySelector('#buehne').getBoundingClientRect();
+    return {
+      links: Math.round(l.width), rechts: Math.round(r.width), buehne: Math.round(b.width),
+      linksSteht: Math.round(l.left) === 0,
+      rechtsSteht: Math.round(r.right) <= 945,
+    };
+  });
+  await seite.setViewportSize({ width: 1500, height: 950 });
+  await seite.waitForTimeout(900);
+  if (lage.links !== 196) throw new Error(`linke Leiste ${lage.links} px`);
+  if (lage.rechts !== 296) throw new Error(`rechte Leiste ${lage.rechts} px`);
+  if (!lage.linksSteht || !lage.rechtsSteht) throw new Error('eine Leiste liegt über der Bühne');
+  return `196 + ${lage.buehne} + 296`;
+});
+
+await pruefe('Die Werkzeugknöpfe tragen die Wörter des Mockups', async () => {
+  /* Markieren, Kommentar, Redigieren, Signieren — nicht unsere eigenen
+     Wörter. Wer den Entwurf neben die Anwendung legt, soll dasselbe lesen. */
+  const worte = await seite.evaluate(() =>
+    [...document.querySelectorAll('.werkzeugzeile .werkzeug span')].map((k) => k.textContent.trim()));
+  for (const wort of ['Auswahl', 'Text', 'Markieren', 'Kommentar', 'Redigieren',
+    'Formularfeld', 'Signieren', 'Seiten', 'Vergleichen', 'Dokument']) {
+    if (!worte.includes(wort)) throw new Error(`„${wort}" fehlt — da steht: ${worte.join(', ')}`);
+  }
+  return worte.slice(0, 7).join(' · ');
+});
+
 await pruefe('Der Primärknopf in der Titelleiste ist akzentfarben', async () => {
   /* Er war einmal weiß: `.knopf-voll` stand oberhalb von `.knopf` und wurde
      von dessen Grundwerten überschrieben. Gleiche Spezifität, spätere Regel
@@ -1630,7 +1701,7 @@ await pruefe('Kommentarkarte trägt das Zitat aus dem Dokument', async () => {
   if (!/Plex Serif/.test(karte.schrift)) throw new Error(`Zitat in ${karte.schrift}`);
   if (karte.neigung !== 'italic') throw new Error(`Zitat ist ${karte.neigung}`);
   if (!/212, 175, 55/.test(karte.kante)) throw new Error(`Kante ist ${karte.kante}`);
-  if (karte.chip !== 'Hervorheben') throw new Error(`Chip sagt „${karte.chip}"`);
+  if (karte.chip !== 'Markieren') throw new Error(`Chip sagt „${karte.chip}"`);
   if (!/Plex Mono/.test(karte.chipSchrift)) throw new Error(`Chip in ${karte.chipSchrift}`);
   return `„${karte.zitat.slice(0, 40)}…", Chip ${karte.chip}`;
 });

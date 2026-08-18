@@ -2495,6 +2495,13 @@ app.put('/api/settings', requireKey, (req, res) => {
 
 const DRUCKFORMATE = Object.keys(require('../formate.json'));
 
+/* Muss mit `DEKOLISTE` in `src/deko.ts` uebereinstimmen. Zwei Listen
+   derselben Sache laufen auseinander — deshalb prueft `tools/deko-probe.mjs`
+   beide gegeneinander. */
+const DEKOARTEN = ['hochzeit-gold', 'blush-blumen', 'botanik', 'konfetti', 'ballons',
+  'firma', 'reiner-rahmen', 'feuerwerk', 'bokeh', 'lorbeer', 'sanfter-himmel', 'schnee',
+  'neon', 'filmkante', 'art-deco', 'sofortbild', 'herzen', 'feine-linie'];
+
 /**
  * Erlaubte Bildquelle: eine eigene Datenadresse aus dem Editor oder eine
  * mitgelieferte Datei unter `/vorlagen/`. Nichts sonst — ueber eine Vorlage
@@ -2612,6 +2619,11 @@ function vorlageUebernehmen(t) {
   const hg = bildQuelle(t.hintergrund);
   if (hg) tpl.hintergrund = hg;
   if (t.ecken) tpl.ecken = true;
+  /* Der gezeichnete Schmuck ist kein Feld, sondern ein Name — die Formen
+     liegen im Client (`src/deko.ts`). Der Server muss die Liste trotzdem
+     kennen: Ein unbekannter Name wuerde sonst durchgereicht und der Client
+     zeichnete nichts, ohne dass jemand erfaehrt warum. */
+  if (DEKOARTEN.includes(t.deko)) tpl.deko = t.deko;
   if (typeof t.logo === 'string' && t.logo.startsWith('data:image/') && t.logo.length < 6_000_000) {
     tpl.logo = t.logo;
   }
@@ -4212,6 +4224,38 @@ app.get('/zertifikat.cer', (req, res) => {
   res.set('Content-Type', 'application/x-x509-ca-cert')
      .set('Content-Disposition', 'attachment; filename="Youbooth.cer"')
      .send(fs.readFileSync(datei));
+});
+
+/* ---------- Stirbt die Huelle, stirbt die Box ----------
+   Ein mit `fork` gestarteter Node-Prozess ueberlebt seinen Erzeuger. Genau
+   daran ist eine Windows-Installation gescheitert: Das Installationsprogramm
+   beendete das Fenster, der Serverprozess lief weiter, hielt Port 3377 — und
+   die frisch installierte Fassung fand ihn belegt, sah dort ein Youbooth
+   antworten und beendete sich hoeflich. Ergebnis: „Die Box startet nicht",
+   obwohl alles heil war.
+
+   Der Kanal zur Huelle ist das verlaesslichste Lebenszeichen, das es gibt:
+   Er bricht, sobald der Erzeuger weg ist — auch beim harten Abschuss. */
+if (typeof process.send === 'function') {
+  process.on('disconnect', () => {
+    console.log('Die Huelle ist weg — die Box beendet sich mit.');
+    process.exit(0);
+  });
+}
+
+/* Ein Weg, eine laufende Box von aussen sauber zu beenden. Gebraucht wird er
+   beim Aktualisieren: Die neue Huelle findet eine aeltere Box auf dem Port,
+   und die muss weichen, sonst zeigt das Fenster die alte Oberflaeche.
+   Nur vom selben Rechner — wer dort steht, koennte den Prozess ohnehin
+   abschiessen; hier tut er es wenigstens geordnet. */
+app.post('/api/beenden', (req, res) => {
+  if (!isLocal(req)) return res.status(403).json({ error: 'Nur vom Booth-PC' });
+  res.json({ ok: true, version: APP_VERSION });
+  console.log('Beenden angefordert (lokal) — die Box faehrt herunter.');
+  setTimeout(() => {
+    try { server.close(); } catch (e) { /* dann eben hart */ }
+    process.exit(0);
+  }, 250);
 });
 
 /* ---------- Der Port ist belegt — und das ist meistens harmlos ----------

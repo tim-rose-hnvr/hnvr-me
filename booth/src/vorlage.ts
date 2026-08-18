@@ -16,6 +16,7 @@
  * Blattpunkte bei 300 dpi, also dieselbe Einheit wie die Blattmaße.
  */
 
+import { istDekoart, zeichneDeko, type Dekoart } from './deko';
 import {
   FORMATE,
   formatVon,
@@ -27,7 +28,7 @@ import {
   type Schriftart,
 } from './formate';
 
-export type { Formatschluessel, Schriftart };
+export type { Formatschluessel, Schriftart, Dekoart };
 
 export type Feldart = 'bild' | 'text' | 'flaeche' | 'logo' | 'bilddatei' | 'qr';
 export type Ausrichtung = 'links' | 'mitte' | 'rechts';
@@ -90,6 +91,11 @@ export type Vorlage = {
   ecken?: boolean;
   /** Logo als Datenadresse; liegt in der Vorlage, damit sie für sich steht. */
   logo?: string;
+  /**
+   * Gezeichneter Schmuck über dem ganzen Blatt — Blüten, Neon, Lorbeer.
+   * Kein Feld, weil er aus hunderten Formen besteht; siehe `deko.ts`.
+   */
+  deko?: Dekoart;
   felder: Feld[];
 };
 
@@ -566,7 +572,20 @@ export function zeichneVorlage(
   const bildfelderGesamt = v.felder.filter((f) => f.art === 'bild').length;
   let bildzaehler = 0;
 
-  v.felder.forEach((feld) => {
+  /**
+   * Wo der Schmuck in die Reihenfolge gehört.
+   *
+   * Über die Bilder — die Blüten greifen absichtlich über die Bildecken,
+   * darin besteht der ganze Effekt. Aber NICHT über die Schrift: Auf dem
+   * ersten Probebogen saß eine Pfingstrose mitten auf „Anna & Ben". Ein
+   * Schmuck, der den Namen des Brautpaars verdeckt, ist kein Schmuck.
+   *
+   * Blätter ohne Verzierung zeichnen unverändert in einem Durchgang; ihre
+   * Ebenenfolge darf sich durch diese Regel nicht verschieben.
+   */
+  const zweiDurchgaenge = !!v.deko;
+
+  const zeichneFeld = (feld: Feld): void => {
     const x = feld.x * W;
     const y = feld.y * H;
     const b = feld.b * W;
@@ -608,7 +627,25 @@ export function zeichneVorlage(
     }
 
     stift.restore();
-  });
+  };
+
+  const farben = { papier: v.papier, tinte: v.tinte, akzent: v.akzent };
+
+  if (zweiDurchgaenge) {
+    v.felder.filter((f) => f.art !== 'text').forEach(zeichneFeld);
+    /* Der Fußbereich, den die Verzierung frei lässt: vom unteren Rand des
+       letzten Bildfeldes bis zur Blattkante. Dort steht die Beschriftung —
+       gemessen am Blatt, nicht geraten, damit es auch für Vorlagen stimmt,
+       die jemand selbst gebaut hat. */
+    const letztesBild = v.felder
+      .filter((feld) => feld.art === 'bild')
+      .reduce((tiefste, feld) => Math.max(tiefste, feld.y + feld.h), 0);
+    const freierFuss = letztesBild > 0 ? Math.max(0, (1 - letztesBild) * H) : 0;
+    zeichneDeko(stift, W, H, farben, v.deko, freierFuss);
+    v.felder.filter((f) => f.art === 'text').forEach(zeichneFeld);
+  } else {
+    v.felder.forEach(zeichneFeld);
+  }
 
   return flaeche;
 }
@@ -682,6 +719,7 @@ export function pruefeVorlage(roh: unknown): { vorlage: Vorlage } | { fehler: st
       ecken: Boolean(v.ecken),
       logo:
         typeof v.logo === 'string' && v.logo.startsWith('data:image/') ? v.logo : undefined,
+      deko: istDekoart(v.deko) ? v.deko : undefined,
       felder,
     },
   };

@@ -3257,5 +3257,1271 @@
         "umbruch": false
       }
     ]
+  },
+  {
+    "id": "deko-hochzeit-gold",
+    "name": "Hochzeit Gold",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#1a1408",
+    "tinte": "#ffc857",
+    "akzent": "#f6f1e7",
+    "ecken": true,
+    "deko": "hochzeit-gold",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#f6f1e7"
+      }
+    ]
+  },
+  {
+    "id": "deko-hochzeit-creme",
+    "name": "Hochzeit Creme",
+    "format": "postkarte-4x6",
+    "art": "foto",
+    "aufnahmen": 1,
+    "papier": "#f6f1e7",
+    "tinte": "#3a2f22",
+    "akzent": "#b8926a",
+    "ecken": true,
+    "deko": "botanik",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0,
+        "y": 0,
+        "b": 1,
+        "h": 0.85
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8922,
+        "h": 0.0756,
+        "groesse": 76,
+        "x": 0.05,
+        "b": 0.55,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "links"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9091,
+        "h": 0.0504,
+        "groesse": 50,
+        "x": 0.55,
+        "b": 0.4,
+        "text": "{datum} · youbooth.me",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "rechts",
+        "farbe": "#b8926a"
+      }
+    ]
+  },
+  {
+    "id": "deko-hochzeit-blush",
+    "name": "Hochzeit Blush",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#f3e3e0",
+    "tinte": "#7a4a4a",
+    "akzent": "#c98f8f",
+    "ecken": true,
+    "deko": "blush-blumen",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#c98f8f"
+      }
+    ]
+  },
+  {
+    "id": "deko-hochzeit-deco",
+    "name": "Hochzeit Art déco",
+    "format": "postkarte-4x6",
+    "art": "foto",
+    "aufnahmen": 1,
+    "papier": "#12100d",
+    "tinte": "#ffc857",
+    "akzent": "#e8d3a0",
+    "deko": "art-deco",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0,
+        "y": 0,
+        "b": 1,
+        "h": 0.85
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8922,
+        "h": 0.0756,
+        "groesse": 76,
+        "x": 0.05,
+        "b": 0.55,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "links"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9091,
+        "h": 0.0504,
+        "groesse": 50,
+        "x": 0.55,
+        "b": 0.4,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "rechts",
+        "farbe": "#e8d3a0"
+      }
+    ]
+  },
+  {
+    "id": "deko-hochzeit-herzen",
+    "name": "Hochzeit Herzen",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#f7ecec",
+    "tinte": "#8a4a58",
+    "akzent": "#d98a9a",
+    "ecken": true,
+    "deko": "herzen",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#d98a9a"
+      }
+    ]
+  },
+  {
+    "id": "deko-geburtstag-party",
+    "name": "Party Vierer",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 4,
+    "papier": "#12100d",
+    "tinte": "#ffc857",
+    "akzent": "#ff5d8f",
+    "deko": "konfetti",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.19
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.23,
+        "b": 0.88,
+        "h": 0.19
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.44,
+        "b": 0.88,
+        "h": 0.19
+      },
+      {
+        "id": "b4",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.65,
+        "b": 0.88,
+        "h": 0.19
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#ff5d8f"
+      }
+    ]
+  },
+  {
+    "id": "deko-geburtstag-bunt",
+    "name": "Geburtstag Bunt",
+    "format": "postkarte-4x6",
+    "art": "foto",
+    "aufnahmen": 1,
+    "papier": "#fff3d6",
+    "tinte": "#12100d",
+    "akzent": "#ff5d8f",
+    "ecken": true,
+    "deko": "ballons",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0,
+        "y": 0,
+        "b": 1,
+        "h": 0.85
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8922,
+        "h": 0.0756,
+        "groesse": 76,
+        "x": 0.05,
+        "b": 0.55,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "links"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9091,
+        "h": 0.0504,
+        "groesse": 50,
+        "x": 0.55,
+        "b": 0.4,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "rechts",
+        "farbe": "#ff5d8f"
+      }
+    ]
+  },
+  {
+    "id": "deko-geburtstag-sofort",
+    "name": "Sofortbild",
+    "format": "postkarte-4x6",
+    "art": "foto",
+    "aufnahmen": 1,
+    "papier": "#2a2622",
+    "tinte": "#f6f1e7",
+    "akzent": "#ffc857",
+    "deko": "sofortbild",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0,
+        "y": 0,
+        "b": 1,
+        "h": 0.85
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8922,
+        "h": 0.0756,
+        "groesse": 76,
+        "x": 0.05,
+        "b": 0.55,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "links"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9091,
+        "h": 0.0504,
+        "groesse": 50,
+        "x": 0.55,
+        "b": 0.4,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "rechts",
+        "farbe": "#ffc857"
+      }
+    ]
+  },
+  {
+    "id": "deko-firma-dunkel",
+    "name": "Firma Dunkel",
+    "format": "postkarte-4x6",
+    "art": "foto",
+    "aufnahmen": 1,
+    "papier": "#14171c",
+    "tinte": "#f6f1e7",
+    "akzent": "#8fd3ff",
+    "deko": "firma",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0,
+        "y": 0,
+        "b": 1,
+        "h": 0.85
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8922,
+        "h": 0.0756,
+        "groesse": 76,
+        "x": 0.05,
+        "b": 0.55,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "links"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9091,
+        "h": 0.0504,
+        "groesse": 50,
+        "x": 0.55,
+        "b": 0.4,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "rechts",
+        "farbe": "#8fd3ff"
+      }
+    ]
+  },
+  {
+    "id": "deko-firma-klar",
+    "name": "Firma Klar",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#f6f6f4",
+    "tinte": "#1a1a1a",
+    "akzent": "#4a5568",
+    "deko": "reiner-rahmen",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#4a5568"
+      }
+    ]
+  },
+  {
+    "id": "deko-silvester-gold",
+    "name": "Silvester Gold",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#0a0a14",
+    "tinte": "#ffc857",
+    "akzent": "#ff5d8f",
+    "deko": "feuerwerk",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#ff5d8f"
+      }
+    ]
+  },
+  {
+    "id": "deko-silvester-glanz",
+    "name": "Silvester Glanz",
+    "format": "postkarte-4x6",
+    "art": "foto",
+    "aufnahmen": 1,
+    "papier": "#101020",
+    "tinte": "#f6f1e7",
+    "akzent": "#ffc857",
+    "ecken": true,
+    "deko": "bokeh",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0,
+        "y": 0,
+        "b": 1,
+        "h": 0.85
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8922,
+        "h": 0.0756,
+        "groesse": 76,
+        "x": 0.05,
+        "b": 0.55,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "links"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9091,
+        "h": 0.0504,
+        "groesse": 50,
+        "x": 0.55,
+        "b": 0.4,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "rechts",
+        "farbe": "#ffc857"
+      }
+    ]
+  },
+  {
+    "id": "deko-silvester-deco",
+    "name": "Silvester Art déco",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#0a0a14",
+    "tinte": "#ffc857",
+    "akzent": "#e8d3a0",
+    "deko": "art-deco",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#e8d3a0"
+      }
+    ]
+  },
+  {
+    "id": "deko-abschluss-gold",
+    "name": "Abschluss Gold",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#14120c",
+    "tinte": "#ffc857",
+    "akzent": "#f6f1e7",
+    "deko": "lorbeer",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#f6f1e7"
+      }
+    ]
+  },
+  {
+    "id": "deko-abschluss-modern",
+    "name": "Abschluss Modern",
+    "format": "postkarte-4x6",
+    "art": "foto",
+    "aufnahmen": 1,
+    "papier": "#1c2333",
+    "tinte": "#f6f1e7",
+    "akzent": "#7ee081",
+    "ecken": true,
+    "deko": "firma",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0,
+        "y": 0,
+        "b": 1,
+        "h": 0.85
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8922,
+        "h": 0.0756,
+        "groesse": 76,
+        "x": 0.05,
+        "b": 0.55,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "links"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9091,
+        "h": 0.0504,
+        "groesse": 50,
+        "x": 0.55,
+        "b": 0.4,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "rechts",
+        "farbe": "#7ee081"
+      }
+    ]
+  },
+  {
+    "id": "deko-taufe-zart",
+    "name": "Taufe Zart",
+    "format": "postkarte-4x6",
+    "art": "foto",
+    "aufnahmen": 1,
+    "papier": "#eaf2f8",
+    "tinte": "#3a5a78",
+    "akzent": "#8fbcd8",
+    "ecken": true,
+    "deko": "sanfter-himmel",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0,
+        "y": 0,
+        "b": 1,
+        "h": 0.85
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8922,
+        "h": 0.0756,
+        "groesse": 76,
+        "x": 0.05,
+        "b": 0.55,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "links"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9091,
+        "h": 0.0504,
+        "groesse": 50,
+        "x": 0.55,
+        "b": 0.4,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "rechts",
+        "farbe": "#8fbcd8"
+      }
+    ]
+  },
+  {
+    "id": "deko-kommunion-weiss",
+    "name": "Kommunion Weiß",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#f8f6f0",
+    "tinte": "#6a6355",
+    "akzent": "#c9a227",
+    "ecken": true,
+    "deko": "botanik",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#c9a227"
+      }
+    ]
+  },
+  {
+    "id": "deko-weihnacht-rot",
+    "name": "Weihnacht Rot",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#2a0d0d",
+    "tinte": "#f6f1e7",
+    "akzent": "#7ee081",
+    "deko": "schnee",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#7ee081"
+      }
+    ]
+  },
+  {
+    "id": "deko-weihnacht-winter",
+    "name": "Winter Edel",
+    "format": "postkarte-4x6",
+    "art": "foto",
+    "aufnahmen": 1,
+    "papier": "#0f1a1a",
+    "tinte": "#f6f1e7",
+    "akzent": "#8fd3ff",
+    "ecken": true,
+    "deko": "schnee",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0,
+        "y": 0,
+        "b": 1,
+        "h": 0.85
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8922,
+        "h": 0.0756,
+        "groesse": 76,
+        "x": 0.05,
+        "b": 0.55,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "links"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9091,
+        "h": 0.0504,
+        "groesse": 50,
+        "x": 0.55,
+        "b": 0.4,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "rechts",
+        "farbe": "#8fd3ff"
+      }
+    ]
+  },
+  {
+    "id": "deko-party-neon",
+    "name": "Neon Nacht",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#12100d",
+    "tinte": "#ff5d8f",
+    "akzent": "#ffc857",
+    "deko": "neon",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#ffc857"
+      }
+    ]
+  },
+  {
+    "id": "deko-party-klassik",
+    "name": "Klassik Hell",
+    "format": "postkarte-4x6",
+    "art": "foto",
+    "aufnahmen": 1,
+    "papier": "#f6f1e7",
+    "tinte": "#12100d",
+    "akzent": "#6b6355",
+    "deko": "filmkante",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0,
+        "y": 0,
+        "b": 1,
+        "h": 0.85
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8922,
+        "h": 0.0756,
+        "groesse": 76,
+        "x": 0.05,
+        "b": 0.55,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "links"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9091,
+        "h": 0.0504,
+        "groesse": 50,
+        "x": 0.55,
+        "b": 0.4,
+        "text": "{datum} · youbooth.me",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "rechts",
+        "farbe": "#6b6355"
+      }
+    ]
+  },
+  {
+    "id": "deko-party-minimal",
+    "name": "Minimal Studio",
+    "format": "streifen-2x6",
+    "art": "streifen",
+    "aufnahmen": 3,
+    "papier": "#f6f1e7",
+    "tinte": "#12100d",
+    "akzent": "#ff5d8f",
+    "deko": "feine-linie",
+    "felder": [
+      {
+        "id": "b1",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.02,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b2",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.3,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "b3",
+        "art": "bild",
+        "x": 0.06,
+        "y": 0.58,
+        "b": 0.88,
+        "h": 0.26
+      },
+      {
+        "id": "t1",
+        "art": "text",
+        "y": 0.8803,
+        "h": 0.054,
+        "groesse": 81,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{event}",
+        "gewicht": 600,
+        "schrift": "serif",
+        "ausrichtung": "mitte"
+      },
+      {
+        "id": "t2",
+        "art": "text",
+        "y": 0.9492,
+        "h": 0.0288,
+        "groesse": 43,
+        "x": 0.06,
+        "b": 0.88,
+        "text": "{datum}",
+        "gewicht": 400,
+        "schrift": "sans",
+        "ausrichtung": "mitte",
+        "farbe": "#ff5d8f"
+      }
+    ]
   }
 ]

@@ -2,6 +2,8 @@
 import Marketing from '../layouts/Marketing.astro';
 import Bildplatz from '../components/Bildplatz.astro';
 import Icon from '../components/Icon.astro';
+import Standmarke from '../components/Standmarke.astro';
+import { STANDTEXTE } from '../daten/stand';
 
 const oberflaechen = [
   { text: 'Animationen ansehen', ziel: '/oberflaechen/booth-animationen', haupt: true },
@@ -13,24 +15,30 @@ const oberflaechen = [
   { text: 'Alle Oberflächen im Detail', ziel: '/oberflaechen/fotobox-system' },
 ];
 
+/* Vier laufen, Video ist eingeplant. Die Marke steht an der Kachel, weil hier
+   entschieden wird, ob eine Box das Gewünschte kann. */
 const aufnahmearten = [
-  { icon: 'foto', titel: 'Foto', text: 'Ein Bild, Countdown wählbar, direkt druckbar' },
-  { icon: 'streifen', titel: 'Streifen', text: 'Drei Bilder, Doppelstreifen mit Schnittlinie' },
-  { icon: 'boomerang', titel: 'Boomerang', text: 'Kurze Sequenz vor und zurück' },
-  { icon: 'gif', titel: 'GIF', text: 'Bilderzahl, Tempo und Pingpong einstellbar' },
-  { icon: 'video', titel: 'Video', text: 'Bis 30 Sekunden mit Ton, für Grüße' },
-];
+  { icon: 'foto', titel: 'Foto', text: 'Ein Bild, Countdown wählbar, direkt druckbar', stand: 'laeuft' },
+  { icon: 'streifen', titel: 'Streifen', text: 'Drei Bilder, Doppelstreifen mit Schnittlinie', stand: 'laeuft' },
+  { icon: 'boomerang', titel: 'Boomerang', text: 'Kurze Sequenz vor und zurück', stand: 'laeuft' },
+  { icon: 'gif', titel: 'GIF', text: 'Bilderzahl, Tempo und Pingpong einstellbar', stand: 'laeuft' },
+  { icon: 'video', titel: 'Video', text: 'Bis 30 Sekunden mit Ton, für Grüße', stand: 'geplant' },
+] as const;
+
+const laufendeArten = aufnahmearten.filter((a) => a.stand === 'laeuft').length;
 
 const wege = [
-  { icon: 'druck', titel: 'Sofortdruck', text: 'Systemdruck, Doppelstreifen, Stundenlimit', hervor: true },
-  { icon: 'qr', titel: 'QR-Download', text: 'Über den eigenen Hotspot der Box' },
-  { icon: 'chat', titel: 'WhatsApp', text: 'Nummer am Screen eingeben' },
-  { icon: 'mail', titel: 'E-Mail', text: 'Mit Bildschirmtastatur, Adresse optional gespeichert' },
-  { icon: 'sms', titel: 'SMS', text: 'Fallback, wenn keine App vorhanden ist' },
-  { icon: 'teilen', titel: 'System-Teilen', text: 'AirDrop und Teilen-Dialog auf iPad' },
-  { icon: 'galerie', titel: 'Event-Galerie', text: 'Alle Bilder, mit Löschfrist und Moderation' },
-  { icon: 'upload', titel: 'Gäste-Upload', text: 'Eigene Handybilder und Hashtag-Feed dazu' },
-];
+  { icon: 'druck', titel: 'Sofortdruck', text: 'Systemdruck, Doppelstreifen, Stundenlimit', hervor: true, stand: 'laeuft' },
+  { icon: 'qr', titel: 'QR-Download', text: 'Über den eigenen Hotspot der Box', stand: 'laeuft' },
+  { icon: 'galerie', titel: 'Event-Galerie', text: 'Alle Bilder, mit Löschfrist und Moderation', stand: 'laeuft' },
+  { icon: 'upload', titel: 'Gäste-Upload', text: 'Eigene Handybilder und Hashtag-Feed dazu', stand: 'arbeit' },
+  { icon: 'mail', titel: 'E-Mail', text: 'Mit Bildschirmtastatur, Adresse optional gespeichert', stand: 'geplant' },
+  { icon: 'chat', titel: 'WhatsApp', text: 'Nummer am Screen eingeben', stand: 'geplant' },
+  { icon: 'sms', titel: 'SMS', text: 'Fallback, wenn keine App vorhanden ist', stand: 'geplant' },
+  { icon: 'teilen', titel: 'System-Teilen', text: 'AirDrop und Teilen-Dialog auf iPad', stand: 'geplant' },
+] as const;
+
+const laufendeWege = wege.filter((w) => w.stand === 'laeuft').length;
 
 const vorlagenzahlen = [
   { wert: '55', text: 'Vorlagen' },
@@ -134,7 +142,10 @@ const betrieb = [
   </section>
 
   <section class="abschnitt">
-    <h2>Fünf Aufnahmearten</h2>
+    <div class="abschnitt-kopf">
+      <h2>Fünf Aufnahmearten</h2>
+      <span class="mono mono--still">{laufendeArten} laufen heute, Video ist eingeplant</span>
+    </div>
     <div class="raster raster--5">
       {
         aufnahmearten.map((a) => (
@@ -144,6 +155,7 @@ const betrieb = [
               <span class="artkarte__titel">
                 <Icon name={a.icon} groesse={19} />
                 {a.titel}
+                {a.stand !== 'laeuft' && <Standmarke stand={a.stand} />}
               </span>
               <span class="klein">{a.text}</span>
             </span>
@@ -156,7 +168,9 @@ const betrieb = [
   <section class="abschnitt abschnitt--dunkel">
     <div class="abschnitt-kopf">
       <h2>Acht Wege zum Gast</h2>
-      <span class="mono mono--hell">Druck und QR funktionieren ohne Internet</span>
+      <span class="mono mono--hell">
+        {laufendeWege} laufen heute · Druck und QR funktionieren ohne Internet
+      </span>
     </div>
     <div class="raster raster--4 kacheln">
       {
@@ -165,12 +179,24 @@ const betrieb = [
             <span class="kachel__titel">
               <Icon name={w.icon} groesse={20} />
               {w.titel}
+              {w.stand !== 'laeuft' && <Standmarke stand={w.stand} hell={!w.hervor} />}
             </span>
             <span class="kachel__text">{w.text}</span>
           </article>
         ))
       }
     </div>
+
+    <p class="legende">
+      {
+        (['laeuft', 'arbeit', 'geplant'] as const).map((st) => (
+          <span class="legende__glied">
+            <Standmarke stand={st} hell />
+            <span>{STANDTEXTE[st]}</span>
+          </span>
+        ))
+      }
+    </p>
   </section>
 
   <section class="abschnitt designer">
@@ -264,6 +290,26 @@ const betrieb = [
 </Marketing>
 
 <style>
+  .artkarte__titel,
+  .kachel__titel {
+    flex-wrap: wrap;
+  }
+
+  .legende {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px 24px;
+    margin: 26px 0 0;
+    font-size: 12.5px;
+    color: var(--text-hell-leise);
+  }
+
+  .legende__glied {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .hero {
     background: var(--ink);
     color: var(--text-hell);

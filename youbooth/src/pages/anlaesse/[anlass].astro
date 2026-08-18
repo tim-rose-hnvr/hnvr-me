@@ -1,5 +1,7 @@
 ---
 import Marketing from '../../layouts/Marketing.astro';
+import Standmarke from '../../components/Standmarke.astro';
+import { standNachTitel } from '../../daten/stand';
 import Bildplatz from '../../components/Bildplatz.astro';
 import HeroDeko from '../../components/HeroDeko.astro';
 import { anlaesse, preishinweis } from '../../daten/anlaesse';
@@ -71,7 +73,10 @@ const farbwelt = [
         {
           anlass.module.map(([titel, zeile]) => (
             <article class="karte modulkarte">
-              <span class="modulkarte__titel">{titel}</span>
+              <span class="modulkarte__titel">
+                {titel}
+                {standNachTitel(titel) && <Standmarke stand={standNachTitel(titel)!.stand} />}
+              </span>
               <span class="modulkarte__zeile">{zeile}</span>
             </article>
           ))
@@ -122,6 +127,13 @@ const farbwelt = [
 </Marketing>
 
 <style>
+  .modulkarte__titel {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+  }
+
   .buehne {
     background: var(--grund);
     color: var(--text-eigen);

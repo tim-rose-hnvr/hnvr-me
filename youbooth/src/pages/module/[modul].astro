@@ -5,6 +5,8 @@ import Icon from '../../components/Icon.astro';
 import ModulSzene from '../../components/ModulSzene.astro';
 import { alleModule } from '../../daten/module';
 import { modulseiten } from '../../daten/modulseiten';
+import Standmarke from '../../components/Standmarke.astro';
+import { standVon } from '../../daten/stand';
 
 /**
  * Eine Vorlage fuer alle 14 Modulseiten. Preis und Icon kommen aus module.ts,
@@ -20,6 +22,7 @@ export function getStaticPaths() {
 const { seite, modul } = Astro.props;
 
 const weitere = alleModule.filter((m) => m.id !== modul.id).slice(0, 4);
+const stand = standVon(modul.id);
 ---
 
 <Marketing titel={modul.titel} beschreibung={seite.sub}>
@@ -28,9 +31,21 @@ const weitere = alleModule.filter((m) => m.id !== modul.id).slice(0, 4);
       <span class="kicker">
         <Icon name={modul.icon} groesse={17} />
         Modul · ab {modul.preis} €/Mon.
+        <Standmarke stand={stand.stand} hell />
       </span>
       <h1>{seite.h1}</h1>
       <p class="fliess">{seite.sub}</p>
+      {
+        stand.stand !== 'laeuft' && (
+          <p class="standhinweis">
+            {stand.stand === 'arbeit'
+              ? 'Dieses Modul ist noch nicht fertig: Die Box kann es bereits, die Bedienoberfläche dazu entsteht gerade.'
+              : 'Dieses Modul ist beschrieben und eingeplant, aber noch nicht gebaut.'}
+            {stand.offen ? ` ${stand.offen}` : ''} Was heute schon läuft, steht unter „Module".
+          </p>
+        )
+      }
+      {stand.stand === 'laeuft' && stand.offen && <p class="standhinweis">{stand.offen}</p>}
       <div class="reihe knopfreihe">
         {
           seite.knoepfe.map((k, i) => (
@@ -170,6 +185,20 @@ const weitere = alleModule.filter((m) => m.id !== modul.id).slice(0, 4);
 </Marketing>
 
 <style>
+  /* Der Hinweis steht im Hero, nicht im Fußbereich: Wer bis dorthin liest,
+     hat die Kaufentscheidung schon gefällt. */
+  .standhinweis {
+    max-width: 58ch;
+    margin: 0;
+    padding: 12px 16px;
+    border-left: 2px solid var(--amber);
+    background: rgba(242, 178, 62, 0.08);
+    border-radius: 0 var(--r-karte) var(--r-karte) 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-hell-leise);
+  }
+
   .hero {
     background: var(--ink);
     color: var(--text-hell);

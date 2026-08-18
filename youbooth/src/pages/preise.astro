@@ -1,6 +1,8 @@
 ---
 import Marketing from '../layouts/Marketing.astro';
 import { basismodul, zusatzmodule } from '../daten/module';
+import Standmarke from '../components/Standmarke.astro';
+import { standVon, STANDTEXTE } from '../daten/stand';
 
 /**
  * Konfigurator. Der Startzustand wird serverseitig gerechnet und ausgeliefert,
@@ -129,6 +131,21 @@ const rechendaten = {
           }
           <button class="segment" type="button" data-preset="leeren" aria-pressed="false">Alles ab</button>
         </div>
+
+        <p class="legende">
+          {
+            (['laeuft', 'arbeit', 'geplant'] as const).map((st) => (
+              <span class="legende__glied">
+                <Standmarke stand={st} />
+                <span>{STANDTEXTE[st]}</span>
+              </span>
+            ))
+          }
+        </p>
+        <p class="legende__satz">
+          Was noch nicht läuft, wird auch nicht berechnet: Ein Modul kostet ab dem Monat, in dem
+          es auf eurer Box ankommt.
+        </p>
       </section>
 
       <!-- 2 · Module -->
@@ -148,7 +165,10 @@ const rechendaten = {
               >
                 <span class="haken" aria-hidden="true">✓</span>
                 <span class="modul__text">
-                  <span class="modul__name">{m.titel}</span>
+                  <span class="modul__name">
+                    {m.titel}
+                    <Standmarke stand={standVon(m.id).stand} />
+                  </span>
                   <span class="modul__kurz">{m.kurz}</span>
                 </span>
                 <span class="modul__preis">{m.preis} €</span>
@@ -272,6 +292,36 @@ const rechendaten = {
 </Marketing>
 
 <style>
+  .modul__name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .legende {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin: 18px 0 0;
+    font-size: 12.5px;
+    color: var(--text-leise);
+  }
+
+  .legende__glied {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .legende__satz {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text-still);
+    max-width: 62ch;
+  }
+
   .hero {
     background: var(--ink);
     color: var(--text-hell);

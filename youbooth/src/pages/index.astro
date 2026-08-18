@@ -4,11 +4,13 @@ import Bildplatz from '../components/Bildplatz.astro';
 import BoxSchema from '../components/BoxSchema.astro';
 import Icon from '../components/Icon.astro';
 import { basismodul, zusatzmodule } from '../daten/module';
+import Standmarke from '../components/Standmarke.astro';
+import { standVon } from '../daten/stand';
 
 const kennzahlen = [
   { wert: '13', text: 'Module einzeln zubuchbar' },
-  { wert: '5', text: 'Aufnahmearten' },
-  { wert: '8', text: 'Wege zum Gast' },
+  { wert: '4', text: 'Aufnahmearten' },
+  { wert: '3', text: 'Wege zum Gast' },
   { wert: '55', text: 'Druckvorlagen' },
 ];
 
@@ -291,7 +293,10 @@ const zielgruppen = [
               {m.titel}
             </a>
             <span class="karte__text">{m.kurz}</span>
-            <span class="preis">ab {m.preis} €</span>
+            <span class="modulkarte__fuss">
+              <span class="preis">ab {m.preis} €</span>
+              <Standmarke stand={standVon(m.id).stand} />
+            </span>
           </article>
         ))
       }
@@ -332,6 +337,14 @@ const zielgruppen = [
 </Marketing>
 
 <style>
+  .modulkarte__fuss {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+  }
+
   /* Hero */
   .hero {
     background: var(--ink);

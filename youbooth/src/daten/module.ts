@@ -25,7 +25,7 @@ export const basismodul = {
   icon: 'box',
   preis: 39,
   kennung: 'Pro Monat · je Box-Lizenz',
-  text: 'Booth mit fünf Aufnahmearten, Sofortdruck über den Systemdruck, Kiosk-Betrieb, Einstellungsmenü, Cockpit mit Boxen-Puls und Fernsteuerung, Druck- und Bildschirm-Designer.',
+  text: 'Booth mit vier Aufnahmearten — Foto, Streifen, Boomerang, GIF —, Sofortdruck über den Systemdruck, Kiosk-Betrieb mit PIN, Einstellungen am Screen, Cockpit und Druck-Designer. Video, Boxen-Puls über mehrere Geräte und der Bildschirm-Designer sind eingeplant.',
   kurz: 'Booth, Sofortdruck und Cockpit — die Basis, auf der jedes weitere Modul aufsetzt.',
   pfad: '/module/fotobox',
 };

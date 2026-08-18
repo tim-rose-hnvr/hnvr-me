@@ -1,0 +1,61 @@
+---
+import { STANDNAMEN, STANDTEXTE, type Stand } from '../daten/stand';
+
+/**
+ * Die Marke, die sagt, ob es das schon gibt.
+ *
+ * Bewusst kein Ampelgrün-Rot: Der Unterschied ist keine Warnung, sondern eine
+ * Auskunft. Amber trägt nur das, was heute läuft — dorthin soll der Blick.
+ */
+interface Props {
+  stand: Stand;
+  hell?: boolean;
+}
+
+const { stand, hell = false } = Astro.props;
+---
+
+<span class:list={['standmarke', `standmarke--${stand}`, { 'standmarke--hell': hell }]} title={STANDTEXTE[stand]}>
+  {STANDNAMEN[stand]}
+</span>
+
+<style>
+  .standmarke {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 9px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: var(--r-pille);
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+
+  .standmarke--laeuft {
+    background: var(--amber);
+    color: var(--amber-ink);
+  }
+
+  .standmarke--arbeit {
+    background: transparent;
+    border-color: var(--linie-stark);
+    color: var(--text-leise);
+  }
+
+  .standmarke--geplant {
+    background: transparent;
+    border-color: var(--linie);
+    color: var(--text-still);
+  }
+
+  .standmarke--hell.standmarke--arbeit {
+    border-color: var(--linie-dunkel-stark);
+    color: var(--text-hell-leise);
+  }
+
+  .standmarke--hell.standmarke--geplant {
+    border-color: var(--linie-dunkel);
+    color: var(--text-hell-still);
+  }
+</style>

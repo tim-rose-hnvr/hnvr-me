@@ -2,6 +2,8 @@
 import Marketing from '../layouts/Marketing.astro';
 import Icon from '../components/Icon.astro';
 import { basismodul, zusatzmodule } from '../daten/module';
+import Standmarke from '../components/Standmarke.astro';
+import { standVon, STANDTEXTE } from '../daten/stand';
 
 const grundsaetze = [
   {
@@ -41,6 +43,10 @@ const grundsaetze = [
         <span class="mono mono--amber">Basis-Modul · Pflicht</span>
         <span class="display display--gross"><a href={basismodul.pfad}>{basismodul.titel}</a></span>
         <span class="basis__beschreibung">{basismodul.text}</span>
+        <span class="standzeile">
+          <Standmarke stand={standVon(basismodul.id).stand} hell />
+          {standVon(basismodul.id).offen && <span class="mono mono--hell">{standVon(basismodul.id).offen}</span>}
+        </span>
       </div>
       <div class="basis__preis">
         <b>ab {basismodul.preis} €</b>
@@ -55,8 +61,10 @@ const grundsaetze = [
             <span class="modul__titel">
               <Icon name={m.icon} groesse={20} />
               <a href={m.pfad}>{m.titel}</a>
+              <Standmarke stand={standVon(m.id).stand} />
             </span>
             <span class="karte__text">{m.text}</span>
+            {standVon(m.id).offen && <span class="modul__offen">{standVon(m.id).offen}</span>}
             <a class="pfeil pfeil--klein" href={m.pfad}>
               Details ansehen →
             </a>
@@ -68,6 +76,17 @@ const grundsaetze = [
         ))
       }
     </div>
+
+    <p class="legende">
+      {
+        (['laeuft', 'arbeit', 'geplant'] as const).map((st) => (
+          <span class="legende__glied">
+            <Standmarke stand={st} />
+            <span>{STANDTEXTE[st]}</span>
+          </span>
+        ))
+      }
+    </p>
   </section>
 
   <section class="abschnitt abschnitt--eng">
@@ -93,6 +112,35 @@ const grundsaetze = [
 </Marketing>
 
 <style>
+  .standzeile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .modul__offen {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-still);
+  }
+
+  .legende {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 26px;
+    margin: 26px 0 0;
+    font-size: 12.5px;
+    color: var(--text-leise);
+  }
+
+  .legende__glied {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .hero {
     background: var(--ink);
     color: var(--text-hell);

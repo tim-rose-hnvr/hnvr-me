@@ -22,6 +22,40 @@ export type Oberflaeche = {
 
 export const oberflaechen: Oberflaeche[] = [
   {
+    id: 'booth-editor',
+    titel: 'Booth-Editor',
+    kicker: 'Druckvorlagen entwerfen',
+    h1: 'Der Editor druckt, was er zeigt',
+    sub: 'Bildfelder, Texte, Flächen und Logo auf dem Blatt setzen — in Millimetern, wie auf dem Papier. Die Vorschau ist kein Bild von etwas Ähnlichem: sie entsteht mit demselben Renderer, der später druckt.',
+    screenshot: '/assets/app-editor.png',
+    bildbeschreibung: 'Booth-Editor mit Streifenvorlage, Feldliste und Werkzeugpalette',
+    koennen: [
+      'Felder ziehen und in der Größe ändern, mit Raster; Pfeiltasten schieben in kleinen Schritten',
+      'Maße in Millimetern — 10 × 15 cm und 5 × 15 cm, gerechnet auf 300 dpi',
+      'Textfelder mit Platzhaltern: {event}, {datum}, {zeit}, {box}, {nummer}',
+      'Logo als PNG einbetten — es steckt in der Vorlage und wandert mit ihr',
+      'Vorlage als Datei ablegen und auf der nächsten Box wieder einlesen',
+      'Testdruck über den Systemdruck, bevor der erste Gast kommt',
+      'Als Standard für Fotos oder Streifen setzen — der Booth druckt danach genau das',
+    ],
+    regeln: [
+      {
+        titel: 'Mitgeliefertes bleibt heil',
+        text: 'Die vier mitgelieferten Vorlagen sind schreibgeschützt. Die erste Änderung legt eine Kopie an, damit der Weg zurück auch um drei Uhr nachts offen ist.',
+      },
+      {
+        titel: 'Kein Blatt ohne Bildfeld',
+        text: 'Das letzte Bildfeld lässt sich nicht löschen, und eine eingelesene Datei ohne Bildfeld weist der Editor ab. Eine Vorlage, die keine Aufnahme zeigen kann, ist kein Layout.',
+      },
+    ],
+    offen:
+      'Mitgeliefert sind heute vier Vorlagen, nicht die 82 aus dem Katalog — die übrigen entstehen mit demselben Modell. Ebenso fehlen noch der Bildschirm-Designer, freie Schriften über die zwei Systemschriften hinaus und die Vorlagen-Bibliothek über mehrere Boxen hinweg.',
+    knoepfe: [
+      { text: 'Vorlagen-System ansehen', ziel: '/vorlagen/system' },
+      { text: 'Software laden', ziel: '/download' },
+    ],
+  },
+  {
     id: 'mosaik-wand',
     titel: 'Foto-Wall',
     kicker: 'Beamer und TV',

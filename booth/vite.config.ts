@@ -16,6 +16,7 @@ export default defineConfig({
         wand: 'wand.html',
         galerie: 'galerie.html',
         einrichtung: 'einrichtung.html',
+        editor: 'editor.html',
       },
     },
   },

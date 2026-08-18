@@ -55,11 +55,22 @@ function kopf(box: string, event: string): HTMLElement {
   titel.textContent = 'Cockpit';
   links.append(titel, mono(`${box} · ${event}`));
 
+  // Alle Oberflächen der Box an einer Stelle — sonst kennt sie nur, wer die
+  // Adressen auswendig kann.
   const rechts = tag('div', 'ckopf__aktionen');
-  const booth = tag('a', 'cknopf cknopf--amber') as HTMLAnchorElement;
-  booth.href = './index.html';
-  booth.textContent = 'Booth öffnen';
-  rechts.append(booth);
+  const wege: { ziel: string; text: string; betont?: boolean }[] = [
+    { ziel: './wand.html', text: 'Foto-Wall' },
+    { ziel: './galerie.html', text: 'Galerie' },
+    { ziel: './editor.html', text: 'Editor' },
+    { ziel: './einrichtung.html', text: 'Einrichtung' },
+    { ziel: './index.html', text: 'Booth öffnen', betont: true },
+  ];
+  wege.forEach((w) => {
+    const glied = tag('a', `cknopf${w.betont ? ' cknopf--amber' : ''}`) as HTMLAnchorElement;
+    glied.href = w.ziel;
+    glied.textContent = w.text;
+    rechts.append(glied);
+  });
 
   leiste.append(links, rechts);
   return leiste;

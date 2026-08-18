@@ -19,6 +19,7 @@ Desktop-App verpackt — auf Windows und macOS. Die Website dazu liegt in `../yo
 | Foto-Wall für Beamer und TV | läuft |
 | Kunden-Galerie mit Filter und Großansicht | läuft |
 | Installations-Zentrum mit echter Selbstprüfung | läuft |
+| Booth-Editor: Druckvorlagen entwerfen, Vorschau = Druckbild | läuft |
 | Bewegtbild (Boomerang, GIF) | Aufnahme und Vorschau laufen; die Videodatei fehlt noch |
 | DSLR-Tethering, Drucker-Sonderfunktionen, Freistellung, Cloud | offen, siehe unten |
 
@@ -31,6 +32,7 @@ npm run dev      # Booth im Browser auf http://localhost:4400
                  #   /wand.html         Foto-Wall für Beamer
                  #   /galerie.html      Kunden-Galerie
                  #   /einrichtung.html  Installations-Zentrum
+                 #   /editor.html       Booth-Editor (Druckvorlagen)
 npm run build    # Weboberfläche nach dist/
 npm run tauri dev    # als Desktop-App (braucht Rust)
 npm run tauri build  # Installationspaket
@@ -57,6 +59,9 @@ src/
   wand.ts            Foto-Wall
   galerie.ts         Kunden-Galerie
   einrichtung.ts     Installations-Zentrum
+  editor.ts          Booth-Editor
+  vorlage.ts         Vorlagenmodell und Renderer — hier entsteht jedes Druckbild
+  vorlagen.ts        Ablage der Vorlagen
   huelle.ts          Brücke zur Desktop-Hülle (Ablage als Datei, Ausgabe-Adresse)
   arten.ts           die Aufnahmearten
   kamera.ts          Kamera — hier hängt später das DSLR-Tethering
@@ -78,6 +83,21 @@ möglich ist. Zwei Rust-Tests decken Auslieferung und Ausbruchsversuch ab (`carg
 
 Im Browser ohne Hülle gibt es keine Adresse — dort bleibt der direkte Weg über „Sichern", und der
 Booth sagt das auch.
+
+## Vorlagen
+
+Eine Vorlage beschreibt ein Blatt (`foto` 10×15 cm, `streifen` 5×15 cm) und die Felder darauf:
+Bildfelder, Textfelder, Flächen, Logo. Feldkoordinaten sind Anteile des Blattes, im Editor als
+Millimeter angezeigt; gerechnet wird auf 300 dpi. Texte tragen Platzhalter (`{event}`, `{datum}`,
+`{zeit}`, `{box}`, `{nummer}`), die beim Druck gefüllt werden.
+
+Der Booth kennt keine festen Layouts mehr — er rendert die eingestellte Vorlage. Der Editor
+zeichnet die Vorschau mit demselben Renderer, deshalb ist sie kein Bild von etwas Ähnlichem,
+sondern das Druckbild selbst. Vorlagen liegen als JSON vor und wandern als Datei auf die nächste
+Box; eingelesene Dateien werden geprüft, bevor sie übernommen werden.
+
+Die vier mitgelieferten Vorlagen stehen im Code und sind schreibgeschützt: die erste Änderung legt
+eine Kopie an. Der Weg zurück bleibt damit offen, auch nach einer verunglückten Nacht am Editor.
 
 ## Regeln, die im Code stecken
 
@@ -102,4 +122,8 @@ Booth sagt das auch.
   Treiber des jeweiligen Sofortdruckers. Der generische Systemdruck steht.
 - **Bewegtbild als Datei.** Boomerang und GIF werden aufgenommen und am Screen animiert gezeigt;
   für die Datei fehlt die Kodierung (GIF oder WebM).
+- **Vorlagen-Katalog.** Mitgeliefert sind vier Vorlagen, nicht die 82 aus dem Katalog der
+  Website. Sie entstehen mit demselben Modell — das ist Fleißarbeit, keine Technik.
+- **Bildschirm-Designer und freie Schriften.** Der Editor gestaltet das Druckbild; die Screen-Seite
+  und Schriften jenseits der beiden Systemschriften kommen später.
 - **Freistellung ohne Greenscreen, Effekt-Studio, Cloud-Galerie, Lizenzserver.**

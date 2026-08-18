@@ -1,0 +1,442 @@
+/* Booth-Editor: hell wie Cockpit und Einrichtung, Blatt links, Werkzeug rechts. */
+
+:root {
+  --v-tinte: #17171c;
+  --v-papier: #f6f4f1;
+  --v-amber: #f2b23e;
+  --v-linie: rgba(0, 0, 0, 0.11);
+}
+
+body.editorseite {
+  margin: 0;
+  background: var(--v-papier);
+  color: var(--v-tinte);
+  font-family: Archivo, 'Archivo Variable', system-ui, sans-serif;
+  overflow: auto;
+  user-select: text;
+}
+
+.mono {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  /* Farbe ausdrücklich: stil.css ist für den dunklen Booth gedacht. */
+  color: rgba(0, 0, 0, 0.62);
+}
+
+.mono--amber {
+  color: #b07d13;
+}
+
+.mono--still {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* --- Kopf ---------------------------------------------------------- */
+
+.vkopf {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px clamp(14px, 3vw, 28px);
+  background: #fff;
+  border-bottom: 1px solid var(--v-linie);
+}
+
+.vkopf__links,
+.vkopf__rechts {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Die linke Gruppe darf schrumpfen, sonst schiebt sich die Vorlagenwahl über
+   die Beschriftung. */
+.vkopf__links {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.vkopf__rechts {
+  flex: 0 0 auto;
+}
+
+.vwahl {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--v-linie);
+  border-radius: 9px;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  max-width: 260px;
+}
+
+.vknopf {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--v-tinte);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--v-tinte);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.vknopf:hover {
+  background: var(--v-tinte);
+  color: #fff;
+}
+
+.vknopf--amber {
+  background: var(--v-amber);
+  border-color: var(--v-amber);
+}
+
+.vknopf--amber:hover {
+  background: var(--v-tinte);
+  border-color: var(--v-tinte);
+}
+
+.vknopf--klein {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+  border-color: var(--v-linie);
+}
+
+.vknopf--datei {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.vknopf--datei input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.vmeldung {
+  margin: 0;
+  padding: 0 clamp(14px, 3vw, 28px);
+  min-height: 22px;
+  line-height: 22px;
+  font-size: 13.5px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.vmeldung[data-art='fehler'] {
+  color: #a3341f;
+}
+
+.vmeldung[data-art='gut'] {
+  color: #2c6b40;
+}
+
+/* --- Fläche -------------------------------------------------------- */
+
+.vflaeche {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+  align-items: start;
+  padding: 14px clamp(14px, 3vw, 28px) 60px;
+}
+
+@media (max-width: 900px) {
+  .vflaeche {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.vblattspalte {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.vblattkopf {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.vreihe {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.vreihe--umbruch {
+  flex-wrap: wrap;
+}
+
+/* Das Blatt: Leinwand mit Feldrahmen darüber. Die Höhe richtet sich nach dem
+   Fenster, damit das ganze Blatt sichtbar bleibt — beim Layouten ist der
+   Gesamteindruck wichtiger als die Detailschärfe. */
+.vblatt {
+  position: relative;
+  height: min(72vh, 760px);
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.16);
+  touch-action: none;
+}
+
+.vblatt canvas {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+.vfelder {
+  position: absolute;
+  inset: 0;
+}
+
+.vfeld-rahmen {
+  position: absolute;
+  border: 1px dashed rgba(0, 0, 0, 0.35);
+  cursor: move;
+  background: transparent;
+  padding: 0;
+}
+
+.vfeld-rahmen[data-art='text'] {
+  border-color: rgba(43, 90, 160, 0.55);
+}
+
+.vfeld-rahmen[data-art='bild'] {
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+.vfeld-rahmen[data-art='flaeche'] {
+  border-color: rgba(120, 60, 160, 0.5);
+}
+
+.vfeld-rahmen[data-art='logo'] {
+  border-color: rgba(30, 130, 100, 0.55);
+}
+
+.vfeld-rahmen:focus-visible,
+.vfeld-rahmen[aria-pressed='true'] {
+  border: 2px solid var(--v-amber);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  outline: none;
+}
+
+.vgriff {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--v-amber);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  cursor: nwse-resize;
+}
+
+.vfeld-rahmen[aria-pressed='false'] .vgriff {
+  display: none;
+}
+
+/* --- Palette ------------------------------------------------------- */
+
+.vpalette {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 74px;
+  max-height: calc(100vh - 90px);
+  overflow: auto;
+}
+
+@media (max-width: 900px) {
+  .vpalette {
+    position: static;
+    max-height: none;
+  }
+}
+
+.vblock {
+  background: #fff;
+  border: 1px solid var(--v-linie);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vzeile {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.vfeld {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.vfeld > span:first-child {
+  font-weight: 600;
+}
+
+.veingabe {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--v-linie);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13.5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+textarea.veingabe {
+  min-height: 68px;
+  resize: vertical;
+}
+
+.vhaken {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.vvier {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.vliste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vliste li {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.vlisteneintrag {
+  flex: 1;
+  min-height: 34px;
+  text-align: left;
+  padding: 0 10px;
+  border: 1px solid var(--v-linie);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vlisteneintrag[aria-pressed='true'] {
+  border-color: var(--v-amber);
+  box-shadow: inset 0 0 0 1px var(--v-amber);
+}
+
+.vmini {
+  width: 30px;
+  min-height: 30px;
+  border: 1px solid var(--v-linie);
+  border-radius: 7px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.vmini:hover {
+  background: var(--v-tinte);
+  color: #fff;
+}
+
+.vpalettenfarben {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vfarbe {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  padding: 0;
+}
+
+.vplatzhalter {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+.vplatzhalter code {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+.vleer {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.vzurueck {
+  text-decoration: none;
+  color: #b07d13;
+}
+
+.vzurueck:hover {
+  text-decoration: underline;
+}

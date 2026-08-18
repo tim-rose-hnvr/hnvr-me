@@ -11,13 +11,9 @@ import { ARTEN, REGIE, type Art } from './arten';
 import { Kamera, deuteFehler } from './kamera';
 import type { Einstellungen } from './einstellungen';
 import { ladeEinstellungen, sichereEinstellungen, standardEinstellungen } from './einstellungen';
-import {
-  alsBilddaten,
-  alsBlob,
-  alsDoppelstreifen,
-  zeichneFoto,
-  zeichneStreifen,
-} from './layout';
+import { alsBilddaten, alsBlob, alsDoppelstreifen, zeichneMitVorlage } from './layout';
+import { werteJetzt } from './vorlage';
+import { findeVorlage } from './vorlagen';
 import { darfDrucken, dateiname, drucke, druckeInLetzterStunde, qrFuer, sichereAlsDatei } from './ausgabe';
 import { neueKennung, raeumeAuf, sichere, anzahl as gesamtzahl } from './speicher';
 import { ausgabeAdresse, legeAb } from './huelle';
@@ -525,21 +521,22 @@ export class Booth {
 
   /** Setzt die Aufnahmen ins Druckbild und sichert sie sofort. */
   private async baueErgebnis(): Promise<void> {
-    const texte = {
-      titel: this.einstellungen.event,
-      zeile: new Date().toLocaleDateString('de-DE'),
-    };
+    const werte = werteJetzt(
+      this.einstellungen.event,
+      this.einstellungen.box,
+      this.sitzungen + 1
+    );
 
     if (this.art.id === 'streifen') {
-      const streifen = zeichneStreifen(this.aufnahmen, texte);
+      const vorlage = findeVorlage(this.einstellungen.vorlageStreifen, 'streifen');
+      const streifen = await zeichneMitVorlage(vorlage, this.aufnahmen, werte);
       this.ergebnis = this.einstellungen.doppelstreifen
         ? alsDoppelstreifen(streifen, this.einstellungen.schnittlinie)
         : streifen;
-    } else if (this.aufnahmen.length > 1) {
-      // Bewegtbild: als Blatt gesichert wird das erste Bild der Serie.
-      this.ergebnis = zeichneFoto(this.aufnahmen[0]!, texte);
     } else {
-      this.ergebnis = zeichneFoto(this.aufnahmen[0]!, texte);
+      // Bewegtbild: als Blatt gesichert wird das erste Bild der Serie.
+      const vorlage = findeVorlage(this.einstellungen.vorlageFoto, 'foto');
+      this.ergebnis = await zeichneMitVorlage(vorlage, [this.aufnahmen[0]!], werte);
     }
 
     this.ergebnisKennung = neueKennung();

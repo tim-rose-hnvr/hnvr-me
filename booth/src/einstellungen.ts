@@ -23,6 +23,10 @@ export type Einstellungen = {
   arten: string[];
   spiegeln: boolean;
   blitz: boolean;
+  /** Kennung der Vorlage, die für Einzelbilder gedruckt wird. */
+  vorlageFoto: string;
+  /** Kennung der Vorlage für Streifen. */
+  vorlageStreifen: string;
   /** Drucken über den Systemdruckdialog anbieten. */
   druck: boolean;
   doppelstreifen: boolean;
@@ -52,6 +56,8 @@ const STANDARD: Einstellungen = {
   arten: ['foto', 'streifen', 'boomerang', 'gif'],
   spiegeln: true,
   blitz: true,
+  vorlageFoto: 'foto-klassisch',
+  vorlageStreifen: 'streifen-klassisch',
   druck: true,
   doppelstreifen: true,
   schnittlinie: true,

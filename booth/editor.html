@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>youbooth — Booth-Editor</title>
+    <meta
+      name="description"
+      content="Druckvorlagen der Box entwerfen: Felder setzen, Texte einsetzen, Logo einbinden."
+    />
+  </head>
+  <body class="editorseite">
+    <header class="vkopf">
+      <div class="vkopf__links">
+        <a class="mono mono--amber vzurueck" href="./cockpit.html">← Cockpit</a>
+        <span class="mono">Booth-Editor</span>
+        <select id="wahl" class="vwahl" aria-label="Vorlage"></select>
+        <span id="herkunft" class="mono mono--still"></span>
+      </div>
+      <div class="vkopf__rechts">
+        <button type="button" class="vknopf" data-tun="neu">Neu</button>
+        <button type="button" class="vknopf" data-tun="kopie">Kopie</button>
+        <button type="button" class="vknopf" data-tun="loeschen">Löschen</button>
+        <button type="button" class="vknopf" data-tun="datei-laden">Datei laden</button>
+        <button type="button" class="vknopf" data-tun="datei-sichern">Als Datei</button>
+        <button type="button" class="vknopf" data-tun="testdruck">Testdruck</button>
+        <button type="button" class="vknopf vknopf--amber" data-tun="sichern">Sichern</button>
+      </div>
+    </header>
+
+    <p id="meldung" class="vmeldung" role="status" aria-live="polite"></p>
+
+    <main class="vflaeche">
+      <section class="vblattspalte">
+        <div class="vblattkopf">
+          <span class="mono" id="blattmass"></span>
+          <div class="vreihe">
+            <button type="button" class="vknopf vknopf--klein" data-tun="muster-kamera">
+              Kamerabild als Muster
+            </button>
+            <button type="button" class="vknopf vknopf--klein" data-tun="muster-testbild">
+              Testbild
+            </button>
+          </div>
+        </div>
+        <div class="vblatt" id="blatt">
+          <canvas id="leinwand"></canvas>
+          <div class="vfelder" id="felder"></div>
+        </div>
+        <span class="mono mono--still">
+          Ziehen verschiebt, die Ecke unten rechts ändert die Größe. Pfeiltasten schieben in kleinen
+          Schritten, mit Umschalt in großen. Alt beim Ziehen schaltet das Raster ab.
+        </span>
+      </section>
+
+      <aside class="vpalette">
+        <div class="vblock">
+          <h2 class="vzeile">Vorlage</h2>
+          <label class="vfeld">
+            <span>Name</span>
+            <input type="text" id="name" class="veingabe" maxlength="60" />
+          </label>
+          <label class="vfeld">
+            <span>Blatt</span>
+            <select id="blattart" class="veingabe">
+              <option value="foto">Foto — 10 × 15 cm</option>
+              <option value="streifen">Streifen — 5 × 15 cm</option>
+            </select>
+          </label>
+          <label class="vfeld">
+            <span>Papierfarbe</span>
+            <input type="text" id="papier" class="veingabe" />
+          </label>
+          <div class="vfeld">
+            <span>Logo</span>
+            <div class="vreihe">
+              <label class="vknopf vknopf--klein vknopf--datei">
+                Logo wählen
+                <input type="file" id="logodatei" accept="image/png,image/jpeg,image/svg+xml" />
+              </label>
+              <button type="button" class="vknopf vknopf--klein" data-tun="logo-weg">
+                Entfernen
+              </button>
+            </div>
+            <span class="mono mono--still" id="logostand">kein Logo</span>
+          </div>
+          <div class="vfeld">
+            <span>Nutzung</span>
+            <label class="vhaken"
+              ><input type="checkbox" id="standard-foto" /> Standard für Fotos</label
+            >
+            <label class="vhaken"
+              ><input type="checkbox" id="standard-streifen" /> Standard für Streifen</label
+            >
+          </div>
+        </div>
+
+        <div class="vblock">
+          <h2 class="vzeile">Felder</h2>
+          <div class="vreihe vreihe--umbruch">
+            <button type="button" class="vknopf vknopf--klein" data-neu="bild">+ Bild</button>
+            <button type="button" class="vknopf vknopf--klein" data-neu="text">+ Text</button>
+            <button type="button" class="vknopf vknopf--klein" data-neu="flaeche">+ Fläche</button>
+            <button type="button" class="vknopf vknopf--klein" data-neu="logo">+ Logo</button>
+          </div>
+          <ul class="vliste" id="liste"></ul>
+        </div>
+
+        <div class="vblock">
+          <h2 class="vzeile">Feld</h2>
+          <div id="pruefer"></div>
+        </div>
+
+        <div class="vblock">
+          <h2 class="vzeile">Platzhalter</h2>
+          <ul class="vplatzhalter" id="platzhalter"></ul>
+        </div>
+      </aside>
+    </main>
+
+    <input type="file" id="vorlagendatei" accept="application/json,.json" hidden />
+    <script type="module" src="/src/editor.ts"></script>
+  </body>
+</html>

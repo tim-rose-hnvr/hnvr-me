@@ -1,0 +1,301 @@
+---
+import { weg } from '../lib/weg';
+import Seite from '../layouts/Seite.astro';
+import Icon from '../components/Icon.astro';
+import { ICON_NAMEN } from '../components/icons';
+
+/**
+ * Die Design-System-Seite — 2f aus dem Handoff.
+ *
+ * Sie ist die einzige Seite, die man nicht lesen, sondern prüfen soll.
+ * Deshalb ist sie so gebaut, dass sie nicht lügen kann: jede Farbfläche
+ * unten ist mit ihrer eigenen CSS-Variablen gefüllt, nicht mit einem
+ * abgeschriebenen Hexwert. Ändert jemand `--color-accent`, ändert sich
+ * dieses Feld mit — und die Seite zeigt weiter die Wahrheit statt eine
+ * Momentaufnahme von heute.
+ *
+ * Dieselbe Regel bei den Zeichen: die Liste kommt aus `icons.ts`, dem
+ * Verzeichnis, aus dem auch die Seiten sie holen. Wer eines hinzufügt,
+ * sieht es hier ohne eine Zeile Arbeit.
+ */
+
+const rollen = [
+  { name: 'Grund', variable: '--color-bg', wofuer: 'Papier. Alles liegt darauf.' },
+  { name: 'Fläche', variable: '--color-surface', wofuer: 'Tafeln, Karten, Schubladen.' },
+  { name: 'Tinte', variable: '--color-text', wofuer: 'Schrift und dunkle Panele.' },
+  { name: 'Terrakotta', variable: '--color-accent', wofuer: 'Führt. Handlung, Marke, Auswahl.' },
+  { name: 'Salbei', variable: '--color-accent-2', wofuer: 'Begleitet. Bestätigung, Ruhe.' },
+];
+
+const stufen = [100, 200, 300, 400, 500, 600, 700, 800, 900];
+
+const radien = [
+  { name: 'klein', variable: '--radius-sm', wofuer: 'Marken, Felder in Tabellen' },
+  { name: 'mittel', variable: '--radius-md', wofuer: 'Eingaben, kleine Karten' },
+  { name: 'groß', variable: '--radius-lg', wofuer: 'Karten' },
+  { name: 'Pille', variable: '999px', wofuer: 'Knöpfe, Chips, Marken' },
+];
+
+// Die neun Bewegungen aus 4c. Sechs davon gibt es; drei nicht, und das
+// steht dabei. Eine Liste, in der Vorhandenes und Geplantes gleich
+// aussehen, ist ein Versprechen über Dinge, die es nicht gibt.
+const bewegungen = [
+  { name: 'Erkennen', wo: 'sweep', text: 'Ein Streifen läuft über die Vorschau, solange gerechnet wird.', stand: 'da' },
+  { name: 'Bestätigen', wo: 'breathe', text: 'Das Siegel atmet einmal, wenn das Urteil umschlägt.', stand: 'da' },
+  { name: 'Warten', wo: 'spinslow', text: 'Ein Ring dreht, solange der Server ein Paket baut.', stand: 'da' },
+  { name: 'Karte hebt', wo: 'hebt', text: 'Karten heben sich beim Überfahren, 280 ms.', stand: 'da' },
+  { name: 'Code entsteht', wo: 'bloom', text: 'Die Punkte blühen diagonal auf.', stand: 'da' },
+  { name: 'Strecke fließt', wo: 'flow', text: 'Punkte laufen durch die Röhren der Strecke.', stand: 'da' },
+  { name: 'Schublade öffnet', wo: 'aufziehen', text: 'Die Schublade fährt auf statt aufzublinken.', stand: 'da' },
+  { name: 'Zahlen laufen', wo: '—', text: 'Live-Zahlen rollen ziffernweise. Braucht Live-Zahlen; die Zahlenseite lädt einmal.', stand: 'fehlt' },
+  { name: 'Push kommt an', wo: '—', text: 'Fällt mit 2° Neigung ein. Braucht Push-Nachrichten; die gibt es nicht.', stand: 'fehlt' },
+];
+
+const zustaende = [
+  { name: 'Live', klasse: 'tag tag-accent-2' },
+  { name: 'Test', klasse: 'tag tag-accent' },
+  { name: 'Entwurf', klasse: 'tag tag-neutral' },
+  { name: 'Pausiert', klasse: 'tag tag-outline' },
+];
+---
+
+<Seite
+  titel="Design-System"
+  beschreibung="Die Bausteine, aus denen pnkt.me gebaut ist: Farbrollen, Typografie, Radien, Zeichen, Bewegung — und was davon noch fehlt."
+  aktiv=""
+>
+  <section class="spur">
+    <span class="tag tag-accent">
+      <Icon name="punkt" groesse={16} />
+      Organic · v0.1
+    </span>
+    <h1 class="titel-seite" style="margin:14px 0 12px">Warm, rund, ruhig</h1>
+    <p class="fliess">
+      Zwei Stimmen: Terrakotta führt, Salbei begleitet. Alles bekommt Radius,
+      nichts bekommt Ecken. Diese Seite zeigt die Bausteine <b>live</b> — jede
+      Fläche unten ist mit ihrer eigenen Variablen gefüllt, nicht mit einem
+      abgeschriebenen Wert.
+    </p>
+  </section>
+
+  <section class="spur">
+    <div class="panel">
+      <div class="kicker">Farbrollen</div>
+      <div class="rollen">
+        {rollen.map((r) => (
+          <div class="rolle">
+            <div class="rolle-flaeche" style={`background:var(${r.variable})`}></div>
+            <div class="rolle-name">{r.name}</div>
+            <code>{r.variable}</code>
+            <p class="rolle-text">{r.wofuer}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel">
+      <div class="kicker">Tonleitern</div>
+      <h2 class="titel-panel">100 → 900</h2>
+      <p class="fliess-klein" style="margin:0 0 18px;max-width:44rem">
+        In OKLCH auf einer gemeinsamen Helligkeitsskala gerechnet: dieselbe Stufe
+        zweier Rollen hat denselben Hellwert. Deshalb passt Salbei 200 unter
+        Terrakotta 200, ohne dass eines heraussticht.
+      </p>
+      {[['Terrakotta', 'accent'], ['Salbei', 'accent-2'], ['Neutral', 'neutral']].map(([name, roh]) => (
+        <div class="leiter">
+          <div class="leiter-name">{name}</div>
+          <div class="leiter-band">
+            {stufen.map((s) => (
+              <div class="leiter-feld" style={`background:var(--color-${roh}-${s})`}>
+                <span class={s >= 500 ? 'hell' : ''}>{s}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="spur zweispalt">
+    <div class="panel">
+      <div class="kicker">Typografie</div>
+      <div class="schriftprobe">Caprasimo</div>
+      <p class="fliess-klein">
+        Überschriften, und nur die. Eine Display-Stimme, sonst wird es laut.
+      </p>
+      <div class="schriftzeile">Figtree 400 trägt den Fließtext.</div>
+      <div class="schriftzeile fett">Figtree 600 trägt die Beschriftungen.</div>
+      <div class="beschriftung">Beschriftung · 0.1em · Versalien</div>
+      <p class="fliess-klein" style="margin-top:14px">
+        Zahlen in Tabellen laufen mit <code>tabular-nums</code>, damit die Spalten
+        ruhig bleiben.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="kicker">Radien</div>
+      <div class="radien">
+        {radien.map((r) => (
+          <div class="radius">
+            <div
+              class="radius-flaeche"
+              style={`border-radius:${r.variable.startsWith('--') ? `var(${r.variable})` : r.variable}`}
+            ></div>
+            <div class="radius-name">{r.name}</div>
+            <p class="rolle-text">{r.wofuer}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="spur zweispalt">
+    <div class="panel">
+      <div class="kicker">Aktionen</div>
+      <div class="knopfreihe" style="margin-top:12px">
+        <span class="btn btn-primary">Primär</span>
+        <span class="btn btn-secondary">Sekundär</span>
+        <span class="btn btn-ghost">Ghost</span>
+      </div>
+      <div class="kicker" style="margin-top:26px">Zustände</div>
+      <div class="knopfreihe" style="margin-top:12px">
+        {zustaende.map((z) => <span class={z.klasse}>{z.name}</span>)}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="kicker">Zeichen</div>
+      <h2 class="titel-panel">{ICON_NAMEN.length} Stück, ein Werkzeug</h2>
+      <p class="fliess-klein" style="margin:0 0 16px">
+        24er-Raster, Strich 2,75, runde Enden, keine Füllung außer beim Punkt —
+        dem Namensgeber. Nie zwei Zeichen kombinieren; lieber ein Zeichen plus Wort.
+      </p>
+      <div class="zeichen">
+        {ICON_NAMEN.map((n) => (
+          <div class="zeichen-feld" title={n}>
+            <Icon name={n} groesse={22} />
+            <span>{n}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel">
+      <div class="kicker">Bewegung</div>
+      <h2 class="titel-panel">Kurz, weich, eine Sache</h2>
+      <p class="fliess-klein" style="margin:0 0 18px;max-width:44rem">
+        180–420 ms, weiche Kurve, nie zwei Bewegungen gleichzeitig. Bewegung
+        erklärt etwas — sie schmückt nicht. Mit <code>prefers-reduced-motion</code>
+        bleibt nur das Überblenden.
+      </p>
+      <div class="bewegungen">
+        {bewegungen.map((b) => (
+          <div class:list={['bewegung', { fehlt: b.stand === 'fehlt' }]}>
+            <div class="bewegung-kopf">
+              <span class="bewegung-name">{b.name}</span>
+              <span class:list={['bewegung-stand', `stand-${b.stand}`]}>
+                {b.stand === 'da' ? 'gebaut' : 'fehlt'}
+              </span>
+            </div>
+            <p class="rolle-text">{b.text}</p>
+            {b.wo !== '—' && <code>{b.wo}</code>}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="spur">
+    <div class="panel-dunkel">
+      <h2 class="titel-panel">Die Grammatik des Codes</h2>
+      <p class="dunkel-text">
+        Punkte dürfen rund werden, die drei Ecken bleiben klar. Ruhezone
+        mindestens vier Module, Kontrast ab 4:1. Das sind keine Geschmacksfragen
+        — sie stehen als Prüfung im Programm und entscheiden über jedes Urteil.
+      </p>
+      <div class="knopfreihe">
+        <a href={weg('/lesbarkeit')} class="btn btn-primary knopf-gross">
+          <Icon name="geprueft" />
+          Die sechs Grenzwerte
+        </a>
+        <a href={weg('/studio')} class="btn btn-secondary knopf-gross">
+          <Icon name="code" />
+          In der Werkstatt ausprobieren
+        </a>
+      </div>
+    </div>
+  </section>
+</Seite>
+
+<style is:global>
+  .zweispalt { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  .zweispalt > * { min-width: 0; }
+  .panel { background: var(--color-surface); border-radius: 36px; padding: 28px 30px; }
+
+  .rollen { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 16px; }
+  .rollen > * { min-width: 0; }
+  .rolle-flaeche {
+    height: 84px; border-radius: 22px; margin-bottom: 10px;
+    border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+  }
+  .rolle-name { font-family: var(--font-heading); font-size: 17px; margin-bottom: 3px; }
+  .rolle-text { font-size: 13px; line-height: 1.5; color: rgba(32, 30, 29, 0.65); margin: 6px 0 0; }
+
+  .leiter { margin-top: 14px; }
+  .leiter-name { font-size: 12.5px; font-weight: 600; color: rgba(32, 30, 29, 0.62); margin-bottom: 6px; }
+  .leiter-band { display: flex; border-radius: 14px; overflow: hidden; }
+  .leiter-feld {
+    flex: 1; min-width: 0; height: 52px; display: grid; place-items: center;
+    font-size: 11px; font-variant-numeric: tabular-nums;
+  }
+  .leiter-feld .hell { color: var(--color-bg); }
+
+  .schriftprobe { font-family: var(--font-heading); font-size: 46px; line-height: 1.1; letter-spacing: -0.02em; }
+  .schriftzeile { font-size: 16px; margin-top: 12px; }
+  .schriftzeile.fett { font-weight: 600; margin-top: 4px; }
+  .beschriftung {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--color-accent-700); margin-top: 12px;
+  }
+
+  .radien { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 16px; }
+  .radien > * { min-width: 0; }
+  .radius-flaeche { height: 62px; background: var(--color-accent-200); margin-bottom: 8px; }
+  .radius-name { font-size: 14px; font-weight: 600; }
+
+  .zeichen { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 10px; }
+  .zeichen-feld {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: var(--color-bg); border-radius: 18px; padding: 14px 6px;
+    font-size: 10.5px; color: rgba(32, 30, 29, 0.6); text-align: center;
+  }
+
+  .bewegungen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .bewegungen > * { min-width: 0; }
+  .bewegung { background: var(--color-bg); border-radius: 22px; padding: 18px 20px; }
+  .bewegung.fehlt { background: color-mix(in srgb, var(--color-text) 5%, transparent); }
+  .bewegung-kopf { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .bewegung-name { font-family: var(--font-heading); font-size: 17px; }
+  .bewegung-stand {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    border-radius: 999px; padding: 3px 8px; white-space: nowrap;
+  }
+  .stand-da { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
+  .stand-fehlt { background: var(--color-neutral-300); color: var(--color-neutral-900); }
+
+  .dunkel-text { font-size: 15.5px; line-height: 1.65; color: rgba(245, 234, 216, 0.78); margin: 0 0 18px; max-width: 46rem; }
+  code { font-size: 12.5px; background: var(--color-bg); border-radius: 6px; padding: 2px 7px; }
+
+  @media (max-width: 1000px) {
+    .rollen { grid-template-columns: repeat(3, 1fr); }
+    .bewegungen { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 760px) {
+    .zweispalt, .bewegungen { grid-template-columns: 1fr; }
+    .rollen, .radien { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>

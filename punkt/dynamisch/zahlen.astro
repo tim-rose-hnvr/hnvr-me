@@ -1,0 +1,233 @@
+---
+/**
+ * Zahlen — der Screen 2d aus dem Handoff.
+ *
+ * Dort steht die Vorgabe, die diese Seite trägt: „Das Dashboard startet
+ * mit einem Satz statt mit vier Kacheln." Also steht oben ein Satz, den
+ * das Programm aus den Zählerständen bildet, und erst darunter kommen
+ * Balken und Tabelle.
+ *
+ * Was der Satz sagen darf, ist streng begrenzt. Er entsteht aus dem,
+ * was wirklich gezählt wurde, und er sagt nichts über Bestellungen,
+ * Umsatz oder Signifikanz — das steht im Entwurf, weil es gut aussieht,
+ * und es gibt hier nichts davon. Bei zu wenigen Scans sagt er das
+ * ausdrücklich, statt aus drei Aufrufen einen Trend zu machen.
+ */
+import Seite from '../../website/src/layouts/Seite.astro';
+import Icon from '../../website/src/components/Icon.astro';
+import { sitzungAus } from './konto.ts';
+import { codesVonKonto, statistikVonCode, type Tagesstand } from './ablage.ts';
+
+export const prerender = false;
+
+const sitzung = await sitzungAus(Astro.request.headers);
+if (!sitzung) return Astro.redirect('/anmelden', 302);
+
+const TAGE = 30;
+const codes = await codesVonKonto(sitzung.kontoId, 500);
+
+// Je Code die letzten dreißig Tage. Danach auf eine Zeitachse gelegt,
+// damit Lücken als Lücken erscheinen und nicht als dichte Reihe.
+const jeCode = new Map<string, Tagesstand[]>();
+for (const c of codes) {
+  try {
+    jeCode.set(c.id, await statistikVonCode(c.id, TAGE));
+  } catch {
+    jeCode.set(c.id, []);
+  }
+}
+
+const heute = new Date();
+const achse: string[] = [];
+for (let i = TAGE - 1; i >= 0; i--) {
+  const d = new Date(heute);
+  d.setUTCDate(d.getUTCDate() - i);
+  achse.push(d.toISOString().slice(0, 10));
+}
+
+const jeTag = new Map<string, number>(achse.map((t) => [t, 0]));
+const klassen = new Map<string, number>();
+let gesamt = 0;
+const summeJeCode = new Map<string, number>();
+
+for (const [id, staende] of jeCode) {
+  let summe = 0;
+  for (const s of staende) {
+    summe += s.gesamt;
+    if (jeTag.has(s.tag)) jeTag.set(s.tag, (jeTag.get(s.tag) ?? 0) + s.gesamt);
+    for (const [k, v] of Object.entries(s.klassen)) {
+      if (k === 'gesamt') continue;
+      klassen.set(k, (klassen.get(k) ?? 0) + v);
+    }
+  }
+  summeJeCode.set(id, summe);
+  gesamt += summe;
+}
+
+const reihe = achse.map((t) => ({ tag: t, wert: jeTag.get(t) ?? 0 }));
+const hoechst = Math.max(1, ...reihe.map((r) => r.wert));
+
+// Der Satz. Er sagt nur, was aus den Zahlen folgt.
+const MINDEST_FUER_AUSSAGE = 20;
+const staerkster = [...summeJeCode.entries()].sort((a, b) => b[1] - a[1])[0];
+const staerksterCode = staerkster ? codes.find((c) => c.id === staerkster[0]) : undefined;
+const anteil = staerkster && gesamt > 0 ? Math.round((staerkster[1] / gesamt) * 100) : 0;
+const besterTag = [...reihe].sort((a, b) => b.wert - a.wert)[0];
+
+let satz: string;
+if (gesamt === 0) {
+  satz = 'Noch kein Scan in dreißig Tagen. Sobald jemand einen Code aufruft, steht es hier.';
+} else if (gesamt < MINDEST_FUER_AUSSAGE) {
+  satz =
+    `${gesamt} ${gesamt === 1 ? 'Scan' : 'Scans'} in dreißig Tagen. ` +
+    'Das ist zu wenig für eine Aussage über Zeiten oder Anteile — die kommt, wenn mehr zusammen ist.';
+} else {
+  satz =
+    `${gesamt} Scans in dreißig Tagen. ` +
+    (staerksterCode
+      ? `„${staerksterCode.name || staerksterCode.kuerzel}" trägt ${anteil} Prozent davon. `
+      : '') +
+    (besterTag && besterTag.wert > 0 ? `Stärkster Tag war der ${besterTag.tag}.` : '');
+}
+
+/** Klassen nach Gruppe: geraet, system, quelle. */
+function gruppe(name: string): { was: string; anzahl: number }[] {
+  return [...klassen.entries()]
+    .filter(([k]) => k.startsWith(`${name}:`))
+    .map(([k, v]) => ({ was: k.slice(name.length + 1), anzahl: v }))
+    .sort((a, b) => b.anzahl - a.anzahl);
+}
+
+const wort: Record<string, string> = {
+  telefon: 'Telefon', tablet: 'Tablet', rechner: 'Rechner',
+  apple: 'Apple', android: 'Android', windows: 'Windows', sonstige: 'Sonstige',
+  direkt: 'Direkt gescannt', verweis: 'Über einen Verweis',
+};
+---
+
+<Seite titel="Zahlen" beschreibung="Was aus den Codes wurde: Scans je Tag, je Code und in groben Klassen." aktiv="">
+  <section class="spur">
+    <span class="tag tag-accent">
+      <Icon name="zahlen" groesse={16} />
+      Letzte 30 Tage
+    </span>
+    <h1 class="titel-seite satz">{satz}</h1>
+    <p class="fliess">
+      Gezählt wird der Aufruf eines Kurzwegs. Eine Vorschau zählt nicht mit, und
+      sobald jemand auf einer fremden Seite ist, hört die Messung auf.
+      <a href="/zentrale">Zur Zentrale</a>
+    </p>
+  </section>
+
+  <section class="spur">
+    <div class="panel">
+      <div class="kicker">Scans je Tag</div>
+      {gesamt === 0 ? (
+        <p class="fliess-klein">Noch nichts zu zeigen.</p>
+      ) : (
+        <div class="balken" role="img" aria-label={`Scans je Tag, ${TAGE} Tage, höchstens ${hoechst} an einem Tag`}>
+          {reihe.map((r) => (
+            <span
+              class:list={['balken-stab', { 'balken-leer': r.wert === 0 }]}
+              style={`height:${Math.max(2, Math.round((r.wert / hoechst) * 100))}%`}
+              title={`${r.tag}: ${r.wert}`}
+            ></span>
+          ))}
+        </div>
+      )}
+      <div class="achse">
+        <span>{achse[0]}</span>
+        <span>{achse[achse.length - 1]}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="spur zweispalt">
+    <div class="panel">
+      <div class="kicker">Womit gescannt wurde</div>
+      {klassen.size === 0 ? (
+        <p class="fliess-klein">Noch nichts gezählt.</p>
+      ) : (
+        <div class="gruppen">
+          {[['geraet', 'Gerät'], ['system', 'System'], ['quelle', 'Herkunft']].map(([schluessel, titel]) => (
+            <div class="gruppe">
+              <div class="gruppe-titel">{titel}</div>
+              {gruppe(schluessel).length === 0 ? (
+                <p class="fliess-klein">—</p>
+              ) : (
+                gruppe(schluessel).map((z) => (
+                  <div class="zeile">
+                    <span>{wort[z.was] ?? z.was}</span>
+                    <span class="zahl">{z.anzahl}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      <p class="hinweis">
+        Grobe Klassen, aus der Gerätekennung abgelesen. Keine IP, kein
+        Fingerabdruck, nichts das denselben Menschen zweimal erkennt.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="kicker">Je Code</div>
+      <div class="tabellenrahmen">
+        <table class="table">
+          <thead><tr><th>Code</th><th>Kurzweg</th><th class="rechts">Scans</th></tr></thead>
+          <tbody>
+            {codes.map((c) => (
+              <tr>
+                <td>{c.name || 'Ohne Bezeichnung'}</td>
+                <td><code>/r/{c.kuerzel}</code></td>
+                <td class="rechts zahl">{summeJeCode.get(c.id) ?? 0}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</Seite>
+
+<style is:global>
+  .satz { max-width: 30rem; margin: 14px 0 12px; font-size: 40px; line-height: 1.12; }
+  @media (max-width: 700px) { .satz { font-size: 30px; } }
+
+  .panel { background: var(--color-surface); border-radius: 36px; padding: 28px 30px; }
+  .zweispalt { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  .zweispalt > * { min-width: 0; }
+
+  .balken {
+    display: flex; align-items: flex-end; gap: 3px;
+    height: 140px; margin: 16px 0 8px;
+  }
+  .balken-stab {
+    flex: 1; min-width: 0; border-radius: 4px 4px 2px 2px;
+    background: var(--color-accent);
+  }
+  .balken-leer { background: color-mix(in srgb, var(--color-text) 10%, transparent); }
+  .achse { display: flex; justify-content: space-between; font-size: 12px; color: rgba(32, 30, 29, 0.55); }
+
+  .gruppen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 16px 0 4px; }
+  .gruppen > * { min-width: 0; }
+  .gruppe-titel {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--color-accent-700); margin-bottom: 8px;
+  }
+  .zeile { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; padding: 4px 0; }
+
+  .tabellenrahmen { overflow-x: auto; margin-top: 14px; }
+  .table { width: 100%; }
+  .rechts { text-align: right; }
+  .zahl { font-variant-numeric: tabular-nums; }
+  code { font-size: 13px; background: var(--color-bg); border-radius: 6px; padding: 2px 7px; }
+  .hinweis { font-size: 13px; line-height: 1.55; color: rgba(32, 30, 29, 0.6); margin: 14px 0 0; }
+
+  @media (max-width: 860px) {
+    .zweispalt { grid-template-columns: 1fr; }
+    .gruppen { grid-template-columns: 1fr; }
+  }
+</style>

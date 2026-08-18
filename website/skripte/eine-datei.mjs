@@ -34,6 +34,7 @@ const seiten = [
   { id: 'vorlagen', weg: '/vorlagen', datei: 'vorlagen/index.html' },
   { id: 'studio', weg: '/studio', datei: 'studio/index.html', stattdessen: true },
   { id: 'preise', weg: '/preise', datei: 'preise/index.html' },
+  { id: 'system', weg: '/system', datei: 'system/index.html' },
   { id: 'lesbarkeit', weg: '/lesbarkeit', datei: 'lesbarkeit/index.html' },
   { id: 'massenanlage', weg: '/massenanlage', datei: 'massenanlage/index.html' },
   { id: 'schnittstelle', weg: '/schnittstelle', datei: 'schnittstelle/index.html' },

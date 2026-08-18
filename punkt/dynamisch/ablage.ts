@@ -41,6 +41,18 @@ interface Items {
   get(sammlung: string, id: string): Promise<Record<string, unknown>>;
   save(sammlung: string, eintrag: Record<string, unknown>): Promise<Record<string, unknown>>;
 }
+/**
+ * `auth.elevate` nimmt eine **SDK-Funktion** und gibt eine Fassung
+ * zurück, die mit erhöhten Rechten läuft. Nicht einen beliebigen
+ * Abschluss: der erste Versuch wickelte hier eigene Pfeilfunktionen
+ * ein, und die Abfrage lief dann doch ohne Rechte — die Weiterleitung
+ * antwortete mit 503 statt weiterzuleiten.
+ *
+ *   richtig:  auth.elevate(items.query)(SAMMLUNG).eq(…).find()
+ *   falsch:   auth.elevate(() => items.query(SAMMLUNG).find())()
+ *
+ * Steht so in der Dokumentation zu `@wix/essentials`.
+ */
 interface Rechte {
   elevate<T extends (...a: never[]) => unknown>(f: T): T;
 }
@@ -106,10 +118,8 @@ function alsCode(eintrag: Record<string, unknown>): Code {
 export async function codeNachKuerzel(kuerzel: string): Promise<Code | null> {
   const w = await wixModule();
   if (!w) return null;
-  const treffer = await w.auth.elevate(
-    (): Promise<{ items: Record<string, unknown>[] }> =>
-      w.items.query(CODES).eq('kuerzel', kuerzel.toLowerCase()).limit(1).find(),
-  )();
+  const abfrage = w.auth.elevate(w.items.query)(CODES);
+  const treffer = await abfrage.eq('kuerzel', kuerzel.toLowerCase()).limit(1).find();
   const eintrag = treffer.items[0];
   return eintrag ? alsCode(eintrag) : null;
 }
@@ -117,10 +127,8 @@ export async function codeNachKuerzel(kuerzel: string): Promise<Code | null> {
 export async function codesVonKonto(kontoId: string, grenze = 200): Promise<Code[]> {
   const w = await wixModule();
   if (!w) return [];
-  const treffer = await w.auth.elevate(
-    (): Promise<{ items: Record<string, unknown>[] }> =>
-      w.items.query(CODES).eq('kontoId', kontoId).limit(grenze).find(),
-  )();
+  const abfrage = w.auth.elevate(w.items.query)(CODES);
+  const treffer = await abfrage.eq('kontoId', kontoId).limit(grenze).find();
   return treffer.items.map(alsCode).filter((c) => !c.geloescht);
 }
 
@@ -131,10 +139,8 @@ export async function codesVonKonto(kontoId: string, grenze = 200): Promise<Code
 export async function zielSetzen(id: string, ziel: string): Promise<void> {
   const w = await wixModule();
   if (!w) throw new Error('keine Ablage');
-  const alt = await w.auth.elevate((): Promise<Record<string, unknown>> => w.items.get(CODES, id))();
-  await w.auth.elevate((): Promise<Record<string, unknown>> =>
-    w.items.update(CODES, { ...alt, ziel, geaendert: new Date().toISOString() }),
-  )();
+  const alt = await w.auth.elevate(w.items.get)(CODES, id);
+  await w.auth.elevate(w.items.update)(CODES, { ...alt, ziel, geaendert: new Date().toISOString() });
 }
 
 /**
@@ -150,7 +156,7 @@ export async function zaehle(codeId: string, klassen: string[]): Promise<void> {
 
   let stand: Record<string, unknown> | null = null;
   try {
-    stand = await w.auth.elevate((): Promise<Record<string, unknown>> => w.items.get(STATISTIK, id))();
+    stand = await w.auth.elevate(w.items.get)(STATISTIK, id);
   } catch {
     stand = null; // den Tag gibt es noch nicht
   }
@@ -162,16 +168,14 @@ export async function zaehle(codeId: string, klassen: string[]): Promise<void> {
   zaehler.gesamt = (zaehler.gesamt ?? 0) + 1;
   for (const k of klassen) zaehler[k] = (zaehler[k] ?? 0) + 1;
 
-  await w.auth.elevate((): Promise<Record<string, unknown>> =>
-    w.items.save(STATISTIK, {
-      ...(stand ?? {}),
-      _id: id,
-      codeId,
-      tag,
-      gesamt: zaehler.gesamt,
-      zaehlerJson: JSON.stringify(zaehler),
-    }),
-  )();
+  await w.auth.elevate(w.items.save)(STATISTIK, {
+    ...(stand ?? {}),
+    _id: id,
+    codeId,
+    tag,
+    gesamt: zaehler.gesamt,
+    zaehlerJson: JSON.stringify(zaehler),
+  });
 }
 
 /**
@@ -201,22 +205,37 @@ export function klassen(kopf: Headers): string[] {
 export async function kontoNachMail(mail: string): Promise<Record<string, unknown> | null> {
   const w = await wixModule();
   if (!w) return null;
-  const treffer = await w.auth.elevate(
-    (): Promise<{ items: Record<string, unknown>[] }> =>
-      w.items.query(KONTEN).eq('mail', mail.toLowerCase().trim()).limit(1).find(),
-  )();
+  const abfrage = w.auth.elevate(w.items.query)(KONTEN);
+  const treffer = await abfrage.eq('mail', mail.toLowerCase().trim()).limit(1).find();
   return treffer.items[0] ?? null;
 }
 
-export async function statistikVonCode(codeId: string, tage = 30): Promise<{ tag: string; gesamt: number }[]> {
+export interface Tagesstand {
+  tag: string;
+  gesamt: number;
+  /** Grobe Klassen: geraet:…, system:…, quelle:… */
+  klassen: Record<string, number>;
+}
+
+export async function statistikVonCode(codeId: string, tage = 30): Promise<Tagesstand[]> {
   const w = await wixModule();
   if (!w) return [];
-  const treffer = await w.auth.elevate(
-    (): Promise<{ items: Record<string, unknown>[] }> =>
-      w.items.query(STATISTIK).eq('codeId', codeId).descending('tag').limit(tage).find(),
-  )();
-  return treffer.items.map((i) => ({
-    tag: typeof i.tag === 'string' ? i.tag : '',
-    gesamt: typeof i.gesamt === 'number' ? i.gesamt : 0,
-  }));
+  const abfrage = w.auth.elevate(w.items.query)(STATISTIK);
+  const treffer = await abfrage.eq('codeId', codeId).descending('tag').limit(tage).find();
+  return treffer.items.map((i) => {
+    let klassen: Record<string, number> = {};
+    if (typeof i.zaehlerJson === 'string') {
+      try {
+        klassen = JSON.parse(i.zaehlerJson) as Record<string, number>;
+      } catch {
+        // Ein kaputter Satz darf die Auswertung nicht mitreissen.
+        klassen = {};
+      }
+    }
+    return {
+      tag: typeof i.tag === 'string' ? i.tag : '',
+      gesamt: typeof i.gesamt === 'number' ? i.gesamt : 0,
+      klassen,
+    };
+  });
 }

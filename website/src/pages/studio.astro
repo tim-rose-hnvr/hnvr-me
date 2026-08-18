@@ -114,20 +114,51 @@ const typen = [
         SVG, PDF und EPS sind echter Vektor in Millimetermaß. PNG rechnet der
         Browser aus demselben SVG — für den Druck nimmt man es nicht.
       </p>
+
+      {/* Varianten-Filmstreifen (3a). Nebeneinander sieht man
+          Unterschiede in der Modulform sofort, die man einzeln
+          übersieht. Bewusst OHNE Scanrate darunter: die stünde im
+          Entwurf, wäre aber erfunden — dieselbe Nutzlast ergibt
+          denselben Code, und was ein fremder Scanner damit macht,
+          misst dieser Rechner nicht. */}
+      <div class="streifen">
+        <div class="streifen-kopf">
+          <span>Varianten</span>
+          <button type="button" class="streifen-neu" id="variante-neu">+ diese sichern</button>
+        </div>
+        <div class="streifen-band" id="streifen"></div>
+        <p class="hinweis" id="streifen-leer">
+          Noch keine. Sichere eine Gestaltung, ändere etwas, und leg beide
+          nebeneinander — die Unterschiede sieht man erst im Vergleich.
+        </p>
+      </div>
     </div>
 
     <!-- Regler -->
     <div class="tafel reglertafel">
-      <div class="reiter" role="tablist">
-        <button type="button" class="reiter-knopf reiter-aktiv" data-reiter="inhalt" role="tab" aria-selected="true">Inhalt</button>
-        <button type="button" class="reiter-knopf" data-reiter="form" role="tab" aria-selected="false">Form</button>
-        <button type="button" class="reiter-knopf" data-reiter="farbe" role="tab" aria-selected="false">Farbe</button>
-        <button type="button" class="reiter-knopf" data-reiter="druck" role="tab" aria-selected="false">Druck</button>
+      {/* Werkzeuge als runde Chips in einer Leiste, eine Schublade
+          offen — so steht es im Handoff unter 2b. Der Unterschied zum
+          Reiter ist nicht die Form: eine Schublade lässt sich auch
+          zuklappen, und dann ist die Vorschau allein da. Genau das
+          will man, wenn man den Code ansieht statt ihn zu bauen. */}
+      <div class="chips" role="tablist" aria-label="Werkzeuge">
+        <button type="button" class="chip chip-aktiv" data-lade="inhalt" role="tab" aria-selected="true">
+          <Icon name="etikett" groesse={15} />Inhalt
+        </button>
+        <button type="button" class="chip" data-lade="form" role="tab" aria-selected="false">
+          <Icon name="code" groesse={15} />Punkte & Ecken
+        </button>
+        <button type="button" class="chip" data-lade="farbe" role="tab" aria-selected="false">
+          <Icon name="punkt" groesse={15} />Farbe
+        </button>
+        <button type="button" class="chip" data-lade="druck" role="tab" aria-selected="false">
+          <Icon name="bogen" groesse={15} />Druck
+        </button>
       </div>
 
       <div class="tafel-koerper">
         <!-- Inhalt -->
-        <div class="blatt" data-blatt="inhalt">
+        <div class="lade" data-lade="inhalt">
           <label class="feld">Was soll der Code enthalten?
             <select class="eingabe" id="typ">
               {typen.map((t) => <option value={t.wert}>{t.name}</option>)}
@@ -186,7 +217,7 @@ const typen = [
         </div>
 
         <!-- Form -->
-        <div class="blatt" data-blatt="form" hidden>
+        <div class="lade" data-lade="form" hidden>
           <div class="feldname">Module</div>
           <div class="wahl" id="modulform">
             {modulformen.map((m, i) => (
@@ -220,7 +251,7 @@ const typen = [
         </div>
 
         <!-- Farbe -->
-        <div class="blatt" data-blatt="farbe" hidden>
+        <div class="lade" data-lade="farbe" hidden>
           <div class="feldname">Code</div>
           <div class="wahl" id="vordergrund">
             {farben.map((f, i) => (
@@ -246,7 +277,7 @@ const typen = [
         </div>
 
         <!-- Druck -->
-        <div class="blatt" data-blatt="druck" hidden>
+        <div class="lade" data-lade="druck" hidden>
           <div class="paar">
             <label class="feld">Breite in Millimetern
               <input class="eingabe" id="breite" type="number" min="8" max="1000" value="40" />
@@ -496,14 +527,18 @@ const typen = [
   });
 
   // ── Bedienung ─────────────────────────────────────────────────────
-  document.querySelectorAll('.reiter-knopf').forEach((k) => {
+  // Chips und Schubladen. Ein zweiter Klick auf denselben Chip
+  // schließt die Schublade — dann steht die Vorschau allein.
+  document.querySelectorAll('.chip').forEach((k) => {
     k.addEventListener('click', () => {
-      document.querySelectorAll('.reiter-knopf').forEach((a) => {
-        a.classList.toggle('reiter-aktiv', a === k);
-        a.setAttribute('aria-selected', a === k ? 'true' : 'false');
+      const offen = k.classList.contains('chip-aktiv');
+      document.querySelectorAll('.chip').forEach((a) => {
+        const wird = !offen && a === k;
+        a.classList.toggle('chip-aktiv', wird);
+        a.setAttribute('aria-selected', wird ? 'true' : 'false');
       });
-      document.querySelectorAll('.blatt').forEach((b) => {
-        b.hidden = b.dataset.blatt !== k.dataset.reiter;
+      document.querySelectorAll('.lade').forEach((b) => {
+        b.hidden = offen || b.dataset.lade !== k.dataset.lade;
       });
     });
   });
@@ -550,6 +585,83 @@ const typen = [
       clearTimeout(tippUhr);
       tippUhr = setTimeout(zeichnen, 160);
     });
+  });
+
+  // ── Varianten ─────────────────────────────────────────────────────
+  //
+  // Sie leben im Tab und sonst nirgends: kein Konto, kein Speicher auf
+  // der Platte, kein Abruf. Wer die Seite schließt, hat sie nicht mehr
+  // — das ist der Preis dafür, dass diese Werkstatt ohne Anmeldung
+  // funktioniert, und er steht auch so auf der Seite.
+  let varianten = [];
+
+  function varianteNehmen() {
+    return {
+      stil: { ...stil },
+      breite: e('breite').value,
+      stufe: e('stufe').value,
+      verfahren: e('verfahren').value,
+      ruhezone: e('ruhezone').value,
+      typ: e('typ').value,
+      text: e('text').value,
+      svg: letzte ? letzte.svg : '',
+      note: letzte ? letzte.urteil.note : '?',
+      pruefung: letzte ? letzte.pruefung : 'gut',
+    };
+  }
+
+  function varianteAnwenden(v) {
+    Object.assign(stil, v.stil);
+    e('breite').value = v.breite;
+    e('stufe').value = v.stufe;
+    e('verfahren').value = v.verfahren;
+    e('ruhezone').value = v.ruhezone;
+    e('typ').value = v.typ;
+    e('text').value = v.text;
+    e('typ').dispatchEvent(new Event('change'));
+    e('vordergrund-hex').value = stil.vordergrund;
+    e('hintergrund-hex').value = stil.hintergrund;
+    for (const [id, feld] of [['modulform', 'modulform'], ['augenrahmen', 'augenrahmen'],
+                              ['augenkern', 'augenkern'], ['vordergrund', 'vordergrund']]) {
+      e(id).querySelectorAll('[data-wert]').forEach((a) =>
+        a.classList.toggle('wahl-aktiv', a.dataset.wert === stil[feld]));
+    }
+    zeichnen();
+  }
+
+  function streifenZeichnen() {
+    e('streifen-leer').hidden = varianten.length > 0;
+    e('streifen').innerHTML = varianten
+      .map((v, i) =>
+        '<div class="variante" data-nr="' + i + '">' +
+          '<div class="variante-bild">' + v.svg + '</div>' +
+          '<div class="variante-fuss">' +
+            '<span class="variante-note u-' + v.pruefung + '">' + v.note + '</span>' +
+            '<button type="button" class="variante-weg" data-weg="' + i + '" ' +
+              'aria-label="Variante entfernen">&times;</button>' +
+          '</div>' +
+        '</div>')
+      .join('');
+  }
+
+  e('variante-neu').addEventListener('click', () => {
+    if (!letzte) return;
+    // Acht reichen. Mehr passen nicht nebeneinander, und wer mehr
+    // braucht, vergleicht nicht mehr, sondern sammelt.
+    if (varianten.length >= 8) varianten.shift();
+    varianten.push(varianteNehmen());
+    streifenZeichnen();
+  });
+
+  e('streifen').addEventListener('click', (ev) => {
+    const weg = ev.target.closest('[data-weg]');
+    if (weg) {
+      varianten.splice(Number(weg.dataset.weg), 1);
+      streifenZeichnen();
+      return;
+    }
+    const v = ev.target.closest('[data-nr]');
+    if (v) varianteAnwenden(varianten[Number(v.dataset.nr)]);
   });
 
   e('abstand').dispatchEvent(new Event('input'));
@@ -660,32 +772,75 @@ const typen = [
   .holen { display: flex; flex-wrap: wrap; gap: 8px; padding: 18px 22px 0; }
   .holen .btn { font-size: 14px; padding: 9px 18px; }
 
-  .reiter {
+  .chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 14px 18px 0;
+    gap: 7px;
+    padding: 16px 18px 0;
   }
-  .reiter-knopf {
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     font: inherit;
     font-size: 13.5px;
     font-weight: 600;
     cursor: pointer;
-    background: none;
-    border: none;
+    background: var(--color-bg);
+    border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
     border-radius: 999px;
-    padding: 8px 16px;
-    color: rgba(32, 30, 29, 0.62);
+    padding: 9px 16px;
+    color: rgba(32, 30, 29, 0.72);
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  .reiter-knopf:hover { color: var(--color-text); }
-  .reiter-aktiv { background: var(--color-accent); color: var(--color-bg); }
-  .reiter-aktiv:hover { color: var(--color-bg); }
+  .chip:hover { color: var(--color-text); border-color: var(--color-accent); }
+  .chip-aktiv {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-bg);
+  }
+  .chip-aktiv:hover { color: var(--color-bg); }
 
-  .blatt { display: flex; flex-direction: column; gap: 14px; }
-  /* `display` schlaegt das hidden-Attribut. Ohne diese Zeile stehen
-     alle vier Reiter gleichzeitig untereinander, und die Reiterleiste
-     sieht aus, als tue sie nichts. */
-  .blatt[hidden], [data-typfeld][hidden] { display: none; }
+  /* Die Schublade fährt auf, sie blinkt nicht auf. Eine Bewegung je
+     Handlung — mit prefers-reduced-motion steht sie sofort da. */
+  .lade { display: flex; flex-direction: column; gap: 14px; animation: aufziehen 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .lade[hidden], [data-typfeld][hidden] { display: none; }
+  @keyframes aufziehen {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Varianten-Filmstreifen ──────────────────────────────────────── */
+  .streifen { padding: 20px 22px 4px; border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); margin-top: 18px; }
+  .streifen-kopf {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--color-accent-700); margin-bottom: 12px;
+  }
+  .streifen-neu {
+    font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    background: none; border: none; color: var(--color-accent-700);
+    text-transform: none; letter-spacing: 0;
+  }
+  .streifen-neu:hover { text-decoration: underline; }
+  .streifen-band { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+  .variante {
+    flex: none; width: 92px; cursor: pointer;
+    background: var(--color-bg); border-radius: 16px; padding: 8px;
+    transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .variante:hover { transform: translateY(-3px); }
+  .variante-bild svg { width: 100%; height: auto; display: block; border-radius: 8px; }
+  .variante-fuss { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  .variante-note {
+    font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 2px 7px;
+  }
+  .variante-weg {
+    font: inherit; font-size: 15px; line-height: 1; cursor: pointer;
+    background: none; border: none; color: rgba(32, 30, 29, 0.45); padding: 0 2px;
+  }
+  .variante-weg:hover { color: #a82e23; }
+
   .feld { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px;
     font-weight: 600; color: rgba(32, 30, 29, 0.62); }
   .feldname { font-size: 12.5px; font-weight: 600; color: rgba(32, 30, 29, 0.62); }

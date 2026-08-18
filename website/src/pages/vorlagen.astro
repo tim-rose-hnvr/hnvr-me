@@ -132,7 +132,7 @@ const teamZahlen = [
           </ul>
           <div class="vorlage-fuss">
             {v.stand === 'gebaut'
-              ? <a href={weg('/preise')} class="btn btn-primary">Verwenden</a>
+              ? <a href={weg('/werkstatt')} class="btn btn-primary">Ansehen</a>
               : <span class="btn btn-geist">noch nicht gebaut</span>}
             <span class:list={['vorlage-stand', { 'stand-offen': v.stand !== 'gebaut' }]}>
               {v.stand === 'gebaut' ? 'im System' : 'geplant'}

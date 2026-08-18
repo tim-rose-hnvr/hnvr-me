@@ -15,6 +15,7 @@
 
 const { app, BrowserWindow, dialog, session, shell, powerSaveBlocker } = require('electron');
 const { fork } = require('node:child_process');
+const { sucheLaufendeBox, ersterFreierPort, wieStarten } = require('./finden.cjs');
 const path = require('node:path');
 const fs = require('node:fs');
 
@@ -64,93 +65,13 @@ function serverPfad() {
   return path.join(__dirname, '..', 'server', 'server.js');
 }
 
-/**
- * Antwortet auf diesem Port eine Box? Dann welche Fassung?
- *
- * Ohne diese Frage ist der zweite Start ein Rätsel: Der Serverprozess sagt
- * „läuft bereits" und beendet sich, die Hülle wartet 45 Sekunden auf eine
- * Meldung, die nie kommt, und zeigt „Die Box startet nicht" — obwohl auf
- * demselben Rechner eine völlig gesunde Box läuft.
- */
-function frageBox(port, sekunden = 2) {
-  return new Promise((fertig) => {
-    const http = require('node:http');
-    const uhr = setTimeout(() => {
-      anfrage.destroy();
-      fertig(null);
-    }, sekunden * 1000);
-    const anfrage = http.get({ host: '127.0.0.1', port, path: '/api/version', timeout: sekunden * 1000 }, (antwort) => {
-      let text = '';
-      antwort.on('data', (t) => {
-        text += t;
-        if (text.length > 8192) anfrage.destroy();
-      });
-      antwort.on('end', () => {
-        clearTimeout(uhr);
-        try {
-          const daten = JSON.parse(text);
-          fertig(daten && daten.version ? { port, version: String(daten.version) } : null);
-        } catch {
-          fertig(null);
-        }
-      });
-    });
-    anfrage.on('error', () => {
-      clearTimeout(uhr);
-      fertig(null);
-    });
-    anfrage.on('timeout', () => anfrage.destroy());
-  });
-}
-
-/** Sucht auf den Ports, auf die die Box ausweichen würde. */
-async function sucheLaufendeBox() {
-  for (let i = 0; i <= 10; i++) {
-    const gefunden = await frageBox(PORT_WUNSCH + i, i === 0 ? 2 : 0.6);
-    if (gefunden) return gefunden;
-  }
-  return null;
-}
-
-/**
- * Bittet eine ältere Box, den Platz zu räumen.
- *
- * Sie stammt aus einer vorigen Installation und ist beim Aktualisieren
- * übrig geblieben. Sie einfach weiterzubenutzen wäre falsch: Sie liefert die
- * alte Oberfläche aus, und der Betreiber sähe von seiner Aktualisierung
- * nichts.
- */
-function bitteBoxZuBeenden(port) {
-  return new Promise((fertig) => {
-    const http = require('node:http');
-    const anfrage = http.request(
-      { host: '127.0.0.1', port, path: '/api/beenden', method: 'POST', timeout: 3000 },
-      (antwort) => {
-        antwort.resume();
-        antwort.on('end', () => fertig(antwort.statusCode === 200));
-      }
-    );
-    anfrage.on('error', () => fertig(false));
-    anfrage.on('timeout', () => {
-      anfrage.destroy();
-      fertig(false);
-    });
-    anfrage.end();
-  });
-}
-
-/** Wartet, bis auf dem Port niemand mehr antwortet. */
-async function wartetBisFrei(port, sekunden = 10) {
-  for (let i = 0; i < sekunden * 2; i++) {
-    if (!(await frageBox(port, 0.5))) return true;
-    await new Promise((weiter) => setTimeout(weiter, 500));
-  }
-  return false;
-}
-
 /* Wie oft die Box nach einem Absturz neu gestartet wurde. Ohne Zähler dreht
    sich bei einem Startfehler eine Schleife, die niemand sieht. */
 let neustarts = 0;
+
+/* Auf welchem Port die eigene Box laufen soll. Meist der Wunschport — aber
+   nicht, wenn dort eine alte Fassung klebt, die sich nicht bitten lässt. */
+let portFuerUns = PORT_WUNSCH;
 
 function starteBox() {
   const skript = serverPfad();
@@ -161,7 +82,7 @@ function starteBox() {
       ...process.env,
       YOUBOOTH_DATEN: DATEN,
       YOUBOOTH_OBERFLAECHE: path.join(__dirname, '..', 'dist'),
-      PORT: String(PORT_WUNSCH),
+      PORT: String(portFuerUns),
       // Damit der Server nicht in ein Archiv greifen muss, um zu wissen,
       // welche Fassung er ist.
       YOUBOOTH_FASSUNG: app.getVersion(),
@@ -205,8 +126,13 @@ function starteBox() {
        weil auf dem Port schon eine läuft. Dann ist Neustarten genau falsch;
        richtig ist, die vorhandene zu benutzen. */
     if (code === 0) {
-      const laeuft = await sucheLaufendeBox();
-      if (laeuft) {
+      const laeuft = await sucheLaufendeBox(PORT_WUNSCH);
+      /* NUR bei gleicher Fassung übernehmen. Eine ältere Box liefert ihre
+         eigene, alte Oberfläche aus — der Betreiber hätte aktualisiert und
+         sähe davon nichts. Genau das wäre in dem Fall passiert, der diesen
+         Umbau ausgelöst hat: Die alte Fassung kannte `/api/beenden` noch
+         nicht, ließ sich also nicht bitten, und wäre dann übernommen worden. */
+      if (laeuft && laeuft.version === app.getVersion()) {
         merke(`Es läuft bereits eine Box auf Port ${laeuft.port} (Fassung ${laeuft.version}) — sie wird benutzt.`);
         adresse = `http://127.0.0.1:${laeuft.port}`;
         server = null;
@@ -215,6 +141,10 @@ function starteBox() {
           meldeBereit = null;
         }
         return;
+      }
+      if (laeuft) {
+        merke(`Auf Port ${laeuft.port} klebt Fassung ${laeuft.version} — wir weichen aus.`);
+        portFuerUns = await ersterFreierPort(PORT_WUNSCH);
       }
     }
 
@@ -374,29 +304,20 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(async () => {
     erlaubeKamera();
 
-    /* Vor dem eigenen Start nachsehen, ob schon eine Box läuft.
-       Drei Fälle, drei Antworten — vorher gab es nur einen: aufgeben.
-         · Gleiche Fassung  → benutzen. Das Fenster ist sofort da.
-         · Andere Fassung   → sie stammt aus der vorigen Installation und
-                              soll weichen; sonst zeigt die neue Hülle die
-                              alte Oberfläche.
-         · Nichts           → selbst starten, wie bisher. */
-    const vorhanden = await sucheLaufendeBox();
-    if (vorhanden && vorhanden.version === app.getVersion()) {
-      merke(`Eine Box der Fassung ${vorhanden.version} läuft schon auf Port ${vorhanden.port} — sie wird benutzt.`);
-      adresse = `http://127.0.0.1:${vorhanden.port}`;
+    /* Vor dem eigenen Start nachsehen, ob schon eine Box läuft. Die
+       Entscheidung selbst steht in `finden.cjs` — dort hängt sie nicht an
+       Electron und wird von `tools/start-probe.mjs` durchgemessen. */
+    const entscheidung = await wieStarten(PORT_WUNSCH, app.getVersion(), merke);
+    portFuerUns = entscheidung.port;
+
+    if (entscheidung.art === 'benutzen') {
+      adresse = `http://127.0.0.1:${entscheidung.port}`;
       baueFenster();
       pruefeAktualisierung();
       app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) baueFenster();
       });
       return;
-    }
-    if (vorhanden) {
-      merke(`Auf Port ${vorhanden.port} läuft noch Fassung ${vorhanden.version} — sie wird gebeten aufzuhören.`);
-      const gehoert = await bitteBoxZuBeenden(vorhanden.port);
-      const frei = await wartetBisFrei(vorhanden.port, gehoert ? 10 : 4);
-      merke(frei ? 'Der Platz ist frei.' : 'Die alte Box antwortet weiter — es wird auf einem anderen Port gestartet.');
     }
 
     starteBox();

@@ -15,11 +15,16 @@
  *   4. Eine ältere Box lässt sich von außen zum Aufhören bewegen.
  *   5. Stirbt die Hülle, stirbt die Box mit — sonst entsteht genau der
  *      Waisenprozess, der den Fehler ausgelöst hat.
+ *   6. Eine ALTE Box, die `/api/beenden` noch gar nicht kennt, blockiert den
+ *      Port. Dann muss die neue ausweichen — und darf die alte auf keinen
+ *      Fall übernehmen: Der Betreiber hätte aktualisiert und sähe weiter die
+ *      alte Oberfläche.
  *
  *   node tools/start-probe.mjs
  */
 
 import { fork } from 'node:child_process';
+import { wieStarten } from '../huelle/finden.cjs';
 import http from 'node:http';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -196,6 +201,33 @@ try {
   pruefe('Bricht der Kanal zur Hülle, beendet sich die Box von selbst', weg,
     'der Prozess lebt noch — genau das war der Waisenprozess');
   if (!weg) dritte.kind.kill('SIGKILL');
+  /* 6 — Eine alte Fassung, die sich nicht bitten lässt. */
+  console.log('\n6 · Alte Fassung ohne /api/beenden blockiert den Port');
+  const altePort = PORT + 1;
+  const alte = http.createServer((anfrage, antwort) => {
+    if (anfrage.url === '/api/version') {
+      antwort.writeHead(200, { 'content-type': 'application/json' });
+      antwort.end(JSON.stringify({ version: '1.0.3' }));
+      return;
+    }
+    // Genau wie 1.0.3: Diesen Weg gibt es dort noch nicht.
+    antwort.writeHead(404);
+    antwort.end();
+  });
+  await new Promise((fertig) => alte.listen(altePort, '127.0.0.1', fertig));
+
+  const zeilen = [];
+  const entscheidung = await wieStarten(altePort, '1.0.5', (z) => zeilen.push(z));
+  pruefe('Die alte Box wird gefunden', zeilen.some((z) => z.includes('1.0.3')), zeilen.join(' / '));
+  pruefe('Sie wird NICHT übernommen', entscheidung.art !== 'benutzen', entscheidung.art);
+  pruefe('Die neue weicht auf einen freien Port aus', entscheidung.art === 'ausweichen', entscheidung.art);
+  pruefe('Und zwar nicht auf den blockierten', entscheidung.port !== altePort, String(entscheidung.port));
+
+  /* Und die Gegenprobe: Läuft dort die GLEICHE Fassung, wird sie benutzt. */
+  const gleich = await wieStarten(altePort, '1.0.3', () => {});
+  pruefe('Bei gleicher Fassung wird die laufende benutzt', gleich.art === 'benutzen', gleich.art);
+  pruefe('Und zwar genau die auf dem Port', gleich.port === altePort, String(gleich.port));
+  await new Promise((fertig) => alte.close(fertig));
 } finally {
   for (const k of aufzuraeumen) {
     try {

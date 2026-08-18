@@ -9,14 +9,14 @@
 html {
   height: auto;
   overflow: visible;
-  background: #f6f4f1;
+  background: var(--paper);
 }
 
 body.buchenseite {
   height: auto;
   min-height: 100%;
-  background: #f6f4f1;
-  color: #17171c;
+  background: var(--paper);
+  color: var(--ink-soft);
   overflow: visible;
   user-select: text;
 }
@@ -41,7 +41,7 @@ body.buchenseite {
 
 /* Amber trägt auf Papier zu wenig Kontrast für Text — dafür die dunkle
    Schwester, gleiche Familie, lesbar auf Weiß. */
-.bmono--amber { color: #8a5c00; }
+.bmono--amber { color: var(--amber-text); }
 
 .bkopf {
   display: flex;
@@ -93,7 +93,7 @@ body.buchenseite {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-left: 3px solid var(--amber);
   border-radius: 14px;
-  background: #fff;
+  background: var(--weiss);
   padding: 26px 28px;
 }
 
@@ -121,10 +121,10 @@ body.buchenseite {
   padding: 20px 22px;
   border-radius: 14px;
   border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #fff;
+  background: var(--weiss);
   cursor: pointer;
   font-family: var(--schrift);
-  color: #17171c;
+  color: var(--ink-soft);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -185,8 +185,8 @@ body.buchenseite {
   min-height: 44px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #fff;
-  color: #17171c;
+  background: var(--weiss);
+  color: var(--ink-soft);
   font-family: var(--mono);
   font-weight: 500;
   font-size: 14px;
@@ -231,8 +231,8 @@ body.buchenseite {
   min-height: 50px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.14);
-  background: #fff;
-  color: #17171c;
+  background: var(--weiss);
+  color: var(--ink-soft);
   padding: 12px 14px;
   font-family: var(--schrift);
   font-size: 16px;
@@ -252,8 +252,8 @@ textarea.beingabe { resize: vertical; }
   padding: 0 26px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.14);
-  background: #fff;
-  color: #17171c;
+  background: var(--weiss);
+  color: var(--ink-soft);
   font-family: var(--schrift);
   font-weight: 700;
   font-size: 15px;
@@ -292,8 +292,8 @@ textarea.beingabe { resize: vertical; }
   line-height: 1.5;
 }
 
-.bmeldung--fehler { color: #b3382c; }
-.bmeldung--gut { color: #0f7a5e; }
+.bmeldung--fehler { color: var(--warn-text); }
+.bmeldung--gut { color: var(--ok-text); }
 .bmeldung--still { color: rgba(0, 0, 0, 0.55); }
 
 @media (prefers-reduced-motion: reduce) {

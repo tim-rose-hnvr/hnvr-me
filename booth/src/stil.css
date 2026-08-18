@@ -121,7 +121,7 @@ body {
   position: relative;
   border-radius: var(--r-karte);
   overflow: hidden;
-  background: #000;
+  background: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,6 +180,55 @@ h1 {
 
 h2 {
   font-size: clamp(26px, 2.6vw, 40px);
+}
+
+/* Versalien auf den Betreiber-Oberflächen, gemischt im Booth.
+   BUILD_SPEC Teil 2 nimmt ausdrücklich nur Booth- und Gäste-Oberflächen von
+   den Versalien aus — der Gast steht davor und liest im Vorbeigehen. Cockpit,
+   Portal, Editor, Einrichtung und Zentrale sind Arbeitsflächen und folgen der
+   Typografie der Website: h1 in 900, h2 in 900, h3 in 800.
+
+   Die Ränge stehen hier zusammen, statt in fünf Dateien einzeln — sonst
+   entsteht wieder das, was bei Farben und Modulen schon zweimal passiert
+   ist. */
+body.cockpitseite h1,
+body.cockpitseite h2,
+body.cockpitseite h3,
+body.editorseite h1,
+body.editorseite h2,
+body.editorseite h3,
+body.einrichtungsseite h1,
+body.einrichtungsseite h2,
+body.einrichtungsseite h3,
+body.zentraleseite h1,
+body.zentraleseite h2,
+body.zentraleseite h3 {
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+body.cockpitseite h1,
+body.editorseite h1,
+body.einrichtungsseite h1,
+body.zentraleseite h1 {
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+
+body.cockpitseite h2,
+body.editorseite h2,
+body.einrichtungsseite h2,
+body.zentraleseite h2 {
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+body.cockpitseite h3,
+body.editorseite h3,
+body.einrichtungsseite h3,
+body.zentraleseite h3 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 p {
@@ -365,7 +414,7 @@ p {
 .blitz {
   position: absolute;
   inset: 0;
-  background: #fff;
+  background: var(--weiss);
   opacity: 0;
   pointer-events: none;
 }
@@ -566,7 +615,7 @@ a.chip:hover {
 }
 
 .qrfeld {
-  background: #fff;
+  background: var(--weiss);
   padding: 20px;
   border-radius: var(--r-knopf);
   align-self: center;
@@ -639,7 +688,7 @@ a.chip:hover {
   width: 104px;
   height: 104px;
   border-radius: 10px;
-  background: #fff;
+  background: var(--weiss);
   padding: 6px;
 }
 

@@ -152,7 +152,7 @@ body {
   color: var(--text-hell-leise, rgba(244, 242, 238, 0.62));
 }
 
-.ameldung--fehler { color: #ff8271; }
+.ameldung--fehler { color: var(--warn-hell); }
 
 /* --- Logo ---------------------------------------------------------- */
 

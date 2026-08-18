@@ -28,6 +28,10 @@
   --amber: #f2b23e;
   --amber-ink: #141008;
   --paper: #f6f4f1;
+  /* Eine Spur tiefer als `paper`: für Flächen, die eingelassen wirken sollen —
+     Bildkästen, Verlaufseinträge. Die Software hatte dafür zwei leicht
+     verschiedene Grautöne, je nach Datei. */
+  --paper-tief: #f0ede8;
   --weiss: #ffffff;
   --deep: #8e2b26;
 
@@ -55,6 +59,44 @@
   /* Zustände — nie dekorativ verwenden */
   --ok: #17b187;
   --warn: #e0483c;
+
+  /* Dieselben Zustände als TEXT.
+     `--ok` und `--warn` sind Flächenfarben; als Schrift auf hellem Grund
+     liegen sie unter dem Kontrast, den man auf einem Booth-Screen aus zwei
+     Metern noch liest. Die Software hatte sich dafür still eigene Werte
+     gesucht — neun verschiedene, verteilt über sechs Dateien. Hier sind es
+     drei, und sie stehen dort, wo alle anderen auch stehen. */
+  --ok-text: #0f7a5e;
+  --warn-text: #b3382c;
+  --amber-text: #8a5c00;
+
+  /* Und auf dunklem Grund umgekehrt: Dort ist `--warn` zu dunkel. */
+  --warn-hell: #ff8271;
+
+  /* Zarte Tönung für Hinweiskästen. */
+  --amber-tint: #fff5e0;
+
+  /* --- Zeichnungen -------------------------------------------------------
+     Die Schemazeichnungen auf der Website (Aufbau der Box, Modulszenen)
+     brauchen Abstufungen, die Teil 2 nicht vorsieht — eine Zeichnung ohne
+     Tiefe ist keine. Sie stehen hier statt verstreut in den Komponenten;
+     dort lagen zwanzig verschiedene Töne, von denen drei nur zufällig
+     verschieden waren.
+
+     Sie sind Abstufungen von `ink` und `paper`, keine neuen Farben. */
+  --z-dunkel-1: #0d0d11;
+  --z-dunkel-2: #111116;
+  --z-dunkel-3: #1e1e26;
+  --z-dunkel-4: #2a2a33;
+  --z-dunkel-5: #3b3b46;
+
+  --z-hell-1: #faf8f5;
+  --z-hell-2: #f0ede8;
+  --z-hell-3: #e9e5dd;
+  --z-hell-4: #dcd6cb;
+
+  /* Ein warmer Ton für Haut und Holz in den Szenen. */
+  --z-warm: #c98b7a;
 
   /* --- Maß ------------------------------------------------------------- */
   --rand: clamp(20px, 4vw, 56px);

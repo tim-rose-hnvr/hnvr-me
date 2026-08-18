@@ -88,7 +88,7 @@ export function deuteFehler(fehler: unknown): { art: Kamerafehler; text: string 
     case 'SecurityError':
       return {
         art: 'verweigert',
-        text: 'Die Kamera ist nicht freigegeben. Im Installations-Zentrum die Freigabe erteilen.',
+        text: 'Die Kamera ist nicht freigegeben. In der Einrichtung die Freigabe erteilen.',
       };
     case 'NotFoundError':
     case 'OverconstrainedError':

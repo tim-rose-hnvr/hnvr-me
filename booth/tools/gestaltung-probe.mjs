@@ -67,6 +67,15 @@ for (const ordner of [path.join(WURZEL, 'booth', 'src'), path.join(WURZEL, 'youb
     for (const t of text.matchAll(/(--[a-z0-9-]+):\s*(#[0-9a-fA-F]{3,8})\s*;/g)) {
       stellen.push(`${path.relative(WURZEL, datei)}: ${t[1]}: ${t[2]}`);
     }
+    /* Und der zweite Weg, auf dem ein zweites System entsteht: nicht ein
+       eigener Token, sondern ein Hexwert direkt an der Eigenschaft. Davon
+       lagen 96 in den sechs Stilblättern der Software — die dunklen
+       Zustandsfarben allein in neun verschiedenen Tönen. */
+    for (const t of text.matchAll(
+      /\b(background|background-color|color|border-color|fill|stroke|outline-color):\s*(#[0-9a-fA-F]{3,8})\b/g
+    )) {
+      stellen.push(`${path.relative(WURZEL, datei)}: ${t[1]}: ${t[2]}`);
+    }
   }
 }
 pruefe('Keine Oberfläche definiert eigene Farbwerte als Token',

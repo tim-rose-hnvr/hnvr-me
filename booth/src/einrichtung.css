@@ -1,8 +1,8 @@
-/* Installations-Zentrum: hell wie das Cockpit, Schritt für Schritt. */
+/* Einrichtung: hell wie das Cockpit, Schritt für Schritt. */
 
 body.einrichtungsseite {
-  background: #f6f4f1;
-  color: #17171c;
+  background: var(--paper);
+  color: var(--ink-soft);
   overflow: auto;
   user-select: text;
 }
@@ -38,7 +38,7 @@ body.einrichtungsseite {
 }
 
 .eschritt {
-  background: #fff;
+  background: var(--weiss);
   border: 1px solid rgba(0, 0, 0, 0.09);
   border-radius: 14px;
   padding: 22px;
@@ -57,8 +57,8 @@ body.einrichtungsseite {
   width: 38px;
   height: 38px;
   border-radius: 999px;
-  background: #17171c;
-  color: #fff;
+  background: var(--ink-soft);
+  color: var(--weiss);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -100,15 +100,15 @@ body.einrichtungsseite {
 }
 
 .emeldung[data-zustand='gut'] {
-  color: #0f7a5e;
+  color: var(--ok-text);
 }
 
 .emeldung[data-zustand='schlecht'] {
-  color: #a5291f;
+  color: var(--warn-text);
 }
 
 .emeldung[data-zustand='laeuft'] {
-  color: #8a6512;
+  color: var(--amber-text);
 }
 
 .evideo {
@@ -116,7 +116,7 @@ body.einrichtungsseite {
   max-width: 420px;
   aspect-ratio: 4 / 3;
   border-radius: 10px;
-  background: #17171c;
+  background: var(--ink-soft);
   object-fit: cover;
   transform: scaleX(-1);
 }
@@ -124,7 +124,7 @@ body.einrichtungsseite {
 .eqr img {
   width: 180px;
   height: 180px;
-  background: #fff;
+  background: var(--weiss);
   padding: 10px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.09);
@@ -156,11 +156,11 @@ body.einrichtungsseite {
 }
 
 .elampe--gut {
-  background: #17b187;
+  background: var(--ok);
 }
 
 .elampe--schlecht {
-  background: #e0483c;
+  background: var(--warn);
 }
 
 @media (max-width: 640px) {

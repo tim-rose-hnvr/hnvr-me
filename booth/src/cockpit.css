@@ -2,8 +2,8 @@
    Gegenstück zum Booth: was Gäste sehen, ist dunkel und großflächig. */
 
 body.cockpitseite {
-  background: #f6f4f1;
-  color: #17171c;
+  background: var(--paper);
+  color: var(--ink-soft);
   overflow: auto;
   user-select: text;
 }
@@ -29,7 +29,7 @@ body.cockpitseite {
 
 .ckopf h1 {
   font-size: clamp(30px, 3.4vw, 44px);
-  color: #17171c;
+  color: var(--ink-soft);
 }
 
 .ckopf__marke {
@@ -52,8 +52,8 @@ body.cockpitseite {
   padding: 0 20px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.14);
-  background: #fff;
-  color: #17171c;
+  background: var(--weiss);
+  color: var(--ink-soft);
   font-family: var(--schrift);
   font-weight: 600;
   font-size: 14px;
@@ -87,7 +87,7 @@ body.cockpitseite {
 }
 
 .ckachel {
-  background: #fff;
+  background: var(--weiss);
   border: 1px solid rgba(0, 0, 0, 0.09);
   border-radius: 14px;
   padding: 20px;
@@ -111,7 +111,7 @@ body.cockpitseite {
 
 .cbereich h2 {
   font-size: clamp(22px, 2.2vw, 28px);
-  color: #17171c;
+  color: var(--ink-soft);
 }
 
 .cbereich__kopf {
@@ -130,7 +130,7 @@ body.cockpitseite {
 
 .cbild {
   margin: 0;
-  background: #fff;
+  background: var(--weiss);
   border: 1px solid rgba(0, 0, 0, 0.09);
   border-radius: 12px;
   overflow: hidden;
@@ -144,7 +144,7 @@ body.cockpitseite {
   width: 100%;
   aspect-ratio: 2 / 3;
   object-fit: contain;
-  background: #efece7;
+  background: var(--paper-tief);
   display: block;
 }
 
@@ -171,15 +171,29 @@ body.cockpitseite {
   gap: 6px;
 }
 
+/* Ein Eingabefeld ist so breit wie sein Inhalt, nicht so breit wie die Karte.
+   Vorher zog jedes Feld die volle Kartenbreite — ein Kennwortfeld über 700px,
+   das ist keine Gestaltung, sondern ein fehlendes Maß. Wer mehr braucht,
+   nimmt `--lang`; für Zahlen und PINs gibt es `--kurz`. */
 .ceingabe {
+  width: 100%;
+  max-width: 420px;
   min-height: 46px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.14);
-  background: #fff;
-  color: #17171c;
+  background: var(--weiss);
+  color: var(--ink-soft);
   padding: 0 14px;
   font-family: var(--schrift);
   font-size: 15px;
+}
+
+.ceingabe--kurz {
+  max-width: 200px;
+}
+
+.ceingabe--lang {
+  max-width: 100%;
 }
 
 .ceingabe:focus {
@@ -202,7 +216,7 @@ body.cockpitseite {
 }
 
 .cbereich--offen {
-  background: #fff5e0;
+  background: var(--amber-tint);
   border: 1px solid var(--amber);
   border-radius: 14px;
   padding: 24px;

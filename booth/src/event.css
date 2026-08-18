@@ -15,14 +15,14 @@
 html {
   height: auto;
   overflow: visible;
-  background: #f6f4f1;
+  background: var(--paper);
 }
 
 body.eventseite {
   height: auto;
   min-height: 100%;
-  background: #f6f4f1;
-  color: #17171c;
+  background: var(--paper);
+  color: var(--ink-soft);
   overflow: visible;
   user-select: text;
 }
@@ -138,7 +138,7 @@ body.eventseite {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
-  background: #fff;
+  background: var(--weiss);
   border: 1px solid rgba(0, 0, 0, 0.09);
 }
 
@@ -157,7 +157,7 @@ body.eventseite {
   padding: 7px 12px;
   border-radius: 8px;
   background: rgba(11, 11, 13, 0.82);
-  color: #f4f2ee;
+  color: var(--text-hell);
   font-family: var(--mono);
   font-weight: 500;
   font-size: 10.5px;
@@ -181,7 +181,7 @@ body.eventseite {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-left: 3px solid var(--eakzent);
   border-radius: 14px;
-  background: #fff;
+  background: var(--weiss);
   padding: 26px 28px;
   display: flex;
   flex-direction: column;
@@ -208,8 +208,8 @@ body.eventseite {
   min-height: 48px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.14);
-  background: #fff;
-  color: #17171c;
+  background: var(--weiss);
+  color: var(--ink-soft);
   padding: 0 14px;
   font-family: var(--schrift);
   font-size: 16px;
@@ -228,8 +228,8 @@ body.eventseite {
   align-items: center;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.14);
-  background: #fff;
-  color: #17171c;
+  background: var(--weiss);
+  color: var(--ink-soft);
   font-family: var(--schrift);
   font-weight: 600;
   font-size: 14px;
@@ -240,7 +240,7 @@ body.eventseite {
 .eknopf--amber {
   background: var(--eakzent);
   border-color: transparent;
-  color: #141008;
+  color: var(--amber-ink);
 }
 
 .emeldung {
@@ -248,7 +248,7 @@ body.eventseite {
   font-family: var(--schrift);
   font-weight: 600;
   font-size: 14px;
-  color: #b3382c;
+  color: var(--warn-text);
 }
 
 .efuss {

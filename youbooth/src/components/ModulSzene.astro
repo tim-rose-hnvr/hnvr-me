@@ -160,7 +160,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
     flex: 1 1 480px;
     min-width: min(460px, 100%);
     aspect-ratio: 16 / 10;
-    background: #111116;
+    background: var(--z-dunkel-2);
     border-radius: var(--r-karte);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
     overflow: hidden;
@@ -170,7 +170,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
   .flaeche {
     position: absolute;
     inset: 0;
-    background: #0d0d11;
+    background: var(--z-dunkel-1);
     padding: 16px;
     display: flex;
     gap: 14px;
@@ -206,14 +206,14 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
   }
 
   .kachelraster span {
-    background: #22222a;
+    background: var(--ink-hoch);
     border-radius: 4px;
     display: block;
     animation: auftauchen 0.8s ease-out both var(--verzug);
   }
 
   .kachelraster span:nth-child(3n) {
-    background: #2b2b35;
+    background: var(--z-dunkel-4);
   }
 
   .seitenfeld {
@@ -266,7 +266,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
   .blitzflaeche {
     position: absolute;
     inset: 0;
-    background: #fff;
+    background: var(--weiss);
     animation: blitzen 5s linear infinite;
     pointer-events: none;
   }
@@ -310,7 +310,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
     width: 7px;
     height: 7px;
     border-radius: var(--r-kreis);
-    background: #3b3b46;
+    background: var(--z-dunkel-5);
     display: block;
   }
 
@@ -375,7 +375,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
   }
 
   .zettelwand span {
-    background: #f4f2ee;
+    background: var(--text-hell);
     border-radius: 3px;
     display: block;
     transform: rotate(-2deg);
@@ -384,7 +384,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
 
   .zettelwand span:nth-child(2n) {
     transform: rotate(2.5deg);
-    background: #e9e5dd;
+    background: var(--z-hell-3);
   }
 
   /* buehne */
@@ -459,7 +459,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
   }
 
   .kalenderraster span {
-    background: #1e1e26;
+    background: var(--z-dunkel-3);
     border-radius: 3px;
     display: block;
   }

@@ -63,7 +63,7 @@ const { titel, beschreibung, abschnitte, stand = 'Entwurf' } = Astro.props;
 
   .warnung {
     margin: 32px var(--rand) 0;
-    background: #fff5e0;
+    background: var(--amber-tint);
     border: 1px solid var(--amber);
     border-radius: var(--r-karte);
     padding: 20px 24px;
@@ -74,7 +74,7 @@ const { titel, beschreibung, abschnitte, stand = 'Entwurf' } = Astro.props;
   }
 
   .warnung .mono {
-    color: #8a6512;
+    color: var(--amber-text);
   }
 
   .warnung p {

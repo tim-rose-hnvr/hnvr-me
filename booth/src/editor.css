@@ -31,7 +31,7 @@ body.editorseite {
 }
 
 .mono--amber {
-  color: #b07d13;
+  color: var(--amber-text);
 }
 
 .mono--still {
@@ -50,7 +50,7 @@ body.editorseite {
   align-items: center;
   justify-content: space-between;
   padding: 12px clamp(14px, 3vw, 28px);
-  background: #fff;
+  background: var(--weiss);
   border-bottom: 1px solid var(--v-linie);
 }
 
@@ -78,7 +78,7 @@ body.editorseite {
   padding: 0 10px;
   border: 1px solid var(--v-linie);
   border-radius: 9px;
-  background: #fff;
+  background: var(--weiss);
   font: inherit;
   font-size: 14px;
   max-width: 260px;
@@ -89,7 +89,7 @@ body.editorseite {
   padding: 0 14px;
   border: 1px solid var(--v-tinte);
   border-radius: 9px;
-  background: #fff;
+  background: var(--weiss);
   color: var(--v-tinte);
   font: inherit;
   font-size: 13px;
@@ -100,7 +100,7 @@ body.editorseite {
 
 .vknopf:hover {
   background: var(--v-tinte);
-  color: #fff;
+  color: var(--weiss);
 }
 
 .vknopf--amber {
@@ -144,11 +144,11 @@ body.editorseite {
 }
 
 .vmeldung[data-art='fehler'] {
-  color: #a3341f;
+  color: var(--warn-text);
 }
 
 .vmeldung[data-art='gut'] {
-  color: #2c6b40;
+  color: var(--ok-text);
 }
 
 /* --- Fläche -------------------------------------------------------- */
@@ -199,7 +199,7 @@ body.editorseite {
 .vblatt {
   position: relative;
   height: min(72vh, 760px);
-  background: #fff;
+  background: var(--weiss);
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.16);
   touch-action: none;
 }
@@ -282,7 +282,7 @@ body.editorseite {
 }
 
 .vblock {
-  background: #fff;
+  background: var(--weiss);
   border: 1px solid var(--v-linie);
   border-radius: 12px;
   padding: 16px;
@@ -317,7 +317,7 @@ body.editorseite {
   padding: 6px 10px;
   border: 1px solid var(--v-linie);
   border-radius: 8px;
-  background: #fff;
+  background: var(--weiss);
   font: inherit;
   font-size: 13.5px;
   width: 100%;
@@ -365,7 +365,7 @@ textarea.veingabe {
   padding: 0 10px;
   border: 1px solid var(--v-linie);
   border-radius: 8px;
-  background: #fff;
+  background: var(--weiss);
   font: inherit;
   font-size: 13px;
   cursor: pointer;
@@ -384,7 +384,7 @@ textarea.veingabe {
   min-height: 30px;
   border: 1px solid var(--v-linie);
   border-radius: 7px;
-  background: #fff;
+  background: var(--weiss);
   font: inherit;
   font-size: 13px;
   cursor: pointer;
@@ -392,7 +392,7 @@ textarea.veingabe {
 
 .vmini:hover {
   background: var(--v-tinte);
-  color: #fff;
+  color: var(--weiss);
 }
 
 .vpalettenfarben {
@@ -439,7 +439,7 @@ textarea.veingabe {
 
 .vzurueck {
   text-decoration: none;
-  color: #b07d13;
+  color: var(--amber-text);
 }
 
 .vzurueck:hover {

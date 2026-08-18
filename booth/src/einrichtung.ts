@@ -1,5 +1,9 @@
 /**
- * Installations-Zentrum: die sechs Schritte, bevor die Box läuft.
+ * Einrichtung: die sechs Schritte, bevor die Box läuft.
+ *
+ * Hiess einmal „Installations-Zentrum". Seit es die Zentrale gibt, waren das
+ * zwei Seiten mit fast demselben Namen — und die Zentrale ist die erste, die
+ * aufgeht. Zwei „Zentren" nebeneinander sind eines zu viel.
  *
  * Jeder Schritt prüft etwas Echtes — Kamera, Druckweg, Ablage, Ausgabe-Adresse
  * — statt nur einen Haken zu setzen. Was nicht geprüft werden kann, sagt das
@@ -37,7 +41,7 @@ async function starte(ziel: HTMLElement): Promise<void> {
 
   const kopf = tag('header', 'ekopf');
   const titel = document.createElement('h1');
-  titel.textContent = 'Installations-Zentrum';
+  titel.textContent = 'Einrichtung';
   const zeile = tag('span', 'cmono');
   /* Seit die Box einen Server hat, kann sie alles auch im Browser: ablegen,
      drucken, ausliefern. Die Hülle bringt nur noch Vollbild, Autostart und
@@ -72,7 +76,7 @@ function schrittBox(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
      nur ihre gesalzene Prüfsumme. Hier wird eine neue gesetzt oder die alte
      entfernt — angezeigt wird nur, ob überhaupt eine gilt. */
   let neuePin = '';
-  const pin = feld('Neue Kiosk-PIN (leer = keine)', '', (v) => (neuePin = v));
+  const pin = feld('Neue Kiosk-PIN (leer = keine)', '', (v) => (neuePin = v), 'kurz');
   const pinFeld = pin.querySelector('input');
   if (pinFeld) {
     pinFeld.type = 'password';
@@ -296,7 +300,7 @@ function schrittNetz(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
     'Der QR-Code am Screen zeigt auf diese Adresse. In der Desktop-App trägt die Box sie selbst ein.'
   );
 
-  const adresse = feld('Ausgabe-Adresse', e.ausgabeBasis, (v) => (e.ausgabeBasis = v));
+  const adresse = feld('Ausgabe-Adresse', e.ausgabeBasis, (v) => (e.ausgabeBasis = v), 'lang');
   const vorschau = tag('div', 'eqr');
 
   const pruefe = knopf('Adresse holen und QR prüfen', 'cknopf cknopf--amber', async () => {
@@ -456,12 +460,26 @@ function befund(name: string, gut: boolean, text: string): HTMLElement {
   return zeile;
 }
 
-function feld(marke: string, wert: string, setze: (v: string) => void): HTMLElement {
+/**
+ * Ein beschriftetes Eingabefeld.
+ *
+ * `breite` ist keine Kosmetik: Ein Feld, das breiter ist als sein längster
+ * denkbarer Inhalt, sagt dem Auge etwas Falsches über die Eingabe. Eine
+ * vierstellige PIN in einem 700px breiten Kasten sieht aus, als fehlte noch
+ * etwas.
+ */
+function feld(
+  marke: string,
+  wert: string,
+  setze: (v: string) => void,
+  breite: 'kurz' | 'normal' | 'lang' = 'normal'
+): HTMLElement {
   const zeile = tag('label', 'czeile');
   const beschriftung = tag('span', 'cmono');
   beschriftung.textContent = marke;
   const eingabe = document.createElement('input');
-  eingabe.className = 'ceingabe';
+  eingabe.className =
+    'ceingabe' + (breite === 'kurz' ? ' ceingabe--kurz' : breite === 'lang' ? ' ceingabe--lang' : '');
   eingabe.value = wert;
   eingabe.addEventListener('input', () => setze(eingabe.value));
   zeile.append(beschriftung, eingabe);

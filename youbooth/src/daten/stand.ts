@@ -62,7 +62,10 @@ export const MODULSTAND: Record<string, Eintrag> = {
     offen: 'Vertrag und Zahlungsstand fehlen noch — Anfrage, Kalender, Pakete und Tickets laufen.',
   },
   'effekt-studio': { stand: 'arbeit', offen: 'Der Anschluss steht, die Auswahl am Screen fehlt.' },
-  'web-kamera': { stand: 'arbeit', offen: 'Aufnahmen von fremden Geräten kommen an, die Gastseite fehlt.' },
+  'web-kamera': {
+    stand: 'laeuft',
+    offen: 'Gesichtsfilter und Sticker kommen noch; aufnehmen und senden geht.',
+  },
   'foto-finder': { stand: 'geplant' },
   slideshow: { stand: 'geplant' },
   einwegkamera: { stand: 'geplant' },

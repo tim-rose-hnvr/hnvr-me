@@ -37,6 +37,7 @@ export default defineConfig({
         zentrale: 'zentrale.html',
         gaestebuch: 'gaestebuch.html',
         zettelwand: 'zettelwand.html',
+        gastkamera: 'gastkamera.html',
       },
     },
   },

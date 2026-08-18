@@ -22,7 +22,13 @@
  *    beantwortet Wix den Rückgriff mit 500 und leerem Rumpf. Das Ziel wird
  *    deshalb ausdrücklich mit `https://` und dem `host`-Kopf gebaut.
  *
- * 3. Eine Schleife entsteht nicht: Vorhandene Dateien werden vor diesem Modul
+ * 3. Ein Umlenken auf den Schrägstrich (`/preise` → `/preise/`) sieht nach
+ *    sauberen Adressen aus und ist unter der eigenen Domain tödlich: Dort
+ *    streift Wix den Schrägstrich ab, wir hängten ihn wieder an — 50 Runden,
+ *    dann gibt der Browser auf. Beide Schreibweisen liefern deshalb dasselbe
+ *    Blatt, ohne jede Umleitung.
+ *
+ * 4. Eine Schleife entsteht nicht: Vorhandene Dateien werden vor diesem Modul
  *    ausgeliefert. Nachgemessen, während hier ein fehlerhafter Stand lief und
  *    `/module/index.html` trotzdem mit 200 antwortete, `/module/` dagegen mit
  *    dem Fehler.
@@ -46,17 +52,16 @@ export default {
     // sie nicht — dann ist 404 richtig und keine HTML-Seite.
     if (istDatei(pfad)) return nichtGefunden('Nicht gefunden');
 
-    // Ohne Schrägstrich am Ende erst dorthin führen, damit jede Seite unter
-    // genau einer Adresse steht.
-    if (!pfad.endsWith('/')) {
-      return new Response(null, {
-        status: 308,
-        headers: { location: pfad + '/' + url.search },
-      });
-    }
-
+    /* KEINE Umleitung auf den Schrägstrich. Sie war der naheliegende Weg zu
+       einer kanonischen Adresse — und unter der eigenen Domain die Ursache
+       einer Endlosschleife: Dort streift Wix den Schrägstrich ab, hier wurde
+       er wieder angehängt, und der Browser gab nach 50 Runden auf. Gemessen
+       am 18.08. an `www.youbooth.me/vorlagen/`.
+       Beide Schreibweisen liefern jetzt dasselbe Blatt aus. */
     const host = request.headers.get('host') || url.host;
-    const ziel = `https://${host}${pfad}index.html`;
+    // `/preise` und `/preise/` führen beide zu `/preise/index.html`.
+    const rumpf = pfad.replace(/\/+$/, '');
+    const ziel = `https://${host}${rumpf}/index.html`;
 
     try {
       const antwort = await fetch(ziel);
@@ -71,8 +76,7 @@ export default {
         });
       }
     } catch {
-      // Kein Rückgriff möglich — dann wenigstens hinführen, statt 404 zu zeigen.
-      return new Response(null, { status: 302, headers: { location: pfad + 'index.html' } });
+      return nichtGefunden('Die Seite ist gerade nicht erreichbar.');
     }
 
     return nichtGefunden('Diese Seite gibt es nicht.');

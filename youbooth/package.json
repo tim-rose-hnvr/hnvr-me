@@ -7,11 +7,15 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "schuesse": "node tools/seitenschuesse.mjs"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.2.5",
     "@fontsource/ibm-plex-mono": "^5.2.5",
     "astro": "^7.2.2"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.62.1"
   }
 }

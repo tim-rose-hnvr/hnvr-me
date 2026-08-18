@@ -1,5 +1,6 @@
 ---
 import Rechtstext from '../components/Rechtstext.astro';
+import { angabe, hat } from '../daten/firma';
 
 /**
  * Datenschutzerklärung.
@@ -14,8 +15,10 @@ const abschnitte = [
   {
     titel: 'Verantwortlicher',
     zeilen: [
-      '[Firmenname], [Anschrift], [E-Mail], [Telefon].',
-      'Ein Datenschutzbeauftragter ist [benannt: Name und Kontakt / nicht benannt].',
+      `${angabe('name')}, ${angabe('strasse')}, ${angabe('plzOrt')}, ${angabe('email')}, ${angabe('telefon')}.`,
+      hat('datenschutzbeauftragte')
+        ? `Datenschutzbeauftragte Stelle: ${angabe('datenschutzbeauftragte')}.`
+        : 'Eine oder ein Datenschutzbeauftragter ist nicht bestellt; die gesetzlichen Schwellen sind nicht erreicht.',
     ],
   },
   {
@@ -23,14 +26,14 @@ const abschnitte = [
     zeilen: [
       'Beim Aufruf werden technisch notwendige Daten verarbeitet: IP-Adresse, Zeitpunkt, abgerufene Seite, Browser. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, unser berechtigtes Interesse am sicheren Betrieb.',
       'Die Website lädt keine externen Schriften, keine CDN-Skripte und kein Analysewerkzeug. Es werden keine Cookies zu Marketingzwecken gesetzt.',
-      'Serverprotokolle werden nach [Frist] gelöscht.',
+      `Serverprotokolle werden nach ${angabe('fristProtokolle')} gelöscht.`,
     ],
   },
   {
     titel: 'Kontakt- und Testanfragen',
     zeilen: [
       'Wenn ihr das Formular nutzt, verarbeiten wir Name, E-Mail, Firma, Anzahl der Boxen, Anliegen und Freitext, um die Anfrage zu beantworten. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO beziehungsweise eure Einwilligung nach lit. a.',
-      'Die Angaben werden nach [Frist] gelöscht, sofern kein Vertrag zustande kommt.',
+      `Die Angaben werden nach ${angabe('fristAnfragen')} gelöscht, sofern kein Vertrag zustande kommt.`,
     ],
   },
   {
@@ -51,7 +54,7 @@ const abschnitte = [
   {
     titel: 'Auftragsverarbeitung',
     zeilen: [
-      'Für Betreiber, die die Cloud-Funktionen nutzen, schließen wir einen Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO. Serverstandort ist [Frankfurt am Main, Deutschland].',
+      `Für Betreiber, die die Cloud-Funktionen nutzen, schließen wir einen Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO. Serverstandort ist ${angabe('serverstandort')}.`,
       'Der Betrieb der Box selbst funktioniert ohne Cloud; ohne Netz verlassen keine Daten das Gerät.',
     ],
   },
@@ -59,7 +62,7 @@ const abschnitte = [
     titel: 'Eure Rechte',
     zeilen: [
       'Ihr habt das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch sowie das Recht, eine Einwilligung jederzeit zu widerrufen.',
-      'Beschwerden richtet ihr an die zuständige Aufsichtsbehörde: [Behörde und Anschrift].',
+      `Beschwerden richtet ihr an die zuständige Aufsichtsbehörde: ${angabe('aufsichtsbehoerde')}.`,
     ],
   },
 ];

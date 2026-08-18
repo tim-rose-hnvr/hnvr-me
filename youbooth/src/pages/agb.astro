@@ -1,5 +1,6 @@
 ---
 import Rechtstext from '../components/Rechtstext.astro';
+import { angabe } from '../daten/firma';
 
 /**
  * Allgemeine Geschäftsbedingungen.
@@ -40,7 +41,7 @@ const abschnitte = [
     titel: '5. Laufzeit und Kündigung',
     zeilen: [
       'Monatslizenzen sind zum Monatsende kündbar, Jahreslizenzen zum Ende der Laufzeit. Die Kündigung ist im Cockpit ohne Angabe von Gründen möglich.',
-      'Nach Vertragsende bleiben Daten [30 Tage] abrufbar und werden anschließend gelöscht.',
+      `Nach Vertragsende bleiben Daten ${angabe('fristNachVertrag')} abrufbar und werden anschließend gelöscht.`,
     ],
   },
   {
@@ -53,7 +54,7 @@ const abschnitte = [
   {
     titel: '7. Verfügbarkeit und Support',
     zeilen: [
-      'Der Betrieb der Box funktioniert ohne Internetverbindung. Für Cloud-Dienste streben wir eine Verfügbarkeit von [99 %] im Jahresmittel an, ausgenommen angekündigte Wartung.',
+      `Der Betrieb der Box funktioniert ohne Internetverbindung. Für Cloud-Dienste streben wir eine Verfügbarkeit von ${angabe('verfuegbarkeit')} im Jahresmittel an, ausgenommen angekündigte Wartung.`,
       'Support ist werktags von 9 bis 18 Uhr erreichbar, Antwort in der Regel innerhalb von vier Stunden. Für laufende Events besteht eine Notfallnummer.',
     ],
   },
@@ -67,7 +68,7 @@ const abschnitte = [
   {
     titel: '9. Schlussbestimmungen',
     zeilen: [
-      'Es gilt das Recht der Bundesrepublik Deutschland. Gerichtsstand ist [Ort], soweit der Kunde Kaufmann ist.',
+      `Es gilt das Recht der Bundesrepublik Deutschland. Gerichtsstand ist ${angabe('gerichtsstand')}, soweit der Kunde Kaufmann ist.`,
       'Sollten einzelne Bestimmungen unwirksam sein, bleibt der übrige Vertrag wirksam.',
     ],
   },

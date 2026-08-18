@@ -1,43 +1,63 @@
 ---
 import Rechtstext from '../components/Rechtstext.astro';
+import { angabe, hat } from '../daten/firma';
 
 /**
  * Impressum nach § 5 DDG (früher § 5 TMG).
  *
- * ACHTUNG: Die Angaben unten sind Platzhalter. Sie müssen vor dem Livegang
- * durch die echten Daten ersetzt und rechtlich geprüft werden — ein falsches
- * Impressum ist abmahnfähig.
+ * Die Angaben kommen aus `daten/firma.ts` — dort einmal ausfüllen, hier
+ * nichts ändern. Was dort fehlt, erscheint auf der Seite als sichtbare
+ * Markierung; `tools/recht-probe.mjs` zählt es beim Bauen auf.
+ *
+ * ACHTUNG: Vor dem Livegang rechtlich prüfen lassen. Ein falsches Impressum
+ * ist abmahnfähig, und diese Datei kann nur die Form liefern, nicht die
+ * Richtigkeit.
  */
 
 const abschnitte = [
   {
     titel: 'Angaben gemäß § 5 DDG',
     zeilen: [
-      '[Firmenname]',
-      '[Straße und Hausnummer]',
-      '[PLZ Ort]',
-      'Deutschland',
+      angabe('name'),
+      angabe('strasse'),
+      angabe('plzOrt'),
+      angabe('land'),
     ],
   },
   {
     titel: 'Vertreten durch',
-    zeilen: ['[Name der vertretungsberechtigten Person]'],
+    zeilen: [angabe('vertretung')],
   },
   {
     titel: 'Kontakt',
-    zeilen: ['Telefon: +49 234 555 018', 'E-Mail: hallo@youbooth.me'],
+    zeilen: [`Telefon: ${angabe('telefon')}`, `E-Mail: ${angabe('email')}`],
   },
-  {
-    titel: 'Registereintrag',
-    zeilen: ['Eintragung im Handelsregister: [Registergericht]', 'Registernummer: [HRB …]'],
-  },
-  {
-    titel: 'Umsatzsteuer-Identifikationsnummer',
-    zeilen: ['Gemäß § 27 a Umsatzsteuergesetz: [DE …]'],
-  },
+  /* Register und Umsatzsteuer-Id gibt es nicht bei jeder Rechtsform. Fehlen
+     sie in `firma.ts`, entfällt der Abschnitt ganz — ein Impressum mit der
+     Zeile „Registernummer: ⟨fehlt⟩" behauptet eine Eintragung, die es
+     vielleicht gar nicht geben muss. */
+  ...(hat('registergericht') || hat('registernummer')
+    ? [
+        {
+          titel: 'Registereintrag',
+          zeilen: [
+            `Eintragung im Handelsregister: ${angabe('registergericht')}`,
+            `Registernummer: ${angabe('registernummer')}`,
+          ],
+        },
+      ]
+    : []),
+  ...(hat('ustId')
+    ? [
+        {
+          titel: 'Umsatzsteuer-Identifikationsnummer',
+          zeilen: [`Gemäß § 27 a Umsatzsteuergesetz: ${angabe('ustId')}`],
+        },
+      ]
+    : []),
   {
     titel: 'Verantwortlich für den Inhalt',
-    zeilen: ['[Name]', '[Anschrift wie oben]'],
+    zeilen: [angabe('redaktion'), `${angabe('strasse')}, ${angabe('plzOrt')}`],
   },
   {
     titel: 'Streitschlichtung',

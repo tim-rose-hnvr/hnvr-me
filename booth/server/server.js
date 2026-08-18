@@ -3155,7 +3155,7 @@ function cleanMicrosite(m, existing) {
     title: s(m.title, 80) || 'Unser Event',
     headline: s(m.headline, 80),
     subtitle: s(m.subtitle, 160),
-    accent: /^#[0-9a-fA-F]{6}$/.test(m.accent || '') ? m.accent : '#ffc857',
+    accent: /^#[0-9a-fA-F]{6}$/.test(m.accent || '') ? m.accent : '#f2b23e',   // unser Amber
     logo: m.logo === null ? null : (typeof m.logo === 'string' && m.logo.startsWith('data:image/') && m.logo.length < 3_000_000 ? m.logo : (existing ? existing.logo : null)),
     boxUrl: s(m.boxUrl, 200).replace(/\/$/, ''),
     gallery: m.gallery !== false,
@@ -3207,9 +3207,17 @@ app.delete('/api/microsites/:slug', requireKey, (req, res) => {
   res.json({ ok: true });
 });
 
-/* Hübsche Microsite-URL: /m/<slug> */
-app.get('/m/:slug', (req, res) =>
-  res.status(404).type('text').send('Event-Seiten gibt es in dieser Fassung noch nicht.'));
+/* Hübsche Event-Seiten-Adresse: /m/<slug>
+   Ausgeliefert wird immer dieselbe Seite; welche Feier gemeint ist, liest sie
+   aus dem Weg. Ob es die Seite gibt, ob sie abgelaufen ist und ob ein Kennwort
+   davor liegt, entscheidet `/api/microsites/public/:slug` — nicht diese Zeile.
+   Beim Bauen entsteht `event.html`; im Entwicklungsbetrieb liegt sie noch
+   nicht im `dist`, dann führt der Weg zur Quelle. */
+app.get('/m/:slug', (req, res) => {
+  const gebaut = path.join(OBERFLAECHE, 'event.html');
+  if (fs.existsSync(gebaut)) return res.sendFile(gebaut);
+  res.redirect('/event.html?slug=' + encodeURIComponent(req.params.slug));
+});
 
 /* ---------- API: Boxen (Mehr-Box-Verwaltung im Kunden-Dashboard) ---------- */
 

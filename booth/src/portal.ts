@@ -66,6 +66,28 @@ type Ticket = {
   messages: { from: string; text: string; time: string }[];
 };
 
+type Eventseite = {
+  slug: string;
+  title: string;
+  headline: string;
+  subtitle: string;
+  accent: string;
+  logo: string | null;
+  boxUrl: string;
+  gallery: boolean;
+  theme: 'glow' | 'photo' | 'minimal';
+  expires: string;
+  password: string;
+  enabled: boolean;
+  created: string;
+};
+
+const ANMUTUNGEN: { id: Eventseite['theme']; name: string }[] = [
+  { id: 'glow', name: 'Leuchten' },
+  { id: 'photo', name: 'Groß' },
+  { id: 'minimal', name: 'Ruhig' },
+];
+
 const BUCHUNGSSTAENDE: Buchungsstand[] = ['angefragt', 'bestätigt', 'abgelehnt', 'abgeschlossen'];
 const TICKETSTAENDE: Ticketstand[] = ['offen', 'beantwortet', 'geschlossen'];
 
@@ -99,12 +121,13 @@ async function hole<T>(pfad: string, wunsch?: RequestInit): Promise<T> {
 /* Zustand                                                             */
 /* ------------------------------------------------------------------ */
 
-type Reiter = 'buchungen' | 'kalender' | 'pakete' | 'tickets';
+type Reiter = 'buchungen' | 'kalender' | 'pakete' | 'seiten' | 'tickets';
 
 let reiter: Reiter = 'buchungen';
 let buchungen: Buchung[] = [];
 let pakete: Paket[] = [];
 let tickets: Ticket[] = [];
+let seiten: Eventseite[] = [];
 let gesperrt: string[] = [];
 let belegt: string[] = [];
 let meldung = '';
@@ -125,7 +148,7 @@ async function starte(ziel: HTMLElement): Promise<void> {
 }
 
 async function lade(): Promise<void> {
-  const [b, p, t, v] = await Promise.all([
+  const [b, p, t, v, e] = await Promise.all([
     hole<Buchung[]>('/api/bookings').catch(() => [] as Buchung[]),
     hole<Paket[]>('/api/packages').catch(() => [] as Paket[]),
     hole<Ticket[]>('/api/tickets').catch(() => [] as Ticket[]),
@@ -133,12 +156,14 @@ async function lade(): Promise<void> {
       blocked: [] as string[],
       booked: [] as string[],
     })),
+    hole<Eventseite[]>('/api/microsites').catch(() => [] as Eventseite[]),
   ]);
   buchungen = b;
   pakete = p;
   tickets = t;
   gesperrt = v.blocked;
   belegt = v.booked;
+  seiten = e;
 }
 
 function sage(text: string, art: 'still' | 'gut' | 'fehler' = 'still'): void {
@@ -175,7 +200,9 @@ function zeichne(ziel: HTMLElement): void {
         ? kalenderbereich(ziel)
         : reiter === 'pakete'
           ? paketbereich(ziel)
-          : ticketbereich(ziel)
+          : reiter === 'seiten'
+            ? seitenbereich(ziel)
+            : ticketbereich(ziel)
   );
 }
 
@@ -215,6 +242,7 @@ function reiterleiste(ziel: HTMLElement, anfragen: number, offen: number): HTMLE
     { id: 'buchungen', text: 'Buchungen', zahl: anfragen },
     { id: 'kalender', text: 'Kalender' },
     { id: 'pakete', text: 'Pakete' },
+    { id: 'seiten', text: 'Event-Seiten' },
     { id: 'tickets', text: 'Tickets', zahl: offen },
   ];
   wege.forEach((w) => {
@@ -605,6 +633,124 @@ function ticketkarte(ziel: HTMLElement, t: Ticket): HTMLElement {
     reihe.append(knopf);
   });
 
+  karte.append(reihe);
+  return karte;
+}
+
+/* --- Event-Seiten -------------------------------------------------- */
+
+function seitenbereich(ziel: HTMLElement): HTMLElement {
+  const bereich = tag('section', 'cbereich');
+  const kopfzeile = tag('div', 'cbereich__kopf');
+  const titel = document.createElement('h2');
+  titel.textContent = 'Event-Seiten';
+  kopfzeile.append(titel, mono(`${seiten.filter((s) => s.enabled).length} von ${seiten.length} offen`));
+  bereich.append(
+    kopfzeile,
+    hinweis(
+      'Eine Adresse, die der Kunde weitergeben kann. Ein Kennwort davor und ein Datum, an dem ' +
+        'alles verschwindet, sind beide freiwillig — versprochen ist aber, was hier steht.'
+    )
+  );
+
+  seiten.forEach((s) => bereich.append(seitenkarte(ziel, s)));
+
+  const neuKnopf = tag('button', 'cknopf cknopf--amber');
+  neuKnopf.textContent = 'Event-Seite anlegen';
+  neuKnopf.addEventListener('click', () =>
+    void tueUndZeichne(
+      ziel,
+      () =>
+        hole('/api/microsites', {
+          method: 'POST',
+          body: JSON.stringify({ title: 'Neue Feier', headline: '', subtitle: '', enabled: false }),
+        }),
+      'Seite angelegt — sie ist noch zu.'
+    )
+  );
+  bereich.append(neuKnopf);
+  return bereich;
+}
+
+function seitenkarte(ziel: HTMLElement, s: Eventseite): HTMLElement {
+  const karte = tag('article', `pkarte${s.enabled ? '' : ' pkarte--still'}`);
+  const entwurf: Eventseite = { ...s };
+
+  const adresse = `${location.origin}/m/${s.slug}`;
+
+  const kopfzeile = tag('div', 'pkarte__kopf');
+  const name = tag('b', 'pkarte__titel');
+  name.textContent = s.title;
+  kopfzeile.append(name, marke(s.enabled ? 'offen' : 'zu'));
+  if (s.password) kopfzeile.append(marke('kennwort'));
+  if (s.expires) kopfzeile.append(marke(`bis ${datum(s.expires)}`));
+  karte.append(kopfzeile);
+
+  const link = tag('a', 'pkarte__adresse') as HTMLAnchorElement;
+  link.href = adresse;
+  link.target = '_blank';
+  link.rel = 'noreferrer';
+  link.textContent = adresse;
+  karte.append(link);
+
+  karte.append(
+    eingabe('Titel', entwurf.title, (v) => (entwurf.title = v)),
+    eingabe('Überschrift', entwurf.headline, (v) => (entwurf.headline = v), 'steht groß auf der Seite'),
+    eingabe('Zeile darunter', entwurf.subtitle, (v) => (entwurf.subtitle = v)),
+    eingabe('Kennwort', entwurf.password, (v) => (entwurf.password = v), 'leer = ohne'),
+    eingabe('Läuft ab am', entwurf.expires, (v) => (entwurf.expires = v), 'JJJJ-MM-TT, leer = nie'),
+    eingabe('Farbe', entwurf.accent, (v) => (entwurf.accent = v), '#f2b23e')
+  );
+
+  const anmutung = tag('div', 'creihe');
+  ANMUTUNGEN.forEach((a) => {
+    const knopf = tag('button', `cknopf cknopf--klein${entwurf.theme === a.id ? ' cknopf--amber' : ''}`);
+    knopf.textContent = a.name;
+    knopf.addEventListener('click', () =>
+      void tueUndZeichne(
+        ziel,
+        () => hole(`/api/microsites/${encodeURIComponent(s.slug)}`, { method: 'PUT', body: JSON.stringify({ ...entwurf, theme: a.id }) }),
+        `Anmutung: ${a.name}.`
+      )
+    );
+    anmutung.append(knopf);
+  });
+  karte.append(mono('Anmutung'), anmutung);
+
+  const reihe = tag('div', 'creihe');
+
+  const sichern = tag('button', 'cknopf cknopf--amber cknopf--klein');
+  sichern.textContent = 'Sichern';
+  sichern.addEventListener('click', () =>
+    void tueUndZeichne(
+      ziel,
+      () => hole(`/api/microsites/${encodeURIComponent(s.slug)}`, { method: 'PUT', body: JSON.stringify(entwurf) }),
+      `„${entwurf.title}" gesichert.`
+    )
+  );
+
+  const schalten = tag('button', 'cknopf cknopf--klein');
+  schalten.textContent = s.enabled ? 'Schließen' : 'Öffnen';
+  schalten.addEventListener('click', () =>
+    void tueUndZeichne(
+      ziel,
+      () => hole(`/api/microsites/${encodeURIComponent(s.slug)}`, { method: 'PUT', body: JSON.stringify({ ...entwurf, enabled: !s.enabled }) }),
+      s.enabled ? 'Die Seite ist zu.' : 'Die Seite ist offen.'
+    )
+  );
+
+  const loeschen = tag('button', 'cknopf cknopf--klein');
+  loeschen.textContent = 'Löschen';
+  loeschen.addEventListener('click', () => {
+    if (!window.confirm(`Event-Seite „${s.title}" wirklich löschen? Die Adresse führt danach ins Leere.`)) return;
+    void tueUndZeichne(
+      ziel,
+      () => hole(`/api/microsites/${encodeURIComponent(s.slug)}`, { method: 'DELETE' }),
+      'Seite gelöscht.'
+    );
+  });
+
+  reihe.append(sichern, schalten, loeschen);
   karte.append(reihe);
   return karte;
 }

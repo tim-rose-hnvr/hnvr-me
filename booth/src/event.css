@@ -1,0 +1,262 @@
+/* Event-Seite. Die einzige Fläche des Systems, auf der eine fremde Farbe
+   erlaubt ist: `--eakzent` kommt aus der Event-Seite selbst, damit ein
+   Betreiber sie in die Farben seines Kunden setzen kann. Alles andere bleibt
+   unser Haus — Papier, Ink, Archivo, IBM Plex Mono. */
+
+:root {
+  --eakzent: #f2b23e;
+}
+
+/* `stil.css` legt für den Booth ein Vollbild fest, das nicht scrollt. Diese
+   Seite ist ein Dokument und muss scrollen. */
+html {
+  height: auto;
+  overflow: visible;
+  background: #f6f4f1;
+}
+
+body.eventseite {
+  height: auto;
+  min-height: 100%;
+  background: #f6f4f1;
+  color: #17171c;
+  overflow: visible;
+  user-select: text;
+}
+
+#event {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 clamp(18px, 5vw, 48px) 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.emono {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.efliess {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.62);
+  max-width: 56ch;
+}
+
+/* --- Kopf ---------------------------------------------------------- */
+
+.ekopf {
+  padding: clamp(48px, 9vw, 96px) 0 clamp(28px, 5vw, 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.ekopf h1 {
+  font-family: var(--schrift);
+  font-weight: 800;
+  font-size: clamp(34px, 8vw, 76px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.ekopf .efliess { text-align: center; }
+
+.ekopf__logo {
+  max-height: 72px;
+  max-width: 240px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Der Akzent trägt einen Strich unter dem Titel, keine Fläche: Eine fremde
+   Farbe großflächig zu setzen geht schief, sobald sie hell ist. */
+.ekopf::after {
+  content: '';
+  width: 64px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--eakzent);
+}
+
+/* Drei Anmutungen, wie in der Fassung, aus der die Event-Seiten stammen —
+   aber in unserem Haus gesetzt statt in ihrem. */
+.ekopf--minimal::after { width: 28px; }
+
+.ekopf--photo h1 { font-size: clamp(38px, 10vw, 92px); }
+
+.ekopf--glow h1 {
+  text-shadow: 0 0 44px color-mix(in srgb, var(--eakzent) 45%, transparent);
+}
+
+/* --- Galerie ------------------------------------------------------- */
+
+.ebereich {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ebereich__kopf {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ebereich h2 {
+  font-family: var(--schrift);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: -0.02em;
+  margin: 0;
+  margin-right: auto;
+}
+
+.eraster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+}
+
+.ebild {
+  margin: 0;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+}
+
+.ebild img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Der Sichern-Knopf liegt auf dem Bild und wird beim Berühren sichtbar. Auf
+   dem Handy gibt es kein Berühren — dort steht er immer da. */
+.ebild__laden {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: rgba(11, 11, 13, 0.82);
+  color: #f4f2ee;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.ebild:hover .ebild__laden,
+.ebild__laden:focus-visible { opacity: 1; }
+
+@media (hover: none) {
+  .ebild__laden { opacity: 1; }
+}
+
+/* --- Karten und Knöpfe --------------------------------------------- */
+
+.ekarte {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-left: 3px solid var(--eakzent);
+  border-radius: 14px;
+  background: #fff;
+  padding: 26px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 560px;
+}
+
+.ekarte h2 {
+  font-family: var(--schrift);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.ereihe {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.eeingabe {
+  flex: 1 1 180px;
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #fff;
+  color: #17171c;
+  padding: 0 14px;
+  font-family: var(--schrift);
+  font-size: 16px;
+}
+
+.eeingabe:focus {
+  outline: none;
+  border-color: var(--eakzent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--eakzent) 25%, transparent);
+}
+
+.eknopf {
+  min-height: 48px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #fff;
+  color: #17171c;
+  font-family: var(--schrift);
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.eknopf--amber {
+  background: var(--eakzent);
+  border-color: transparent;
+  color: #141008;
+}
+
+.emeldung {
+  margin: 0;
+  font-family: var(--schrift);
+  font-weight: 600;
+  font-size: 14px;
+  color: #b3382c;
+}
+
+.efuss {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(0, 0, 0, 0.09);
+  padding-top: 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ebild__laden { transition: none; }
+}

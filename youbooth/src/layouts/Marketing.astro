@@ -2,6 +2,8 @@
 import '../styles/global.css';
 import Kopfleiste from '../components/Kopfleiste.astro';
 import Fusszeile from '../components/Fusszeile.astro';
+import Ladeschirm from '../components/Ladeschirm.astro';
+import Bewegung from '../components/Bewegung.astro';
 
 interface Props {
   titel: string;
@@ -28,12 +30,14 @@ const { titel, beschreibung } = Astro.props;
     <meta property="og:locale" content="de_DE" />
   </head>
   <body>
+    <Ladeschirm />
     <a class="sprung" href="#inhalt">Zum Inhalt springen</a>
     <Kopfleiste />
     <main id="inhalt">
       <slot />
     </main>
     <Fusszeile />
+    <Bewegung />
 
     <style>
       .sprung {

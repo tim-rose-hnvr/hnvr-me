@@ -1,0 +1,118 @@
+---
+/**
+ * Der erste Moment.
+ *
+ * Eine Fotobox-Seite, die weiß aufblitzt und dann ruckartig steht, verkauft
+ * keine Fotobox. Also ein kurzer, gebauter Auftakt: die Blende schließt sich
+ * einmal, dann öffnet sich die Seite.
+ *
+ * Zwei Regeln, die den Unterschied zwischen Auftakt und Ärgernis ausmachen:
+ *
+ *  1. **Er darf nie im Weg stehen.** Der Schirm verschwindet spätestens nach
+ *     1,4 Sekunden — auch wenn etwas hängt. Ein Ladeschirm, der bleibt, ist
+ *     schlimmer als gar keiner.
+ *  2. **Nur beim ersten Mal.** Wer von Seite zu Seite klickt, will nicht bei
+ *     jedem Klick warten. Danach ist er für die Sitzung erledigt.
+ *
+ * Ohne JavaScript und bei `prefers-reduced-motion` erscheint er gar nicht:
+ * Das Markup startet versteckt und wird erst vom Skript sichtbar gemacht.
+ */
+---
+
+<div class="ladeschirm" data-ladeschirm hidden aria-hidden="true">
+  <svg class="blende" viewBox="0 0 48 48" width="72" height="72" aria-hidden="true">
+    <rect width="48" height="48" rx="13" fill="#F2B23E"></rect>
+    <circle class="ring" cx="24" cy="21" r="9.5" fill="none" stroke="#0b0b0d" stroke-width="3.2"></circle>
+    <circle class="kern" cx="24" cy="21" r="2.6" fill="#0b0b0d"></circle>
+    <rect x="30.5" y="8.5" width="5" height="5" rx="1.4" fill="#0b0b0d"></rect>
+    <rect x="14" y="35.5" width="20" height="3.4" rx="1.7" fill="#0b0b0d"></rect>
+  </svg>
+  <span class="wort">youbooth</span>
+</div>
+
+<script>
+  const schirm = document.querySelector<HTMLElement>('[data-ladeschirm]');
+  const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const schonGesehen = sessionStorage.getItem('youbooth.auftakt') === 'ja';
+
+  if (schirm && !ruhig && !schonGesehen) {
+    schirm.hidden = false;
+    // Erst im nächsten Bild einblenden, sonst springt die Seite.
+    requestAnimationFrame(() => schirm.classList.add('an'));
+    sessionStorage.setItem('youbooth.auftakt', 'ja');
+
+    const weg = () => {
+      if (!schirm.classList.contains('an')) return;
+      schirm.classList.remove('an');
+      schirm.classList.add('weg');
+      window.setTimeout(() => schirm.remove(), 600);
+    };
+
+    /* Fertig ist fertig — aber spätestens nach 1,4 Sekunden. Ein Bild, das
+       nicht lädt, darf die Seite nicht verschließen. */
+    if (document.readyState === 'complete') window.setTimeout(weg, 520);
+    else window.addEventListener('load', () => window.setTimeout(weg, 320), { once: true });
+    window.setTimeout(weg, 1400);
+  }
+</script>
+
+<style>
+  .ladeschirm {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: var(--ink);
+    opacity: 0;
+    transition: opacity 0.45s ease;
+  }
+
+  .ladeschirm.an { opacity: 1; }
+
+  /* Beim Verschwinden hebt sich der Schirm leicht ab — als hätte man den
+     Verschluss geöffnet und sähe dahinter die Seite. */
+  .ladeschirm.weg {
+    opacity: 0;
+    transform: scale(1.04);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+  }
+
+  .blende {
+    animation: atmen 1.6s ease-in-out infinite;
+  }
+
+  /* Der Ring zieht sich zu und wieder auf: eine Blende, kein Rädchen. */
+  .ring {
+    transform-origin: 24px 21px;
+    animation: blende 1.6s ease-in-out infinite;
+  }
+
+  .wort {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--text-hell-still);
+    padding-left: 0.34em;
+  }
+
+  @keyframes atmen {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+
+  @keyframes blende {
+    0%, 100% { r: 9.5; opacity: 1; }
+    50% { r: 5.5; opacity: 0.75; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ladeschirm { display: none; }
+  }
+</style>

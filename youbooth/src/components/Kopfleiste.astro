@@ -21,11 +21,6 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     <i></i><i></i><i></i>
   </button>
 
-  <div class="rechts">
-    <a class="ghost" href="/anmelden">Anmelden</a>
-    <a class="cta" href="/kontakt">14 Tage testen</a>
-  </div>
-
   <nav class="links" id="hauptnavigation" aria-label="Hauptnavigation">
     {
       hauptnavigation.map((v) => (
@@ -35,6 +30,11 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
       ))
     }
   </nav>
+  <div class="rechts">
+    <a class="ghost" href="/anmelden">Anmelden</a>
+    <a class="cta" href="/kontakt">14 Tage testen</a>
+  </div>
+
 </header>
 
 <style>
@@ -129,11 +129,15 @@ const istAktiv = (ziel: string) => pfad === ziel || pfad.startsWith(ziel + '/');
     background: var(--amber);
   }
 
+  /* Ganz rechts, hinter der Navigation: Anmelden und Testen sind das Ziel
+     der Seite, nicht ein Menüpunkt unter vielen. Das Auge läuft die Leiste
+     von links nach rechts — dort endet es. */
   .rechts {
     display: flex;
     align-items: center;
     gap: 9px;
     flex: none;
+    margin-left: auto;
   }
 
   .ghost,

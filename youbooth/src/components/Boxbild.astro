@@ -1,0 +1,184 @@
+---
+/**
+ * Die Box als Zeichnung.
+ *
+ * An den Stellen, wo ein Foto der Hardware stünde, stand bisher ein
+ * gestrichelter Kasten mit „Bild fehlt". Eine Fotobox lässt sich nicht aus
+ * dem Quelltext heraus fotografieren — aber ein leerer Kasten ist die
+ * schlechteste aller Antworten: Er sagt dem Besucher, hier fehle etwas.
+ *
+ * Also eine Zeichnung, und zwar erkennbar als Zeichnung. Kein Schein-Foto:
+ * Wer später ein echtes Bild hat, tauscht es aus, ohne dass vorher jemand
+ * getäuscht wurde.
+ *
+ * Drei Ansichten, weil drei Dinge zu zeigen sind: die Box selbst, der Abend
+ * mit Gästen davor, und der Abzug, der herauskommt.
+ */
+interface Props {
+  art?: 'box' | 'abend' | 'abzug';
+  format?: string;
+  radius?: number;
+  bildtext: string;
+}
+
+const { art = 'box', format = '16 / 9', radius = 16, bildtext } = Astro.props;
+---
+
+<figure class="boxbild" style={`--format:${format};--radius:${radius}px`}>
+  {
+    art === 'box' && (
+      <svg viewBox="0 0 320 180" role="img" aria-label={bildtext} preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="bb-schirm" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1c1c22" />
+            <stop offset="1" stop-color="#101014" />
+          </linearGradient>
+        </defs>
+
+        {/* Stativ */}
+        <rect x="152" y="112" width="16" height="46" rx="4" class="korpus" />
+        <path d="M132 162 L160 148 L188 162" class="strich" fill="none" />
+
+        {/* Säule mit Screen */}
+        <rect x="86" y="22" width="148" height="94" rx="10" class="korpus" />
+        <rect x="94" y="30" width="132" height="66" rx="6" fill="url(#bb-schirm)" />
+
+        {/* Live-Bild auf dem Screen: eine angedeutete Gestalt */}
+        <circle cx="160" cy="52" r="9" class="gestalt" />
+        <path d="M141 82 a19 19 0 0 1 38 0 Z" class="gestalt" />
+
+        {/* Auslöseknopf auf dem Screen */}
+        <rect x="139" y="86" width="42" height="7" rx="3.5" class="amber" />
+
+        {/* Kamera oben */}
+        <rect x="140" y="8" width="40" height="16" rx="5" class="korpus" />
+        <circle cx="160" cy="16" r="5" class="amber" />
+        <circle cx="160" cy="16" r="2" class="tiefe" />
+
+        {/* Ringlicht */}
+        <circle cx="160" cy="16" r="11" class="strich" fill="none" stroke-dasharray="3 4" />
+
+        {/* Drucker im Sockel, ein Streifen kommt heraus */}
+        <rect x="100" y="100" width="52" height="14" rx="3" class="tiefe" />
+        <rect x="112" y="106" width="28" height="30" rx="2" class="papier" />
+        <rect x="116" y="110" width="20" height="7" rx="1" class="gestalt" />
+        <rect x="116" y="119" width="20" height="7" rx="1" class="gestalt" />
+        <rect x="116" y="128" width="20" height="5" rx="1" class="amber" />
+      </svg>
+    )
+  }
+
+  {
+    art === 'abend' && (
+      <svg viewBox="0 0 320 180" role="img" aria-label={bildtext} preserveAspectRatio="xMidYMid meet">
+        {/* Die Box klein im Hintergrund, davor drei Gäste */}
+        <rect x="212" y="34" width="76" height="88" rx="8" class="korpus" />
+        <rect x="219" y="41" width="62" height="52" rx="4" class="tiefe" />
+        <rect x="238" y="98" width="24" height="6" rx="3" class="amber" />
+
+        <circle cx="60" cy="74" r="17" class="gestalt" />
+        <path d="M26 148 a34 34 0 0 1 68 0 Z" class="gestalt" />
+
+        <circle cx="112" cy="64" r="20" class="gestalt gestalt--vorn" />
+        <path d="M72 152 a40 40 0 0 1 80 0 Z" class="gestalt gestalt--vorn" />
+
+        <circle cx="166" cy="76" r="16" class="gestalt" />
+        <path d="M134 148 a32 32 0 0 1 64 0 Z" class="gestalt" />
+
+        {/* Blitz */}
+        <path d="M250 12 l-9 16 h7 l-5 14 12 -18 h-7 z" class="amber" />
+      </svg>
+    )
+  }
+
+  {
+    art === 'abzug' && (
+      <svg viewBox="0 0 320 180" role="img" aria-label={bildtext} preserveAspectRatio="xMidYMid meet">
+        {/* Ein Streifen und eine Karte, wie sie aus dem Drucker kommen */}
+        <g transform="rotate(-7 84 90)">
+          <rect x="56" y="24" width="56" height="132" rx="4" class="papier" />
+          <rect x="62" y="30" width="44" height="30" rx="2" class="gestalt" />
+          <rect x="62" y="64" width="44" height="30" rx="2" class="gestalt" />
+          <rect x="62" y="98" width="44" height="30" rx="2" class="gestalt" />
+          <rect x="70" y="134" width="28" height="4" rx="2" class="tiefe" />
+        </g>
+
+        <g transform="rotate(5 214 96)">
+          <rect x="150" y="40" width="128" height="96" rx="5" class="papier" />
+          <rect x="157" y="47" width="114" height="66" rx="3" class="gestalt" />
+          <rect x="180" y="118" width="68" height="5" rx="2.5" class="tiefe" />
+          <rect x="198" y="127" width="32" height="4" rx="2" class="amber" />
+        </g>
+      </svg>
+    )
+  }
+
+  <figcaption class="mono">{bildtext}</figcaption>
+</figure>
+
+<style>
+  .boxbild {
+    margin: 0;
+    aspect-ratio: var(--format);
+    border-radius: var(--radius);
+    border: 1px solid var(--linie-dunkel);
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(242, 178, 62, 0.1), transparent 62%),
+      var(--ink-soft);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Die Zeichnung skaliert mit dem Rahmen — genau das war bei den alten
+     Platzhaltern nicht der Fall. */
+  .boxbild svg {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .korpus { fill: #23232a; }
+  .tiefe { fill: #0f0f13; }
+  .papier { fill: #f4f2ee; }
+  .amber { fill: var(--amber); }
+  .gestalt { fill: rgba(244, 242, 238, 0.16); }
+  .gestalt--vorn { fill: rgba(244, 242, 238, 0.26); }
+  .strich { stroke: rgba(244, 242, 238, 0.28); stroke-width: 2; }
+
+  figcaption {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-hell-fein);
+    text-align: center;
+    flex: none;
+  }
+
+  /* Beim Überfahren wandert das Licht — nur eine Andeutung, damit die
+     Zeichnung nicht tot wirkt. */
+  .boxbild::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(60% 50% at 50% 40%, rgba(242, 178, 62, 0.14), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+  }
+
+  @media (hover: hover) {
+    .boxbild:hover::after { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .boxbild::after { transition: none; }
+  }
+</style>

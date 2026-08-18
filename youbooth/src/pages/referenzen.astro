@@ -1,5 +1,6 @@
 ---
 import Marketing from '../layouts/Marketing.astro';
+import Boxbild from '../components/Boxbild.astro';
 import Bildplatz from '../components/Bildplatz.astro';
 
 const einsaetze = [
@@ -88,7 +89,15 @@ const galeriebilder = [
       <span class="mono mono--still">Mit Freigabe der Paare und Veranstalter</span>
     </div>
     <div class="raster raster--auto">
-      {galeriebilder.map((motiv) => <Bildplatz motiv={motiv} format="3 / 2" />)}
+      {
+        galeriebilder.map((motiv, i) => (
+          <Boxbild
+            art={(['box', 'abend', 'abzug'] as const)[i % 3]}
+            format="3 / 2"
+            bildtext={motiv.replace(/^Foto: /, '')}
+          />
+        ))
+      }
     </div>
   </section>
 

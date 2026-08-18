@@ -1,5 +1,6 @@
 ---
 import Marketing from '../../layouts/Marketing.astro';
+import Boxbild from '../../components/Boxbild.astro';
 import Bildplatz from '../../components/Bildplatz.astro';
 import Icon from '../../components/Icon.astro';
 import ModulSzene from '../../components/ModulSzene.astro';
@@ -109,7 +110,7 @@ const stand = standVon(modul.id);
       </ul>
     </div>
     <div class="vertiefung__bild">
-      <Bildplatz motiv={`Foto: ${modul.titel} im Einsatz`} format="4 / 3" radius={16} />
+      <Boxbild art="abend" format="4 / 3" bildtext={`${modul.titel} im Einsatz`} />
     </div>
   </section>
 

@@ -1,5 +1,6 @@
 ---
 import Marketing from '../../layouts/Marketing.astro';
+import Boxbild from '../../components/Boxbild.astro';
 import Standmarke from '../../components/Standmarke.astro';
 import { standNachTitel } from '../../daten/stand';
 import Bildplatz from '../../components/Bildplatz.astro';
@@ -45,7 +46,7 @@ const farbwelt = [
     </div>
 
     <div class="buehne__bild">
-      <Bildplatz motiv={anlass.bild} format="16 / 11" radius={16} laden="eager" />
+      <Boxbild art="abend" format="16 / 11" bildtext={anlass.bild} />
     </div>
   </section>
 

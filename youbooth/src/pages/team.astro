@@ -175,9 +175,11 @@ const standortzeile = 'Werkstatt in Herne, Server in Frankfurt';
         rollen.map((r, i) => (
           <details class="rolle" style={`--verzug:${(i * 0.05).toFixed(2)}s`}>
             <summary>
-              <span class="portraet">
-                <Bildplatz motiv="Porträt" format="1 / 1" radius={999} fit="cover" />
-              </span>
+              {/* Kein Platzhalter für ein Gesicht: Ein gestrichelter Kasten
+                  mit „Bild fehlt" sagt dem Besucher, hier fehle etwas — und
+                  ein erfundenes Porträt wäre schlimmer. Bis echte Bilder da
+                  sind, steht hier das Zeichen der Rolle. */}
+              <span class="portraet" aria-hidden="true">{r.rolle.slice(0, 1)}</span>
               <span class="rolle__kopf">
                 <span class="rolle__name">{r.rolle}</span>
                 <span class="mono">{r.seit}</span>
@@ -470,6 +472,15 @@ const standortzeile = 'Werkstatt in Herne, Server in Frankfurt';
   }
 
   .portraet {
+    display: grid;
+    place-items: center;
+    font-family: var(--schrift);
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--amber);
+    background: rgba(242, 178, 62, 0.12);
+    border: 1px solid rgba(242, 178, 62, 0.3);
+    border-radius: 50%;
     width: 64px;
     height: 64px;
     flex: none;

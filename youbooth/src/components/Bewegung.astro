@@ -1,0 +1,155 @@
+---
+/**
+ * Bewegung auf der Seite — einmal für alle Seiten.
+ *
+ * Zwei Dinge, mehr nicht:
+ *
+ *  · **Auftauchen beim Scrollen.** Abschnitte, Karten und Überschriften
+ *    kommen leicht von unten herein, sobald sie in den Blick geraten.
+ *    Beobachtet wird mit `IntersectionObserver` — kein Rechnen bei jedem
+ *    Scrollschritt, sonst ruckelt die Seite auf schwachen Geräten genau
+ *    dann, wenn man sie flüssig haben will.
+ *  · **Tiefe unter dem Zeiger.** Karten heben sich leicht, Bilder ziehen
+ *    sacht heran.
+ *
+ * Was hier NICHT passiert: Nichts wird erst durch das Skript sichtbar. Alles
+ * steht auch ohne JavaScript da — die Animation ist eine Zugabe, kein Träger.
+ * Deshalb setzt das Skript zuerst eine Marke am `html`, und nur unter dieser
+ * Marke gilt der Startzustand.
+ */
+---
+
+<script>
+  const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!ruhig && 'IntersectionObserver' in window) {
+    document.documentElement.classList.add('bewegt');
+
+    /* Was sich bewegen soll. Bewusst grob gewählt: Wer jede Kachel einzeln
+       auszeichnet, vergisst die Hälfte und die Seite wirkt ungleichmäßig. */
+    const auswahl = [
+      '.abschnitt',
+      '.abschnitt-kopf',
+      '.karte',
+      '.plattform',
+      '.modul',
+      '.modulkarte',
+      '.vorlage',
+      '.sammlung',
+      '.kachel',
+      '.artkarte',
+      '.pkarte',
+      '.grundsatz',
+      '.zahlkachel',
+      '.hero__text > *',
+      '.hero__blatt',
+      '.holen',
+    ].join(',');
+
+    const stuecke = [...document.querySelectorAll<HTMLElement>(auswahl)]
+      // Was schon beim Laden im Bild steht, wird nicht versteckt — sonst
+      // blitzt der obere Rand der Seite einmal auf.
+      .filter((el) => el.getBoundingClientRect().top > window.innerHeight * 0.9);
+
+    stuecke.forEach((el) => el.classList.add('auf-warten'));
+
+    const beobachter = new IntersectionObserver(
+      (eintraege) => {
+        eintraege.forEach((e) => {
+          if (!e.isIntersecting) return;
+          const el = e.target as HTMLElement;
+          /* Geschwister leicht versetzt: Eine Reihe Karten, die gleichzeitig
+             erscheint, wirkt wie ein Sprung; nacheinander wirkt sie gebaut. */
+          const geschwister = [...(el.parentElement?.children ?? [])];
+          const platz = Math.min(geschwister.indexOf(el), 6);
+          el.style.transitionDelay = `${platz * 60}ms`;
+          el.classList.add('auf-da');
+          beobachter.unobserve(el);
+        });
+      },
+      { rootMargin: '0px 0px -12% 0px', threshold: 0.06 }
+    );
+
+    stuecke.forEach((el) => beobachter.observe(el));
+  }
+</script>
+
+<style is:global>
+  /* Nur unter der Marke, die das Skript setzt: Ohne JavaScript bleibt alles
+     sichtbar, statt für immer durchsichtig zu sein. */
+  html.bewegt .auf-warten {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+
+  html.bewegt .auf-da {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.62s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  /* --- Tiefe unter dem Zeiger ------------------------------------- */
+
+  .karte,
+  .plattform,
+  .modul,
+  .modulkarte,
+  .sammlung,
+  .kachel,
+  .artkarte,
+  .vorlage {
+    transition:
+      transform var(--t-transform),
+      box-shadow var(--t-transform),
+      border-color var(--t-farbe);
+  }
+
+  @media (hover: hover) {
+    .karte:hover,
+    .plattform:hover,
+    .modul:hover,
+    .modulkarte:hover,
+    .sammlung:hover,
+    .kachel:hover,
+    .artkarte:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--schatten-hoch);
+    }
+
+    /* Vorlagenblätter heben sich stärker: Sie sind das Erzeugnis, nicht die
+       Verpackung. */
+    .vorlage:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--schatten-hoch);
+    }
+
+    .vorlage__blatt img,
+    .ebild img {
+      transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .vorlage:hover .vorlage__blatt img {
+      transform: scale(1.035);
+    }
+  }
+
+  /* Der Pfeil-Link zieht mit — die kleinste Zugabe mit der größten Wirkung. */
+  .pfeil {
+    transition: gap var(--t-transform), color var(--t-farbe);
+  }
+
+  @media (hover: hover) {
+    .pfeil:hover { gap: 12px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.bewegt .auf-warten,
+    html.bewegt .auf-da {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>

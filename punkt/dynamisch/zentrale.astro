@@ -6,63 +6,20 @@
  * in einem Formular: das Ziel wechseln, während das gedruckte Muster
  * bleibt. Alles andere hier ist Beiwerk.
  *
- * Ohne JavaScript bedienbar. Ein Aufsteller hängt an diesem Ziel; die
- * Änderung darf nicht daran scheitern, dass ein Skript nicht lädt.
+ * Abgeschickt wird über `/api/ziel` als JSON. Der Grund steht in
+ * `api.ts` und ist unangenehm: Wix' Rand weist jeden Formular-POST mit
+ * 403 ab, gleich wie sauber er aussieht. Auf diesem Hoster braucht das
+ * Umhängen deshalb JavaScript — auf einem eigenen Server nicht.
  */
 import Seite from '../../website/src/layouts/Seite.astro';
 import Icon from '../../website/src/components/Icon.astro';
-import { sitzungAus, ausweisLoeschen } from './konto.ts';
-import { codesVonKonto, zielSetzen, codeNachKuerzel, statistikVonCode } from './ablage.ts';
+import { sitzungAus } from './konto.ts';
+import { codesVonKonto, statistikVonCode } from './ablage.ts';
 
 export const prerender = false;
 
 const sitzung = await sitzungAus(Astro.request.headers);
 if (!sitzung) return Astro.redirect('/anmelden', 302);
-
-let meldung = '';
-let meldungArt: 'gut' | 'schlecht' = 'gut';
-
-if (Astro.request.method === 'POST') {
-  const felder = await Astro.request.formData();
-  const was = String(felder.get('was') ?? '');
-
-  if (was === 'abmelden') {
-    return new Response(null, {
-      status: 303,
-      headers: { location: '/anmelden', 'set-cookie': ausweisLoeschen() },
-    });
-  }
-
-  if (was === 'ziel') {
-    const id = String(felder.get('id') ?? '');
-    const ziel = String(felder.get('ziel') ?? '').trim();
-    // Geprüft wird hier und nicht im Browser: das Formular kommt
-    // notfalls von überall her. Erlaubt ist, was ein Telefon nach dem
-    // Scannen auch öffnen soll.
-    const erlaubt = /^https?:\/\/[^\s]+$/i.test(ziel) || /^(mailto|tel):[^\s]+$/i.test(ziel);
-    if (!erlaubt) {
-      meldung = 'Das Ziel muss mit http://, https://, mailto: oder tel: beginnen.';
-      meldungArt = 'schlecht';
-    } else {
-      // Der Code muss diesem Konto gehören. Sonst hängt jemand mit einer
-      // fremden Kennung im Formular ein fremdes Plakat um.
-      const eigene = await codesVonKonto(sitzung.kontoId, 500);
-      if (!eigene.some((c) => c.id === id)) {
-        meldung = 'Dieser Code gehört nicht zu diesem Konto.';
-        meldungArt = 'schlecht';
-      } else {
-        try {
-          await zielSetzen(id, ziel);
-          meldung = 'Umgehängt. Der gedruckte Code bleibt gültig — ab sofort führt er dorthin.';
-        } catch (e) {
-          console.error('[pnkt] Ziel nicht setzbar:', e);
-          meldung = 'Das Speichern hat nicht geklappt. Bitte gleich noch einmal.';
-          meldungArt = 'schlecht';
-        }
-      }
-    }
-  }
-}
 
 const codes = await codesVonKonto(sitzung.kontoId, 500);
 codes.sort((a, b) => (b.geaendert ?? '').localeCompare(a.geaendert ?? ''));
@@ -98,17 +55,18 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
         der gedruckte Code bleibt derselbe.
       </p>
     </div>
-    <form method="post">
-      <input type="hidden" name="was" value="abmelden" />
-      <button type="submit" class="btn btn-secondary">Abmelden</button>
-    </form>
+    <button type="button" class="btn btn-secondary" id="abmelden">Abmelden</button>
   </section>
 
-  {meldung && (
-    <section class="spur">
-      <div class:list={['meldung', meldungArt]}>{meldung}</div>
-    </section>
-  )}
+  <section class="spur">
+    <div class="meldung" id="meldung" hidden></div>
+    <noscript>
+      <div class="meldung schlecht">
+        Das Umhängen braucht hier JavaScript: der Hoster weist Formular-Absendungen
+        grundsätzlich ab (403). Auf einem eigenen Server entfällt das.
+      </div>
+    </noscript>
+  </section>
 
   <section class="spur">
     {codes.length === 0 ? (
@@ -136,9 +94,7 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
               </div>
             </div>
 
-            <form method="post" class="zielform">
-              <input type="hidden" name="was" value="ziel" />
-              <input type="hidden" name="id" value={c.id} />
+            <form class="zielform" data-id={c.id}>
               <label class="feld">Zeigt auf
                 <input class="eingabe" type="text" name="ziel" value={c.ziel} required />
               </label>
@@ -155,6 +111,46 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
     )}
   </section>
 </Seite>
+
+<script>
+  const meldung = document.getElementById('meldung');
+
+  function melde(text, art) {
+    meldung.textContent = text;
+    meldung.className = 'meldung ' + (art || 'gut');
+    meldung.hidden = !text;
+    if (text) meldung.scrollIntoView({ block: 'nearest' });
+  }
+
+  document.getElementById('abmelden').addEventListener('click', async () => {
+    await fetch('/api/abmelden', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    window.location.href = '/anmelden';
+  });
+
+  document.querySelectorAll('.zielform').forEach((formular) => {
+    formular.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const knopf = formular.querySelector('button');
+      const alt = knopf.textContent;
+      knopf.disabled = true;
+      knopf.textContent = 'wird gespeichert …';
+      try {
+        const antwort = await fetch('/api/ziel', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: formular.dataset.id, ziel: formular.querySelector('[name=ziel]').value }),
+        });
+        const d = await antwort.json();
+        if (d.ok) melde('Umgehängt. Der gedruckte Code bleibt gültig — ab sofort führt er dorthin.', 'gut');
+        else melde(d.fehler || 'Das hat nicht geklappt.', 'schlecht');
+      } catch (e) {
+        melde('Der Server antwortet nicht: ' + e.message, 'schlecht');
+      }
+      knopf.disabled = false;
+      knopf.textContent = alt;
+    });
+  });
+</script>
 
 <style is:global>
   .kopfreihe { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }

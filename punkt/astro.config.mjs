@@ -46,6 +46,9 @@ function dynamischeWege() {
         injectRoute({ pattern: '/r/[kuerzel]', entrypoint: './dynamisch/weiterleitung.ts' });
         injectRoute({ pattern: '/anmelden', entrypoint: './dynamisch/anmelden.astro' });
         injectRoute({ pattern: '/zentrale', entrypoint: './dynamisch/zentrale.astro' });
+        injectRoute({ pattern: '/api/anmelden', entrypoint: './dynamisch/api-anmelden.ts' });
+        injectRoute({ pattern: '/api/abmelden', entrypoint: './dynamisch/api-abmelden.ts' });
+        injectRoute({ pattern: '/api/ziel', entrypoint: './dynamisch/api-ziel.ts' });
       },
     },
   };

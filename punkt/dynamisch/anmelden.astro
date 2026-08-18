@@ -5,47 +5,22 @@
  * Der Knopf, der monatelang auf eine Preistabelle zeigte und deshalb zu
  * Recht als kaputt galt. Jetzt tut er, was er verspricht.
  *
- * Ein Formular, kein JavaScript: die Anmeldung ist der eine Vorgang,
- * der auch dann funktionieren muss, wenn sonst nichts lädt. Post,
- * Redirect, Get — ein Neuladen meldet niemanden zweimal an.
+ * Abgeschickt wird über `/api/anmelden` als JSON, nicht als Formular.
+ * Der Grund steht in `api.ts`: Wix' Rand weist jeden
+ * `application/x-www-form-urlencoded`-POST mit 403 ab. Das ist
+ * nachgemessen, nicht vermutet — und es heißt, dass diese Seite auf
+ * diesem Hoster JavaScript braucht. Das steht auch für den Leser da,
+ * statt ihn vor einem Knopf sitzen zu lassen, der nichts tut.
  */
 import Seite from '../../website/src/layouts/Seite.astro';
 import Icon from '../../website/src/components/Icon.astro';
-import { anmelden, ausweisKeks, sitzungAus } from './konto.ts';
+import { sitzungAus } from './konto.ts';
 
 export const prerender = false;
-
-let fehler = '';
 
 // Wer schon angemeldet ist, hat hier nichts zu suchen.
 const schon = await sitzungAus(Astro.request.headers);
 if (schon) return Astro.redirect('/zentrale', 302);
-
-if (Astro.request.method === 'POST') {
-  const felder = await Astro.request.formData();
-  const mail = String(felder.get('mail') ?? '').trim();
-  const passwort = String(felder.get('passwort') ?? '');
-
-  if (!mail || !passwort) {
-    fehler = 'Bitte beides ausfüllen.';
-  } else {
-    try {
-      const angemeldet = await anmelden(mail, passwort);
-      if (angemeldet) {
-        return new Response(null, {
-          status: 303,
-          headers: { location: '/zentrale', 'set-cookie': ausweisKeks(angemeldet.ausweis) },
-        });
-      }
-      // Eine Meldung für beide Fälle. Wer „Adresse unbekannt" von
-      // „Passwort falsch" unterscheiden kann, kann Konten abzählen.
-      fehler = 'Adresse oder Passwort stimmt nicht.';
-    } catch (e) {
-      console.error('[pnkt] Anmeldung fehlgeschlagen:', e);
-      fehler = 'Die Anmeldung ist gerade nicht erreichbar. Bitte gleich noch einmal.';
-    }
-  }
-}
 ---
 
 <Seite
@@ -65,9 +40,16 @@ if (Astro.request.method === 'POST') {
       <a href="/studio">Werkstatt</a> läuft ohne Konto.
     </p>
 
-    {fehler && <div class="warnung">{fehler}</div>}
+    <div class="warnung" id="fehler" hidden></div>
+    <noscript>
+      <div class="warnung">
+        Diese Seite braucht hier JavaScript. Der Hoster weist Formular-Absendungen
+        grundsätzlich ab (403), deshalb geht die Anmeldung über einen kleinen
+        Aufruf im Hintergrund. Auf einem eigenen Server entfällt das.
+      </div>
+    </noscript>
 
-    <form method="post" class="tafel">
+    <form id="formular" class="tafel">
       <div class="tafel-koerper">
         <label class="feld">E-Mail
           <input class="eingabe" type="email" name="mail" autocomplete="username" required />
@@ -75,7 +57,7 @@ if (Astro.request.method === 'POST') {
         <label class="feld">Passwort
           <input class="eingabe" type="password" name="passwort" autocomplete="current-password" required />
         </label>
-        <button type="submit" class="btn btn-primary knopf-gross">
+        <button type="submit" class="btn btn-primary knopf-gross" id="knopf">
           <Icon name="weiter" />
           Anmelden
         </button>
@@ -88,6 +70,40 @@ if (Astro.request.method === 'POST') {
     </form>
   </section>
 </Seite>
+
+<script>
+  const formular = document.getElementById('formular');
+  const fehler = document.getElementById('fehler');
+  const knopf = document.getElementById('knopf');
+
+  function melde(text) {
+    fehler.textContent = text;
+    fehler.hidden = !text;
+  }
+
+  formular.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    melde('');
+    knopf.disabled = true;
+    const alt = knopf.innerHTML;
+    knopf.innerHTML = '<span class="laeuft"></span>Wird geprüft …';
+    try {
+      const daten = Object.fromEntries(new FormData(formular).entries());
+      const antwort = await fetch('/api/anmelden', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(daten),
+      });
+      const d = await antwort.json();
+      if (d.ok) { window.location.href = d.weiter || '/zentrale'; return; }
+      melde(d.fehler || 'Das hat nicht geklappt.');
+    } catch (e) {
+      melde('Der Server antwortet nicht: ' + e.message);
+    }
+    knopf.disabled = false;
+    knopf.innerHTML = alt;
+  });
+</script>
 
 <style is:global>
   .schmal { max-width: 34rem; }

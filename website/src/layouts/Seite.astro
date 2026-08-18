@@ -19,13 +19,23 @@ const kanonisch = new URL(Astro.url.pathname, Astro.site ?? 'https://pnkt.me');
 // Sie bekommt dann einen Riegel oben und ein noindex — auffindbar soll
 // sie erst sein, wenn die Pflichtangaben stehen.
 //
-// Gelesen aus process.env und nicht aus import.meta.env: Astro reicht
-// dort nur PUBLIC_-Variablen durch, und der Riegel soll nicht im
-// Browser landen, sondern beim Bauen entscheiden.
+// Gelesen aus BEIDEN Quellen, und das hat einen teuer gelernten Grund.
 //
-// Gesteuert über die Umgebung, nicht über eine Datei: der Zielstand
-// unter pnkt.me setzt VORSCHAU einfach nicht.
-const vorschau = process.env.VORSCHAU === '1';
+// `process.env.VORSCHAU` wird ausgewertet, wenn diese Zeile läuft. Bei
+// einem statischen Bau ist das die Bauzeit — der Riegel steht dann fest
+// in der Datei. Bei `output: 'server'`, wie es die Wix-Auslieferung
+// benutzt, läuft die Zeile erst beim Aufruf, auf dem fremden Server,
+// wo die Variable nicht gesetzt ist. Ergebnis: der Bau lief mit
+// VORSCHAU=1 durch, und die ausgelieferte Seite hatte trotzdem kein
+// noindex und keinen Riegel. Nachgesehen an der veröffentlichten Seite,
+// nicht am Bau.
+//
+// `import.meta.env.PUBLIC_VORSCHAU` ersetzt Vite beim Bauen durch den
+// Wert — in jeder Betriebsart, auch bei SSR. Das ist die verlässliche
+// Quelle; `process.env` bleibt daneben stehen, damit ältere Aufrufe
+// (VORSCHAU=1 npm run build) weiter tun, was sie sollen.
+const vorschau =
+  import.meta.env.PUBLIC_VORSCHAU === '1' || process.env.VORSCHAU === '1';
 ---
 
 <!doctype html>

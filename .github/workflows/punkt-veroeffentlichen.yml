@@ -134,6 +134,12 @@ jobs:
       - name: Bauen
         run: npm run build
         env:
+          # PUBLIC_ ist Pflicht, nicht Geschmack: nur diese Variablen
+          # ersetzt Vite beim Bauen. Ohne das Präfix wird die Zeile im
+          # Layout erst beim Aufruf ausgewertet — auf dem Wix-Server,
+          # wo nichts gesetzt ist. Genau so lief der erste Versuch: Bau
+          # mit VORSCHAU=1, ausgelieferte Seite ohne noindex.
+          PUBLIC_VORSCHAU: '1'
           VORSCHAU: '1'
 
       - name: Ausliefern

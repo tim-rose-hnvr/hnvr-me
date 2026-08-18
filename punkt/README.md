@@ -87,3 +87,54 @@ gestartet. Er prüft zuerst die Kennungen, baut, liefert aus und ruft
 danach alle zehn Seiten und die Schrift ab — fehlt die Schrift, sieht die
 Seite auf den ersten Blick richtig aus und setzt in Wahrheit die
 Systemschrift.
+
+## Die dynamischen Wege — `dynamisch/`
+
+Hier liegt der Teil, der eine Laufzeit braucht: `/r/{kürzel}` schlägt das
+Ziel nach, leitet weiter und zählt. Er ist bewusst **nicht** in
+`website/src`, sondern in diesem Verzeichnis, und wird von
+`astro.config.mjs` per `injectRoute` eingehängt.
+
+Zwei Gründe:
+
+1. `website/` bleibt eine statische Seite, die überall liegen kann. Eine
+   Route mit einem Kürzel, das erst morgen entsteht, würde den
+   statischen Bau brechen — Astro verlangt dort `getStaticPaths`.
+2. Dieser Code ist Wix-eigen: er liest `@wix/data`. Das gehört nicht in
+   ein Verzeichnis, das auch auf GitHub Pages liegen soll.
+
+### Das ist eine zweite Umsetzung — mit Ansage
+
+Die Weiterleitung gibt es damit zweimal: einmal in Go (`pnkt/`, mit
+JSONL-Ablage, für einen eigenen Server) und einmal hier (mit Wix-Daten).
+Das widerspricht dem Grundsatz „ein Programm, keine Sonderzweige", und
+die Ausnahme ist begründet:
+
+- Die **Rechnung** — kodieren, formen, beurteilen, ausgeben — bleibt
+  einfach. Sie steht nur in Go und läuft im Browser als WebAssembly.
+  Zwei Urteile über denselben Code kann es nicht geben.
+- Doppelt ist allein die **Ablage**: Nachschlagen, Zählen, Ziel setzen.
+  Das sind wenige, klar umrissene Vorgänge.
+
+Der Grund für die Ausnahme ist ein Datum: die Codes in `PK_Codes` sind
+gedruckt, und seit der Auslieferung der neuen Seiten zeigten sie ins
+Leere. Ein gedruckter Code, der 404 gibt, ist der teuerste Fehler dieses
+Systems. Auf einen Server zu warten war keine Möglichkeit.
+
+Sobald ein eigener Server steht, gilt Go, und dieses Verzeichnis wird
+zur Übergangslösung, die man abschaltet — nicht zur zweiten Wahrheit,
+die man pflegt.
+
+### Die Sammlungen
+
+Sie stammen aus der vorigen PUNKT-Anwendung und tragen echte Daten:
+
+| Sammlung | Inhalt |
+|---|---|
+| `PK_Codes` | 5 Codes, davon dynamische mit Kürzel und Ziel |
+| `PK_Konten` | 2 Konten, mit `pwHash` und `sitzungsSalz` |
+| `PK_Statistik` | Zählerstände je Code und Tag |
+| `PK_Ereignisse`, `PK_Ordner`, `PK_Schluessel`, `PK_Domains`, `PK_Dateien`, `PK_Mitglieder` | vorhanden, noch nicht angebunden |
+
+Die Feldnamen sind aus dem Bestand abgelesen. Wer eines umbenennt,
+verliert die Daten.

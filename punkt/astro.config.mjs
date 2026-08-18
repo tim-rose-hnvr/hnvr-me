@@ -25,6 +25,30 @@ import wix from '@wix/astro';
  * in der Liste läuft der Bau scheinbar durch und bricht erst beim
  * Ausliefern mit `NoAdapterInstalled` ab.
  */
+/**
+ * Die dynamischen Wege gibt es nur hier.
+ *
+ * `website/` bleibt eine statische Seite, die überall liegen kann — auf
+ * GitHub Pages, auf einem Stick, in einer einzigen Datei. Eine Route
+ * wie /r/{kürzel} braucht dagegen eine Laufzeit, die antwortet. Beides
+ * im selben Verzeichnis würde den statischen Bau brechen: Astro
+ * verlangt dort `getStaticPaths`, und das gibt es für ein Kürzel nicht,
+ * das erst morgen entsteht.
+ *
+ * `injectRoute` löst genau das: die Dateien liegen außerhalb von
+ * `src/pages`, und nur dieses Projekt hängt sie ein.
+ */
+function dynamischeWege() {
+  return {
+    name: 'pnkt-dynamisch',
+    hooks: {
+      'astro:config:setup': ({ injectRoute }) => {
+        injectRoute({ pattern: '/r/[kuerzel]', entrypoint: './dynamisch/weiterleitung.ts' });
+      },
+    },
+  };
+}
+
 export default defineConfig({
   srcDir: '../website/src',
   publicDir: '../website/public',
@@ -41,6 +65,6 @@ export default defineConfig({
   // Der Preis: sie liest beim Bauen WIX_CLIENT_ID. Deshalb steht im
   // Workflow ein `wix env pull` — der Bau laeuft nicht mehr ohne
   // Anmeldung. Beides ist nachgesehen und nicht geraten.
-  integrations: [wix()],
+  integrations: [wix(), dynamischeWege()],
   site: process.env.SEITE ?? 'https://punkt-954d3e9b-hnvrme.wix-site-host.com',
 });

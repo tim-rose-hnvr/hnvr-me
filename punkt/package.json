@@ -15,7 +15,9 @@
     "prebuild": "node skripte/kennung-pruefen.mjs"
   },
   "dependencies": {
-    "astro": "^5.18.2"
+    "astro": "^5.18.2",
+    "@wix/data": "^1.0.506",
+    "@wix/essentials": "^0.1.23"
   },
   "devDependencies": {
     "@wix/astro": "^2.39.0",

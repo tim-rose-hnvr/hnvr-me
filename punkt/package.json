@@ -12,7 +12,8 @@
     "release": "wix release",
     "env": "wix env",
     "wix": "wix",
-    "prebuild": "node skripte/kennung-pruefen.mjs"
+    "prebuild": "node skripte/kennung-pruefen.mjs",
+    "test": "node --experimental-strip-types --test test/*.test.ts"
   },
   "dependencies": {
     "astro": "^5.18.2",

@@ -21,7 +21,7 @@
  * erste Anmeldeversuch eines echten Kontos zeigen würde.
  */
 
-import { kontoNachMail, wixModule, KONTEN } from './ablage.ts';
+import { kontoAnlegen, kontoNachMail, wixModule, KONTEN } from './ablage.ts';
 
 const RUNDEN_HOECHSTENS = 400_000; // Schutz gegen einen Hash mit absurdem Wert
 
@@ -202,4 +202,50 @@ export function ausweisKeks(wert: string, tage = TAGE): string {
 
 export function ausweisLoeschen(): string {
   return `${AUSWEIS}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
+}
+
+/**
+ * Legt ein Konto an und meldet es gleich an.
+ *
+ * Ohne diese Funktion war das System unvollständig: Codes umhängen
+ * konnte nur, wem die Hausverwaltung von Hand ein Konto eingetragen
+ * hatte. Solange die Einführungsphase läuft, ist das Konto kostenlos —
+ * an dieser Stelle gibt es deshalb keine Zahlungsprüfung.
+ *
+ * Das Passwort wird nach denselben Werten gestreut wie die vorhandenen
+ * Sätze (siehe `passwortHashen`), damit nicht zwei Formate in derselben
+ * Spalte stehen.
+ */
+export async function registrieren(
+  mail: string,
+  passwort: string,
+  name: string,
+): Promise<{ ausweis: string; sitzung: Sitzung } | { fehler: string }> {
+  const adresse = mail.trim().toLowerCase();
+  // Bewusst grob: eine strengere Regel weist mehr gültige Adressen ab
+  // als sie ungültige fängt. Ob die Adresse erreichbar ist, sagt ohnehin
+  // erst eine Nachricht dorthin.
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(adresse)) return { fehler: 'Diese E-Mail-Adresse sieht nicht vollständig aus.' };
+  if (passwort.length < 10) return { fehler: 'Das Passwort braucht mindestens zehn Zeichen. Länge hilft hier mehr als Sonderzeichen.' };
+  if (passwort.length > 200) return { fehler: 'Höchstens 200 Zeichen.' };
+
+  const pwHash = await passwortHashen(passwort);
+  const sitzungsSalz = [...crypto.getRandomValues(new Uint8Array(24))]
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  let konto: { id: string };
+  try {
+    konto = await kontoAnlegen({ mail: adresse, pwHash, sitzungsSalz, name: name.trim() });
+  } catch (fehler) {
+    if ((fehler as Error)?.message === 'mail-vergeben')
+      return { fehler: 'Zu dieser Adresse gibt es schon ein Konto. Melde dich damit an.' };
+    console.error('[pnkt] Konto nicht anlegbar:', fehler);
+    return { fehler: 'Das Anlegen hat nicht geklappt. Bitte gleich noch einmal versuchen.' };
+  }
+
+  return {
+    ausweis: await ausweisBauen(konto.id, sitzungsSalz),
+    sitzung: { kontoId: konto.id, name: name.trim(), mail: adresse },
+  };
 }

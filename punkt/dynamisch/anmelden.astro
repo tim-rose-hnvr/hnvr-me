@@ -1,16 +1,20 @@
 ---
 /**
- * Anmelden.
+ * Anmelden und Konto anlegen.
  *
- * Der Knopf, der monatelang auf eine Preistabelle zeigte und deshalb zu
- * Recht als kaputt galt. Jetzt tut er, was er verspricht.
+ * Zwei Sachen auf einer Seite, weil es zwei Sätze desselben Vorgangs
+ * sind: wer hier landet, will in die Zentrale. Ob er dort schon ein
+ * Konto hat, ist eine Nebensache und keine zweite Adresse wert.
  *
- * Abgeschickt wird über `/api/anmelden` als JSON, nicht als Formular.
- * Der Grund steht in `api.ts`: Wix' Rand weist jeden
- * `application/x-www-form-urlencoded`-POST mit 403 ab. Das ist
- * nachgemessen, nicht vermutet — und es heißt, dass diese Seite auf
- * diesem Hoster JavaScript braucht. Das steht auch für den Leser da,
- * statt ihn vor einem Knopf sitzen zu lassen, der nichts tut.
+ * Bis eben gab es die zweite Hälfte nicht. Auf dieser Seite stand, dass
+ * Konten „die Hausverwaltung anlegt" — damit war das Versprechen des
+ * ganzen Produkts (Ziel später wechseln, Muster bleibt) für niemanden
+ * einlösbar, der nicht persönlich bekannt war. Solange die
+ * Einführungsphase läuft, ist das Konto kostenlos.
+ *
+ * Abgeschickt wird als JSON, nicht als Formular. Der Grund steht in
+ * `api.ts`: Wix' Rand weist jeden `x-www-form-urlencoded`-POST mit 403
+ * ab. Das ist nachgemessen. Auf einem eigenen Server entfällt es.
  */
 import Seite from '../../website/src/layouts/Seite.astro';
 import Icon from '../../website/src/components/Icon.astro';
@@ -21,11 +25,14 @@ export const prerender = false;
 // Wer schon angemeldet ist, hat hier nichts zu suchen.
 const schon = await sitzungAus(Astro.request.headers);
 if (schon) return Astro.redirect('/zentrale', 302);
+
+// /anmelden?neu=1 kommt von den Knöpfen, die zum Anlegen einladen.
+const startetMitNeu = new URL(Astro.request.url).searchParams.has('neu');
 ---
 
 <Seite
   titel="Anmelden"
-  beschreibung="Anmeldung zur Zentrale: Codes verwalten, Ziele umhängen, Zahlen ansehen."
+  beschreibung="Zur Zentrale: Codes anlegen, Ziele umhängen, Zahlen ansehen."
   aktiv=""
 >
   <section class="spur schmal">
@@ -33,23 +40,35 @@ if (schon) return Astro.redirect('/zentrale', 302);
       <Icon name="team" groesse={16} />
       Zentrale
     </span>
-    <h1 class="titel-seite" style="margin:14px 0 12px">Anmelden</h1>
+    <h1 class="titel-seite" style="margin:14px 0 12px">
+      {startetMitNeu ? 'Konto anlegen' : 'Anmelden'}
+    </h1>
     <p class="fliess">
-      Für die Zentrale: Codes verwalten, Ziele umhängen, Zahlen ansehen. Zum
-      Bauen eines Codes brauchst du das nicht — die
-      <a href="/studio">Werkstatt</a> läuft ohne Konto.
+      Ein Konto brauchst du für eines: Codes, deren Ziel du später wechseln
+      kannst, ohne neu zu drucken — und die Zahlen dazu. Zum Bauen eines
+      festen Codes brauchst du es nicht, die <a href="/studio">Werkstatt</a>
+      läuft ohne Konto.
     </p>
+
+    <div class="reiter" role="tablist">
+      <button type="button" role="tab" id="reiter-an" class="reiter-knopf" aria-selected={!startetMitNeu}>
+        Anmelden
+      </button>
+      <button type="button" role="tab" id="reiter-neu" class="reiter-knopf" aria-selected={startetMitNeu}>
+        Konto anlegen
+      </button>
+    </div>
 
     <div class="warnung" id="fehler" hidden></div>
     <noscript>
       <div class="warnung">
         Diese Seite braucht hier JavaScript. Der Hoster weist Formular-Absendungen
-        grundsätzlich ab (403), deshalb geht die Anmeldung über einen kleinen
+        grundsätzlich ab (403), deshalb geht das Abschicken über einen kleinen
         Aufruf im Hintergrund. Auf einem eigenen Server entfällt das.
       </div>
     </noscript>
 
-    <form id="formular" class="tafel">
+    <form id="form-an" class="tafel" hidden={startetMitNeu}>
       <div class="tafel-koerper">
         <label class="feld">E-Mail
           <input class="eingabe" type="email" name="mail" autocomplete="username" required />
@@ -57,14 +76,40 @@ if (schon) return Astro.redirect('/zentrale', 302);
         <label class="feld">Passwort
           <input class="eingabe" type="password" name="passwort" autocomplete="current-password" required />
         </label>
-        <button type="submit" class="btn btn-primary knopf-gross" id="knopf">
+        <button type="submit" class="btn btn-primary knopf-gross">
           <Icon name="weiter" />
           Anmelden
         </button>
         <p class="hinweis">
-          Es gibt hier keine Selbstregistrierung. Konten legt bis auf Weiteres
-          die Hausverwaltung an — solange die Einführungsphase läuft, ist das
-          eine Nachricht wert und kein Formular.
+          Passwort vergessen? Solange es noch keine Zurücksetzung per Mail gibt,
+          hilft eine Nachricht an <a href="mailto:hallo@pnkt.me">hallo@pnkt.me</a>.
+        </p>
+      </div>
+    </form>
+
+    <form id="form-neu" class="tafel" hidden={!startetMitNeu}>
+      <div class="tafel-koerper">
+        <label class="feld">Name oder Betrieb
+          <input class="eingabe" type="text" name="name" autocomplete="organization" />
+        </label>
+        <label class="feld">E-Mail
+          <input class="eingabe" type="email" name="mail" autocomplete="username" required />
+        </label>
+        <label class="feld">Passwort
+          <input
+            class="eingabe" type="password" name="passwort"
+            autocomplete="new-password" minlength="10" required
+          />
+          <span class="unterzeile">Mindestens zehn Zeichen. Länge hilft hier mehr als Sonderzeichen.</span>
+        </label>
+        <button type="submit" class="btn btn-primary knopf-gross">
+          <Icon name="weiter" />
+          Konto anlegen
+        </button>
+        <p class="hinweis">
+          Während der Einführungsphase kostenlos, ohne Zahlungsdaten und ohne
+          Kündigungsfrist. Was gespeichert wird, steht in der
+          <a href="/datenschutz">Datenschutzerklärung</a>.
         </p>
       </div>
     </form>
@@ -72,37 +117,61 @@ if (schon) return Astro.redirect('/zentrale', 302);
 </Seite>
 
 <script>
-  const formular = document.getElementById('formular');
   const fehler = document.getElementById('fehler');
-  const knopf = document.getElementById('knopf');
+  const formAn = document.getElementById('form-an');
+  const formNeu = document.getElementById('form-neu');
+  const reiterAn = document.getElementById('reiter-an');
+  const reiterNeu = document.getElementById('reiter-neu');
 
   function melde(text) {
     fehler.textContent = text;
     fehler.hidden = !text;
   }
 
-  formular.addEventListener('submit', async (ev) => {
-    ev.preventDefault();
+  function zeige(neu) {
+    formAn.hidden = neu;
+    formNeu.hidden = !neu;
+    reiterAn.setAttribute('aria-selected', String(!neu));
+    reiterNeu.setAttribute('aria-selected', String(neu));
+    document.querySelector('.titel-seite').textContent = neu ? 'Konto anlegen' : 'Anmelden';
     melde('');
-    knopf.disabled = true;
-    const alt = knopf.innerHTML;
-    knopf.innerHTML = '<span class="laeuft"></span>Wird geprüft …';
-    try {
-      const daten = Object.fromEntries(new FormData(formular).entries());
-      const antwort = await fetch('/api/anmelden', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(daten),
-      });
-      const d = await antwort.json();
-      if (d.ok) { window.location.href = d.weiter || '/zentrale'; return; }
-      melde(d.fehler || 'Das hat nicht geklappt.');
-    } catch (e) {
-      melde('Der Server antwortet nicht: ' + e.message);
-    }
-    knopf.disabled = false;
-    knopf.innerHTML = alt;
-  });
+    // Die Adresse mitführen, damit ein Neuladen dort bleibt, wo man war.
+    const weg = neu ? '/anmelden?neu=1' : '/anmelden';
+    history.replaceState(null, '', weg);
+    (neu ? formNeu : formAn).querySelector('input').focus();
+  }
+
+  reiterAn.addEventListener('click', () => zeige(false));
+  reiterNeu.addEventListener('click', () => zeige(true));
+
+  function verbinde(formular, weg, laeuftText) {
+    formular.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      melde('');
+      const knopf = formular.querySelector('button[type=submit]');
+      const alt = knopf.innerHTML;
+      knopf.disabled = true;
+      knopf.innerHTML = '<span class="laeuft"></span>' + laeuftText;
+      try {
+        const daten = Object.fromEntries(new FormData(formular).entries());
+        const antwort = await fetch(weg, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(daten),
+        });
+        const d = await antwort.json();
+        if (d.ok) { window.location.href = d.weiter || '/zentrale'; return; }
+        melde(d.fehler || 'Das hat nicht geklappt.');
+      } catch (e) {
+        melde('Der Server antwortet nicht: ' + e.message);
+      }
+      knopf.disabled = false;
+      knopf.innerHTML = alt;
+    });
+  }
+
+  verbinde(formAn, '/api/anmelden', 'Wird geprüft …');
+  verbinde(formNeu, '/api/registrieren', 'Wird angelegt …');
 </script>
 
 <style is:global>
@@ -112,7 +181,19 @@ if (schon) return Astro.redirect('/zentrale', 302);
     border-radius: 20px; padding: 14px 18px; margin: 18px 0 0;
     font-size: 15px; line-height: 1.55;
   }
-  .tafel { background: var(--color-surface); border-radius: 32px; margin-top: 22px; }
+  .reiter {
+    display: flex; gap: 6px; margin-top: 22px; padding: 5px;
+    background: var(--color-surface); border-radius: 999px; width: fit-content;
+  }
+  .reiter-knopf {
+    font: inherit; font-size: 14px; font-weight: 600;
+    border: 0; border-radius: 999px; padding: 9px 18px; cursor: pointer;
+    background: transparent; color: rgba(32, 30, 29, 0.62);
+  }
+  .reiter-knopf[aria-selected='true'] { background: var(--color-bg); color: var(--color-text); }
+  .reiter-knopf:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .tafel { background: var(--color-surface); border-radius: 32px; margin-top: 18px; }
+  .tafel[hidden] { display: none; }
   .tafel-koerper { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
   .feld {
     display: flex; flex-direction: column; gap: 6px;
@@ -125,5 +206,6 @@ if (schon) return Astro.redirect('/zentrale', 302);
     border-radius: 14px; padding: 12px 14px; width: 100%;
   }
   .eingabe:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+  .unterzeile { font-size: 12px; font-weight: 400; color: rgba(32, 30, 29, 0.55); }
   .hinweis { font-size: 13px; line-height: 1.55; color: rgba(32, 30, 29, 0.6); margin: 0; }
 </style>

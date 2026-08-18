@@ -45,23 +45,31 @@ const wege = [
       ))}
     </nav>
 
-    {/* Hier stand „Anmelden" und daneben „Kostenlos starten". Beide
-        zeigten auf die Preisseite, und beide versprachen etwas, das es
-        nicht gibt: es gibt kein Konto und keine Anmeldung, weil der
-        Dienst auf keinem öffentlichen Server läuft. Wer auf Anmelden
-        klickte, landete auf einer Preistabelle — für den Leser sieht
-        das aus, als sei der Knopf kaputt.
+    {/* Hier stand einmal „Anmelden" und daneben „Kostenlos starten".
+        Beide zeigten auf die Preisseite und versprachen etwas, das es
+        nicht gab: kein Konto, keine Anmeldung. Wer klickte, landete auf
+        einer Preistabelle — für den Leser sieht das aus, als sei der
+        Knopf kaputt. Deshalb standen sie eine Zeit lang gar nicht da.
 
-        Was jetzt dasteht, ist wahr und führt an die Stelle, wo es
-        erklärt wird. Der Anmeldeknopf kommt zurück, wenn es etwas
-        anzumelden gibt. */}
+        Jetzt gibt es beides wirklich, aber nur, wo eine Laufzeit
+        antwortet. Die statische Fassung — auf einem Stick, in einer
+        Datei — zeigt weiter nur den ehrlichen Hinweis. */}
     <span class="kopf-rechts">
-      {dynamisch && <a href={weg('/zentrale')} class="anmelden">Zentrale</a>}
-      {dynamisch && <a href={weg('/zahlen')} class="anmelden">Zahlen</a>}
-      <a href={weg('/preise')} class="btn btn-primary kopf-knopf">
-        <Icon name="zahlen" />
-        Zurzeit kostenlos
-      </a>
+      {dynamisch ? (
+        <>
+          <a href={weg('/zentrale')} class="anmelden">Zentrale</a>
+          <a href={weg('/anmelden')} class="anmelden">Anmelden</a>
+          <a href={weg('/anmelden?neu=1')} class="btn btn-primary kopf-knopf">
+            <Icon name="zahlen" />
+            Kostenlos starten
+          </a>
+        </>
+      ) : (
+        <a href={weg('/preise')} class="btn btn-primary kopf-knopf">
+          <Icon name="zahlen" />
+          Zurzeit kostenlos
+        </a>
+      )}
     </span>
   </div>
 </header>

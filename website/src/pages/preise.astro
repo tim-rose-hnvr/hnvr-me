@@ -19,13 +19,20 @@ import Icon from '../components/Icon.astro';
 // § 5 UWG angreifbar — eine Preisangabe ist eine geschäftliche Aussage,
 // auch wenn sie in die Zukunft zeigt.
 
+// Anmeldung und Konto gibt es nur, wo eine Laufzeit antwortet. Die
+// statische Fassung dieser Seite darf sie deshalb nicht versprechen.
+const dynamisch = import.meta.env.PUBLIC_DYNAMISCH === '1';
+
 // Was es heute wirklich gibt. Jede Zeile lässt sich im Programm
 // wiederfinden — das ist die Bedingung dafür, dass sie hier steht.
 const dabei = [
   { titel: 'Codes, so viele du brauchst',
     text: 'Keine Obergrenze in der Einführungsphase, auch nicht bei Serien aus einer Tabelle.' },
+  // „alte Fassungen zurückholen" stand hier, bevor es das gab — und es
+  // gibt es weiterhin nicht. Versprochen wird nur, was in der Zentrale
+  // wirklich zu bedienen ist.
   { titel: 'Ziel jederzeit tauschen',
-    text: 'Der gedruckte Code bleibt derselbe. Jede Änderung ist eine neue Fassung, alte lassen sich zurückholen.' },
+    text: 'Der gedruckte Code bleibt derselbe; das Ziel wechselst du in der Zentrale, so oft du willst.' },
   { titel: 'Prüfliste vor dem Druck',
     text: 'Kontrast, Ruhezone, Modulgröße, Fehlerkorrektur gegen Logo — mit Begründung, nicht nur mit Ampel.' },
   { titel: 'Export ohne Wasserzeichen',
@@ -57,10 +64,14 @@ const fragen = [
       'Ankündigung, nicht über Nacht.',
   },
   {
-    frage: 'Kann ich mich anmelden?',
-    antwort: 'Noch nicht. Es gibt kein Konto und keine Anmeldung, weil der Dienst noch auf ' +
-      'keinem öffentlichen Server läuft. Deshalb steht in der Kopfzeile auch kein ' +
-      'Anmeldeknopf mehr — er hätte nichts getan.',
+    frage: 'Brauche ich ein Konto?',
+    antwort: dynamisch
+      ? 'Nur für einen Zweck: Codes, deren Ziel du später wechseln kannst, ohne neu zu ' +
+        'drucken — und die Zahlen dazu. Zum Bauen eines festen Codes brauchst du keines, ' +
+        'die Werkstatt läuft ohne Anmeldung. Das Konto ist in der Einführungsphase ' +
+        'kostenlos, ohne Zahlungsdaten.'
+      : 'In dieser Fassung nicht — sie ist eine reine Werkstatt und läuft ohne Server. ' +
+        'Umhängbare Codes und Zahlen gibt es dort, wo eine Laufzeit antwortet.',
   },
   {
     frage: 'Was kostet es später?',
@@ -179,12 +190,22 @@ const fragen = [
       </h2>
       <p class="abschluss-text">
         Die Werkstatt zeigt, was ein Code hier kann — Stile, Prüfliste, Serien.
-        Anmelden musst du dich dafür nicht; du kannst es auch nicht.
+        {dynamisch
+          ? ' Anmelden musst du dich dafür nicht. Ein Konto brauchst du erst, wenn du das Ziel später wechseln willst, ohne neu zu drucken.'
+          : ' Anmelden musst du dich dafür nicht; du kannst es auch nicht.'}
       </p>
-      <a href={weg('/studio')} class="btn btn-primary knopf-gross">
-        <Icon name="code" />
-        Code bauen — kostet nichts
-      </a>
+      <div class="abschluss-knoepfe">
+        <a href={weg('/studio')} class="btn btn-primary knopf-gross">
+          <Icon name="code" />
+          Code bauen — kostet nichts
+        </a>
+        {dynamisch && (
+          <a href={weg('/anmelden?neu=1')} class="btn btn-secondary knopf-gross">
+            <Icon name="team" />
+            Konto anlegen
+          </a>
+        )}
+      </div>
     </div>
   </section>
 </Seite>
@@ -298,6 +319,18 @@ const fragen = [
     color: rgba(245, 234, 216, 0.78);
     margin: 0 0 20px;
     max-width: 30rem;
+  }
+  .abschluss-knoepfe { display: flex; gap: 12px; flex-wrap: wrap; }
+  /* Der zweite Knopf steht auf dunklem Grund — die helle Fassung von
+     btn-secondary wäre dort unlesbar. */
+  .abschluss-knoepfe .btn-secondary {
+    background: transparent;
+    color: var(--color-bg);
+    border: 1px solid rgba(245, 234, 216, 0.42);
+  }
+  .abschluss-knoepfe .btn-secondary:hover {
+    background: rgba(245, 234, 216, 0.12);
+    border-color: rgba(245, 234, 216, 0.6);
   }
 
   @media (max-width: 1000px) {

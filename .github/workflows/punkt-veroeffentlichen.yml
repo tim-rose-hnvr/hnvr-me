@@ -123,6 +123,13 @@ jobs:
       # Nachgesehen im CLI: `wix release` verlangt diese Datei, und
       # geschrieben wird sie im Hook `astro:build:done` von @wix/astro.
       # Ohne die Anbindung entsteht sie nie.
+      # Die Regeln, die ohne Wix pruefbar sind: Kuerzelform,
+      # Passwortstreuung, Sitzungsausweis. Laeuft vor dem Bau, damit ein
+      # verstellter Grenzwert nicht erst auf der ausgelieferten Seite
+      # auffaellt.
+      - name: Regeln pruefen
+        run: npm test
+
       - name: Projektwerte holen
         run: npx wix env pull
 
@@ -168,7 +175,8 @@ jobs:
           fehler=0
           for pfad in "" "/werkstatt" "/strecken" "/vorlagen" "/preise" \
                       "/lesbarkeit" "/massenanlage" "/schnittstelle" \
-                      "/datenschutz" "/impressum"; do
+                      "/datenschutz" "/impressum" "/studio" "/serie" \
+                      "/system" "/anmelden"; do
             code=$(curl -sSL -o /dev/null -w '%{http_code}' "$basis$pfad" || echo 000)
             echo "$code  $pfad"
             [ "$code" = "200" ] || fehler=1
@@ -178,4 +186,17 @@ jobs:
           code=$(curl -sSL -o /dev/null -w '%{http_code}' "$basis/schrift/caprasimo-400-latin.woff2" || echo 000)
           echo "$code  /schrift/caprasimo-400-latin.woff2"
           [ "$code" = "200" ] || fehler=1
+
+          # Ohne den Kern zeigt die Werkstatt eine leere Vorschau und
+          # sonst nichts. Er ist die Anwendung, nicht ein Beiwerk.
+          code=$(curl -sSL -o /dev/null -w '%{http_code}' "$basis/wasm/pnkt.wasm" || echo 000)
+          echo "$code  /wasm/pnkt.wasm"
+          [ "$code" = "200" ] || fehler=1
+
+          # /zentrale ohne Ausweis gehoert auf /anmelden. Eine 200 hier
+          # hiesse, dass fremde Codes offen liegen.
+          code=$(curl -sS -o /dev/null -w '%{http_code}' "$basis/zentrale" || echo 000)
+          echo "$code  /zentrale (ohne Ausweis, erwartet 302)"
+          [ "$code" = "302" ] || fehler=1
+
           exit $fehler

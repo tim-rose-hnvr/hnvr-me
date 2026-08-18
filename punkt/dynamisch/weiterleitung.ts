@@ -41,17 +41,8 @@ const seite = (titel: string, text: string, code: number) =>
     { status: code, headers: { 'content-type': 'text/html; charset=utf-8' } },
   );
 
-// Ein Notausgang zum Nachsehen, nicht mehr. Ohne ihn kostet jeder
-// Fehlversuch eine Auslieferung und zehn Minuten Warten: die Logs der
-// Wix-Laufzeit sind von hier aus nicht lesbar. Mit falschem oder
-// fehlendem Wort verhält sich die Route ganz normal.
-//
-// Wird entfernt, sobald die Anbindung steht.
-const DIAGNOSEWORT = 'wieso-4f2a91';
-
 export const GET: APIRoute = async ({ params, request }) => {
   const kuerzel = (params.kuerzel ?? '').trim();
-  const diagnose = new URL(request.url).searchParams.get('diagnose') === DIAGNOSEWORT;
   if (!kuerzel) return seite('Kein Code angegeben', 'Diese Adresse braucht ein Kürzel.', 400);
 
   let code = null;
@@ -59,12 +50,6 @@ export const GET: APIRoute = async ({ params, request }) => {
     code = await codeNachKuerzel(kuerzel);
   } catch (fehler) {
     console.error(`[pnkt] Kürzel „${kuerzel}" nicht nachschlagbar:`, fehler);
-    if (diagnose) {
-      return new Response(String((fehler as Error)?.stack ?? fehler).slice(0, 2000), {
-        status: 500,
-        headers: { 'content-type': 'text/plain; charset=utf-8' },
-      });
-    }
     return seite(
       'Gerade nicht erreichbar',
       'Der Code ist in Ordnung, nur die Datenbank antwortet nicht. Bitte gleich noch einmal versuchen.',

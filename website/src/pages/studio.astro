@@ -357,6 +357,26 @@ const typen = [
   // Vite beim Bauen ein.
   const WASMWEG = (import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/wasm/pnkt.wasm';
 
+  // Aus der Zentrale kommt man mit ?ziel=… hierher: dort steht ein
+  // umhängbarer Code, hier entsteht das Muster dazu. Gedruckt wird der
+  // Kurzweg, nicht das Endziel — das ist der ganze Punkt, und deshalb
+  // steht es auch unter dem Feld.
+  function zielAusAdresse() {
+    const ziel = new URLSearchParams(location.search).get('ziel');
+    if (!ziel) return;
+    e('typ').value = 'url';
+    document.querySelectorAll('[data-typfeld]').forEach((f) => {
+      f.hidden = !f.dataset.typfeld.split(' ').includes('url');
+    });
+    e('text').value = ziel;
+    const zeile = document.createElement('p');
+    zeile.className = 'hinweis';
+    zeile.textContent =
+      'Kommt aus der Zentrale. Im Muster steht der Kurzweg — wohin er führt, ' +
+      'änderst du dort, ohne neu zu drucken.';
+    e('text').closest('.feld').insertAdjacentElement('afterend', zeile);
+  }
+
   async function kernLaden() {
     const go = new Go();
     try {
@@ -368,6 +388,7 @@ const typen = [
       bereit = true;
       standSetzen('Kern geladen — läuft in diesem Browser', 'gut');
       verfahrenFuellen();
+      zielAusAdresse();
       zeichnen();
     } catch (fehler) {
       standSetzen('Der Kern ließ sich nicht laden: ' + fehler.message, 'schlecht');

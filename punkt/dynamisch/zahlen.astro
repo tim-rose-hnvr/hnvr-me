@@ -179,7 +179,7 @@ const wort: Record<string, string> = {
           <thead><tr><th>Code</th><th>Kurzweg</th><th class="rechts">Scans</th></tr></thead>
           <tbody>
             {codes.map((c) => (
-              <tr>
+              <tr id={`code-${c.id}`}>
                 <td>{c.name || 'Ohne Bezeichnung'}</td>
                 <td><code>/r/{c.kuerzel}</code></td>
                 <td class="rechts zahl">{summeJeCode.get(c.id) ?? 0}</td>
@@ -197,6 +197,11 @@ const wort: Record<string, string> = {
   @media (max-width: 700px) { .satz { font-size: 30px; } }
 
   .panel { background: var(--color-surface); border-radius: 36px; padding: 28px 30px; }
+  /* Angesprungene Zeile kurz hervorheben — der Knopf in der Zentrale
+     zeigt hierher, und ohne Markierung sucht man in dreißig Zeilen. */
+  tr:target td { background: var(--color-accent-2-200); }
+  tr:target td:first-child { border-radius: 10px 0 0 10px; }
+  tr:target td:last-child { border-radius: 0 10px 10px 0; }
   .zweispalt { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
   .zweispalt > * { min-width: 0; }
 

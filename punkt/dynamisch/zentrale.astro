@@ -6,9 +6,15 @@
  * in einem Formular: das Ziel wechseln, während das gedruckte Muster
  * bleibt. Alles andere hier ist Beiwerk.
  *
- * Abgeschickt wird über `/api/ziel` als JSON. Der Grund steht in
- * `api.ts` und ist unangenehm: Wix' Rand weist jeden Formular-POST mit
- * 403 ab, gleich wie sauber er aussieht. Auf diesem Hoster braucht das
+ * Bis eben fehlte der Anfang davon. Hier standen nur Codes, die jemand
+ * anders eingetragen hatte — anlegen konnte man keinen. Ein Werkzeug,
+ * mit dem man nichts anfangen kann, solange man nicht persönlich
+ * bekannt ist, ist kein Werkzeug. Jetzt entsteht ein umhängbarer Code
+ * in diesem Formular, in einem Zug.
+ *
+ * Abgeschickt wird über `/api/…` als JSON. Der Grund steht in `api.ts`
+ * und ist unangenehm: Wix' Rand weist jeden Formular-POST mit 403 ab,
+ * gleich wie sauber er aussieht. Auf diesem Hoster braucht das
  * Umhängen deshalb JavaScript — auf einem eigenen Server nicht.
  */
 import Seite from '../../website/src/layouts/Seite.astro';
@@ -41,7 +47,7 @@ const host = new URL(Astro.request.url).origin;
 const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
 ---
 
-<Seite titel="Zentrale" beschreibung="Codes verwalten, Ziele umhängen, Zahlen ansehen." aktiv="">
+<Seite titel="Zentrale" beschreibung="Codes anlegen, Ziele umhängen, Zahlen ansehen." aktiv="">
   <section class="spur kopfreihe">
     <div>
       <span class="tag tag-accent">
@@ -62,31 +68,67 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
     <div class="meldung" id="meldung" hidden></div>
     <noscript>
       <div class="meldung schlecht">
-        Das Umhängen braucht hier JavaScript: der Hoster weist Formular-Absendungen
+        Diese Seite braucht hier JavaScript: der Hoster weist Formular-Absendungen
         grundsätzlich ab (403). Auf einem eigenen Server entfällt das.
       </div>
     </noscript>
   </section>
 
   <section class="spur">
+    <form class="tafel neu" id="neu">
+      <div class="tafel-koerper">
+        <h2 class="karte-titel">Neuen Code anlegen</h2>
+        <p class="hinweis">
+          Er bekommt eine feste Adresse unter <code>{host}/r/…</code>. Die wird
+          gedruckt und bleibt für immer. Wohin sie führt, änderst du danach
+          jederzeit hier.
+        </p>
+        <div class="zeile">
+          <label class="feld wachsend">Ziel — wohin soll der Scan führen?
+            <input class="eingabe" type="text" name="ziel" placeholder="https://…" required />
+          </label>
+          <label class="feld">Bezeichnung (nur für dich)
+            <input class="eingabe" type="text" name="name" placeholder="Tisch 12" />
+          </label>
+        </div>
+        <label class="feld">Wunschkürzel — freilassen, dann wird eines gewürfelt
+          <span class="kuerzelzeile">
+            <span class="vorsatz">/r/</span>
+            <input
+              class="eingabe" type="text" name="kuerzel" id="kuerzelfeld"
+              placeholder="tisch12" autocapitalize="off" autocorrect="off" spellcheck="false"
+            />
+          </span>
+          <span class="unterzeile" id="kuerzelurteil">Kleinbuchstaben, Ziffern, Bindestriche.</span>
+        </label>
+        <button type="submit" class="btn btn-primary knopf-gross">
+          <Icon name="weiter" />
+          Code anlegen
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="spur">
     {codes.length === 0 ? (
       <div class="tafel leer">
         <p>
-          Noch kein Code auf diesem Konto. In der <a href="/studio">Werkstatt</a>
-          entstehen statische Codes ohne Konto; dynamische — die man später
-          umhängen kann — legt bis auf Weiteres die Hausverwaltung an.
+          Noch kein Code auf diesem Konto. Leg oben einen an — oder bau in der
+          <a href="/studio">Werkstatt</a> einen festen Code, bei dem das Ziel
+          direkt im Muster steht und sich später nicht mehr ändern lässt.
         </p>
       </div>
     ) : (
       <div class="karten">
         {codes.map((c) => (
-          <article class="karte">
+          <article class="karte" data-karte={c.id} data-aktiv={String(c.aktiv)}>
             <div class="karte-kopf">
               <div>
                 <h2 class="karte-titel">{c.name || 'Ohne Bezeichnung'}</h2>
                 <a class="kurzweg" href={`${host}/r/${c.kuerzel}`} target="_blank" rel="noopener">
                   /r/{c.kuerzel}
                 </a>
+                {!c.aktiv && <span class="marke">stillgelegt</span>}
               </div>
               <div class="karte-zahlen">
                 <span class="karte-scans">{zahlen.get(c.id) ?? 0}</span>
@@ -95,11 +137,26 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
             </div>
 
             <form class="zielform" data-id={c.id}>
-              <label class="feld">Zeigt auf
+              <label class="feld wachsend">Zeigt auf
                 <input class="eingabe" type="text" name="ziel" value={c.ziel} required />
               </label>
               <button type="submit" class="btn btn-primary">Umhängen</button>
             </form>
+
+            <div class="karte-reihe">
+              <a class="btn btn-secondary klein" href={`/zahlen#code-${c.id}`}>Zahlen</a>
+              <a
+                class="btn btn-secondary klein"
+                href={`/studio?ziel=${encodeURIComponent(`${host}/r/${c.kuerzel}`)}`}
+              >Muster bauen</a>
+              <button type="button" class="btn btn-secondary klein umbenennen" data-id={c.id}>
+                Umbenennen
+              </button>
+              <button
+                type="button" class="btn btn-secondary klein stand"
+                data-id={c.id} data-ziel={c.aktiv ? 'stillgelegt' : 'aktiv'}
+              >{c.aktiv ? 'Stilllegen' : 'Wieder aufnehmen'}</button>
+            </div>
 
             <p class="karte-fuss">
               {c.dynamisch ? 'Dynamisch — Ziel jederzeit änderbar.' : 'Statisch angelegt — das Ziel steht im Muster.'}
@@ -122,32 +179,135 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
     if (text) meldung.scrollIntoView({ block: 'nearest' });
   }
 
+  async function sende(weg, koerper) {
+    const antwort = await fetch(weg, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(koerper),
+    });
+    return antwort.json();
+  }
+
+  /** Knopf sperren, Beschriftung tauschen, hinterher zurücksetzen. */
+  async function waehrend(knopf, text, tue) {
+    const alt = knopf.innerHTML;
+    knopf.disabled = true;
+    knopf.innerHTML = text;
+    try { await tue(); } finally {
+      knopf.disabled = false;
+      knopf.innerHTML = alt;
+    }
+  }
+
   document.getElementById('abmelden').addEventListener('click', async () => {
     await fetch('/api/abmelden', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
     window.location.href = '/anmelden';
   });
 
+  // ─── Anlegen ───────────────────────────────────────────────────────
+  const neu = document.getElementById('neu');
+  const kuerzelfeld = document.getElementById('kuerzelfeld');
+  const kuerzelurteil = document.getElementById('kuerzelurteil');
+
+  // Nachsehen, ob das Wunschkürzel frei ist — erst wenn das Tippen
+  // aufgehört hat, sonst fragt man bei jedem Buchstaben.
+  let warten = 0;
+  kuerzelfeld.addEventListener('input', () => {
+    clearTimeout(warten);
+    const wert = kuerzelfeld.value.trim();
+    if (!wert) { kuerzelurteil.textContent = 'Kleinbuchstaben, Ziffern, Bindestriche.'; kuerzelurteil.dataset.stand = ''; return; }
+    kuerzelurteil.textContent = 'wird geprüft …';
+    kuerzelurteil.dataset.stand = '';
+    warten = setTimeout(async () => {
+      try {
+        const antwort = await fetch('/api/kuerzel?kuerzel=' + encodeURIComponent(wert));
+        const d = await antwort.json();
+        if (d.frei === true) { kuerzelurteil.textContent = '„' + d.wert + '" ist frei.'; kuerzelurteil.dataset.stand = 'gut'; }
+        else if (d.frei === false) { kuerzelurteil.textContent = d.grund; kuerzelurteil.dataset.stand = 'schlecht'; }
+        else { kuerzelurteil.textContent = 'Nicht nachsehbar — das Anlegen prüft es ohnehin.'; kuerzelurteil.dataset.stand = ''; }
+      } catch {
+        kuerzelurteil.textContent = 'Nicht nachsehbar — das Anlegen prüft es ohnehin.';
+        kuerzelurteil.dataset.stand = '';
+      }
+    }, 350);
+  });
+
+  neu.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    melde('');
+    const knopf = neu.querySelector('button[type=submit]');
+    await waehrend(knopf, '<span class="laeuft"></span>Wird angelegt …', async () => {
+      try {
+        const d = await sende('/api/neu', Object.fromEntries(new FormData(neu).entries()));
+        if (d.ok) {
+          melde('Angelegt: /r/' + d.kuerzel + ' — die Seite lädt gleich neu.', 'gut');
+          setTimeout(() => window.location.reload(), 900);
+          return;
+        }
+        melde(d.fehler || 'Das hat nicht geklappt.', 'schlecht');
+      } catch (e) {
+        melde('Der Server antwortet nicht: ' + e.message, 'schlecht');
+      }
+    });
+  });
+
+  // ─── Umhängen ──────────────────────────────────────────────────────
   document.querySelectorAll('.zielform').forEach((formular) => {
     formular.addEventListener('submit', async (ev) => {
       ev.preventDefault();
       const knopf = formular.querySelector('button');
-      const alt = knopf.textContent;
-      knopf.disabled = true;
-      knopf.textContent = 'wird gespeichert …';
-      try {
-        const antwort = await fetch('/api/ziel', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ id: formular.dataset.id, ziel: formular.querySelector('[name=ziel]').value }),
-        });
-        const d = await antwort.json();
-        if (d.ok) melde('Umgehängt. Der gedruckte Code bleibt gültig — ab sofort führt er dorthin.', 'gut');
-        else melde(d.fehler || 'Das hat nicht geklappt.', 'schlecht');
-      } catch (e) {
-        melde('Der Server antwortet nicht: ' + e.message, 'schlecht');
-      }
-      knopf.disabled = false;
-      knopf.textContent = alt;
+      await waehrend(knopf, 'wird gespeichert …', async () => {
+        try {
+          const d = await sende('/api/ziel', {
+            id: formular.dataset.id,
+            ziel: formular.querySelector('[name=ziel]').value,
+          });
+          if (d.ok) melde('Umgehängt. Der gedruckte Code bleibt gültig — ab sofort führt er dorthin.', 'gut');
+          else melde(d.fehler || 'Das hat nicht geklappt.', 'schlecht');
+        } catch (e) {
+          melde('Der Server antwortet nicht: ' + e.message, 'schlecht');
+        }
+      });
+    });
+  });
+
+  // ─── Stilllegen und wieder aufnehmen ───────────────────────────────
+  document.querySelectorAll('.stand').forEach((knopf) => {
+    knopf.addEventListener('click', async () => {
+      const nachAktiv = knopf.dataset.ziel === 'aktiv';
+      if (!nachAktiv && !confirm(
+        'Stilllegen? Gedruckte Codes zeigen danach eine Hinweisseite statt des Ziels. ' +
+        'Das Kürzel bleibt für immer dir zugeordnet und wird nie neu verteilt.',
+      )) return;
+      await waehrend(knopf, '…', async () => {
+        try {
+          const d = await sende('/api/stand', { id: knopf.dataset.id, stand: nachAktiv ? 'aktiv' : 'still' });
+          if (d.ok) { window.location.reload(); return; }
+          melde(d.fehler || 'Das hat nicht geklappt.', 'schlecht');
+        } catch (e) {
+          melde('Der Server antwortet nicht: ' + e.message, 'schlecht');
+        }
+      });
+    });
+  });
+
+  // ─── Umbenennen ────────────────────────────────────────────────────
+  document.querySelectorAll('.umbenennen').forEach((knopf) => {
+    knopf.addEventListener('click', async () => {
+      const karte = document.querySelector('[data-karte="' + knopf.dataset.id + '"]');
+      const titel = karte.querySelector('.karte-titel');
+      const alt = titel.textContent.trim() === 'Ohne Bezeichnung' ? '' : titel.textContent.trim();
+      const name = prompt('Bezeichnung — nur für dich, steht nicht im Code:', alt);
+      if (name === null) return;
+      await waehrend(knopf, '…', async () => {
+        try {
+          const d = await sende('/api/name', { id: knopf.dataset.id, name });
+          if (d.ok) { titel.textContent = name.trim() || 'Ohne Bezeichnung'; melde('Umbenannt.', 'gut'); return; }
+          melde(d.fehler || 'Das hat nicht geklappt.', 'schlecht');
+        } catch (e) {
+          melde('Der Server antwortet nicht: ' + e.message, 'schlecht');
+        }
+      });
     });
   });
 </script>
@@ -160,16 +320,32 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
 
   .karten { display: flex; flex-direction: column; gap: 16px; }
   .karte { background: var(--color-surface); border-radius: 32px; padding: 24px 26px; }
+  .karte[data-aktiv='false'] { opacity: 0.72; }
   .karte-kopf { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
   .karte-titel { font-family: var(--font-heading); font-size: 22px; letter-spacing: -0.01em; margin: 0 0 4px; }
   .kurzweg { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13.5px; color: var(--color-accent-700); }
+  .marke {
+    display: inline-block; margin-left: 8px; padding: 2px 9px; border-radius: 999px;
+    background: #f7e7e5; color: #a82e23; font-size: 11.5px; font-weight: 600;
+  }
   .karte-zahlen { text-align: right; }
   .karte-scans { display: block; font-family: var(--font-heading); font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; }
   .karte-scanwort { font-size: 12px; color: rgba(32, 30, 29, 0.6); }
 
   .zielform { display: flex; gap: 12px; align-items: flex-end; margin-top: 18px; flex-wrap: wrap; }
-  .zielform .feld { flex: 1 1 22rem; min-width: 0; display: flex; flex-direction: column; gap: 6px;
-    font-size: 12.5px; font-weight: 600; color: rgba(32, 30, 29, 0.62); }
+  .karte-reihe { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .btn.klein { font-size: 13px; padding: 7px 14px; }
+
+  .tafel { background: var(--color-surface); border-radius: 32px; }
+  .tafel-koerper { padding: 24px 26px; display: flex; flex-direction: column; gap: 16px; }
+  .tafel.neu .karte-titel { margin: 0; }
+  .zeile { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .feld {
+    display: flex; flex-direction: column; gap: 6px;
+    font-size: 12.5px; font-weight: 600; color: rgba(32, 30, 29, 0.62);
+  }
+  .feld.wachsend { flex: 1 1 22rem; min-width: 0; }
   .eingabe {
     font: inherit; font-size: 15px; font-weight: 400; color: var(--color-text);
     background: var(--color-bg);
@@ -177,7 +353,20 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
     border-radius: 14px; padding: 11px 14px; width: 100%;
   }
   .eingabe:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+  .kuerzelzeile { display: flex; align-items: center; gap: 8px; }
+  .vorsatz {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 14px; font-weight: 400; color: rgba(32, 30, 29, 0.5);
+  }
+  .kuerzelzeile .eingabe { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .unterzeile { font-size: 12px; font-weight: 400; color: rgba(32, 30, 29, 0.55); }
+  .unterzeile[data-stand='gut'] { color: var(--color-accent-2-800); font-weight: 600; }
+  .unterzeile[data-stand='schlecht'] { color: #a82e23; font-weight: 600; }
+
   .karte-fuss { font-size: 13px; color: rgba(32, 30, 29, 0.6); margin: 14px 0 0; }
-  .tafel.leer { background: var(--color-surface); border-radius: 32px; padding: 30px; }
+  .hinweis { font-size: 13.5px; line-height: 1.55; color: rgba(32, 30, 29, 0.62); margin: 0; }
+  .hinweis code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+  .tafel.leer { padding: 30px; }
   .tafel.leer p { margin: 0; font-size: 15.5px; line-height: 1.6; }
 </style>

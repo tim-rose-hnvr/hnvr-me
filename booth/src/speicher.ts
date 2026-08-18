@@ -13,6 +13,8 @@ export type Aufnahme = {
   art: string;
   event: string;
   blob: Blob;
+  /** Bewegtbild als GIF, wenn die Aufnahmeart eines hergibt. */
+  bewegt?: Blob;
 };
 
 const DATENBANK = 'youbooth';

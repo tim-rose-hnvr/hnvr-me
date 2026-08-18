@@ -97,7 +97,7 @@ export const oberflaechen: Oberflaeche[] = [
     koennen: [
       'Filter nach Aufnahmeart, mit Trefferzähler',
       'Großansicht mit Vor und Zurück, auch per Pfeiltasten und Escape bedienbar',
-      'Herunterladen einzeln, ohne Anmeldung',
+      'Herunterladen einzeln, ohne Anmeldung — Boomerang und GIF zusätzlich als Animation',
       'Löschfrist steht im Kopf, nicht im Kleingedruckten',
     ],
     regeln: [

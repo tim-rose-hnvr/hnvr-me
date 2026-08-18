@@ -35,13 +35,17 @@ async function hole(): Promise<Aufruf | null> {
  * Legt die Aufnahme als Datei auf der Box ab.
  * Gibt den Pfad zurueck oder null, wenn es keine Huelle gibt.
  */
-export async function legeAb(kennung: string, blob: Blob): Promise<string | null> {
+export async function legeAb(
+  kennung: string,
+  blob: Blob,
+  endung: 'jpg' | 'gif' = 'jpg'
+): Promise<string | null> {
   const rufe = await hole();
   if (!rufe) return null;
 
   const daten = Array.from(new Uint8Array(await blob.arrayBuffer()));
   try {
-    return await rufe<string>('sichere_aufnahme', { kennung, daten });
+    return await rufe<string>('sichere_aufnahme', { kennung, endung, daten });
   } catch {
     return null;
   }

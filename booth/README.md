@@ -20,7 +20,7 @@ Desktop-App verpackt — auf Windows und macOS. Die Website dazu liegt in `../yo
 | Kunden-Galerie mit Filter und Großansicht | läuft |
 | Installations-Zentrum mit echter Selbstprüfung | läuft |
 | Booth-Editor: Druckvorlagen entwerfen, Vorschau = Druckbild | läuft |
-| Bewegtbild (Boomerang, GIF) | Aufnahme und Vorschau laufen; die Videodatei fehlt noch |
+| Bewegtbild (Boomerang, GIF) als Datei — eigener GIF-Kodierer | läuft |
 | DSLR-Tethering, Drucker-Sonderfunktionen, Freistellung, Cloud | offen, siehe unten |
 
 ## Starten
@@ -65,7 +65,8 @@ src/
   huelle.ts          Brücke zur Desktop-Hülle (Ablage als Datei, Ausgabe-Adresse)
   arten.ts           die Aufnahmearten
   kamera.ts          Kamera — hier hängt später das DSLR-Tethering
-  layout.ts          Canvas-Renderer: Foto, Streifen, Doppelstreifen
+  layout.ts          Blatt, Doppelstreifen, Ausgabeformate
+  gif.ts             GIF-Kodierer fuer Boomerang und GIF
   ausgabe.ts         Druck, Datei, QR, Stundenlimit
   speicher.ts        lokale Ablage der Aufnahmen
   einstellungen.ts   Konfiguration der Box
@@ -99,6 +100,21 @@ Box; eingelesene Dateien werden geprüft, bevor sie übernommen werden.
 Die vier mitgelieferten Vorlagen stehen im Code und sind schreibgeschützt: die erste Änderung legt
 eine Kopie an. Der Weg zurück bleibt damit offen, auch nach einer verunglückten Nacht am Editor.
 
+## Bewegtbild
+
+Boomerang und GIF werden nicht nur animiert gezeigt, sondern als Datei ausgegeben. Der Kodierer
+steht in `gif.ts` und ist selbst geschrieben — GIF89a mit globaler Farbtabelle (Median-Cut, 256
+Farben), LZW und NETSCAPE-Schleife. Kein Nachladen aus dem Netz, auch nicht beim ersten Start in
+einem fremden WLAN.
+
+Die Serie läuft als Pingpong: vor und zurück, damit die Schleife ohne Sprung durchläuft. Kodiert
+wird auf 480 Pixel Breite, **nachdem** das Blatt gesichert und gezeigt wurde — der Gast wartet
+nicht auf die Rechenzeit. Acht Aufnahmen ergeben 14 Einzelbilder in gut einer halben Sekunde.
+
+Der QR-Code zeigt bei Boomerang und GIF auf die Bewegung (`/f/<kennung>.gif`), sonst auf das
+Standbild. Der Auslieferungsdienst kennt genau zwei Endungen; alles andere landet als `jpg` in der
+Ablage.
+
 ## Regeln, die im Code stecken
 
 - **Erst sichern, dann zeigen.** `baueErgebnis()` legt die Aufnahme ab, bevor das Ergebnis am
@@ -120,8 +136,8 @@ eine Kopie an. Der Weg zurück bleibt damit offen, auch nach einer verunglückte
   Oberfläche anzufassen. Ohne Kamera am Kabel lässt sich das nicht verlässlich schreiben.
 - **Drucker-Sonderfunktionen.** Randlos, Doppelstreifen-Schnitt und Materialstand hängen am
   Treiber des jeweiligen Sofortdruckers. Der generische Systemdruck steht.
-- **Bewegtbild als Datei.** Boomerang und GIF werden aufgenommen und am Screen animiert gezeigt;
-  für die Datei fehlt die Kodierung (GIF oder WebM).
+- **Bewegtbild als Video.** GIF steht; WebM oder MP4 wären kleiner und schärfer, hängen aber am
+  Codec des jeweiligen Systems (MediaRecorder). Für den Gast am Handy reicht GIF.
 - **Vorlagen-Katalog.** Mitgeliefert sind vier Vorlagen, nicht die 82 aus dem Katalog der
   Website. Sie entstehen mit demselben Modell — das ist Fleißarbeit, keine Technik.
 - **Bildschirm-Designer und freie Schriften.** Der Editor gestaltet das Druckbild; die Screen-Seite

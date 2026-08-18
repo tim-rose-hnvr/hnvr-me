@@ -30,6 +30,11 @@ async function starte(ziel: HTMLElement): Promise<void> {
   }
 
   const adressen = new Map(aufnahmen.map((a) => [a.id, URL.createObjectURL(a.blob)]));
+  // Bewegtbilder liegen neben dem Blatt — in der Kachel bleibt das Standbild,
+  // damit nicht zwanzig Animationen gleichzeitig laufen.
+  const bewegte = new Map(
+    aufnahmen.filter((a) => a.bewegt).map((a) => [a.id, URL.createObjectURL(a.bewegt!)])
+  );
   let filter = 'alle';
 
   const kopf = tag('header', 'gkopf');
@@ -63,7 +68,7 @@ async function starte(ziel: HTMLElement): Promise<void> {
         bild.alt = '';
         bild.loading = 'lazy';
         knopf.append(bild);
-        knopf.addEventListener('click', () => zeigeGross(sichtbar, i, adressen));
+        knopf.addEventListener('click', () => zeigeGross(sichtbar, i, adressen, bewegte));
 
         const fuss = document.createElement('figcaption');
         const zeitzeile = tag('span', 'gmono');
@@ -78,6 +83,18 @@ async function starte(ziel: HTMLElement): Promise<void> {
         laden.textContent = 'Herunterladen';
 
         fuss.append(zeitzeile, laden);
+
+        if (bewegte.has(a.id)) {
+          const gif = tag('a', 'gknopf gknopf--zweit') as HTMLAnchorElement;
+          gif.href = bewegte.get(a.id)!;
+          gif.download = `youbooth-${a.id}.gif`;
+          gif.textContent = 'GIF';
+          fuss.append(gif);
+
+          const marke = tag('span', 'gmarke');
+          marke.textContent = 'GIF';
+          kachel.append(marke);
+        }
         kachel.append(knopf, fuss);
         return kachel;
       })
@@ -113,7 +130,12 @@ async function starte(ziel: HTMLElement): Promise<void> {
 }
 
 /** Lightbox mit Vor und Zurück, bedienbar auch per Tastatur. */
-function zeigeGross(liste: Aufnahme[], start: number, adressen: Map<string, string>): void {
+function zeigeGross(
+  liste: Aufnahme[],
+  start: number,
+  adressen: Map<string, string>,
+  bewegte: Map<string, string>
+): void {
   let i = start;
 
   const decke = tag('div', 'glightbox');
@@ -136,7 +158,8 @@ function zeigeGross(liste: Aufnahme[], start: number, adressen: Map<string, stri
   const zeige = () => {
     const a = liste[i];
     if (!a) return;
-    bild.src = adressen.get(a.id) ?? '';
+    // Gross zeigt die Bewegung, wenn es eine gibt.
+    bild.src = bewegte.get(a.id) ?? adressen.get(a.id) ?? '';
     zaehler.textContent = `${i + 1} von ${liste.length}`;
   };
 

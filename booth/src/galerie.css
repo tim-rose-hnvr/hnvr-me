@@ -183,3 +183,27 @@ body.galerieseite {
     font-size: 28px;
   }
 }
+
+/* Bewegtbild: Marke auf der Kachel, zweiter Ladeknopf im Fuß. */
+.gkachel {
+  position: relative;
+}
+
+.gmarke {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--amber);
+  color: var(--amber-ink);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+}
+
+.gknopf--zweit {
+  border-color: var(--amber);
+  color: var(--amber);
+}

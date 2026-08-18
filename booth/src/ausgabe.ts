@@ -76,21 +76,26 @@ export function drucke(bilddaten: string, beschriftung: string): void {
  * anbietet. Ohne konfigurierte Basis-Adresse gibt es keinen sinnvollen QR —
  * dann bleibt der direkte Download.
  */
-export async function qrFuer(basis: string, kennung: string): Promise<string | null> {
+export async function qrFuer(
+  basis: string,
+  kennung: string,
+  endung: 'jpg' | 'gif' = 'jpg'
+): Promise<string | null> {
   const sauber = basis.trim().replace(/\/$/, '');
   if (!sauber) return null;
 
-  return QRCode.toDataURL(`${sauber}/f/${kennung}`, {
+  // Die Endung steht in der Adresse: der Dienst liefert genau diese Datei aus.
+  return QRCode.toDataURL(`${sauber}/f/${kennung}.${endung}`, {
     margin: 1,
     width: 600,
     color: { dark: '#0b0b0d', light: '#ffffff' },
   });
 }
 
-export function dateiname(art: string, kennung: string): string {
+export function dateiname(art: string, kennung: string, endung: 'jpg' | 'gif' = 'jpg'): string {
   const jetzt = new Date();
   const zwei = (n: number) => String(n).padStart(2, '0');
   const datum = `${jetzt.getFullYear()}${zwei(jetzt.getMonth() + 1)}${zwei(jetzt.getDate())}`;
   const zeit = `${zwei(jetzt.getHours())}${zwei(jetzt.getMinutes())}`;
-  return `youbooth-${datum}-${zeit}-${art}-${kennung}.jpg`;
+  return `youbooth-${datum}-${zeit}-${art}-${kennung}.${endung}`;
 }

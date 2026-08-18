@@ -12,10 +12,11 @@ import { Kamera, deuteFehler } from './kamera';
 import type { Einstellungen } from './einstellungen';
 import { ladeEinstellungen, sichereEinstellungen, standardEinstellungen } from './einstellungen';
 import { alsBilddaten, alsBlob, alsDoppelstreifen, zeichneMitVorlage } from './layout';
+import { alsGif } from './gif';
 import { werteJetzt } from './vorlage';
 import { findeVorlage } from './vorlagen';
 import { darfDrucken, dateiname, drucke, druckeInLetzterStunde, qrFuer, sichereAlsDatei } from './ausgabe';
-import { neueKennung, raeumeAuf, sichere, anzahl as gesamtzahl } from './speicher';
+import { alle, neueKennung, raeumeAuf, sichere, anzahl as gesamtzahl } from './speicher';
 import { ausgabeAdresse, legeAb } from './huelle';
 
 type Schritt = 'attract' | 'auswahl' | 'aufnahme' | 'ergebnis' | 'ausgabe';
@@ -30,6 +31,8 @@ export class Booth {
   private art: Art = ARTEN[0]!;
   private aufnahmen: HTMLCanvasElement[] = [];
   private ergebnis: HTMLCanvasElement | null = null;
+  /** Bewegtbild zur laufenden Aufnahme, sobald es kodiert ist. */
+  private bewegtbild: Blob | null = null;
   private ergebnisKennung = '';
   private sitzungen = 0;
 
@@ -123,6 +126,7 @@ export class Booth {
     this.stoppeAnimation();
     this.aufnahmen = [];
     this.ergebnis = null;
+    this.bewegtbild = null;
     this.schritt = 'attract';
     this.zeichne();
   }
@@ -386,8 +390,18 @@ export class Booth {
       );
     }
 
+    wege.append(this.weg('Sichern', 'Datei auf das Gerät', true, () => void this.sichereDatei()));
+
+    if (this.art.bewegt) {
+      const da = this.bewegtbild !== null;
+      wege.append(
+        this.weg('GIF sichern', da ? 'Animiert, für das Handy' : 'wird noch gerechnet …', da, () =>
+          this.sichereBewegtbild()
+        )
+      );
+    }
+
     wege.append(
-      this.weg('Sichern', 'Datei auf das Gerät', true, () => void this.sichereDatei()),
       this.weg('QR-Code', 'Ohne Internet', true, () => void this.zeigeQr()),
       this.weg('Galerie', 'Alle Event-Fotos', false, () => undefined)
     );
@@ -540,6 +554,7 @@ export class Booth {
     }
 
     this.ergebnisKennung = neueKennung();
+    this.bewegtbild = null;
 
     try {
       const blob = await alsBlob(this.ergebnis);
@@ -554,6 +569,9 @@ export class Booth {
       // Auslieferungsdienst sie über den QR-Code herausgeben.
       void legeAb(this.ergebnisKennung, blob);
       void this.zaehleAuf();
+      // Das Bewegtbild kommt danach: Es dauert länger, und der Gast soll sein
+      // Bild sehen, ohne darauf zu warten.
+      if (this.art.bewegt) void this.baueBewegtbild(this.ergebnisKennung, this.aufnahmen.slice());
     } catch {
       // Sichern fehlgeschlagen: die Aufnahme bleibt trotzdem am Screen,
       // damit der Gast sein Bild bekommt.
@@ -561,6 +579,32 @@ export class Booth {
         'Nicht gesichert',
         'Die Aufnahme konnte nicht abgelegt werden. Sie lässt sich trotzdem drucken und sichern.'
       );
+    }
+  }
+
+  /**
+   * Kodiert die Serie als GIF und legt sie zur Aufnahme dazu. Läuft nach dem
+   * Sichern des Blattes; schlägt es fehl, bleibt das Blatt unberührt.
+   */
+  private async baueBewegtbild(kennung: string, rahmen: HTMLCanvasElement[]): Promise<void> {
+    try {
+      const bewegt = await alsGif(rahmen, {
+        breite: 480,
+        verzoegerungMs: Math.max(80, this.art.pause * 1000),
+        pingpong: true,
+      });
+
+      const stand = (await alle()).find((a) => a.id === kennung);
+      if (stand) await sichere({ ...stand, bewegt: bewegt.blob });
+      void legeAb(kennung, bewegt.blob, 'gif');
+
+      if (this.ergebnisKennung === kennung) {
+        this.bewegtbild = bewegt.blob;
+        // Nur nachzeichnen, wenn der Gast noch bei seiner Aufnahme steht.
+        if (this.schritt === 'ergebnis' || this.schritt === 'ausgabe') this.zeichne();
+      }
+    } catch {
+      // Ohne Bewegtbild bleibt das Blatt — der Gast bekommt sein Bild.
     }
   }
 
@@ -575,10 +619,17 @@ export class Booth {
     sichereAlsDatei(blob, dateiname(this.art.id, this.ergebnisKennung));
   }
 
+  private sichereBewegtbild(): void {
+    if (!this.bewegtbild) return;
+    sichereAlsDatei(this.bewegtbild, dateiname(this.art.id, this.ergebnisKennung, 'gif'));
+  }
+
   // --- Überlagerungen ---------------------------------------------------
 
   private async zeigeQr(): Promise<void> {
-    const adresse = await qrFuer(this.einstellungen.ausgabeBasis, this.ergebnisKennung);
+    // Bei Boomerang und GIF will der Gast die Bewegung, nicht das Standbild.
+    const endung = this.art.bewegt && this.bewegtbild ? 'gif' : 'jpg';
+    const adresse = await qrFuer(this.einstellungen.ausgabeBasis, this.ergebnisKennung, endung);
 
     if (!adresse) {
       this.zeigeMeldung(

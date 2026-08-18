@@ -24,6 +24,7 @@ struct Dienstzustand {
 fn sichere_aufnahme(
     zustand: State<'_, Mutex<Dienstzustand>>,
     kennung: String,
+    endung: Option<String>,
     daten: Vec<u8>,
 ) -> Result<String, String> {
     let gesperrt = zustand.lock().map_err(|_| "Zustand nicht lesbar".to_string())?;
@@ -32,7 +33,7 @@ fn sichere_aufnahme(
         .clone()
         .ok_or_else(|| "Ablageordner steht nicht bereit".to_string())?;
 
-    ausgabe::lege_ab(&ordner, &kennung, &daten)
+    ausgabe::lege_ab(&ordner, &kennung, endung.as_deref().unwrap_or("jpg"), &daten)
         .map(|pfad| pfad.to_string_lossy().to_string())
         .map_err(|e| e.to_string())
 }

@@ -77,6 +77,8 @@ type Eventseite = {
   logo: string | null;
   boxUrl: string;
   gallery: boolean;
+  /** Was der Link zeigt: alles, nur die eigenen Bilder, oder gar keine. */
+  galerieart: 'alle' | 'finder' | 'keine';
   theme: 'glow' | 'photo' | 'minimal';
   expires: string;
   password: string;
@@ -727,6 +729,49 @@ function seitenkarte(ziel: HTMLElement, s: Eventseite): HTMLElement {
     anmutung.append(knopf);
   });
   karte.append(mono('Anmutung'), anmutung);
+
+  /* Die wichtigste Entscheidung dieser Seite, deshalb mit einem Satz dabei:
+     Wer den Link weitergibt, gibt bei „Alle Bilder" die Bilder aller Gäste
+     weiter. Bei „Nur die eigenen" nicht. */
+  const ARTEN: { id: Eventseite['galerieart']; name: string; zeile: string }[] = [
+    { id: 'alle', name: 'Alle Bilder', zeile: 'Jeder mit dem Link sieht die ganze Galerie.' },
+    { id: 'finder', name: 'Nur die eigenen', zeile: 'Jeder findet per Selfie nur die Bilder, auf denen er selbst ist.' },
+    { id: 'keine', name: 'Keine Bilder', zeile: 'Die Seite zeigt nur Text — etwa vor der Feier.' },
+  ];
+  const galerieart = tag('div', 'creihe');
+  ARTEN.forEach((a) => {
+    const knopf = tag('button', `cknopf cknopf--klein${entwurf.galerieart === a.id ? ' cknopf--amber' : ''}`);
+    knopf.textContent = a.name;
+    knopf.title = a.zeile;
+    knopf.addEventListener('click', () =>
+      void tueUndZeichne(
+        ziel,
+        () => hole(`/api/microsites/${encodeURIComponent(s.slug)}`, {
+          method: 'PUT',
+          body: JSON.stringify({ ...entwurf, galerieart: a.id }),
+        }),
+        `Galerie: ${a.name}.`
+      )
+    );
+    galerieart.append(knopf);
+  });
+  const erklaerung = tag('p', 'chinweis');
+  erklaerung.textContent =
+    ARTEN.find((a) => a.id === entwurf.galerieart)?.zeile ?? ARTEN[0]!.zeile;
+  karte.append(mono('Was der Link zeigt'), galerieart, erklaerung);
+
+  /* Der Satz, der einem Betreiber am Montag den Anruf erspart: Die Seite
+     zeigt die Bilder VON DER BOX. Steht die Box im Schrank, steht die
+     Galerie still. Wer den Link für die Zeit danach herausgibt, braucht
+     entweder eine erreichbare Box oder die Cloud-Galerie — und die gibt es
+     noch nicht. */
+  const abhaengig = tag('p', 'chinweis');
+  abhaengig.textContent =
+    'Die Bilder liegen auf der Box: Der Link funktioniert, solange die Box läuft und ' +
+    'unter der Adresse oben erreichbar ist. Im WLAN der Feier ist das der Normalfall; ' +
+    'für die Tage danach braucht es eine Box, die erreichbar bleibt. Die Cloud-Galerie, ' +
+    'die das übernimmt, ist noch nicht in Betrieb.';
+  karte.append(abhaengig);
 
   const reihe = tag('div', 'creihe');
 

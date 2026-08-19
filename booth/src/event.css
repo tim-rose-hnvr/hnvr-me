@@ -243,6 +243,13 @@ body.eventseite {
   color: var(--amber-ink);
 }
 
+/* In einer Spalte streckt sich ein `inline-flex` über die volle Breite, weil
+   die Spalte ihre Kinder streckt. Ein Knopf über 800 Punkte ist keine
+   Schaltfläche mehr, sondern ein Balken. */
+.ebereich > .eknopf {
+  align-self: flex-start;
+}
+
 .emeldung {
   margin: 0;
   font-family: var(--schrift);

@@ -48,14 +48,24 @@ export const MODULSTAND: Record<string, Eintrag> = {
     stand: 'laeuft',
     offen: 'Moderation vor der Anzeige kommt mit dem Dienst zwischen den Geräten.',
   },
-  galerie: { stand: 'laeuft', offen: 'Passwort je Event und eigene Adresse folgen.' },
+  galerie: {
+    stand: 'laeuft',
+    offen:
+      'Teilen läuft über die Event-Seite: eigene Adresse, Kennwort, Ablaufdatum — und die Wahl, ' +
+      'ob der Link ALLE Bilder zeigt oder jeder per Selfie nur seine eigenen findet. ' +
+      'Was fehlt, ist die Cloud: Heute liefert die Box die Bilder aus, der Link trägt also nur ' +
+      'so weit, wie die Box erreichbar ist.',
+  },
   gaestebuch: {
     stand: 'laeuft',
     offen: 'Der Ausdruck als Buch für das Paar kommt noch; die Einträge liegen auf der Box.',
   },
   'event-seiten': {
     stand: 'laeuft',
-    offen: 'Ein Logo lässt sich noch nicht hochladen; Farbe, Kennwort und Frist schon.',
+    offen:
+      'Farbe, Kennwort, Frist und die Galerie-Art (alle Bilder / nur die eigenen / keine) laufen. ' +
+      'Ein Logo lässt sich noch nicht hochladen, und die Seite lebt von der Box: ' +
+      'Sie zeigt die Bilder, solange die Box erreichbar ist.',
   },
   vermietung: {
     stand: 'laeuft',

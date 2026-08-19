@@ -4204,6 +4204,19 @@ function cleanMicrosite(m, existing) {
     accent: /^#[0-9a-fA-F]{6}$/.test(m.accent || '') ? m.accent : '#f2b23e',   // unser Amber
     logo: m.logo === null ? null : (typeof m.logo === 'string' && m.logo.startsWith('data:image/') && m.logo.length < 3_000_000 ? m.logo : (existing ? existing.logo : null)),
     boxUrl: s(m.boxUrl, 200).replace(/\/$/, ''),
+    /* Wie die Bilder auf der geteilten Seite stehen:
+         'alle'   — die ganze Galerie, jeder mit dem Link sieht alles
+         'finder' — niemand sieht etwas, bis er sich per Selfie erkennt;
+                    dann nur die eigenen Bilder
+         'keine'  — die Seite zeigt gar keine Bilder
+       `gallery` gab es vorher als Ja/Nein und bleibt als Rückfall stehen:
+       Bestehende Event-Seiten sollen nach einem Update nicht plötzlich
+       alles zeigen, was sie vorher verbargen — oder umgekehrt. */
+    galerieart: ['alle', 'finder', 'keine'].includes(m.galerieart)
+      ? m.galerieart
+      : (existing && existing.galerieart)
+        || ((m.gallery !== undefined ? m.gallery !== false : !(existing && existing.gallery === false))
+              ? 'alle' : 'keine'),
     gallery: m.gallery !== false,
     theme: ['glow', 'photo', 'minimal'].includes(m.theme) ? m.theme : 'glow',
     expires: /^\d{4}-\d{2}-\d{2}$/.test(m.expires || '') ? m.expires : (m.expires === '' ? '' : (existing ? existing.expires || '' : '')),

@@ -23,6 +23,9 @@ type Seite = {
   accent?: string;
   logo?: string | null;
   gallery?: boolean;
+  /** Wie die Bilder gezeigt werden: alles, nur die eigenen, oder gar nichts. */
+  galerieart?: 'alle' | 'finder' | 'keine';
+  faceFinder?: { enabled?: boolean };
   theme?: 'glow' | 'photo' | 'minimal';
   expires?: string;
   base?: string;
@@ -83,15 +86,28 @@ async function zeigeSeite(ziel: HTMLElement, slug: string, kennwort: string): Pr
 
   const teile: HTMLElement[] = [kopf(seite)];
 
-  if (seite.gallery !== false) {
+  /* Alte Seiten kannten nur ja/nein. `galerieart` hat Vorrang, wenn sie
+     dasteht — sonst gilt weiter, was die Seite vorher tat. */
+  const art = seite.galerieart ?? (seite.gallery === false ? 'keine' : 'alle');
+  const grund = (seite.base || '').replace(/\/$/, '');
+
+  if (art === 'finder') {
+    /* Hier stehen mit Absicht KEINE Bilder. Der Gast bekommt seine eigenen,
+       nachdem er sich erkannt hat — das ist der ganze Sinn dieser Wahl:
+       Nicht jede Feier will, dass jeder mit dem Link alles sieht. */
+    teile.push(finderkarte(grund, seite.faceFinder?.enabled !== false));
+  } else if (art === 'alle') {
     let bilder: Aufnahme[] = [];
+    let erreichbar = true;
     try {
-      const grund = (seite.base || '').replace(/\/$/, '');
       bilder = (await (await fetch(grund + '/api/photos')).json()) as Aufnahme[];
     } catch {
+      erreichbar = false;
       teile.push(hinweiskarte('Gerade nicht erreichbar', 'Die Bilder liegen auf der Box. Bitte später noch einmal.'));
     }
-    teile.push(bilder.length ? galerie(bilder, seite.base || '') : hinweiskarte('Noch nichts da', 'Sobald die ersten Bilder entstanden sind, stehen sie hier.'));
+    if (erreichbar) {
+      teile.push(bilder.length ? galerie(bilder, grund) : hinweiskarte('Noch nichts da', 'Sobald die ersten Bilder entstanden sind, stehen sie hier.'));
+    }
   }
 
   if (seite.expires) {
@@ -129,6 +145,47 @@ function kopf(seite: Seite): HTMLElement {
     zeile.textContent = seite.subtitle;
     bereich.append(zeile);
   }
+  return bereich;
+}
+
+/**
+ * Die Karte für die Finder-Galerie.
+ *
+ * Sie zeigt kein einziges Bild — das ist keine Sparsamkeit, sondern die
+ * Zusage: Auf dieser Feier bekommt jeder nur seine eigenen Aufnahmen. Wer
+ * den Link weitergibt, gibt damit nicht die Bilder aller Gäste weiter.
+ *
+ * Ist der Finder auf der Box abgeschaltet, steht das hier ehrlich — statt
+ * eines Knopfes, der auf eine Seite führt, die „nicht eingeschaltet" sagt.
+ */
+function finderkarte(grund: string, an: boolean): HTMLElement {
+  const bereich = tag('section', 'ebereich');
+  const titel = document.createElement('h2');
+  titel.textContent = 'Deine Bilder';
+  bereich.append(titel);
+
+  if (!an) {
+    bereich.append(
+      fliesstext(
+        'Die Gesichtssuche ist für diese Feier gerade nicht eingeschaltet. ' +
+          'Sobald die Gastgeber sie freigeben, findest du hier deine Bilder.'
+      )
+    );
+    return bereich;
+  }
+
+  bereich.append(
+    fliesstext(
+      'Für diese Feier gilt: Jeder sieht nur die Bilder, auf denen er selbst zu sehen ist. ' +
+        'Ein Selfie genügt — es bleibt auf deinem Gerät, verglichen wird dort, und die Box ' +
+        'erfährt nur, welche Bilder du sehen möchtest.'
+    )
+  );
+
+  const weg = tag('a', 'eknopf eknopf--amber') as HTMLAnchorElement;
+  weg.href = `${grund}/finder`;
+  weg.textContent = 'Meine Bilder finden';
+  bereich.append(weg);
   return bereich;
 }
 
@@ -212,6 +269,10 @@ function kennwortkarte(ziel: HTMLElement, slug: string): HTMLElement {
   return bereich;
 }
 
+function fliesstext(text: string): HTMLElement {
+  return tag('p', 'efliess', text);
+}
+
 function hinweiskarte(titel: string, text: string): HTMLElement {
   const bereich = tag('section', 'ekarte');
   const h = document.createElement('h2');
@@ -240,9 +301,10 @@ function zeige(ziel: HTMLElement, ...teile: HTMLElement[]): void {
   ziel.replaceChildren(...teile);
 }
 
-function tag(name: string, klasse: string): HTMLElement {
+function tag(name: string, klasse: string, text = ''): HTMLElement {
   const el = document.createElement(name);
   el.className = klasse;
+  if (text) el.textContent = text;
   return el;
 }
 

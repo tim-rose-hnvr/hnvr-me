@@ -85,6 +85,14 @@ const browser = await chromium.launch({
 const gesamt = { fehler: [], bilder: [], verweise: [], knoepfe: [] };
 const gesehen = new Set();
 
+/* Der Rundgang drückt Knöpfe, und manche legen etwas an — im Editor etwa
+   „Kopieren". Was dabei entsteht, gehört hinterher weggeräumt: Eine Probe,
+   die bei jedem Lauf zwei Vorlagen mehr im Katalog des Betreibers
+   hinterlässt, ist nach zehn Läufen selbst das Problem. */
+const vorlagenVorher = new Set(
+  (((await sitzung.anDieBox('/api/templates')).daten?.templates) || []).map((v) => v.id)
+);
+
 for (const seite of SEITEN) {
   const kontext = seite.anmeldung
     ? await angemeldeterKontext(browser, sitzung, {
@@ -217,6 +225,16 @@ function rechte(seite) {
   if (seite.mikrofon) r.push('microphone');
   return r;
 }
+
+// Was der Rundgang unterwegs angelegt hat, wieder wegräumen.
+const vorlagenNachher = ((await sitzung.anDieBox('/api/templates')).daten?.templates) || [];
+const angelegt = vorlagenNachher.filter((v) => !vorlagenVorher.has(v.id));
+for (const v of angelegt) {
+  await sitzung.anDieBox('/api/templates/' + encodeURIComponent(v.id), { method: 'DELETE' });
+}
+pruefe(`Der Rundgang räumt hinter sich auf (${angelegt.length} Vorlagen)`,
+  ((await sitzung.anDieBox('/api/templates')).daten?.templates || []).length === vorlagenVorher.size,
+  angelegt.map((v) => v.name).join(', '));
 
 // Einstellungen zurück auf den vorgefundenen Stand.
 await sitzung.anDieBox('/api/settings', {

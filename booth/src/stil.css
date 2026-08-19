@@ -698,7 +698,17 @@ a.chip:hover {
   background: linear-gradient(rgba(11, 11, 13, 0.55), rgba(11, 11, 13, 0.8));
 }
 
+/* Das Laufband gehört an die Kante, nicht in die Mitte.
+   Im Fluss stand es zwischen „Berühren zum Starten" und dem QR-Code und
+   schnitt den Wartebildschirm quer durch — ein Band, das über dem Gesicht
+   im Live-Bild liegt. Unten am Rand ist es eine Leiste; in der Mitte ist es
+   ein Balken. Es wächst deshalb über die volle Breite hinaus, weil der
+   Wartebildschirm 40 Punkte Innenabstand hat. */
 .laufband {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 44px;
   background: var(--amber);
   color: var(--amber-ink);
@@ -706,6 +716,12 @@ a.chip:hover {
   align-items: center;
   overflow: hidden;
   flex: none;
+}
+
+/* Damit der Inhalt nicht unter dem Band verschwindet, wenn der Schirm
+   niedrig ist. */
+.attract:has(.laufband) {
+  padding-bottom: 84px;
 }
 
 .laufband div {

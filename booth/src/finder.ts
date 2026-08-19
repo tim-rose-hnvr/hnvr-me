@@ -119,7 +119,9 @@ async function starte(ziel: HTMLElement): Promise<void> {
     }
 
     if (lage === 'treffer') {
-      const wieviel = treffer.length;
+      const sichere = treffer.filter((t) => t.sicher);
+      const unsichere = treffer.filter((t) => !t.sicher);
+      const wieviel = sichere.length;
       sagt.textContent =
         `${wieviel} ${wieviel === 1 ? 'Bild' : 'Bilder'} mit dir` +
         (stand && stand.offen > 0
@@ -128,19 +130,45 @@ async function starte(ziel: HTMLElement): Promise<void> {
       /* Alle Treffer in einem Zug. Siebzehnmal auf „Herunterladen" zu tippen
          macht niemand — und wer es doch tut, hat danach siebzehn Dateien im
          Downloadordner und keine Ahnung, welche zusammengehören. */
-      const paket = tag('a', 'knopf knopf--amber fdknopf') as HTMLAnchorElement;
-      paket.href =
-        '/api/photos.zip?nur=' +
-        encodeURIComponent(treffer.map((t) => t.datei).join(','));
-      paket.setAttribute('download', 'meine-bilder.zip');
-      paket.textContent = `Alle ${wieviel} herunterladen`;
+      /* Ins Paket kommen NUR die sicheren. Ein Gast, der auf „alle
+         herunterladen" tippt, erwartet seine Bilder — nicht die von
+         jemandem, der ihm ähnlich sieht. */
+      if (wieviel > 0) {
+        const paket = tag('a', 'knopf knopf--amber fdknopf') as HTMLAnchorElement;
+        paket.href =
+          '/api/photos.zip?nur=' + encodeURIComponent(sichere.map((t) => t.datei).join(','));
+        paket.setAttribute('download', 'meine-bilder.zip');
+        paket.textContent = `Alle ${wieviel} herunterladen`;
+        leiste.append(paket);
+      }
 
       leiste.append(
-        paket,
         knopf('Noch einmal suchen', 'still', () => void anschalten()),
         verweis('Alle Bilder ansehen', './galerie.html')
       );
-      treffer.forEach((t) => raster.append(kachel(t)));
+
+      sichere.forEach((t) => raster.append(kachel(t)));
+
+      /* Die Zweifelsfälle stehen darunter, hinter einer eigenen Überschrift
+         und ausdrücklich als unsicher benannt. Sie ungefragt unter „deine
+         Bilder" zu mischen hieße, die Entscheidung der Schwelle zu
+         überlassen — und die Schwelle kennt den Gast nicht. */
+      if (unsichere.length > 0) {
+        const klappe = document.createElement('details');
+        klappe.className = 'fdvielleicht';
+        const kopf = document.createElement('summary');
+        kopf.textContent = `${unsichere.length} weitere könnten passen`;
+        const hinweis = tag(
+          'p',
+          'fdvielleicht__text',
+          'Hier ist sich die Erkennung nicht sicher. Sieh selbst nach — es kann ' +
+            'auch jemand sein, der dir ähnlich sieht.'
+        );
+        const zweites = tag('div', 'fdraster');
+        unsichere.forEach((t) => zweites.append(kachel(t)));
+        klappe.append(kopf, hinweis, zweites);
+        raster.append(klappe);
+      }
       return;
     }
 
@@ -212,6 +240,13 @@ async function starte(ziel: HTMLElement): Promise<void> {
     bild.src = `/photos/${encodeURIComponent(t.datei)}`;
     bild.alt = '';
     bild.loading = 'lazy';
+    /* Die Bilder liegen auf der Box. Ist sie weg, bleibt sonst eine leere
+       Kachel stehen — und der Gast hält sein Foto für kaputt statt die
+       Verbindung. */
+    bild.addEventListener('error', () => {
+      feld.classList.add('fdkachel--weg');
+      feld.append(tag('span', 'fdkachel__weg', 'Bild nicht erreichbar'));
+    }, { once: true });
 
     const laden = tag('a', 'knopf knopf--rahmen-hell fdladen') as HTMLAnchorElement;
     laden.href = bild.src;
@@ -220,7 +255,11 @@ async function starte(ziel: HTMLElement): Promise<void> {
 
     /* Wie sicher der Treffer ist, in Worten statt in Zahlen: „0,42" sagt
        einem Gast nichts, „ziemlich sicher" schon. */
-    const guete = tag('span', 'fdguete', t.abstand < 0.4 ? 'sicher' : t.abstand < 0.5 ? 'ziemlich sicher' : 'könnte passen');
+    const guete = tag(
+      'span',
+      t.sicher ? 'fdguete' : 'fdguete fdguete--unsicher',
+      t.sicher ? (t.abstand < 0.35 ? 'sicher' : 'ziemlich sicher') : 'könnte passen'
+    );
     feld.append(bild, guete, laden);
     return feld;
   };
@@ -236,8 +275,9 @@ async function starte(ziel: HTMLElement): Promise<void> {
       }
       if (!antwort.ok) throw new Error(String(antwort.status));
       stand = (await antwort.json()) as Stand;
-      lage = 'erklaerung';
+      if (lage === 'erklaerung' || lage === 'fehler') lage = 'erklaerung';
     } catch {
+      stand = null;
       grund = 'Die Box antwortet nicht. Seid ihr im richtigen WLAN?';
       lage = 'fehler';
     }
@@ -312,8 +352,19 @@ async function starte(ziel: HTMLElement): Promise<void> {
       return;
     }
 
+    /* Ohne Liste keine Aussage. „Nichts gefunden" wäre hier gelogen: Es ist
+       nichts DURCHSUCHT worden. Wer der Box glaubt, sie habe nachgesehen,
+       geht mit dem Eindruck weg, es gebe keine Bilder von ihm. */
     if (!stand) await holeStand();
-    treffer = stand && erkennung ? erkennung.suche(such, stand.liste) : [];
+    if (!stand || !erkennung) {
+      grund = 'Die Liste der Aufnahmen ist gerade nicht erreichbar — es wurde nichts durchsucht. '
+        + 'Seid ihr noch im WLAN der Box?';
+      lage = 'fehler';
+      zeichne();
+      return;
+    }
+
+    treffer = erkennung.suche(such, stand.liste);
     lage = treffer.length > 0 ? 'treffer' : 'nichts';
     zeichne();
   };

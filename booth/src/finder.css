@@ -234,3 +234,60 @@ body.finderseite {
   min-height: 40px;
   font-size: 13px;
 }
+
+/* --- Die Zweifelsfälle -------------------------------------------------- */
+
+/* Sie stehen unter den sicheren Treffern, zugeklappt und benannt. Sie
+   darunterzumischen hiesse, die Entscheidung der Schwelle zu überlassen —
+   und ein fremdes Bild in „deinen Bildern" ist schlimmer als ein fehlendes. */
+.fdvielleicht {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  border-top: 1px solid var(--linie);
+  padding-top: 14px;
+}
+
+.fdvielleicht summary {
+  cursor: pointer;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  min-height: var(--ziel);
+  display: flex;
+  align-items: center;
+}
+
+.fdvielleicht__text {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--hell-still);
+}
+
+/* Unsichere Treffer tragen ihre Unsicherheit auch in der Farbe. */
+.fdguete--unsicher {
+  background: color-mix(in srgb, var(--warn-hell) 82%, transparent);
+  color: var(--ink);
+}
+
+/* Ein Bild, das die Box gerade nicht liefert — sichtbar, statt leer. */
+.fdkachel--weg img {
+  opacity: 0.12;
+}
+
+.fdkachel__weg {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 12%;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warn-hell);
+}

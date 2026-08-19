@@ -164,6 +164,12 @@ if (!habenGesichter) {
      Probe dafür nicht wissen — sie prüft „gleich findet gleich, verschieden
      findet nicht". */
   const rechner = await kontext.newPage();
+  /* Die Beispielbilder liegen im Paket, nicht auf der Box. Sie werden der
+     Seite untergeschoben, statt sie in die Ablage des Betreibers zu legen. */
+  await rechner.route('**/probe/*', (weg) => {
+    const name = weg.request().url().split('/').pop();
+    weg.fulfill({ status: 200, contentType: 'image/jpeg', body: readFileSync(`${BEISPIELE}/${name}`) });
+  });
   await rechner.goto(BASIS + '/finder', { waitUntil: 'networkidle' });
   /* Die Erkennung einmal an das Fenster hängen, damit die Auswertungen unten
      sie benutzen können — die Seite selbst lädt sie erst bei Zustimmung.
@@ -219,11 +225,45 @@ if (!habenGesichter) {
   pruefe('Und zwar als sicherster Treffer ganz oben',
     !!ergebnis && ergebnis[0]?.datei === angelegt[0].name,
     JSON.stringify(ergebnis?.[0]));
-  pruefe(`Fremde Gesichter kommen NICHT mit (${ergebnis?.length ?? 0} Treffer von ${angelegt.length})`,
-    !!ergebnis && ergebnis.length < angelegt.length,
+  pruefe(`Fremde Gesichter kommen NICHT als „sicher" mit`,
+    !!ergebnis && ergebnis.filter((t) => t.sicher).every((t) => t.datei === angelegt[0].name),
     JSON.stringify(ergebnis));
 
+  console.log('\n5b · Keine fremden Bilder in „deinen Bildern"');
+  /* Die Gegenprobe, und der Grund für die strenge Schwelle: Sechs Aufnahmen
+     mit lauter VERSCHIEDENEN Menschen, mit jeder einzeln gesucht. Kein
+     fremdes Bild darf als „sicher" gelten.
+     Bei der Lehrbuchschwelle 0,6 wären zwei Paare davon durchgerutscht — der
+     kleinste gemessene Abstand zwischen zwei Fremden lag bei 0,503.
+
+     Was diese Probe NICHT misst: wie viele Bilder ein Gast tatsächlich
+     wiederfindet. Dafür bräuchte es mehrere Aufnahmen DESSELBEN Menschen mit
+     bekannter Zuordnung; die gibt es hier nicht. Die Trefferquote ist damit
+     unbelegt, und sie wird auf der Seite auch nicht behauptet. */
+  const alleProben = readdirSync(BEISPIELE).filter((f) => /^sample\d+\.jpg$/.test(f)).sort();
+  const kreuz = await rechner.evaluate(async (namen) => {
+    const lade = (d) => new Promise((f) => { const i = new Image(); i.onload = () => f(i); i.src = d; });
+    const liste = [];
+    for (const n of namen) {
+      liste.push({ datei: n, merkmale: await window.erkennung.merkmale(await lade('/probe/' + n)) });
+    }
+    const fremd = [];
+    for (const n of namen) {
+      const such = await window.erkennung.suchmerkmal(await lade('/probe/' + n));
+      if (!such) continue;
+      for (const t of window.erkennung.suche(such, liste)) {
+        if (t.sicher && t.datei !== n) fremd.push(`${n}→${t.datei} ${t.abstand.toFixed(2)}`);
+      }
+    }
+    return { geprueft: namen.length, fremd, sicher: window.erkennung.SICHER };
+  }, alleProben);
+  pruefe(`Bei ${kreuz.geprueft} verschiedenen Menschen kein einziger fremder „sicher"-Treffer ` +
+    `(Schwelle ${kreuz.sicher})`, kreuz.fremd.length === 0, kreuz.fremd.join(', '));
+
   console.log('\n6 · Die Treffer als ein Paket');
+/* Geprüft wird hier der Weg der Box: Sie gibt GENAU die angeforderten
+   Aufnahmen heraus und nicht die ganze Ablage. Welche die Seite anfordert —
+   nur die sicheren — entscheidet die Oberfläche, und dafür bürgt 5b. */
   /* Siebzehnmal „Herunterladen" tippt kein Gast. Das Paket enthält GENAU die
      Treffer — nicht die ganze Ablage, sonst bekäme jeder Gast alle Bilder
      des Abends, und das wäre das Gegenteil eines Foto-Finders. */

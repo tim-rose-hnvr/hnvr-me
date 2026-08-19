@@ -40,14 +40,31 @@ import * as gesicht from '@vladmandic/face-api';
 export type Merkmal = number[];
 
 /**
- * Ab welchem Abstand zwei Merkmale als derselbe Mensch gelten.
+ * Zwei Schwellen, nicht eine — und beide nachgemessen.
  *
- * 0,6 ist der Wert, mit dem das Modell trainiert wurde. Kleiner heißt
- * strenger: Der Gast findet weniger von sich, dafür nichts Fremdes. Größer
- * heißt großzügiger — und dann steht ein anderer Gast in „deinen Bildern",
- * was schlimmer ist als ein fehlendes Bild.
+ * Die Lehrbuchzahl für dieses Modell ist 0,6. Sie stammt aus Prüfreihen mit
+ * frontalen Porträts bei gutem Licht. Auf Partybildern gilt sie nicht: Beim
+ * Nachmessen an sechs Aufnahmen mit lauter VERSCHIEDENEN Menschen lag der
+ * kleinste Abstand zwischen zwei Fremden bei **0,503** — bei 0,6 hätte der
+ * Finder ihnen gegenseitig ihre Bilder gezeigt.
+ *
+ * Deshalb zwei Bänder:
+ *
+ *   · bis `SICHER` gilt als derselbe Mensch. Diese Bilder stehen als
+ *     „deine Bilder" da und wandern ins Paket.
+ *   · bis `VIELLEICHT` wird gezeigt, aber getrennt und ausdrücklich als
+ *     unsicher. Der Gast entscheidet, nicht die Schwelle.
+ *   · darüber gar nicht.
+ *
+ * Die Richtung ist mit Absicht streng. Ein fehlendes Bild ärgert; ein
+ * fremdes Bild in „deinen Bildern" ist ein Datenschutzvorfall — dann hat
+ * die Box einem Gast das Foto eines anderen gezeigt.
  */
-export const SCHWELLE = 0.55;
+export const SICHER = 0.45;
+export const VIELLEICHT = 0.55;
+
+/** Rückwärtsverträglich: wer nur eine Schwelle will, bekommt die strenge. */
+export const SCHWELLE = SICHER;
 
 const QUELLE = '/gesichtsmodell';
 let geladen: Promise<void> | null = null;
@@ -132,8 +149,8 @@ export function abstand(a: Merkmal, b: Merkmal): number {
 /** Ein Eintrag der Merkmalsliste, wie die Box sie herausgibt. */
 export type Eintrag = { datei: string; merkmale: Merkmal[] };
 
-/** Ein Treffer: die Aufnahme und wie sicher sie ist. */
-export type Treffer = { datei: string; abstand: number };
+/** Ein Treffer: die Aufnahme, der Abstand und in welchem Band er liegt. */
+export type Treffer = { datei: string; abstand: number; sicher: boolean };
 
 /**
  * Vergleicht das Suchmerkmal mit der ganzen Liste — auf dem Gerät des Gastes.
@@ -146,7 +163,7 @@ export type Treffer = { datei: string; abstand: number };
  * was der Gast erwartet, und die Zweifelsfälle stehen unten, wo sie niemanden
  * stören.
  */
-export function suche(such: Merkmal, liste: Eintrag[], schwelle = SCHWELLE): Treffer[] {
+export function suche(such: Merkmal, liste: Eintrag[], schwelle = VIELLEICHT): Treffer[] {
   const treffer: Treffer[] = [];
   for (const eintrag of liste) {
     let bester = Infinity;
@@ -154,7 +171,9 @@ export function suche(such: Merkmal, liste: Eintrag[], schwelle = SCHWELLE): Tre
       const d = abstand(such, m);
       if (d < bester) bester = d;
     }
-    if (bester <= schwelle) treffer.push({ datei: eintrag.datei, abstand: bester });
+    if (bester <= schwelle) {
+      treffer.push({ datei: eintrag.datei, abstand: bester, sicher: bester <= SICHER });
+    }
   }
   return treffer.sort((a, b) => a.abstand - b.abstand);
 }

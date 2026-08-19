@@ -75,9 +75,11 @@ export const MODULSTAND: Record<string, Eintrag> = {
     stand: 'laeuft',
     offen:
       'Selfie, Vergleich und Trefferliste laufen — der Vergleich auf dem Gerät des Gastes, ' +
-      'sein Selfie verlässt es nicht. Was fehlt: Fehltreffer melden, und die Suche über ' +
-      'mehrere Boxen hinweg. Das Modell liegt auf der Box (7 MB), der Gast lädt es einmal ' +
-      'aus dem WLAN — ohne Internet.',
+      'sein Selfie verlässt es nicht. Zwei Grenzen gehören dazu: Die Suche braucht das WLAN ' +
+      'der Box (dort liegen Fotos, Modell und Merkmalsliste) — ohne Internet ja, ohne Box nein. ' +
+      'Und Gesichtserkennung ist ein Schätzverfahren: Unsichere Treffer stehen deshalb getrennt ' +
+      'unter „könnte passen" und nicht bei „deine Bilder". Fehltreffer melden und die Suche über ' +
+      'mehrere Boxen hinweg fehlen noch.',
   },
   slideshow: {
     stand: 'laeuft',

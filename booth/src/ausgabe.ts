@@ -8,6 +8,7 @@
 
 import QRCode from 'qrcode';
 import { druckeUeberBox } from './huelle';
+import { farbe } from './farben';
 
 /** Merkt sich Druckzeitpunkte, um das Stundenlimit zu prüfen. */
 const druckzeiten: number[] = [];
@@ -125,7 +126,9 @@ export function qrBild(adresse: string): Promise<string> {
   return QRCode.toDataURL(adresse, {
     margin: 1,
     width: 600,
-    color: { dark: '#0b0b0d', light: '#ffffff' },
+    /* Ein QR-Code braucht den vollen Kontrast. Das Dunkel ist trotzdem das
+       Dunkel des Hauses und nicht ein zweites Schwarz daneben. */
+    color: { dark: farbe('--ink'), light: '#ffffff' },
   });
 }
 

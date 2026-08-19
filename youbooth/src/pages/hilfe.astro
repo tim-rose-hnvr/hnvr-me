@@ -163,8 +163,8 @@ const geprueft = '08/2026';
     height: 56px;
     flex: 1 1 320px;
     border-radius: 11px;
-    border: 1px solid rgba(244, 242, 238, 0.2);
-    background: rgba(244, 242, 238, 0.06);
+    border: 1px solid color-mix(in srgb, var(--text-hell) 20%, transparent);
+    background: color-mix(in srgb, var(--text-hell) 6%, transparent);
     color: var(--text-hell);
     padding: 0 18px;
     font-family: var(--schrift);
@@ -172,13 +172,13 @@ const geprueft = '08/2026';
   }
 
   .suche::placeholder {
-    color: rgba(244, 242, 238, 0.42);
+    color: color-mix(in srgb, var(--text-hell) 42%, transparent);
   }
 
   .suche:focus {
     outline: none;
     border-color: var(--amber);
-    box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.2);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 20%, transparent);
   }
 
   .zuruecksetzen {

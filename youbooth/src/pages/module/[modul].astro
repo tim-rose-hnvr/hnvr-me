@@ -219,7 +219,7 @@ const stand = standVon(modul.id);
     margin: 0;
     padding: 12px 16px;
     border-left: 2px solid var(--amber);
-    background: rgba(242, 178, 62, 0.08);
+    background: color-mix(in srgb, var(--amber) 8%, transparent);
     border-radius: 0 var(--r-karte) var(--r-karte) 0;
     font-size: 13.5px;
     line-height: 1.55;
@@ -283,7 +283,7 @@ const stand = standVon(modul.id);
   .merkmale .mono {
     font-size: 10.5px;
     letter-spacing: 0.1em;
-    color: rgba(244, 242, 238, 0.45);
+    color: color-mix(in srgb, var(--text-hell) 45%, transparent);
   }
 
   /* Screenshot */
@@ -368,7 +368,7 @@ const stand = standVon(modul.id);
   }
 
   .fall .mono--hell {
-    color: rgba(244, 242, 238, 0.45);
+    color: color-mix(in srgb, var(--text-hell) 45%, transparent);
   }
 
   .fall__text {

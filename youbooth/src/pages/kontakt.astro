@@ -254,7 +254,7 @@ const hinweise = [
   }
 
   .hero .punkte li {
-    color: rgba(244, 242, 238, 0.72);
+    color: color-mix(in srgb, var(--text-hell) 72%, transparent);
   }
 
   .hero .punkte li::before {
@@ -290,7 +290,7 @@ const hinweise = [
   .direkt__text {
     font-size: 13px;
     line-height: 1.55;
-    color: rgba(244, 242, 238, 0.55);
+    color: color-mix(in srgb, var(--text-hell) 55%, transparent);
   }
 
   /* Formularkarte */
@@ -366,12 +366,12 @@ const hinweise = [
   .eingabe:focus {
     outline: none;
     border-color: var(--amber);
-    box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.18);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 18%, transparent);
   }
 
   .eingabe[aria-invalid='true'] {
     border-color: var(--warn);
-    box-shadow: 0 0 0 3px rgba(224, 72, 60, 0.14);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 14%, transparent);
   }
 
   .fehler {

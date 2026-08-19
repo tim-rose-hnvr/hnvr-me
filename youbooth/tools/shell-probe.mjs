@@ -41,7 +41,23 @@ const kopf = await seite.evaluate(() => {
 });
 pruefe('Genau 74px hoch', Math.round(kopf.hoehe) === 74, String(kopf.hoehe));
 pruefe('Haftet oben', kopf.haftend === 'sticky', kopf.haftend);
-pruefe('Fläche rgba(11,11,13,.86)', kopf.flaeche.replace(/\s/g, '') === 'rgba(11,11,13,0.86)', kopf.flaeche);
+/* Gemessen wird die FARBE, nicht ihre Schreibweise. Der Browser gibt je nach
+   Herkunft `rgba(11, 11, 13, 0.86)` oder `color(srgb 0.0431 … / 0.86)` zurück
+   — dieselbe Farbe. Eine Probe, die auf die Zeichenkette prüft, fällt beim
+   nächsten Umbau des Gestaltungssystems um, ohne dass sich etwas geändert
+   hat, und dann glaubt ihr niemand mehr. */
+const alsZahlen = (wert) => {
+  const z = (wert.match(/[\d.]+/g) || []).map(Number);
+  if (wert.startsWith('color(')) {
+    return [Math.round(z[0] * 255), Math.round(z[1] * 255), Math.round(z[2] * 255), z[3] ?? 1];
+  }
+  return [z[0], z[1], z[2], z[3] ?? 1];
+};
+const flaeche = alsZahlen(kopf.flaeche);
+pruefe('Fläche ist das Ink des Hauses bei 86 % Deckung',
+  flaeche[0] === 11 && flaeche[1] === 11 && flaeche[2] === 13 &&
+  Math.abs(flaeche[3] - 0.86) < 0.01,
+  kopf.flaeche);
 
 /* Neun wie im Entwurf. Die Spec-Prosa nennt zwölf; die passen mit ihren
    eigenen Maßen erst ab 1366px — siehe daten/navigation.ts. */

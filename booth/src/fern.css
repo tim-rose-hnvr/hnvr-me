@@ -25,7 +25,7 @@
   margin: 0;
   font-size: 16px;
   line-height: 1.55;
-  color: var(--text-hell-leise, rgba(244, 242, 238, 0.62));
+  color: var(--text-hell-leise, color-mix(in srgb, var(--text-hell) 62%, transparent));
   max-width: 30ch;
 }
 

@@ -2,6 +2,13 @@
  * Die sechs Anlass-Landingpages. Jede hat eine eigene Farbwelt und eine
  * eigene Hero-Deko — Amber bleibt trotzdem die Farbe des Handlungsaufrufs,
  * ausser bei der Hochzeit, die durchgaengig auf Bordeaux steht.
+ *
+ * gestaltung: eigene Palette — Anlassfarbwelten, absichtlich neben dem
+ * Hausfarbsatz. Einzelne Werte fallen mit ihm zusammen (die Hochzeit nimmt
+ * dasselbe Bordeaux wie `--deep`), aber sie MEINEN nicht dasselbe: Wer den
+ * Hausakzent wechselt, will damit nicht die Hochzeitsseite umfaerben. Diese
+ * Werte gehen ausserdem als Zeichenketten in Zeichenflaechen und
+ * SVG-Attribute, wo `var(--…)` nichts bedeutet.
  */
 
 export type Deko = 'bluete' | 'ballon' | 'funkeln' | 'schnee' | 'feuerwerk' | 'keine';

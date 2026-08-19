@@ -224,19 +224,19 @@ body.editorseite {
 }
 
 .vfeld-rahmen[data-art='text'] {
-  border-color: rgba(43, 90, 160, 0.55);
+  border-color: color-mix(in srgb, var(--feld-text) 55%, transparent);
 }
 
 .vfeld-rahmen[data-art='bild'] {
-  border-color: rgba(0, 0, 0, 0.3);
+  border-color: color-mix(in srgb, var(--feld-bild) 60%, transparent);
 }
 
 .vfeld-rahmen[data-art='flaeche'] {
-  border-color: rgba(120, 60, 160, 0.5);
+  border-color: color-mix(in srgb, var(--feld-flaeche) 50%, transparent);
 }
 
 .vfeld-rahmen[data-art='logo'] {
-  border-color: rgba(30, 130, 100, 0.55);
+  border-color: color-mix(in srgb, var(--feld-logo) 55%, transparent);
 }
 
 .vfeld-rahmen:focus-visible,

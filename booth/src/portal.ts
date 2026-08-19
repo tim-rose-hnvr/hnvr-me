@@ -18,6 +18,7 @@ import './cockpit.css';
 import './portal.css';
 import { amDraht } from './draht';
 import { abmelden, verlangeAnmeldung } from './anmeldung';
+import { farbe } from './farben';
 
 /* ------------------------------------------------------------------ */
 /* Modelle — genau die Felder, die der Server schickt                  */
@@ -709,7 +710,7 @@ function seitenkarte(ziel: HTMLElement, s: Eventseite): HTMLElement {
     eingabe('Zeile darunter', entwurf.subtitle, (v) => (entwurf.subtitle = v)),
     eingabe('Kennwort', entwurf.password, (v) => (entwurf.password = v), 'leer = ohne'),
     eingabe('Läuft ab am', entwurf.expires, (v) => (entwurf.expires = v), 'JJJJ-MM-TT, leer = nie'),
-    eingabe('Farbe', entwurf.accent, (v) => (entwurf.accent = v), '#f2b23e')
+    eingabe('Farbe', entwurf.accent, (v) => (entwurf.accent = v), farbe('--amber'))
   );
 
   const anmutung = tag('div', 'creihe');

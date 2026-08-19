@@ -124,7 +124,7 @@ body.galerieseite {
   position: fixed;
   inset: 0;
   z-index: 30;
-  background: rgba(11, 11, 13, 0.94);
+  background: color-mix(in srgb, var(--ink) 94%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -144,7 +144,7 @@ body.galerieseite {
   min-height: 64px;
   border-radius: var(--r-kreis);
   border: 1px solid var(--linie);
-  background: rgba(23, 23, 28, 0.9);
+  background: color-mix(in srgb, var(--ink-soft) 90%, transparent);
   color: var(--hell);
   font-size: 34px;
   line-height: 1;
@@ -245,7 +245,7 @@ body.galerieseite {
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: thin;
-  background: linear-gradient(to top, rgba(11, 11, 13, 0.85), transparent);
+  background: linear-gradient(to top, color-mix(in srgb, var(--ink) 85%, transparent), transparent);
 }
 
 /* Während die Diashow läuft, ist der Streifen im Weg — man schaut, statt

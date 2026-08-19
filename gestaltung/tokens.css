@@ -35,11 +35,19 @@
   --weiss: #ffffff;
   --deep: #8e2b26;
 
-  --linie: rgba(0, 0, 0, 0.09);
-  --linie-stark: rgba(0, 0, 0, 0.15);
-  --linie-dunkel: rgba(244, 242, 238, 0.14);
-  --linie-dunkel-zart: rgba(244, 242, 238, 0.1);
-  --linie-dunkel-stark: rgba(244, 242, 238, 0.25);
+  /* Zwei Linien, zwei Gründe. `--linie-hell` ist die Linie AUF hellem Grund
+     (dunkles Haar auf Papier), `--linie-dunkel` die auf dunklem. `--linie`
+     ist der Kurzname für „die richtige Linie hier" und wird auf dunklen
+     Oberflächen umgehängt — deshalb braucht die helle einen eigenen Namen:
+     Sonst hat eine helle Karte in einer dunklen Anwendung keinen Weg mehr
+     zurück zu ihrer eigenen Linie, und ihr Rand verschwindet. */
+  --linie-hell: rgba(0, 0, 0, 0.09);
+  --linie-hell-stark: rgba(0, 0, 0, 0.15);
+  --linie: var(--linie-hell);
+  --linie-stark: var(--linie-hell-stark);
+  --linie-dunkel: color-mix(in srgb, var(--text-hell) 14%, transparent);
+  --linie-dunkel-zart: color-mix(in srgb, var(--text-hell) 10%, transparent);
+  --linie-dunkel-stark: color-mix(in srgb, var(--text-hell) 25%, transparent);
 
   /* Fließtext ist `ink`, nicht `ink-soft`. Die zweite dunkle Fläche ist für
      Flächen und für Überschriften auf Hell da — nicht für Text. */
@@ -107,6 +115,27 @@
      Nummer von 0 bis 4 — welche Farbe das ist, entscheidet die Gestaltung.
      Vorher lagen fünf Hexwerte aus einem älteren Stand in `server.js`, und
      drei davon gehörten in keine Palette dieses Hauses. */
+/* Das kühle Licht eines Kamerablitzes. Wie der Laborstempel eine
+   Materialnachahmung, keine Hausfarbe: Ein kleiner Reflektor aus zwei Metern
+   färbt das Bild leicht ins Blaue, und genau das macht die Blitz-Anmutung
+   der Einwegkamera aus. */
+  --blitzlicht: #96b4ff;
+
+/* Der Datumsstempel eines Fotolabors. Bewusst NICHT das Amber des Hauses:
+   Der Stempel ahmt ein Material nach — die Leuchtdiode einer Kamera aus den
+   Neunzigern hat genau diesen Orangeton, und das ist der ganze Witz an dem
+   Look. Ein Stempel in Hausfarbe sähe aus wie ein Wasserzeichen. */
+  --laborstempel: #ff8a28;
+
+/* Feldarten im Vorlagen-Editor. Vier Rahmenfarben, die NUR unterscheiden
+   sollen — sie tragen keine Bedeutung wie „gut" oder „Warnung" und dürfen
+   deshalb nicht aus den Zustandsfarben genommen werden. Bewusst gedämpft:
+   Der Rahmen liegt über einem Druckbild und darf es nicht überstimmen. */
+  --feld-text: #2b5aa0;
+  --feld-bild: #3f3f4a;
+  --feld-flaeche: #783ca0;
+  --feld-logo: #1e8264;
+
   --zettel-0: #f2b23e;
   --zettel-1: #e8836b;
   --zettel-2: #7f9f7a;
@@ -148,8 +177,8 @@
   /* --- Schatten --------------------------------------------------------- */
   --schatten-karte: 0 1px 2px rgba(0, 0, 0, 0.04);
   --schatten-hoch: 0 18px 40px -28px rgba(0, 0, 0, 0.45);
-  --schatten-cta: 0 6px 18px -8px rgba(242, 178, 62, 0.75);
-  --schatten-cta-hover: 0 10px 24px -8px rgba(242, 178, 62, 0.9);
+  --schatten-cta: 0 6px 18px -8px color-mix(in srgb, var(--amber) 75%, transparent);
+  --schatten-cta-hover: 0 10px 24px -8px color-mix(in srgb, var(--amber) 90%, transparent);
   --schatten-kopf: 0 10px 30px -22px rgba(0, 0, 0, 0.7);
 
   /* --- Bewegung --------------------------------------------------------- */

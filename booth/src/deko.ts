@@ -7,6 +7,11 @@
  * blieben sie zunächst liegen, weil unser Vorlagenmodell nur Felder kennt —
  * Bild, Text, Fläche. Ein Blütenkranz ist keins davon.
  *
+ * gestaltung: eigene Palette — Materialfarben der Verzierungen (Blattgold,
+ * Beere, Tannengruen). Sie ahmen Werkstoffe nach und stehen deshalb neben
+ * dem Hausfarbsatz; dass eine davon zufaellig einem Zettelton gleicht,
+ * macht sie nicht zu derselben Sache.
+ *
  * Er wird auch keins. Statt 22 Vorlagen mit je hundert Flächenfeldern
  * nachzubauen, trägt eine Vorlage jetzt einen Namen: `deko`. Der Rest steht
  * hier. Das hat drei Gründe:

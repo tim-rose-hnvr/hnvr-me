@@ -242,7 +242,7 @@ body.buchenseite {
 .beingabe:focus {
   outline: none;
   border-color: var(--amber);
-  box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 20%, transparent);
 }
 
 textarea.beingabe { resize: vertical; }

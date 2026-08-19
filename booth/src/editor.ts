@@ -54,6 +54,7 @@ import {
   sichereVorlage,
   stelleEin,
 } from './vorlagen';
+import { farbe, schrift } from './farben';
 
 /* --- Bausteine ------------------------------------------------------ */
 
@@ -153,7 +154,7 @@ function testbilder(): HTMLCanvasElement[] {
     s.fill();
 
     s.fillStyle = 'rgba(255,255,255,0.85)';
-    s.font = `600 44px 'IBM Plex Mono', ui-monospace, monospace`;
+    s.font = schrift(44, 600);
     s.textAlign = 'center';
     s.fillText(`TESTBILD ${i + 1}`, f.width / 2, f.height - 48);
     return f;
@@ -460,10 +461,10 @@ function neuesFeld(art: Feldart): void {
     feld.gewicht = 700;
     feld.schrift = 'anzeige';
     feld.ausrichtung = 'mitte';
-    feld.farbe = '#17171c';
+    feld.farbe = farbe('--ink-soft');
   }
   if (art === 'flaeche') {
-    feld.farbe = '#f2b23e';
+    feld.farbe = farbe('--amber');
     feld.figur = 'rechteck';
   }
   if (art === 'qr') {
@@ -477,7 +478,17 @@ function neuesFeld(art: Feldart): void {
   waehle(feld.id);
 }
 
-const FARBEN = ['#17171c', '#ffffff', '#f2b23e', '#0b0b0d', '#f6f4f1', 'rgba(0,0,0,0.45)'];
+/* Die Farbwahl im Editor bietet die Hausfarben an — sie stehen in
+   `gestaltung/tokens.css` und werden von dort gelesen. Abgeschrieben wären
+   sie beim nächsten Wechsel der Marke die einzigen, die alt bleiben. */
+const FARBEN = [
+  farbe('--ink-soft'),
+  farbe('--weiss'),
+  farbe('--amber'),
+  farbe('--ink'),
+  farbe('--paper'),
+  'rgba(0,0,0,0.45)',
+];
 
 function farbwahl(wert: string, bei: (w: string) => void): HTMLElement {
   const huelle = document.createElement('div');
@@ -634,7 +645,7 @@ function bauePruefer(): void {
     kasten.append(
       feldblock(
         'Farbe',
-        farbwahl(feld.farbe ?? '#17171c', (w) => setze((f) => (f.farbe = w)))
+        farbwahl(feld.farbe ?? farbe('--ink-soft'), (w) => setze((f) => (f.farbe = w)))
       )
     );
   }
@@ -657,7 +668,7 @@ function bauePruefer(): void {
     kasten.append(
       feldblock(
         'Füllung',
-        farbwahl(feld.farbe ?? '#f2b23e', (w) => setze((f) => (f.farbe = w)))
+        farbwahl(feld.farbe ?? farbe('--amber'), (w) => setze((f) => (f.farbe = w)))
       )
     );
     kasten.append(
@@ -846,8 +857,8 @@ function neueVorlage(): void {
     art: 'foto',
     aufnahmen: 1,
     papier: '#ffffff',
-    tinte: '#17171c',
-    akzent: '#f2b23e',
+    tinte: farbe('--ink-soft'),
+    akzent: farbe('--amber'),
     felder: [
       { id: neueFeldKennung(), art: 'bild', x: 0.05, y: 0.05, b: 0.9, h: 0.6 },
       {
@@ -862,7 +873,7 @@ function neueVorlage(): void {
         gewicht: 800,
         schrift: 'anzeige',
         ausrichtung: 'mitte',
-        farbe: '#17171c',
+        farbe: farbe('--ink-soft'),
       },
     ],
   };

@@ -24,7 +24,7 @@ body.cockpitseite {
   gap: 24px;
   flex-wrap: wrap;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+  border-bottom: 1px solid var(--linie);
 }
 
 .ckopf h1 {
@@ -88,7 +88,7 @@ body.cockpitseite {
 
 .ckachel {
   background: var(--weiss);
-  border: 1px solid rgba(0, 0, 0, 0.09);
+  border: 1px solid var(--linie);
   border-radius: 14px;
   padding: 20px;
   display: flex;
@@ -131,7 +131,7 @@ body.cockpitseite {
 .cbild {
   margin: 0;
   background: var(--weiss);
-  border: 1px solid rgba(0, 0, 0, 0.09);
+  border: 1px solid var(--linie);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
@@ -206,7 +206,7 @@ body.cockpitseite {
 .ceingabe:focus {
   outline: none;
   border-color: var(--amber);
-  box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.18);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 18%, transparent);
 }
 
 .creihe {
@@ -247,7 +247,7 @@ body.cockpitseite {
   padding: 10px 14px;
   border-radius: 10px;
   background: var(--weiss);
-  border: 1px solid rgba(0, 0, 0, 0.09);
+  border: 1px solid var(--linie);
 }
 
 .cfilm__name {
@@ -296,7 +296,7 @@ body.cockpitseite {
   padding: 16px 18px;
   border-radius: 14px;
   background: var(--weiss);
-  border: 1px solid rgba(0, 0, 0, 0.09);
+  border: 1px solid var(--linie);
 }
 
 .caufsteller__code {

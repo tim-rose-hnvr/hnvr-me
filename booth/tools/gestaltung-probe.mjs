@@ -89,5 +89,90 @@ pruefe('Die Software importiert gestaltung/tokens.css', software.includes('gesta
 pruefe('Die Software hält keinen eigenen Farbsatz mehr',
   !/--amber:\s*#/.test(software), 'im :root der Software steht noch --amber');
 
+console.log('\n4 · Kein Tokenwert steht ein zweites Mal irgendwo');
+/* Der Hexwert war nur der offensichtliche Weg. Zwei weitere sind uns durch
+   die Finger gegangen:
+     · `rgba(242, 178, 62, 0.12)` in einem Stilblatt — dasselbe Amber, nur
+       als Zahlen. Wer `--amber` ändert, ändert das nicht mit.
+     · `stift.fillStyle = '#f2b23e'` in einer Zeichenfläche. Canvas kennt
+       keine CSS-Variablen, also stand der Wert dort abgeschrieben — im
+       fertigen Video eines gesprochenen Grußes.
+   Gesucht wird deshalb nach dem WERT, nicht nach der Schreibweise, und in
+   TypeScript ebenso wie in CSS. Echtes Schwarz und echtes Weiß bleiben
+   erlaubt: Ein Schattenwurf ist Physik, keine Hausfarbe. */
+const tokenwerte = new Map();
+/* Reines Schwarz und reines Weiß gehören keiner Palette. Ein Schattenwurf,
+   der Rand eines Blitzes, das Papier eines Abzugs — das sind Naturgesetze
+   und Material, nicht Hausfarben, und sie blieben dieselben, wenn das ganze
+   System morgen grün wäre. Sie hier mitzuzählen ergäbe hundert Funde, in
+   denen die drei echten untergingen. */
+const NEUTRAL = new Set(['#ffffff', '#000000', '255, 255, 255', '0, 0, 0']);
+for (const t of quelle.matchAll(/(--[a-z0-9-]+):\s*#([0-9a-fA-F]{6})\s*;/g)) {
+  const [, name, hex] = t;
+  const zahlen = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ');
+  if (NEUTRAL.has('#' + hex.toLowerCase())) continue;
+  if (!tokenwerte.has(zahlen)) tokenwerte.set(zahlen, name);
+  if (!tokenwerte.has('#' + hex.toLowerCase())) tokenwerte.set('#' + hex.toLowerCase(), name);
+}
+
+/* Es gibt echte Ausnahmen, und sie sollen sichtbar bleiben statt in einer
+   Liste in dieser Probe zu verschwinden: Eine Datei darf `gestaltung: eigene
+   Palette` samt Grund im Kopf tragen, dann wird sie übersprungen — und hier
+   trotzdem AUFGEZÄHLT. Eine Ausnahme, die niemand mehr sieht, ist keine
+   Ausnahme, sondern ein Leck. */
+const AUSNAHME = /gestaltung:\s*eigene Palette\s*—\s*([^\n*]+)/;
+const ausnahmen = [];
+
+const doppelt = [];
+for (const ordner of [path.join(WURZEL, 'booth', 'src'), path.join(WURZEL, 'youbooth', 'src')]) {
+  const dateien = [
+    ...alleDateien(ordner, '.css'),
+    ...alleDateien(ordner, '.astro'),
+    ...alleDateien(ordner, '.ts'),
+  ];
+  for (const datei of dateien) {
+    if (datei.endsWith(path.join('styles', 'tokens.css'))) continue;
+    const text = readFileSync(datei, 'utf8');
+    const kurz = path.relative(WURZEL, datei);
+    const erlaubt = text.match(AUSNAHME);
+    if (erlaubt) {
+      ausnahmen.push(`${kurz} — ${erlaubt[1].trim()}`);
+      continue;
+    }
+
+    for (const t of text.matchAll(/rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/g)) {
+      const zahlen = `${Number(t[1])}, ${Number(t[2])}, ${Number(t[3])}`;
+      const name = tokenwerte.get(zahlen);
+      if (name) doppelt.push(`${kurz}: rgba(${zahlen}…) ist ${name}`);
+    }
+    /* Hexwerte in TypeScript. In CSS fängt sie schon Abschnitt 2 ab. */
+    if (datei.endsWith('.ts')) {
+      for (const t of text.matchAll(/['"`](#[0-9a-fA-F]{6})['"`]/g)) {
+        const name = tokenwerte.get(t[1].toLowerCase());
+        if (name) doppelt.push(`${kurz}: ${t[1]} ist ${name}`);
+      }
+    }
+  }
+}
+pruefe(`Kein Gestaltungswert ist irgendwo abgeschrieben (${doppelt.length} Funde)`,
+  doppelt.length === 0, doppelt.slice(0, 6).join(' | '));
+console.log(`  · ${ausnahmen.length} Dateien mit erklärter eigener Palette:`);
+ausnahmen.forEach((a) => console.log(`      ${a}`));
+
+console.log('\n5 · Schrift kommt auch auf der Zeichenfläche aus der Quelle');
+/* Ein `stift.font = '500 22px "IBM Plex Mono"…'` überlebt jeden
+   Schriftwechsel — und niemand sieht es, weil es nur in einem Video steht. */
+const schriftfunde = [];
+for (const ordner of [path.join(WURZEL, 'booth', 'src'), path.join(WURZEL, 'youbooth', 'src')]) {
+  for (const datei of alleDateien(ordner, '.ts')) {
+    const text = readFileSync(datei, 'utf8');
+    for (const t of text.matchAll(/\.font\s*=\s*[^;\n]*(Archivo|IBM Plex|system-ui|ui-monospace)/g)) {
+      schriftfunde.push(`${path.relative(WURZEL, datei)}: ${t[0].slice(0, 60)}`);
+    }
+  }
+}
+pruefe(`Keine Schriftfamilie steht in einer Zeichenfläche fest (${schriftfunde.length})`,
+  schriftfunde.length === 0, schriftfunde.slice(0, 4).join(' | '));
+
 console.log(`\n${bestanden} bestanden, ${gefallen} gefallen\n`);
 process.exit(gefallen ? 1 : 0);

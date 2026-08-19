@@ -188,7 +188,7 @@ const kennzahlen = [
   .zahlenzeile .mono {
     font-size: 10.5px;
     letter-spacing: 0.1em;
-    color: rgba(244, 242, 238, 0.45);
+    color: color-mix(in srgb, var(--text-hell) 45%, transparent);
   }
 
   .filter {
@@ -366,7 +366,7 @@ const kennzahlen = [
 
   .sammlung {
     background: var(--ink-soft);
-    border: 1px solid rgba(244, 242, 238, 0.12);
+    border: 1px solid color-mix(in srgb, var(--text-hell) 12%, transparent);
     border-radius: var(--r-karte);
     padding: 22px;
     display: flex;
@@ -375,7 +375,7 @@ const kennzahlen = [
   }
 
   .sammlung--wunsch {
-    background: rgba(242, 178, 62, 0.1);
+    background: color-mix(in srgb, var(--amber) 10%, transparent);
     border-color: var(--amber);
   }
 

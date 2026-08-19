@@ -22,8 +22,11 @@
   --hell-still: var(--text-hell-still);
 
   /* Absichtlich überschrieben: Auf schwarzem Grund ist eine schwarze Linie
-     keine. */
+     keine. Die hellen Oberflächen der Software (Cockpit, Portal, Buchen,
+     Einrichtung, Editor) hängen `--linie` unten wieder zurück — sonst wäre
+     ihr Kartenrand eine helle Linie auf Papier, also gar keiner. */
   --linie: var(--linie-dunkel);
+  --linie-stark: var(--linie-dunkel-stark);
 
   /* Booth statt Website: 64 statt 44. */
   --ziel: 64px;
@@ -48,6 +51,15 @@ html:has(> body.cockpitseite),
 html:has(> body.buchenseite),
 html:has(> body.einrichtungsseite) {
   background: var(--paper);
+}
+
+/* Helle Oberflächen bekommen ihre Linie zurück. */
+body.cockpitseite,
+body.buchenseite,
+body.einrichtungsseite,
+body.editorseite {
+  --linie: var(--linie-hell);
+  --linie-stark: var(--linie-hell-stark);
 }
 
 /* Der Editor arbeitet auf seinem eigenen Papierton — er zeigt Druckbilder,
@@ -287,7 +299,7 @@ p {
 .knopf--amber {
   background: var(--amber);
   color: var(--amber-ink);
-  box-shadow: 0 10px 30px -12px rgba(242, 178, 62, 0.8);
+  box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--amber) 80%, transparent);
 }
 
 .knopf--rahmen {
@@ -343,7 +355,7 @@ p {
 
 .art.gewaehlt {
   border-color: var(--amber);
-  background: rgba(242, 178, 62, 0.12);
+  background: color-mix(in srgb, var(--amber) 12%, transparent);
 }
 
 .art__name {
@@ -392,7 +404,7 @@ p {
 
 .stil.gewaehlt {
   border-color: var(--amber);
-  background: rgba(242, 178, 62, 0.12);
+  background: color-mix(in srgb, var(--amber) 12%, transparent);
 }
 
 .stil:disabled {
@@ -484,14 +496,14 @@ p {
   align-items: center;
   justify-content: center;
   gap: 22px;
-  background: rgba(11, 11, 13, 0.35);
+  background: color-mix(in srgb, var(--ink) 35%, transparent);
 }
 
 .ring {
   width: min(38vh, 320px);
   aspect-ratio: 1;
   border-radius: var(--r-kreis);
-  border: 10px solid rgba(242, 178, 62, 0.25);
+  border: 10px solid color-mix(in srgb, var(--amber) 25%, transparent);
   border-top-color: var(--amber);
   display: flex;
   align-items: center;
@@ -518,7 +530,7 @@ p {
   width: min(60%, 620px);
   height: 22px;
   border-radius: var(--r-kreis);
-  background: rgba(244, 242, 238, 0.16);
+  background: color-mix(in srgb, var(--text-hell) 16%, transparent);
   overflow: hidden;
 }
 
@@ -610,7 +622,7 @@ p {
 }
 
 .weg--haupt .mono {
-  color: rgba(20, 16, 8, 0.7);
+  color: color-mix(in srgb, var(--amber-ink) 70%, transparent);
 }
 
 .weg__name {
@@ -675,7 +687,7 @@ a.chip:hover {
   width: 46px;
   height: 6px;
   border-radius: 3px;
-  background: rgba(244, 242, 238, 0.2);
+  background: color-mix(in srgb, var(--text-hell) 20%, transparent);
   display: block;
 }
 
@@ -695,7 +707,7 @@ a.chip:hover {
   gap: 26px;
   text-align: center;
   padding: 40px;
-  background: linear-gradient(rgba(11, 11, 13, 0.55), rgba(11, 11, 13, 0.8));
+  background: linear-gradient(color-mix(in srgb, var(--ink) 55%, transparent), color-mix(in srgb, var(--ink) 80%, transparent));
 }
 
 /* Das Laufband gehört an die Kante, nicht in die Mitte.
@@ -750,7 +762,7 @@ a.chip:hover {
 .decke {
   position: fixed;
   inset: 0;
-  background: rgba(11, 11, 13, 0.9);
+  background: color-mix(in srgb, var(--ink) 90%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -870,10 +882,10 @@ a.chip:hover {
 
 @keyframes puls {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(242, 178, 62, 0.5);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--amber) 50%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 18px rgba(242, 178, 62, 0);
+    box-shadow: 0 0 0 18px color-mix(in srgb, var(--amber) 0%, transparent);
   }
 }
 

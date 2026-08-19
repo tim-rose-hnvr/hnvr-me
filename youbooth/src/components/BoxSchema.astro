@@ -171,7 +171,7 @@
     width: 46%;
     aspect-ratio: 1;
     border-radius: var(--r-kreis);
-    border: 5px solid rgba(242, 178, 62, 0.25);
+    border: 5px solid color-mix(in srgb, var(--amber) 25%, transparent);
     border-top-color: var(--amber);
     display: flex;
     align-items: center;
@@ -214,7 +214,7 @@
     height: 12px;
     border-radius: 6px;
     background: var(--ink);
-    border: 1px solid rgba(244, 242, 238, 0.12);
+    border: 1px solid color-mix(in srgb, var(--text-hell) 12%, transparent);
     display: block;
     position: relative;
     overflow: hidden;
@@ -259,18 +259,18 @@
     margin-top: 14px;
     font-size: 9px;
     letter-spacing: 0.16em;
-    color: rgba(244, 242, 238, 0.35);
+    color: color-mix(in srgb, var(--text-hell) 35%, transparent);
   }
 
   @keyframes licht {
     0%,
     100% {
       opacity: 0.55;
-      box-shadow: 0 0 26px 6px rgba(242, 178, 62, 0.25);
+      box-shadow: 0 0 26px 6px color-mix(in srgb, var(--amber) 25%, transparent);
     }
     50% {
       opacity: 1;
-      box-shadow: 0 0 46px 12px rgba(242, 178, 62, 0.42);
+      box-shadow: 0 0 46px 12px color-mix(in srgb, var(--amber) 42%, transparent);
     }
   }
 

@@ -265,11 +265,11 @@ body.zentraleseite {
 }
 
 .zmeldung--gut {
-  background: rgba(23, 177, 135, 0.12);
+  background: color-mix(in srgb, var(--ok) 12%, transparent);
 }
 
 .zmeldung--fehler {
-  background: rgba(224, 72, 60, 0.12);
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
 }
 
 .zmeldung[hidden] {

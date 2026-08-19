@@ -27,6 +27,7 @@ import {
   type Formatschluessel,
   type Schriftart,
 } from './formate';
+import { farbe, schrift } from './farben';
 
 export type { Formatschluessel, Schriftart, Dekoart };
 
@@ -349,7 +350,7 @@ function zeichnePlatzhalter(
   stift.fillStyle = 'rgba(0,0,0,0.4)';
   stift.textAlign = 'center';
   stift.textBaseline = 'middle';
-  stift.font = `500 ${Math.max(14, Math.min(22, h / 6))}px ui-monospace, monospace`;
+  stift.font = schrift(Math.max(14, Math.min(22, h / 6)));
   stift.fillText(beschriftung, x + b / 2, y + h / 2);
   stift.restore();
 }
@@ -451,7 +452,7 @@ function zeichneFlaeche(
   }
 
   if (figur === 'linie') {
-    stift.fillStyle = feld.linie || feld.farbe || '#17171c';
+    stift.fillStyle = feld.linie || feld.farbe || farbe('--ink-soft');
     stift.fill();
   } else {
     if (feld.farbe && feld.farbe !== 'transparent') {
@@ -494,7 +495,7 @@ function zeichneBildfeld(
     stift.shadowColor = 'rgba(0,0,0,0.34)';
     stift.shadowBlur = Math.max(8, Math.min(b, h) * 0.08);
     stift.shadowOffsetY = Math.max(4, Math.min(b, h) * 0.03);
-    stift.fillStyle = v.papier || '#ffffff';
+    stift.fillStyle = v.papier || farbe('--weiss');
     pfadRechteck(stift, x, y, b, h, radius);
     stift.fill();
     stift.restore();
@@ -554,7 +555,7 @@ export function zeichneVorlage(
   flaeche.height = H;
   const stift = stiftVon(flaeche);
 
-  stift.fillStyle = v.papier || '#ffffff';
+  stift.fillStyle = v.papier || farbe('--weiss');
   stift.fillRect(0, 0, W, H);
 
   if (zubehoer.hintergrund) {
@@ -712,9 +713,12 @@ export function pruefeVorlage(roh: unknown): { vorlage: Vorlage } | { fehler: st
       format,
       art: v.art === 'streifen' || v.kind === 'strip' ? 'streifen' : 'foto',
       aufnahmen: Math.max(1, Number(v.aufnahmen ?? v.shots ?? felder.filter((f) => f.art === 'bild').length)),
-      papier: zeichen(v.papier ?? v.bg, '#ffffff'),
-      tinte: zeichen(v.tinte ?? v.fg, '#17171c'),
-      akzent: zeichen(v.akzent ?? v.accent, '#f2b23e'),
+      /* Die Vorgabe einer Vorlage ist die Hausfarbe — sie steht in
+         `gestaltung/tokens.css` und wird von dort gelesen, nicht hier
+         abgeschrieben. */
+      papier: zeichen(v.papier ?? v.bg, farbe('--weiss')),
+      tinte: zeichen(v.tinte ?? v.fg, farbe('--ink-soft')),
+      akzent: zeichen(v.akzent ?? v.accent, farbe('--amber')),
       hintergrund: typeof v.hintergrund === 'string' ? v.hintergrund : undefined,
       ecken: Boolean(v.ecken),
       logo:

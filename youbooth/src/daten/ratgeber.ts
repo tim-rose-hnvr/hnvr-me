@@ -1,4 +1,8 @@
-/** Ratgeber-Artikel fuer Vermieter: Rubrik, Anriss, Volltext, Merkpunkte, Fazit. */
+/** Ratgeber-Artikel fuer Vermieter: Rubrik, Anriss, Volltext, Merkpunkte, Fazit.
+ *
+ * gestaltung: eigene Palette — je Rubrik eine Kennfarbe, damit sich die
+ * Artikel im Register unterscheiden. Sie folgt der Rubrik, nicht der Marke.
+ */
 
 export type Ratgeberartikel = {
   rubrik: string;

@@ -22,6 +22,7 @@
 
 import './stil.css';
 import './stimme.css';
+import { farbe, schrift } from './farben';
 
 type Lage = 'start' | 'nimmt' | 'hoert' | 'sendet' | 'fertig' | 'fehler';
 
@@ -373,30 +374,30 @@ function zeichneTafel(
   const b = tafel.width;
   const h = tafel.height;
 
-  stift.fillStyle = '#0b0b0d';
+  stift.fillStyle = farbe('--ink');
   stift.fillRect(0, 0, b, h);
 
   const schein = stift.createRadialGradient(b / 2, h * 0.52, 0, b / 2, h * 0.52, b * 0.6);
-  schein.addColorStop(0, 'rgba(242, 178, 62, 0.16)');
-  schein.addColorStop(1, 'rgba(242, 178, 62, 0)');
+  schein.addColorStop(0, farbe('--amber', 0.16));
+  schein.addColorStop(1, farbe('--amber', 0));
   stift.fillStyle = schein;
   stift.fillRect(0, 0, b, h);
 
   // Kopfzeile: wo und für wen.
-  stift.fillStyle = '#f2b23e';
-  stift.font = '500 22px "IBM Plex Mono", ui-monospace, monospace';
+  stift.fillStyle = farbe('--amber');
+  stift.font = schrift(22);
   stift.textAlign = 'left';
   stift.fillText('GESPROCHENER GRUSS', 64, 76);
 
-  stift.fillStyle = 'rgba(244, 242, 238, 0.62)';
-  stift.font = '500 22px "IBM Plex Mono", ui-monospace, monospace';
+  stift.fillStyle = farbe('--text-hell', 0.62);
+  stift.font = schrift(22);
   stift.textAlign = 'right';
   stift.fillText(stand.event.toUpperCase(), b - 64, 76);
 
   // Die Welle in der Mitte.
   const mitte = h * 0.52;
   const hoehe = h * 0.2;
-  stift.strokeStyle = '#f4f2ee';
+  stift.strokeStyle = farbe('--text-hell');
   stift.lineWidth = 4;
   stift.lineJoin = 'round';
   stift.beginPath();
@@ -419,12 +420,12 @@ function zeichneTafel(
   const jetzt = new Date();
   const zwei = (n: number) => String(n).padStart(2, '0');
   stift.textAlign = 'left';
-  stift.fillStyle = '#f4f2ee';
-  stift.font = '800 46px Archivo, system-ui, sans-serif';
+  stift.fillStyle = farbe('--text-hell');
+  stift.font = schrift(46, 800, 'text');
   stift.fillText(name.trim() || 'Ein Gast', 64, h - 96);
 
-  stift.fillStyle = 'rgba(244, 242, 238, 0.62)';
-  stift.font = '500 22px "IBM Plex Mono", ui-monospace, monospace';
+  stift.fillStyle = farbe('--text-hell', 0.62);
+  stift.font = schrift(22);
   stift.fillText(
     `${zwei(jetzt.getDate())}.${zwei(jetzt.getMonth() + 1)}.${jetzt.getFullYear()}  ` +
       `${zwei(jetzt.getHours())}:${zwei(jetzt.getMinutes())}`,
@@ -433,8 +434,8 @@ function zeichneTafel(
   );
 
   stift.textAlign = 'right';
-  stift.fillStyle = '#f2b23e';
-  stift.font = '500 34px "IBM Plex Mono", ui-monospace, monospace';
+  stift.fillStyle = farbe('--amber');
+  stift.font = schrift(34);
   stift.fillText(`${zwei(Math.floor(sekunden / 60))}:${zwei(Math.floor(sekunden % 60))}`, b - 64, h - 60);
 }
 

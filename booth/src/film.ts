@@ -28,6 +28,7 @@
 
 import './stil.css';
 import './film.css';
+import { farbe, schrift } from './farben';
 import { Kamera, deuteFehler } from './kamera';
 
 /** Was die Box über einen Film herausgibt — nie die Bilder selbst. */
@@ -401,8 +402,11 @@ function hartesLicht(stift: CanvasRenderingContext2D, flaeche: HTMLCanvasElement
   stift.save();
   stift.globalCompositeOperation = 'overlay';
   const licht = stift.createRadialGradient(b / 2, h * 0.42, 0, b / 2, h * 0.42, Math.max(b, h) * 0.72);
-  licht.addColorStop(0, 'rgba(255, 255, 255, 0.34)');
-  licht.addColorStop(0.55, 'rgba(255, 255, 255, 0.04)');
+  licht.addColorStop(0, farbe('--weiss', 0.34));
+  licht.addColorStop(0.55, farbe('--weiss', 0.04));
+  /* Echtes Schwarz, kein Tokenwert: Der Randabfall eines Blitzes ist ein
+     Lichtmangel, keine Hausfarbe — er bliebe schwarz, auch wenn das ganze
+     Gestaltungssystem morgen grün wäre. */
   licht.addColorStop(1, 'rgba(0, 0, 0, 0.42)');
   stift.fillStyle = licht;
   stift.fillRect(0, 0, b, h);
@@ -410,7 +414,7 @@ function hartesLicht(stift: CanvasRenderingContext2D, flaeche: HTMLCanvasElement
 
   stift.save();
   stift.globalCompositeOperation = 'soft-light';
-  stift.fillStyle = 'rgba(150, 180, 255, 0.16)';
+  stift.fillStyle = farbe('--blitzlicht', 0.16);
   stift.fillRect(0, 0, b, h);
   stift.restore();
 }
@@ -433,7 +437,7 @@ function datumsstempel(
 
   const groesse = Math.max(13, Math.round(flaeche.width / 42));
   stift.save();
-  stift.font = `600 ${groesse}px "IBM Plex Mono", ui-monospace, monospace`;
+  stift.font = schrift(groesse, 600);
   stift.textAlign = 'right';
   stift.textBaseline = 'alphabetic';
 
@@ -444,7 +448,7 @@ function datumsstempel(
   const y = flaeche.height - groesse;
   stift.shadowColor = 'rgba(0, 0, 0, 0.55)';
   stift.shadowBlur = groesse * 0.5;
-  stift.fillStyle = 'rgba(255, 138, 40, 0.92)';
+  stift.fillStyle = farbe('--laborstempel', 0.92);
   stift.fillText(text, x, y);
   stift.shadowBlur = 0;
   stift.fillText(text, x, y);

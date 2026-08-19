@@ -30,6 +30,7 @@
 
 import './stil.css';
 import './zeitlupe.css';
+import { farbe, schrift } from './farben';
 
 type Lage = 'start' | 'laeuft' | 'nimmt' | 'rechnet' | 'fertig' | 'fehler';
 
@@ -412,7 +413,7 @@ function zeichneTafel(
   const b = tafel.width;
   const h = tafel.height;
 
-  stift.fillStyle = '#0b0b0d';
+  stift.fillStyle = farbe('--ink');
   stift.fillRect(0, 0, b, h);
 
   if (bild) {
@@ -427,21 +428,21 @@ function zeichneTafel(
      Anfang wirkt wie ein abgeschnittener Clip. */
   if (teil !== 'clip') {
     const deckung = teil === 'vor' ? 1 - fortschritt : fortschritt;
-    stift.fillStyle = `rgba(11, 11, 13, ${deckung.toFixed(3)})`;
+    stift.fillStyle = farbe('--ink', Number(deckung.toFixed(3)));
     stift.fillRect(0, 0, b, h);
   }
 
   // Der Rahmen: zwei feine Linien, keine Zierleiste.
-  stift.strokeStyle = 'rgba(242, 178, 62, 0.9)';
+  stift.strokeStyle = farbe('--amber', 0.9);
   stift.lineWidth = 3;
   stift.strokeRect(28, 28, b - 56, h - 56);
 
-  stift.fillStyle = '#f2b23e';
-  stift.font = '500 22px "IBM Plex Mono", ui-monospace, monospace';
+  stift.fillStyle = farbe('--amber');
+  stift.font = schrift(22);
   stift.textAlign = 'left';
   stift.fillText('ZEITLUPE', 56, 74);
 
-  stift.fillStyle = 'rgba(244, 242, 238, 0.82)';
+  stift.fillStyle = farbe('--text-hell', 0.82);
   stift.textAlign = 'right';
   stift.fillText(stand.event.toUpperCase(), b - 56, 74);
 

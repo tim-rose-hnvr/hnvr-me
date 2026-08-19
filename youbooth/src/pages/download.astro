@@ -338,7 +338,7 @@ const dateien = [
   .zahlenzeile .mono {
     font-size: 10.5px;
     letter-spacing: 0.1em;
-    color: rgba(244, 242, 238, 0.45);
+    color: color-mix(in srgb, var(--text-hell) 45%, transparent);
   }
 
   .lizenz {
@@ -359,7 +359,7 @@ const dateien = [
   .lizenz__feld {
     height: 48px;
     border-radius: var(--r-knopf);
-    border: 1px solid rgba(244, 242, 238, 0.18);
+    border: 1px solid color-mix(in srgb, var(--text-hell) 18%, transparent);
     background: transparent;
     padding: 0 14px;
     font-family: var(--mono);
@@ -371,13 +371,13 @@ const dateien = [
   }
 
   .lizenz__feld::placeholder {
-    color: rgba(244, 242, 238, 0.4);
+    color: color-mix(in srgb, var(--text-hell) 40%, transparent);
   }
 
   .lizenz__feld:focus {
     outline: none;
     border-color: var(--amber);
-    box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.2);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 20%, transparent);
   }
 
   .knopf--flach {
@@ -642,7 +642,7 @@ const dateien = [
     padding: 28px;
     border-radius: var(--r-karte-gross);
     border: 1px solid var(--linie-dunkel);
-    background: rgba(244, 242, 238, 0.04);
+    background: color-mix(in srgb, var(--text-hell) 4%, transparent);
   }
 
   .holen__knopf { width: 100%; justify-content: center; }

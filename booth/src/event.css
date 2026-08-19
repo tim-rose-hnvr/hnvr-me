@@ -139,7 +139,7 @@ body.eventseite {
   border-radius: 12px;
   overflow: hidden;
   background: var(--weiss);
-  border: 1px solid rgba(0, 0, 0, 0.09);
+  border: 1px solid var(--linie);
 }
 
 .ebild img {
@@ -156,7 +156,7 @@ body.eventseite {
   bottom: 8px;
   padding: 7px 12px;
   border-radius: 8px;
-  background: rgba(11, 11, 13, 0.82);
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
   color: var(--text-hell);
   font-family: var(--mono);
   font-weight: 500;
@@ -256,7 +256,7 @@ body.eventseite {
   font-size: 13.5px;
   line-height: 1.6;
   color: rgba(0, 0, 0, 0.5);
-  border-top: 1px solid rgba(0, 0, 0, 0.09);
+  border-top: 1px solid var(--linie);
   padding-top: 20px;
 }
 

@@ -76,7 +76,7 @@ body.zettelseite {
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(11, 11, 13, 0.88);
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
   animation: zwauf 0.4s ease-out;
 }
 

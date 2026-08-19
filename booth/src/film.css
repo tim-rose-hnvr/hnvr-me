@@ -82,7 +82,7 @@ body.filmseite {
 .fmflaeche[data-lage='voll'] .fmbuehne,
 .fmflaeche[data-lage='fehler'] .fmbuehne {
   background:
-    radial-gradient(120% 80% at 50% 0%, rgba(242, 178, 62, 0.12), transparent 60%),
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--amber) 12%, transparent), transparent 60%),
     var(--ink-soft);
 }
 
@@ -117,8 +117,8 @@ body.filmseite {
   min-width: 58px;
   padding: 6px 12px;
   border-radius: var(--r-pille);
-  background: rgba(11, 11, 13, 0.62);
-  border: 1px solid rgba(244, 242, 238, 0.18);
+  background: color-mix(in srgb, var(--ink) 62%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-hell) 18%, transparent);
   font-family: var(--mono);
   font-weight: 500;
   font-size: 26px;

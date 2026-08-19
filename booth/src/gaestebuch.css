@@ -81,7 +81,7 @@ body.gbseite {
 .gbtext:focus {
   outline: none;
   border-color: var(--amber);
-  box-shadow: 0 0 0 3px rgba(242, 178, 62, 0.2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 20%, transparent);
 }
 
 .gbzaehler {
@@ -106,12 +106,12 @@ body.gbseite {
 }
 
 .gbmeldung--gut {
-  background: rgba(23, 177, 135, 0.16);
+  background: color-mix(in srgb, var(--ok) 16%, transparent);
   color: var(--hell);
 }
 
 .gbmeldung--fehler {
-  background: rgba(224, 72, 60, 0.16);
+  background: color-mix(in srgb, var(--warn) 16%, transparent);
   color: var(--hell);
 }
 

@@ -21,7 +21,7 @@ body.einrichtungsseite {
   flex-direction: column;
   gap: 10px;
   padding-bottom: 18px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+  border-bottom: 1px solid var(--linie);
 }
 
 .ekopf h1 {
@@ -39,7 +39,7 @@ body.einrichtungsseite {
 
 .eschritt {
   background: var(--weiss);
-  border: 1px solid rgba(0, 0, 0, 0.09);
+  border: 1px solid var(--linie);
   border-radius: 14px;
   padding: 22px;
   display: flex;
@@ -127,7 +127,7 @@ body.einrichtungsseite {
   background: var(--weiss);
   padding: 10px;
   border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.09);
+  border: 1px solid var(--linie);
 }
 
 .epruefung {

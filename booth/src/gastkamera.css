@@ -57,7 +57,7 @@ body.gkseite {
 .gkflaeche[data-lage='start'] .gkbuehne,
 .gkflaeche[data-lage='fehler'] .gkbuehne {
   background:
-    radial-gradient(120% 80% at 50% 0%, rgba(242, 178, 62, 0.12), transparent 60%),
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--amber) 12%, transparent), transparent 60%),
     var(--ink-soft);
 }
 

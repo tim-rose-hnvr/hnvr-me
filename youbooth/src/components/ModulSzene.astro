@@ -247,7 +247,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
     width: 34%;
     aspect-ratio: 1;
     border-radius: var(--r-kreis);
-    border: 5px solid rgba(242, 178, 62, 0.25);
+    border: 5px solid color-mix(in srgb, var(--amber) 25%, transparent);
     border-top-color: var(--amber);
     display: flex;
     align-items: center;
@@ -334,7 +334,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
     height: 8px;
     background: repeating-linear-gradient(
       90deg,
-      rgba(244, 242, 238, 0.4) 0 8px,
+      color-mix(in srgb, var(--text-hell) 40%, transparent) 0 8px,
       transparent 8px 18px
     );
   }
@@ -434,7 +434,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
     width: 30%;
     aspect-ratio: 3 / 4;
     border-radius: 44% 44% 40% 40%;
-    border: 2px solid rgba(244, 242, 238, 0.4);
+    border: 2px solid color-mix(in srgb, var(--text-hell) 40%, transparent);
     position: relative;
     overflow: hidden;
   }
@@ -445,7 +445,7 @@ const balken = Array.from({ length: 22 }, (_, i) => i);
     right: -10%;
     height: 3px;
     background: var(--amber);
-    box-shadow: 0 0 16px 3px rgba(242, 178, 62, 0.6);
+    box-shadow: 0 0 16px 3px color-mix(in srgb, var(--amber) 60%, transparent);
     animation: scannen 2.6s ease-in-out infinite;
   }
 

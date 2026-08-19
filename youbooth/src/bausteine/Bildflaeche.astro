@@ -55,7 +55,7 @@ const { format = '16 / 9', quelle, motiv, hell = false, klasse = '' } = Astro.pr
   }
 
   .bildflaeche--hell {
-    background: rgba(244, 242, 238, 0.06);
+    background: color-mix(in srgb, var(--text-hell) 6%, transparent);
   }
 
   .bildflaeche img {

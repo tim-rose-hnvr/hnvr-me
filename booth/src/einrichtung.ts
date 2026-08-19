@@ -19,6 +19,7 @@ import { anzahl, loesche, sichere } from './speicher';
 import { ausgabeAdresse, druckerListe, huellenauskunft } from './huelle';
 import { drucke, qrFuer } from './ausgabe';
 import { verlangeAnmeldung } from './anmeldung';
+import { farbe, schrift } from './farben';
 
 type Zustand = 'offen' | 'laeuft' | 'gut' | 'schlecht';
 
@@ -235,14 +236,14 @@ function schrittDruck(e: ReturnType<typeof ladeEinstellungen>): HTMLElement {
 
     stift.fillStyle = '#ffffff';
     stift.fillRect(0, 0, 1200, 1800);
-    stift.strokeStyle = '#17171c';
+    stift.strokeStyle = farbe('--ink-soft');
     stift.lineWidth = 6;
     stift.strokeRect(40, 40, 1120, 1720);
-    stift.fillStyle = '#17171c';
-    stift.font = '800 74px Archivo, system-ui, sans-serif';
+    stift.fillStyle = farbe('--ink-soft');
+    stift.font = schrift(74, 800, 'text');
     stift.textAlign = 'center';
     stift.fillText('youbooth', 600, 820);
-    stift.font = "500 34px 'IBM Plex Mono', ui-monospace, monospace";
+    stift.font = schrift(34);
     stift.fillText('TESTDRUCK 10 × 15', 600, 900);
     stift.fillText(new Date().toLocaleString('de-DE'), 600, 960);
 

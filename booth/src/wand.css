@@ -101,7 +101,7 @@ body.wandseite {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(11, 11, 13, 0.88);
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.5s ease;

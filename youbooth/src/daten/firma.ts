@@ -18,15 +18,29 @@ export type Angabe = string | null;
 
 export const firma = {
   /* --- Wer betreibt die Seite (Impressum, § 5 DDG) --------------------- */
-  name: null as Angabe,
-  strasse: null as Angabe,
-  plzOrt: null as Angabe,
+  name: 'hnvr.me digital GbR' as Angabe,
+  strasse: 'Am Bahnhof 8' as Angabe,
+  plzOrt: '30926 Seelze' as Angabe,
   land: 'Deutschland',
 
   /** Wer vertritt das Unternehmen — bei GmbH die Geschäftsführung. */
-  vertretung: null as Angabe,
+  vertretung: 'Tim Rose' as Angabe,
 
-  telefon: '+49 234 555 018' as Angabe,
+  /**
+   * Alle Gesellschafter der GbR, mit Namen.
+   *
+   * Eine GbR hat keine eigene Rechtspersönlichkeit im Register, deshalb
+   * verlangt § 5 DDG die Nennung ALLER Gesellschafter — und eine GbR hat
+   * definitionsgemäß mindestens zwei. Bekannt ist bisher einer. Der zweite
+   * Name fehlt, und ihn zu erfinden wäre schlimmer als ihn offen zu lassen.
+   */
+  gesellschafter: null as Angabe,
+
+  /** Kein Platzhalter mehr: Hier stand eine ausgedachte Bochumer Nummer,
+      während die Firma in Seelze sitzt. Eine erfundene Telefonnummer im
+      Impressum ist schlechter als gar keine — § 5 DDG verlangt eine schnelle
+      elektronische Kontaktaufnahme, und die leistet die E-Mail. */
+  telefon: null as Angabe,
   email: 'hallo@youbooth.me' as Angabe,
 
   /* --- Register und Steuer --------------------------------------------- */
@@ -38,16 +52,38 @@ export const firma = {
   ustId: null as Angabe,
 
   /** Verantwortlich nach § 18 Abs. 2 MStV. Meist dieselbe Person. */
-  redaktion: null as Angabe,
+  redaktion: 'Tim Rose' as Angabe,
 
   /* --- Datenschutz ------------------------------------------------------ */
   /** Kontakt der oder des Datenschutzbeauftragten, oder null, wenn keine
       Bestellpflicht besteht — dann steht das ausdrücklich auf der Seite. */
   datenschutzbeauftragte: null as Angabe,
-  /** Wo die Cloud-Dienste laufen. */
-  serverstandort: 'Frankfurt am Main, Deutschland' as Angabe,
-  /** Zuständige Aufsichtsbehörde samt Anschrift. */
-  aufsichtsbehoerde: null as Angabe,
+  /**
+   * Wo die Cloud-Dienste laufen.
+   *
+   * Hier stand „Frankfurt am Main" — ein Satz in einer Datenschutzerklärung
+   * über einen Server, den es nicht gibt: Die Cloud-Galerie ist nicht
+   * gebaut, und der Dienst zwischen den Boxen auch nicht. Eine Zusage über
+   * einen Serverstandort ist eine Zusage; sie darf erst dahin, wenn der
+   * Vertrag mit dem Rechenzentrum steht.
+   */
+  serverstandort: null as Angabe,
+  /**
+   * Die Datenschutz-Aufsichtsbehörde — und das ist etwas anderes als die
+   * „Aufsichtsbehörde" im Impressum.
+   *
+   * Im Impressum (§ 5 DDG) meint der Begriff eine Behörde, die einen
+   * zulassungspflichtigen Beruf beaufsichtigt: Makler, Handwerk, Heilberufe.
+   * Für ein Softwareunternehmen gibt es die nicht, und dort steht deshalb
+   * auch keine.
+   *
+   * Hier steht die andere: die Stelle, bei der ein Betroffener sich über UNS
+   * beschweren kann (Art. 77 DSGVO). Die hat jeder Verantwortliche, sie
+   * richtet sich nach dem Sitz — Seelze liegt in Niedersachsen.
+   */
+  aufsichtsbehoerde:
+    'Die Landesbeauftragte für den Datenschutz Niedersachsen, ' +
+    'Prinzenstraße 5, 30159 Hannover' as Angabe,
 
   /* --- Fristen und Zusagen ---------------------------------------------- */
   fristProtokolle: '7 Tagen' as Angabe,
@@ -56,7 +92,10 @@ export const firma = {
   verfuegbarkeit: '99 %' as Angabe,
 
   /* --- AGB -------------------------------------------------------------- */
-  gerichtsstand: null as Angabe,
+  /** Der Sitz der Gesellschaft. Die AGB-Zeile beschränkt ihn ausdrücklich auf
+      Kaufleute — gegenüber Verbrauchern gilt ohnehin das Gesetz, und eine
+      Klausel, die das übergeht, ist unwirksam. */
+  gerichtsstand: 'Seelze' as Angabe,
 };
 
 /**
@@ -75,6 +114,14 @@ export const nachRechtsform = [
   'registernummer',
   'ustId',
   'datenschutzbeauftragte',
+  /* Eine Telefonnummer verlangt § 5 DDG nicht, solange eine schnelle
+     elektronische Kontaktaufnahme möglich ist — die E-Mail leistet das.
+     Steht keine da, entfällt die Zeile im Impressum. */
+  'telefon',
+  /* Der Serverstandort gehört erst genannt, wenn es einen gibt. Bis dahin
+     sagt die Datenschutzerklärung, dass alles auf der Box bleibt — was
+     stimmt. */
+  'serverstandort',
 ] as const;
 
 /** Was fehlt und fehlen darf. */

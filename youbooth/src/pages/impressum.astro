@@ -26,11 +26,23 @@ const abschnitte = [
   },
   {
     titel: 'Vertreten durch',
-    zeilen: [angabe('vertretung')],
+    /* Eine GbR wird von ihren Gesellschaftern vertreten, und § 5 DDG will
+       sie alle mit Namen. Steht die Liste da, hat sie Vorrang vor dem
+       einzelnen Vertretungsfeld — sonst nennte das Impressum einen und
+       verschwiege den anderen. */
+    zeilen: hat('gesellschafter')
+      ? [`Gesellschafter: ${angabe('gesellschafter')}`]
+      : [angabe('vertretung')],
   },
   {
     titel: 'Kontakt',
-    zeilen: [`Telefon: ${angabe('telefon')}`, `E-Mail: ${angabe('email')}`],
+    /* Eine Telefonnummer ist nach § 5 DDG nicht zwingend, solange eine
+       schnelle elektronische Kontaktaufnahme möglich ist. Fehlt sie, entfällt
+       die Zeile — statt „Telefon: ⟨fehlt⟩" zu drucken. */
+    zeilen: [
+      ...(hat('telefon') ? [`Telefon: ${angabe('telefon')}`] : []),
+      `E-Mail: ${angabe('email')}`,
+    ],
   },
   /* Register und Umsatzsteuer-Id gibt es nicht bei jeder Rechtsform. Fehlen
      sie in `firma.ts`, entfällt der Abschnitt ganz — ein Impressum mit der

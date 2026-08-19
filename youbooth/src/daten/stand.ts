@@ -72,11 +72,12 @@ export const MODULSTAND: Record<string, Eintrag> = {
     offen: 'Gesichtsfilter und Sticker kommen noch; aufnehmen und senden geht.',
   },
   'foto-finder': {
-    stand: 'geplant',
+    stand: 'laeuft',
     offen:
-      'Braucht ein Gesichtsmodell auf der Box — das ist biometrische Verarbeitung ' +
-      'nach Art. 9 DSGVO und eine Entscheidung, die der Betreiber trifft, nicht die Software. ' +
-      'Solange es fehlt, bekommt jeder Gast seine Bilder über den QR-Code an der Box.',
+      'Selfie, Vergleich und Trefferliste laufen — der Vergleich auf dem Gerät des Gastes, ' +
+      'sein Selfie verlässt es nicht. Was fehlt: Fehltreffer melden, und die Suche über ' +
+      'mehrere Boxen hinweg. Das Modell liegt auf der Box (7 MB), der Gast lädt es einmal ' +
+      'aus dem WLAN — ohne Internet.',
   },
   slideshow: {
     stand: 'laeuft',
@@ -106,10 +107,12 @@ export const MODULSTAND: Record<string, Eintrag> = {
       'sagt es. Windmaschine und Konfettikanone zu triggern fehlt noch.',
   },
   '360-booth': {
-    stand: 'geplant',
+    stand: 'arbeit',
     offen:
-      'Braucht Hardware, die wir noch nicht ausliefern: Drehteller, Ausleger und Motorsteuerung. ' +
-      'Die Software dahinter ist die Zeitlupe — die läuft.',
+      'Teller und Software sind getrennt: Die Aufnahme läuft schon — als Zeitlupe an der Box, ' +
+      'mit Rahmen, Logo und Ausgabe in Galerie und QR. Was fehlt, ist die Ansteuerung des ' +
+      'Drehtellers (Tempo, Richtung, Vor- und Rücklauf). Den Teller selbst liefern wir nicht; ' +
+      'er wird zugekauft, und welches Modell angebunden wird, entscheidet sich am ersten Gerät.',
   },
 };
 

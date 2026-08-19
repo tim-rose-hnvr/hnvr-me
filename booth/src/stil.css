@@ -296,6 +296,27 @@ p {
   transform: scale(0.98);
 }
 
+/* Ein Knopf als Verweis trägt keine Unterstreichung — er sieht aus wie ein
+   Knopf, also verhält er sich auch so. */
+a.knopf {
+  text-decoration: none;
+}
+
+/* Gesperrt heißt SICHTBAR gesperrt. Ein amberfarbener Knopf, der beim Tippen
+   nichts tut, ist schlimmer als ein grauer: Der Gast tippt ein zweites Mal
+   und sucht den Fehler bei sich. */
+.knopf:disabled,
+.knopf[disabled] {
+  cursor: not-allowed;
+  opacity: 0.42;
+  filter: saturate(0.4);
+}
+
+.knopf:disabled:active,
+.knopf[disabled]:active {
+  transform: none;
+}
+
 .knopf--amber {
   background: var(--amber);
   color: var(--amber-ink);

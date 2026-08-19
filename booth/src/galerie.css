@@ -330,3 +330,15 @@ body.galerieseite {
   display: block;
   background: var(--ink-soft);
 }
+
+/* Der Weg zum Foto-Finder steht in der Filterreihe, aber er ist kein Filter —
+   deshalb amber und abgesetzt am Ende. */
+.gchip--finder {
+  margin-left: auto;
+  background: var(--amber);
+  border-color: transparent;
+  color: var(--amber-ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}

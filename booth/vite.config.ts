@@ -42,6 +42,7 @@ export default defineConfig({
         film: 'film.html',
         stimme: 'stimme.html',
         zeitlupe: 'zeitlupe.html',
+        finder: 'finder.html',
       },
     },
   },

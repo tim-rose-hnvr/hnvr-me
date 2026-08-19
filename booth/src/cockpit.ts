@@ -73,6 +73,7 @@ async function zeichne(ziel: HTMLElement): Promise<void> {
     filmbereich(einstellungen, ziel),
     stimmbereich(einstellungen, ziel),
     zeitlupenbereich(einstellungen, ziel),
+    finderbereich(einstellungen, ziel),
     offenerBereich()
   );
 }
@@ -399,6 +400,179 @@ function zeitlupenbereich(
     knoepfe
   );
   return bereich;
+}
+
+/**
+ * Der Foto-Finder.
+ *
+ * Der Bereich mit der größten Verantwortung im ganzen Cockpit: Hier wird
+ * entschieden, ob die Box von den Gesichtern ihrer Gäste eine Merkmalsliste
+ * führt. Deshalb steht der Satz, was das bedeutet, DANEBEN und nicht in
+ * einem Hilfetext — und deshalb gibt es einen Knopf, der die Liste wieder
+ * wegwirft, ohne die Fotos anzurühren.
+ */
+function finderbereich(
+  einstellungen: ReturnType<typeof ladeEinstellungen>,
+  ziel: HTMLElement
+): HTMLElement {
+  const bereich = tag('section', 'cbereich');
+  const kopfzeile = tag('div', 'cbereich__kopf');
+  const titel = document.createElement('h2');
+  titel.textContent = 'Foto-Finder';
+  const stand = mono('wird geladen …');
+  stand.dataset.feld = 'finderstand';
+  kopfzeile.append(titel, stand);
+  bereich.append(kopfzeile);
+
+  const e = einstellungen.finder;
+
+  const schalter = tag('button', 'cknopf');
+  const punkt = tag('span', e.an ? 'cpunkt cpunkt--an' : 'cpunkt');
+  schalter.append(punkt, document.createTextNode(e.an ? 'Eingeschaltet' : 'Ausgeschaltet'));
+  schalter.addEventListener('click', async () => {
+    e.an = !e.an;
+    schalter.replaceChildren(document.createTextNode('Sichere …'));
+    await sichereEinstellungen(einstellungen);
+    await zeichne(ziel);
+  });
+
+  const formular = tag('div', 'cformular');
+  const textzeile = tag('label', 'czeile');
+  const text = document.createElement('input');
+  text.className = 'ceingabe ceingabe--lang';
+  text.value = e.einwilligungstext;
+  text.maxLength = 600;
+  text.placeholder = 'Eigener Satz zur Einwilligung, erscheint beim Gast';
+  text.addEventListener('input', () => (e.einwilligungstext = text.value));
+  textzeile.append(mono('Einwilligungstext'), text);
+  formular.append(textzeile);
+
+  const haken = tag('label', 'czeile');
+  const kasten = document.createElement('input');
+  kasten.type = 'checkbox';
+  kasten.className = 'ckasten';
+  kasten.checked = e.einwilligung;
+  kasten.addEventListener('change', () => (e.einwilligung = kasten.checked));
+  haken.append(mono('Einwilligung verlangen'), kasten);
+  formular.append(haken);
+
+  const sichern = tag('button', 'cknopf cknopf--amber');
+  sichern.textContent = 'Sichern';
+  sichern.addEventListener('click', async () => {
+    sichern.textContent = 'Sichere …';
+    const gut = await sichereEinstellungen(einstellungen);
+    sichern.textContent = gut ? 'Sichern' : 'Die Box hat nicht angenommen';
+    if (gut) await zeichne(ziel);
+  });
+
+  /* Nachtragen. Ein Betreiber schaltet den Finder oft erst mitten am Abend
+     ein — dann fehlen die ersten hundert Bilder, und ohne diesen Knopf
+     findet ein Gast genau die nicht, auf denen er tanzt.
+     Gerechnet wird HIER im Browser des Betreibers, nicht auf der Box: Der
+     Booth-Rechner druckt nebenbei. */
+  const nachtragen = tag('button', 'cknopf');
+  nachtragen.dataset.feld = 'nachtragen';
+  nachtragen.textContent = 'Fehlende Bilder nachtragen';
+  nachtragen.addEventListener('click', () => void trageNach(nachtragen, stand, ziel));
+
+  const verwerfen = tag('button', 'cknopf cknopf--klein');
+  verwerfen.dataset.feld = 'merkmale-verwerfen';
+  verwerfen.textContent = 'Merkmale verwerfen';
+  verwerfen.title = 'Löscht die Gesichtsmerkmale. Die Fotos bleiben.';
+  verwerfen.addEventListener('click', async () => {
+    verwerfen.textContent = 'Verwerfe …';
+    try {
+      const antwort = await fetch('/api/gesichter', { method: 'DELETE' });
+      const daten = (await antwort.json()) as { verworfen?: number };
+      verwerfen.textContent = antwort.ok
+        ? `${daten.verworfen ?? 0} Merkmale verworfen`
+        : 'Ging nicht';
+    } catch {
+      verwerfen.textContent = 'Die Box antwortet nicht';
+    }
+    window.setTimeout(() => void zeichne(ziel), 1800);
+  });
+
+  const knoepfe = tag('div', 'creihe');
+  knoepfe.append(schalter, sichern, nachtragen, verwerfen);
+
+  const aufsteller = tag('div', 'caufsteller');
+  aufsteller.dataset.feld = 'finder-aufsteller';
+
+  bereich.append(
+    hinweis(
+      'Gäste finden ihre Bilder mit einem Selfie. Das Selfie verlässt ihr Gerät nicht — ' +
+        'verglichen wird dort, die Box gibt nur die Merkmalsliste heraus. ' +
+        'Diese Liste IST ein biometrisches Datum nach Art. 9 DSGVO: Sie entsteht nur, ' +
+        'solange der Finder eingeschaltet ist, sie wird mit jedem gelöschten Foto kleiner, ' +
+        'und der Knopf unten wirft sie ganz weg. Die Einwilligung der abgebildeten Gäste ' +
+        'holt ihr am Booth ein, nicht hier.'
+    ),
+    aufsteller,
+    formular,
+    knoepfe
+  );
+
+  void ladeFinderstand(stand);
+  void zeigeAufsteller(aufsteller, '/finder');
+  return bereich;
+}
+
+async function ladeFinderstand(stand: HTMLElement): Promise<void> {
+  try {
+    const antwort = await fetch('/api/gesichter/offen');
+    if (!antwort.ok) throw new Error(String(antwort.status));
+    const daten = (await antwort.json()) as { offen: unknown[]; erfasst: number };
+    stand.textContent =
+      `${daten.erfasst} Aufnahmen erfasst · ${daten.offen.length} offen`;
+  } catch {
+    stand.textContent = 'Merkmalsliste nicht abrufbar';
+  }
+}
+
+/**
+ * Trägt fehlende Merkmale nach — Bild für Bild, im Browser des Betreibers.
+ *
+ * Sichtbar mitzählend: Vierhundert Bilder dauern Minuten, und ein Knopf, der
+ * minutenlang nichts sagt, wird ein zweites Mal gedrückt.
+ */
+async function trageNach(
+  knopf: HTMLElement,
+  stand: HTMLElement,
+  ziel: HTMLElement
+): Promise<void> {
+  knopf.setAttribute('disabled', 'true');
+  knopf.textContent = 'Suche fehlende …';
+  try {
+    const antwort = await fetch('/api/gesichter/offen');
+    if (!antwort.ok) throw new Error(String(antwort.status));
+    const daten = (await antwort.json()) as { offen: { name: string; url: string }[] };
+    if (daten.offen.length === 0) {
+      knopf.textContent = 'Nichts nachzutragen';
+      knopf.removeAttribute('disabled');
+      return;
+    }
+
+    const { merkeGesichter } = await import('./gesichter');
+    let fertig = 0;
+    for (const eintrag of daten.offen) {
+      const bild = await new Promise<HTMLImageElement | null>((f) => {
+        const b = new Image();
+        b.addEventListener('load', () => f(b), { once: true });
+        b.addEventListener('error', () => f(null), { once: true });
+        b.src = eintrag.url;
+      });
+      if (bild) await merkeGesichter(eintrag.name, bild);
+      fertig += 1;
+      knopf.textContent = `${fertig} von ${daten.offen.length} …`;
+    }
+    knopf.textContent = `${fertig} nachgetragen`;
+  } catch {
+    knopf.textContent = 'Das ging nicht';
+  }
+  knopf.removeAttribute('disabled');
+  await ladeFinderstand(stand);
+  window.setTimeout(() => void zeichne(ziel), 2000);
 }
 
 type Filmstand = {

@@ -3328,6 +3328,122 @@ app.get('/api/survey.csv', requireKey, (req, res) => {
      .send([head.map(esc).join(','), ...rows].join('\n'));
 });
 
+/* ---------- API: Foto-Finder (Merkmalsliste der Gesichter) ---------- */
+
+/* Die Box speichert je Aufnahme eine Liste von Merkmalen — 128 Zahlen je
+   Gesicht. Gerechnet werden sie NICHT hier: Ein Booth-Rechner druckt
+   nebenbei, und ein Modell ueber 400 Bilder laufen zu lassen legt ihn lahm.
+   Es rechnet der Browser, der das Bild ohnehin gerade in der Hand hat.
+
+   Was hier steht, ist bewusst duenn: eine Liste, die mit den Aufnahmen lebt
+   und mit ihnen stirbt. Ein zweiter Datenbestand, der die Loeschfrist
+   ueberlebt, waere bei biometrischen Merkmalen der schlimmste Fehler, den
+   man machen kann. */
+
+const GESICHTER_FILE = path.join(CONFIG_DIR, 'gesichter.json');
+
+function ladeGesichter() {
+  return loadJson(GESICHTER_FILE, {});
+}
+
+function sichereGesichter(karte) {
+  saveJson(GESICHTER_FILE, karte);
+}
+
+/**
+ * Raeumt Eintraege weg, zu denen es keine Datei mehr gibt.
+ *
+ * Der Weg, auf dem sonst ein Merkmal ein Foto ueberlebt: Ein Bild wird
+ * geloescht, der Eintrag bleibt. Deshalb wird bei jedem Lesen abgeglichen —
+ * das kostet ein `readdir` und erspart eine Datenschutzpanne.
+ */
+function gesichterAufraeumen() {
+  const karte = ladeGesichter();
+  const da = new Set(fs.readdirSync(PHOTOS_DIR));
+  let weg = 0;
+  for (const name of Object.keys(karte)) {
+    if (!da.has(name)) { delete karte[name]; weg++; }
+  }
+  if (weg > 0) sichereGesichter(karte);
+  return { karte, weg };
+}
+
+/* Merkmale zu einer Aufnahme ablegen. Kein Betreiberschluessel: Es ist
+   derselbe Weg, auf dem der Booth gerade die Aufnahme selbst abgelegt hat,
+   und ein Merkmal ohne zugehoerige Datei nimmt die Box nicht an. */
+app.post('/api/gesichter/:datei', (req, res) => {
+  if (!settings.faceFinder.enabled) {
+    return res.status(403).json({ error: 'Der Foto-Finder ist nicht eingeschaltet.' });
+  }
+  const name = path.basename(req.params.datei);
+  if (!fs.existsSync(path.join(PHOTOS_DIR, name))) {
+    return res.status(404).json({ error: 'Zu dieser Aufnahme gibt es keine Datei.' });
+  }
+
+  const roh = (req.body || {}).merkmale;
+  if (!Array.isArray(roh)) return res.status(400).json({ error: 'Keine Merkmale im Aufruf' });
+  /* Streng geprueft, weil eine Merkmalsliste sonst ein Ablageplatz fuer
+     beliebige Daten waere: hoechstens 20 Gesichter, je genau 128 Zahlen. */
+  const merkmale = roh.slice(0, 20)
+    .filter((m) => Array.isArray(m) && m.length === 128 && m.every((z) => Number.isFinite(z)))
+    .map((m) => m.map((z) => Math.round(z * 10000) / 10000));
+
+  const karte = ladeGesichter();
+  karte[name] = merkmale;
+  sichereGesichter(karte);
+  res.json({ ok: true, gesichter: merkmale.length });
+});
+
+/**
+ * Die Merkmalsliste, wie der Gast sie bekommt.
+ *
+ * Sie geht ANS GERAET, nicht in einen Vergleich hier: Das Selfie des Gastes
+ * soll die Box nie sehen. Der Preis ist eine Uebertragung von rund einem
+ * halben Kilobyte je Aufnahme — bei 400 Bildern zweihundert Kilobyte, ueber
+ * das eigene WLAN kein Thema.
+ */
+app.get('/api/gesichter', (req, res) => {
+  if (!settings.faceFinder.enabled) {
+    return res.status(403).json({ error: 'Der Foto-Finder ist nicht eingeschaltet.' });
+  }
+  const { karte } = gesichterAufraeumen();
+  const liste = Object.entries(karte)
+    .filter(([, m]) => Array.isArray(m) && m.length > 0)
+    .map(([datei, merkmale]) => ({ datei, merkmale }));
+  res.json({
+    ok: true,
+    liste,
+    /* Wie viele Aufnahmen noch keinen Eintrag haben. Der Gast sieht daran,
+       ob die Suche vollstaendig sein kann — „0 Treffer" heisst etwas anderes,
+       wenn die Haelfte der Bilder noch gar nicht angesehen wurde. */
+    offen: fs.readdirSync(PHOTOS_DIR).filter((f) =>
+      /\.(jpe?g|png|webp)$/i.test(f) && !karte[f]).length,
+    hinweis: settings.faceFinder.showHint,
+    einwilligung: settings.faceFinder.consent,
+    einwilligungstext: settings.faceFinder.consentText,
+  });
+});
+
+/* Welche Aufnahmen noch kein Merkmal haben — fuer das Nachtragen. Ein
+   Betreiber schaltet den Finder oft erst mitten am Abend ein, und dann
+   fehlen die ersten hundert Bilder. */
+app.get('/api/gesichter/offen', requireKey, (req, res) => {
+  const { karte } = gesichterAufraeumen();
+  const offen = fs.readdirSync(PHOTOS_DIR)
+    .filter((f) => /\.(jpe?g|png|webp)$/i.test(f) && !karte[f])
+    .map((f) => ({ name: f, url: `/photos/${encodeURIComponent(f)}` }));
+  res.json({ ok: true, offen, erfasst: Object.keys(karte).length });
+});
+
+/* Die ganze Liste verwerfen. Der Knopf, den ein Betreiber druecken koennen
+   MUSS: Wer die Einwilligung zurueckzieht oder den Finder abschaltet, will
+   die Merkmale weg haben, nicht die Fotos. */
+app.delete('/api/gesichter', requireKey, (req, res) => {
+  const anzahl = Object.keys(ladeGesichter()).length;
+  sichereGesichter({});
+  res.json({ ok: true, verworfen: anzahl });
+});
+
 /* ---------- API: Einwegkamera (Film je Gast) ---------- */
 
 /* Der Kern des Moduls ist eine Verneinung: Der Gast sieht seine Bilder NICHT.
@@ -4150,6 +4266,13 @@ app.get('/fern', (req, res) => {
   res.redirect('/fern.html');
 });
 
+/* Kurze Adresse für den QR-Code neben der Galerie: /finder */
+app.get('/finder', (req, res) => {
+  const gebaut = path.join(OBERFLAECHE, 'finder.html');
+  if (fs.existsSync(gebaut)) return res.sendFile(gebaut);
+  res.redirect('/finder.html');
+});
+
 /* Kurze Adresse für den QR-Code am Mikrofonplatz: /stimme */
 app.get('/stimme', (req, res) => {
   const gebaut = path.join(OBERFLAECHE, 'stimme.html');
@@ -4693,7 +4816,18 @@ function makeZip(entries) {
   return Buffer.concat([...parts, cd, eocd]);
 }
 app.get('/api/photos.zip', (req, res) => {
-  const files = fs.readdirSync(PHOTOS_DIR).filter(f => /\.(jpe?g|png|gif|webp|webm|mp4)$/i.test(f));
+  /* `?nur=a.jpg,b.jpg` gibt genau diese Aufnahmen aus — der Weg, auf dem ein
+     Gast seine Treffer aus dem Foto-Finder in einem Zug mitnimmt, statt
+     siebzehnmal auf „Herunterladen" zu tippen. Die Namen werden auf den
+     Dateinamen zurechtgestutzt und muessen existieren; damit ist die Liste
+     kein Weg aus dem Ordner heraus. */
+  const gewuenscht = String(req.query.nur || '')
+    .split(',')
+    .map((n) => path.basename(n.trim()))
+    .filter(Boolean);
+  const files = fs.readdirSync(PHOTOS_DIR)
+    .filter(f => /\.(jpe?g|png|gif|webp|webm|mp4)$/i.test(f))
+    .filter(f => gewuenscht.length === 0 || gewuenscht.includes(f));
   if (!files.length) return res.status(404).json({ error: 'Keine Fotos vorhanden' });
   const entries = files.map(f => ({ name: f, data: fs.readFileSync(path.join(PHOTOS_DIR, f)) }));
   res.set('Content-Type', 'application/zip')
@@ -4810,6 +4944,14 @@ app.delete('/api/photos/:name', requireKey, (req, res) => {
   const file = path.join(PHOTOS_DIR, name);
   if (!fs.existsSync(file)) return res.status(404).json({ error: 'Nicht gefunden' });
   fs.unlinkSync(file);
+  /* Das Gesichtsmerkmal geht mit dem Bild. Bliebe es liegen, ueberlebte ein
+     biometrisches Merkmal die Aufnahme, aus der es stammt — und damit die
+     Loeschfrist, die dem Gast zugesagt wurde. */
+  const gesichter = ladeGesichter();
+  if (gesichter[name]) {
+    delete gesichter[name];
+    sichereGesichter(gesichter);
+  }
   broadcast({ type: 'remove', name });
   res.json({ ok: true });
 });

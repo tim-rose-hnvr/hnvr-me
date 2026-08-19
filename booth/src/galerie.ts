@@ -160,6 +160,15 @@ async function starte(ziel: HTMLElement): Promise<void> {
     filterreihe.append(knopf);
   });
 
+  /* Der Weg zum Foto-Finder gehört hierher und nirgendwo sonst: Wer vor
+     vierhundert Kacheln steht, ist genau der Gast, der ihn braucht. */
+  if (einstellungen.finder.an) {
+    const finder = tag('a', 'gchip gchip--finder') as HTMLAnchorElement;
+    finder.href = './finder.html';
+    finder.textContent = 'Meine Bilder finden';
+    filterreihe.append(finder);
+  }
+
   ziel.replaceChildren(kopf, filterreihe, raster, leer);
   zeichne();
 }

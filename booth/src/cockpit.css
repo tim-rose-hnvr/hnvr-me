@@ -330,3 +330,13 @@ body.cockpitseite {
 .cpunkt--an {
   background: var(--ok);
 }
+
+/* Ein Haken in einer Formularzeile. Groß genug für einen Finger, auch wenn
+   das Cockpit für die Maus gebaut ist — der Betreiber steht oft mit dem
+   Tablet neben der Box. */
+.ckasten {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--amber);
+  align-self: start;
+}

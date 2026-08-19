@@ -362,7 +362,7 @@ async function starte(ziel: HTMLElement): Promise<void> {
  * („kommt meine Stimme an?") und zugleich das, was das fertige Video
  * ansehnlich macht. Zwei Aufgaben, eine Zeichnung.
  */
-function zeichneTafel(
+export function zeichneTafel(
   tafel: HTMLCanvasElement,
   werte: Uint8Array | null,
   name: string,

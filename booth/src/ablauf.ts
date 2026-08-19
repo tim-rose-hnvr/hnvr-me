@@ -830,6 +830,19 @@ export class Booth {
       const abgelegt = await sichere(alsBilddaten(this.ergebnis), this.art.id, altesBlatt);
       this.ergebnisKennung = abgelegt.id;
       if (!ersatz) void this.zaehleAuf();
+      /* Gesichter für den Foto-Finder — hier und nicht später: Das Blatt liegt
+         gerade im Speicher, und ein Nachtragen über die halbe Ablage kostet
+         den Betreiber am Abend Minuten.
+         Nur wenn der Finder eingeschaltet ist: Ohne das rechnete die Box
+         biometrische Merkmale von Gästen, die niemand danach gefragt hat.
+         Und nur nebenher — der Gast wartet nicht darauf. */
+      if (this.einstellungen.finder.an && this.ergebnis) {
+        const blatt = this.ergebnis;
+        const name = abgelegt.id;
+        void import('./gesichter')
+          .then((g) => g.merkeGesichter(name, blatt))
+          .catch(() => undefined);
+      }
       // Das Bewegtbild kommt danach: Es dauert länger, und der Gast soll sein
       // Bild sehen, ohne darauf zu warten.
       if (this.art.bewegt) void this.baueBewegtbild(quellen.slice(), altesBewegtbild);
@@ -1327,6 +1340,7 @@ export class Booth {
         ['Einwegkamera', './film.html'],
         ['Gesprochene Grüße', './stimme.html'],
         ['Zeitlupe', './zeitlupe.html'],
+        ['Foto-Finder', './finder.html'],
         ['Einrichtung', './einrichtung.html'],
       ] as const
     ).forEach(([name, ziel]) => {

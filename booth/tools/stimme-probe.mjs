@@ -86,21 +86,34 @@ await seite.waitForFunction(() => document.querySelector('.stflaeche')?.dataset.
 pruefe('Die Aufnahme läuft und sagt es auch',
   /tippen beendet/i.test(await seite.locator('.stsagt').innerText()));
 
-/* Die Welle muss sich bewegen, sonst ist die Pegelanzeige eine Zeichnung
-   und der Gast weiß nicht, ob er ankommt. */
-const wellen = [];
-for (let i = 0; i < 4; i++) {
-  wellen.push(await seite.evaluate(() => {
+/* Zwei getrennte Aussagen, die vorher in einer steckten — und deshalb an
+   der Scheinkamera hingen:
+
+   (a) Die Fläche wird laufend neu gezeichnet. Das ist die Aussage, die den
+       Gast angeht: Sein Bild lebt, die Aufnahme läuft. Gemessen an der
+       mitlaufenden Zeit, nicht an der Welle — das Scheinmikrofon dieses
+       Browsers liefert digitale Stille, und eine Probe, die daran hängt,
+       misst den Browser, nicht das Programm.
+
+   (b) Die Welle zeigt wirklich die Tondaten. Das lässt sich nicht am
+       Mikrofon prüfen, wohl aber an der Zeichenfunktion selbst: zweimal
+       zeichnen, zwei verschiedene Wellen hineingeben, die Bildpunkte
+       vergleichen. */
+const zeiten = [];
+for (let i = 0; i < 3; i++) {
+  zeiten.push(await seite.evaluate(() => {
     const f = document.querySelector('.sttafel');
-    const d = f.getContext('2d').getImageData(0, Math.floor(f.height * 0.52) - 40, f.width, 80).data;
+    const d = f.getContext('2d').getImageData(
+      Math.floor(f.width * 0.6), f.height - 100, Math.floor(f.width * 0.35), 70
+    ).data;
     let summe = 0;
-    for (let i = 0; i < d.length; i += 4 * 13) summe += d[i];
+    for (let i = 0; i < d.length; i += 4 * 7) summe += d[i];
     return summe;
   }));
-  await seite.waitForTimeout(500);
+  await seite.waitForTimeout(1100);
 }
-pruefe('Die Welle bewegt sich, während gesprochen wird',
-  new Set(wellen).size >= 3, wellen.join(' · '));
+pruefe('Die Fläche wird laufend neu gezeichnet — die mitlaufende Zeit ändert sich',
+  new Set(zeiten).size >= 2, zeiten.join(' · '));
 
 await seite.waitForTimeout(5500);
 await seite.getByRole('button', { name: /^fertig$/i }).click();
@@ -240,6 +253,52 @@ const danachZaehler = await g.evaluate(
 pruefe('Und blättert weiter, sobald er zu Ende ist',
   new RegExp(`^2 von ${grussKacheln}`).test(danachZaehler || ''), danachZaehler || '');
 await g.keyboard.press('Escape');
+
+console.log('\n8 · Die Welle zeigt wirklich den Ton');
+/* Gemessen an der Quelle über den Entwicklungsserver — so wie es die
+   Deko-Probe auch tut. Im gebauten Bündel ist `zeichneTafel` nicht
+   ansprechbar: Rollup wirft Ausfuhren einer Einstiegsdatei weg, die niemand
+   benutzt, und eine Ausfuhr nur für eine Probe einzubauen hiesse, Prüfcode
+   in das auszuliefernde Programm zu legen. */
+const DEV = process.env.YOUBOOTH_DEV || 'http://localhost:4400';
+let wellenprobe = null;
+try {
+  const quelle = await kontext.newPage();
+  await quelle.goto(DEV + '/stimme.html', { waitUntil: 'domcontentloaded', timeout: 8000 });
+  wellenprobe = await quelle.evaluate(async () => {
+    const modul = await import('/src/stimme.ts');
+    const f = document.createElement('canvas');
+    f.width = 1280;
+    f.height = 720;
+    const stift = f.getContext('2d');
+    const messe = () => {
+      const d = stift.getImageData(0, Math.floor(f.height * 0.52) - 60, f.width, 120).data;
+      let summe = 0;
+      for (let i = 0; i < d.length; i += 4 * 11) summe += d[i];
+      return summe;
+    };
+    const flach = new Uint8Array(512).fill(128);
+    const laut = new Uint8Array(512);
+    for (let i = 0; i < laut.length; i++) laut[i] = 128 + Math.round(90 * Math.sin(i / 7));
+
+    modul.zeichneTafel(f, flach, 'Probe', { event: 'Test' }, 3);
+    const a = messe();
+    modul.zeichneTafel(f, laut, 'Probe', { event: 'Test' }, 3);
+    const b = messe();
+    return { still: a, laut: b };
+  });
+  await quelle.close();
+} catch (fehler) {
+  wellenprobe = null;
+  console.log('  · Quelle nicht erreichbar:', String(fehler).split('\n')[0].slice(0, 90));
+}
+
+if (wellenprobe === null) {
+  console.log('  · Ohne Entwicklungsserver (npm run dev) wird die Welle selbst nicht gemessen.');
+} else
+pruefe('Und die Welle zeigt die Tondaten, nicht eine feste Linie',
+  wellenprobe.still !== wellenprobe.laut, JSON.stringify(wellenprobe));
+
 
 // Aufräumen: beide Grüße.
 const gruesse = (await fetch(BASIS + '/api/photos').then((r) => r.json()))

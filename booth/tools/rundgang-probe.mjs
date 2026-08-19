@@ -54,6 +54,7 @@ const SEITEN = [
   { pfad: '/film', name: 'Einwegkamera', wurzel: '#film', kamera: true },
   { pfad: '/stimme', name: 'Gesprochene Grüße', wurzel: '#stimme', mikrofon: true },
   { pfad: '/zeitlupe.html', name: 'Zeitlupe', wurzel: '#zeitlupe', kamera: true },
+  { pfad: '/finder', name: 'Foto-Finder', wurzel: '#finder', kamera: true },
   { pfad: '/fern.html', name: 'Fernauslöser', wurzel: '#fern' },
   { pfad: '/anmelden.html', name: 'Anmeldung', wurzel: '#anmelden' },
 ];
@@ -73,6 +74,7 @@ const alleModuleAn = () =>
       einweg: { enabled: true },
       stimme: { enabled: true },
       zeitlupe: { enabled: true },
+      faceFinder: { enabled: true },
     }),
   });
 await alleModuleAn();
@@ -243,6 +245,7 @@ await sitzung.anDieBox('/api/settings', {
     einweg: { enabled: vorher.einweg.enabled },
     stimme: { enabled: vorher.stimme.enabled },
     zeitlupe: { enabled: vorher.zeitlupe.enabled },
+    faceFinder: { enabled: vorher.faceFinder.enabled },
   }),
 });
 

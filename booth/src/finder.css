@@ -1,0 +1,236 @@
+/* Der Foto-Finder auf dem Handy des Gastes. Hochkant, Vollbild, Daumen unten
+   — wie die Web-Kamera nebenan, aber mit einer Erklärung, die oben steht und
+   nicht im Kleingedruckten. */
+
+body.finderseite {
+  margin: 0;
+  background: var(--ink);
+  color: var(--hell);
+  font-family: var(--schrift);
+  min-height: 100%;
+}
+
+.fdflaeche {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top) 18px env(safe-area-inset-bottom);
+  gap: 4px;
+}
+
+/* --- Sucher und Ruhefläche ---------------------------------------------- */
+
+.fdbuehne {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  max-height: 46dvh;
+  flex: none;
+  margin-top: 14px;
+  border-radius: var(--r-karte-gross);
+  overflow: hidden;
+  background: var(--ink-soft);
+  border: 1px solid var(--linie);
+}
+
+.fdlive {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+  /* Gespiegelt wie ein Spiegel — sonst greift jeder in die falsche Richtung.
+     Das Standbild wird beim Auslösen zurückgedreht. */
+  transform: scaleX(-1);
+}
+
+.fdflaeche[data-lage='live'] .fdlive,
+.fdflaeche[data-lage='sucht'] .fdlive { display: block; }
+
+.fdruhe {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 8%;
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--amber) 12%, transparent), transparent 60%),
+    var(--ink-soft);
+}
+
+.fdflaeche[data-lage='live'] .fdruhe,
+.fdflaeche[data-lage='sucht'] .fdruhe { display: none; }
+
+.fdruhe__marke {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.fdruhe__text {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--hell-still);
+  max-width: 26ch;
+}
+
+/* --- Die Erklärung ------------------------------------------------------ */
+
+.fdsagt {
+  margin: 0;
+  padding: 16px 2px 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--hell-leise);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+/* Drei Sätze mit einem Haken davor — jeder eine eigene Zeile, weil sie
+   einzeln gelesen werden sollen und nicht als Absatz überflogen. */
+.fdpunkt {
+  position: relative;
+  padding-left: 22px;
+}
+
+.fdpunkt::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--ok);
+  font-weight: 700;
+}
+
+/* Was der Betreiber selbst dazugeschrieben hat, steht abgesetzt: Es ist
+   seine Aussage, nicht unsere. */
+.fdpunkt--betreiber {
+  padding-left: 14px;
+  border-left: 2px solid var(--linie);
+  color: var(--hell-still);
+  font-size: 14px;
+}
+
+.fdpunkt--betreiber::before { content: none; }
+
+.fdhaken {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-top: 4px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.fdhaken input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin-top: 1px;
+  accent-color: var(--amber);
+}
+
+/* --- Bedienung ---------------------------------------------------------- */
+
+.fdleiste {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 0 18px;
+  flex-wrap: wrap;
+}
+
+.fdknopf {
+  min-height: var(--ziel);
+  padding: 0 18px;
+  font-size: 15px;
+}
+
+.fdausloeser {
+  width: 78px;
+  height: 78px;
+  border-radius: var(--r-kreis);
+  border: 0;
+  background: var(--hell);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex: none;
+  transition: transform var(--t-transform);
+}
+
+.fdausloeser:active { transform: scale(0.93); }
+
+.fdausloeser:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.fdring {
+  width: 62px;
+  height: 62px;
+  border-radius: var(--r-kreis);
+  border: 3px solid var(--ink);
+}
+
+/* --- Die Treffer -------------------------------------------------------- */
+
+.fdraster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  padding-bottom: 28px;
+}
+
+.fdkachel {
+  position: relative;
+  margin: 0;
+  border-radius: var(--r-karte);
+  overflow: hidden;
+  background: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 10px;
+}
+
+.fdkachel img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+/* Wie sicher der Treffer ist — in Worten. „0,42" sagt einem Gast nichts. */
+.fdguete {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: var(--r-kreis);
+  background: color-mix(in srgb, var(--ink) 72%, transparent);
+  color: var(--hell);
+}
+
+.fdladen {
+  margin: 0 10px;
+  min-height: 40px;
+  font-size: 13px;
+}

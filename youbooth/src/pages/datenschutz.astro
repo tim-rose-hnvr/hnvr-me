@@ -15,7 +15,9 @@ const abschnitte = [
   {
     titel: 'Verantwortlicher',
     zeilen: [
-      `${angabe('name')}, ${angabe('strasse')}, ${angabe('plzOrt')}, ${angabe('email')}, ${angabe('telefon')}.`,
+      [angabe('name'), angabe('strasse'), angabe('plzOrt'), angabe('email')]
+        .concat(hat('telefon') ? [angabe('telefon')] : [])
+        .join(', ') + '.',
       hat('datenschutzbeauftragte')
         ? `Datenschutzbeauftragte Stelle: ${angabe('datenschutzbeauftragte')}.`
         : 'Eine oder ein Datenschutzbeauftragter ist nicht bestellt; die gesetzlichen Schwellen sind nicht erreicht.',
@@ -54,7 +56,11 @@ const abschnitte = [
   {
     titel: 'Auftragsverarbeitung',
     zeilen: [
-      `Für Betreiber, die die Cloud-Funktionen nutzen, schließen wir einen Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO. Serverstandort ist ${angabe('serverstandort')}.`,
+      /* Solange kein Rechenzentrum feststeht, wird auch keines genannt. Die
+         Box selbst braucht ohnehin keins: Sie speichert auf dem Gerät. */
+      hat('serverstandort')
+        ? `Für Betreiber, die die Cloud-Funktionen nutzen, schließen wir einen Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO. Serverstandort ist ${angabe('serverstandort')}.`
+        : 'Die Box speichert alle Aufnahmen auf dem Gerät im Veranstaltungsraum, nicht bei uns. Cloud-Funktionen sind noch nicht in Betrieb; sobald sie es sind, schließen wir mit Betreibern einen Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO und nennen hier den Serverstandort.',
       'Der Betrieb der Box selbst funktioniert ohne Cloud; ohne Netz verlassen keine Daten das Gerät.',
     ],
   },

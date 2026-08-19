@@ -98,6 +98,11 @@ export type Einstellungen = {
   greenscreen: { an: boolean; farbe: string; toleranz: number; hintergrund: string | null };
   /** Vollbild-Diashow für Beamer und Fernseher. */
   diashow: { dauer: number; bewegung: boolean; jedesTafel: number };
+  /**
+   * Foto-Finder. `an` schaltet die Merkmalsliste ein — solange sie aus ist,
+   * rechnet der Booth nichts und die Box legt nichts ab.
+   */
+  finder: { an: boolean; hinweis: boolean; einwilligung: boolean; einwilligungstext: string };
   /** Slow-Motion: Zeitlupe an der Box. */
   zeitlupe: { an: boolean; sekunden: number };
   /** Audio-Gästebuch: gesprochene Grüße als Video mit Standbild. */
@@ -169,6 +174,7 @@ const STANDARD: Einstellungen = {
   greenscreen: { an: false, farbe: '#00c800', toleranz: 42, hintergrund: null },
   diashow: { dauer: 7, bewegung: true, jedesTafel: 5 },
   tafeln: [],
+  finder: { an: false, hinweis: true, einwilligung: true, einwilligungstext: '' },
   zeitlupe: { an: false, sekunden: 4 },
   stimme: { an: false, sekunden: 30 },
   einweg: {
@@ -234,6 +240,12 @@ export function ausBoxstand(roh: Boxstand): Einstellungen {
     logo: feld<string | null>(roh, 'betreiber.logo', null),
     firma: feld(roh, 'betreiber.firma', ''),
     effekte: erlaubteEffekte(feld<unknown>(roh, 'effekte.erlaubt', null)),
+    finder: {
+      an: feld(roh, 'faceFinder.enabled', STANDARD.finder.an),
+      hinweis: feld(roh, 'faceFinder.showHint', STANDARD.finder.hinweis),
+      einwilligung: feld(roh, 'faceFinder.consent', STANDARD.finder.einwilligung),
+      einwilligungstext: feld(roh, 'faceFinder.consentText', ''),
+    },
     zeitlupe: {
       an: feld(roh, 'zeitlupe.enabled', STANDARD.zeitlupe.an),
       sekunden: feld(roh, 'zeitlupe.sekunden', STANDARD.zeitlupe.sekunden),
@@ -339,6 +351,12 @@ export function alsBoxstand(e: Einstellungen): Boxstand {
        Sichern am Sonntagmorgen die eben von Hand ausgelöste Entwicklung. */
     stimme: { enabled: e.stimme.an, sekunden: e.stimme.sekunden },
     zeitlupe: { enabled: e.zeitlupe.an, sekunden: e.zeitlupe.sekunden },
+    faceFinder: {
+      enabled: e.finder.an,
+      showHint: e.finder.hinweis,
+      consent: e.finder.einwilligung,
+      consentText: e.finder.einwilligungstext,
+    },
     einweg: {
       enabled: e.einweg.an,
       bilder: e.einweg.bilder,

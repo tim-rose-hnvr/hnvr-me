@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="5 18 1030 296" width="1030" height="296">
+  <g fill="#FA6A28" transform="translate(116,164)">
+    <rect x="-16" y="-126" width="32" height="256" rx="2"/>
+    <rect x="-80" y="-16" width="96" height="32" rx="2"/>
+    <g transform="rotate(-135)"><rect x="-16" y="-16" width="129" height="32" rx="2"/></g>
+    <g transform="rotate(135)"><rect x="-16" y="-16" width="129" height="32" rx="2"/></g>
+  </g>
+  <!-- Ersatzschrift. Hier gehoert die Hausschrift hin, siehe LIESMICH.md. -->
+  <text x="238" y="238" font-family="Liberation Sans, DejaVu Sans" font-weight="700" font-size="196" letter-spacing="-5">
+    <tspan fill="#FFFFFF">hnvr</tspan><tspan fill="#FA6A28">.me</tspan>
+  </text>
+</svg>

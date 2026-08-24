@@ -1,0 +1,5 @@
+# Entsteht aus plates.sh / ton.sh / den Higgsfield-Auftraegen.
+# Nicht ins Repo — regenerierbar, und die Shots sind je ~17 MB.
+plate-*.png
+ton.wav
+shot*.mp4

@@ -1,0 +1,14 @@
+<html><head><meta charset="utf-8"><style>
+/* Bereichs-Einblendung als transparentes PNG. Die Leinwand ist bewusst
+   1200x300 gross: bei sehr niedrigen Fenstern klemmt Chromium die Hoehe
+   und rendert den Inhalt gestaucht in die obersten Pixel. */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1200px;height:300px;background:transparent}
+.zeile{position:absolute;left:0;top:118px;height:64px;display:flex;align-items:center;gap:26px}
+.regel{width:5px;height:64px;background:#FA6A28;border-radius:2px;box-shadow:0 0 22px rgba(250,106,40,.75)}
+.text{font-family:"Liberation Sans","DejaVu Sans";font-weight:700;font-size:41px;letter-spacing:5.4px;
+  color:#ffffff;text-transform:uppercase;white-space:nowrap;
+  text-shadow:0 2px 26px rgba(0,0,0,.95),0 0 60px rgba(0,0,0,.85)}
+</style></head><body><div class="zeile"><div class="regel"></div><div class="text" id="t"></div></div>
+<script>document.getElementById('t').textContent=decodeURIComponent(new URLSearchParams(location.search).get('s')||'');</script>
+</body></html>

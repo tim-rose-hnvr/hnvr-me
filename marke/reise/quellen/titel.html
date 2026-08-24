@@ -1,0 +1,126 @@
+<html><head><meta charset="utf-8"><style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#050506}
+#buehne{position:fixed;inset:0;background:radial-gradient(ellipse 90% 70% at 50% 50%,#17161a 0%,#0a0a0c 62%,#050506 100%)}
+#schein{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:1500px;height:700px;
+  background:radial-gradient(ellipse at center,rgba(250,106,40,.13),transparent 66%)}
+.wm{position:fixed;left:0;width:1920px;text-align:center;white-space:pre;
+  font-family:"Liberation Sans","DejaVu Sans";font-weight:700;line-height:1;letter-spacing:0}
+.wm span{display:inline-block;overflow:visible;will-change:width,opacity,transform}
+.sg{position:fixed;transform-origin:50% 50%}
+/* Der Sweep liegt auf einer weissgefilterten Kopie des Logos und wird von
+   einem wandernden Verlauf maskiert. So bleibt der Hintergrund unberuehrt —
+   ein Overlay ueber die ganze Flaeche zeigt sonst seine Kanten. */
+#glanz{position:fixed;inset:0;mix-blend-mode:screen;pointer-events:none;opacity:0;
+  -webkit-mask-image:linear-gradient(104deg,rgba(0,0,0,0) 40%,rgba(0,0,0,1) 50%,rgba(0,0,0,0) 60%);
+  mask-image:linear-gradient(104deg,rgba(0,0,0,0) 40%,rgba(0,0,0,1) 50%,rgba(0,0,0,0) 60%);
+  -webkit-mask-size:260% 100%;mask-size:260% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+#glanz .wm,#glanz .sg{filter:brightness(0) invert(1) blur(0.4px)!important}
+</style></head><body>
+<div id="buehne"></div><div id="schein"></div>
+<div id="wort" class="wm"></div>
+<img id="signet" class="sg" src="signet.svg">
+<div id="glanz"></div>
+<script>
+// Masse aus logo-lockup.svg, damit das Schlussbild exakt dem Logo entspricht.
+const FB=218.83, LB=-5.58, BASE=620.4, ASC=0.905;
+const SIG={l:394.3,t:383.7,w:145.9,h:311.8};
+const WEISS=[255,255,255], ORANGE=[250,106,40];
+
+// Quelle "Hannover Me" -> Ziel "hnvr.me".
+// behalten: H->h, n, v, r, M->m, e ; faellt weg: a, n, o, e und das Leerzeichen
+const G=[
+ {von:'H',nach:'h',bleibt:true ,orange:false},
+ {von:'a',nach:null,bleibt:false,orange:false},
+ {von:'n',nach:'n',bleibt:true ,orange:false},
+ {von:'n',nach:null,bleibt:false,orange:false},
+ {von:'o',nach:null,bleibt:false,orange:false},
+ {von:'v',nach:'v',bleibt:true ,orange:false},
+ {von:'e',nach:null,bleibt:false,orange:false},
+ {von:'r',nach:'r',bleibt:true ,orange:false},
+ {von:' ',nach:null,bleibt:false,orange:false},
+ {von:'' ,nach:'.',bleibt:true ,orange:true , neu:true},
+ {von:'M',nach:'m',bleibt:true ,orange:true },
+ {von:'e',nach:'e',bleibt:true ,orange:true }
+];
+
+const wort=document.getElementById('wort');
+wort.style.fontSize=FB+'px';
+wort.style.top=(BASE-ASC*FB)+'px';
+const mess=document.createElement('canvas').getContext('2d');
+mess.font='700 '+FB+'px "Liberation Sans", "DejaVu Sans"';
+const spans=G.map(g=>{const s=document.createElement('span');wort.appendChild(s);
+  g.bVon=g.von?mess.measureText(g.von).width:0;
+  g.bNach=g.nach?mess.measureText(g.nach).width:0;
+  return s;});
+
+function misch(a,b,p){return a+(b-a)*p}
+function farbe(p){const c=WEISS.map((v,i)=>Math.round(misch(v,ORANGE[i],p)));return 'rgb('+c.join(',')+')'}
+function lerpKlemm(x,a,b){return Math.max(0,Math.min(1,(x-a)/(b-a)))}
+function weich(p){return p*p*(3-2*p)}
+
+const sg=document.getElementById('signet');
+function bild(t){
+  // --- Wortmarke ---------------------------------------------------
+  const pEin  = weich(lerpKlemm(t,0.6,2.6));          // Einblendung
+  const pUm   = weich(lerpKlemm(t,3.6,5.8));          // Umbau
+  const pSchub= weich(lerpKlemm(t,7.0,9.0));          // Rutsch nach rechts
+  const ls    = misch(0,LB,pUm);
+  G.forEach((g,i)=>{
+    const s=spans[i];
+    let zeichen, breite, deck=1, dy=0, unschaerf=0, fp=0;
+    if(g.neu){
+      zeichen=pUm>0.35?'.':'';
+      breite=misch(0,g.bNach+ls,lerpKlemm(pUm,0.35,1));
+      deck=lerpKlemm(pUm,0.35,0.8); fp=1;
+    } else if(g.bleibt){
+      zeichen=(g.nach&&g.von!==g.nach&&pUm>0.5)?g.nach:g.von;
+      breite=misch(g.bVon,g.bNach+ls,pUm);
+      fp=g.orange?pUm:0;
+    } else {
+      zeichen=g.von;
+      breite=misch(g.bVon,0,pUm);
+      deck=1-weich(lerpKlemm(pUm,0,0.65));
+      dy=60*weich(lerpKlemm(pUm,0,1));
+      unschaerf=14*weich(lerpKlemm(pUm,0,0.8));
+    }
+    s.textContent=zeichen;
+    s.style.width=Math.max(0,breite)+'px';
+    s.style.opacity=(deck*(g.neu?1:pEin)).toFixed(3);
+    s.style.transform='translateY('+dy.toFixed(2)+'px)';
+    s.style.filter=unschaerf>0.2?'blur('+unschaerf.toFixed(2)+'px)':'none';
+    s.style.color=farbe(fp);
+  });
+  const einZoom=misch(1.055,1,pEin), einBlur=misch(16,0,pEin);
+  wort.style.transform='translateX('+(118.9*pSchub).toFixed(2)+'px) scale('+einZoom.toFixed(4)+')';
+  wort.style.filter=einBlur>0.2?'blur('+einBlur.toFixed(2)+'px)':'none';
+
+  // --- Signet fliegt heran ------------------------------------------
+  const pSig=weich(lerpKlemm(t,7.1,9.0));
+  sg.style.left=SIG.l+'px'; sg.style.top=SIG.t+'px';
+  sg.style.width=SIG.w+'px'; sg.style.height=SIG.h+'px';
+  const sk=misch(7.5,1,pSig), sBlur=misch(34,0,pSig);
+  const sx=misch(150,0,pSig), sy=misch(-40,0,pSig);
+  sg.style.transform='translate('+sx.toFixed(1)+'px,'+sy.toFixed(1)+'px) scale('+sk.toFixed(3)+')';
+  sg.style.filter=sBlur>0.2?'blur('+sBlur.toFixed(2)+'px)':'none';
+  sg.style.opacity=lerpKlemm(t,7.1,7.9).toFixed(3);
+
+  // --- Lichtsweep ueber die Buchstaben --------------------------------
+  const gl=document.getElementById('glanz');
+  const pSw=lerpKlemm(t,9.8,11.6);
+  if(pSw>0&&pSw<1){
+    gl.innerHTML='';
+    gl.appendChild(wort.cloneNode(true));
+    gl.appendChild(sg.cloneNode(true));
+    gl.style.opacity=(0.85*Math.sin(Math.PI*pSw)**0.35).toFixed(3);
+    const mp=misch(100,0,pSw);
+    gl.style.webkitMaskPosition=mp+'% 0'; gl.style.maskPosition=mp+'% 0';
+  } else { gl.style.opacity=0; gl.innerHTML=''; }
+
+  // --- Abblende -------------------------------------------------------
+  document.body.style.opacity=(1-lerpKlemm(t,13.3,14.0)).toFixed(3);
+}
+const f=parseInt(new URLSearchParams(location.search).get('f')||'0',10);
+bild(f/24);
+document.title='f'+f;
+</script></body></html>

@@ -23,7 +23,9 @@ HTML
   rm -f ".f_$1.html"
 }
 
+# Die Breiten sind auf die jeweilige viewBox abgestimmt: 1150 und 146 ergeben
+# ein gleich grosses Signet in beiden Plates.
 rahmen lockup 1150 logo-lockup.svg   # Endstand: vollstaendiges Logo
-rahmen signet  250 signet.svg        # Zwischenstand: nur Signet
+rahmen signet  146 signet.svg        # Zwischenstand: nur Signet
 rahmen leere     0 ""                # Startbild: leerer Raum
 echo "plate-lockup.png plate-signet.png plate-leere.png"

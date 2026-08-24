@@ -46,14 +46,18 @@ Logo, nicht der Prompt.
 
 ## Neu bauen
 
+Die Skripte kamen ueber die GitHub-API ins Repo und haben kein
+Ausfuehrbit — deshalb `bash` davor (oder einmalig `chmod +x quellen/*.sh`).
+
 ```sh
 cd quellen
-./plates.sh                       # Keyframes aus den SVG rendern
+bash plates.sh                    # Keyframes aus den SVG rendern
 # plate-*.png bei Higgsfield hochladen, die vier Shots nach shots.md
 # erzeugen und als shot1.mp4 .. shot4.mp4 hier ablegen
-FF=ffmpeg ./ton.sh                # Sounddesign
-FF=ffmpeg ./schnitt.sh            # Schnitt, Vertonung, Formatvarianten
+FF=ffmpeg bash ton.sh             # Sounddesign
+FF=ffmpeg bash schnitt.sh         # Schnitt, Vertonung, Formatvarianten
 ```
 
+`plates.sh` erwartet Chromium; der Pfad laesst sich ueber `CHROME=` setzen.
 Der Ton entsteht vollstaendig aus ffmpeg-Generatoren — kein Sample, keine
 externe Bibliothek, kein Netz noetig.

@@ -9,8 +9,8 @@
    2. beim Sichern als unsichtbarer Text hinter dem Bild (Textmodus 3) —
       das ergibt ein durchsuchbares PDF, das überall gleich aussieht. */
 
-import { zustand, melde, sage, kennung, el, zeigeDialog, merkeSchritt, $, fremdWeg } from './kern.js';
-import { holeSeite, nummerVon, seitenText } from './dokument.js';
+import { zustand, melde, sage, el, zeigeDialog, merkeSchritt, $, fremdWeg, zeile } from './kern.js';
+import { holeSeite, nummerVon } from './dokument.js';
 
 export const SPRACHEN = [
   { id: 'deu', name: 'Deutsch' },
@@ -203,9 +203,9 @@ export function zeigeErkennungsDialog({ nurOhneText = false } = {}) {
   dichte.value = '200';
 
   const rumpf = el('div', {},
-    el('div', { klasse: 'zeile' }, el('label', { text: 'Umfang' }), umfang),
-    el('div', { klasse: 'zeile' }, el('label', { text: 'Sprache' }), sprache),
-    el('div', { klasse: 'zeile' }, el('label', { text: 'Auflösung' }), dichte),
+    zeile('Umfang', umfang),
+    zeile('Sprache', sprache),
+    zeile('Auflösung', dichte),
     el('p', { klasse: 'hinweis' },
       'Die Erkennung läuft auf diesem Gerät — je nach Rechner etwa 1 bis 4 Sekunden je Seite. ',
       'Das Seitenbild bleibt unverändert; der erkannte Text wird unsichtbar dahintergelegt. ',

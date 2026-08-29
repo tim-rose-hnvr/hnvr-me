@@ -574,10 +574,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .miniatur.wird-gezogen { opacity: .4; }
 .miniatur.ziel-vor { box-shadow: inset 0 3px 0 var(--tally); }
 .miniatur.ziel-nach { box-shadow: inset 0 -3px 0 var(--tally); }
-.miniatur-werkzeuge { display: flex; gap: .1rem; justify-content: center; flex-wrap: wrap; }
-.miniatur-werkzeuge button { border: 0; background: transparent; cursor: pointer; padding: .1rem .2rem; color: var(--tinte-leise); }
-.miniatur-werkzeuge button:hover { background: var(--flaeche); color: var(--tinte); }
-.seiten-kopf { display: flex; gap: .25rem; flex-wrap: wrap; margin-bottom: .5rem; }
 
 /* Karten in der Tafel „Dateien" — Name, Maß, darunter eine Ablegefläche mit
    gestricheltem Rand, wie im Handoff. */
@@ -771,6 +767,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .zeile { display: flex; gap: .5rem; align-items: center; margin-bottom: .625rem; flex-wrap: wrap; }
 .zeile label { min-width: 9rem; }
 .zeile .feld { flex: 1; }
+/* Ein Ankreuzfeld mit Satz daneben steht in derselben Zeile, aber ohne die
+   9rem-Spalte der Beschriftung — die hat die Zeile schon links. */
+.zeile .zeile-kasten { min-width: 0; display: flex; gap: .4rem; align-items: center; }
 
 .palette { width: min(38rem, 100%); }
 .palette input {
@@ -905,13 +904,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .ordnen-titel::before { content: '· '; }
-/* Das Häkchen sitzt jetzt als Quadrat auf der Karte, nicht in der Fußzeile. */
-.ordnen-haken { display: none; }
 
 /* ---------- Fokus: nur gewählte Seiten ----------------------------------- */
 .blatt.ist-verborgen { display: none; }
-
-.seiten-ordnen-knopf { width: 100%; justify-content: center; margin-bottom: .5rem; font-weight: 600; }
 
 /* ---------- Formularfeld-Entwurf ----------------------------------------- */
 /* Ein Feld, das es noch nicht gibt. Es sieht bewusst nach Bauplan aus und
@@ -1030,8 +1025,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ohne-seitenzahlen .blatt-nummer { display: none; }
 .werkzeug-schmal { padding: 0 8px; }
 .werkzeug[disabled] { opacity: .4; cursor: not-allowed; }
-.seiten-kopf { display: flex; flex-wrap: nowrap; gap: 3px; margin-bottom: 8px; }
-.seiten-kopf .knopf { padding: 3px 5px; }
 
 /* ---------- Vergleich als eigene Ansicht -------------------------------- */
 /* Liegt in derselben Rasterzelle wie die Bühne und tritt an ihre Stelle. */

@@ -10,7 +10,7 @@
    - Jeder Vorschlag lässt sich wegklicken und kommt in dieser Sitzung nicht wieder.
    - Kein Vorschlag ohne Grund im Dokument. Keine Werbung, keine Ratschläge ins Blaue. */
 
-import { zustand, melde, hoer, el, sage } from './kern.js';
+import { zustand, melde, hoer, el } from './kern.js';
 import { seitenText, nummerVon } from './dokument.js';
 import { offeneFelder, hatFormular } from './formulare.js';
 import { hatUnterschrift } from './anmerkungen.js';

@@ -227,6 +227,117 @@ export function frage({ titel, text, jaText = 'Ja', neinText = 'Abbrechen', gefa
   });
 }
 
+/* ---------- Formulardialoge ----------------------------------------------- */
+
+/* Fast jeder Dialog dieser Werkbank ist dasselbe Gebäude: ein paar Zeilen aus
+   Beschriftung und Feld, darunter zwei Sätze darüber, was das Programm nicht
+   kann, und unten „Abbrechen" neben einem betonten Knopf.
+
+   Das stand fünfzehnmal ausgeschrieben da — jedes Mal dieselbe Abbrechen-Zeile,
+   jedes Mal derselbe Inline-Stil an den Ankreuzfeldern, jedes Mal dieselbe
+   Handarbeit beim Auslesen der Felder. Wer einen Dialog dazubauen wollte,
+   schrieb dreißig Zeilen Gerüst für drei Zeilen Inhalt.
+
+   `zeigeFormular` nimmt die Beschreibung statt des Bauplans. Beim Auslösen
+   bekommt `tat.tun` ein flaches Objekt mit den Werten: `{ umfang: 'alle',
+   kopieren: true }`. `false` aus `tun` hält den Dialog offen — dieselbe Regel
+   wie bei `zeigeDialog`, damit eine Prüfung den Menschen nicht aussperrt.
+
+   Was hier nicht hineinpasst, gehört nicht hinein: die elf übrigen Dialoge —
+   Eigenschaften, Stapel, Einstellungen, Palette — rufen weiter `zeigeDialog`
+   und bauen ihren Rumpf selbst. Eine Abkürzung, die alles können will, ist
+   keine mehr. */
+
+/** Eine Zeile aus Beschriftung und Inhalt — das Grundmaß aller Dialoge. */
+export function zeile(beschriftung, ...inhalt) {
+  return el('div', { klasse: 'zeile' }, el('label', { text: beschriftung }), ...inhalt);
+}
+
+/** Ein Hinweissatz unter den Feldern. Nimmt Text oder fertige Knoten. */
+export function hinweis(...teile) {
+  return el('p', { klasse: 'hinweis' }, ...teile);
+}
+
+/* Baut ein Feld aus seiner Beschreibung und liefert Knoten und Leser.
+   Die Art ergibt sich aus dem, was dasteht: `wahl` macht ein Auswahlfeld,
+   `kasten` ein Ankreuzfeld, `schieber` einen Schieber, sonst entscheidet
+   `art` zwischen Text, Kennwort und Zahl. */
+function baueFeld(f) {
+  if (f.wahl) {
+    const feld = el('select', { klasse: 'feld' }, ...f.wahl.filter(Boolean)
+      .map(([wert, text]) => el('option', { value: String(wert), text })));
+    if (f.wert != null) feld.value = String(f.wert);
+    return { knoten: zeile(f.beschriftung, feld), lies: () => feld.value };
+  }
+  if (f.kasten) {
+    const feld = el('input', { type: 'checkbox', checked: f.wert === true });
+    return {
+      knoten: zeile(f.beschriftung, el('label', { klasse: 'zeile-kasten' }, feld, f.kasten)),
+      lies: () => feld.checked,
+    };
+  }
+  if (f.schieber) {
+    const { von, bis, schritt = 0.01 } = f.schieber;
+    const feld = el('input', {
+      type: 'range', klasse: 'schieber',
+      min: String(von), max: String(bis), step: String(schritt), value: String(f.wert ?? von),
+    });
+    /* Ein Schieber ohne Beschriftung ist eine Zumutung: 0,72 sagt niemandem
+       etwas, „mittel" schon. Die Benennung wird beim Ziehen mitgeführt. */
+    const marke = f.benennung ? el('span', { klasse: 'hinweis', text: f.benennung(Number(feld.value)) }) : null;
+    if (marke) feld.addEventListener('input', () => { marke.textContent = f.benennung(Number(feld.value)); });
+    return { knoten: zeile(f.beschriftung, feld, marke), lies: () => Number(feld.value) };
+  }
+  const zahl = f.art === 'zahl';
+  const feld = el('input', {
+    klasse: 'feld',
+    type: zahl ? 'number' : f.art === 'kennwort' ? 'password' : 'text',
+    value: f.wert != null ? String(f.wert) : null,
+    placeholder: f.platzhalter,
+    min: f.von != null ? String(f.von) : null,
+    max: f.bis != null ? String(f.bis) : null,
+    autocomplete: 'off',
+    stil: f.stil,
+  });
+  return { knoten: zeile(f.beschriftung, feld), lies: () => (zahl ? Number(feld.value) : feld.value) };
+}
+
+/**
+ * @param {{
+ *   titel: string,
+ *   oben?: Node|string|null,
+ *   felder?: Array<Object|null>,
+ *   hinweise?: Array<Node|string|null>,
+ *   tat: { beschriftung: string, tun: (werte: Object) => any, gefahr?: boolean },
+ * }} bau
+ */
+export function zeigeFormular({ titel, oben = null, felder = [], hinweise = [], tat }) {
+  const rumpf = el('div', {});
+  if (oben) rumpf.append(oben.nodeType ? oben : hinweis(oben));
+
+  const leser = new Map();
+  for (const f of felder) {
+    if (!f) continue;                          /* bedingte Zeilen dürfen null sein */
+    const teil = baueFeld(f);
+    rumpf.append(teil.knoten);
+    if (f.name) leser.set(f.name, teil.lies);
+  }
+  for (const satz of hinweise) {
+    if (!satz) continue;
+    rumpf.append(satz.nodeType ? satz : hinweis(satz));
+  }
+
+  const werte = () => Object.fromEntries([...leser].map(([name, lies]) => [name, lies()]));
+  return zeigeDialog({
+    titel,
+    rumpf,
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      { beschriftung: tat.beschriftung, betont: true, gefahr: tat.gefahr, tun: () => tat.tun(werte()) },
+    ],
+  });
+}
+
 /* ---------- Leerzustand ---------------------------------------------------- */
 
 /* Eine leere Tafel war ein nackter Satz in einer 296 Pixel breiten Leere:

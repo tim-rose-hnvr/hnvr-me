@@ -7,7 +7,7 @@
    Damit sind Zusammenführen, Einfügen, Umsortieren, Löschen und Ausgeben
    ein und derselbe Mechanismus. */
 
-import { zustand, kennung, melde, sage, ladeDatei, fremdWurzel, fremdWeg } from './kern.js';
+import { zustand, kennung, melde, sage, ladeDatei, fremdWeg } from './kern.js';
 
 export let pdfjs = null;
 

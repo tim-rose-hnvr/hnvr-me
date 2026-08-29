@@ -4,7 +4,7 @@
    Bild in die Seite gelegt. Das ist eine sichtbare Unterschrift, keine
    kryptografische Signatur — der Unterschied steht auch im Dialog. */
 
-import { el, zeigeDialog, sage, $ } from './kern.js';
+import { el, zeigeDialog, sage, $, zeile } from './kern.js';
 import { setzeUnterschriftsbild } from './anmerkungen.js';
 
 const SCHRIFTEN = [
@@ -56,12 +56,12 @@ export function zeigeUnterschriftDialog(beiFertig) {
   const namensfeld = el('input', { klasse: 'feld', placeholder: 'Vorname Nachname', stil: { flex: '1' } });
   const schriftwahl = el('select', { klasse: 'feld' }, ...SCHRIFTEN.map((s, i) => el('option', { value: String(i), text: s.name })));
   const tippBereich = el('div', { stil: { display: 'none' } },
-    el('div', { klasse: 'zeile' }, el('label', { text: 'Name' }), namensfeld, schriftwahl));
+    zeile('Name', namensfeld, schriftwahl));
 
   const bildwahl = el('input', { type: 'file', accept: 'image/png,image/jpeg', klasse: 'feld' });
   const bildHinweis = el('span', { klasse: 'hinweis' });
   const bildBereich = el('div', { stil: { display: 'none' } },
-    el('div', { klasse: 'zeile' }, el('label', { text: 'Bilddatei' }), bildwahl),
+    zeile('Bilddatei', bildwahl),
     el('p', { klasse: 'hinweis' }, 'Am besten ein PNG mit durchsichtigem Grund. '),
     el('p', {}, bildHinweis));
 

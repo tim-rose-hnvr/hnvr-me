@@ -424,7 +424,7 @@ Ehrlicher als eine lange Merkmalsliste:
 
 ```
 index.html          Gerüst
-app/kern.js         Zustand, Ereignisse, Dialoge, Meldungen, Historie
+app/kern.js         Zustand, Ereignisse, Dialograhmen, Formularhelfer, Meldungen, Historie
 app/dokument.js     Quellen laden, Seitenfolge, Text, Merkmale, Formularfelder
 app/ansicht.js      Seitenfluss, Zoom, Textebene, Koordinatenwandlung
 app/anmerkungen.js  Anmerkungsmodell, Darstellung, Zeigerbedienung
@@ -445,9 +445,13 @@ app/signieren.js    PKCS#12 lesen, CMS bauen, PDF signieren (PAdES)
 app/barrierefrei.js Barrierefreiheit pruefen und setzen, was ohne Raten geht
 app/mitdenken.js    Befunde und Vorschläge
 app/ausgabe.js      Schreiben über pdf-lib
-app/oberflaeche.js  Befehlsregister, Tafeln, Tastatur
+app/oberflaeche.js  Befehlsregister, Werkzeugleiste, Tastatur, Anschluss
+app/tafeln.js       die beiden Leisten: Lesezeichen, Dateien, Suche, Kommentare, Felder, Verlauf
+app/dialoge.js      alles, was sich als Fenster ueber die Werkbank legt
 fremd/              pdf.js, pdf-lib, tesseract.js, qpdf, node-forge — siehe fremd/HERKUNFT.md
 werkzeuge/          Beispieldatei bauen, Prüfläufe fahren, ZIP wieder aufmachen
+werkzeuge/pruefstand.mjs   Server, Browser, `pruefe()` — der Aufbau, den alle teilen
+werkzeuge/pruefungen/      die Prüfungen selbst, thematisch in acht Gruppen
 ```
 
 ### Datenmodell
@@ -499,7 +503,8 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 128 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 116 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 119 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  31 Prüfungen — was der Hoster ausliefert
 ```
 

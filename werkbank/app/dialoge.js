@@ -16,8 +16,8 @@
    überdauern muss, steht im Kern. */
 
 import {
-  zustand, melde, el, $, $$, sage, zeigeDialog, schliesseDialog, groesse, datum,
-  mitLader, sichereBytes, frage,
+  zustand, melde, el, $, $$, sage, zeigeDialog, zeigeFormular, zeile, schliesseDialog,
+  groesse, datum, mitLader, sichereBytes,
 } from './kern.js';
 import { nummerVon } from './dokument.js';
 import { zeigeSeite } from './ansicht.js';
@@ -63,40 +63,34 @@ export function zeigeEigenschaften() {
   zeigeDialog({ titel: 'Dokumenteigenschaften', rumpf, knoepfe: [{ beschriftung: 'Schließen', betont: true }] });
 }
 export function zeigeSicherungsDialog() {
-  const name = el('input', { klasse: 'feld', value: vorschlagsname(), stil: { flex: '1' } });
-  const einbrennen = el('input', { type: 'checkbox', checked: hatFormular() ? true : false });
-  const metadatenWeg = el('input', { type: 'checkbox' });
-  const nurAuswahl = el('input', { type: 'checkbox' });
-
-  const rumpf = el('div', {},
-    el('div', { klasse: 'zeile' }, el('label', { text: 'Dateiname' }), name),
-    hatFormular() ? el('div', { klasse: 'zeile' }, el('label', { text: 'Formular' }),
-      el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, einbrennen, 'Werte fest einbrennen (nicht mehr änderbar)')) : null,
-    el('div', { klasse: 'zeile' }, el('label', { text: 'Metadaten' }),
-      el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, metadatenWeg, 'Verfasser und Erzeuger entfernen')),
-    zustand.gewaehlteSeiten.size ? el('div', { klasse: 'zeile' }, el('label', { text: 'Umfang' }),
-      el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, nurAuswahl, `nur die ${zustand.gewaehlteSeiten.size} gewählten Seiten`)) : null,
-    el('p', { klasse: 'hinweis' }, istUnveraendertesGeruest()
-      ? 'Das Original wird geöffnet und ergänzt: Lesezeichen, Formularstruktur und Metadaten bleiben erhalten.'
-      : 'Seitenfolge, Drehung oder Schwärzung wurden geändert — das Dokument wird neu aufgebaut. Formularwerte werden dabei fest eingebrannt, Lesezeichen gehen verloren.'));
-
-  zeigeDialog({
+  zeigeFormular({
     titel: 'Sichern unter',
-    rumpf,
-    knoepfe: [
-      { beschriftung: 'Abbrechen' },
-      {
-        beschriftung: 'Sichern', betont: true,
-        tun: () => {
-          sichereMit({
-            dateiname: name.value.endsWith('.pdf') ? name.value : `${name.value}.pdf`,
-            formularEinbrennen: einbrennen.checked,
-            metadatenEntfernen: metadatenWeg.checked,
-            seiten: nurAuswahl.checked ? [...zustand.gewaehlteSeiten] : null,
-          });
-        },
-      },
+    felder: [
+      { name: 'dateiname', beschriftung: 'Dateiname', wert: vorschlagsname() },
+      hatFormular()
+        ? { name: 'einbrennen', beschriftung: 'Formular', kasten: 'Werte fest einbrennen (nicht mehr änderbar)', wert: true }
+        : null,
+      { name: 'metadatenWeg', beschriftung: 'Metadaten', kasten: 'Verfasser und Erzeuger entfernen' },
+      zustand.gewaehlteSeiten.size
+        ? { name: 'nurAuswahl', beschriftung: 'Umfang', kasten: `nur die ${zustand.gewaehlteSeiten.size} gewählten Seiten` }
+        : null,
     ],
+    hinweise: [
+      istUnveraendertesGeruest()
+        ? 'Das Original wird geöffnet und ergänzt: Lesezeichen, Formularstruktur und Metadaten bleiben erhalten.'
+        : 'Seitenfolge, Drehung oder Schwärzung wurden geändert — das Dokument wird neu aufgebaut. Formularwerte werden dabei fest eingebrannt, Lesezeichen gehen verloren.',
+    ],
+    tat: {
+      beschriftung: 'Sichern',
+      tun: ({ dateiname, einbrennen, metadatenWeg, nurAuswahl }) => {
+        sichereMit({
+          dateiname: dateiname.endsWith('.pdf') ? dateiname : `${dateiname}.pdf`,
+          formularEinbrennen: einbrennen === true,
+          metadatenEntfernen: metadatenWeg === true,
+          seiten: nurAuswahl === true ? [...zustand.gewaehlteSeiten] : null,
+        });
+      },
+    },
   });
 }
 /* Der Stapel geht bewusst nicht über das offene Dokument, sondern über
@@ -145,7 +139,7 @@ export async function zeigeStapelDialog() {
     titel: 'Stapel — dieselbe Arbeit an vielen Dateien',
     breit: true,
     rumpf: el('div', {},
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Dateien' }), dateiwahl),
+      zeile('Dateien', dateiwahl),
       stand,
       el('p', { klasse: 'hinweis' }, el('strong', { text: 'Schritte' }),
         ' — sie laufen immer in dieser Reihenfolge, nicht in der des Anklickens.'),
@@ -212,14 +206,14 @@ export async function zeigeMassstabDialog() {
       jetzt.benannt ? '' : ' — gemessen wird, was auf dem Blatt steht.'),
     strecken.length
       ? el('div', {},
-        el('div', { klasse: 'zeile' }, el('label', { text: 'Welche Strecke?' }), auswahl),
-        el('div', { klasse: 'zeile' }, el('label', { text: 'Wie lang ist sie wirklich?' }), laenge),
-        el('div', { klasse: 'zeile' }, el('label', { text: 'Einheit' }), einheit))
+        zeile('Welche Strecke?', auswahl),
+        zeile('Wie lang ist sie wirklich?', laenge),
+        zeile('Einheit', einheit))
       : el('div', {},
         el('p', { klasse: 'hinweis ist-warnung' },
           'Zum Kalibrieren fehlt eine Strecke. Erst mit dem Werkzeug „Strecke messen" eine ',
           'Länge ziehen, die Sie kennen — dann hier eintragen, wie lang sie wirklich ist.'),
-        el('div', { klasse: 'zeile' }, el('label', { text: 'Einheit' }), einheit)),
+        zeile('Einheit', einheit)),
     el('p', { klasse: 'hinweis klein' },
       'Ein PDF-Punkt ist 1/72 Zoll. Auf dem Papier stimmt das Maß deshalb auch ohne ',
       'Kalibrierung — sie wird erst gebraucht, wenn die Zeichnung selbst einen Maßstab hat.'));
@@ -468,11 +462,11 @@ export function zeigeSignaturDialog() {
         'Hier wird über die Bytes der Datei ein Hashwert gebildet und mit dem Schlüssel aus Ihrer ',
         'Ausweisdatei signiert. Ändert danach jemand ein Zeichen, meldet jeder Betrachter, dass das ',
         'Dokument nach der Unterschrift verändert wurde.'),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Ausweisdatei' }), dateifeld),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Kennwort' }), kennwortfeld),
+      zeile('Ausweisdatei', dateifeld),
+      zeile('Kennwort', kennwortfeld),
       bericht,
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Grund' }), grundfeld),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Ort' }), ortfeld),
+      zeile('Grund', grundfeld),
+      zeile('Ort', ortfeld),
       el('p', { klasse: 'hinweis' },
         'Die Datei verlässt dieses Gerät nicht, auch die Ausweisdatei nicht. ',
         'Grenzen: eine Unterschrift je Datei (eine zweite darüber würde die erste brechen), ',
@@ -537,8 +531,8 @@ export function zeigeBarrierefreiDialog() {
     wurzel.append(
       el('hr', { klasse: 'menue-trenner' }),
       el('p', { klasse: 'hinweis', text: 'Was sich ohne Vermutung setzen lässt, setzt die Werkbank beim nächsten Sichern:' }),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Sprache' }), sprachwahl),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Titel' }), titelfeld),
+      zeile('Sprache', sprachwahl),
+      zeile('Titel', titelfeld),
       el('button', { klasse: 'knopf', text: 'Übernehmen und sichern', beiClick: () => {
         zustand.zugang = { sprache: sprachwahl.value, titel: titelfeld.value.trim(), feldbeschriftungen: true };
         schliesseDialog();
@@ -550,192 +544,177 @@ export function zeigeBarrierefreiDialog() {
   });
 }
 export function zeigeExcelDialog() {
-  const umfang = el('select', { klasse: 'feld' },
-    el('option', { value: 'alle', text: `Alle Seiten (${zustand.folge.length})` }),
-    el('option', { value: 'auswahl', text: `Gewählte Seiten (${zustand.gewaehlteSeiten.size})` }));
-  const weg = el('select', { klasse: 'feld' },
-    el('option', { value: 'tabellen', text: 'Nur erkannte Tabellen' }),
-    el('option', { value: 'alles', text: 'Jede Zeile ins Raster' }));
-
-  zeigeDialog({
+  zeigeFormular({
     titel: 'Nach Excel ausgeben',
-    rumpf: el('div', {},
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Umfang' }), umfang),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Weg' }), weg),
-      el('p', { klasse: 'hinweis' },
-        'Ein PDF kennt keine Tabellen, nur Buchstaben an Punkten. Als Tabelle gilt hier, ',
-        'was in mindestens drei Zeilen hintereinander an denselben Stellen beginnt. ',
-        'Findet das nichts, holt „Jede Zeile ins Raster" den Text trotzdem — dann steht ',
-        'auch Fließtext in den Zellen.'),
-      el('p', { klasse: 'hinweis' },
-        'Je Seite entsteht ein Blatt. Zahlen werden als Zahlen geschrieben, damit sich ',
-        'damit rechnen lässt; Bestellnummern mit führender Null bleiben Text. ',
-        'Nicht übernommen: Rahmen, Farben, verbundene Zellen, Formeln, Bilder.')),
-    knoepfe: [
-      { beschriftung: 'Abbrechen' },
+    felder: [
       {
-        beschriftung: 'Ausgeben', betont: true,
-        tun: () => mitLader('Tabellen werden gelesen …', async () => {
-          try {
-            const { bytes, blaetter, zeilen, zellen, uebersprungen } = await alsExcel({
-              seiten: umfang.value === 'auswahl' && zustand.gewaehlteSeiten.size ? [...zustand.gewaehlteSeiten] : null,
-              nurTabellen: weg.value === 'tabellen',
-            });
-            sichereBytes(bytes, vorschlagsname('').replace(/\.pdf$/i, '.xlsx'),
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            sage(uebersprungen
-              ? `${zeilen} Zeilen, ${zellen} Zellen auf ${blaetter} Blättern — ${uebersprungen} Seite${uebersprungen === 1 ? '' : 'n'} ohne Tabelle übersprungen`
-              : `${zeilen} Zeilen, ${zellen} Zellen auf ${blaetter} Blättern ausgegeben`, { dauer: 6000 });
-          } catch (fehler) {
-            sage(fehler.message, { art: 'warn', dauer: 8000 });
-          }
-        }),
+        name: 'umfang', beschriftung: 'Umfang',
+        wahl: [
+          ['alle', `Alle Seiten (${zustand.folge.length})`],
+          ['auswahl', `Gewählte Seiten (${zustand.gewaehlteSeiten.size})`],
+        ],
+      },
+      {
+        name: 'weg', beschriftung: 'Weg',
+        wahl: [['tabellen', 'Nur erkannte Tabellen'], ['alles', 'Jede Zeile ins Raster']],
       },
     ],
+    hinweise: [
+      'Ein PDF kennt keine Tabellen, nur Buchstaben an Punkten. Als Tabelle gilt hier, '
+      + 'was in mindestens drei Zeilen hintereinander an denselben Stellen beginnt. '
+      + 'Findet das nichts, holt „Jede Zeile ins Raster" den Text trotzdem — dann steht '
+      + 'auch Fließtext in den Zellen.',
+      'Je Seite entsteht ein Blatt. Zahlen werden als Zahlen geschrieben, damit sich '
+      + 'damit rechnen lässt; Bestellnummern mit führender Null bleiben Text. '
+      + 'Nicht übernommen: Rahmen, Farben, verbundene Zellen, Formeln, Bilder.',
+    ],
+    tat: {
+      beschriftung: 'Ausgeben',
+      tun: ({ umfang, weg }) => mitLader('Tabellen werden gelesen …', async () => {
+        try {
+          const { bytes, blaetter, zeilen, zellen, uebersprungen } = await alsExcel({
+            seiten: umfang === 'auswahl' && zustand.gewaehlteSeiten.size ? [...zustand.gewaehlteSeiten] : null,
+            nurTabellen: weg === 'tabellen',
+          });
+          sichereBytes(bytes, vorschlagsname('').replace(/\.pdf$/i, '.xlsx'),
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+          sage(uebersprungen
+            ? `${zeilen} Zeilen, ${zellen} Zellen auf ${blaetter} Blättern — ${uebersprungen} Seite${uebersprungen === 1 ? '' : 'n'} ohne Tabelle übersprungen`
+            : `${zeilen} Zeilen, ${zellen} Zellen auf ${blaetter} Blättern ausgegeben`, { dauer: 6000 });
+        } catch (fehler) {
+          sage(fehler.message, { art: 'warn', dauer: 8000 });
+        }
+      }),
+    },
   });
 }
 export function zeigeWordDialog() {
-  const umfang = el('select', { klasse: 'feld' },
-    el('option', { value: 'alle', text: `Alle Seiten (${zustand.folge.length})` }),
-    el('option', { value: 'auswahl', text: `Gewählte Seiten (${zustand.gewaehlteSeiten.size})` }));
-  const ueberschriften = el('input', { type: 'checkbox', checked: true });
-  const umbrueche = el('input', { type: 'checkbox', checked: true });
-
-  zeigeDialog({
+  zeigeFormular({
     titel: 'Nach Word ausgeben',
-    rumpf: el('div', {},
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Umfang' }), umfang),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Überschriften' }),
-        el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, ueberschriften, 'aus der Schriftgröße erkennen')),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Seiten' }),
-        el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, umbrueche, 'Seitenumbrüche übernehmen')),
-      el('p', { klasse: 'hinweis' },
-        'Übernommen werden Absätze, Überschriften, fette und kursive Stellen. ',
-        'Nicht übernommen werden Spalten, Tabellenraster und Bilder — ein PDF beschreibt Buchstaben an Punkten, keine Absätze. ',
-        'Wer das Aussehen braucht, gibt das PDF weiter; wer weiterschreiben will, nimmt diese Datei.'),
-      zustand.ocr.size
-        ? el('p', { klasse: 'hinweis', text: 'Erkannter Text aus Scans wandert mit.' })
-        : el('p', { klasse: 'hinweis', text: 'Seiten ohne Textebene bleiben leer — dafür erst die Texterkennung laufen lassen.' })),
-    knoepfe: [
-      { beschriftung: 'Abbrechen' },
+    felder: [
       {
-        beschriftung: 'Ausgeben', betont: true,
-        tun: () => mitLader('Word-Datei wird geschrieben …', async () => {
-          const { bytes, woerter, absaetze, seitenOhneText } = await alsWord({
-            seiten: umfang.value === 'auswahl' && zustand.gewaehlteSeiten.size ? [...zustand.gewaehlteSeiten] : null,
-            ueberschriftenErkennen: ueberschriften.checked,
-            seitenumbrueche: umbrueche.checked,
-          });
-          sichereBytes(bytes, vorschlagsname('').replace(/\.pdf$/i, '.docx'),
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-          sage(seitenOhneText
-            ? `${woerter} Wörter in ${absaetze} Absätzen — ${seitenOhneText} Seite${seitenOhneText === 1 ? '' : 'n'} ohne Text blieb leer`
-            : `${woerter} Wörter in ${absaetze} Absätzen ausgegeben`, { dauer: 6000 });
-        }),
+        name: 'umfang', beschriftung: 'Umfang',
+        wahl: [
+          ['alle', `Alle Seiten (${zustand.folge.length})`],
+          ['auswahl', `Gewählte Seiten (${zustand.gewaehlteSeiten.size})`],
+        ],
       },
+      { name: 'ueberschriften', beschriftung: 'Überschriften', kasten: 'aus der Schriftgröße erkennen', wert: true },
+      { name: 'umbrueche', beschriftung: 'Seiten', kasten: 'Seitenumbrüche übernehmen', wert: true },
     ],
+    hinweise: [
+      'Übernommen werden Absätze, Überschriften, fette und kursive Stellen. '
+      + 'Nicht übernommen werden Spalten, Tabellenraster und Bilder — ein PDF beschreibt Buchstaben an Punkten, keine Absätze. '
+      + 'Wer das Aussehen braucht, gibt das PDF weiter; wer weiterschreiben will, nimmt diese Datei.',
+      zustand.ocr.size
+        ? 'Erkannter Text aus Scans wandert mit.'
+        : 'Seiten ohne Textebene bleiben leer — dafür erst die Texterkennung laufen lassen.',
+    ],
+    tat: {
+      beschriftung: 'Ausgeben',
+      tun: ({ umfang, ueberschriften, umbrueche }) => mitLader('Word-Datei wird geschrieben …', async () => {
+        const { bytes, woerter, absaetze, seitenOhneText } = await alsWord({
+          seiten: umfang === 'auswahl' && zustand.gewaehlteSeiten.size ? [...zustand.gewaehlteSeiten] : null,
+          ueberschriftenErkennen: ueberschriften,
+          seitenumbrueche: umbrueche,
+        });
+        sichereBytes(bytes, vorschlagsname('').replace(/\.pdf$/i, '.docx'),
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        sage(seitenOhneText
+          ? `${woerter} Wörter in ${absaetze} Absätzen — ${seitenOhneText} Seite${seitenOhneText === 1 ? '' : 'n'} ohne Text blieb leer`
+          : `${woerter} Wörter in ${absaetze} Absätzen ausgegeben`, { dauer: 6000 });
+      }),
+    },
   });
 }
 export function zeigeSchutzDialog() {
-  const benutzer = el('input', { klasse: 'feld', type: 'password', placeholder: 'zum Öffnen nötig', stil: { flex: '1' } });
-  const besitzer = el('input', { klasse: 'feld', type: 'password', placeholder: 'zum Ändern der Rechte', stil: { flex: '1' } });
-  const drucken = el('select', { klasse: 'feld' },
-    el('option', { value: 'full', text: 'erlaubt' }),
-    el('option', { value: 'low', text: 'nur in niedriger Auflösung' }),
-    el('option', { value: 'none', text: 'verboten' }));
-  const aendern = el('select', { klasse: 'feld' },
-    el('option', { value: 'all', text: 'alles erlaubt' }),
-    el('option', { value: 'annotate', text: 'nur kommentieren und Formulare ausfüllen' }),
-    el('option', { value: 'form', text: 'nur Formulare ausfüllen' }),
-    el('option', { value: 'none', text: 'nichts erlaubt' }));
-  const kopieren = el('input', { type: 'checkbox', checked: true });
-
-  zeigeDialog({
+  zeigeFormular({
     titel: 'Mit Kennwort schützen',
-    rumpf: el('div', {},
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Öffnen-Kennwort' }), benutzer),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Besitzer-Kennwort' }), besitzer),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Drucken' }), drucken),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Ändern' }), aendern),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Text kopieren' }),
-        el('label', { stil: { minWidth: 'auto', display: 'flex', gap: '.4rem' } }, kopieren, 'erlaubt')),
-      el('p', { klasse: 'hinweis' },
-        'Verschlüsselt mit AES-256 durch qpdf, das hier als WebAssembly mitläuft. ',
-        'Ohne Öffnen-Kennwort lässt sich die Datei nicht mehr lesen — auch nicht von dieser Werkbank. ',
-        'Rechtebeschränkungen ohne Öffnen-Kennwort sind eine Bitte an den Betrachter, kein technischer Riegel.')),
-    knoepfe: [
-      { beschriftung: 'Abbrechen' },
+    felder: [
+      { name: 'benutzer', beschriftung: 'Öffnen-Kennwort', art: 'kennwort', platzhalter: 'zum Öffnen nötig' },
+      { name: 'besitzer', beschriftung: 'Besitzer-Kennwort', art: 'kennwort', platzhalter: 'zum Ändern der Rechte' },
       {
-        beschriftung: 'Geschützt sichern', betont: true,
-        tun: () => {
-          if (!benutzer.value && !besitzer.value) { sage('Mindestens ein Kennwort angeben', { art: 'warn' }); return false; }
-          sichereMit({
-            dateiname: vorschlagsname('-geschuetzt'),
-            formularEinbrennen: false,
-            schutz: {
-              benutzer: benutzer.value, besitzer: besitzer.value,
-              drucken: drucken.value, aendern: aendern.value, kopieren: kopieren.checked,
-            },
-          });
-        },
+        name: 'drucken', beschriftung: 'Drucken',
+        wahl: [['full', 'erlaubt'], ['low', 'nur in niedriger Auflösung'], ['none', 'verboten']],
       },
+      {
+        name: 'aendern', beschriftung: 'Ändern',
+        wahl: [
+          ['all', 'alles erlaubt'],
+          ['annotate', 'nur kommentieren und Formulare ausfüllen'],
+          ['form', 'nur Formulare ausfüllen'],
+          ['none', 'nichts erlaubt'],
+        ],
+      },
+      { name: 'kopieren', beschriftung: 'Text kopieren', kasten: 'erlaubt', wert: true },
     ],
+    hinweise: [
+      'Verschlüsselt mit AES-256 durch qpdf, das hier als WebAssembly mitläuft. '
+      + 'Ohne Öffnen-Kennwort lässt sich die Datei nicht mehr lesen — auch nicht von dieser Werkbank. '
+      + 'Rechtebeschränkungen ohne Öffnen-Kennwort sind eine Bitte an den Betrachter, kein technischer Riegel.',
+    ],
+    tat: {
+      beschriftung: 'Geschützt sichern',
+      tun: (schutz) => {
+        /* Ein Dokument ohne beide Kennwörter wäre unverschlüsselt — dann führt
+           der Knopf in die Irre. `false` hält den Dialog offen. */
+        if (!schutz.benutzer && !schutz.besitzer) { sage('Mindestens ein Kennwort angeben', { art: 'warn' }); return false; }
+        sichereMit({ dateiname: vorschlagsname('-geschuetzt'), formularEinbrennen: false, schutz });
+      },
+    },
   });
 }
 export function zeigeVerkleinernDialog() {
-  const dichte = el('select', { klasse: 'feld' },
-    el('option', { value: '72', text: '72 dpi — Bildschirm, kleinste Datei' }),
-    el('option', { value: '110', text: '110 dpi — Weitergabe per E-Mail' }),
-    el('option', { value: '150', text: '150 dpi — Ausdruck im Büro' }),
-    el('option', { value: '200', text: '200 dpi — sorgfältiger Ausdruck' }));
-  dichte.value = '110';
-  const guete = el('input', { type: 'range', klasse: 'schieber', min: '0.4', max: '0.92', step: '0.02', value: '0.72' });
-  const anzeige = el('span', { klasse: 'hinweis', text: 'mittel' });
-  guete.addEventListener('input', () => {
-    const w = Number(guete.value);
-    anzeige.textContent = w < 0.55 ? 'grob' : w < 0.75 ? 'mittel' : 'fein';
-  });
-
   const jetzt = zustand.eigenschaften?.dateigroesse || 0;
-  zeigeDialog({
+  zeigeFormular({
     titel: 'Verkleinern',
-    rumpf: el('div', {},
-      el('p', { klasse: 'hinweis', text: `Zurzeit ${groesse(jetzt)}.` }),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Auflösung' }), dichte),
-      el('div', { klasse: 'zeile' }, el('label', { text: 'Bildgüte' }), guete, anzeige),
-      el('p', { klasse: 'hinweis' },
-        zustand.ocr.size
-          ? 'Die Seiten werden zu Bildern. Der erkannte Text wandert als unsichtbare Ebene mit — die Datei bleibt durchsuchbar.'
-          : 'Die Seiten werden zu Bildern: kleiner, aber der Text ist danach nicht mehr auswählbar. Mit vorheriger Texterkennung bleibt die Datei durchsuchbar.')),
-    knoepfe: [
-      { beschriftung: 'Abbrechen' },
+    oben: `Zurzeit ${groesse(jetzt)}.`,
+    felder: [
       {
-        beschriftung: 'Verkleinern', betont: true,
-        tun: () => mitLader('Seiten werden neu berechnet …', async () => {
-          const bytes = await verkleinere({ dichte: Number(dichte.value), guete: Number(guete.value) });
-          const name = vorschlagsname('-klein');
-          sichereBytes(bytes, name);
-          const anteil = jetzt ? Math.round((1 - bytes.length / jetzt) * 100) : 0;
-          sage(anteil > 0
-            ? `${groesse(jetzt)} → ${groesse(bytes.length)} (${anteil} % kleiner)`
-            : `${groesse(bytes.length)} — nicht kleiner geworden, das Original war schon sparsam`);
-        }),
+        name: 'dichte', beschriftung: 'Auflösung', wert: '110',
+        wahl: [
+          ['72', '72 dpi — Bildschirm, kleinste Datei'],
+          ['110', '110 dpi — Weitergabe per E-Mail'],
+          ['150', '150 dpi — Ausdruck im Büro'],
+          ['200', '200 dpi — sorgfältiger Ausdruck'],
+        ],
+      },
+      {
+        name: 'guete', beschriftung: 'Bildgüte', wert: 0.72,
+        schieber: { von: 0.4, bis: 0.92, schritt: 0.02 },
+        benennung: (w) => (w < 0.55 ? 'grob' : w < 0.75 ? 'mittel' : 'fein'),
       },
     ],
+    hinweise: [
+      zustand.ocr.size
+        ? 'Die Seiten werden zu Bildern. Der erkannte Text wandert als unsichtbare Ebene mit — die Datei bleibt durchsuchbar.'
+        : 'Die Seiten werden zu Bildern: kleiner, aber der Text ist danach nicht mehr auswählbar. Mit vorheriger Texterkennung bleibt die Datei durchsuchbar.',
+    ],
+    tat: {
+      beschriftung: 'Verkleinern',
+      tun: ({ dichte, guete }) => mitLader('Seiten werden neu berechnet …', async () => {
+        const bytes = await verkleinere({ dichte: Number(dichte), guete });
+        sichereBytes(bytes, vorschlagsname('-klein'));
+        const anteil = jetzt ? Math.round((1 - bytes.length / jetzt) * 100) : 0;
+        sage(anteil > 0
+          ? `${groesse(jetzt)} → ${groesse(bytes.length)} (${anteil} % kleiner)`
+          : `${groesse(bytes.length)} — nicht kleiner geworden, das Original war schon sparsam`);
+      }),
+    },
   });
 }
 export function zeigeTeilenDialog() {
-  const proDatei = el('input', { klasse: 'feld', type: 'number', min: '1', value: '1', stil: { width: '6rem' } });
-  const rumpf = el('div', {},
-    el('p', { klasse: 'hinweis', text: `${zustand.folge.length} Seiten werden in gleich große Teile zerlegt und einzeln heruntergeladen.` }),
-    el('div', { klasse: 'zeile' }, el('label', { text: 'Seiten je Datei' }), proDatei));
-  zeigeDialog({
+  zeigeFormular({
     titel: 'Dokument teilen',
-    rumpf,
-    knoepfe: [
-      { beschriftung: 'Abbrechen' },
-      { beschriftung: 'Teilen', betont: true, tun: () => mitLader('Teile werden geschrieben …', () => teileDokument(Math.max(1, Number(proDatei.value) || 1))) },
+    oben: `${zustand.folge.length} Seiten werden in gleich große Teile zerlegt und einzeln heruntergeladen.`,
+    felder: [
+      { name: 'proDatei', beschriftung: 'Seiten je Datei', art: 'zahl', von: 1, wert: 1, stil: { width: '6rem' } },
     ],
+    tat: {
+      beschriftung: 'Teilen',
+      tun: ({ proDatei }) => mitLader('Teile werden geschrieben …',
+        () => teileDokument(Math.max(1, proDatei || 1))),
+    },
   });
 }
 export function zeigeMusterDialog() {

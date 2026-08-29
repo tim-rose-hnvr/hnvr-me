@@ -1,0 +1,198 @@
+---
+/**
+ * Die Startseite.
+ *
+ * Sie hat eine Aufgabe: in einem Satz zu sagen, was hier anders ist, und
+ * danach ehrlich aufzuzählen, was noch fehlt. Der Abschnitt „Was heute fehlt"
+ * ist kein Eingeständnis, sondern der Grund, aus dem man den übrigen Angaben
+ * glauben kann — eine Seite, die nur Vorzüge nennt, sagt nichts über ein
+ * Werkzeug außer, dass sie verkauft werden soll.
+ */
+import Rahmen from '../layouts/Rahmen.astro';
+import { MARKE } from '../kern/marke.ts';
+import { REGELN, KANALARTEN } from '../kern/kanal.ts';
+import { grenzeVon } from '../kern/kanal.ts';
+import { kanaele } from '../kern/bestand.ts';
+
+export const prerender = false;
+
+const jetzt = Date.now();
+const meine = kanaele(jetzt);
+
+const VERGLEICH = [
+  { was: 'Redaktionsplan', dort: 'soziale Kanäle', hier: 'soziale Kanäle und Newsletter in einer Woche' },
+  { was: 'Freigabe', dort: 'für Beiträge', hier: 'derselbe Lauf für Beiträge und Newsletter' },
+  { was: 'Freigabe nach Textänderung', dort: 'bleibt bestehen', hier: 'verfällt — sie gilt einem Stand' },
+  { was: 'Posteingang', dort: 'Kommentare, Nachrichten', hier: 'dazu Antworten auf den Newsletter' },
+  { was: 'E-Mail-Marketing', dort: '—', hier: 'Verteiler, Segmente, A/B, Strecken, Zustellbarkeit' },
+  { was: 'Alternativtext', dort: 'empfohlen', hier: 'Bedingung fürs Veröffentlichen' },
+  { was: 'Öffnungsrate', dort: 'als Zahl', hier: 'als Schätzung, mit dem Vorbehalt im Ergebnis' },
+  { was: 'Krisenschalter', dort: 'hält Beiträge an', hier: 'hält auch den Newsletter an' },
+  { was: 'Betrieb', dort: 'als Dienst', hier: 'als Dienst oder auf eigenem Server' },
+];
+
+const GEBAUT = [
+  ['Zeitrechnung mit Sommerzeit', 'Die beiden Nächte im Jahr, in denen eine Uhrzeit fehlt oder doppelt ist, werden ausdrücklich entschieden.'],
+  ['Zeichenzählung je Netz', 'Vier Netze, vier Zählweisen. X wiegt Emoji doppelt, Bluesky zählt Graphemgruppen, Mastodon rechnet Adressen pauschal mit 23.'],
+  ['Beitrag mit Zustandskette', 'Entwurf bis veröffentlicht, ohne Abkürzungen. Aus dem Veröffentlichten führt kein Weg zurück.'],
+  ['Freigabe mit vier Augen', 'Wer verfasst hat, gibt nicht frei. Eine Ablehnung braucht einen Grund und wiegt schwerer als jede Zustimmung.'],
+  ['Redaktionsplan', 'Abstand, Ruhezeiten, Vorlauf, Kanalzugänge — jeder Termin wird gegen alle vier geprüft.'],
+  ['Einwilligung und Löschung', 'Doppelte Bestätigung, gespeicherter Wortlaut, Löschung, die die Ereigniskette nicht bricht.'],
+  ['Segmente', 'Können keine Unbestätigten enthalten — nicht aus Sorgfalt, sondern weil sie sie nicht sehen.'],
+  ['Newsletter', 'Bausteine, aus denen HTML und Textfassung gleichermaßen entstehen. Ein fehlendes Feld ohne Ersatz hält an.'],
+  ['Versand', 'Errechnete Postenkennungen gegen den doppelten Versand, Drosselung, Rückläufer, Abbruch.'],
+  ['Zustellbarkeit', 'SPF, DKIM, DMARC, Ein-Klick-Abmeldung, Aufwärmplan — als reine Funktion über die DNS-Einträge.'],
+  ['Strecken', 'Eine Abmeldung beendet jede Strecke sofort. Ein Kreis ohne Warteschritt wird vor dem Speichern gefunden.'],
+  ['Posteingang', 'Alle Kanäle in einer Liste, Zuweisung als Sperre mit Ablauf, Fristen in Dienstzeiten.'],
+  ['Auswertung', 'Ehrliche Nenner, der Öffnungsvorbehalt im Ergebnis, keine erfundene Gesamtreichweite.'],
+  ['Ereignisprotokoll', 'Nur anfügbar, als Hash-Kette, mit Tagesabschluss und einem Wächter gegen Personendaten.'],
+];
+
+const FEHLT = [
+  ['Speicher', 'Es gibt keine Datenbank. Alle Seiten rechnen mit einem Bestand aus erfundenen Daten — durch dieselben Kernfunktionen, die später der Betrieb benutzt.'],
+  ['Anmeldung', 'Wer am Bildschirm sitzt, steht fest im Code. Rollen und Rechte sind gebaut und geprüft, die Anmeldung dahinter nicht.'],
+  ['Die Netze selbst', 'Kein OAuth, keine Schnittstelle zu Mastodon, LinkedIn oder Instagram. Die Grenzen und Regeln der Netze sind da, das Verbinden nicht.'],
+  ['Der Mailserver', 'Der Kern baut Kopfzeilen und Mails und beurteilt die Einrichtung. Er verschickt nichts.'],
+  ['Der Editor', 'Beiträge und Newsletter lassen sich ansehen, nicht ändern. Die Felder stehen auf „nur lesen", weil es nichts gibt, wohin gespeichert würde.'],
+  ['Bilder', 'Kein Hochladen, keine Ablage, keine Umrechnung in die Maße der Netze.'],
+];
+---
+
+<Rahmen titel="Start" ueberschrift={MARKE.zeile} zeile={MARKE.beschreibung}>
+  <div class="karte" style="margin-bottom:16px">
+    <h2>Warum überhaupt</h2>
+    <p>
+      swat.io macht soziale Kanäle gut und E-Mail gar nicht. Wer beides betreibt, führt zwei
+      Redaktionspläne, zwei Freigabeläufe und zwei Auswertungen — und erklärt einmal im Quartal,
+      warum der Newsletter und der LinkedIn-Beitrag am selben Tag dasselbe angekündigt haben, nur
+      mit anderen Zahlen.
+    </p>
+    <p style="margin-bottom:0">
+      Der Unterschied ist deshalb keine weitere Funktion, sondern eine Zusammenlegung. Alles Übrige
+      folgt daraus.
+    </p>
+  </div>
+
+  <div class="karte" style="margin-bottom:16px">
+    <h2>Der Vergleich</h2>
+    <div class="rollbar">
+      <table>
+        <thead>
+          <tr><th></th><th>swat.io</th><th>hier</th></tr>
+        </thead>
+        <tbody>
+          {VERGLEICH.map((v) => (
+            <tr>
+              <td><strong>{v.was}</strong></td>
+              <td class="gedaempft">{v.dort}</td>
+              <td>{v.hier}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="raster zwei">
+    <div class="karte">
+      <h2>Was steht</h2>
+      <p class="klein gedaempft">
+        Der Kern — die Regeln, ohne Server, ohne Datenbank, ohne Netz prüfbar. 190 Prüfungen.
+      </p>
+      <ul class="schlicht klein" style="margin-top:12px">
+        {GEBAUT.map(([was, wie]) => (
+          <li>
+            <strong>{was}</strong><br />
+            <span class="gedaempft">{wie}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="karte">
+      <h2>Was heute fehlt</h2>
+      <p class="klein gedaempft">
+        Diese Liste wird mitgepflegt, wenn etwas fertig wird. Sie ist der Grund, aus dem man der
+        Liste daneben glauben kann.
+      </p>
+      <ul class="schlicht klein" style="margin-top:12px">
+        {FEHLT.map(([was, wie]) => (
+          <li>
+            <span class="geplant">geplant</span> <strong>{was}</strong><br />
+            <span class="gedaempft">{wie}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <div class="karte abstand">
+    <h2>Die Kanäle und ihre Grenzen</h2>
+    <p class="klein gedaempft">
+      Diese Zahlen veralten. Sie stehen an einer Stelle im Kern, mit einem Stand daran (August 2026),
+      und jeder verbundene Zugang darf seine eigene mitbringen — bei Mastodon wird sie beim Verbinden
+      aus der Instanz gelesen und nicht geraten.
+    </p>
+    <div class="rollbar">
+      <table>
+        <thead>
+          <tr>
+            <th>Netz</th><th>zählt</th><th class="zahlenspalte">Zeichen</th>
+            <th class="zahlenspalte">Bilder</th><th class="zahlenspalte">Hashtags</th><th>Besonderheit</th>
+          </tr>
+        </thead>
+        <tbody>
+          {KANALARTEN.map((art) => {
+            const r = REGELN[art];
+            const meiner = meine.find((k) => k.art === art);
+            return (
+              <tr>
+                <td><strong>{r.name}</strong></td>
+                <td class="gedaempft klein">
+                  {r.zaehlart === 'gewichtet' ? 'gewichtet, Adressen 23'
+                    : r.zaehlart === 'graphem' ? 'Graphemgruppen'
+                    : r.zaehlart === 'kurzadresse' ? 'Codepunkte, Adressen 23'
+                    : 'Codepunkte'}
+                </td>
+                <td class="zahlenspalte">
+                  {(meiner ? grenzeVon(meiner) : r.grenze).toLocaleString('de-DE')}
+                  {meiner?.grenzeUeberschrieben && <span class="klein gedaempft"> (Instanz)</span>}
+                </td>
+                <td class="zahlenspalte">{r.bilder}</td>
+                <td class="zahlenspalte">{r.hashtags ?? '—'}</td>
+                <td class="gedaempft klein">
+                  {r.brauchtMedium && 'braucht ein Bild. '}
+                  {!r.linkWirkt && 'Links wirken nicht. '}
+                  {r.umbruchBei !== null && r.umbruchBei < r.grenze && `klappt nach ${r.umbruchBei} zu.`}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="karte abstand">
+    <h2>Vier Sätze, die fast jede Detailfrage entscheiden</h2>
+    <ol class="klein" style="padding-left:20px;margin:0">
+      <li style="margin-bottom:8px">
+        <strong>Nichts behaupten, was nicht eingelöst ist.</strong> Was geplant ist, steht als geplant
+        da — auf jeder Seite, an jedem Knopf.
+      </li>
+      <li style="margin-bottom:8px">
+        <strong>Geprüft wird im Kern.</strong> Ein Knopf, der nicht angezeigt wird, ist keine
+        Absicherung: die Adresse dahinter lässt sich eintippen.
+      </li>
+      <li style="margin-bottom:8px">
+        <strong>Kein Fremdaufruf im Browser.</strong> Keine Schrift, kein Symbolsatz, keine Zählung
+        von außen. Ein Werkzeug, das Einwilligungen verwaltet und dabei selbst Daten an ein CDN gibt,
+        widerlegt sich beim Laden.
+      </li>
+      <li>
+        <strong>Ein Ausfall darf Komfort kosten, niemals Daten.</strong> Für einen Newsletter heißt
+        das: keine Mail geht zweimal hinaus, auch nicht nach einem Neustart mitten im Versand.
+      </li>
+    </ol>
+  </div>
+</Rahmen>

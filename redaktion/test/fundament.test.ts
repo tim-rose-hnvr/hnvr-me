@@ -61,6 +61,27 @@ describe('Kennungen', () => {
     const inA = werte.filter((w) => w < 0.5).length;
     ok(Math.abs(inA - 2500) < 150, `A bekam ${inA} von 5000`);
   });
+
+  /* Diese Prüfung fehlte, und das hat gekostet: mit 5000 Schlüsseln mittelt
+     sich jede Schieflage weg. Ein Verteiler hat aber 49 Empfänger, nicht 5000,
+     und die Schlüssel sehen einander dann sehr ähnlich. Ohne den Nachlauf im
+     Streuwert fielen hier 2 von 49 in die erste Gruppe statt 24. */
+  it('teilt auch wenige, einander ähnliche Schlüssel noch gleichmäßig', () => {
+    for (const anzahl of [20, 49, 120]) {
+      const inA = Array.from({ length: anzahl }, (_, i) => streuwert(`nl_1:ep_${i}`)).filter((w) => w < 0.5).length;
+      const abweichung = Math.abs(inA - anzahl / 2) / anzahl;
+      ok(abweichung < 0.2, `bei ${anzahl} Schlüsseln bekam A ${inA} — ${(abweichung * 100).toFixed(0)} % daneben`);
+    }
+  });
+
+  it('streut auch über verschiedene Versuche hinweg', () => {
+    // Derselbe Empfänger darf bei zwei Newslettern nicht zwangsläufig in
+    // derselben Gruppe landen — sonst sieht ein Teil des Bestands nie eine B.
+    const gleich = Array.from({ length: 200 }, (_, i) =>
+      streuwert(`nl_1:ep_${i}`) < 0.5 === streuwert(`nl_2:ep_${i}`) < 0.5,
+    ).filter(Boolean).length;
+    ok(gleich > 60 && gleich < 140, `${gleich} von 200 landeten beide Male gleich`);
+  });
 });
 
 describe('Token', () => {

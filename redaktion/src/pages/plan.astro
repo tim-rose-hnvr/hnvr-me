@@ -1,0 +1,254 @@
+---
+/**
+ * Der Redaktionsplan.
+ *
+ * Eine Woche, sieben Spalten, und darin **beides**: Beiträge und Newsletter.
+ * Das ist der ganze Unterschied zu einem Werkzeug für soziale Kanäle — der
+ * Newsletter steht nicht in einem zweiten Kalender, sondern in derselben
+ * Spalte wie der LinkedIn-Beitrag desselben Tages.
+ *
+ * Jeder Termin läuft durch `pruefeTermin`. Was hier an Warnungen steht, ist
+ * gerechnet und nicht eingetragen.
+ */
+import Rahmen from '../layouts/Rahmen.astro';
+import Befundliste from '../komponenten/Befundliste.astro';
+import Kanalmarke from '../komponenten/Kanalmarke.astro';
+import { geordnet, type Befund } from '../kern/befund.ts';
+import { ZUSTANDSNAMEN } from '../kern/beitrag.ts';
+import { belegungenAus, pruefeTermin, ruhemodusBefund, vomRuhemodusBetroffen } from '../kern/plan.ts';
+import { tokenbefund, type Kanalart } from '../kern/kanal.ts';
+import { beitraege, freigabelaeufe, kanaele, newsletter, planregeln } from '../kern/bestand.ts';
+import { fristbefund } from '../kern/freigabe.ts';
+import { alsText, oertlich, tagePlus, tagesbeginn, wochenbeginn, WOCHENTAGE, ZONE } from '../kern/zeit.ts';
+
+export const prerender = false;
+
+const jetzt = Date.now();
+const regeln = planregeln();
+const alleKanaele = kanaele(jetzt);
+const alleBeitraege = beitraege(jetzt);
+const alleBriefe = newsletter(jetzt);
+const belegt = belegungenAus(alleBeitraege);
+
+/** Welche Woche gezeigt wird — `?woche=-1` ist die vorige. */
+const versatz = Number(Astro.url.searchParams.get('woche') ?? '0') || 0;
+const montag = tagePlus(wochenbeginn(jetzt, ZONE), versatz * 7, ZONE);
+const heuteBeginn = tagesbeginn(jetzt, ZONE);
+
+/** Ein Stück im Plan — Beitrag oder Newsletter, dieselbe Form. */
+interface Planstueck {
+  kennung: string;
+  art: 'beitrag' | 'newsletter';
+  titel: string;
+  zeitpunkt: number;
+  zustand: string;
+  kanalarten: Array<{ art: Kanalart; name: string }>;
+  befunde: Befund[];
+  ziel: string;
+}
+
+const stuecke: Planstueck[] = [];
+
+for (const b of alleBeitraege) {
+  if (b.geplantFuer === null) continue;
+  stuecke.push({
+    kennung: b.kennung,
+    art: 'beitrag',
+    titel: b.titel,
+    zeitpunkt: b.geplantFuer,
+    zustand: ZUSTANDSNAMEN[b.zustand],
+    kanalarten: b.fassungen.map((f) => ({
+      art: f.art,
+      name: alleKanaele.find((k) => k.kennung === f.kanal)?.anzeigename ?? f.kanal,
+    })),
+    // Veröffentlichtes wird nicht mehr geprüft: es ist draußen.
+    befunde: b.zustand === 'veroeffentlicht' ? [] : pruefeTermin(b, b.geplantFuer, belegt, alleKanaele, regeln, jetzt),
+    ziel: `/werkstatt?beitrag=${b.kennung}`,
+  });
+}
+
+for (const n of alleBriefe) {
+  if (n.geplantFuer === null) continue;
+  const mailkanal = alleKanaele.find((k) => k.art === 'mail');
+  const befunde: Befund[] = [];
+  if (n.zustand !== 'gesendet') {
+    if (regeln.ruhemodus.an) {
+      befunde.push({
+        schwere: 'fehler',
+        kennung: 'plan.ruhemodus',
+        text: 'Der Ruhemodus ist an. Auch der Newsletter geht nicht hinaus.',
+      });
+    }
+    if (n.zustand === 'eingereicht' || n.zustand === 'entwurf') {
+      befunde.push({
+        schwere: 'warnung',
+        kennung: 'plan.newsletter.ohne.freigabe',
+        text: `„${n.titel}" steht im Plan, ist aber noch nicht freigegeben.`,
+      });
+    }
+    if (mailkanal) {
+      const t = tokenbefund(mailkanal, n.geplantFuer);
+      if (t) befunde.push(t);
+    }
+  }
+  stuecke.push({
+    kennung: n.kennung,
+    art: 'newsletter',
+    titel: n.titel,
+    zeitpunkt: n.geplantFuer,
+    zustand: n.zustand,
+    kanalarten: [{ art: 'mail', name: 'Newsletter' }],
+    befunde,
+    ziel: `/newsletter/${n.kennung}`,
+  });
+}
+
+const tage = Array.from({ length: 7 }, (_, i) => {
+  const tag = tagePlus(montag, i, ZONE);
+  const naechster = tagePlus(montag, i + 1, ZONE);
+  return {
+    beginn: tag,
+    nummer: oertlich(tag, ZONE).tag,
+    monat: oertlich(tag, ZONE).monat,
+    name: WOCHENTAGE[i]!,
+    istHeute: tag === heuteBeginn,
+    istWochenende: i >= 5,
+    stuecke: stuecke
+      .filter((s) => s.zeitpunkt >= tag && s.zeitpunkt < naechster)
+      .sort((a, b) => a.zeitpunkt - b.zeitpunkt),
+  };
+});
+
+/* Die Befunde der ganzen Woche, oben zusammengezogen — damit man sie sieht,
+   ohne jedes Stück anzuklicken. */
+const ruhe = ruhemodusBefund(regeln, vomRuhemodusBetroffen(alleBeitraege, jetzt).length);
+const wochenbefunde = geordnet([
+  ...(ruhe ? [ruhe] : []),
+  ...tage.flatMap((t) => t.stuecke.flatMap((s) => s.befunde)),
+  ...freigabelaeufe(jetzt)
+    .map((l) => fristbefund(l, jetzt))
+    .filter((b): b is Befund => b !== null),
+]);
+
+const eindeutig = wochenbefunde.filter(
+  (b, i, alle) => alle.findIndex((x) => x.kennung === b.kennung && x.text === b.text) === i,
+);
+
+const betroffeneBeitraege = vomRuhemodusBetroffen(alleBeitraege, jetzt).length;
+const betroffeneBriefe = alleBriefe.filter(
+  (n) => n.geplantFuer !== null && n.geplantFuer > jetzt && n.zustand !== 'gesendet',
+).length;
+
+const zeitraum = `${oertlich(montag, ZONE).tag}. — ${oertlich(tagePlus(montag, 6, ZONE), ZONE).tag}. ${
+  ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'][oertlich(tagePlus(montag, 6, ZONE), ZONE).monat - 1]
+} ${oertlich(montag, ZONE).jahr}`;
+---
+
+<Rahmen
+  titel="Plan"
+  ueberschrift="Redaktionsplan"
+  zeile="Beiträge und Newsletter in derselben Woche, derselben Spalte, demselben Blick. Jeder Termin ist gegen Abstand, Ruhezeiten und Kanalzugänge geprüft."
+>
+  <div class="zwischen" style="margin-bottom:14px">
+    <div class="reihe">
+      <a class="knopf" href={`/plan?woche=${versatz - 1}`}>← Woche davor</a>
+      <strong>{zeitraum}</strong>
+      <a class="knopf" href={`/plan?woche=${versatz + 1}`}>Woche danach →</a>
+      {versatz !== 0 && <a class="knopf" href="/plan">Heute</a>}
+    </div>
+    <div class="reihe">
+      {alleKanaele.map((k) => <Kanalmarke art={k.art} name={k.anzeigename} />)}
+    </div>
+  </div>
+
+  {eindeutig.length > 0 && (
+    <div class="karte" style="margin-bottom:14px">
+      <h2>Was diese Woche im Weg steht</h2>
+      <Befundliste befunde={eindeutig} />
+    </div>
+  )}
+
+  <div class="rollbar">
+    <div class="planwoche">
+      {tage.map((t) => (
+        <div class={`plantag${t.istHeute ? ' heute' : ''}${t.istWochenende ? ' wochenende' : ''}`}>
+          <h3>{t.name.slice(0, 2)} {t.nummer}.{t.monat}.</h3>
+          {t.stuecke.length === 0 && <p class="klein gedaempft" style="margin:0">—</p>}
+          {t.stuecke.map((s) => {
+            const schwerste = s.befunde.some((b) => b.schwere === 'fehler')
+              ? 'fehler'
+              : s.befunde.some((b) => b.schwere === 'warnung')
+                ? 'warnung'
+                : null;
+            return (
+              <a
+                class="planstueck"
+                href={s.ziel}
+                style={schwerste ? `border-left-color:var(--${schwerste})` : undefined}
+                title={s.befunde.map((b) => b.text).join('\n') || undefined}
+              >
+                <span class="zeit">{alsText(s.zeitpunkt, ZONE).split(', ').at(-1)}</span>
+                <span class="titel">{s.titel}</span>
+                <span class="kanaele">
+                  {s.kanalarten.map((k) => <Kanalmarke art={k.art} name={k.name} knapp />)}
+                  <span class="gedaempft" style="font-size:0.72rem">{s.zustand}</span>
+                </span>
+                {schwerste && (
+                  <span class={`marke ${schwerste === 'fehler' ? 'rot' : 'warn'}`} style="margin-top:4px;font-size:0.7rem">
+                    {s.befunde.filter((b) => b.schwere === schwerste).length}&nbsp;
+                    {schwerste === 'fehler' ? 'Fehler' : 'Warnung'}
+                  </span>
+                )}
+              </a>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="raster zwei abstand">
+    <div class="karte">
+      <h2>Ruhemodus</h2>
+      <p class="klein gedaempft">
+        Der eine Schalter für den Fall, dass etwas passiert ist. Er hält alles an — Beiträge <em>und</em>
+        Newsletter. Ein Krisenschalter, der nur die sozialen Kanäle erreicht, hat den Zweck verfehlt.
+      </p>
+      <p class="klein">
+        Zustand: <strong>{regeln.ruhemodus.an ? 'an' : 'aus'}</strong> · Betroffen{' '}
+        {betroffeneBeitraege === 1 ? <>wäre <strong>1</strong> geplanter Beitrag</> : <>wären <strong>{betroffeneBeitraege}</strong> geplante Beiträge</>}
+        {' und '}
+        <strong>{betroffeneBriefe}</strong> Newsletter.
+      </p>
+      <div class="reihe">
+        <button class="knopf" disabled>Ruhemodus einschalten</button>
+        <span class="geplant">geplant</span>
+      </div>
+    </div>
+
+    <div class="karte">
+      <h2>Regeln dieser Organisation</h2>
+      <table>
+        <tbody>
+          <tr><td>Raster</td><td class="zahlenspalte">{regeln.raster} Minuten</td></tr>
+          <tr><td>Kleinster Abstand je Kanal</td><td class="zahlenspalte">{regeln.mindestabstandMin} Minuten</td></tr>
+          <tr><td>Vorlauf</td><td class="zahlenspalte">{regeln.vorlaufMin} Minuten</td></tr>
+          <tr>
+            <td>Ruhezeiten</td>
+            <td class="zahlenspalte">
+              {regeln.ruhezeiten.map((r) =>
+                `${String(Math.floor(r.vonMinute / 60)).padStart(2, '0')}:${String(r.vonMinute % 60).padStart(2, '0')}–${String(Math.floor(r.bisMinute / 60)).padStart(2, '0')}:${String(r.bisMinute % 60).padStart(2, '0')}`,
+              ).join(', ')}
+            </td>
+          </tr>
+          <tr><td>Zeitzone</td><td class="zahlenspalte mono">{regeln.zone}</td></tr>
+        </tbody>
+      </table>
+      <p class="klein gedaempft" style="margin-top:10px;margin-bottom:0">
+        Geplant wird in örtlicher Zeit. In den beiden Nächten im Jahr, in denen eine Uhrzeit fehlt oder
+        doppelt ist, entscheidet der Kern ausdrücklich — er verschiebt hinter die Lücke und nimmt bei
+        einer doppelten Angabe die frühere.
+      </p>
+    </div>
+  </div>
+</Rahmen>

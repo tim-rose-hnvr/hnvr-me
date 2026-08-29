@@ -1,0 +1,242 @@
+---
+/**
+ * Die Empfänger.
+ *
+ * Diese Seite zeigt absichtlich zuerst die Zahl, die niemand sehen will: wie
+ * viele im Bestand stehen und wie viele davon **wirklich erreichbar** sind.
+ * Der Abstand zwischen beiden ist die ehrlichste Kennzahl eines Verteilers,
+ * und er gehört vor den Versand und nicht in einen Bericht danach.
+ */
+import Rahmen from '../layouts/Rahmen.astro';
+import Befundliste from '../komponenten/Befundliste.astro';
+import { geordnet } from '../kern/befund.ts';
+import {
+  BESTAETIGUNGSFRIST_MS,
+  doppelte,
+  empfaengtPost,
+  faellig,
+  pruefeAdresse,
+  SPERRGRUENDE,
+  WEICHE_GRENZE,
+  ZUSTANDSNAMEN,
+} from '../kern/empfaenger.ts';
+import { pruefeRegelwerk, segmentbild, VERGLEICHSNAMEN } from '../kern/verteiler.ts';
+import { empfaenger, kennzahlen, ORGANISATION, SEGMENTE, VERTEILER } from '../kern/bestand.ts';
+import { alsText, ZONE } from '../kern/zeit.ts';
+
+export const prerender = false;
+
+const jetzt = Date.now();
+const bestand = empfaenger(jetzt);
+const zahlen = kennzahlen(jetzt, bestand);
+const bild = segmentbild(bestand, zahlen, { organisation: ORGANISATION });
+
+const aufzuraeumen = faellig(bestand, jetzt);
+const doppelt = doppelte(bestand);
+
+/** Die Adressen einmal durch die Prüfung — Rollenpostfächer und Vertipper. */
+const adressbefunde = geordnet(
+  bestand
+    .filter((e) => e.adresse)
+    .flatMap((e) => pruefeAdresse(e.adresse!).befunde)
+    .filter((b, i, alle) => alle.findIndex((x) => x.text === b.text) === i),
+);
+
+const filter = Astro.url.searchParams.get('zustand') ?? 'alle';
+const gezeigt = bestand
+  .filter((e) => filter === 'alle' || e.zustand === filter)
+  .slice(0, 40);
+
+const ZUSTAENDE = ['alle', 'bestaetigt', 'eingetragen', 'abgemeldet', 'gesperrt'] as const;
+---
+
+<Rahmen
+  titel="Empfänger"
+  zeile="Nur wer bestätigt hat, bekommt Post. Der Wortlaut, dem zugestimmt wurde, steht im Datensatz — nicht ein Verweis darauf, denn die verlinkte Seite von damals gibt es nicht mehr."
+>
+  <div class="raster vier" style="margin-bottom:16px">
+    <dl class="zahl">
+      <dt>Im Bestand</dt>
+      <dd>{bild.imBestand}</dd>
+    </dl>
+    <dl class="zahl">
+      <dt>Wirklich erreichbar</dt>
+      <dd style="color:var(--akzent)">{bild.trifft}</dd>
+      <div class="neben">{Math.round((bild.trifft / Math.max(1, bild.imBestand)) * 100)} % des Bestands</div>
+    </dl>
+    <dl class="zahl">
+      <dt>Nie bestätigt</dt>
+      <dd>{bild.nichtBestaetigt}</dd>
+      <div class="neben">{aufzuraeumen.length} davon über die Frist</div>
+    </dl>
+    <dl class="zahl">
+      <dt>Abgemeldet · gesperrt</dt>
+      <dd>{bild.abgemeldet} · {bild.gesperrt}</dd>
+    </dl>
+  </div>
+
+  <div class="raster zwei" style="margin-bottom:14px">
+    <div class="karte">
+      <h2>Aufräumen</h2>
+      <p class="klein gedaempft">
+        Wer nach {Math.round(BESTAETIGUNGSFRIST_MS / 86_400_000)} Tagen nicht bestätigt hat, wird
+        <strong>gelöscht</strong> und nicht gesperrt: eine Sperrliste aus Menschen, die nie zugestimmt
+        haben, wäre selbst eine Sammlung ohne Rechtsgrundlage.
+      </p>
+      {aufzuraeumen.length === 0 ? (
+        <p class="klein" style="margin:0">Nichts fällig.</p>
+      ) : (
+        <>
+          <p class="klein" style="margin-bottom:6px">
+            <strong>{aufzuraeumen.length}</strong> Einträge sind fällig.
+          </p>
+          <ul class="schlicht klein gedaempft">
+            {aufzuraeumen.slice(0, 5).map((e) => (
+              <li>
+                <span class="mono">{e.adresse}</span> — eingetragen{' '}
+                {alsText(e.einwilligung.eingetragenAm, ZONE)}
+              </li>
+            ))}
+          </ul>
+          <div class="reihe" style="margin-top:9px">
+            <button class="knopf" disabled>Fällige löschen</button>
+            <span class="geplant">geplant</span>
+          </div>
+        </>
+      )}
+
+      {doppelt.size > 0 && (
+        <p class="klein" style="margin:12px 0 0">
+          <strong>{doppelt.size}</strong> Adressen stehen mehrfach im Bestand.
+        </p>
+      )}
+    </div>
+
+    <div class="karte">
+      <h2>Was an den Adressen auffällt</h2>
+      <Befundliste befunde={adressbefunde.slice(0, 6)} leer="Nichts. Alle Adressen sehen sauber aus." />
+      <p class="klein gedaempft" style="margin:10px 0 0">
+        Nach {WEICHE_GRENZE} weichen Rückläufern hintereinander wird gesperrt. Ein Versender, der
+        weiter schickt, verdirbt den Ruf der eigenen Domain für alle anderen Mails aus dem Haus —
+        auch die, die keine Werbung sind.
+      </p>
+    </div>
+  </div>
+
+  <div class="karte">
+    <div class="zwischen" style="margin-bottom:12px">
+      <h2 style="margin:0">Bestand</h2>
+      <div class="reihe">
+        {ZUSTAENDE.map((z) => (
+          <a
+            class="knopf"
+            href={z === 'alle' ? '/empfaenger' : `/empfaenger?zustand=${z}`}
+            style={filter === z ? 'border-color:var(--akzent);background:var(--akzent-hell);color:var(--akzent)' : undefined}
+          >
+            {z === 'alle' ? 'Alle' : ZUSTANDSNAMEN[z]}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="rollbar">
+      <table>
+        <thead>
+          <tr>
+            <th>Adresse</th>
+            <th>Zustand</th>
+            <th>Einwilligung</th>
+            <th>Verteiler</th>
+            <th class="zahlenspalte">Gesendet</th>
+            <th class="zahlenspalte">Geklickt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {gezeigt.map((e) => {
+            const k = zahlen.get(e.kennung);
+            return (
+              <tr>
+                <td>
+                  <span class="mono">{e.adresse ?? '— gelöscht —'}</span>
+                  {e.merkmale.vorname ? (
+                    <span class="gedaempft klein"> · {e.merkmale.vorname}, {e.merkmale.stadt}</span>
+                  ) : (
+                    <span class="marke warn" style="margin-left:6px">ohne Vornamen</span>
+                  )}
+                </td>
+                <td>
+                  <span class={`marke ${empfaengtPost(e) ? 'stark' : e.zustand === 'gesperrt' ? 'rot' : ''}`}>
+                    {ZUSTANDSNAMEN[e.zustand]}
+                  </span>
+                  {e.gesperrtWegen && <span class="klein gedaempft"> {SPERRGRUENDE[e.gesperrtWegen]}</span>}
+                </td>
+                <td class="klein gedaempft">
+                  {e.einwilligung.quelle}
+                  <br />
+                  {e.einwilligung.bestaetigtAm === null
+                    ? 'nie bestätigt'
+                    : alsText(e.einwilligung.bestaetigtAm, ZONE)}
+                </td>
+                <td class="klein gedaempft">
+                  {e.verteiler.map((v) => VERTEILER.find((x) => x.kennung === v)?.name ?? v).join(', ') || '—'}
+                </td>
+                <td class="zahlenspalte">{k?.gesendet ?? 0}</td>
+                <td class="zahlenspalte">{k?.geklickt ?? 0}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+    <p class="klein gedaempft" style="margin:12px 0 0">
+      Gezeigt werden {gezeigt.length} von {bestand.filter((e) => filter === 'alle' || e.zustand === filter).length}.
+    </p>
+  </div>
+
+  <div class="karte abstand">
+    <h2>Segmente</h2>
+    <p class="klein gedaempft">
+      Ein Segment wird bei jedem Versand neu beantwortet. Es sieht Unbestätigte und Gesperrte gar
+      nicht erst — die Zusage hängt nicht an der Sorgfalt dessen, der die Filter zusammenklickt.
+    </p>
+    {SEGMENTE.map((s) => {
+      const sb = segmentbild(bestand, zahlen, { segment: s, organisation: ORGANISATION });
+      const befunde = pruefeRegelwerk(s.regelwerk);
+      return (
+        <div style="margin-top:14px">
+          <div class="zwischen">
+            <strong>{s.name}</strong>
+            <span class="marke stark">{sb.trifft} Empfänger</span>
+          </div>
+          <ul class="schlicht klein gedaempft" style="margin-top:5px">
+            {s.regelwerk.teile.map((t) =>
+              'verknuepfung' in t ? (
+                <li>({t.teile.length} Regeln, {t.verknuepfung})</li>
+              ) : (
+                <li>
+                  <span class="mono">{t.feld}</span> {VERGLEICHSNAMEN[t.vergleich]}{' '}
+                  {t.wert !== undefined && <strong>{String(t.wert)}</strong>}
+                </li>
+              ),
+            )}
+          </ul>
+          {befunde.length > 0 && <div style="margin-top:7px"><Befundliste befunde={befunde} /></div>}
+        </div>
+      );
+    })}
+  </div>
+
+  <div class="karte abstand">
+    <h2>Löschen heißt löschen</h2>
+    <p class="klein gedaempft" style="margin-bottom:8px">
+      Eine Löschung nach Artikel 17 nimmt Adresse und Merkmale und lässt die Kennung stehen. Das ist
+      kein Schlupfloch, sondern die Bedingung dafür, dass das Ereignisprotokoll nicht gebrochen werden
+      muss: dort steht nur die Kennung, und die zeigt danach ins Leere.
+    </p>
+    <p class="klein gedaempft" style="margin:0">
+      Nachweisbar bleibt, <em>dass</em> eine Einwilligung vorlag — nicht mehr, <em>wessen</em>. Und
+      die Merkmale gehen mit: „Vorname: Anna" und „Stadt: Verden" sind zusammen ein Personenbezug,
+      auch ohne Adresse.
+    </p>
+  </div>
+</Rahmen>

@@ -1,0 +1,158 @@
+---
+/**
+ * Der gemeinsame Posteingang.
+ *
+ * Kommentare, Erwähnungen — **und Antworten auf den Newsletter**, in derselben
+ * Liste und derselben Reihenfolge. Sortiert wird nach Frist und nicht nach
+ * Kanal: ein Eingang, der nach Kanälen sortiert, ist wieder ein Stapel je
+ * Kanal, und dann hätte man ihn nicht zusammenlegen müssen.
+ */
+import Rahmen from '../layouts/Rahmen.astro';
+import Befundliste from '../komponenten/Befundliste.astro';
+import Kanalmarke from '../komponenten/Kanalmarke.astro';
+import { type Befund } from '../kern/befund.ts';
+import {
+  ARTNAMEN,
+  DIENSTZEIT_UEBLICH,
+  eingangsbild,
+  fristbefund,
+  fristrest,
+  gesperrtVon,
+  inDienstzeit,
+  reihenfolge,
+  uebernehmen,
+  VORGANGSNAMEN,
+} from '../kern/posteingang.ts';
+import { SITZUNG, vorgaenge } from '../kern/bestand.ts';
+import { alsText, ZONE } from '../kern/zeit.ts';
+
+export const prerender = false;
+
+const jetzt = Date.now();
+const alle = vorgaenge(jetzt);
+const offen = reihenfolge(alle, jetzt, DIENSTZEIT_UEBLICH, ZONE);
+const erledigt = alle.filter((v) => v.zustand === 'beantwortet' || v.zustand === 'geschlossen');
+const bild = eingangsbild(alle, jetzt, DIENSTZEIT_UEBLICH, ZONE);
+const dienst = inDienstzeit(jetzt, DIENSTZEIT_UEBLICH, ZONE);
+
+/** Je Vorgang: Frist, Sperre und was diese Rolle hier gerade tun kann. */
+const zeilen = offen.map((v) => {
+  const rest = fristrest(v, jetzt, DIENSTZEIT_UEBLICH, ZONE);
+  const versuch = uebernehmen(v, SITZUNG, jetzt);
+  const befunde: Befund[] = [];
+  const f = fristbefund(v, jetzt, DIENSTZEIT_UEBLICH, ZONE);
+  if (f) befunde.push(f);
+  if (!versuch.ok) befunde.push(versuch.befund);
+  return { vorgang: v, rest, halter: gesperrtVon(v, jetzt), darfUebernehmen: versuch.ok, befunde };
+});
+
+function restText(minuten: number): string {
+  if (minuten < 0) return `${Math.abs(minuten)} Dienstminuten über der Frist`;
+  if (minuten < 60) return `noch ${minuten} Dienstminuten`;
+  return `noch ${Math.floor(minuten / 60)} Dienststunden`;
+}
+---
+
+<Rahmen
+  titel="Eingang"
+  ueberschrift="Posteingang"
+  zeile="Alle Kanäle in einer Liste, Antworten auf den Newsletter eingeschlossen. Fristen laufen in Dienstzeiten — was am Freitagabend eingeht, ist am Samstag nicht überfällig."
+>
+  <div class="raster vier" style="margin-bottom:16px">
+    <dl class="zahl"><dt>Offen</dt><dd>{bild.offen}</dd></dl>
+    <dl class="zahl">
+      <dt>Über der Frist</dt>
+      <dd style={bild.ueberfaellig > 0 ? 'color:var(--warnung)' : undefined}>{bild.ueberfaellig}</dd>
+    </dl>
+    <dl class="zahl"><dt>In Arbeit</dt><dd>{bild.inArbeit}</dd><div class="neben">gerade übernommen</div></dl>
+    <dl class="zahl">
+      <dt>Mittlere erste Antwort</dt>
+      <dd>{bild.mittlereAntwortzeit === null ? '—' : `${bild.mittlereAntwortzeit}′`}</dd>
+      <div class="neben">in Dienstminuten</div>
+    </dl>
+  </div>
+
+  {!dienst && (
+    <div class="karte" style="margin-bottom:14px">
+      <p class="klein" style="margin:0">
+        <strong>Außerhalb der Dienstzeiten.</strong> Die Fristen stehen still, bis sie wieder beginnen —
+        Montag bis Freitag, 9 bis 18 Uhr. Eine Frist, die nachts weiterläuft, wird am Montag abgeschaltet
+        und danach nie wieder eingeschaltet.
+      </p>
+    </div>
+  )}
+
+  <h2>Offen</h2>
+  {zeilen.length === 0 && <p class="gedaempft">Nichts offen.</p>}
+
+  {zeilen.map(({ vorgang: v, rest, halter, darfUebernehmen, befunde }) => (
+    <div class={`vorgang${rest < 0 ? ' ueberfaellig' : ''}`}>
+      <div class="vorgang-kopf">
+        <Kanalmarke art={v.kanalart} />
+        <span class="von">{v.von}</span>
+        <span class="marke">{ARTNAMEN[v.art]}</span>
+        <span class="klein gedaempft">{alsText(v.eingegangenAm, ZONE)}</span>
+        <span class={`marke ${rest < 0 ? 'warn' : ''}`} style="margin-left:auto">{restText(rest)}</span>
+      </div>
+
+      <blockquote>{v.text}</blockquote>
+
+      {v.notizen.map((n) => (
+        <div class="notiz">
+          <strong>{n.person}</strong>, {alsText(n.zeitpunkt, ZONE)}: {n.text}
+          <span class="marke" style="margin-left:6px">nur intern</span>
+        </div>
+      ))}
+
+      {befunde.length > 0 && <div style="margin-top:9px"><Befundliste befunde={befunde} /></div>}
+
+      <div class="reihe" style="margin-top:11px">
+        <span class="marke">{VORGANGSNAMEN[v.zustand]}</span>
+        {halter && <span class="klein gedaempft">bei {halter}</span>}
+        <span style="margin-left:auto"></span>
+        <button class="knopf" disabled>Notiz</button>
+        <button class="knopf wichtig" disabled>
+          {darfUebernehmen ? (halter === SITZUNG.person ? 'Antworten' : 'Übernehmen') : 'Belegt'}
+        </button>
+        <span class="geplant">geplant</span>
+      </div>
+    </div>
+  ))}
+
+  {erledigt.length > 0 && (
+    <>
+      <h2 class="abstand">Erledigt</h2>
+      {erledigt.map((v) => (
+        <div class="vorgang">
+          <div class="vorgang-kopf">
+            <Kanalmarke art={v.kanalart} />
+            <span class="von">{v.von}</span>
+            <span class="klein gedaempft">{alsText(v.eingegangenAm, ZONE)}</span>
+            <span class="marke stark" style="margin-left:auto">{VORGANGSNAMEN[v.zustand]}</span>
+          </div>
+          <blockquote>{v.text}</blockquote>
+          {v.antwort && (
+            <p class="klein" style="margin:0">
+              <strong>{v.antwort.person}</strong> antwortete {alsText(v.antwort.zeitpunkt, ZONE)}:
+              „{v.antwort.text}"
+            </p>
+          )}
+        </div>
+      ))}
+    </>
+  )}
+
+  <div class="karte abstand">
+    <h2>Warum eine Sperre und keine Beschriftung</h2>
+    <p class="klein gedaempft" style="margin-bottom:8px">
+      Zwei Antworten auf denselben Kommentar sind schlimmer als eine späte. Wer einen Vorgang
+      übernimmt, hält ihn 30 Minuten — lang genug, um in Ruhe zu antworten, kurz genug, dass ein
+      vergessener Vorgang nicht den Nachmittag blockiert.
+    </p>
+    <p class="klein gedaempft" style="margin:0">
+      Dazu die Prüfung, die keine Sperre fängt: wer auf einen schon beantworteten Vorgang antwortet,
+      bekommt den Namen dessen genannt, der zuvor geantwortet hat — der Fall zweier offener Fenster
+      derselben Person.
+    </p>
+  </div>
+</Rahmen>

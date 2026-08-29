@@ -1,0 +1,162 @@
+---
+/**
+ * Zustellbarkeit.
+ *
+ * Der unangenehme Teil. Er entscheidet, ob die Mail ankommt, und er lässt sich
+ * durch Gestaltung nicht ausgleichen: eine Domain ohne DMARC landet seit
+ * Februar 2024 bei Google und Yahoo im Werbeordner oder gar nicht, gleich wie
+ * gut der Betreff ist.
+ *
+ * Diese Seite steht so weit vorn in der Navigation wie die Auswertung, weil sie
+ * genauso oft gebraucht wird — und weil ein Werkzeug, das sie versteckt, sie
+ * damit zum Problem des Kunden macht.
+ */
+import Rahmen from '../layouts/Rahmen.astro';
+import Befundliste from '../komponenten/Befundliste.astro';
+import { geordnet, haeltAn, nach } from '../kern/befund.ts';
+import { aufwaermplan, pruefeEinrichtung } from '../kern/zustellung.ts';
+import { beschwerdequote, quotenbefund, legeLaufAn, alsGesendet, alsEndgueltig, starten } from '../kern/versand.ts';
+import { DNS, empfaenger, kennzahlen, mailzahlen, ORGANISATION } from '../kern/bestand.ts';
+import { empfaengerFuer } from '../kern/verteiler.ts';
+import { alsProzent } from '../kern/auswertung.ts';
+
+export const prerender = false;
+
+const jetzt = Date.now();
+const bestand = empfaenger(jetzt);
+const zahlen = kennzahlen(jetzt, bestand);
+const erreichbar = empfaengerFuer(bestand, zahlen, { organisation: ORGANISATION });
+
+/** Wie viel am Tag versandt würde, wenn einmal im Monat gesendet wird. */
+const proTag = erreichbar.length;
+const befunde = geordnet(pruefeEinrichtung(DNS, proTag));
+const plan = aufwaermplan(Math.max(1000, erreichbar.length * 4));
+
+/* Ein Lauf mit den Zahlen des letzten Versands — damit die Beschwerdequote
+   nicht behauptet, sondern gerechnet ist. */
+const letzter = mailzahlen()[0]!;
+const angelegt = legeLaufAn(
+  'vl_probe',
+  ORGANISATION,
+  'nl_0',
+  Array.from({ length: letzter.gesendet }, (_, i) => ({ kennung: `ep_${i}`, variante: 'a' })),
+  2000,
+);
+const gestartet = starten(angelegt, jetzt);
+let lauf = gestartet.ok ? gestartet.lauf : angelegt;
+
+for (let i = 0; i < letzter.zugestellt; i++) lauf = alsGesendet(lauf, lauf.posten[i]!.kennung, jetzt);
+// Die Beschwerden liegen unter den Zugestellten: gemeldet wird, was ankam.
+for (let i = 0; i < letzter.beschwerden; i++) lauf = alsEndgueltig(lauf, lauf.posten[i]!.kennung, 'beschwerde', 'FBL');
+const quote = beschwerdequote(lauf);
+const qBefund = quotenbefund(lauf);
+
+const ANFORDERUNGEN = [
+  { was: 'SPF und DKIM, beide bestanden', erfuellt: !befunde.some((b) => (b.stelle === 'spf' || b.stelle === 'dkim') && b.schwere === 'fehler') },
+  { was: 'DMARC, mindestens p=none', erfuellt: !befunde.some((b) => b.stelle === 'dmarc' && b.schwere === 'fehler') },
+  { was: 'Abmeldung mit einem Klick im Kopf der Mail', erfuellt: true },
+  { was: 'Umsetzung der Abmeldung binnen zwei Tagen', erfuellt: true },
+  { was: 'Beschwerdequote dauerhaft unter 0,3 %', erfuellt: quote < 0.003 },
+  { was: 'Reine Textfassung wird mitgeschickt', erfuellt: true },
+];
+---
+
+<Rahmen
+  titel="Zustellbarkeit"
+  zeile="Ob die Mail ankommt, entscheidet sich vor dem Betreff. Die Anforderungen von Google und Yahoo für Versender ab 5 000 Mails am Tag — geprüft, nicht behauptet."
+>
+  <div class="raster zwei" style="margin-bottom:16px">
+    <div class="karte">
+      <h2>Die Anforderungen</h2>
+      <ul class="schlicht">
+        {ANFORDERUNGEN.map((a) => (
+          <li class="reihe">
+            <span style={`color:var(--${a.erfuellt ? 'akzent' : 'fehler'});font-weight:700;width:1em`}>
+              {a.erfuellt ? '✓' : '✕'}
+            </span>
+            <span>{a.was}</span>
+          </li>
+        ))}
+      </ul>
+      <p class="klein gedaempft" style="margin:12px 0 0">
+        Bei derzeit <strong>{erreichbar.length.toLocaleString('de-DE')}</strong> erreichbaren Empfängern
+        {proTag >= 5000
+          ? ' greifen die Regeln für Massenversender in vollem Umfang.'
+          : ' liegt der Versand noch unter der Schwelle von 5 000 am Tag — beim Wachsen werden alle Zeilen oben zur Bedingung.'}
+      </p>
+    </div>
+
+    <div class="karte">
+      <h2>Beschwerdequote</h2>
+      <dl class="zahl" style="border:0;padding:0">
+        <dt>Als Werbung gemeldet, letzter Versand</dt>
+        <dd style={quote >= 0.001 ? 'color:var(--warnung)' : 'color:var(--akzent)'}>{alsProzent(quote)}</dd>
+      </dl>
+      <div class="balken" style="margin:10px 0">
+        <i style={`width:${Math.min(100, (quote / 0.003) * 100)}%;background:${quote >= 0.003 ? 'var(--fehler)' : quote >= 0.001 ? 'var(--warnung)' : 'var(--akzent)'}`}></i>
+      </div>
+      <p class="klein gedaempft" style="margin:0 0 8px">
+        Die Skala endet bei 0,3 % — der Grenze, ab der Google und Yahoo die ganze Domain drosseln,
+        nicht nur diesen Newsletter.
+      </p>
+      {qBefund ? <Befundliste befunde={[qBefund]} /> : <p class="klein" style="margin:0">Unauffällig.</p>}
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2>Einträge im DNS</h2>
+    <Befundliste befunde={befunde} leer="Alles in Ordnung." />
+    {!haeltAn(befunde) && nach(befunde, 'warnung').length === 0 && (
+      <p class="klein" style="margin:10px 0 0;color:var(--akzent)">Die Einrichtung trägt.</p>
+    )}
+
+    <hr class="trenner" />
+
+    <table>
+      <tbody>
+        <tr>
+          <td style="white-space:nowrap"><strong>SPF</strong><br /><span class="klein gedaempft">TXT auf der Domain</span></td>
+          <td class="mono klein" style="word-break:break-all">{DNS.spf ?? '— fehlt —'}</td>
+        </tr>
+        <tr>
+          <td style="white-space:nowrap"><strong>DKIM</strong><br /><span class="klein gedaempft">TXT unter <span class="mono">…_domainkey</span></span></td>
+          <td class="mono klein" style="word-break:break-all">{DNS.dkim ? `${DNS.dkim.slice(0, 90)}…` : '— fehlt —'}</td>
+        </tr>
+        <tr>
+          <td style="white-space:nowrap"><strong>DMARC</strong><br /><span class="klein gedaempft">TXT unter <span class="mono">_dmarc</span></span></td>
+          <td class="mono klein" style="word-break:break-all">{DNS.dmarc ?? '— fehlt —'}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="klein gedaempft" style="margin:12px 0 0">
+      Die Beurteilung ist eine reine Funktion über die schon aufgelösten Einträge. Das Auflösen gehört
+      nicht in den Kern, das Beurteilen schon — so steht im Betrieb dieselbe Beurteilung wie in der
+      Prüfung, und jede Regel lässt sich ohne Netz nachrechnen.
+    </p>
+  </div>
+
+  <div class="karte abstand">
+    <h2>Aufwärmen einer neuen Versanddomain</h2>
+    <p class="klein gedaempft">
+      Eine Domain, die gestern nichts versandt hat und heute {(erreichbar.length * 4).toLocaleString('de-DE')} Mails
+      abgibt, ist aus Sicht jedes Anbieters ein übernommenes Konto. Die Menge wird deshalb täglich
+      etwa verdoppelt — nicht weil 50 eine besondere Zahl wäre, sondern weil die Steigerung zählt und
+      nicht der Anfang.
+    </p>
+    <div class="rollbar">
+      <table>
+        <thead>
+          <tr>{plan.slice(0, 12).map((p) => <th class="zahlenspalte">Tag {p.tag}</th>)}</tr>
+        </thead>
+        <tbody>
+          <tr>{plan.slice(0, 12).map((p) => <td class="zahlenspalte">{p.hoechstmenge.toLocaleString('de-DE')}</td>)}</tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="klein gedaempft" style="margin:12px 0 0">
+      Der Plan ist eine Warnung und keine Sperre: es gibt Domains, die seit Jahren senden und keinen
+      brauchen. Wer ihn überschreitet, soll es nur wissen — der Ruf einer Domain ist teuer
+      zurückzugewinnen.
+    </p>
+  </div>
+</Rahmen>

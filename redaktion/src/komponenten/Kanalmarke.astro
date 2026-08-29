@@ -1,0 +1,22 @@
+---
+/** Ein Kanal als kleine Marke — Punkt in der Kanalfarbe plus Name. */
+import { KANALFARBEN } from '../kern/marke.ts';
+import { REGELN, type Kanalart } from '../kern/kanal.ts';
+
+interface Props {
+  art: Kanalart;
+  name?: string;
+  /** Nur der Punkt, ohne Text — für enge Stellen wie den Plan. */
+  knapp?: boolean;
+}
+
+const { art, name, knapp = false } = Astro.props;
+const farbe = KANALFARBEN[art] ?? '#6b675e';
+const beschriftung = name ?? REGELN[art].name;
+---
+
+{knapp ? (
+  <span class="punkt" style={`background:${farbe}`} title={beschriftung} role="img" aria-label={beschriftung}></span>
+) : (
+  <span class="marke"><span class="punkt" style={`background:${farbe}`}></span>{beschriftung}</span>
+)}

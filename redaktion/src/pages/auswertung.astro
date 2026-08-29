@@ -1,0 +1,252 @@
+---
+/**
+ * Auswertung.
+ *
+ * Die Seite, auf der eine Zahl fehlt, die andere Werkzeuge groß anzeigen: eine
+ * gemeinsame Reichweite über E-Mail und soziale Kanäle. Sie ließe sich
+ * addieren und wäre eine Erfindung — eine Zustellung und eine Auslieferung in
+ * einer Zeitleiste sind nicht dasselbe Ereignis.
+ *
+ * Zusammengezählt werden nur Klicks. Sie bedeuten auf beiden Seiten dasselbe.
+ */
+import Rahmen from '../layouts/Rahmen.astro';
+import Befundliste from '../komponenten/Befundliste.astro';
+import Kanalmarke from '../komponenten/Kanalmarke.astro';
+import {
+  alsProzent,
+  entscheideVersuch,
+  gesamtbild,
+  kanalbild,
+  OEFFNUNGSVORBEHALT,
+  pruefeZaehlweise,
+  quoten,
+  regungsrate,
+} from '../kern/auswertung.ts';
+import { beitragszahlen, kanaele, mailzahlen, newsletter, ZAEHLEINSTELLUNG } from '../kern/bestand.ts';
+import { alsText, ZONE } from '../kern/zeit.ts';
+
+export const prerender = false;
+
+const jetzt = Date.now();
+const mail = mailzahlen();
+const sozial = beitragszahlen(jetzt);
+const alleKanaele = kanaele(jetzt);
+const briefe = newsletter(jetzt);
+
+const zeitraum = { von: jetzt - 30 * 86_400_000, bis: jetzt };
+const gesamt = gesamtbild(zeitraum, mail, sozial);
+
+const letzter = mail[0]!;
+const q = quoten(letzter, ZAEHLEINSTELLUNG.oeffnungen !== 'aus');
+
+const einstellungsbefunde = pruefeZaehlweise(ZAEHLEINSTELLUNG);
+
+/* Ein A/B-Versuch, wie er ausginge: über Klicks entschieden, weil Öffnungen
+   den Fehler direkt in die Entscheidung tragen. */
+const versuch = entscheideVersuch(
+  [
+    { variante: 'a', zahlen: { ...letzter, zugestellt: 600, geklickt: 71, geoeffnet: 262 } },
+    { variante: 'b', zahlen: { ...letzter, zugestellt: 598, geklickt: 96, geoeffnet: 259 } },
+  ],
+  'klick',
+);
+
+const kanalbilder = alleKanaele
+  .filter((k) => k.art !== 'mail')
+  .map((k) => ({ kanal: k, bild: kanalbild(sozial, k.kennung) }))
+  .filter((x) => x.bild.beitraege > 0);
+---
+
+<Rahmen
+  titel="Auswertung"
+  zeile="Letzte 30 Tage. Eine gemeinsame Reichweite steht hier nicht — sie wäre addiert und damit erfunden."
+>
+  <div class="raster vier" style="margin-bottom:16px">
+    <dl class="zahl">
+      <dt>Newsletter zugestellt</dt>
+      <dd>{gesamt.mail.zugestellt.toLocaleString('de-DE')}</dd>
+      <div class="neben">{gesamt.mail.versaende} Versände</div>
+    </dl>
+    <dl class="zahl">
+      <dt>Beiträge veröffentlicht</dt>
+      <dd>{gesamt.sozial.beitraege}</dd>
+      <div class="neben">{gesamt.sozial.regungen} Regungen</div>
+    </dl>
+    <dl class="zahl">
+      <dt>Klicks zusammen</dt>
+      <dd style="color:var(--akzent)">{gesamt.klicksZusammen.toLocaleString('de-DE')}</dd>
+      <div class="neben">{gesamt.mail.klicks} aus Mail, {gesamt.sozial.klicks} aus sozialen Kanälen</div>
+    </dl>
+    <dl class="zahl">
+      <dt>Abmeldungen</dt>
+      <dd>{gesamt.mail.abmeldungen}</dd>
+      <div class="neben">{alsProzent(gesamt.mail.abmeldungen / Math.max(1, gesamt.mail.zugestellt))} der Zustellungen</div>
+    </dl>
+  </div>
+
+  <div class="karte" style="margin-bottom:14px">
+    <h2>Der Vorbehalt, der zu jeder Öffnungsrate gehört</h2>
+    <div class="befund hinweis">
+      <span class="befund-zeichen" aria-hidden="true">·</span>
+      <span>{OEFFNUNGSVORBEHALT}</span>
+    </div>
+    <p class="klein gedaempft" style="margin:10px 0 0">
+      Er steht nicht in dieser Seite, sondern im Ergebnis der Rechnung
+      (<code class="mono">oeffnungenSindGeschaetzt</code>). Damit kann keine Oberfläche ihn versehentlich
+      weglassen — auch kein Bericht, den jemand später hinzufügt.
+    </p>
+  </div>
+
+  <div class="raster zwei">
+    <div class="karte">
+      <h2>Letzter Versand</h2>
+      <p class="klein gedaempft" style="margin-bottom:12px">
+        {briefe.find((n) => n.zustand === 'gesendet')?.titel ?? 'Newsletter'} ·
+        {' '}{letzter.gesendet.toLocaleString('de-DE')} abgeschickt
+      </p>
+      <table>
+        <tbody>
+          <tr>
+            <td>Zustellquote</td>
+            <td class="zahlenspalte"><strong>{alsProzent(q.zustellquote)}</strong></td>
+            <td class="klein gedaempft">{letzter.zugestellt.toLocaleString('de-DE')} von {letzter.gesendet.toLocaleString('de-DE')}</td>
+          </tr>
+          <tr>
+            <td>Öffnungsrate<span class="marke warn" style="margin-left:6px">geschätzt</span></td>
+            <td class="zahlenspalte">{alsProzent(q.oeffnungsrate)}</td>
+            <td class="klein gedaempft">auf Zugestellte, nicht auf Gesendete</td>
+          </tr>
+          <tr>
+            <td>Klickrate</td>
+            <td class="zahlenspalte"><strong>{alsProzent(q.klickrate)}</strong></td>
+            <td class="klein gedaempft">die verlässliche Zahl</td>
+          </tr>
+          <tr>
+            <td>Klicks je Öffnung</td>
+            <td class="zahlenspalte">{alsProzent(q.klickAufOeffnung)}</td>
+            <td class="klein gedaempft">stabiler, der Fehler steckt im Nenner</td>
+          </tr>
+          <tr>
+            <td>Rückläufer</td>
+            <td class="zahlenspalte">{alsProzent(q.ruecklaeuferquote)}</td>
+            <td class="klein gedaempft">{letzter.hart} hart, {letzter.weich} weich</td>
+          </tr>
+          <tr>
+            <td>Als Werbung gemeldet</td>
+            <td class="zahlenspalte" style={q.beschwerderate >= 0.001 ? 'color:var(--warnung)' : undefined}>
+              {alsProzent(q.beschwerderate)}
+            </td>
+            <td class="klein gedaempft">Grenze 0,3 %</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="karte">
+      <h2>A/B-Versuch</h2>
+      {versuch.entschieden ? (
+        <>
+          <p style="margin-bottom:8px">
+            Variante <strong>{versuch.gewinner.toUpperCase()}</strong> gewinnt mit
+            {' '}{alsProzent(versuch.vorsprung)} Vorsprung, gemessen an {versuch.mass === 'klick' ? 'Klicks' : 'Öffnungen'}.
+          </p>
+          <div class="balken" style="margin-bottom:10px">
+            <i style="width:42%;background:var(--linie-stark)"></i>
+            <i style="width:58%;background:var(--akzent)"></i>
+          </div>
+        </>
+      ) : (
+        <p style="margin-bottom:8px">Noch nicht entschieden: {versuch.grund}</p>
+      )}
+      {versuch.befunde.length > 0 && <Befundliste befunde={versuch.befunde} />}
+      <p class="klein gedaempft" style="margin:10px 0 0">
+        Unter 500 Zustellungen und unter 20 % Vorsprung wird nichts ausgerufen. Bei 500 Zustellungen
+        und 2 % Unterschied wird sonst eine Betreffzeile zur Siegerin erklärt, die keine ist.
+      </p>
+    </div>
+  </div>
+
+  <div class="karte abstand">
+    <h2>Soziale Kanäle</h2>
+    <div class="rollbar">
+      <table>
+        <thead>
+          <tr>
+            <th>Kanal</th>
+            <th class="zahlenspalte">Beiträge</th>
+            <th class="zahlenspalte">Regungen</th>
+            <th class="zahlenspalte">Klicks</th>
+            <th class="zahlenspalte">Regungsrate</th>
+          </tr>
+        </thead>
+        <tbody>
+          {kanalbilder.map(({ kanal, bild }) => (
+            <tr>
+              <td><Kanalmarke art={kanal.art} name={kanal.anzeigename} /></td>
+              <td class="zahlenspalte">{bild.beitraege}</td>
+              <td class="zahlenspalte">{bild.regungen}</td>
+              <td class="zahlenspalte">{bild.klicks}</td>
+              <td class="zahlenspalte">
+                {bild.mittlereRegungsrate === null ? (
+                  <span class="gedaempft" title="Dieses Netz gibt keine Auslieferungen heraus.">—</span>
+                ) : (
+                  alsProzent(bild.mittlereRegungsrate)
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="klein gedaempft" style="margin:12px 0 0">
+      Wo ein Strich steht, gibt das Netz keine Auslieferungen heraus. Die meisten Werkzeuge setzen
+      dort die Zahl der Folgenden ein — und die Zahl, die dabei herauskommt, ist eine andere als die
+      auf dem Nachbarkanal. Zwei Zahlen mit demselben Namen und verschiedener Bedeutung sind
+      schlimmer als eine fehlende.
+    </p>
+  </div>
+
+  <div class="karte abstand">
+    <h2>Einzelne Beiträge</h2>
+    <div class="rollbar">
+      <table>
+        <thead>
+          <tr>
+            <th>Beitrag</th><th>Kanal</th><th>Veröffentlicht</th>
+            <th class="zahlenspalte">Auslieferungen</th><th class="zahlenspalte">Regungen</th><th class="zahlenspalte">Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sozial.map((z) => {
+            const rate = regungsrate(z);
+            return (
+              <tr>
+                <td class="mono klein">{z.beitrag}</td>
+                <td><Kanalmarke art={z.kanalart} /></td>
+                <td class="klein gedaempft">{alsText(z.veroeffentlichtAm, ZONE)}</td>
+                <td class="zahlenspalte">{z.auslieferungen === null ? <span class="gedaempft">—</span> : z.auslieferungen.toLocaleString('de-DE')}</td>
+                <td class="zahlenspalte">{z.regungen}</td>
+                <td class="zahlenspalte">{rate === null ? <span class="gedaempft">—</span> : alsProzent(rate)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="karte abstand">
+    <h2>Wie gezählt wird</h2>
+    <table style="margin-bottom:12px">
+      <tbody>
+        <tr><td>Öffnungen</td><td class="zahlenspalte"><span class="marke">{ZAEHLEINSTELLUNG.oeffnungen}</span></td></tr>
+        <tr><td>Klicks</td><td class="zahlenspalte"><span class="marke">{ZAEHLEINSTELLUNG.klicks}</span></td></tr>
+      </tbody>
+    </table>
+    <Befundliste befunde={einstellungsbefunde} />
+    <p class="klein gedaempft" style="margin:12px 0 0">
+      Die Zählung geht auch ganz ohne Personenbezug. Dann fehlen die Segmente nach Verhalten — und das
+      steht dann so da, statt sie lautlos leer zu lassen.
+    </p>
+  </div>
+</Rahmen>

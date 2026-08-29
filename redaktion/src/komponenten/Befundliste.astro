@@ -1,0 +1,46 @@
+---
+/**
+ * Befunde anzeigen.
+ *
+ * An einer Stelle, damit die drei Schweregrade überall gleich aussehen und
+ * ein Fehler nirgends versehentlich wie ein Hinweis wirkt.
+ */
+import { geordnet, type Befund } from '../kern/befund.ts';
+
+interface Props {
+  befunde: readonly Befund[];
+  /** Was steht da, wenn nichts anliegt? Leer heißt: gar nichts anzeigen. */
+  leer?: string;
+}
+
+const { befunde, leer } = Astro.props;
+const sortiert = geordnet(befunde);
+const ZEICHEN = { fehler: '✕', warnung: '!', hinweis: '·' } as const;
+const WORT = { fehler: 'Fehler', warnung: 'Warnung', hinweis: 'Hinweis' } as const;
+---
+
+{sortiert.length === 0 && leer && <p class="klein gedaempft">{leer}</p>}
+
+{sortiert.length > 0 && (
+  <ul class="befundliste">
+    {sortiert.map((b) => (
+      <li class={`befund ${b.schwere}`}>
+        <span class="befund-zeichen" aria-hidden="true">{ZEICHEN[b.schwere]}</span>
+        <span><b class="sr-nur">{WORT[b.schwere]}: </b>{b.text}</span>
+      </li>
+    ))}
+  </ul>
+)}
+
+<style>
+  /* Der Schweregrad steht als Farbe da — und als Wort für alle, die die
+     Farbe nicht sehen. */
+  .sr-nur {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+</style>

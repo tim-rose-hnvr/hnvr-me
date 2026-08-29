@@ -1,0 +1,215 @@
+---
+/**
+ * Die Werkstatt.
+ *
+ * Ein Gedanke, je Kanal eine Fassung, und neben jeder Fassung der Zähler
+ * dieses Netzes — nicht ein gemeinsamer. Der Zähler rechnet im Browser mit
+ * demselben Modul wie der Server: `kern/zeichen.ts` läuft an beiden Enden,
+ * und deshalb kann die Anzeige nicht von der Prüfung abweichen.
+ *
+ * Das ist der eigentliche Grund, aus dem der Kern nichts von Astro weiß.
+ */
+import Rahmen from '../layouts/Rahmen.astro';
+import Befundliste from '../komponenten/Befundliste.astro';
+import Kanalmarke from '../komponenten/Kanalmarke.astro';
+import { geordnet } from '../kern/befund.ts';
+import { pruefeBeitrag, pruefeFassung, ZUSTANDSNAMEN, naechsteZustaende } from '../kern/beitrag.ts';
+import { grenzeVon, regelnVon } from '../kern/kanal.ts';
+import { beitraege, kanaele } from '../kern/bestand.ts';
+import { zaehle } from '../kern/zeichen.ts';
+import { alsFeldwert, ZONE } from '../kern/zeit.ts';
+
+export const prerender = false;
+
+const jetzt = Date.now();
+const alleKanaele = kanaele(jetzt);
+const alle = beitraege(jetzt);
+
+const gewaehlt = Astro.url.searchParams.get('beitrag');
+const beitrag = alle.find((b) => b.kennung === gewaehlt) ?? alle.find((b) => b.zustand === 'entwurf') ?? alle[0]!;
+
+const befunde = geordnet(pruefeBeitrag(beitrag, alleKanaele));
+
+/** Was je Fassung angezeigt wird — alles im Kern gerechnet. */
+const fassungen = beitrag.fassungen.map((f) => {
+  const kanal = alleKanaele.find((k) => k.kennung === f.kanal);
+  return {
+    fassung: f,
+    kanal,
+    regeln: kanal ? regelnVon(kanal) : null,
+    grenze: kanal ? grenzeVon(kanal) : 0,
+    zahl: kanal ? zaehle(f.text, regelnVon(kanal).zaehlart) : 0,
+    befunde: kanal ? geordnet(pruefeFassung(f, kanal)) : [],
+  };
+});
+
+const weiter = naechsteZustaende(beitrag.zustand);
+---
+
+<Rahmen
+  titel="Werkstatt"
+  zeile="Ein Gedanke, je Kanal eine Fassung. Der Zähler neben jedem Feld ist der des jeweiligen Netzes — X wiegt Emoji doppelt und rechnet Adressen pauschal mit 23, Bluesky zählt Graphemgruppen."
+>
+  <div class="reihe" style="margin-bottom:14px">
+    {alle.map((b) => (
+      <a
+        class="knopf"
+        href={`/werkstatt?beitrag=${b.kennung}`}
+        aria-current={b.kennung === beitrag.kennung ? 'true' : undefined}
+        style={b.kennung === beitrag.kennung ? 'border-color:var(--akzent);background:var(--akzent-hell);color:var(--akzent)' : undefined}
+      >
+        {b.titel}
+        <span class="marke">{ZUSTANDSNAMEN[b.zustand]}</span>
+      </a>
+    ))}
+  </div>
+
+  <div class="werkbank">
+    <div>
+      <div class="karte" style="margin-bottom:14px">
+        <div class="zwischen">
+          <div>
+            <h2 style="margin-bottom:2px">{beitrag.titel}</h2>
+            <p class="klein gedaempft" style="margin:0">
+              Von {beitrag.verfasser} · Zustand {ZUSTANDSNAMEN[beitrag.zustand]}
+              {beitrag.geplantFuer !== null && <> · geplant für <span class="mono">{alsFeldwert(beitrag.geplantFuer, ZONE)}</span></>}
+            </p>
+          </div>
+          <div class="reihe">
+            {weiter.map((z) => (
+              <button class={`knopf${z === 'eingereicht' ? ' wichtig' : ''}`} disabled>
+                {ZUSTANDSNAMEN[z]}
+              </button>
+            ))}
+            <span class="geplant">geplant</span>
+          </div>
+        </div>
+      </div>
+
+      {fassungen.map(({ fassung, kanal, regeln, grenze, zahl, befunde: eigene }) => (
+        <div class="fassung">
+          <div class="fassung-kopf">
+            {kanal && <Kanalmarke art={kanal.art} name={kanal.anzeigename} />}
+            {regeln && (
+              <span class="klein gedaempft">
+                zählt {regeln.zaehlart === 'gewichtet' ? 'gewichtet' : regeln.zaehlart === 'graphem' ? 'Graphemgruppen' : regeln.zaehlart === 'kurzadresse' ? 'Codepunkte, Adressen pauschal 23' : 'Codepunkte'}
+              </span>
+            )}
+            <span
+              class={`zaehler${zahl > grenze ? ' drueber' : zahl > grenze * 0.9 ? ' knapp' : ''}`}
+              data-zaehler-fuer={fassung.kanal}
+            >{zahl} / {grenze}</span>
+          </div>
+
+          <textarea
+            data-feld={fassung.kanal}
+            data-zaehlart={regeln?.zaehlart}
+            data-grenze={grenze}
+            rows="5"
+            readonly
+          >{fassung.text}</textarea>
+
+          {fassung.ersterKommentar && (
+            <div class="feld">
+              <label>Erster Kommentar — dort wandern die Hashtags hin, damit die Bildunterschrift lesbar bleibt</label>
+              <textarea rows="2" readonly>{fassung.ersterKommentar}</textarea>
+            </div>
+          )}
+
+          {fassung.medien.length > 0 && (
+            <div class="feld">
+              <label>Medien</label>
+              <ul class="schlicht klein">
+                {fassung.medien.map((m) => (
+                  <li class="reihe">
+                    <span class="mono">{m.datei}</span>
+                    {m.schmueckend ? (
+                      <span class="marke">schmückend, ohne Alternativtext</span>
+                    ) : m.alt.trim() ? (
+                      <span class="gedaempft">„{m.alt}"</span>
+                    ) : (
+                      <span class="marke rot">Alternativtext fehlt</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {eigene.length > 0 && <div style="margin-top:10px"><Befundliste befunde={eigene} /></div>}
+        </div>
+      ))}
+
+      <p class="klein gedaempft abstand">
+        Die Felder stehen auf „nur lesen": es gibt noch keinen Speicher. Der Zähler rechnet trotzdem
+        mit — tippen Sie hinein, indem Sie das Attribut entfernen; die Zahl daneben kommt aus
+        demselben Modul, das auch der Server benutzt.
+      </p>
+    </div>
+
+    <aside>
+      <div class="karte">
+        <h3>Was diesen Beitrag anhält</h3>
+        <Befundliste befunde={befunde} leer="Nichts. Der Beitrag könnte eingereicht werden." />
+      </div>
+
+      <div class="karte">
+        <h3>Die Grenzen dieser Kanäle</h3>
+        <div class="rollbar">
+        <table>
+          <thead>
+            <tr><th>Kanal</th><th class="zahlenspalte">Zeichen</th><th class="zahlenspalte">Bilder</th></tr>
+          </thead>
+          <tbody>
+            {alleKanaele.map((k) => {
+              const r = regelnVon(k);
+              return (
+                <tr>
+                  <td><Kanalmarke art={k.art} name={k.anzeigename} /></td>
+                  <td class="zahlenspalte">{grenzeVon(k).toLocaleString('de-DE')}</td>
+                  <td class="zahlenspalte">{r.bilder}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        </div>
+        <p class="klein gedaempft" style="margin:10px 0 0">
+          Diese Zahlen veralten. Sie stehen an einer Stelle im Kern, mit einem Stand daran, und jeder
+          Zugang darf seine eigene mitbringen — bei Mastodon wird sie beim Verbinden aus der Instanz
+          gelesen und nicht geraten.
+        </p>
+      </div>
+    </aside>
+  </div>
+</Rahmen>
+
+<script>
+  /**
+   * Der Zähler im Browser.
+   *
+   * Er lädt dasselbe Modul, das der Server benutzt. Ein zweiter Zähler in der
+   * Oberfläche wäre der sichere Weg zu zwei verschiedenen Zahlen für denselben
+   * Text — und die Abweichung fiele erst auf, wenn ein Netz einen Beitrag
+   * abweist, den die Anzeige für in Ordnung hielt.
+   */
+  import { zaehle, type Zaehlart } from '../kern/zeichen.ts';
+
+  for (const feld of document.querySelectorAll<HTMLTextAreaElement>('textarea[data-feld]')) {
+    const kanal = feld.dataset.feld!;
+    const art = feld.dataset.zaehlart as Zaehlart | undefined;
+    const grenze = Number(feld.dataset.grenze ?? '0');
+    const anzeige = document.querySelector<HTMLElement>(`[data-zaehler-fuer="${kanal}"]`);
+    if (!anzeige || !art) continue;
+
+    const auffrischen = () => {
+      const zahl = zaehle(feld.value, art);
+      anzeige.textContent = `${zahl} / ${grenze}`;
+      anzeige.classList.toggle('drueber', zahl > grenze);
+      anzeige.classList.toggle('knapp', zahl <= grenze && zahl > grenze * 0.9);
+    };
+
+    feld.addEventListener('input', auffrischen);
+    auffrischen();
+  }
+</script>

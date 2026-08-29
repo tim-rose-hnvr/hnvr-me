@@ -1,0 +1,246 @@
+---
+/**
+ * Ein Newsletter, fertig gemacht für **einen** Empfänger.
+ *
+ * Das ist der Punkt dieser Seite: nicht eine Vorschau mit Platzhaltern,
+ * sondern die Mail, die dieser Mensch bekäme — mit seinem Vornamen, seinem
+ * Abmeldelink, seiner Variante. Wer über die Empfänger blättert, findet den,
+ * bei dem „Hallo ," entstünde, bevor 40 000 andere es lesen.
+ *
+ * Alles darauf kommt aus dem Kern: `fertige`, `kopfzeilen`, `variantenwahl`.
+ * Die Seite baut keine Mail, sie zeigt eine.
+ */
+import Rahmen from '../../layouts/Rahmen.astro';
+import Befundliste from '../../komponenten/Befundliste.astro';
+import { geordnet, haeltAn, type Befund } from '../../kern/befund.ts';
+import { fertige, pruefeNewsletter, variantenwahl, verlangteFelder, ZUSTANDSNAMEN } from '../../kern/newsletter.ts';
+import { empfaengerFuer } from '../../kern/verteiler.ts';
+import { kopfzeilen } from '../../kern/zustellung.ts';
+import { legeLaufAn, fortschritt } from '../../kern/versand.ts';
+import { empfaenger, kennzahlen, newsletter, ORGANISATION, VERTEILER } from '../../kern/bestand.ts';
+import { alsText, ZONE } from '../../kern/zeit.ts';
+
+export const prerender = false;
+
+const jetzt = Date.now();
+const { kennung } = Astro.params;
+const brief = newsletter(jetzt).find((n) => n.kennung === kennung);
+
+if (!brief) return Astro.rewrite('/404');
+
+const verteiler = VERTEILER.find((v) => v.kennung === brief.verteiler)!;
+const bestand = empfaenger(jetzt);
+const zahlen = kennzahlen(jetzt, bestand);
+const empfangend = empfaengerFuer(bestand, zahlen, { verteiler: brief.verteiler, organisation: ORGANISATION });
+
+/** Wessen Fassung gezeigt wird. Vorgabe: der erste Empfänger. */
+const gewaehlt = Astro.url.searchParams.get('fuer');
+const wer = empfangend.find((e) => e.kennung === gewaehlt) ?? empfangend[0];
+
+const briefbefunde = geordnet(pruefeNewsletter(brief));
+
+/* Ein Abmeldelink, wie er im Betrieb aussähe: ein signiertes Token je
+   Empfänger. Hier steht ein Platzhalter, weil es noch keinen Schlüssel gibt —
+   die Form stimmt. */
+const abmeldelink = wer ? `https://haus.de/abmelden/${wer.kennung}~zeichen` : '';
+
+const gemacht = wer ? fertige(brief, wer, verteiler, abmeldelink) : null;
+
+const kopf = wer
+  ? kopfzeilen(
+      { name: brief.absender.name, adresse: brief.absender.adresse, antwortAn: brief.absender.antwortAn, domain: brief.absender.adresse.split('@')[1] ?? 'haus.de' },
+      verteiler.listenkennung,
+      verteiler.name,
+      { einKlick: abmeldelink, perMail: `mailto:abmelden@haus.de?subject=${wer.kennung}` },
+      `${brief.kennung}.${wer.kennung}`,
+    )
+  : {};
+
+/* Wer im Bestand ein Feld nicht hat, das keinen Ersatzwert trägt. Genau diese
+   Liste ist der Unterschied zwischen „Hallo Anna" und „Hallo ,". */
+const felder = verlangteFelder(
+  [brief.varianten.map((v) => `${v.betreff} ${v.vorschau}`).join(' '),
+   brief.bausteine.map((b) => ('text' in b ? b.text : 'beschriftung' in b ? b.beschriftung : '')).join(' ')].join(' '),
+);
+const ohneErsatz = felder.filter((f) => !f.hatErsatz && f.feld !== 'abmeldelink' && f.feld !== 'verteiler');
+const wuerdenScheitern = empfangend.filter((e) =>
+  ohneErsatz.some((f) => !e.merkmale[f.feld.startsWith('merkmal.') ? f.feld.slice(8) : f.feld]),
+);
+
+const versandbefunde: Befund[] = [];
+if (wuerdenScheitern.length > 0) {
+  versandbefunde.push({
+    schwere: 'fehler',
+    kennung: 'newsletter.felder.fehlen',
+    text: `Bei ${wuerdenScheitern.length} von ${empfangend.length} Empfängern fehlt ein Feld ohne Ersatzwert (${ohneErsatz.map((f) => f.feld).join(', ')}). Dort stünde „Hallo ,".`,
+  });
+}
+
+/** Ein Versandlauf, wie er angelegt würde — für die Vorschau der Drosselung. */
+const probelauf = legeLaufAn(
+  `vl_${brief.kennung}`,
+  ORGANISATION,
+  brief.kennung,
+  empfangend.map((e) => ({ kennung: e.kennung, variante: variantenwahl(brief, e).kennung })),
+  2_000,
+);
+const verteilung = brief.varianten.map((v) => ({
+  kennung: v.kennung,
+  anzahl: probelauf.posten.filter((p) => p.variante === v.kennung).length,
+}));
+---
+
+<Rahmen titel={brief.titel} ueberschrift={brief.titel} zeile={`${verteiler.name} · ${empfangend.length.toLocaleString('de-DE')} Empfänger · ${ZUSTANDSNAMEN[brief.zustand]}`}>
+  <p><a href="/newsletter">← Alle Newsletter</a></p>
+
+  {(briefbefunde.length > 0 || versandbefunde.length > 0) && (
+    <div class="karte" style="margin-bottom:14px">
+      <h2>Vor dem Versand</h2>
+      <Befundliste befunde={[...versandbefunde, ...briefbefunde]} />
+      {haeltAn([...versandbefunde, ...briefbefunde]) && (
+        <p class="klein" style="margin:10px 0 0;color:var(--fehler)">
+          Solange ein Fehler steht, lässt sich der Versand nicht auslösen. Das ist keine Anzeige,
+          sondern die Bedingung.
+        </p>
+      )}
+    </div>
+  )}
+
+  <div class="werkbank">
+    <div>
+      <div class="karte" style="margin-bottom:14px">
+        <div class="zwischen">
+          <h2 style="margin:0">Wie es bei einem Menschen ankommt</h2>
+          <form method="get" class="reihe">
+            <label for="fuer" style="margin:0">Empfänger</label>
+            <select id="fuer" name="fuer" onchange="this.form.submit()" style="width:auto;min-width:220px">
+              {empfangend.slice(0, 60).map((e) => (
+                <option value={e.kennung} selected={e.kennung === wer?.kennung}>
+                  {e.adresse}{e.merkmale.vorname ? '' : '  (ohne Vornamen)'}
+                </option>
+              ))}
+            </select>
+          </form>
+        </div>
+      </div>
+
+      {!gemacht && <p class="gedaempft">Kein Empfänger im Verteiler.</p>}
+
+      {gemacht && !gemacht.ok && (
+        <div class="karte">
+          <h3>Diese Mail lässt sich für {wer!.adresse} nicht bauen</h3>
+          <Befundliste befunde={gemacht.befunde} />
+          <p class="klein gedaempft" style="margin:10px 0 0">
+            Der Kern liefert hier keinen leeren Text, sondern einen Fehler. Ein fehlendes Feld ohne
+            Ersatzwert darf nicht erst im Postfach auffallen.
+          </p>
+        </div>
+      )}
+
+      {gemacht && gemacht.ok && (
+        <>
+          <div class="postfach">
+            <div class="postfach-kopf">
+              <span class="klein gedaempft">
+                {brief.absender.name} &lt;{brief.absender.adresse}&gt;
+                {brief.varianten.length > 1 && <span class="marke" style="margin-left:6px">Variante {gemacht.mail.variante.toUpperCase()}</span>}
+              </span>
+              <span class="betreff">{gemacht.mail.betreff}</span>
+              <span class="vorschau">{gemacht.mail.vorschau}</span>
+            </div>
+            {/* Die gebaute Mail in einem abgeschotteten Rahmen: kein Skript,
+                kein Formular, keine Navigation nach außen. */}
+            <iframe title="Vorschau der Mail" sandbox="" srcdoc={gemacht.mail.html}></iframe>
+          </div>
+
+          <div class="karte abstand">
+            <h3>Die Textfassung</h3>
+            <p class="klein gedaempft">
+              Aus denselben Bausteinen gebaut wie die HTML-Fassung und nicht aus ihr herausgerechnet.
+              Deshalb ist sie lesbar — und deshalb kann sie mitgeschickt werden, was eines der wenigen
+              Merkmale ist, an denen Postfächer Post von Werbung unterscheiden.
+            </p>
+            <pre class="textfassung">{gemacht.mail.text}</pre>
+          </div>
+        </>
+      )}
+    </div>
+
+    <aside>
+      <div class="karte">
+        <h3>Kopfzeilen</h3>
+        <p class="klein gedaempft">
+          <code class="mono">List-Unsubscribe-Post</code> ist der Unterschied zwischen „es gibt einen
+          Abmeldelink" und „das Postfach zeigt einen Abmeldeknopf". Ohne den Knopf klickt der Leser
+          den anderen — den, der als Werbung meldet.
+        </p>
+        <table>
+          <tbody>
+            {Object.entries(kopf).map(([k, v]) => (
+              <tr>
+                <td class="mono" style="white-space:nowrap">{k}</td>
+                <td class="mono gedaempft" style="word-break:break-all">{v}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {brief.varianten.length > 1 && (
+        <div class="karte">
+          <h3>A/B</h3>
+          <p class="klein gedaempft">
+            Geteilt wird über den Streuwert der Empfängerkennung, nicht über Zufall: derselbe Mensch
+            landet nach einem Neustart in derselben Gruppe und bekommt nicht beide Fassungen.
+          </p>
+          <table>
+            <tbody>
+              {verteilung.map((v) => (
+                <tr>
+                  <td><span class="marke">{v.kennung.toUpperCase()}</span></td>
+                  <td class="zahlenspalte">{v.anzahl}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p class="klein gedaempft" style="margin:10px 0 0">
+            Entschieden wird über <strong>{brief.entscheidungsmass === 'klick' ? 'Klicks' : 'Öffnungen'}</strong>
+            {brief.entscheidungsmass === 'oeffnung' && ' — was ein Vorbehalt ist, siehe Auswertung'}
+            {brief.pruefdauerMs && <> nach {Math.round(brief.pruefdauerMs / 3_600_000)} Stunden</>}.
+          </p>
+        </div>
+      )}
+
+      <div class="karte">
+        <h3>Versand</h3>
+        <table>
+          <tbody>
+            <tr><td>Empfänger</td><td class="zahlenspalte">{fortschritt(probelauf).gesamt.toLocaleString('de-DE')}</td></tr>
+            <tr><td>Höchstens je Stunde</td><td class="zahlenspalte">{probelauf.hoechstProStunde.toLocaleString('de-DE')}</td></tr>
+            <tr><td>Dauert etwa</td><td class="zahlenspalte">
+              {Math.max(1, Math.ceil((fortschritt(probelauf).gesamt / probelauf.hoechstProStunde) * 60))} Min.
+            </td></tr>
+          </tbody>
+        </table>
+        <p class="klein gedaempft" style="margin:10px 0 0">
+          Die Drosselung ist Eigennutz: wer 40 000 Mails in zehn Minuten abgibt, wird von jedem großen
+          Anbieter verzögert — und die Verzögerung trifft dann auch die Post, die wichtig ist.
+        </p>
+        <div class="reihe" style="margin-top:10px">
+          <button class="knopf wichtig" disabled>Versand auslösen</button>
+          <span class="geplant">geplant</span>
+        </div>
+      </div>
+
+      <div class="karte">
+        <h3>Termin</h3>
+        <p class="klein" style="margin:0">
+          {brief.geplantFuer === null ? 'Noch kein Termin.' : alsText(brief.geplantFuer, ZONE)}
+        </p>
+        <p class="klein gedaempft" style="margin:6px 0 0">
+          Steht im selben Plan wie die Beiträge — und wird vom selben Ruhemodus angehalten.
+        </p>
+      </div>
+    </aside>
+  </div>
+</Rahmen>

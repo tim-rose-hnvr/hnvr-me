@@ -202,7 +202,6 @@ export function naechsterFreierTermin(
   regeln: Planregeln,
   tage = 14,
 ): number | null {
-  const schritt = regeln.raster * 60_000;
   const abstandMs = regeln.mindestabstandMin * 60_000;
   const betroffen = belegungen.filter((b) => kanaele.includes(b.kanal)).map((b) => b.zeitpunkt);
   const ende = ab + tage * 86_400_000;

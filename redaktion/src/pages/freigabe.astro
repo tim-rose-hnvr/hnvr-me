@@ -1,0 +1,175 @@
+---
+/**
+ * Die Freigabe.
+ *
+ * **Ein** Lauf für Beiträge und Newsletter. Sobald es zwei gäbe, liefen sie
+ * auseinander, und dann gälte für den Newsletter an die 40 000 eine lockerere
+ * Regel als für den Beitrag an die 300.
+ *
+ * Neben jedem Lauf steht, ob die eigene Rolle hier zustimmen darf — und wenn
+ * nicht, warum. Der Satz kommt aus `hindernis()` im Kern; die Oberfläche
+ * leitet ihn nicht ab, sie zeigt ihn an.
+ */
+import Rahmen from '../layouts/Rahmen.astro';
+import Befundliste from '../komponenten/Befundliste.astro';
+import { type Befund } from '../kern/befund.ts';
+import { fehlende, fristbefund, hindernis, standAus, standVon, type Freigabestand } from '../kern/freigabe.ts';
+import { beitraege, freigabelaeufe, MITGLIEDER, newsletter, SITZUNG } from '../kern/bestand.ts';
+import { alsText, ZONE } from '../kern/zeit.ts';
+import { ROLLENBESCHREIBUNG, ROLLENNAMEN, ROLLEN } from '../kern/rollen.ts';
+
+export const prerender = false;
+
+const jetzt = Date.now();
+const laeufe = freigabelaeufe(jetzt);
+const alleBeitraege = beitraege(jetzt);
+const alleBriefe = newsletter(jetzt);
+
+/**
+ * Der aktuelle Inhaltsstand.
+ *
+ * Genau so wird er auch im Betrieb gebildet: über den Text, der jetzt dasteht.
+ * Weicht er vom Stand beim Einreichen ab, ist die Freigabe überholt — und das
+ * ist keine Anzeige, sondern eine Sperre.
+ */
+function standJetzt(lauf: (typeof laeufe)[number]): string {
+  if (lauf.art === 'beitrag') {
+    const b = alleBeitraege.find((x) => x.kennung === lauf.gegenstand);
+    return b ? standAus(b.fassungen.flatMap((f) => [f.text, ...f.medien.map((m) => m.alt)])) : 'weg';
+  }
+  const n = alleBriefe.find((x) => x.kennung === lauf.gegenstand);
+  return n ? lauf.stand : 'weg';
+}
+
+const zeilen = laeufe.map((lauf) => {
+  const stand = standJetzt(lauf);
+  const wo: Freigabestand = standVon(lauf, stand);
+  const dagegen = hindernis(lauf, SITZUNG, stand);
+  const frist = fristbefund(lauf, jetzt);
+  const titel =
+    lauf.art === 'beitrag'
+      ? alleBeitraege.find((b) => b.kennung === lauf.gegenstand)?.titel ?? lauf.gegenstand
+      : alleBriefe.find((n) => n.kennung === lauf.gegenstand)?.titel ?? lauf.gegenstand;
+  return { lauf, stand, wo, dagegen, frist, titel };
+});
+
+const STANDNAMEN: Record<Freigabestand, string> = {
+  offen: 'Offen',
+  freigegeben: 'Freigegeben',
+  abgelehnt: 'Abgelehnt',
+  ueberholt: 'Überholt',
+};
+
+const offene = zeilen.filter((z) => z.wo === 'offen' || z.wo === 'ueberholt');
+const alleBefunde: Befund[] = zeilen.map((z) => z.frist).filter((b): b is Befund => b !== null);
+---
+
+<Rahmen
+  titel="Freigabe"
+  zeile="Derselbe Lauf für Beiträge und Newsletter. Wer verfasst hat, gibt nicht frei — und wer nach der Freigabe den Text ändert, hat keinen freigegebenen Text mehr."
+>
+  <div class="raster vier" style="margin-bottom:16px">
+    <dl class="zahl"><dt>Offen</dt><dd>{offene.length}</dd></dl>
+    <dl class="zahl"><dt>Überfällig</dt><dd>{alleBefunde.length}</dd></dl>
+    <dl class="zahl"><dt>Freigegeben</dt><dd>{zeilen.filter((z) => z.wo === 'freigegeben').length}</dd></dl>
+    <dl class="zahl">
+      <dt>Deine Rolle</dt>
+      <dd style="font-size:1.1rem">{ROLLENNAMEN[SITZUNG.rolle]}</dd>
+      <div class="neben">{ROLLENBESCHREIBUNG[SITZUNG.rolle]}</div>
+    </dl>
+  </div>
+
+  {alleBefunde.length > 0 && (
+    <div class="karte" style="margin-bottom:14px">
+      <h2>Fristen</h2>
+      <Befundliste befunde={alleBefunde} />
+    </div>
+  )}
+
+  {zeilen.map(({ lauf, wo, dagegen, titel }) => (
+    <div class="karte">
+      <div class="zwischen">
+        <div>
+          <h2 style="margin-bottom:3px">{titel}</h2>
+          <p class="klein gedaempft" style="margin:0">
+            {lauf.art === 'beitrag' ? 'Beitrag' : 'Newsletter'} · eingereicht von {lauf.verfasser} am{' '}
+            {alsText(lauf.eingereichtAm, ZONE)}
+            {lauf.frist !== null && <> · Frist {alsText(lauf.frist, ZONE)}</>}
+          </p>
+        </div>
+        <span class={`marke ${wo === 'freigegeben' ? 'stark' : wo === 'abgelehnt' ? 'rot' : wo === 'ueberholt' ? 'warn' : ''}`}>
+          {STANDNAMEN[wo]}
+        </span>
+      </div>
+
+      <hr class="trenner" />
+
+      <div class="zwischen">
+        <div>
+          <p class="klein" style="margin-bottom:6px">
+            <strong>{lauf.zustimmungen.length} von {lauf.noetig}</strong> Zustimmungen
+            {fehlende(lauf) > 0 && <span class="gedaempft"> — es {fehlende(lauf) === 1 ? 'fehlt eine' : `fehlen ${fehlende(lauf)}`}</span>}
+          </p>
+          <div class="stufen" style="max-width:180px">
+            {Array.from({ length: lauf.noetig }, (_, i) => (
+              <i class={i < lauf.zustimmungen.length ? 'voll' : ''}></i>
+            ))}
+          </div>
+          <ul class="schlicht klein gedaempft" style="margin-top:9px">
+            {lauf.zustimmungen.map((z) => (
+              <li>✓ {z.person}, {alsText(z.zeitpunkt, ZONE)}{z.anmerkung && <> — „{z.anmerkung}"</>}</li>
+            ))}
+            {lauf.ablehnung && (
+              <li style="color:var(--fehler)">
+                ✕ {lauf.ablehnung.person}, {alsText(lauf.ablehnung.zeitpunkt, ZONE)} — „{lauf.ablehnung.grund}"
+              </li>
+            )}
+          </ul>
+        </div>
+
+        <div style="min-width:260px;max-width:340px">
+          {dagegen ? (
+            <Befundliste befunde={[dagegen]} />
+          ) : (
+            <p class="klein gedaempft" style="margin:0 0 8px">
+              Du darfst hier entscheiden.
+            </p>
+          )}
+          <div class="reihe rechts" style="margin-top:8px">
+            <button class="knopf" disabled>Ablehnen</button>
+            <button class="knopf wichtig" disabled>Zustimmen</button>
+            <span class="geplant">geplant</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
+
+  <div class="karte abstand">
+    <h2>Wer was darf</h2>
+    <p class="klein gedaempft">
+      Geprüft wird im Kern und nicht in der Oberfläche. Ein Knopf, der nicht angezeigt wird, ist keine
+      Absicherung — die Adresse dahinter lässt sich eintippen.
+    </p>
+    <div class="rollbar">
+      <table>
+        <thead>
+          <tr><th>Rolle</th><th>Was sie tut</th><th>Im Haus</th></tr>
+        </thead>
+        <tbody>
+          {ROLLEN.map((r) => (
+            <tr>
+              <td><strong>{ROLLENNAMEN[r]}</strong></td>
+              <td class="gedaempft">{ROLLENBESCHREIBUNG[r]}</td>
+              <td class="gedaempft">{MITGLIEDER.filter((m) => m.rolle === r).map((m) => m.person).join(', ') || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="klein gedaempft" style="margin:12px 0 0">
+      Der Freigeber gibt frei und sendet nicht. Das ist Absicht: Freigabe und Auslösung sind zwei
+      Handgriffe, und wer beide in einem hat, kann sich nicht vertippen, sondern nur irren.
+    </p>
+  </div>
+</Rahmen>

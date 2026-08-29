@@ -1,0 +1,81 @@
+---
+/**
+ * Kopf, Navigation, Fuß — einmal.
+ *
+ * Sie standen in den ersten Entwürfen je Seite einzeln da und waren nach drei
+ * Seiten schon auseinandergelaufen. Wer eine Seite hinzufügt, trägt sie in
+ * `SEITEN` ein und sonst nirgends.
+ */
+import { MARKE } from '../kern/marke.ts';
+import { ROLLENNAMEN } from '../kern/rollen.ts';
+import { SITZUNG } from '../kern/bestand.ts';
+import '../stile/redaktion.css';
+
+interface Props {
+  titel: string;
+  /** Ein Satz unter der Überschrift. Kein Absatz. */
+  zeile?: string;
+  /** Die Überschrift oben auf der Seite. Fehlt sie, steht dort `titel`. */
+  ueberschrift?: string;
+}
+
+const { titel, zeile, ueberschrift } = Astro.props;
+
+const SEITEN = [
+  { pfad: '/plan', name: 'Plan' },
+  { pfad: '/werkstatt', name: 'Werkstatt' },
+  { pfad: '/freigabe', name: 'Freigabe' },
+  { pfad: '/eingang', name: 'Eingang' },
+  { pfad: '/newsletter', name: 'Newsletter' },
+  { pfad: '/empfaenger', name: 'Empfänger' },
+  { pfad: '/auswertung', name: 'Auswertung' },
+  { pfad: '/zustellbarkeit', name: 'Zustellbarkeit' },
+];
+
+const hier = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titel} — {MARKE.name}</title>
+    <meta name="description" content={MARKE.beschreibung} />
+    {/* Kein Fremdaufruf: keine Schrift, kein Symbolsatz, keine Zählung. */}
+    <meta name="referrer" content="same-origin" />
+    <link rel="icon" href="/zeichen.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="kopf">
+      <div class="kopf-innen">
+        <a class="wortmarke" href="/">{MARKE.name}<span> · {MARKE.zeile}</span></a>
+        <nav class="navi" aria-label="Bereiche">
+          {SEITEN.map((s) => (
+            <a href={s.pfad} aria-current={hier === s.pfad ? 'page' : undefined}>{s.name}</a>
+          ))}
+        </nav>
+        <div class="wer" title={`Angemeldet als ${SITZUNG.person}`}>
+          <span>{SITZUNG.person}</span>
+          <span class="marke">{ROLLENNAMEN[SITZUNG.rolle]}</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="seitenkopf">
+        <h1>{ueberschrift ?? titel}</h1>
+        {zeile && <p>{zeile}</p>}
+      </div>
+      <slot />
+    </main>
+
+    <footer class="fuss">
+      <div class="fuss-innen">
+        <span>{MARKE.name} — Anschauungsstand mit erfundenen Daten.</span>
+        <span>Kein Fremdaufruf im Browser: keine Schrift, kein Symbolsatz, keine Zählung von außen.</span>
+        <a href="/">Was hier anders ist</a>
+      </div>
+    </footer>
+  </body>
+</html>

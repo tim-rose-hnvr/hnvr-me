@@ -1,0 +1,173 @@
+---
+/**
+ * Die Newsletter.
+ *
+ * Sie stehen im selben Plan und laufen durch denselben Freigabelauf wie die
+ * Beiträge. Diese Seite ist die Liste; das Interessante steht auf der
+ * Einzelseite, wo die Mail wirklich gebaut wird.
+ */
+import Rahmen from '../../layouts/Rahmen.astro';
+import Befundliste from '../../komponenten/Befundliste.astro';
+import { geordnet, haeltAn } from '../../kern/befund.ts';
+import { pruefeNewsletter, ZUSTANDSNAMEN } from '../../kern/newsletter.ts';
+import { empfaengerFuer, segmentbild } from '../../kern/verteiler.ts';
+import { empfaenger, kennzahlen, newsletter, ORGANISATION, SEGMENTE, STRECKEN, VERTEILER } from '../../kern/bestand.ts';
+import { pruefeStrecke, SCHRITTNAMEN } from '../../kern/strecke.ts';
+import { alsText, ZONE } from '../../kern/zeit.ts';
+
+export const prerender = false;
+
+const jetzt = Date.now();
+const briefe = newsletter(jetzt);
+const bestand = empfaenger(jetzt);
+const zahlen = kennzahlen(jetzt, bestand);
+
+const zeilen = briefe.map((n) => {
+  const befunde = geordnet(pruefeNewsletter(n));
+  const verteiler = VERTEILER.find((v) => v.kennung === n.verteiler);
+  const empfangen = empfaengerFuer(bestand, zahlen, { verteiler: n.verteiler, organisation: ORGANISATION });
+  return { n, befunde, verteiler, anzahl: empfangen.length };
+});
+
+const bild = segmentbild(bestand, zahlen, { organisation: ORGANISATION });
+---
+
+<Rahmen
+  titel="Newsletter"
+  zeile="Derselbe Plan, derselbe Freigabelauf, dieselbe Auswertung wie bei den Beiträgen. Nur der Kanal ist ein anderer."
+>
+  <div class="raster vier" style="margin-bottom:16px">
+    <dl class="zahl"><dt>Im Bestand</dt><dd>{bild.imBestand}</dd></dl>
+    <dl class="zahl"><dt>Erreichbar</dt><dd>{bild.trifft}</dd><div class="neben">bestätigt und nicht gesperrt</div></dl>
+    <dl class="zahl"><dt>Verteiler</dt><dd>{VERTEILER.length}</dd></dl>
+    <dl class="zahl"><dt>Strecken</dt><dd>{STRECKEN.filter((s) => s.aktiv).length}</dd><div class="neben">laufen von selbst</div></dl>
+  </div>
+
+  {zeilen.map(({ n, befunde, verteiler, anzahl }) => (
+    <div class="karte">
+      <div class="zwischen">
+        <div>
+          <h2 style="margin-bottom:3px"><a href={`/newsletter/${n.kennung}`}>{n.titel}</a></h2>
+          <p class="klein gedaempft" style="margin:0">
+            {verteiler?.name ?? n.verteiler} · {anzahl.toLocaleString('de-DE')} Empfänger · von {n.verfasser}
+            {n.geplantFuer !== null && <> · {n.zustand === 'gesendet' ? 'gesendet' : 'geplant für'} {alsText(n.geplantFuer, ZONE)}</>}
+          </p>
+        </div>
+        <div class="reihe">
+          {n.varianten.length > 1 && <span class="marke">A/B über {n.entscheidungsmass === 'klick' ? 'Klicks' : 'Öffnungen'}</span>}
+          <span class={`marke ${n.zustand === 'gesendet' ? 'stark' : ''}`}>{ZUSTANDSNAMEN[n.zustand]}</span>
+        </div>
+      </div>
+
+      <hr class="trenner" />
+
+      <div class="raster zwei">
+        <div>
+          <p class="klein gedaempft" style="margin-bottom:5px">Betreff{n.varianten.length > 1 ? 'e' : ''}</p>
+          <ul class="schlicht klein">
+            {n.varianten.map((v) => (
+              <li>
+                {n.varianten.length > 1 && <span class="marke">{v.kennung.toUpperCase()}</span>}
+                <strong>{v.betreff}</strong>
+                <span class="gedaempft"> — {v.vorschau}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          {befunde.length === 0 ? (
+            <p class="klein gedaempft" style="margin:0">Nichts zu beanstanden.</p>
+          ) : (
+            <Befundliste befunde={befunde} />
+          )}
+          {haeltAn(befunde) && (
+            <p class="klein" style="margin:8px 0 0;color:var(--fehler)">Dieser Newsletter geht so nicht hinaus.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  ))}
+
+  <div class="raster zwei abstand">
+    <div class="karte">
+      <h2>Verteiler</h2>
+      <p class="klein gedaempft">
+        Jeder trägt seinen eigenen Wortlaut. Wer die Termine abbestellt, bleibt im Newsletter — und
+        umgekehrt.
+      </p>
+      {VERTEILER.map((v) => {
+        const drin = empfaengerFuer(bestand, zahlen, { verteiler: v.kennung, organisation: ORGANISATION });
+        return (
+          <div style="margin-top:12px">
+            <div class="zwischen">
+              <strong>{v.name}</strong>
+              <span class="marke">{drin.length.toLocaleString('de-DE')}</span>
+            </div>
+            <p class="klein gedaempft" style="margin:2px 0 3px">{v.beschreibung}</p>
+            <p class="klein" style="margin:0">
+              <span class="gedaempft">Wortlaut:</span> „{v.wortlaut}"
+            </p>
+            <p class="klein gedaempft mono" style="margin:2px 0 0">List-Id: {v.listenkennung}</p>
+          </div>
+        );
+      })}
+    </div>
+
+    <div class="karte">
+      <h2>Segmente</h2>
+      <p class="klein gedaempft">
+        Ein Segment wird bei jedem Versand neu beantwortet und nirgends gespeichert. Es kann keine
+        Unbestätigten enthalten — nicht, weil niemand solche Regeln schriebe, sondern weil das Segment
+        sie gar nicht erst sieht.
+      </p>
+      <table>
+        <thead><tr><th>Segment</th><th class="zahlenspalte">Trifft</th></tr></thead>
+        <tbody>
+          {SEGMENTE.map((s) => (
+            <tr>
+              <td>{s.name}</td>
+              <td class="zahlenspalte">
+                {segmentbild(bestand, zahlen, { segment: s, organisation: ORGANISATION }).trifft}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p class="klein gedaempft" style="margin:10px 0 0">
+        Von {bild.imBestand} im Bestand sind {bild.nichtBestaetigt} nicht bestätigt,
+        {' '}{bild.abgemeldet} abgemeldet und {bild.gesperrt} gesperrt. Diese Zahl gehört vor den
+        Versand und nicht danach.
+      </p>
+    </div>
+  </div>
+
+  <div class="karte abstand">
+    <h2>Strecken</h2>
+    <p class="klein gedaempft">
+      Ketten aus Warten, Senden und Verzweigen, die von selbst ablaufen. Eine Abmeldung beendet jede
+      Strecke sofort — nicht am nächsten Schritt, nicht nach dem Warten.
+    </p>
+    {STRECKEN.map((s) => {
+      const befunde = pruefeStrecke(s);
+      return (
+        <div style="margin-top:12px">
+          <div class="zwischen">
+            <strong>{s.name}</strong>
+            <span class={`marke ${s.aktiv ? 'stark' : ''}`}>{s.aktiv ? 'läuft' : 'stillgelegt'}</span>
+          </div>
+          <ol class="klein gedaempft" style="margin:6px 0 0;padding-left:20px">
+            {s.schritte.map((schritt) => (
+              <li>
+                <strong>{SCHRITTNAMEN[schritt.art]}</strong>
+                {schritt.art === 'warten' && <> — {Math.round(schritt.dauerMs / 86_400_000)} Tage</>}
+                {schritt.art === 'senden' && <> — <span class="mono">{schritt.newsletter}</span></>}
+                {schritt.art === 'bedingung' && <> — hat geklickt? dann {schritt.dann}, sonst {schritt.sonst}</>}
+              </li>
+            ))}
+          </ol>
+          {befunde.length > 0 && <div style="margin-top:8px"><Befundliste befunde={befunde} /></div>}
+        </div>
+      );
+    })}
+  </div>
+</Rahmen>

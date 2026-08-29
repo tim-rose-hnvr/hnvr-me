@@ -191,8 +191,18 @@ export async function tokenPruefen(
  *
  * Gebraucht für A/B-Teilung: derselbe Empfänger muss bei jedem Aufruf in
  * dieselbe Gruppe fallen, auch nach einem Neustart. Ein Zufallszahlengenerator
- * kann das nicht, ein Streuwert schon. FNV-1a, weil er kurz ist und für diesen
- * Zweck reicht — er ist ausdrücklich nicht für Sicherheit gedacht.
+ * kann das nicht, ein Streuwert schon. Ausdrücklich nicht für Sicherheit.
+ *
+ * **Der Nachlauf am Ende ist nicht schmückend.** FNV-1a allein mischt die
+ * oberen Bits schlecht, und genau die entscheiden bei einer Zweiteilung. Bei
+ * 49 ähnlichen Schlüsseln (`nl_1:ep_0` bis `nl_1:ep_48`) fielen ohne ihn
+ * **2 statt 24** in die erste Gruppe — ein A/B-Versuch, der 2 gegen 47 teilt,
+ * misst nichts. Der Nachlauf ist der Finalisierer aus Murmur3; er kostet drei
+ * Schiebungen und macht aus dem Streuwert einen brauchbaren.
+ *
+ * Aufgefallen ist das nicht im Test — der prüfte 5000 Schlüssel, und dort
+ * mittelt sich die Schieflage weg. Erst die Oberfläche mit 49 Empfängern hat
+ * es gezeigt.
  */
 export function streuwert(text: string): number {
   let h = 0x811c9dc5;
@@ -200,5 +210,10 @@ export function streuwert(text: string): number {
     h ^= text.charCodeAt(i);
     h = Math.imul(h, 0x01000193) >>> 0;
   }
-  return h / 0x100000000;
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b) >>> 0;
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35) >>> 0;
+  h ^= h >>> 16;
+  return (h >>> 0) / 0x100000000;
 }

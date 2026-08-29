@@ -1,0 +1,27 @@
+{
+  "name": "redaktion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Redaktion — ein Plan für soziale Kanäle und E-Mail. Selbst betrieben, ohne Fremdaufruf im Browser.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "pruefen": "astro check",
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.4.4",
+    "astro": "^5.18.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}

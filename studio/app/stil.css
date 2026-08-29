@@ -1,0 +1,1220 @@
+/* PDF Studio — Gestaltung.
+
+   Farben, Schriften, Abstände und Formen folgen dem Handoff „PDF Studio":
+   Akzent #0f766e, dunkle Chrome #1d2327, IBM Plex in drei Schnitten, nur
+   4er-Schritte im Raster, Radius 0 — alles kantig.
+
+   Zwei Abweichungen vom Handoff, mit Grund:
+
+   · **Die Schriften liegen bei, nicht bei Google.** Das Handoff nennt Google
+     Fonts; das Studio darf nichts nachladen (Leitprinzip 2). Acht Schnitte
+     liegen als woff2 in fremd/schrift, zusammen 176 kB.
+   · **Es gibt eine dunkle Fassung.** Das Handoff ist nur hell gedacht. Die
+     dunklen Werte sind daraus abgeleitet: der Akzent wird zu accent-light
+     (#7fd6cd), weil #0f766e auf dunklem Grund nicht mehr trägt. Und die
+     Bühne bleibt der dunkelste Grund im Fenster — hell war sie einmal
+     heller als die Tafeln daneben, und dann liegt das Blatt nicht mehr auf
+     einem Tisch, sondern in einem Kasten. */
+
+/* ---------- Schriften (liegen bei, kein CDN) ---------------------------- */
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../fremd/schrift/plex-sans-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('../fremd/schrift/plex-sans-500.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('../fremd/schrift/plex-sans-600.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Serif'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../fremd/schrift/plex-serif-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Serif'; font-style: italic; font-weight: 400; font-display: swap;
+  src: url('../fremd/schrift/plex-serif-400-italic.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Serif'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('../fremd/schrift/plex-serif-600.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../fremd/schrift/plex-mono-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('../fremd/schrift/plex-mono-500.woff2') format('woff2'); }
+
+:root {
+  --grund:        #E9EAEC;
+  --flaeche:      #FFFFFF;
+  --flaeche-tief: #E6E9EB;
+  --flaeche-hoch: #F4F5F6;
+  --tafel:        #EFF1F2;
+  --menue-grund:  #E7E9EB;
+  --tinte:        #171C20;
+  --tinte-leise:  #77828A;
+  --linie:        #DDE1E4;
+  --linie-stark:  #CFD4D8;
+  --tally:        #0F766E;
+  --tally-hover:  #0E6B64;
+  --tally-hell:   #7FD6CD;
+  --tally-grund:  rgba(15,118,110,.10);
+  --warn:         #B4530A;
+  --warn-grund:   rgba(180,83,10,.10);
+  --gut:          #0F766E;
+  --gut-grund:    rgba(15,118,110,.10);
+  --gefahr:       #8B3A3A;
+
+  /* Dunkle Chrome: Titelleiste, Statusleiste, Aktionsleisten. */
+  --chrome-900:   #1D2327;
+  --chrome-800:   #22292E;
+  --chrome-700:   #2A3236;
+  --chrome-600:   #3F474C;
+  --chrome-linie: #2C3438;
+  --chrome-fuss:  #333B40;   /* Handoff: Statusleiste */
+  --chrome-text:  #FFFFFF;
+  --chrome-leise: #8B979C;
+
+  --buehne:       #5F686E;
+  --buehne-tief:  #4F585E;
+  --papier:       #FDFCF9;
+
+  --schatten:     0 1px 3px rgba(0,0,0,.06);
+  --schatten-blatt: 0 6px 22px rgba(0,0,0,.34);
+  --schatten-tafel: 0 14px 30px rgba(18,24,28,.26);
+  --schatten-dialog: 0 24px 60px rgba(0,0,0,.4);
+
+  --sans: 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
+  --serif: 'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
+  --mono: 'IBM Plex Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Handoff: Titelleiste 38, Menü 27, Werkzeuge 46, Status 30. */
+  --kopfhoehe: 38px;
+  --menuehoehe: 27px;
+  --werkzeughoehe: 46px;
+  --fusshoehe: 30px;
+  --leiste-links: 196px;
+  --leiste-rechts: 296px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-thema="hell"]) { --dunkel: 1; }
+}
+:root[data-thema="dunkel"] { --dunkel: 1; }
+
+/* Die dunkle Fassung erbt Aufbau und Abstände und tauscht nur die Farben.
+   Doppelt geschrieben, weil CSS keine Verzweigung auf eine Variable kennt. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-thema="hell"]) {
+    --grund:        #14191C;
+    --flaeche:      #1D2327;
+    --flaeche-tief: #262E33;
+    --flaeche-hoch: #22292E;
+    --tafel:        #1A2024;
+    --menue-grund:  #191F23;
+    --tinte:        #E4E9EA;
+    --tinte-leise:  #8B979C;
+    --linie:        #2C3438;
+    --linie-stark:  #3F474C;
+    --tally:        #7FD6CD;
+    --tally-hover:  #A2E4DD;
+    --tally-hell:   #7FD6CD;
+    --tally-grund:  rgba(127,214,205,.14);
+    --warn:         #E2B15C;
+    --warn-grund:   rgba(226,177,92,.14);
+    --gut:          #7FD6CD;
+    --gut-grund:    rgba(127,214,205,.14);
+    --gefahr:       #E38B8B;
+    --chrome-900:   #12171A;
+    --chrome-800:   #171C20;
+    --chrome-700:   #1F262A;
+    --chrome-600:   #2C3438;
+    --chrome-linie: #232B2F;
+    --chrome-fuss:  #1F262A;
+    --buehne:       #0E1215;
+    --buehne-tief:  #0A0D0F;
+    --schatten:     0 1px 3px rgba(0,0,0,.5);
+    --schatten-blatt: 0 6px 22px rgba(0,0,0,.6);
+    --schatten-tafel: 0 14px 30px rgba(0,0,0,.6);
+    --schatten-dialog: 0 24px 60px rgba(0,0,0,.7);
+  }
+}
+:root[data-thema="dunkel"] {
+  --grund:        #14191C;
+  --flaeche:      #1D2327;
+  --flaeche-tief: #262E33;
+  --flaeche-hoch: #22292E;
+  --tafel:        #1A2024;
+  --menue-grund:  #191F23;
+  --tinte:        #E4E9EA;
+  --tinte-leise:  #8B979C;
+  --linie:        #2C3438;
+  --linie-stark:  #3F474C;
+  --tally:        #7FD6CD;
+  --tally-hover:  #A2E4DD;
+  --tally-hell:   #7FD6CD;
+  --tally-grund:  rgba(127,214,205,.14);
+  --warn:         #E2B15C;
+  --warn-grund:   rgba(226,177,92,.14);
+  --gut:          #7FD6CD;
+  --gut-grund:    rgba(127,214,205,.14);
+  --gefahr:       #E38B8B;
+  --chrome-900:   #12171A;
+  --chrome-800:   #171C20;
+  --chrome-700:   #1F262A;
+  --chrome-600:   #2C3438;
+  --chrome-linie: #232B2F;
+  --chrome-fuss:  #1F262A;
+  --buehne:       #0E1215;
+  --buehne-tief:  #0A0D0F;
+  --schatten:     0 1px 3px rgba(0,0,0,.5);
+  --schatten-blatt: 0 6px 22px rgba(0,0,0,.6);
+  --schatten-tafel: 0 14px 30px rgba(0,0,0,.6);
+  --schatten-dialog: 0 24px 60px rgba(0,0,0,.7);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--tinte);
+  background: var(--grund);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+.leise { color: var(--tinte-leise); }
+.klein { font-size: .8125rem; }
+.sinnbild { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* ---------- Grundgerüst ------------------------------------------------ */
+.huelle {
+  display: grid;
+  grid-template-rows: var(--kopfhoehe) var(--menuehoehe) var(--werkzeughoehe) 1fr var(--fusshoehe);
+  height: 100dvh;
+}
+.rumpf {
+  display: grid;
+  grid-template-columns: var(--leiste-links) 1fr var(--leiste-rechts);
+  min-height: 0;
+}
+.huelle[data-links="zu"]  { --leiste-links: 0px; }
+.huelle[data-rechts="zu"] { --leiste-rechts: 0px; }
+.leiste {
+  background: var(--tafel);
+  border-right: 1px solid var(--linie-stark);
+  display: flex; flex-direction: column;
+  min-height: 0; overflow: hidden;
+}
+/* Ausdrücklich gesetzt, weil die Vergleichsansicht dieselbe Zelle wie die
+   Bühne belegt — ohne feste Spalten würde die automatische Verteilung sie in
+   eine neue Zeile schieben. */
+.leiste-links  { grid-column: 1; grid-row: 1; }
+.leiste-rechts { grid-column: 3; grid-row: 1; border-right: 0; border-left: 1px solid var(--linie-stark); }
+.huelle[data-links="zu"] .leiste-links,
+.huelle[data-rechts="zu"] .leiste-rechts { display: none; }
+.leiste-fuss {
+  display: flex; gap: 6px; padding: 8px; flex: none;
+  border-top: 1px solid var(--linie); background: var(--tafel);
+}
+.leiste-fuss .knopf { flex: 1; justify-content: center; }
+
+/* ---------- Titelleiste ------------------------------------------------- */
+.kopf {
+  display: flex; align-items: stretch; gap: 0;
+  background: var(--chrome-900); color: var(--chrome-text);
+  padding: 0 8px 0 0;
+}
+/* Die Wortmarke heißt .wortmarke, die Seitenzahl der Miniatur .miniatur-nummer.
+   Beide hießen einmal .marke — ein Klassenname, zweimal benutzt, ist ein
+   Fehler, den erst der Bildschirmabzug zeigt. */
+.wortmarke {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 12px; border-right: 1px solid var(--chrome-linie); flex: none;
+}
+/* Gefaltete Seite, nach der Beschreibung im Handoff: Rechteck 4:5 mit
+   abgeschnittener Ecke, darauf das hellere Fold-Dreieck. */
+.wortmarke-zeichen {
+  width: 17px; height: 21px; position: relative; flex: none;
+  background: var(--tally);
+  clip-path: polygon(0 0, 66% 0, 100% 30%, 100% 100%, 0 100%);
+}
+.wortmarke-zeichen::after {
+  content: ''; position: absolute; right: 0; top: 0;
+  width: 34%; height: 30%; background: var(--tally-hell);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+.wortmarke-wort { font-family: var(--serif); font-weight: 600; font-size: 13.5px; white-space: nowrap; }
+
+.dokument-reiter {
+  display: flex; align-items: stretch; flex: 1 1 auto; min-width: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.dokument-reiter::-webkit-scrollbar { display: none; }
+.dok-reiter {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; border: 0; background: none; cursor: pointer;
+  color: var(--chrome-leise); font-size: 11.5px; max-width: 15rem; flex: none;
+  border-right: 1px solid var(--chrome-linie);
+}
+.dok-reiter:hover { background: var(--chrome-800); }
+.dok-reiter.ist-aktiv {
+  background: var(--chrome-700); color: var(--chrome-text);
+  box-shadow: inset 0 -2px 0 var(--tally-hell);
+}
+.dok-reiter-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dok-reiter-zahl { font-family: var(--mono); font-size: 9px; color: var(--chrome-leise); flex: none; }
+.dok-reiter-zu {
+  border: 0; background: none; color: var(--chrome-leise); cursor: pointer;
+  font-size: 13px; line-height: 1; padding: 2px 3px; flex: none;
+}
+.dok-reiter-zu:hover { color: var(--chrome-text); background: var(--chrome-600); }
+.dok-reiter-neu {
+  border: 0; background: none; color: var(--chrome-leise); cursor: pointer;
+  padding: 0 12px; font-size: 15px; flex: none;
+}
+.dok-reiter-neu:hover { color: var(--chrome-text); background: var(--chrome-800); }
+
+.kopf-rechts { display: flex; align-items: center; gap: 6px; flex: none; }
+
+/* ---------- Menüleiste -------------------------------------------------- */
+.menueleiste {
+  display: flex; align-items: stretch; gap: 0;
+  padding: 0 4px;
+  background: var(--menue-grund);
+  border-bottom: 1px solid var(--linie-stark);
+  /* Darf jetzt scrollen: die Listen hängen am Fenster, nicht an der Leiste. */
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+}
+.menueleiste::-webkit-scrollbar { display: none; }
+.menue-stand {
+  margin-left: auto; align-self: center; padding: 0 10px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--tinte-leise); white-space: nowrap;
+  /* Die Menüleiste muss overflow:visible tragen, damit die Listen aufklappen
+     können — also darf der Dokumentstand sie nicht sprengen. Er kürzt sich
+     selbst, statt das ganze Fenster breiter zu machen. */
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto;
+}
+.menue { position: relative; display: flex; }
+.menue-knopf {
+  border: 0; background: none; color: var(--tinte);
+  font: inherit; font-size: 11.5px; padding: 0 10px;
+  cursor: pointer; white-space: nowrap; border-radius: 0;
+}
+.menue-knopf:hover { background: var(--flaeche-tief); }
+.menue.ist-offen .menue-knopf { background: var(--tally); color: #fff; }
+.menue-liste {
+  position: fixed; z-index: 60;
+  min-width: 250px; max-height: 70vh; overflow-y: auto;
+  padding: 4px 0;
+  background: var(--flaeche-hoch); border: 1px solid var(--linie-stark);
+  box-shadow: var(--schatten-tafel);
+}
+.menue-eintrag {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  width: 100%; padding: 6px 14px;
+  border: 0; background: none; color: var(--tinte);
+  font: inherit; font-size: 11.5px; text-align: left; cursor: pointer;
+}
+.menue-eintrag:hover:not(:disabled) { background: var(--flaeche-tief); }
+.menue-eintrag:disabled { color: var(--tinte-leise); opacity: .55; cursor: default; }
+.menue-eintrag.ist-an .menue-name::before { content: '✓ '; }
+.menue-name { white-space: nowrap; }
+.menue-kuerzel { font-family: var(--mono); font-size: 9.5px; color: var(--tinte-leise); white-space: nowrap; }
+.menue-trenner { margin: 4px 0; border: 0; border-top: 1px solid var(--linie); }
+
+/* ---------- Werkzeugzeile ----------------------------------------------- */
+.werkzeugzeile {
+  display: flex; align-items: center; gap: 2px;
+  padding: 0 0 0 8px;
+  background: var(--flaeche-hoch);
+  border-bottom: 1px solid var(--linie-stark);
+  overflow-x: auto; scrollbar-width: thin;
+}
+.werkzeug {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 10px; flex: none;
+  border: 1px solid var(--linie); background: var(--flaeche);
+  color: var(--tinte); font-size: 11.5px; cursor: pointer;
+}
+.werkzeug:hover { background: var(--flaeche-tief); }
+.werkzeug.ist-aktiv {
+  background: var(--tally); border-color: var(--tally); color: #fff;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,.22);
+}
+.werkzeug .sinnbild { width: 15px; height: 15px; }
+.werkzeug-trenner {
+  width: 1px; height: 24px; background: #DBDFE2;
+  margin: 0 9px; flex: none;
+}
+/* Die rechte Gruppe bleibt erreichbar, auch wenn die Zeile scrollt. */
+.werkzeug-rechts {
+  position: sticky; right: 0; margin-left: auto; flex: none;
+  display: flex; align-items: center; gap: 2px;
+  padding: 0 8px 0 6px; background: var(--flaeche-hoch);
+  box-shadow: -12px 0 12px -6px rgba(0,0,0,.10);
+}
+
+/* ---------- Bedienelemente --------------------------------------------- */
+.knopf {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--linie-stark);
+  border-radius: 0;
+  background: var(--flaeche);
+  color: var(--tinte);
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 11.5px;
+  transition: background .12s, border-color .12s;
+}
+.knopf:hover { background: var(--flaeche-tief); }
+.knopf:focus-visible { outline: 2px solid var(--tally); outline-offset: 1px; }
+.knopf-still { border-color: transparent; background: transparent; }
+.knopf-still:hover { background: var(--flaeche-tief); }
+.knopf-klein { padding: 3px 7px; font-size: 11px; }
+.knopf-gross { padding: 8px 16px; font-weight: 600; font-size: 13px; }
+.knopf[disabled] { opacity: .45; cursor: not-allowed; }
+.knopf.ist-aktiv { background: var(--tally); border-color: var(--tally); color: #fff; }
+.knopf-gefahr { color: var(--gefahr); }
+
+/* Diese beiden standen einmal oberhalb von `.knopf` — und wurden von dessen
+   Grundwerten ueberschrieben: der Primaerknopf in der Titelleiste war weiss
+   statt akzentfarben. Gleiche Spezifitaet, spaetere Regel gewinnt. Sie
+   gehoeren deshalb hierhin, hinter die Grundform. */
+.knopf-chrome {
+  border: 1px solid var(--chrome-600); background: transparent; color: var(--chrome-text);
+  padding: 4px 9px; font-size: 11px;
+}
+.knopf-chrome:hover { background: var(--chrome-700); }
+.knopf-voll {
+  border: 1px solid var(--tally); background: var(--tally); color: #fff;
+  padding: 5px 11px; font-size: 11px; font-weight: 500;
+}
+.knopf-voll:hover { background: var(--tally-hover); border-color: var(--tally-hover); }
+.knopf-voll:disabled { opacity: .55; }
+
+.feld {
+  padding: 4px 6px;
+  border: 1px solid var(--linie-stark);
+  border-radius: 0;
+  background: var(--flaeche);
+  color: var(--tinte);
+  min-width: 0;
+}
+.feld-schmal { width: 44px; text-align: center; font-family: var(--mono); font-size: 11px; }
+.feld:focus-visible { outline: 2px solid var(--tally); outline-offset: 0; }
+
+.reiter { display: flex; border-bottom: 1px solid var(--linie-stark); flex: none; background: var(--tafel); }
+.reiter-knopf {
+  flex: 1; padding: 7px 4px; border: 0; background: transparent; cursor: pointer;
+  font-size: 11px; font-weight: 500; color: var(--tinte-leise); border-bottom: 2px solid transparent;
+}
+.reiter-knopf:hover { color: var(--tinte); }
+.reiter-knopf.ist-aktiv { color: var(--tally); border-bottom-color: var(--tally); }
+.tafel { display: none; overflow: auto; flex: 1; min-height: 0; padding: 8px; }
+.tafel.ist-aktiv { display: block; }
+.tafel[hidden] { display: none; }
+
+/* ---------- Statusleiste ------------------------------------------------ */
+.fuss {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 10px;
+  background: var(--chrome-fuss); color: var(--chrome-text);
+  font-size: 11px; white-space: nowrap;
+  justify-content: space-between;
+}
+.fuss-gruppe { display: flex; align-items: center; gap: 6px; flex: none; }
+.fuss-mitte {
+  display: flex; align-items: center; gap: 14px;
+  flex: 1 1 auto; min-width: 0; overflow: hidden;
+  color: var(--chrome-leise); font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: .4px; text-transform: uppercase;
+}
+.fuss-mitte > span { overflow: hidden; text-overflow: ellipsis; }
+.fuss .knopf { color: var(--chrome-text); border-color: var(--chrome-600); background: transparent; }
+.fuss .knopf:hover { background: var(--chrome-600); }
+.fuss .feld { background: var(--chrome-800); border-color: var(--chrome-600); color: var(--chrome-text); }
+.fuss .leise { color: var(--chrome-leise); }
+/* Der Offline-Stand: ein Punkt und ein Wort. Grün heißt „liegt auf dem
+   Gerät", grau heißt „braucht Netz". Er steht in der Fußzeile, weil er eine
+   Eigenschaft ist und keine Nachricht — man sieht hin, wenn man es wissen
+   will, und wird sonst nicht behelligt. */
+.fuss-stand { display: inline-flex; align-items: center; gap: 5px; color: var(--chrome-leise); }
+.stand-punkt { width: 6px; height: 6px; background: var(--chrome-600); }
+.stand-punkt.ist-bereit { background: var(--tally-hell); }
+
+.fuss-fokus { gap: 8px; }
+.fuss-fokus[hidden] { display: none; }
+.fokus-marke {
+  padding: 1px 6px; background: var(--tally); color: #fff;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .4px; text-transform: uppercase;
+}
+.mono { font-family: var(--mono); }
+
+/* ---------- Bühne ------------------------------------------------------ */
+.buehne {
+  overflow: auto;
+  background: var(--buehne);
+  position: relative;
+  outline: none;
+  scroll-behavior: auto;
+}
+/* Handoff: 26 px Luft um die Seite, unten 34. Ohne diesen Rand klebt das
+   Blatt an den Leisten und die Bühne ist nicht mehr zu sehen — dann wirkt die
+   Anwendung wie ein Textfenster, nicht wie ein Leuchttisch. */
+/* Handoff: 26 px Luft um die Seite, unten 34. Und ausdrücklich `margin: 0
+   auto` statt `align-items: center` — bei einer Seite, die breiter ist als
+   die Bühne, schiebt das Zentrieren den linken Rand aus dem Bild, und was
+   dort steht, ist nicht mehr erreichbar. Mit `auto` liegt der Überhang
+   rechts und lässt sich scrollen. */
+.spur {
+  display: block; padding: 26px 26px 34px; min-height: 100%;
+}
+.spur > * { margin: 0 auto 18px; }
+.spur > *:last-child { margin-bottom: 0; }
+
+.blatt {
+  position: relative;
+  background: var(--papier);
+  box-shadow: var(--schatten-blatt);
+  flex: none;
+  --seiten-schub: 0;
+}
+.blatt canvas { display: block; width: 100%; height: 100%; }
+.blatt.ist-gewaehlt { outline: 2px solid var(--tally); outline-offset: 3px; }
+.blatt-nummer {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: -18px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .4px;
+  color: rgba(255,255,255,.72); pointer-events: none;
+}
+
+/* Textebene (Auswahl, Suche) */
+.textebene {
+  position: absolute; inset: 0; overflow: hidden; opacity: 1; line-height: 1;
+  forced-color-adjust: none; text-size-adjust: none; transform-origin: 0 0;
+  z-index: 2;
+}
+.textebene span, .textebene br {
+  color: transparent; position: absolute; white-space: pre; cursor: text;
+  transform-origin: 0% 0%;
+}
+.textebene ::selection { background: rgba(0,110,255,.35); }
+.textebene .treffer { background: rgba(255,196,0,.45); border-radius: 2px; }
+.textebene .treffer-aktiv { background: rgba(255,120,0,.65); }
+.werkzeug-aktiv .textebene { pointer-events: none; }
+.werkzeug-text .textebene { pointer-events: auto; }
+
+/* Anmerkungsebene */
+/* Der Aufdruck liegt über dem Seitenbild und unter den Anmerkungen: er
+   gehört zum Dokument, soll aber nichts verdecken, was jemand hingezeichnet
+   hat. Klicks gehen hindurch — durch ein Wasserzeichen muss man Text
+   markieren können. */
+.aufdruckebene { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.aufdruckebene svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+.malebene { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.malebene svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.werkzeug-aktiv .malebene { pointer-events: auto; cursor: crosshair; }
+
+/* Text ersetzen: die Textebene wird bedienbar, die Malebene tritt zurück. */
+.werkzeug-ersetzen .textebene { pointer-events: auto; cursor: pointer; }
+.werkzeug-ersetzen .malebene { pointer-events: none; }
+.werkzeug-ersetzen .textebene span:hover { background: var(--tally-grund); outline: 1px solid var(--tally); border-radius: 2px; }
+.anmerkung-griff { pointer-events: auto; cursor: pointer; }
+.anmerkung-griff.ist-gewaehlt { filter: drop-shadow(0 0 0 var(--tally)); }
+.notiz-marke {
+  position: absolute; width: 1.5rem; height: 1.5rem; border-radius: 50% 50% 50% 2px;
+  display: grid; place-items: center; font-size: .75rem; color: #3a2c00;
+  box-shadow: 0 1px 3px rgba(0,0,0,.35); pointer-events: auto; cursor: pointer;
+  transform: translate(-2px, -100%);
+}
+/* Stempel: Rahmen und Wort, wie ein Gummistempel — bewusst schlicht. */
+.stempel {
+  display: grid; place-items: center; pointer-events: auto; cursor: move;
+  border: 2.5px solid currentColor;
+  font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden;
+}
+
+/* Maßzahl an einer Messung. Sie sitzt mittig auf der Strecke beziehungsweise
+   in der Fläche und ist bewusst nicht durchsichtig: eine Zahl, die man gegen
+   den Seiteninhalt entziffern muss, ist keine Messung. */
+.messmarke {
+  position: absolute; transform: translate(-50%, -50%);
+  padding: .1rem .35rem; font-size: .72rem; font-variant-numeric: tabular-nums;
+  background: var(--papier); border: 1px solid currentColor;
+  white-space: nowrap; pointer-events: none; line-height: 1.35;
+}
+.messmarke.ist-entwurf { opacity: .9; }
+
+.feldebene { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.formularfeld {
+  position: absolute; pointer-events: auto; border: 1px solid rgba(0,110,255,.55);
+  background: rgba(0,110,255,.07); border-radius: 2px; padding: 0 2px;
+  font-family: var(--sans); color: #111; font-size: 12px;
+}
+.formularfeld:focus { outline: 2px solid var(--tally); background: #fff; }
+.formularfeld[type="checkbox"] { width: auto; height: auto; }
+
+/* ---------- Miniaturen -------------------------------------------------- */
+/* Handoff: eine Spalte, Karte 112 px hoch auf Papierfarbe mit 1 px Rahmen,
+   aktiv Akzentrahmen plus 1-px-Ring; darunter eine Zeile mit Mono-Seitenzahl,
+   Kurztitel (kürzt sich) und Kommentarzahl auf Akzent. Kantig. */
+.miniaturen { display: block; }
+.miniatur {
+  position: relative; padding: 6px 14px 8px; cursor: pointer;
+  border: 0; background: transparent;
+}
+.miniatur:hover { background: var(--flaeche-tief); }
+.miniatur-karte {
+  position: relative; height: 112px; overflow: hidden;
+  background: var(--papier); border: 1px solid var(--linie-stark);
+  box-shadow: 0 1px 2px rgba(0,0,0,.07);
+  display: grid; place-items: center;
+  transition: transform .18s;
+}
+.miniatur canvas { display: block; max-width: 100%; max-height: 112px; width: auto; height: auto; }
+.miniatur-zeile { display: flex; align-items: center; gap: 5px; padding: 4px 2px 0; }
+.miniatur-titel {
+  font-size: 9.5px; color: var(--tinte-leise); flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.miniatur-zahl {
+  font-family: var(--mono); font-size: 9px; background: var(--tally); color: #fff;
+  padding: 1px 4px; flex: none;
+}
+.miniatur-nummer {
+  font-family: var(--mono); font-size: 9.5px; color: var(--tinte-leise);
+  min-width: 14px; flex: none;
+}
+.miniatur.ist-aktuell { background: var(--tally-grund); }
+.miniatur.ist-aktuell .miniatur-karte { border-color: var(--tally); box-shadow: 0 0 0 1px var(--tally); }
+.miniatur.ist-aktuell .miniatur-nummer { color: var(--tally); font-weight: 500; }
+.miniatur.ist-gewaehlt .miniatur-karte { border-color: var(--tally); box-shadow: 0 0 0 2px var(--tally-grund); }
+.miniatur.wird-gezogen { opacity: .4; }
+.miniatur.ziel-vor { box-shadow: inset 0 3px 0 var(--tally); }
+.miniatur.ziel-nach { box-shadow: inset 0 -3px 0 var(--tally); }
+
+/* Karten in der Tafel „Dateien" — Name, Maß, darunter eine Ablegefläche mit
+   gestricheltem Rand, wie im Handoff. */
+.dateikarte {
+  padding: 8px 10px; margin-bottom: 6px; cursor: pointer;
+  background: var(--flaeche); border: 1px solid var(--linie);
+  border-left: 3px solid var(--linie-stark);
+}
+.dateikarte:hover { border-left-color: var(--tally); background: var(--flaeche-hoch); }
+.dateikarte-name {
+  font-size: 11.5px; font-weight: 500; word-break: break-word; line-height: 1.35;
+}
+.dateikarte-mass { font-size: 9px; color: var(--tinte-leise); letter-spacing: .3px; margin-top: 2px; }
+.ablegeflaeche {
+  display: block; width: 100%; margin-top: 8px; padding: 14px 8px;
+  border: 1px dashed var(--linie-stark); background: transparent;
+  color: var(--tinte-leise); font-size: 11px; cursor: pointer;
+}
+.ablegeflaeche:hover { border-color: var(--tally); color: var(--tally); background: var(--tally-grund); }
+
+/* Leerzustand einer Tafel: Zeichen, Satz, Weg. Mittig, aber nicht in der
+   Mitte der Höhe — er soll oben stehen, wo der Inhalt begonnen hätte. */
+.leerbild {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 8px; padding: 32px 18px;
+}
+.leerbild-zeichen {
+  width: 28px; height: 28px; fill: none; stroke: var(--linie-stark);
+  stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round;
+}
+.leerbild-titel { margin: 0; font-size: 12px; font-weight: 500; color: var(--tinte); }
+.leerbild-satz { margin: 0; font-size: 11px; line-height: 1.5; color: var(--tinte-leise); max-width: 24ch; }
+.leerbild-tat { margin-top: 4px; }
+
+/* ---------- Listen in Tafeln ------------------------------------------- */
+.eintrag {
+  display: block; width: 100%; text-align: left; padding: .45rem .5rem;
+  border: 1px solid transparent; background: transparent; cursor: pointer;
+}
+.eintrag:hover { background: var(--flaeche-tief); }
+.eintrag.ist-aktiv { background: var(--tally-grund); border-color: var(--tally); }
+.eintrag-kopf { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; }
+.eintrag-zeile { font-size: .8125rem; color: var(--tinte-leise); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.gliederung-ebene { padding-left: .75rem; border-left: 1px solid var(--linie); margin-left: .35rem; }
+.punkt { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; flex: none; }
+
+/* ---------- Rechte Tafel: Mitdenken ------------------------------------ */
+.abschnitt { border-bottom: 1px solid var(--linie); padding: .625rem .75rem; }
+.abschnitt h2 { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--tinte-leise); margin: 0 0 .5rem; font-weight: 600; }
+.vorschlag {
+  display: flex; gap: .5rem; align-items: flex-start; width: 100%; text-align: left;
+  padding: .5rem .55rem; border: 1px solid var(--linie);
+  background: var(--flaeche-hoch); cursor: pointer; margin-bottom: .4rem;
+}
+.vorschlag:hover { border-color: var(--linie-stark); background: var(--flaeche-tief); }
+.vorschlag .sinnbild { margin-top: .1rem; color: var(--tally); }
+.vorschlag-text { min-width: 0; }
+.vorschlag-text b { display: block; font-size: .8125rem; }
+.vorschlag-text span { font-size: .75rem; color: var(--tinte-leise); }
+.vorschlag-weg { border: 0; background: transparent; color: var(--tinte-leise); cursor: pointer; padding: 0 .1rem; align-self: flex-start; }
+.vorschlag-weg:hover { color: var(--tally); }
+.hinweis { font-size: .8125rem; color: var(--tinte-leise); }
+.merkmal { display: flex; justify-content: space-between; gap: .5rem; padding: .15rem 0; font-size: .8125rem; }
+.merkmal span:last-child { color: var(--tinte-leise); text-align: right; }
+.marke {
+  display: inline-block; padding: .05rem .35rem; font-size: .6875rem;
+  background: var(--flaeche-tief); color: var(--tinte-leise);
+}
+.marke-warn { background: var(--warn-grund); color: var(--warn); }
+.marke-gut { background: var(--gut-grund); color: var(--gut); }
+.marke-tally { background: var(--tally-grund); color: var(--tally); }
+
+/* ---------- Farbwahl --------------------------------------------------- */
+.farbreihe { display: flex; gap: .3rem; flex-wrap: wrap; }
+.farbtupf { width: 1.4rem; height: 1.4rem; border: 2px solid transparent; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+.farbtupf.ist-aktiv { border-color: var(--tinte); }
+.schieber { width: 100%; }
+
+/* ---------- Empfang ---------------------------------------------------- */
+/* Empfang — das Erste, was jemand sieht. Es hatte nie ein Vorbild und sah
+   entsprechend aus: eine graue Fläche mit einer weißen Karte darin, der
+   Hauptknopf nicht einmal akzentfarben.
+
+   Jetzt trägt es dieselbe Sprache wie alles andere: die dunkle Titelleiste
+   38 px mit der Wortmarke, darunter eine kantige Karte mit Mono-Zeile,
+   Serif-Überschrift und zwei Knöpfen — der erste akzentfarben, weil er der
+   ist, den man drücken soll. Die Ablegefläche steht sichtbar da, statt als
+   Satz unter den Knöpfen; sie nennt auch, was außer PDF hineindarf. */
+.empfang {
+  position: fixed; inset: 0; z-index: 40;
+  display: grid; grid-template-rows: var(--kopfhoehe) 1fr;
+  background: var(--grund);
+}
+.empfang[hidden] { display: none; }
+.empfang-kopf {
+  display: flex; align-items: center; gap: 8px; padding: 0 12px;
+  background: var(--chrome-900); color: var(--chrome-text);
+}
+.empfang-karte {
+  place-self: center; width: min(34rem, 100% - 2rem);
+  background: var(--flaeche); border: 1px solid var(--linie-stark);
+  box-shadow: var(--schatten-tafel); padding: 32px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+/* Nicht `.marke` — die ist im Programm ein Chip mit Hintergrund. Hier soll
+   die Zeile nur eine Zeile sein. */
+.empfang-marke {
+  font-size: 9.5px; letter-spacing: 1.4px; color: var(--tally);
+}
+.empfang h1 { font-family: var(--serif); font-size: 28px; font-weight: 600; margin: 0; letter-spacing: -.3px; }
+.empfang p { margin: 0; font-size: 12.5px; line-height: 1.65; color: var(--tinte-leise); max-width: 46ch; }
+.empfang-knoepfe { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.empfang-ablage {
+  border: 1px dashed var(--linie-stark); padding: 14px;
+  font-size: 11.5px; color: var(--tinte-leise); text-align: center;
+}
+.empfang-ablage .mono { font-size: 9px; letter-spacing: .8px; display: block; margin-top: 3px; }
+.empfang-fuss {
+  display: flex; gap: 22px; padding-top: 12px; border-top: 1px solid var(--linie);
+  font-family: var(--mono); font-size: 9px; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--tinte-leise);
+}
+.empfang-fuss b { font-family: var(--serif); font-size: 15px; letter-spacing: 0; color: var(--tinte); }
+
+.ablegeschirm { position: fixed; inset: 0; z-index: 60; background: rgba(168,46,35,.12); backdrop-filter: blur(2px); display: grid; place-items: center; pointer-events: none; }
+.ablegeschirm[hidden] { display: none; }
+.ablegeschirm div { background: var(--flaeche); border: 2px dashed var(--tally); padding: 2rem 3rem; font-weight: 600; }
+
+/* ---------- Schirm, Dialoge, Befehlspalette ---------------------------- */
+.schirm { position: fixed; inset: 0; z-index: 70; background: rgba(18,24,28,.52); display: grid; place-items: start center; padding: 6vh 1rem; overflow: auto; }
+.schirm[hidden] { display: none; }
+/* Handoff: Dialog kantig, Kopf 42 px in Chromefarbe mit Rautenmarke und
+   Serif-Titel, Rumpf hell, Fuß mit Hinweis links und Knöpfen rechts. Der
+   dunkle Kopf ist das auffälligste Merkmal — ein Dialog ohne ihn sieht aus
+   wie aus einem anderen Programm. */
+.dialog {
+  background: var(--flaeche); border: 1px solid var(--linie-stark);
+  box-shadow: var(--schatten-dialog); width: min(54rem, 100%); overflow: hidden;
+}
+.dialog-kopf {
+  display: flex; align-items: center; gap: 10px;
+  height: 42px; padding: 0 14px; flex: none;
+  background: var(--chrome-900); color: var(--chrome-text);
+}
+.dialog-kopf::before {
+  content: ''; width: 10px; height: 10px; flex: none;
+  background: var(--tally-hell); transform: rotate(45deg);
+}
+.dialog-kopf h2 { margin: 0; font-family: var(--serif); font-size: 13px; font-weight: 600; }
+.dialog-kopf .knopf {
+  margin-left: auto; border-color: transparent; background: transparent; color: var(--chrome-leise);
+}
+.dialog-kopf .knopf:hover { background: var(--chrome-700); color: var(--chrome-text); }
+.dialog-rumpf { padding: 16px; max-height: 70vh; overflow: auto; }
+.dialog-fuss {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  padding: 12px 14px; border-top: 1px solid var(--linie); background: var(--flaeche-hoch);
+}
+.dialog-fuss-hinweis {
+  margin-right: auto; font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: .4px; color: var(--tinte-leise);
+}
+/* Abzeichen an einer Kategorie: die Zahl der Dinge, die dort offen sind. */
+.einst-abzeichen {
+  font-family: var(--mono); font-size: 9px; line-height: 1;
+  background: var(--tally); color: #fff; padding: 3px 5px; flex: none;
+}
+
+.einst-fassung {
+  margin-top: auto; padding: 14px 14px 12px; border-top: 1px solid var(--linie);
+  font-size: 9px; letter-spacing: .8px; color: var(--tinte-leise);
+}
+.einst-fassung div:first-child { margin-bottom: 3px; }
+/* Ein Schritt im Stapel: Kasten, Name, Begründung. Die Begründung steht
+   daneben und nicht in einem Hilfetext, weil sie beim Anklicken zählt. */
+.stapel-schritt {
+  display: flex; gap: .5rem; align-items: flex-start;
+  padding: .4rem .5rem; border-bottom: 1px solid var(--linie); cursor: pointer;
+}
+.stapel-schritt:hover { background: var(--flaeche-hoch); }
+.stapel-schritt input { margin-top: .2rem; }
+
+/* Eine schlichte Tabelle für Listen in Dialogen — Messungen, später mehr. */
+.liste-tafel { width: 100%; border-collapse: collapse; font-size: .8125rem; margin: .5rem 0; }
+.liste-tafel th, .liste-tafel td { text-align: left; padding: .3rem .5rem; border-bottom: 1px solid var(--linie); }
+.liste-tafel th { font-weight: 600; color: var(--tinte-leise); }
+.liste-tafel td:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.liste-tafel tr.anklickbar { cursor: pointer; }
+.liste-tafel tr.anklickbar:hover td { background: var(--flaeche-hoch); }
+
+.zeile { display: flex; gap: .5rem; align-items: center; margin-bottom: .625rem; flex-wrap: wrap; }
+.zeile label { min-width: 9rem; }
+.zeile .feld { flex: 1; }
+/* Ein Ankreuzfeld mit Satz daneben steht in derselben Zeile, aber ohne die
+   9rem-Spalte der Beschriftung — die hat die Zeile schon links. */
+.zeile .zeile-kasten { min-width: 0; display: flex; gap: .4rem; align-items: center; }
+
+/* Drei gleich breite Felder nebeneinander: links, mittig, rechts — so, wie
+   sie später auf der Seite stehen. Das Feld sagt seine Lage durch seinen
+   Platz, nicht durch eine Beschriftung. */
+.aufdruck-drei { display: flex; gap: 4px; flex: 1; min-width: 0; }
+.aufdruck-drei .feld { flex: 1; min-width: 0; }
+.aufdruck-drei .feld:nth-child(2) { text-align: center; }
+.aufdruck-drei .feld:nth-child(3) { text-align: right; }
+
+/* Ein Strich zwischen zwei Gedanken im selben Dialog. */
+.dialog-trenner { height: 1px; background: var(--linie); margin: 14px 0; }
+
+/* Die Fundliste der Felderkennung: eine Zeile je Vorschlag, mit Haken,
+   Seitenzahl, Name, Art und dem Grund, aus dem sie gefunden wurde. Der Grund
+   steht dabei — wer einen Fehlgriff sieht, soll auch sehen, warum. */
+.fundliste { max-height: 22rem; overflow-y: auto; border: 1px solid var(--linie); }
+.fundzeile {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-bottom: 1px solid var(--linie);
+}
+.fundzeile:last-child { border-bottom: 0; }
+.fundzeile:nth-child(even) { background: var(--flaeche-tief, transparent); }
+.fundzeile .feld { flex: 1; min-width: 0; }
+.fundzeile select.feld { flex: 0 0 11rem; }
+.fundzeile .mono { flex: 0 0 2.5rem; }
+
+/* Ein Hinweis, der eine Folge ankündigt statt nur zu erklären — etwa: der
+   Absatz wächst und überdeckt, was darunter steht. */
+.hinweis.ist-warnung { color: var(--warn, #A82E23); }
+
+.palette { width: min(38rem, 100%); }
+.palette input {
+  width: 100%; border: 0; border-bottom: 1px solid var(--linie); padding: .875rem 1rem;
+  background: transparent; font-size: 1rem; outline: none;
+}
+.palette-liste { max-height: 55vh; overflow: auto; padding: .375rem; }
+.palette-treffer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .5rem .625rem; cursor: pointer; }
+.palette-treffer.ist-aktiv { background: var(--tally-grund); }
+.palette-treffer .kuerzel { font-family: var(--mono); font-size: .75rem; color: var(--tinte-leise); }
+.palette-treffer .gruppe { font-size: .75rem; color: var(--tinte-leise); }
+
+.unterschrift-flaeche { border: 1px dashed var(--linie-stark); background: var(--flaeche-hoch); touch-action: none; display: block; width: 100%; }
+.unterschrift-reiter { display: flex; gap: .25rem; margin-bottom: .625rem; }
+
+/* ---------- Meldungen, Lader ------------------------------------------- */
+.meldungen { position: fixed; bottom: calc(var(--fusshoehe) + .75rem); left: 50%; transform: translateX(-50%); z-index: 80; display: flex; flex-direction: column; gap: .4rem; align-items: center; pointer-events: none; }
+.meldung {
+  background: var(--tinte); color: var(--grund); padding: .5rem .875rem;
+  box-shadow: var(--schatten); font-size: .8125rem; pointer-events: auto;
+  display: flex; align-items: center; gap: .75rem; animation: auftauchen .16s ease-out;
+}
+.meldung button { border: 0; background: transparent; color: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
+.meldung.ist-warnung { background: var(--warn); color: #fff; }
+.meldung.ist-fehler { background: var(--tally); color: #fff; }
+@keyframes auftauchen { from { opacity: 0; transform: translateY(6px); } }
+
+.lader { position: fixed; inset: auto 0 0 0; z-index: 90; display: flex; align-items: center; gap: .75rem; padding: .5rem 1rem; background: var(--flaeche); border-top: 1px solid var(--linie); font-size: .8125rem; }
+.lader[hidden] { display: none; }
+.lader-balken { width: 8rem; height: .35rem; background: var(--flaeche-tief); overflow: hidden; }
+.lader-balken i { display: block; height: 100%; width: 40%; background: var(--tally); animation: wandern 1.1s infinite ease-in-out; }
+@keyframes wandern { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+
+/* Der alte Vergleichs-Dialog ist fort; seine Regeln standen hier und hätten
+   die neue Ansicht beschnitten (max-height: 55vh). Die gültigen Regeln stehen
+   weiter unten unter „Vergleich als eigene Ansicht". Nur die Spalte im
+   Schutz-Dialog braucht noch eine eigene Form. */
+.schutz-spalte { border: 1px solid var(--linie); padding: .5rem; max-height: 55vh; overflow: auto; font-family: var(--mono); font-size: .75rem; white-space: pre-wrap; }
+
+/* Diese Regel versteckte beide Leisten unter 960 px vollständig — ein
+   Überbleibsel aus der Zeit vor den Schubfächern. Sie hat den Vergleich mit
+   dem Mockup verfälscht: dessen Aufnahme ist 924 px breit und zeigt beide
+   Leisten. Der Umbruch liegt jetzt allein bei 900 px, und dort werden die
+   Leisten zu Schubfächern, statt zu verschwinden.
+
+   Was bleibt: die Wörter neben den Sinnbildern der Titelleiste. */
+@media (max-width: 52rem) {
+  .nur-breit { display: none; }
+}
+@media print { .kopf, .fuss, .leiste, .meldungen { display: none !important; } }
+
+/* ---------- Seiten ordnen ------------------------------------------------ */
+/* Vollbild, weil Ordnen heißt: alle Seiten gleichzeitig sehen. */
+/* Das Seitenraster sitzt in derselben Rasterzelle wie die Bühne: es tauscht
+   die Mitte aus, nicht das Fenster. Aktionsleiste in Chromefarbe, Raster auf
+   dem dunkleren Bühnenton — beides aus dem Mockup. */
+.ordnen {
+  display: flex; flex-direction: column;
+  background: var(--buehne-tief); overflow: hidden; min-height: 0;
+}
+.ordnen[hidden] { display: none; }
+.ordnen-kopf {
+  display: flex; align-items: center; gap: 6px; flex: none;
+  height: 46px; padding: 0 12px;
+  background: var(--chrome-600); color: #fff;
+  overflow-x: auto; scrollbar-width: none;
+}
+.ordnen-kopf::-webkit-scrollbar { display: none; }
+.ordnen-zahl {
+  font-size: 11.5px; font-weight: 500; white-space: nowrap; flex: none;
+  padding-right: 8px; margin-right: 4px; border-right: 1px solid rgba(255,255,255,.18);
+}
+.ordnen-knopf {
+  flex: none; height: 30px; padding: 0 11px; white-space: nowrap;
+  border: 1px solid rgba(255,255,255,.22); background: transparent; color: #fff;
+  font-size: 11.5px; cursor: pointer;
+}
+.ordnen-knopf:hover { background: rgba(255,255,255,.12); }
+.ordnen-knopf.ist-betont { background: var(--tally); border-color: var(--tally); }
+.ordnen-knopf.ist-betont:hover { background: var(--tally-hover); }
+.ordnen-hinweis {
+  margin-left: auto; flex: none; padding: 0 10px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .8px;
+  color: rgba(255,255,255,.45); white-space: nowrap;
+}
+.ordnen-fertig { flex: none; }
+.ordnen-gitter {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 18px; padding: 18px; overflow-y: auto; align-content: start; min-height: 0;
+}
+.ordnen-karte {
+  display: flex; flex-direction: column; gap: 6px;
+  cursor: pointer; position: relative;
+}
+.ordnen-karte:hover .ordnen-blatt { outline: 1px solid rgba(255,255,255,.35); }
+.ordnen-karte.ist-gewaehlt .ordnen-blatt {
+  border-color: var(--tally); box-shadow: 0 0 0 2px rgba(15,118,110,.45);
+}
+/* Häkchen oben rechts auf der gewählten Karte — wie im Mockup. */
+.ordnen-karte.ist-gewaehlt::after {
+  content: '✓'; position: absolute; top: 6px; right: 6px;
+  width: 16px; height: 16px; display: grid; place-items: center;
+  background: var(--tally); color: #fff; font-size: 10px; line-height: 1;
+}
+.ordnen-karte.wird-gezogen { opacity: .4; }
+.ordnen-karte.ziel-vor::before,
+.ordnen-karte.ziel-nach::before {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 3px;
+  background: var(--tally-hell);
+}
+.ordnen-karte.ziel-vor::before  { left: -10px; }
+.ordnen-karte.ziel-nach::before { right: -10px; }
+.ordnen-blatt {
+  /* Feste Hoehe, Inhalt zentriert: sonst stehen Quer- und Hochformat auf
+     verschiedenen Grundlinien und das Gitter franst aus. Mockup: 172 px. */
+  height: 172px; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--papier); border: 1px solid rgba(0,0,0,.25);
+  overflow: hidden;
+}
+.ordnen-blatt canvas {
+  display: block; max-width: 100%; max-height: 100%; width: auto; height: auto;
+}
+/* Fußzeile der Karte in Mono auf dem dunklen Grund — Mockup: „1 · Deckblatt". */
+.ordnen-fuss {
+  display: flex; align-items: baseline; gap: 6px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .4px;
+  color: rgba(255,255,255,.62);
+}
+.ordnen-nummer { font-variant-numeric: tabular-nums; flex: none; }
+.ordnen-titel {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ordnen-titel::before { content: '· '; }
+
+/* ---------- Fokus: nur gewählte Seiten ----------------------------------- */
+.blatt.ist-verborgen { display: none; }
+
+/* ---------- Formularfeld-Entwurf ----------------------------------------- */
+/* Ein Feld, das es noch nicht gibt. Es sieht bewusst nach Bauplan aus und
+   nicht nach Eingabefeld -- sonst tippt jemand hinein und wundert sich. */
+.feld-entwurf {
+  border: 1.5px dashed var(--tally);
+  background: color-mix(in srgb, var(--tally) 8%, transparent);
+  border-radius: .1875rem;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.feld-entwurf span {
+  font-size: .6875rem; color: var(--tally); font-weight: 600;
+  white-space: nowrap; padding: 0 .25rem; pointer-events: none;
+}
+
+/* ---------- Barrierefreiheitsbericht ------------------------------------- */
+.zugang-punkt { padding: .5rem 0; border-top: 1px solid var(--linie); }
+.zugang-punkt:first-of-type { border-top: 0; }
+.zugang-punkt p { margin: .25rem 0 .375rem; }
+.zugang-fehler strong { color: var(--tally); }
+.zugang-warnung strong { color: var(--warn); }
+.zugang-gut strong { color: var(--gut); }
+
+/* ---------- Rechte Tafeln: Faden, Felder, Verlauf ------------------------ */
+.filterreihe { display: flex; gap: 4px; margin-bottom: 8px; }
+.faden {
+  background: var(--flaeche); border: 1px solid var(--linie);
+  border-left: 3px solid var(--linie-stark);
+  padding: 8px 10px; margin-bottom: 6px; cursor: pointer;
+}
+.faden:hover { border-left-color: var(--tally); }
+.faden.ist-aktiv { border-left-color: var(--tally); box-shadow: inset 0 0 0 1px var(--tally-grund); }
+.faden-kopf { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+/* Art-Chip nach dem Handoff: Mono, 8,5 px, Versalien, gesperrt. */
+.art-chip {
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--tally);
+  background: var(--tally-grund); padding: 1px 5px; flex: none;
+}
+/* Zitat aus der Seite: Serif kursiv, goldene Kante links — das Gold ist
+   dieselbe Markierungsfarbe wie auf dem Papier. */
+.faden-zitat {
+  margin: 6px 0 0; padding: 2px 0 2px 8px;
+  border-left: 2px solid rgba(212,175,55,.85);
+  font-family: var(--serif); font-style: italic;
+  font-size: 11.5px; line-height: 1.5; color: var(--tinte-leise);
+}
+.faden-text { margin: 4px 0 0; font-size: 11.5px; line-height: 1.55; }
+.faden-antwort {
+  margin: 6px 0 0 10px; padding-left: 8px; border-left: 1px solid var(--linie);
+}
+.faden-antwort p { margin: 2px 0 0; font-size: 11.5px; line-height: 1.5; }
+.faden-fuss { display: flex; gap: 4px; margin-top: 8px; }
+
+.feldzeile {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 8px 4px; border-bottom: 1px solid var(--linie); cursor: pointer;
+}
+.feldzeile:hover { background: var(--flaeche-tief); }
+.feldzeile-name { font-size: 11.5px; font-weight: 500; }
+.wertmarke {
+  font-family: var(--mono); font-size: 9.5px; padding: 2px 6px;
+  background: var(--flaeche-tief); color: var(--tinte-leise); white-space: nowrap;
+}
+.wertmarke.ist-offen { background: var(--warn-grund); color: var(--warn); font-weight: 500; }
+
+.verlauf-zeile { display: flex; gap: 10px; padding: 6px 2px; }
+.verlauf-marke {
+  width: 8px; height: 8px; background: var(--tally); flex: none; margin-top: 4px;
+  box-shadow: 0 12px 0 -3.5px var(--linie-stark);
+}
+.verlauf-zeile > div { font-size: 11.5px; }
+
+/* ---------- Einstellungen ------------------------------------------------ */
+.einstellungen { display: grid; grid-template-columns: 206px 1fr; min-height: 26rem; }
+.einst-kategorien {
+  display: flex; flex-direction: column; border-right: 1px solid var(--linie);
+  background: var(--tafel); margin: -16px 0 -16px -16px; padding: 8px 0;
+}
+.einst-kategorie {
+  border: 0; background: none; text-align: left; cursor: pointer;
+  padding: 8px 14px; font-size: 12px; color: var(--tinte);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border-left: 2px solid transparent;
+}
+.einst-kategorie:hover { background: var(--flaeche-tief); }
+.einst-kategorie.ist-aktiv { color: var(--tally); background: var(--flaeche-tief); border-left-color: var(--tally); font-weight: 500; }
+.einst-inhalt { padding: 0 4px 0 18px; overflow-y: auto; max-height: 60vh; }
+.einst-inhalt h3 { font-family: var(--serif); font-size: 18px; font-weight: 600; margin: 0 0 10px; }
+.einst-zeile {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 13px 0; border-bottom: 1px solid var(--linie);
+}
+.einst-name { font-size: 12px; font-weight: 500; }
+.einst-hinweis { font-size: 11px; color: var(--tinte-leise); margin-top: 2px; }
+
+.pille {
+  width: 38px; height: 20px; flex: none; cursor: pointer;
+  border: 1px solid var(--linie-stark); background: var(--flaeche-tief);
+  border-radius: 10px; padding: 1px; display: flex; align-items: center;
+}
+.pille i { width: 16px; height: 16px; background: var(--tinte-leise); display: block; transition: transform .12s, background .12s; }
+.pille.ist-an { background: var(--tally); border-color: var(--tally); }
+.pille.ist-an i { background: #fff; transform: translateX(18px); }
+
+.segmente { display: flex; border: 1px solid var(--linie-stark); background: var(--flaeche); flex: none; }
+.segment {
+  border: 0; background: none; cursor: pointer; padding: 4px 10px;
+  font-size: 11px; color: var(--tinte); border-right: 1px solid var(--linie);
+}
+.segment:last-child { border-right: 0; }
+.segment:hover { background: var(--flaeche-tief); }
+.segment.ist-an { background: var(--tally); color: #fff; }
+
+.ohne-seitenzahlen .blatt-nummer { display: none; }
+.werkzeug-schmal { padding: 0 8px; }
+.werkzeug[disabled] { opacity: .4; cursor: not-allowed; }
+
+/* ---------- Vergleich als eigene Ansicht -------------------------------- */
+/* Liegt in derselben Rasterzelle wie die Bühne und tritt an ihre Stelle. */
+/* Bühne, Seitenraster und Vergleich teilen sich dieselbe Zelle: es gibt genau
+   eine Mitte, und sie wird ausgetauscht. Ohne diese Zeile legt das Raster eine
+   zweite Rasterzeile an und schiebt alles auseinander. */
+.buehne, .ordnen, .vergleich-ansicht { grid-column: 2; grid-row: 1; min-height: 0; }
+.vergleich-ansicht {
+  display: flex; flex-direction: column;
+  background: var(--buehne-tief); overflow: hidden;
+}
+.vergleich-ansicht[hidden] { display: none; }
+/* Eine Zeile, 46 px, wie die Aktionsleiste des Seitenrasters — nicht zwei.
+   Im Mockup steht alles nebeneinander: Titel, Fassungen, Legende. */
+.vergleich-kopf {
+  display: flex; align-items: center; gap: 16px; flex: none;
+  height: 46px; padding: 0 12px;
+  background: var(--chrome-600); color: #fff;
+  overflow-x: auto; scrollbar-width: none; white-space: nowrap;
+}
+.vergleich-kopf::-webkit-scrollbar { display: none; }
+.vergleich-titel { display: flex; align-items: baseline; gap: 10px; }
+.vergleich-titel strong { font-size: 12px; font-weight: 600; }
+.vergleich-titel .mono { color: rgba(255,255,255,.66); font-size: 9.5px; letter-spacing: .4px; text-transform: uppercase; }
+.vergleich-legende { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; }
+.vergleich-legende .leise { color: rgba(255,255,255,.6); }
+.vergleich-nav { display: flex; gap: 4px; flex: none; }
+.vergleich-nav .knopf { color: #fff; border-color: rgba(255,255,255,.28); background: transparent; }
+.vergleich-nav .knopf:hover { background: rgba(255,255,255,.14); }
+.diff-marke {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .4px; text-transform: uppercase;
+  padding: 2px 6px; white-space: nowrap;
+}
+.diff-marke-neu { background: rgba(15,118,110,.34); color: var(--tally-hell); }
+.diff-marke-weg { background: rgba(139,58,58,.34); color: #f0a9a9; }
+.vergleich-hinweis {
+  margin: 0; padding: 8px 12px; flex: none;
+  background: var(--chrome-700); color: rgba(255,255,255,.78); font-size: 11.5px;
+}
+.vergleich {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  padding: 16px; overflow: auto; flex: 1; min-height: 0; align-content: start;
+}
+.vergleich-seite { background: var(--papier); box-shadow: var(--schatten-blatt); padding: 0 0 18px; }
+.vergleich-kennung {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 18px; border-bottom: 1px solid #d8d3c9;
+  font-size: 9.5px; letter-spacing: .6px; text-transform: uppercase; color: #8b8478;
+}
+.vergleich-spalte {
+  padding: 16px 18px 0; font-family: var(--serif); font-size: 12.5px; line-height: 1.78;
+  color: #22282c; white-space: pre-wrap; word-break: break-word;
+}
+.diff-weg { background: rgba(139,58,58,.14); text-decoration: line-through; }
+.diff-neu { background: rgba(15,118,110,.13); }
+
+/* ---------- Schmale Fenster --------------------------------------------- */
+/* Das Handoff entwirft dafür eine eigene iOS-App. Eine zweite Anwendung wäre
+   der Sonderzweig, den die Projektanweisung ausschließt — also muss dieselbe
+   PDF Studio auf einem schmalen Fenster arbeiten.
+
+   Der eigentliche Fehler war nicht die Breite, sondern dass die Statusleiste
+   sich nicht stauchen ließ: sie steht in einer Grid-Zeile, ihr min-content
+   war 827 px breit, und damit wurde das ganze Fenster 827 px breit — mit
+   waagerechtem Bildlauf über alles. Ein `min-width: 0` an der richtigen
+   Stelle ist die halbe Antwort. */
+.huelle { min-width: 0; }
+.kopf, .menueleiste, .werkzeugzeile, .fuss, .rumpf { min-width: 0; }
+.fuss-mitte { min-width: 0; }
+.fuss > * { min-width: 0; }
+
+/* Die rechte Leiste war unter 1180 px auf 260 px geschrumpft. Das Handoff
+   kennt nur 296 — und zeigt sie bei 944 px Fensterbreite in voller Breite:
+   196 + 452 Bühne + 296. Ein schmaler gemachtes Panel war eine Bequemlichkeit,
+   die den Entwurf verlässt. */
+
+/* Unter 900 px treten die Leisten aus dem Raster heraus und legen sich als
+   Schubfächer über die Bühne. Sonst bliebe für das Blatt nichts übrig.
+   Darüber stehen sie nebeneinander — bei 944 px wie in der Mockup-Aufnahme:
+   196 links, 296 rechts, der Rest Bühne. */
+@media (max-width: 900px) {
+  .rumpf { grid-template-columns: 1fr; position: relative; }
+  .leiste {
+    position: absolute; top: 0; bottom: 0; z-index: 30;
+    width: 17rem; max-width: 86vw;
+    box-shadow: var(--schatten-tafel);
+  }
+  .leiste-links  { grid-column: 1; left: 0; }
+  .leiste-rechts { grid-column: 1; right: 0; }
+  .buehne, .ordnen, .vergleich-ansicht { grid-column: 1; }
+  /* Geschlossen heißt hier wirklich fort, nicht nur schmal. */
+  .huelle[data-links="zu"] .leiste-links,
+  .huelle[data-rechts="zu"] .leiste-rechts { display: none; }
+  .huelle[data-links="zu"]  { --leiste-links: 0px; }
+  .huelle[data-rechts="zu"] { --leiste-rechts: 0px; }
+  .vergleich { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  /* Das Blattformat und der Werkzeughinweis sind Beiwerk; die Seitenzahl und
+     der Zoom sind es nicht. Die Leiste selbst darf nichts durchlassen — sonst
+     macht sie das ganze Dokument breiter als das Fenster, und die Anwendung
+     wandert beim Wischen zur Seite. */
+  .fuss { overflow: hidden; }
+  .fuss-mitte { display: none; }
+  #feld-zoom { max-width: 6.5rem; }
+  /* Ansichtsdrehung und Thema stehen im Menü „Ansicht"; unten fehlt der Platz. */
+  #knopf-drehen, #knopf-thema { display: none; }
+  .wortmarke-wort { display: none; }
+  .werkzeug span { display: none; }
+  .werkzeug { padding: 0 8px; }
+  .werkzeug-rechts .werkzeug span { display: inline; }
+  .menue-knopf { padding: 0 7px; }
+  .menue-stand { display: none; }
+  .dok-reiter { max-width: 11rem; }
+}
+
+@media (max-width: 520px) {
+  .menue-liste { min-width: min(21rem, 92vw); }
+  .ordnen-gitter { grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); }
+  .ordnen-blatt { height: 10rem; }
+  .einstellungen { grid-template-columns: 1fr; }
+  .einst-kategorien { flex-direction: row; overflow-x: auto; margin: -16px -16px 8px; border-right: 0; border-bottom: 1px solid var(--linie); }
+  .einst-fassung { display: none; }
+  .einst-kategorie { white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; }
+  .einst-kategorie.ist-aktiv { border-left: 0; border-bottom-color: var(--tally); }
+  .einst-inhalt { padding: 0; }
+}
+
+/* ---------- Anmeldeschranke --------------------------------------------- */
+.anmeldeschranke {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: rgba(18,24,28,.72);
+  backdrop-filter: blur(3px);
+}
+.anmeldekarte {
+  background: var(--flaeche); border: 1px solid var(--linie-stark);
+  box-shadow: var(--schatten-dialog);
+  padding: 32px; max-width: 30rem; text-align: left;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.anmeldekarte h1 { font-family: var(--serif); font-size: 24px; font-weight: 600; margin: 4px 0 0; }
+.anmeldekarte p { margin: 0; line-height: 1.6; }
+.anmeldekarte .knopf { align-self: flex-start; margin-top: 8px; }
+.anmeldekarte .knopf-voll { background: var(--tally); border-color: var(--tally); color: #fff; }
+.anmeldekarte .knopf-voll:hover { background: var(--tally-hover); border-color: var(--tally-hover); }
+.anmeldekarte .wortmarke-zeichen { width: 23px; height: 28px; }

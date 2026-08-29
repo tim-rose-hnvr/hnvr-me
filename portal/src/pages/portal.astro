@@ -26,7 +26,7 @@ const name = mitglied?.profile?.nickname
   || mitglied?.loginEmail
   || null;
 ---
-<Grundgeruest titel="Kundenbereich — Werkbank" anmeldenZeigen={false}>
+<Grundgeruest titel="Kundenbereich — PDF Studio" anmeldenZeigen={false}>
   <main>
     <section class="spur">
       <span class="marke">Kundenbereich</span>
@@ -35,13 +35,13 @@ const name = mitglied?.profile?.nickname
         <>
           <h2 class="lauf">Angemeldet{name ? ` als ${name}` : ''}</h2>
           <div class="portal-karte">
-            <h2>Die Werkbank steht bereit</h2>
+            <h2>Das Studio steht bereit</h2>
             <p class="leise">
-              Kostenlos, ohne Stufen, ohne Zahlungsdaten. Alles, was sie kann,
+              Kostenlos, ohne Stufen, ohne Zahlungsdaten. Alles, was es kann,
               ist jetzt offen — und Ihre Dateien bleiben dabei auf Ihrem Gerät.
             </p>
             <div class="knopf-reihe" style="margin-top:1rem">
-              <a class="knopf-voll" href="/werkbank/index.html">Werkbank öffnen</a>
+              <a class="knopf-voll" href="/studio/index.html">PDF Studio öffnen</a>
               <form method="post" action="/api/auth/logout?returnToUrl=%2F" style="display:inline">
                 <button class="knopf-rand" type="submit">Abmelden</button>
               </form>
@@ -57,7 +57,7 @@ const name = mitglied?.profile?.nickname
             </div>
             <div class="eintrag">
               <h3>Ihre Dateien bleiben, wo sie sind</h3>
-              <p>Auch angemeldet lädt die Werkbank nichts hoch. Texterkennung,
+              <p>Auch angemeldet lädt das Studio nichts hoch. Texterkennung,
               Verschlüsselung und Unterschrift laufen in Ihrem Browser.</p>
             </div>
           </div>
@@ -68,7 +68,7 @@ const name = mitglied?.profile?.nickname
           <div class="portal-karte">
             <h2>Kostenlos — mit Anmeldung</h2>
             <p class="leise">
-              Die Werkbank kostet nichts. Wir möchten nur wissen, wer sie
+              Das Studio kostet nichts. Wir möchten nur wissen, wer sie
               benutzt: ein Konto, keine Zahlungsdaten. Ihre Dateien werden auch
               danach nicht hochgeladen.
             </p>
@@ -76,7 +76,7 @@ const name = mitglied?.profile?.nickname
             {fehler && (
               <p class="klein leise" style="margin-top:1rem">
                 Die Mitgliederverwaltung antwortet gerade nicht
-                (<code>{fehler.slice(0, 90)}</code>). Die Werkbank selbst läuft
+                (<code>{fehler.slice(0, 90)}</code>). Das Studio selbst läuft
                 davon unabhängig.
               </p>
             )}

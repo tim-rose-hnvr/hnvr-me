@@ -1,0 +1,32 @@
+{
+  "name": "PDF Studio",
+  "short_name": "PDF Studio",
+  "description": "PDF lesen, ordnen, anmerken, ausfüllen, schwärzen, unterschreiben — vollständig auf dem eigenen Gerät.",
+  "lang": "de",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "id": "studio-pdf",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#1D2327",
+  "theme_color": "#1D2327",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "symbole/symbol-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "symbole/symbol-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "symbole/symbol-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": { "application/pdf": [".pdf"] },
+      "launch_type": "single-client"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Datei öffnen", "url": "./?tun=oeffnen" },
+    { "name": "Beispiel ansehen", "url": "./?tun=beispiel" }
+  ]
+}

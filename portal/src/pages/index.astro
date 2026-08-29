@@ -3,7 +3,7 @@
 
    **Der Aufbau ist der des Handoffs**, Abschnitt für Abschnitt und in seiner
    Reihenfolge: Aufmacher, Funktionen, Vergleich (invers), Für die Arbeit,
-   Preise, Fragen, Aufruf, Fuß. Was die Werkbank mehr hat als das gezeichnete
+   Preise, Fragen, Aufruf, Fuß. Was das Studio mehr hat als das gezeichnete
    Produkt — das Mitdenken, der Abgleich mit Acrobat, die Grenzen, der
    Prüfstand — steht nicht daneben, sondern in denselben Mustern: Karten im
    Haarlinienraster, Ablaufkarten, inverse Tabelle.
@@ -17,10 +17,10 @@
      ein Satz, für den wir geradestehen.
 
    Die Zahlen im Abgleich und im Prüfstand stammen aus dem Repository
-   (werkbank/README.md) und werden dort gepflegt. */
+   (studio/README.md) und werden dort gepflegt. */
 import Grundgeruest from '../layouts/Grundgeruest.astro';
 ---
-<Grundgeruest titel="Werkbank — PDF-Arbeit auf Ihrem Gerät">
+<Grundgeruest titel="PDF Studio — Arbeit am Dokument auf Ihrem Gerät">
 <main>
 
   <section class="band band-grund" id="oben"><div class="spur">
@@ -29,7 +29,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <span class="marke">Werkzeug für PDF</span>
         <h1>Sie liest das Dokument,<br>bevor Sie es tun.</h1>
         <p class="these">
-          Die Werkbank sieht sich an, was Sie geöffnet haben, und sagt, was
+          Das Studio sieht sich an, was Sie geöffnet haben, und sagt, was
           ansteht: offene Pflichtfelder, ein Scan ohne Textebene, sechs
           personenbezogene Angaben vor der Weitergabe.
           <strong>Jeder Hinweis nennt seinen Grund und erledigt die Arbeit auf
@@ -39,7 +39,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           Konto, ohne dass eine Datei das Gerät verlässt.
         </p>
         <div class="knopf-reihe">
-          <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html">Kostenlos anmelden und öffnen</a>
+          <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fstudio%2Findex.html">Kostenlos anmelden und öffnen</a>
           <a class="knopf-rand" href="#unterschied-lokal">Was sie anders macht</a>
         </div>
         <p class="klein leise" style="margin-top:.8rem">
@@ -59,10 +59,10 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
            ihrer Werkzeugnamen: wer sich fragt, wie das aussieht, bekommt hier
            die Antwort und nicht das Inhaltsverzeichnis. -->
       <div>
-      <div class="fenster" role="img" aria-label="Die Werkbank mit Seitenleiste, Dokument und Kommentaren">
+      <div class="fenster" role="img" aria-label="Das Studio mit Seitenleiste, Dokument und Kommentaren">
         <div class="fenster-kopf">
           <i class="ampel"></i><i class="ampel"></i><i class="ampel"></i>
-          <span class="fenster-titel">Vertragsentwurf.pdf — Werkbank</span>
+          <span class="fenster-titel">Vertragsentwurf.pdf — PDF Studio</span>
         </div>
         <div class="fenster-rumpf">
           <div class="fenster-seiten">
@@ -102,7 +102,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         </div>
       </div>
       <p class="fenster-bildzeile">
-        Seitenleiste · Dokument · Kommentare — <a href="/werkbank/index.html">die laufende Anwendung öffnen</a>
+        Seitenleiste · Dokument · Kommentare — <a href="/studio/index.html">die laufende Anwendung öffnen</a>
       </p>
       </div>
     </div>
@@ -227,7 +227,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         </div>
         <h3>Barrierefreiheit mit Begründung</h3>
         <p>Prüfung mit Grund. Sprache, Titel und Feldbeschriftungen setzt die
-        Werkbank; auszeichnen tut sie nicht — das wäre geraten.</p>
+        PDF Studio; auszeichnen tut es nicht — das wäre geraten.</p>
       </div>
     </div>
   </div></section>
@@ -250,7 +250,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       <div class="ablauf-karte">
         <div class="ablauf-kopf"><span class="marke">SCHRITT 02</span><i></i><span class="raute"></span></div>
         <h3>Lesen lassen</h3>
-        <p>Die Werkbank sieht sich bis zu sechzig Seiten an und sagt, was
+        <p>Das Studio sieht sich bis zu sechzig Seiten an und sagt, was
         ansteht: Scan ohne Textebene, offene Pflichtfelder, personenbezogene
         Angaben. Jeder Hinweis nennt seinen Grund.</p>
         <span class="marke ablauf-fuss">ZWÖLF REGELN · JEDE WEGKLICKBAR</span>
@@ -273,8 +273,8 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
     </div>
     <blockquote class="aussage">
       <p>„Eine Anwendung, die den Dienst verweigert, weil ein Server nicht
-      antwortet, wäre das Gegenteil dessen, wofür sie gebaut ist. Deshalb läuft
-      die Werkbank weiter, wenn das Netz weg ist — und deshalb liegt Ihre Datei
+      antwortet, wäre das Gegenteil dessen, wofür es gebaut ist. Deshalb läuft
+      das Studio weiter, wenn das Netz weg ist — und deshalb liegt Ihre Datei
       auch dann noch bei Ihnen."</p>
       <footer><span class="raute"></span>Aus dem Quelltext, <span class="mono">app/anmeldung.js</span></footer>
     </blockquote>
@@ -290,7 +290,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           Klassische PDF-Suiten sind über zwanzig Jahre gewachsen: verschachtelte
           Dialoge, Cloud-Pflicht, Funktionen hinter Stufen. Inzwischen gibt es
           auch schlanke Programme, die lokal rechnen — „läuft lokal" trägt als
-          Argument allein nicht mehr. Drei Dinge unterscheiden die Werkbank auch
+          Argument allein nicht mehr. Drei Dinge unterscheiden das Studio auch
           von diesen.
         </p>
         <div class="punkte">
@@ -299,7 +299,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           <div class="punktzeile"><span class="raute"></span><span>Nach Word und Excel, und aus Word und Excel zurück. Das ist der Schritt, der sonst zum nächsten Anbieter führt.</span></div>
         </div>
         <p class="klein leise">
-          Was die anderen können und die Werkbank nicht: gemeinsame Ablagen,
+          Was die anderen können und das Studio nicht: gemeinsame Ablagen,
           Freigabeläufe, „drei Bearbeiter live". Das braucht einen Server, auf
           dem Ihre Dateien liegen. Genau den gibt es hier nicht — das ist kein
           Versehen, sondern die Entscheidung.
@@ -327,11 +327,11 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
        (Haarlinienraster für die Bilanz, helle Tabelle darunter). -->
   <section class="band band-hell" id="abgleich"><div class="spur">
     <div class="abschnitt-kopf">
-      <h2>Neunundzwanzig Werkzeuge von Acrobat, ehrlich durchgezählt</h2>
+      <h2>Dreißig Werkzeuge von Acrobat, ehrlich durchgezählt</h2>
       <span class="marke">KEIN VERGLEICH, DER NUR EIGENE STÄRKEN ZEIGT</span>
     </div>
     <div class="bilanz">
-      <div class="zahl betont"><b>22</b><span>ganz vorhanden</span></div>
+      <div class="zahl betont"><b>23</b><span>ganz vorhanden</span></div>
       <div class="zahl"><b>5</b><span>teilweise</span></div>
       <div class="zahl"><b>5</b><span>brauchen Server oder Dienst</span></div>
       <div class="zahl"><b>2</b><span>bewusst abgelehnt</span></div>
@@ -339,7 +339,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
     <div class="tabellenrahmen">
       <table>
         <thead>
-          <tr><th scope="col">Acrobat</th><th scope="col">Werkbank</th><th scope="col">Anmerkung</th></tr>
+          <tr><th scope="col">Acrobat</th><th scope="col">PDF Studio</th><th scope="col">Anmerkung</th></tr>
         </thead>
         <tbody>
           <tr><td>PDF exportieren</td><td class="stand ja">ja</td><td class="grund">PDF, Word, Excel, Text, PNG</td></tr>
@@ -350,15 +350,16 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           <tr><td>Geführte Aktionen</td><td class="stand ja">ja</td><td class="grund">Stapel über viele Dateien, mit Bericht</td></tr>
           <tr><td>Dateien zusammenführen</td><td class="stand ja">ja</td><td class="grund"></td></tr>
           <tr><td>Seiten verwalten</td><td class="stand ja">ja</td><td class="grund">eigene Ordnen-Ansicht: sortieren, drehen, löschen, teilen</td></tr>
+          <tr><td>Wasserzeichen, Kopf- und Fußzeile</td><td class="stand ja">ja</td><td class="grund">mit Seitenzählung ab beliebiger Seite, sofort auf der Bühne sichtbar</td></tr>
           <tr><td>PDF-Datei schützen</td><td class="stand ja">ja</td><td class="grund">AES-256, Rechte</td></tr>
           <tr><td>PDF-Datei schwärzen</td><td class="stand ja">ja</td><td class="grund">mit Rasterung</td></tr>
           <tr><td>PDF komprimieren</td><td class="stand ja">ja</td><td class="grund">mit Vorher-Nachher</td></tr>
           <tr><td>Kommentare hinzufügen</td><td class="stand ja">ja</td><td class="grund">zehn Werkzeuge, Fäden, Liste, Bericht</td></tr>
           <tr><td>Stempel hinzufügen</td><td class="stand ja">ja</td><td class="grund">Vorlagen, eigener Text, Datum</td></tr>
           <tr><td>Dateien vergleichen</td><td class="stand ja">ja</td><td class="grund">wortweise je Seite</td></tr>
-          <tr><td>Formular vorbereiten</td><td class="stand ja">ja</td><td class="grund">sechs Feldarten, Rahmen ziehen</td></tr>
+          <tr><td>Formular vorbereiten</td><td class="stand ja">ja</td><td class="grund">sechs Feldarten; Felder auf flachen und gescannten Formularen werden erkannt</td></tr>
           <tr><td>Ein Zertifikat verwenden</td><td class="stand ja">ja</td><td class="grund">PAdES-B-B aus einer .p12; ohne Zeitstempeldienst</td></tr>
-          <tr><td>PDF bearbeiten</td><td class="stand teil">teilweise</td><td class="grund">Text bearbeiten ja, Bilder im PDF nein</td></tr>
+          <tr><td>PDF bearbeiten</td><td class="stand teil">teilweise</td><td class="grund">Absätze bearbeiten mit Umbruch; Bilder im PDF nein</td></tr>
           <tr><td>Scan &amp; OCR</td><td class="stand teil">teilweise</td><td class="grund">Erkennung ja, Scangerät nein</td></tr>
           <tr><td>Suchindex hinzufügen</td><td class="stand teil">teilweise</td><td class="grund">im Dokument ja, über Ordner nein</td></tr>
           <tr><td>Barrierefreiheit vorbereiten</td><td class="stand teil">teilweise</td><td class="grund">Prüfung, Sprache, Titel, Feldbeschriftungen; auszeichnen nein</td></tr>
@@ -391,12 +392,12 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <p>Für alle, die ein PDF vor sich haben und es fertig bekommen wollen.</p>
         <div class="plan-linie"></div>
         <ul class="plan-liste">
-          <li>Alle 84 Befehle, keiner hinter einer Stufe</li>
+          <li>Alle 86 Befehle, keiner hinter einer Stufe</li>
           <li>Texterkennung, Unterschrift, Schwärzen inbegriffen</li>
           <li>Eine Anmeldung, keine Zahlungsdaten</li>
           <li>Ihre Dateien bleiben auf Ihrem Gerät</li>
         </ul>
-        <a class="plan-knopf" href="/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html">Anmelden und öffnen</a>
+        <a class="plan-knopf" href="/api/auth/login?returnToUrl=%2Fstudio%2Findex.html">Anmelden und öffnen</a>
       </div>
       <div class="plan">
         <span class="marke plan-marke">SELBST BETREIBEN</span>
@@ -440,7 +441,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       <div class="karte">
         <h3>Ein Fenster, ein Symbol</h3>
         <p>Im Menü „Datei → Auf diesem Gerät einrichten" macht der Browser aus
-        der Werkbank ein Programm: eigenes Fenster ohne Adresszeile, Symbol im
+        des Studios ein Programm: eigenes Fenster ohne Adresszeile, Symbol im
         Dock oder Startmenü. In Safari über „Teilen → Zum Dock hinzufügen",
         in Chrome und Edge über das Symbol in der Adresszeile.</p>
       </div>
@@ -477,7 +478,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       <div class="karte">
         <h3>Eine Unterschrift je Datei</h3>
         <p>Signiert wird nach PAdES-B-B. Eine zweite Unterschrift über die
-        erste hinweg bräuchte eine inkrementelle Ergänzung — die Werkbank sagt
+        erste hinweg bräuchte eine inkrementelle Ergänzung — das Studio sagt
         das, statt die erste stillschweigend zu brechen. Kein Zeitstempeldienst,
         keine Sperrlisten.</p>
       </div>
@@ -525,7 +526,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         </p>
         <div class="punkte">
           <div class="punktzeile"><span class="raute"></span><span>openssl bestätigt die Unterschrift — ein geändertes Byte muss sie brechen.</span></div>
-          <div class="punktzeile"><span class="raute"></span><span>Jeder der 84 Befehle wird einmal ausgelöst; keiner darf werfen.</span></div>
+          <div class="punktzeile"><span class="raute"></span><span>Jeder der 86 Befehle wird einmal ausgelöst; keiner darf werfen.</span></div>
           <div class="punktzeile"><span class="raute"></span><span>Die Gestaltung wird gegen das Handoff nachgemessen: Höhen, Farben, Radien.</span></div>
         </div>
       </div>
@@ -562,7 +563,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         </details>
         <details name="frage">
           <summary><span class="marke">02</span><span class="frage-text">Wozu dann eine Anmeldung?</span></summary>
-          <p>Damit wir wissen, ob die Werkbank jemandem hilft und woran sie
+          <p>Damit wir wissen, ob das Studio jemandem hilft und woran es
           klemmt. Sie kostet nichts und verlangt keine Zahlungsdaten. Und um es
           deutlich zu sagen: das ist eine Anmeldeschranke, keine Zugriffssperre
           — die Dateien der Anwendung liegen öffentlich, wie bei jeder
@@ -570,7 +571,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         </details>
         <details name="frage">
           <summary><span class="marke">03</span><span class="frage-text">Ist die Unterschrift rechtlich gültig?</span></summary>
-          <p>Die Werkbank rechnet eine Signatur nach PAdES-B-B aus Ihrem
+          <p>Das Studio rechnet eine Signatur nach PAdES-B-B aus Ihrem
           Zertifikat. Ob sie fortgeschritten oder qualifiziert ist, entscheidet
           das Zertifikat und sein Aussteller, nicht das Programm. Ohne
           Zeitstempeldienst ist das Ergebnis -B-B, nicht -B-T.</p>
@@ -585,7 +586,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <details name="frage">
           <summary><span class="marke">05</span><span class="frage-text">Was passiert, wenn ich den Reiter schließe?</span></summary>
           <p>Ungesicherte Änderungen sind fort — es gibt keinen Server, der sie
-          hätte. Beim Schließen eines geänderten Reiters fragt die Werkbank
+          hätte. Beim Schließen eines geänderten Reiters fragt das Studio
           nach. Wer zwischendurch sichert, hat die Datei auf der Platte.</p>
         </details>
         <details name="frage">
@@ -608,8 +609,8 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       stimmt, trennt das Netz und arbeitet weiter.</p>
     </div>
     <div class="knopf-reihe">
-      <a class="knopf-weiss" href="/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html">Kostenlos anmelden und öffnen</a>
-      <a class="knopf-umriss" href="/werkbank/index.html">Schon angemeldet? Direkt öffnen</a>
+      <a class="knopf-weiss" href="/api/auth/login?returnToUrl=%2Fstudio%2Findex.html">Kostenlos anmelden und öffnen</a>
+      <a class="knopf-umriss" href="/studio/index.html">Schon angemeldet? Direkt öffnen</a>
     </div>
   </div></section>
 

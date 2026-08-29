@@ -1,45 +1,45 @@
 # Portal — Marketingseite und Kundenbereich
 
 **Steht online:** <https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com>
-Die Anwendung darunter: <https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/werkbank/>
+Die Anwendung darunter: <https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/studio/>
 
-Astro-5-Projekt mit der Marketingseite der Werkbank und dem Gerüst für den
+Astro-5-Projekt mit der Marketingseite des Studios und dem Gerüst für den
 späteren Kundenbereich, angehängt an **Wix Headless**: Wix übernimmt Hosting,
 Anmeldung und Umgebungsvariablen.
 
 Gestaltung wie die Anwendung: Akzent `#0f766e`, dunkle Navigation und dunkler
 Fuß `#1d2327`, invers gesetzter Abgleich, IBM Plex in Sans, Serif und Mono,
 Radius 0. Die Schriften liegen unter `public/schrift` und kommen nicht von
-Google — dieselbe Regel wie in der Werkbank. Seite und Anwendung sollen wie
-ein Stück wirken: wer auf „Werkbank öffnen" klickt, soll nicht das Gefühl
+Google — dieselbe Regel wie im Studio. Seite und Anwendung sollen wie
+ein Stück wirken: wer auf „PDF Studio öffnen" klickt, soll nicht das Gefühl
 haben, ein anderes Haus zu betreten.
 
 ```
 src/pages/index.astro       Marketingseite
 src/pages/portal.astro      Kundenbereich (Schritt zwei)
 src/layouts/Grundgeruest.astro
-src/styles/werkbank.css     Farben und Schriften wie werkbank/app/stil.css
+src/styles/studio.css     Farben und Schriften wie studio/app/stil.css
 public/schrift/             IBM Plex, acht Schnitte (kein Google Fonts)
-skripte/app-einbetten.mjs   legt ../werkbank nach public/werkbank
+skripte/app-einbetten.mjs   legt ../studio nach public/studio
 ```
 
 ## Die Anwendung liegt mit auf der Seite
 
-`npm run build` kopiert vorher `../werkbank` nach `public/werkbank` — damit
-wird die Anwendung mit ausgeliefert und läuft unter `/werkbank/` auf demselben
+`npm run build` kopiert vorher `../studio` nach `public/studio` — damit
+wird die Anwendung mit ausgeliefert und läuft unter `/studio/` auf demselben
 Wix-Hosting wie die Marketingseite. **11,9 MB in 239 Dateien**, keine davon
 über 3 MB. Mit `node skripte/app-einbetten.mjs --schlank` sind es 8,3 MB —
 dann ohne CJK-Zeichentabellen und ohne englische Texterkennung.
 
-`public/werkbank` steht in `.gitignore`: die Anwendung hat genau eine Quelle,
-das Verzeichnis daneben. Wer die Werkbank ändert, baut das Portal neu.
+`public/studio` steht in `.gitignore`: die Anwendung hat genau eine Quelle,
+das Verzeichnis daneben. Wer das Studio ändert, baut das Portal neu.
 
-Das Wix-Hosting liefert für Verzeichnisse kein Register aus — `/werkbank/`
+Das Wix-Hosting liefert für Verzeichnisse kein Register aus — `/studio/`
 allein ergäbe 404. Dafür stehen in `astro.config.mjs` zwei Umleitungen auf
-`/werkbank/index.html`, damit auch eine von Hand eingegebene Adresse ankommt.
+`/studio/index.html`, damit auch eine von Hand eingegebene Adresse ankommt.
 
 **Nachgemessen an der veröffentlichten Seite** mit
-`node ../werkbank/werkzeuge/live-pruefen.mjs` (31 Prüfungen): alle 239 Dateien
+`node ../studio/werkzeuge/live-pruefen.mjs` (31 Prüfungen): alle 239 Dateien
 erreichbar und Byte für Byte gleich der gebauten Fassung (11,92 MB verglichen),
 `.wasm` als `application/wasm`, die Sprachdaten als `application/gzip`, alle
 drei Wege in die Anwendung offen. Dazu wird ins verlinkte Stilblatt gesehen:
@@ -50,7 +50,7 @@ nennt einen Abrufer ohne Sitzung ausdrücklich nicht angemeldet, die
 ausgelieferte Anwendung trägt die Schranken-Zeile, und `/api/auth/login` leitet
 auf die Anmeldung von Wix und von dort zurück auf diese Seite. Damit läuft dort
 dieselbe Anwendung, die `pruefen.mjs` und `vollpruefung.mjs` im Browser
-durchgemessen haben — 128 + 130 Prüfungen, darunter Texterkennung,
+durchgemessen haben — 134 + 141 Prüfungen, darunter Texterkennung,
 qpdf-Verschlüsselung, die digitale Unterschrift und ein eigener Abschnitt, der
 die Gestaltung gegen das Handoff nachmisst.
 
@@ -70,7 +70,7 @@ npm run wix:veroeffentlichen
 ```
 
 Das Skript `skripte/wix-veroeffentlichen.mjs` erledigt alles: anmelden,
-Projekt anhängen, Werkbank einbetten, bauen, veröffentlichen. Es ist
+Projekt anhängen, PDF Studio einbetten, bauen, veröffentlichen. Es ist
 wiederholbar — beim zweiten Lauf überspringt es Anmeldung und Anhängen und
 veröffentlicht nur neu.
 
@@ -128,11 +128,11 @@ Seite sonst als serverseitig ansieht — ohne Adapter bricht der Bau dann ab.
 **Der Aufbau ist der des Handoffs**, Abschnitt für Abschnitt und in seiner
 Reihenfolge:
 
-| # | Handoff | Werkbank |
+| # | Handoff | PDF Studio |
 |---|---|---|
 | 1 | Hero | Aufmacher mit dem Fenster: Seitenleiste, Dokument, Kommentare |
 | 2 | Funktionen | zwölf Karten im Haarlinienraster |
-| 3 | Vergleich (invers) | dunkel, Tabelle Werkbank ↔ Suite-Standard |
+| 3 | Vergleich (invers) | dunkel, Tabelle PDF Studio ↔ Suite-Standard |
 | 4 | Für Teams | **Für die Arbeit**: vier Ablaufkarten am Dokument |
 | 5 | Preise | **Kostenlos**: dieselbe Kartenform, 0 € statt Stufen |
 | 6 | FAQ | sechs Fragen als Akkordeon, genau eine offen |
@@ -155,12 +155,12 @@ Zwei Abschnitte tragen bewusst andere Inhalte:
 
 ### Im Einzelnen
 
-- **Was zuerst steht**: dass die Werkbank mitdenkt. „Läuft lokal" trägt als
+- **Was zuerst steht**: dass das Studio mitdenkt. „Läuft lokal" trägt als
   Aufmacher nicht mehr — mehrere Wettbewerber werben inzwischen wörtlich damit.
   Der Abschnitt „Vergleich" nennt drei Punkte, die auch gegen diese tragen, und
-  sagt im selben Atemzug, was die anderen können und die Werkbank nicht.
+  sagt im selben Atemzug, was die anderen können und das Studio nicht.
 - **Kontakt**: hnvr.me digital.
-- **Preis**: keiner. Die Werkbank kostet nichts, es braucht nur eine
+- **Preis**: keiner. Das Studio kostet nichts, es braucht nur eine
   Anmeldung — das steht so auf der Seite und am Knopf.
 - **Der Aufmacher zeigt die Anwendung**, nicht eine Liste ihrer
   Werkzeugnamen: das Fenster aus dem Handoff mit Seitenleiste, Dokument auf
@@ -168,23 +168,23 @@ Zwei Abschnitte tragen bewusst andere Inhalte:
   Kommentarspalte. Wer sich fragt, wie das aussieht, bekommt hier die Antwort
   und nicht das Inhaltsverzeichnis.
 - **Ausprobieren**: der Knopf führt über `/api/auth/login` in die laufende
-  Anwendung unter `/werkbank/`. Das ist die stärkste Stelle der Seite: das
+  Anwendung unter `/studio/`. Das ist die stärkste Stelle der Seite: das
   Versprechen lässt sich sofort nachprüfen, mit einer eigenen Datei und
   notfalls mit getrenntem Netz.
 
 ## Die Anmeldeschranke
 
-Kostenlos, aber nicht anonym: die Werkbank fragt beim Start `/api/mitglied.json`
+Kostenlos, aber nicht anonym: das Studio fragt beim Start `/api/mitglied.json`
 (`src/pages/api/mitglied.json.js`, liest `members.getCurrentMember()`) und legt
 eine Schranke über sich, wenn niemand angemeldet ist. Eingeschaltet wird sie
 durch eine Zeile im Kopf der Anwendung, die `skripte/app-einbetten.mjs` **nur in
 die ausgelieferte Kopie** schreibt:
 
 ```html
-<meta name="werkbank-anmeldung" content="/api/mitglied.json">
+<meta name="studio-anmeldung" content="/api/mitglied.json">
 ```
 
-Ohne diese Zeile — also überall dort, wo die Werkbank ohne dieses Portal läuft —
+Ohne diese Zeile — also überall dort, wo das Studio ohne dieses Portal läuft —
 gibt es keine Schranke. Ebenso, wenn die Auskunft nicht antwortet: dann läuft
 die Anwendung. Das ist Leitprinzip 2, nicht Nachlässigkeit.
 
@@ -194,7 +194,7 @@ Zugriffsschutz braucht, legt ihn vor die Dateien, nicht in die Oberfläche.
 
 Nach der Anmeldung bringt Wix den Menschen zurück: `returnToUrl` wandert in ein
 Sitzungs-Plätzchen und wird vom Rückweg `/api/auth/callback` angesteuert. Nur
-seitenrelative Adressen sind erlaubt — `/werkbank/index.html` ist eine.
+seitenrelative Adressen sind erlaubt — `/studio/index.html` ist eine.
 
 Eine E-Mail-Adresse steht bewusst nicht darauf — sie ist nicht abgestimmt.
 Sie gehört in `src/pages/index.astro` in den Abschnitt „Kontakt", sobald klar
@@ -223,10 +223,10 @@ schneller) und einen getrennten statt eingebetteten Texterkennungs-Kern.
 Upload-Weg auffallen würde.
 
 Und falls ein Hoster doch einmal `.wasm` verweigert: die schweren Teile lassen
-sich verlegen, ohne die Anwendung anzufassen. Im `index.html` der Werkbank:
+sich verlegen, ohne die Anwendung anzufassen. Im `index.html` des Studios:
 
 ```html
-<meta name="werkbank-fremd" content="https://anderer-ort.example/fremd/">
+<meta name="studio-fremd" content="https://anderer-ort.example/fremd/">
 ```
 
 Der Server dort muss `.wasm` als `application/wasm` ausliefern.

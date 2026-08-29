@@ -1,6 +1,6 @@
 /* Auskunft für die Anwendung: Ist gerade jemand angemeldet?
 
-   Die Werkbank liegt als unveränderte Dateien unter /werkbank/ und wird vom
+   Das Studio liegt als unveränderte Dateien unter /studio/ und wird vom
    Hosting direkt ausgeliefert — an Astro vorbei. Sie lässt sich deshalb nicht
    serverseitig abriegeln. Sie fragt stattdessen hier nach und legt sich selbst
    eine Schranke vor, wenn niemand angemeldet ist.
@@ -8,7 +8,7 @@
    Das ist ausdrücklich eine **Anmeldeschranke, keine Zugriffssperre**: wer die
    Adressen der Dateien kennt, kann sie weiterhin laden. Für eine echte Sperre
    müssten die 235 Dateien durch eine serverseitige Prüfung laufen — und damit
-   wäre die Werkbank nicht mehr die Anwendung, die auch ohne Server startet.
+   wäre das Studio nicht mehr die Anwendung, die auch ohne Server startet.
    Da der Zweck die Anmeldung ist und nicht das Aussperren, ist das die
    richtige Abwägung. Sie steht hier, damit sie niemand später für ein
    Sicherheitsversprechen hält. */

@@ -13,7 +13,7 @@
    Die Anmeldung zeigt auf /api/auth/login — diesen Weg stellt Wix'
    Astro-Integration bereit, sobald das Projekt angehängt ist. */
 const { titel, beschreibung = 'PDF-Arbeit, die auf Ihrem Gerät bleibt. Kein Konto, kein Upload, kein Abo.', anmeldenZeigen = true } = Astro.props;
-import '../styles/werkbank.css';
+import '../styles/studio.css';
 
 const wege = [
   { id: 'funktionen', name: 'Funktionen', weg: '/#funktionen', punkte: [
@@ -47,7 +47,7 @@ const fussspalten = [
     { name: 'Funktionen', weg: '/#funktionen' },
     { name: 'Vergleich', weg: '/#vergleich' },
     { name: 'Kostenlos', weg: '/#kostenlos' },
-    { name: 'Werkbank öffnen', weg: '/werkbank/index.html' },
+    { name: 'PDF Studio öffnen', weg: '/studio/index.html' },
   ] },
   { titel: 'EHRLICHKEIT', links: [
     { name: 'Abgleich mit Acrobat', weg: '/#abgleich' },
@@ -78,7 +78,7 @@ const fussspalten = [
       <a class="markenzug" href="/">
         <span class="markenzug-zeichen" aria-hidden="true"></span>
         <span>
-          <span class="markenzug-wort">Werkbank</span>
+          <span class="markenzug-wort">PDF Studio</span>
           <span class="markenzug-unterzeile">hnvr.me digital</span>
         </span>
       </a>
@@ -101,7 +101,7 @@ const fussspalten = [
 
       <div class="kopf-rechts">
         <a class="kopf-still" href="/portal">Kundenbereich</a>
-        {anmeldenZeigen && <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fwerkbank%2Findex.html">Kostenlos öffnen</a>}
+        {anmeldenZeigen && <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fstudio%2Findex.html">Kostenlos öffnen</a>}
       </div>
     </div>
   </header>
@@ -113,7 +113,7 @@ const fussspalten = [
       <div class="fuss-marke">
         <div class="markenzug">
           <span class="markenzug-zeichen" aria-hidden="true"></span>
-          <span class="markenzug-wort">Werkbank</span>
+          <span class="markenzug-wort">PDF Studio</span>
         </div>
         <p>hnvr.me digital. Gebaut für alle, die ein PDF fertig bekommen
         müssen, ohne es aus der Hand zu geben.</p>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="de" data-thema="system">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDF Studio</title>
+<meta name="theme-color" content="#1D2327">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PDF Studio">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="symbole/symbol-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="symbole/symbol-192.png">
+<link rel="stylesheet" href="app/stil.css">
+</head>
+<body>
+
+<div id="huelle" class="huelle" hidden>
+
+  <header class="kopf">
+    <div class="wortmarke">
+      <span class="wortmarke-zeichen" aria-hidden="true"></span>
+      <span class="wortmarke-wort">PDF Studio</span>
+    </div>
+
+    <div class="dokument-reiter" id="dokument-reiter" role="tablist" aria-label="Geöffnete Dateien"></div>
+
+    <div class="kopf-rechts">
+      <button class="knopf knopf-chrome" id="knopf-befehle" title="Befehle (Strg+K)">
+        <svg viewBox="0 0 24 24" class="sinnbild"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg>
+        <span class="nur-breit">Befehle</span>
+      </button>
+      <button class="knopf knopf-voll" id="knopf-sichern" title="Sichern (Strg+S)">Sichern</button>
+      <button class="knopf knopf-chrome" id="knopf-einstellungen" title="Einstellungen">
+        <svg viewBox="0 0 24 24" class="sinnbild"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6"/></svg>
+        <span class="nur-breit">Einstellungen</span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="menueleiste" id="menueleiste" aria-label="Menü">
+    <span class="menue-stand" id="menue-stand"></span>
+  </nav>
+
+  <div class="werkzeugzeile" id="werkzeugleiste" role="toolbar" aria-label="Werkzeuge"></div>
+
+  <div class="rumpf">
+
+    <aside class="leiste leiste-links" id="leiste-links">
+      <nav class="reiter" id="reiter-links" role="tablist">
+        <button class="reiter-knopf ist-aktiv" data-tafel="miniaturen" role="tab">Seiten</button>
+        <button class="reiter-knopf" data-tafel="gliederung" role="tab">Marken</button>
+        <button class="reiter-knopf" data-tafel="dateien" role="tab">Dateien</button>
+        <button class="reiter-knopf" data-tafel="suche" role="tab">Suche</button>
+      </nav>
+      <div class="tafel ist-aktiv" data-tafel="miniaturen" id="tafel-miniaturen"></div>
+      <div class="tafel" data-tafel="gliederung" id="tafel-gliederung"></div>
+      <div class="tafel" data-tafel="dateien" id="tafel-dateien"></div>
+      <div class="tafel" data-tafel="suche" id="tafel-suche"></div>
+      <div class="leiste-fuss">
+        <button class="knopf knopf-klein" id="knopf-einfuegen">Einfügen</button>
+        <button class="knopf knopf-klein" id="knopf-aufteilen">Aufteilen</button>
+      </div>
+    </aside>
+
+    <main class="buehne" id="buehne" tabindex="0">
+      <div class="spur" id="spur"></div>
+    </main>
+
+    <section class="ordnen" id="ordnen" aria-label="Seiten ordnen" hidden></section>
+
+    <section class="vergleich-ansicht" id="vergleich-ansicht" aria-label="Versionsvergleich" hidden></section>
+
+    <aside class="leiste leiste-rechts" id="leiste-rechts">
+      <nav class="reiter" id="reiter-rechts" role="tablist">
+        <button class="reiter-knopf ist-aktiv" data-rtafel="anmerkungen" role="tab">Kommentare</button>
+        <button class="reiter-knopf" data-rtafel="felder" role="tab">Felder</button>
+        <button class="reiter-knopf" data-rtafel="verlauf" role="tab">Verlauf</button>
+        <button class="reiter-knopf" data-rtafel="mitdenken" role="tab">Hinweise</button>
+      </nav>
+      <div class="tafel ist-aktiv" data-rtafel="anmerkungen" id="tafel-kommentare"></div>
+      <div class="tafel" data-rtafel="felder" id="tafel-felder"></div>
+      <div class="tafel" data-rtafel="verlauf" id="tafel-verlauf"></div>
+      <div class="tafel" data-rtafel="mitdenken" id="tafel-rechts"></div>
+    </aside>
+
+  </div>
+
+  <footer class="fuss">
+    <div class="fuss-gruppe">
+      <button class="knopf knopf-klein knopf-still" id="knopf-seitenleiste" title="Seitenleiste ein/aus (F4)" aria-label="Seitenleiste">
+        <svg viewBox="0 0 24 24" class="sinnbild"><rect x="3" y="4" width="18" height="16"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </button>
+      <button class="knopf knopf-klein knopf-still" id="knopf-zurueck" title="Vorherige Seite">◂</button>
+      <input class="feld feld-schmal" id="feld-seite" value="1" aria-label="Seitenzahl" inputmode="numeric">
+      <span class="leise">von <span id="anzeige-seitenzahl">–</span></span>
+      <button class="knopf knopf-klein knopf-still" id="knopf-vor" title="Nächste Seite">▸</button>
+    </div>
+    <div class="fuss-gruppe fuss-mitte">
+      <span class="mono" id="fuss-format">–</span>
+      <span id="fuss-werkzeug" class="fuss-werkzeug"></span>
+      <span id="fuss-melder"></span>
+      <span id="fuss-stand" class="fuss-stand" title="Ob das Studio auf diesem Gerät hinterlegt ist"></span>
+    </div>
+    <div class="fuss-gruppe fuss-fokus" id="fuss-fokus" hidden>
+      <span class="fokus-marke" id="fokus-text"></span>
+      <button class="knopf knopf-klein" id="knopf-fokus-aus">Alle Seiten zeigen</button>
+    </div>
+    <div class="fuss-gruppe">
+      <button class="knopf knopf-klein knopf-still" id="knopf-kleiner" title="Kleiner (Strg+−)">−</button>
+      <select class="feld" id="feld-zoom" aria-label="Vergrößerung">
+        <option value="breite">Breite</option>
+        <option value="seite">Ganze Seite</option>
+        <option value="0.5">50 %</option>
+        <option value="0.75">75 %</option>
+        <option value="1" selected>100 %</option>
+        <option value="1.25">125 %</option>
+        <option value="1.5">150 %</option>
+        <option value="2">200 %</option>
+        <option value="4">400 %</option>
+      </select>
+      <button class="knopf knopf-klein knopf-still" id="knopf-groesser" title="Größer (Strg++)">+</button>
+      <button class="knopf knopf-klein knopf-still" id="knopf-drehen" title="Ansicht drehen (Strg+Umschalt+R)">
+        <svg viewBox="0 0 24 24" class="sinnbild"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 4 21 10 15 10"/></svg>
+      </button>
+      <button class="knopf knopf-klein knopf-still" id="knopf-thema" title="Hell / Dunkel">◐</button>
+    </div>
+  </footer>
+
+</div>
+
+<div id="empfang" class="empfang">
+  <div class="empfang-kopf">
+    <span class="wortmarke-zeichen" aria-hidden="true"></span>
+    <span class="wortmarke-wort">PDF Studio</span>
+  </div>
+  <div class="empfang-karte">
+    <span class="empfang-marke mono">PDF-ARBEIT AUF IHREM GERÄT</span>
+    <h1>Legen Sie eine Datei hin.</h1>
+    <p>
+      Lesen, kommentieren, schwärzen, Formulare ausfüllen, unterschreiben,
+      nach Word und Excel ausgeben — und aus Word und Excel zurück.
+      Alles im Browserfenster; nichts verlässt dieses Gerät.
+    </p>
+    <div class="empfang-knoepfe">
+      <button class="knopf knopf-voll knopf-gross" id="knopf-oeffnen" disabled>Datei öffnen</button>
+      <button class="knopf knopf-gross" id="knopf-beispiel" disabled>Beispiel ansehen</button>
+    </div>
+    <div class="empfang-ablage">
+      Oder eine Datei hierher ziehen — <span class="mono">PDF · DOCX · XLSX · CSV · TXT · MD</span>
+    </div>
+    <div class="empfang-fuss">
+      <span><b>86</b> Befehle</span>
+      <span><b>18</b> Werkzeuge</span>
+      <span><b>0</b> Uploads</span>
+    </div>
+  </div>
+</div>
+
+<div id="ablegeschirm" class="ablegeschirm" hidden><div>Loslassen zum Öffnen</div></div>
+
+<input type="file" id="dateiwahl" accept="application/pdf,.pdf,.docx,.xlsx,.csv,.txt,.md" multiple hidden>
+<input type="file" id="dateiwahl-anhang" accept="application/pdf,.pdf" hidden>
+<input type="file" id="dateiwahl-vergleich" accept="application/pdf,.pdf" hidden>
+<input type="file" id="dateiwahl-bilder" accept="image/png,image/jpeg" multiple hidden>
+<input type="file" id="dateiwahl-einlesen" accept=".docx,.xlsx,.csv,.txt,.md" multiple hidden>
+
+
+
+<div id="schirm" class="schirm" hidden></div>
+<div id="meldungen" class="meldungen" aria-live="polite"></div>
+<div id="lader" class="lader" hidden><div class="lader-balken"><i></i></div><span id="lader-text">Wird geladen …</span></div>
+
+<script type="module" src="app/main.js"></script>
+<noscript><p style="padding:2rem">Diese Anwendung braucht JavaScript.</p></noscript>
+</body>
+</html>

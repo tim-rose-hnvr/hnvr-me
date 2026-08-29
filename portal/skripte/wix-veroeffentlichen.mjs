@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Bringt das Portal samt Werkbank auf Wix — in einem Zug, ohne Rückfragen.
+/* Bringt das Portal samt PDF Studio auf Wix — in einem Zug, ohne Rückfragen.
 
    Der einzige Schritt, den kein Programm für Sie tun kann, ist die Zustimmung
    in Ihrem Wix-Konto. Dafür gibt es zwei Wege, und dieses Skript nimmt
@@ -15,7 +15,7 @@
    Danach ohne weiteres Zutun:
      1. Projekt anhängen (nur beim ersten Mal)   npm create @wix/new -- headless link
      2. Bauskripte zurückholen, die der Link-Befehl überschreibt
-     3. Werkbank einbetten                        skripte/app-einbetten.mjs
+     3. PDF Studio einbetten                        skripte/app-einbetten.mjs
      4. bauen und veröffentlichen                 wix build && wix release
 
    Aufruf:
@@ -33,7 +33,7 @@ const WURZEL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = ['--yes', '@wix/cli@latest'];
 
 const benannt = process.argv.indexOf('--name');
-const GESCHAEFT = benannt > -1 && process.argv[benannt + 1] ? process.argv[benannt + 1] : 'Werkbank';
+const GESCHAEFT = benannt > -1 && process.argv[benannt + 1] ? process.argv[benannt + 1] : 'PDF Studio';
 
 /* Skripte, die der Link-Befehl aus package.json entfernt, obwohl die Seite
    ohne sie unvollständig ist: ohne app:einbetten fehlt die Anwendung. */
@@ -168,7 +168,7 @@ async function skripteZurueckholen() {
 
 async function bauenUndFreigeben() {
   const einbetten = await fuehreAus('node', ['skripte/app-einbetten.mjs']);
-  if (einbetten.code !== 0) abbruch('Die Werkbank ließ sich nicht einbetten.');
+  if (einbetten.code !== 0) abbruch('Das Studio ließ sich nicht einbetten.');
 
   const bauen = await fuehreAus('npx', [...CLI, 'build']);
   if (bauen.code !== 0) abbruch('Der Bau ist gescheitert.');
@@ -191,10 +191,10 @@ await anhaengen();
 schritt(3, 'Eigene Bauskripte sichern');
 await skripteZurueckholen();
 
-schritt(4, 'Werkbank einbetten, bauen, veröffentlichen');
+schritt(4, 'PDF Studio einbetten, bauen, veröffentlichen');
 const adresse = await bauenUndFreigeben();
 
 console.log('\n[32mFertig.[0m Die Seite ist veröffentlicht.');
 if (adresse) console.log(`  ${adresse}`);
-console.log('  Die Anwendung selbst liegt darunter unter /werkbank/.');
+console.log('  Die Anwendung selbst liegt darunter unter /studio/.');
 console.log('  Eigene Domain verbinden: https://manage.wix.com/account/sites');

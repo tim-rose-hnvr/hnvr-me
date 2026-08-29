@@ -1,9 +1,9 @@
 {
-  "name": "werkbank-portal",
+  "name": "pdf-studio-portal",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Marketingseite und späteres Kundenportal der Werkbank — Astro 5, zum Anhängen an Wix Headless.",
+  "description": "Marketingseite und späteres Kundenportal des Studios — Astro 5, zum Anhängen an Wix Headless.",
   "scripts": {
     "app:einbetten": "node skripte/app-einbetten.mjs",
     "dev": "wix dev",

@@ -1,0 +1,928 @@
+/* Prüflauf — fährt das Studio in einem echten Browser durch die Hauptwege.
+
+   Aufruf:  node werkzeuge/pruefen.mjs
+   Nötig:   playwright mit Chromium (global oder im Projekt).
+
+   Geprüft wird nicht die Oberfläche um ihrer selbst willen, sondern das
+   Ergebnis: Was in der Datei steht, die am Ende herauskommt. */
+
+import { readFile, mkdtemp, rm } from 'node:fs/promises';
+import { starteServer } from './dateiserver.mjs';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { join, dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
+
+const WURZEL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const lauf = promisify(execFile);
+
+let bestanden = 0, gescheitert = 0;
+function pruefe(bedingung, was, zusatz = '') {
+  if (bedingung) { bestanden++; console.log(`  ✓ ${was}`); }
+  else { gescheitert++; console.log(`  ✗ ${was}${zusatz ? ` — ${zusatz}` : ''}`); }
+}
+
+async function ladePlaywright() {
+  for (const ort of ['playwright', '/opt/node22/lib/node_modules/playwright/index.mjs']) {
+    try { return await import(ort); } catch { /* nächster Versuch */ }
+  }
+  throw new Error('playwright nicht gefunden — "npm i -D playwright" oder global installieren.');
+}
+
+const { server, basis: wurzelAdresse } = await starteServer(WURZEL);
+const basis = `${wurzelAdresse}/index.html`;
+const ablage = await mkdtemp(join(tmpdir(), 'studio-pruefung-'));
+
+const { chromium } = await ladePlaywright();
+const browser = await chromium.launch();
+const seite = await browser.newPage({ viewport: { width: 1500, height: 950 }, acceptDownloads: true });
+const fehler = [];
+seite.on('pageerror', (e) => fehler.push(`PAGEERROR: ${e.message}`));
+seite.on('console', (m) => { if (m.type() === 'error') fehler.push(m.text()); });
+
+/* Das Beispiel frisch laden — die spaeteren Abschnitte bauen aufeinander auf
+   und sollen nicht die Anmerkungen des vorigen erben. */
+const ladeBeispiel = async () => {
+  await seite.goto(basis);
+  await seite.click('#knopf-beispiel');
+  await seite.waitForSelector('.blatt canvas');
+  await seite.waitForTimeout(2200);
+};
+
+/* Eine Aktion ausloesen und die dabei erzeugte Datei ablegen. */
+let ladungZaehler = 0;
+const ladungVon = async (tun) => {
+  const [ladung] = await Promise.all([seite.waitForEvent('download', { timeout: 45000 }), tun()]);
+  const pfad = join(ablage, `ladung-${++ladungZaehler}-${ladung.suggestedFilename()}`);
+  await ladung.saveAs(pfad);
+  return pfad;
+};
+
+try {
+  console.log('\nLaden und Darstellen');
+  await seite.goto(basis);
+  await seite.click('#knopf-beispiel');
+  await seite.waitForSelector('.blatt canvas');
+  await seite.waitForTimeout(2200);
+
+  const grund = await seite.evaluate(() => ({
+    seiten: window.studio.zustand.folge.length,
+    blaetter: document.querySelectorAll('.blatt').length,
+    miniaturen: document.querySelectorAll('.miniatur').length,
+    textstuecke: document.querySelectorAll('.textebene span').length,
+    felder: window.studio.zustand.formularfelder.length,
+  }));
+  pruefe(grund.seiten === 5, 'fünf Seiten geladen', `war ${grund.seiten}`);
+  pruefe(grund.blaetter === 5, 'fünf Blätter im Fluss');
+  pruefe(grund.miniaturen === 5, 'fünf Miniaturen');
+  pruefe(grund.textstuecke > 5, 'Textebene liegt über der ersten Seite');
+  pruefe(grund.felder === 10, 'zehn Formularfelder erkannt (Text, mehrzeilig, Kasten, Auswahl, zwei Optionen, Unterschrift)', `waren ${grund.felder}`);
+
+  console.log('\nLesezeichen');
+  await seite.evaluate(() => window.studio.fuehreAus('leiste:seiten'));
+  await seite.evaluate(() => document.querySelector('[data-tafel="gliederung"].reiter-knopf').click());
+  await seite.waitForTimeout(500);
+  const lesezeichen = await seite.evaluate(() => [...document.querySelectorAll('#tafel-gliederung .eintrag')].map((k) => k.textContent));
+  pruefe(lesezeichen.length === 4, 'vier Lesezeichen in der Gliederung', lesezeichen.join(' | '));
+  await seite.evaluate(() => [...document.querySelectorAll('#tafel-gliederung .eintrag')][1].click());
+  await seite.waitForTimeout(1400);
+  pruefe(await seite.evaluate(() => window.studio.zustand.aktuelleSeite) === 2, 'Lesezeichen springt auf die richtige Seite');
+  await seite.evaluate(() => document.querySelector('[data-tafel="miniaturen"].reiter-knopf').click());
+  await seite.evaluate(() => window.studio.fuehreAus('gehezu:erste'));
+  await seite.waitForTimeout(1400);
+
+  console.log('\nMitdenken');
+  const vorschlaege = await seite.evaluate(() => [...document.querySelectorAll('.vorschlag b')].map((k) => k.textContent));
+  pruefe(vorschlaege.some((v) => /Formular/.test(v)), 'offene Formularfelder werden gemeldet');
+  pruefe(vorschlaege.some((v) => /personenbezogene/.test(v)), 'personenbezogene Angaben werden gefunden');
+  pruefe(vorschlaege.some((v) => /Unterschriftsstelle/.test(v)), 'Unterschriftsstelle wird gefunden');
+
+  console.log('\nAnmerkungen aus Textauswahl');
+  const stelle = await seite.evaluate(() => {
+    const span = [...document.querySelectorAll('.textebene span')].find((s) => s.textContent.includes('Bankverbindung'));
+    if (!span) return null;
+    const r = span.getBoundingClientRect();
+    return { x: r.left, y: r.top, b: r.width, h: r.height };
+  });
+  if (!stelle) throw new Error('Textstück „Bankverbindung" nicht gefunden — steht Seite 1 im Bild?');
+  await seite.mouse.move(stelle.x + 2, stelle.y + stelle.h / 2);
+  await seite.mouse.down();
+  await seite.mouse.move(stelle.x + stelle.b - 2, stelle.y + stelle.h / 2, { steps: 8 });
+  await seite.mouse.up();
+  await seite.keyboard.press('h');
+  await seite.waitForTimeout(300);
+  pruefe(await seite.evaluate(() => window.studio.zustand.anmerkungen.some((a) => a.art === 'hervor')), 'Hervorhebung entsteht aus der Textauswahl');
+
+  console.log('\nSchwärzen und sichern');
+  await seite.keyboard.press('s');
+  await seite.mouse.move(stelle.x - 2, stelle.y - 2);
+  await seite.mouse.down();
+  await seite.mouse.move(stelle.x + stelle.b + 4, stelle.y + stelle.h + 2, { steps: 8 });
+  await seite.mouse.up();
+  await seite.keyboard.press('Escape');
+  await seite.waitForTimeout(300);
+
+  await seite.evaluate(() => window.studio.fuehreAus('formular:naechstes'));
+  await seite.waitForTimeout(1500);
+  await seite.keyboard.type('Ada Musterfrau');
+  await seite.waitForTimeout(200);
+
+  const [ladung] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(() => window.studio.fuehreAus('sichern')),
+  ]);
+  const ausgabe = join(ablage, 'ausgabe.pdf');
+  await ladung.saveAs(ausgabe);
+
+  const pdfjs = await import('../fremd/pdf.mjs');
+  const dok = await pdfjs.getDocument({
+    data: new Uint8Array(await readFile(ausgabe)),
+    standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/'),
+  }).promise;
+  const textVon = async (nummer) => (await (await dok.getPage(nummer)).getTextContent()).items.map((i) => i.str).join(' ');
+
+  pruefe(dok.numPages === 5, 'Ausgabe hat fünf Seiten', `waren ${dok.numPages}`);
+  pruefe((await textVon(1)).trim() === '', 'geschwärzte Seite trägt keinen auslesbaren Text mehr');
+  pruefe((await textVon(2)).includes('Mikrofone'), 'unberührte Seite behält ihren Text');
+  pruefe((await textVon(3)).includes('Ada Musterfrau'), 'Formularwert steht in der Ausgabe');
+
+  console.log('\nSeiten umbauen');
+  await seite.evaluate(() => {
+    const z = window.studio.zustand;
+    z.gewaehlteSeiten.clear();
+    z.gewaehlteSeiten.add(z.folge[1].id);
+    window.studio.fuehreAus('seiten:drehenRechts');
+  });
+  await seite.waitForTimeout(700);
+  await seite.evaluate(() => {
+    const z = window.studio.zustand;
+    z.gewaehlteSeiten.clear();
+    z.gewaehlteSeiten.add(z.folge[3].id);
+    window.studio.fuehreAus('seiten:loeschen');
+  });
+  await seite.waitForTimeout(700);
+  pruefe(await seite.evaluate(() => window.studio.zustand.folge.length) === 4, 'Seite gelöscht');
+  await seite.evaluate(() => window.studio.fuehreAus('rueckgaengig'));
+  await seite.waitForTimeout(600);
+  pruefe(await seite.evaluate(() => window.studio.zustand.folge.length) === 5, 'Löschen ließ sich zurücknehmen');
+
+  console.log('\nSuche');
+  await seite.evaluate(() => window.studio.fuehreAus('suchen'));
+  await seite.fill('#suchfeld', 'Mikrofone');
+  await seite.waitForTimeout(900);
+  pruefe((await seite.textContent('#such-anzahl')).includes('2'), 'zwei Treffer für „Mikrofone"');
+  await seite.evaluate(() => window.studio.fuehreAus('suche:treffer-hervorheben'));
+  await seite.waitForTimeout(2200);
+  pruefe(await seite.evaluate(() => window.studio.zustand.anmerkungen.filter((a) => a.art === 'hervor').length) >= 2,
+    'Suchtreffer lassen sich in einem Zug hervorheben');
+
+  console.log('\nVerkleinern und Texterkennung');
+  const scan = join(ablage, 'scan.pdf');
+  const [scanLadung] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(async () => {
+      const { verkleinere } = await import('./app/ausgabe.js');
+      const { sichereBytes } = await import('./app/kern.js');
+      sichereBytes(await verkleinere({ dichte: 200, guete: 0.9 }), 'scan.pdf');
+    }),
+  ]);
+  await scanLadung.saveAs(scan);
+
+  await seite.setInputFiles('#dateiwahl', scan);
+  await seite.waitForSelector('.blatt canvas');
+  await seite.waitForTimeout(2000);
+  const scanDok = await pdfjs.getDocument({ data: new Uint8Array(await readFile(scan)), standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/') }).promise;
+  const scanText = (await (await scanDok.getPage(1)).getTextContent()).items.map((i) => i.str).join('');
+  pruefe(scanText.trim() === '', 'verkleinerte Datei ist ein Bild ohne Textebene');
+  pruefe((await seite.evaluate(() => [...document.querySelectorAll('.vorschlag b')].map((k) => k.textContent)))
+    .some((v) => /Scan|ohne auswählbaren Text/.test(v)), 'der fehlende Text wird gemeldet');
+
+  const erkennung = await seite.evaluate(async () => {
+    const ocr = await import('./app/texterkennung.js');
+    const z = window.studio.zustand;
+    const ids = await ocr.erkenneSeiten({ seiten: z.folge.slice(0, 1), sprache: 'deu', dichte: 200 });
+    const treffer = z.ocr.get(ids[0]);
+    return { woerter: treffer.woerter.length, konfidenz: Math.round(treffer.konfidenz), text: treffer.zeilen.map((l) => l.text).join(' ') };
+  });
+  pruefe(erkennung.woerter > 50, `Texterkennung findet Wörter (${erkennung.woerter})`);
+  pruefe(erkennung.konfidenz > 80, `Erkennung ist sicher (${erkennung.konfidenz} %)`);
+  pruefe(/Sitzungstechnik/.test(erkennung.text), 'erkannter Text stimmt inhaltlich');
+
+  await seite.waitForTimeout(800);
+  await seite.evaluate(() => window.studio.fuehreAus('suchen'));
+  await seite.fill('#suchfeld', 'Konferenzanlage');
+  await seite.waitForTimeout(1200);
+  pruefe(/[1-9]/.test(await seite.textContent('#such-anzahl')), 'im Scan lässt sich nach der Erkennung suchen');
+
+  const durchsuchbar = join(ablage, 'scan-durchsuchbar.pdf');
+  const [ladungOcr] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(() => window.studio.fuehreAus('sichern')),
+  ]);
+  await ladungOcr.saveAs(durchsuchbar);
+  const ocrDok = await pdfjs.getDocument({ data: new Uint8Array(await readFile(durchsuchbar)), standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/') }).promise;
+  const ocrText = (await (await ocrDok.getPage(1)).getTextContent()).items.map((i) => i.str).join(' ');
+  pruefe(/Sitzungstechnik/.test(ocrText), 'gesicherter Scan trägt unsichtbaren, auslesbaren Text');
+
+  console.log('\nKennwortschutz');
+  const geschuetzt = join(ablage, 'geschuetzt.pdf');
+  const [ladungSchutz] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(async () => {
+      const { baueDokument } = await import('./app/ausgabe.js');
+      const { sichereBytes } = await import('./app/kern.js');
+      const bytes = await baueDokument({ schutz: { benutzer: 'geheim', besitzer: 'chef', drucken: 'none' } });
+      sichereBytes(bytes, 'geschuetzt.pdf');
+    }),
+  ]);
+  await ladungSchutz.saveAs(geschuetzt);
+  let verschlossen = false;
+  try { await pdfjs.getDocument({ data: new Uint8Array(await readFile(geschuetzt)), standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/') }).promise; }
+  catch (fehler) { verschlossen = fehler?.name === 'PasswordException'; }
+  pruefe(verschlossen, 'geschützte Datei lässt sich ohne Kennwort nicht öffnen');
+  const mitKennwort = await pdfjs.getDocument({ data: new Uint8Array(await readFile(geschuetzt)), password: 'geheim', standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/') }).promise;
+  pruefe(mitKennwort.numPages === 5, 'mit Kennwort geht sie auf');
+
+  console.log('\nText ersetzen');
+  // Frisches Beispiel: in der geschwärzten Ausgabe ist Seite 1 ein Bild.
+  await seite.setInputFiles('#dateiwahl', join(WURZEL, 'beispiel', 'beispiel.pdf'));
+  await seite.waitForSelector('.blatt canvas');
+  await seite.waitForTimeout(2000);
+  await seite.evaluate(() => window.studio.fuehreAus('werkzeug:ersetzen'));
+  await seite.waitForTimeout(300);
+  const ersatzStelle = await seite.evaluate(() => {
+    const span = [...document.querySelectorAll('.textebene span')].find((x) => x.textContent.includes('84.500'));
+    if (!span) return null;
+    const r = span.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  });
+  if (ersatzStelle) {
+    /* Ein Klick bearbeitet den Absatz — das ist der Sinn von „Text
+       bearbeiten". Der Dialog nimmt einen mehrzeiligen Text an. */
+    await seite.mouse.click(ersatzStelle.x, ersatzStelle.y);
+    await seite.waitForSelector('.dialog textarea.feld');
+    const alsAbsatz = await seite.evaluate(() => ({
+      titel: document.querySelector('.dialog-kopf h2').textContent,
+      stand: document.querySelector('.dialog .hinweis')?.textContent || '',
+    }));
+    pruefe(alsAbsatz.titel === 'Absatz bearbeiten', 'ein Klick fasst den ganzen Absatz', alsAbsatz.titel);
+    pruefe(/Zeilen/.test(alsAbsatz.stand), 'und sagt vorher, wieviele Zeilen es werden', alsAbsatz.stand);
+    await seite.fill('.dialog textarea.feld',
+      'Die Verguetung betraegt 79.900 EUR netto. Dieser Satz wurde beim Bearbeiten '
+      + 'deutlich verlaengert, damit der Absatz neu umbrochen werden muss und nicht '
+      + 'einfach an derselben Stelle stehen bleibt.');
+    await seite.waitForTimeout(300);
+    const warnung = await seite.evaluate(() =>
+      document.querySelector('.dialog .hinweis')?.textContent || '');
+    pruefe(/\d+ Zeilen/.test(warnung) && warnung !== alsAbsatz.stand,
+      'der Umbruch wird beim Tippen neu gerechnet', warnung.slice(0, 70));
+    await seite.click('.dialog-fuss .knopf:last-child');
+    await seite.waitForTimeout(500);
+    const ersatz = await seite.evaluate(() =>
+      window.studio.zustand.anmerkungen.find((a) => a.art === 'ersatz') || null);
+    pruefe(!!ersatz, 'Absatz lässt sich anklicken und ersetzen');
+    pruefe(ersatz?.zeilenhoehe > 0, 'der Ersatz trägt eine Zeilenhöhe — er wird umgebrochen',
+      String(ersatz?.zeilenhoehe));
+
+    /* Und in der Datei: der neue Satz muss dastehen, über mehrere Zeilen
+       verteilt. Ein Umbruch, den nur der Bildschirm kennt, wäre keiner. */
+    const ersatzPfad = await ladungVon(() => seite.evaluate(() => window.studio.fuehreAus('sichern')));
+    const ersatzText = await seite.evaluate(async (daten) => {
+      const pdfjs = await import('./fremd/pdf.mjs');
+      pdfjs.GlobalWorkerOptions.workerSrc = './fremd/pdf.worker.mjs';
+      const dok = await pdfjs.getDocument({ data: new Uint8Array(daten) }).promise;
+      const inhalt = await (await dok.getPage(1)).getTextContent();
+      /* Zeilenweise, damit sich der Umbruch zählen lässt. */
+      const zeilen = new Map();
+      for (const stueck of inhalt.items) {
+        const y = Math.round(stueck.transform[5]);
+        zeilen.set(y, (zeilen.get(y) || '') + stueck.str);
+      }
+      return [...zeilen.entries()].sort((a, b) => b[0] - a[0]).map(([, t]) => t);
+    }, [...await readFile(ersatzPfad)]);
+    const mitNeuem = ersatzText.filter((z) => /79\.900|verlaengert|umgebrochen/.test(z));
+    pruefe(mitNeuem.length >= 2, 'der neue Absatz steht umgebrochen in der Datei',
+      `${mitNeuem.length} Zeilen: ${mitNeuem.map((z) => z.slice(0, 34)).join(' / ')}`);
+    /* Ohne Haken bei „wirklich entfernen" wird der alte Text überdeckt, nicht
+       gelöscht — er steht weiter in der Datei und lässt sich auslesen. Genau
+       das sagt der Dialog, und genau das wird hier festgehalten: ein
+       Überdecken, das man für ein Löschen hält, ist ein Datenleck. */
+    pruefe(ersatzText.some((z) => /84\.500/.test(z)),
+      'der überdeckte Text steckt noch in der Datei — wie im Dialog angesagt');
+  } else {
+    pruefe(false, 'Textstück zum Ersetzen gefunden');
+  }
+
+  console.log('\nZusammenführen');
+  await seite.setInputFiles('#dateiwahl-anhang', scan);
+  await seite.waitForTimeout(2500);
+  const nachher = await seite.evaluate(() => ({ seiten: window.studio.zustand.folge.length, quellen: window.studio.zustand.quellen.size }));
+  pruefe(nachher.seiten === 10 && nachher.quellen === 2, 'zweite Datei angehängt', JSON.stringify(nachher));
+
+  console.log('\nFormularfelder aller Arten');
+  await seite.setInputFiles('#dateiwahl', join(WURZEL, 'beispiel', 'beispiel.pdf'));
+  await seite.waitForSelector('.blatt canvas');
+  await seite.waitForTimeout(2000);
+  await seite.fill('#feld-seite', '3');
+  await seite.press('#feld-seite', 'Enter');
+  await seite.waitForTimeout(2200);
+  await seite.fill('[data-feld="bemerkungen"]', 'Zwei Zeilen\nzweite Zeile');
+  await seite.check('input[type=radio][data-feld="abnahme"]');
+  await seite.waitForTimeout(400);
+  const felderWerte = await seite.evaluate(() => Object.fromEntries(window.studio.zustand.formularwerte));
+  pruefe(/zweite Zeile/.test(felderWerte.bemerkungen || ''), 'mehrzeiliges Feld nimmt Zeilenumbrüche');
+  pruefe(!!felderWerte.abnahme, 'Optionsfeld lässt sich setzen', JSON.stringify(felderWerte.abnahme));
+
+  console.log('\nUnterschriftsfeld');
+  await seite.click('[data-feld="unterschrift_abnahme"]');
+  await seite.waitForSelector('.unterschrift-reiter', { timeout: 15000 });
+  await seite.click('.unterschrift-reiter button:has-text("Tippen")');
+  await seite.fill('.dialog input[placeholder="Vorname Nachname"]', 'Ada Musterfrau');
+  await seite.click('.dialog-fuss .knopf:last-child');
+  await seite.waitForTimeout(900);
+  const gesetzt = await seite.evaluate(() => window.studio.zustand.anmerkungen.find((a) => a.art === 'unterschrift'));
+  pruefe(!!gesetzt && Math.abs(gesetzt.x - 56) < 2 && gesetzt.b > 200,
+    'Klick ins Unterschriftsfeld setzt die Unterschrift passend hinein',
+    gesetzt ? `${Math.round(gesetzt.x)}/${Math.round(gesetzt.y)} ${Math.round(gesetzt.b)}×${Math.round(gesetzt.h)} pt` : 'nichts gesetzt');
+
+  console.log('\nMitdenken: jede Regel einmal auslösen');
+  const vorschlaegeJetzt = () => seite.evaluate(() => [...document.querySelectorAll('.vorschlag b')].map((k) => k.textContent));
+  await seite.evaluate(() => {
+    const z = window.studio.zustand;
+    z.gedaechtnis.abgelehnteVorschlaege.clear();
+    z.eigenschaften.dateigroesse = 9 * 1024 * 1024;          // groß genug fürs Verkleinern
+    z.gedaechtnis.benutzteWerkzeuge.set('hervor', 3);        // Kniff-Regel
+    z.anmerkungen.push({ id: 'test-schwaerzung', art: 'schwaerzen', seiteId: z.folge[0].id, x: 0, y: 0, x2: 10, y2: 10 });
+  });
+  await seite.evaluate(() => window.studio.zustand.geaendert = true);
+  await seite.evaluate(() => window.dispatchEvent(new Event('resize')));
+  await seite.evaluate(async () => { const m = await import('./app/mitdenken.js'); await m.untersuche(); });
+  await seite.waitForTimeout(1200);
+  // Die Tafel zeigt nur die wichtigsten; geprüft wird die vollständige Liste.
+  const regeln = await seite.evaluate(async () => {
+    const m = await import('./app/mitdenken.js');
+    return m.vorschlaege().map((v) => v.titel);
+  });
+  const angezeigt = await vorschlaegeJetzt();
+  pruefe(angezeigt.length <= 6, 'die Tafel bleibt auf sechs Vorschläge begrenzt', `zeigt ${angezeigt.length}`);
+  pruefe(regeln.length > angezeigt.length
+    ? await seite.evaluate(() => [...document.querySelectorAll('#tafel-rechts button')].some((k) => /weitere zeigen/.test(k.textContent)))
+    : true, 'verdeckte Vorschläge werden angeboten statt verschwiegen');
+  for (const [name, muster] of [
+    ['Formular', /Formular/],
+    ['Unterschriftsstelle', /Unterschriftsstelle/],
+    ['personenbezogene Angaben', /personenbezogene/],
+    ['Schwärzung gesetzt', /Schwärzung/],
+    ['Datei zu groß', /MB groß/],
+    ['Metadaten', /Metadaten/],
+    ['ungesicherte Änderungen', /Ungesicherte/],
+  ]) pruefe(regeln.some((r) => muster.test(r)), `Vorschlag: ${name}`, regeln.join(' · ').slice(0, 90));
+  await seite.evaluate(() => {
+    const z = window.studio.zustand;
+    z.anmerkungen = z.anmerkungen.filter((a) => a.id !== 'test-schwaerzung');
+  });
+
+  console.log('\nWord-Ausgabe');
+  const wordDatei = join(ablage, 'ausgabe.docx');
+  const [wordLadung] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(async () => {
+      const { alsWord } = await import('./app/word.js');
+      const { sichereBytes } = await import('./app/kern.js');
+      const { bytes } = await alsWord({});
+      sichereBytes(bytes, 'ausgabe.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    }),
+  ]);
+  await wordLadung.saveAs(wordDatei);
+
+  // .docx ist ein ZIP. Wir packen es hier von Hand aus — ohne fremde Hilfe.
+  const { inflateRawSync } = await import('node:zlib');
+  const rohDaten = await readFile(wordDatei);
+  const teile = new Map();
+  let leseStelle = 0;
+  const signatur = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
+  while ((leseStelle = rohDaten.indexOf(signatur, leseStelle)) !== -1) {
+    const verfahren = rohDaten.readUInt16LE(leseStelle + 8);
+    const gepackt = rohDaten.readUInt32LE(leseStelle + 18);
+    const nameLaenge = rohDaten.readUInt16LE(leseStelle + 26);
+    const zusatz = rohDaten.readUInt16LE(leseStelle + 28);
+    const name = rohDaten.subarray(leseStelle + 30, leseStelle + 30 + nameLaenge).toString();
+    const beginn = leseStelle + 30 + nameLaenge + zusatz;
+    const inhalt = rohDaten.subarray(beginn, beginn + gepackt);
+    teile.set(name, verfahren === 8 ? inflateRawSync(inhalt) : inhalt);
+    leseStelle = beginn + gepackt;
+  }
+  pruefe(teile.has('word/document.xml') && teile.has('[Content_Types].xml') && teile.has('word/styles.xml'),
+    'die .docx enthält alle Pflichtteile', [...teile.keys()].join(', '));
+
+  const dokumentXml = (teile.get('word/document.xml') || Buffer.alloc(0)).toString('utf8');
+  const absaetze = (dokumentXml.match(/<w:p>/g) || []).length;
+  pruefe(absaetze > 20, `Absätze im Word-Dokument (${absaetze})`);
+  pruefe(/Ueberschrift1/.test(dokumentXml), 'Überschriften werden als Word-Formatvorlage gesetzt');
+  pruefe(/<w:b\/>/.test(dokumentXml), 'fette Stellen bleiben fett');
+  pruefe(/w:type="page"/.test(dokumentXml), 'Seitenumbrüche stehen drin');
+  pruefe(dokumentXml.includes('Konferenzanlage') && dokumentXml.includes('Kamerapreset'),
+    'Text der ersten und der letzten Seite ist enthalten');
+  pruefe(!/[\x00-\x08]/.test(dokumentXml) && dokumentXml.includes('&amp;'),
+    'Sonderzeichen sind sauber geschützt');
+
+  console.log('\nStempel und Bilder');
+  await seite.evaluate(() => {
+    const z = window.studio.zustand;
+    window.dispatchEvent(new Event('resize'));
+    return import('./app/anmerkungen.js').then((m) => m.fuegeAn({
+      art: 'stempel', seiteId: z.folge[0].id, x: 60, y: 700, b: 160, h: 34,
+      text: 'Genehmigt', groesse: 13, farbe: '#0D5A4D',
+    }));
+  });
+  await seite.waitForTimeout(600);
+  pruefe(await seite.evaluate(() => !!document.querySelector('.stempel')), 'Stempel erscheint auf der Seite');
+
+  const mitStempel = join(ablage, 'mit-stempel.pdf');
+  const [stempelLadung] = await Promise.all([
+    seite.waitForEvent('download'),
+    seite.evaluate(() => window.studio.fuehreAus('sichern')),
+  ]);
+  await stempelLadung.saveAs(mitStempel);
+  const stempelDok = await pdfjs.getDocument({ data: new Uint8Array(await readFile(mitStempel)), standardFontDataUrl: join(WURZEL, 'fremd', 'schriften/') }).promise;
+  const stempelText = (await (await stempelDok.getPage(1)).getTextContent()).items.map((i) => i.str).join(' ');
+  pruefe(/GENEHMIGT/.test(stempelText), 'Stempel steht in der gesicherten Datei');
+
+  console.log('\nAnsicht und Zoom');
+  await seite.selectOption('#feld-zoom', 'breite');
+  await seite.waitForTimeout(800);
+  await seite.keyboard.press('Control+Equal');
+  await seite.waitForTimeout(800);
+  const zoomLage = await seite.evaluate(() => ({
+    zustand: String(window.studio.zustand.zoom),
+    feld: document.querySelector('#feld-zoom').value,
+  }));
+  pruefe(zoomLage.zustand === zoomLage.feld, 'Zoomanzeige folgt dem tatsächlichen Zoom', JSON.stringify(zoomLage));
+
+  await seite.evaluate(() => {
+    // Vier Aufträge in Folge: keiner darf unter den Tisch fallen.
+    window.studio.fuehreAus('ansicht:drehen');
+    window.studio.fuehreAus('ansicht:drehen');
+    window.studio.fuehreAus('ansicht:drehen');
+    window.studio.fuehreAus('ansicht:drehen');
+  });
+  await seite.waitForTimeout(2500);
+  const nachDrehung = await seite.evaluate(() => ({
+    drehung: window.studio.zustand.ansichtDrehung,
+    hochkant: document.querySelector('.blatt').getBoundingClientRect().height > document.querySelector('.blatt').getBoundingClientRect().width,
+  }));
+  pruefe(nachDrehung.drehung === 0 && nachDrehung.hochkant, 'vier Drehungen führen zurück zum Ausgangsbild', JSON.stringify(nachDrehung));
+
+  console.log('\nHilfe');
+  await seite.evaluate(() => window.studio.fuehreAus('hilfe'));
+  await seite.waitForSelector('.dialog');
+  const hilfe = await seite.textContent('.dialog-rumpf');
+  await seite.evaluate(() => { const s = document.querySelector('#schirm'); s.hidden = true; s.innerHTML = ''; });
+  pruefe(hilfe.includes('Strg+K') && hilfe.includes('Esc'), 'Hilfe listet auch Palette und Escape');
+
+  console.log('\nGeschützte Datei öffnen');
+  await seite.goto(basis);
+  await seite.waitForTimeout(800);
+  await seite.setInputFiles('#dateiwahl', geschuetzt);
+  await seite.waitForSelector('.dialog input[type=password]', { timeout: 20000 });
+  await seite.fill('.dialog input[type=password]', 'falsch');
+  await seite.click('.dialog-fuss .knopf:last-child');
+  await seite.waitForTimeout(2000);
+  const zweiterTitel = await seite.textContent('.dialog-kopf h2');
+  pruefe(/stimmt nicht/.test(zweiterTitel), 'falsches Kennwort wird erkannt', zweiterTitel);
+  await seite.fill('.dialog input[type=password]', 'geheim');
+  await seite.click('.dialog-fuss .knopf:last-child');
+  await seite.waitForSelector('.blatt canvas', { timeout: 25000 });
+  await seite.waitForTimeout(2000);
+  const entsperrt = await seite.evaluate(() => ({
+    seiten: window.studio.zustand.folge.length,
+    war: [...window.studio.zustand.quellen.values()].some((q) => q.warGeschuetzt),
+    vorschlag: [...document.querySelectorAll('.vorschlag b')].some((k) => /kennwortgeschützt/i.test(k.textContent)),
+  }));
+  pruefe(entsperrt.seiten === 5 && entsperrt.war, 'mit richtigem Kennwort geht die Datei auf', JSON.stringify(entsperrt));
+  pruefe(entsperrt.vorschlag, 'das Studio bietet an, den Schutz wiederherzustellen');
+
+
+  /* ---------- Formularfelder anlegen ------------------------------------- */
+
+  console.log('\nFormularfelder anlegen');
+  {
+    await ladeBeispiel();
+    const angelegt = await seite.evaluate(async () => {
+      const { fuegeAn } = await import('./app/anmerkungen.js');
+      const z = window.studio.zustand;
+      const s1 = z.folge[0].id;
+      const arten = [
+        { feldArt: 'text', name: 'PruefText', y: 700 },
+        { feldArt: 'mehrzeilig', name: 'PruefMehr', y: 640 },
+        { feldArt: 'ankreuz', name: 'PruefHaken', y: 580 },
+        { feldArt: 'auswahl', name: 'PruefWahl', y: 520, optionen: ['A', 'B'] },
+        { feldArt: 'option', name: 'PruefOption', y: 440, optionen: ['Ja', 'Nein'] },
+        { feldArt: 'unterschrift', name: 'PruefSignatur', y: 360 },
+      ];
+      for (const a of arten) fuegeAn({ art: 'feldneu', seiteId: s1, x: 60, y: a.y, b: 200, h: 40, ...a, optionen: a.optionen || [] });
+      return arten.length;
+    });
+    const mitFeldern = await ladungVon(() => seite.evaluate(() => window.studio.fuehreAus('sichern')));
+    const lib = await import('../fremd/pdf-lib.mjs');
+    const dok = await lib.PDFDocument.load(new Uint8Array(await readFile(mitFeldern)));
+    const felder = dok.getForm().getFields();
+    const namen = felder.map((f) => f.getName());
+    pruefe(namen.filter((n) => n.startsWith('Pruef')).length === angelegt,
+      `alle ${angelegt} angelegten Feldarten stehen im gesicherten PDF`,
+      namen.filter((n) => n.startsWith('Pruef')).join(', '));
+    const wahl = felder.find((f) => f.getName() === 'PruefWahl');
+    pruefe(wahl instanceof lib.PDFDropdown && wahl.getOptions().join('/') === 'A/B',
+      'die Auswahlliste trägt ihre Möglichkeiten');
+    const option = felder.find((f) => f.getName() === 'PruefOption');
+    pruefe(option instanceof lib.PDFRadioGroup && option.getOptions().length === 2,
+      'das Optionsfeld trägt zwei Möglichkeiten');
+    const mehr = felder.find((f) => f.getName() === 'PruefMehr');
+    pruefe(mehr instanceof lib.PDFTextField && mehr.isMultiline(), 'das mehrzeilige Feld ist mehrzeilig');
+    /* Das Unterschriftsfeld ist kein pdf-lib-Feldtyp; es zählt nur mit. */
+    pruefe(namen.includes('PruefSignatur'), 'auch das Unterschriftsfeld steht im Formular');
+  }
+
+  /* ---------- Excel ------------------------------------------------------- */
+
+  console.log('\nExcel-Ausgabe');
+  {
+    await ladeBeispiel();
+    const tabellen = await seite.evaluate(async () => {
+      const { alsExcel } = await import('./app/excel.js');
+      const e = await alsExcel({ nurTabellen: true });
+      globalThis.__x = e.bytes;
+      return { blaetter: e.blaetter, zeilen: e.zeilen, zellen: e.zellen };
+    });
+    pruefe(tabellen.blaetter === 1 && tabellen.zeilen >= 6,
+      'die Tabelle im Beispiel wird als einziges Blatt erkannt', JSON.stringify(tabellen));
+
+    const rohXlsx = await seite.evaluate(() => [...globalThis.__x]);
+    const xlsx = Buffer.from(rohXlsx);
+    pruefe(xlsx[0] === 0x50 && xlsx[1] === 0x4b, 'die .xlsx ist ein gültiges ZIP');
+
+    /* Ins Archiv sehen: die Pflichtteile und der Inhalt der ersten Zeile. */
+    const { unzipRoh } = await import('./zip-lesen.mjs');
+    const teile = unzipRoh(xlsx);
+    for (const pflicht of ['[Content_Types].xml', '_rels/.rels', 'xl/workbook.xml',
+      'xl/_rels/workbook.xml.rels', 'xl/styles.xml', 'xl/worksheets/sheet1.xml']) {
+      pruefe(teile.has(pflicht), `die .xlsx enthält ${pflicht}`);
+    }
+    const blatt = teile.get('xl/worksheets/sheet1.xml') || '';
+    pruefe(/<t xml:space="preserve">Platz<\/t>/.test(blatt), 'die Kopfzeile der Tabelle steht im Blatt');
+    pruefe(/<c r="A2"><v>1<\/v><\/c>/.test(blatt), 'eine Zahl steht als Zahl, nicht als Text');
+    pruefe(/<t xml:space="preserve">Kamerapreset<\/t>/.test(blatt), 'die vierte Spalte ist erkannt worden');
+
+    const alles = await seite.evaluate(async () => {
+      const { alsExcel } = await import('./app/excel.js');
+      const e = await alsExcel({ nurTabellen: false });
+      return e.blaetter;
+    });
+    pruefe(alles === 5, 'im Rastermodus bekommt jede Seite ein Blatt', String(alles));
+  }
+
+  /* ---------- Barrierefreiheit -------------------------------------------- */
+
+  console.log('\nBarrierefreiheit');
+  {
+    await ladeBeispiel();
+    const befund = await seite.evaluate(async () => {
+      const m = await import('./app/barrierefrei.js');
+      return (await m.pruefe()).map((p) => `${p.stufe}:${p.id}`);
+    });
+    pruefe(befund.includes('fehler:struktur'), 'die fehlende Auszeichnung wird gemeldet');
+    pruefe(befund.includes('fehler:sprache'), 'die fehlende Dokumentsprache wird gemeldet');
+    pruefe(befund.includes('fehler:felder'), 'Formularfelder ohne Beschriftung werden gemeldet');
+    pruefe(befund.includes('fehler:scan'), 'die Seite ohne Text wird gemeldet');
+
+    await seite.evaluate(() => {
+      window.studio.zustand.zugang = { sprache: 'de-DE', titel: 'Geprüfter Vertrag', feldbeschriftungen: true };
+    });
+    const zugaenglich = await ladungVon(() => seite.evaluate(() => window.studio.fuehreAus('sichern')));
+    const lib = await import('../fremd/pdf-lib.mjs');
+    const dok = await lib.PDFDocument.load(new Uint8Array(await readFile(zugaenglich)));
+    const N = (n) => lib.PDFName.of(n);
+    pruefe(String(dok.catalog.get(N('Lang'))) === '(de-DE)', 'die Dokumentsprache steht im Katalog');
+    const vp = dok.catalog.get(N('ViewerPreferences'));
+    const vpd = vp?.get ? vp : dok.context.lookup(vp);
+    pruefe(String(vpd?.get(N('DisplayDocTitle'))) === 'true', 'der Titel wird statt des Dateinamens angezeigt');
+    pruefe(dok.getTitle() === 'Geprüfter Vertrag', 'der Titel ist gesetzt', String(dok.getTitle()));
+    const felder = dok.getForm().getFields();
+    const mitTU = felder.filter((f) => f.acroField.dict.get(N('TU'))).length;
+    pruefe(mitTU === felder.length && felder.length > 0,
+      `alle ${felder.length} Felder haben eine Beschriftung bekommen`, String(mitTU));
+    await seite.evaluate(() => { window.studio.zustand.zugang = null; });
+  }
+
+
+  /* ---------- Digital unterschreiben --------------------------------------- */
+
+  console.log('\nDigital unterschreiben');
+  {
+    /* Ein echtes Zertifikat, von openssl erzeugt — kein forge-eigenes. So
+       prüft der Lauf auch, dass das Studio eine .p12 lesen kann, die es
+       nicht selbst geschrieben hat. Ohne openssl wird der Abschnitt
+       ausgelassen und das ausdrücklich gesagt, statt still zu bestehen. */
+    let p12Pfad = null;
+    let certPfad = null;
+    try {
+      certPfad = join(ablage, 'pruef.crt');
+      const keyPfad = join(ablage, 'pruef.key');
+      p12Pfad = join(ablage, 'pruef.p12');
+      await lauf('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-keyout', keyPfad,
+        '-out', certPfad, '-days', '30', '-nodes',
+        '-subj', '/C=DE/O=PDF Studio Pruefung/CN=Prueflauf']);
+      await lauf('openssl', ['pkcs12', '-export', '-out', p12Pfad,
+        '-inkey', keyPfad, '-in', certPfad, '-passout', 'pass:probe']);
+    } catch (fehler) {
+      console.log(`  – ausgelassen: openssl steht nicht bereit (${String(fehler.message).split('\n')[0]})`);
+      p12Pfad = null;
+    }
+
+    if (p12Pfad) {
+      await ladeBeispiel();
+      const p12B64 = (await readFile(p12Pfad)).toString('base64');
+
+      const falsch = await seite.evaluate(async (b64) => {
+        const roh = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        try { await (await import('./app/signieren.js')).oeffneAusweis(roh, 'daneben'); return null; }
+        catch (f) { return f.message; }
+      }, p12B64);
+      pruefe(/Kennwort/i.test(falsch || ''), 'ein falsches Kennwort wird als solches gemeldet', String(falsch));
+
+      const beschreibung = await seite.evaluate(async (b64) => {
+        const roh = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        const a = await (await import('./app/signieren.js')).oeffneAusweis(roh, 'probe');
+        globalThis.__ausweis = a;
+        return a.beschreibung;
+      }, p12B64);
+      pruefe(beschreibung.name === 'Prueflauf' && beschreibung.organisation === 'PDF Studio Pruefung',
+        'die Ausweisdatei wird gelesen und der Inhaber genannt', JSON.stringify(beschreibung));
+      pruefe(!beschreibung.abgelaufen && !beschreibung.nochNichtGueltig, 'die Gültigkeit wird geprüft');
+
+      const unterschrieben = await ladungVon(() => seite.evaluate(async () => {
+        const { sichereDokument } = await import('./app/ausgabe.js');
+        await sichereDokument({ dateiname: 'unterschrieben.pdf', signatur: {
+          ausweis: globalThis.__ausweis, grund: 'Prüflauf', ort: 'Hannover', name: 'Prueflauf',
+        } });
+      }));
+
+      const roh = await readFile(unterschrieben);
+      const bereich = /\/ByteRange\s*\[\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*\]/.exec(roh.toString('latin1'));
+      pruefe(!!bereich, 'die unterschriebene Datei trägt einen ByteRange');
+      const [, a1, b1, c1, d1] = bereich.map(Number);
+      pruefe(Number(c1) + Number(d1) === roh.length, 'der ByteRange reicht bis zum Dateiende',
+        `${c1}+${d1} vs ${roh.length}`);
+
+      const inhalt = /\/Contents\s*<([0-9A-Fa-f]+)>/.exec(roh.toString('latin1'));
+      pruefe(Number(b1) === inhalt.index + '/Contents <'.length - 1
+        || roh.toString('latin1').indexOf('<', inhalt.index) === Number(b1),
+        'die Lücke im ByteRange deckt genau den Platz der Signatur');
+
+      /* Der eigentliche Beweis: openssl rechnet die Signatur nach. */
+      const derVoll = Buffer.from(inhalt[1], 'hex');
+      const derLaenge = derVoll[1] < 0x80
+        ? 2 + derVoll[1]
+        : 2 + (derVoll[1] & 0x7f) + derVoll.readUIntBE(2, derVoll[1] & 0x7f);
+      const derPfad = join(ablage, 'signatur.der');
+      const inhaltPfad = join(ablage, 'signiert.bin');
+      const { writeFile } = await import('node:fs/promises');
+      await writeFile(derPfad, derVoll.subarray(0, derLaenge));
+      await writeFile(inhaltPfad, Buffer.concat([
+        roh.subarray(Number(a1), Number(a1) + Number(b1)),
+        roh.subarray(Number(c1), Number(c1) + Number(d1)),
+      ]));
+
+      const pruefeMitOpenssl = async (datei) => {
+        try {
+          await lauf('openssl', ['cms', '-verify', '-binary', '-inform', 'DER', '-in', derPfad,
+            '-content', datei, '-certfile', certPfad, '-noverify', '-out', '/dev/null']);
+          return true;
+        } catch { return false; }
+      };
+      pruefe(await pruefeMitOpenssl(inhaltPfad), 'openssl bestätigt die Signatur');
+
+      /* Und die Gegenprobe: ein geändertes Byte muss sie brechen. */
+      const manipuliert = Buffer.from(await readFile(inhaltPfad));
+      manipuliert[Math.floor(manipuliert.length / 2)] ^= 0xff;
+      const manipuliertPfad = join(ablage, 'manipuliert.bin');
+      await writeFile(manipuliertPfad, manipuliert);
+      pruefe(!(await pruefeMitOpenssl(manipuliertPfad)), 'ein geändertes Byte bricht die Signatur');
+
+      /* PAdES verlangt das Attribut, das die Signatur an dieses Zertifikat bindet. */
+      const { stdout: attribute } = await lauf('openssl', ['cms', '-cmsout', '-inform', 'DER', '-in', derPfad, '-print']);
+      pruefe(/signingCertificateV2/.test(attribute), 'das von PAdES verlangte signingCertificateV2 ist dabei');
+      pruefe(/signingTime/.test(attribute) && /messageDigest/.test(attribute),
+        'Signierzeit und Inhaltshash stehen als signierte Attribute drin');
+
+      const unterschrift = roh.toString('latin1');
+      pruefe(/\/SubFilter\s*\/ETSI\.CAdES\.detached/.test(unterschrift), 'das Feld ist als PAdES gekennzeichnet');
+      pruefe(/\/Reason\s*\(Pr/.test(unterschrift), 'der angegebene Grund steht in der Datei');
+
+      /* Unterschreiben und Verschlüsseln zusammen muss abgelehnt werden. */
+      const abgelehnt = await seite.evaluate(async () => {
+        const { baueDokument } = await import('./app/ausgabe.js');
+        try {
+          await baueDokument({ signatur: { ausweis: globalThis.__ausweis }, schutz: { benutzer: 'geheim' } });
+          return null;
+        } catch (f) { return f.message; }
+      });
+      pruefe(/Unterschreiben und Kennwortschutz/.test(abgelehnt || ''),
+        'Unterschreiben und Kennwortschutz zusammen wird abgelehnt statt still gebrochen', String(abgelehnt));
+    }
+  }
+
+  /* ---------- Einlesen: Word, Excel, Text werden zu PDF ------------------- */
+
+  console.log('\nEinlesen — aus Word, Excel, Text wird ein PDF');
+  {
+    await ladeBeispiel();
+    /* Der ehrlichste Prüfstein für das Einlesen ist die eigene Ausgabe: das
+       Beispiel nach Word geben, die .docx zurücklesen und nachsehen, ob
+       Gliederung und Text den Weg überstanden haben. */
+    const rund = await seite.evaluate(async () => {
+      const { alsWord } = await import('./app/word.js');
+      const { alsExcel } = await import('./app/excel.js');
+      const ein = await import('./app/einlesen.js');
+
+      const { bytes: docx } = await alsWord({});
+      const bloecke = await ein.liesBloecke(docx, 'beispiel.docx');
+      const pdf = await ein.setze(bloecke, { titel: 'Aus Word' });
+      globalThis.__ausWord = pdf;
+
+      const { bytes: xlsx } = await alsExcel({ nurTabellen: true });
+      const tabellen = await ein.liesBloecke(xlsx, 'beispiel.xlsx');
+
+      return {
+        arten: [...new Set(bloecke.map((b) => b.art))],
+        ueberschriften: bloecke.filter((b) => b.art === 'ueberschrift').length,
+        umbrueche: bloecke.filter((b) => b.art === 'seitenumbruch').length,
+        fett: bloecke.some((b) => (b.laeufe || []).some((l) => l.fett)),
+        pdfKopf: new TextDecoder().decode(pdf.slice(0, 8)),
+        tabellen: tabellen.filter((b) => b.art === 'tabelle').length,
+        ersteZeile: tabellen.find((b) => b.art === 'tabelle')?.zeilen?.[0] || [],
+        zeilenzahl: tabellen.find((b) => b.art === 'tabelle')?.zeilen?.length || 0,
+        markdown: ein.ausMarkdown('# Titel\n\nEin **fetter** Satz.\n\n- eins\n- zwei\n').map((b) => b.art),
+        csv: ein.ausCsv('a;b\n1;"zwei;drei"\n')[0].zeilen,
+        erkannt: ['x.docx', 'y.xlsx', 'z.md', 'a.csv', 'b.txt'].every((n) => ein.istEingangsformat(n))
+          && !ein.istEingangsformat('c.pdf'),
+      };
+    });
+    pruefe(rund.arten.includes('ueberschrift') && rund.arten.includes('absatz'),
+      'die Word-Datei wird in Überschriften und Absätze zerlegt', rund.arten.join(', '));
+    pruefe(rund.ueberschriften >= 3, `Überschriften erkannt (${rund.ueberschriften})`);
+    pruefe(rund.umbrueche >= 1, `Seitenumbrüche erkannt (${rund.umbrueche})`);
+    pruefe(rund.fett, 'fette Stellen kommen als fett an');
+    pruefe(rund.pdfKopf === '%PDF-1.7', 'aus den Blöcken wird ein gültiges PDF', rund.pdfKopf);
+    pruefe(rund.tabellen === 1 && rund.zeilenzahl >= 6,
+      'die Excel-Datei wird als Tabelle gelesen', `${rund.tabellen} Tabelle, ${rund.zeilenzahl} Zeilen`);
+    pruefe(rund.ersteZeile[0] === 'Platz' && rund.ersteZeile[3] === 'Kamerapreset',
+      'die Kopfzeile der Tabelle steht richtig', rund.ersteZeile.join(' | '));
+    pruefe(rund.markdown.join(',') === 'ueberschrift,absatz,punkt,punkt',
+      'Markdown wird in Überschrift, Absatz und Punkte zerlegt', rund.markdown.join(','));
+    pruefe(rund.csv[1][1] === 'zwei;drei',
+      'CSV achtet auf Anführungszeichen — ein Trenner darin trennt nicht', JSON.stringify(rund.csv[1]));
+    pruefe(rund.erkannt, 'die Eingangsformate werden am Namen erkannt, PDF nicht darunter');
+
+    /* Und jetzt das Entscheidende: das erzeugte PDF wieder aufmachen und
+       nachsehen, ob der Text lesbar drinsteht. */
+    const wieder = await seite.evaluate(async () => {
+      const { oeffneBytes, textDerSeite } = await import('./app/dokument.js');
+      const { zustand } = await import('./app/kern.js');
+      await oeffneBytes(globalThis.__ausWord, 'aus-word.pdf');
+      const stuecke = [];
+      for (const eintrag of zustand.folge) stuecke.push(await textDerSeite(eintrag));
+      return { seiten: zustand.folge.length, text: stuecke.join('\n') };
+    });
+    pruefe(wieder.seiten >= 3, `das erzeugte PDF hat Seiten (${wieder.seiten})`);
+    pruefe(/Konferenzanlage/.test(wieder.text) && /Kamerapreset/.test(wieder.text),
+      'Text vom Anfang und vom Ende steht im erzeugten PDF');
+    pruefe(/Hauptstra/.test(wieder.text), 'Umlaute überstehen den Weg durch WinAnsi');
+  }
+
+  /* ---------- Messen ------------------------------------------------------- */
+
+  console.log('\nMessen');
+  {
+    await ladeBeispiel();
+    const gemessen = await seite.evaluate(async () => {
+      const m = await import('./app/messen.js');
+      const { zustand } = await import('./app/kern.js');
+      const { fuegeAn } = await import('./app/anmerkungen.js');
+      const seiteId = zustand.folge[0].id;
+
+      /* Eine Strecke von genau 100 Punkten und eine Fläche von 100 × 50. */
+      fuegeAn({ art: 'messen', seiteId, x: 100, y: 100, x2: 200, y2: 100, farbe: '#1B6AC9', staerke: 1.5 });
+      fuegeAn({ art: 'flaeche', seiteId, x: 100, y: 300, x2: 200, y2: 350, farbe: '#1B6AC9', staerke: 1.5 });
+      const strecke = zustand.anmerkungen.find((a) => a.art === 'messen');
+      const flaeche = zustand.anmerkungen.find((a) => a.art === 'flaeche');
+
+      const papier = m.beschriftung(strecke);
+      /* 100 Punkte sollen 5 Meter sein — also ein Maßstab von 1:141,7. */
+      m.kalibriere(m.laengeInPunkten(strecke), 5, 'm');
+      return {
+        papier,
+        papierFlaeche: m.beschriftung(flaeche, m.standardMassstab()),
+        kalibriert: m.beschriftung(strecke),
+        flaeche: m.beschriftung(flaeche),
+        verhaeltnis: m.verhaeltnis(),
+        summeStrecken: m.summeStrecken(),
+        anzahl: m.messungen().length,
+      };
+    });
+    /* 100 pt × 25,4/72 = 35,28 mm. */
+    pruefe(gemessen.papier === '35,3 mm', 'ohne Maßstab gilt das Papiermaß', gemessen.papier);
+    /* 100 pt x 50 pt sind 35,28 mm x 17,64 mm — also 622,3 mm². */
+    pruefe(/^622,3 mm²/.test(gemessen.papierFlaeche), 'auch die Fläche stimmt in Papiermaß', gemessen.papierFlaeche);
+    pruefe(gemessen.kalibriert === '5 m', 'nach dem Kalibrieren misst dieselbe Strecke 5 m', gemessen.kalibriert);
+    pruefe(/^12,5 m²/.test(gemessen.flaeche), 'die Fläche rechnet im selben Maßstab mit', gemessen.flaeche);
+    pruefe(/^1:141/.test(gemessen.verhaeltnis), 'das Verhältnis wird benannt', gemessen.verhaeltnis);
+    pruefe(gemessen.summeStrecken === '5 m', 'die Summe der Strecken stimmt', gemessen.summeStrecken);
+
+    /* Und das Entscheidende: die Maßzahl muss in der gesicherten Datei stehen,
+       nicht nur auf dem Bildschirm. Gelesen wird sie wie jeder andere Text,
+       durch pdf.js — im Rohbyte-Strom stünde sie verdichtet. */
+    const inDatei = await seite.evaluate(async () => {
+      const { baueDokument } = await import('./app/ausgabe.js');
+      const { oeffneBytes, textDerSeite } = await import('./app/dokument.js');
+      const { zustand } = await import('./app/kern.js');
+      const bytes = await baueDokument({});
+      await oeffneBytes(bytes, 'gemessen.pdf');
+      return textDerSeite(zustand.folge[0]);
+    });
+    pruefe(/5 m/.test(inDatei), 'die Maßzahl der Strecke steht in der gesicherten Datei');
+    pruefe(/12,5 m²/.test(inDatei), 'und die der Fläche ebenso');
+  }
+
+  /* ---------- Stapel ------------------------------------------------------- */
+
+  console.log('\nStapel');
+  {
+    const stapel = await seite.evaluate(async () => {
+      const { laufeStapel, packe, ordne, benoetigt } = await import('./app/stapel.js');
+      const { baueDokument } = await import('./app/ausgabe.js');
+      const eine = await baueDokument({});
+
+      const dateien = [
+        { name: 'eins.pdf', bytes: eine },
+        { name: 'zwei.pdf', bytes: eine.slice(0) },
+        { name: 'kaputt.pdf', bytes: new Uint8Array([1, 2, 3, 4]) },
+      ];
+      const meldungen = [];
+      const ergebnisse = await laufeStapel(dateien, ['metadaten', 'drehen'], { winkel: 90 },
+        (stand) => meldungen.push(`${stand.nummer}/${stand.gesamt} ${stand.schritt}`));
+      const archiv = await packe(ergebnisse, ['metadaten', 'drehen']);
+      globalThis.__stapel = archiv;
+      return {
+        gelungen: ergebnisse.filter((e) => e.bytes).length,
+        gescheitert: ergebnisse.filter((e) => e.fehler).length,
+        fehlertext: ergebnisse.find((e) => e.fehler)?.fehler || '',
+        meldungen: meldungen.length,
+        /* Die Reihenfolge kommt aus SCHRITTE, nicht aus dem Anklicken. */
+        reihenfolge: ordne(['schuetzen', 'entschuetzen', 'reparieren']).map((s) => s.id),
+        braucht: benoetigt(['schuetzen', 'drehen']),
+      };
+    });
+    pruefe(stapel.gelungen === 2, 'zwei von drei Dateien laufen durch', String(stapel.gelungen));
+    pruefe(stapel.gescheitert === 1 && stapel.fehlertext.length > 0,
+      'die kaputte Datei scheitert mit Begründung, statt den Lauf zu beenden', stapel.fehlertext);
+    pruefe(stapel.meldungen >= 4, `der Fortschritt wird gemeldet (${stapel.meldungen} Meldungen)`);
+    pruefe(stapel.reihenfolge.join(',') === 'entschuetzen,reparieren,schuetzen',
+      'entschützen kommt zuerst, schützen zuletzt — egal wie angeklickt wurde', stapel.reihenfolge.join(','));
+    pruefe(stapel.braucht.join(',') === 'drehen,neuesKennwort' || stapel.braucht.includes('neuesKennwort'),
+      'die nötigen Zusatzangaben werden gemeldet', stapel.braucht.join(','));
+
+    const rohArchiv = await seite.evaluate(() => [...globalThis.__stapel]);
+    const archiv = Buffer.from(rohArchiv);
+    pruefe(archiv[0] === 0x50 && archiv[1] === 0x4b, 'das Ergebnis ist ein gültiges ZIP');
+    const { unzipRoh: entpacke } = await import('./zip-lesen.mjs');
+    const inhalt = entpacke(archiv);
+    pruefe(inhalt.has('eins.pdf') && inhalt.has('zwei.pdf'),
+      'beide gelungenen Dateien liegen im Archiv', [...inhalt.keys()].join(', '));
+    pruefe(!inhalt.has('kaputt.pdf'), 'die gescheiterte Datei liegt nicht darin');
+    const bericht = inhalt.get('bericht.txt') || '';
+    pruefe(/GESCHEITERT kaputt\.pdf/.test(bericht),
+      'der Bericht nennt die gescheiterte Datei beim Namen', bericht.split('\n').slice(-1)[0]);
+    pruefe(/gelungen: 2/.test(bericht), 'der Bericht zählt richtig');
+
+    /* Der ZIP-Leser des Studios muss dasselbe sehen wie der des Prüflaufs. */
+    const selbstGelesen = await seite.evaluate(async () => {
+      const { liesZip } = await import('./app/zip.js');
+      const dateien = await liesZip(globalThis.__stapel);
+      return [...dateien.keys()].sort();
+    });
+    pruefe(selbstGelesen.join(',') === 'bericht.txt,eins.pdf,zwei.pdf',
+      'der ZIP-Leser des Studios liest sein eigenes Archiv', selbstGelesen.join(','));
+  }
+
+  console.log(`\nKonsolenfehler: ${fehler.length}`);
+  pruefe(fehler.length === 0, 'kein Fehler in der Browserkonsole', fehler.slice(0, 3).join(' | '));
+} finally {
+  await browser.close();
+  server.close();
+  await rm(ablage, { recursive: true, force: true });
+}
+
+console.log(`\n${bestanden} bestanden, ${gescheitert} gescheitert\n`);
+process.exit(gescheitert ? 1 : 0);

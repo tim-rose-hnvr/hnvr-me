@@ -943,7 +943,9 @@ await pruefe('Ordnen loescht die gewaehlten Seiten', async () => {
   const vorher = await seite.evaluate(() => window.werkbank.zustand.folge.length);
   await seite.click('.ordnen-karte >> nth=1');
   await seite.waitForTimeout(200);
-  await seite.click('.ordnen-werkzeuge .knopf-gefahr');
+  /* Die Aktionsleiste heißt seit dem Abgleich mit dem Mockup .ordnen-kopf und
+     trägt vier beschriftete Knöpfe statt sieben. */
+  await seite.click('.ordnen-kopf .ordnen-knopf:has-text("Löschen")');
   await seite.waitForTimeout(600);
   const nachher = await seite.evaluate(() => window.werkbank.zustand.folge.length);
   if (nachher !== vorher - 1) throw new Error(`${vorher} → ${nachher}`);

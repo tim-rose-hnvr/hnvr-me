@@ -769,55 +769,89 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Seiten ordnen ------------------------------------------------ */
 /* Vollbild, weil Ordnen heißt: alle Seiten gleichzeitig sehen. */
+/* Das Seitenraster sitzt in derselben Rasterzelle wie die Bühne: es tauscht
+   die Mitte aus, nicht das Fenster. Aktionsleiste in Chromefarbe, Raster auf
+   dem dunkleren Bühnenton — beides aus dem Mockup. */
 .ordnen {
-  position: fixed; inset: 0; z-index: 80;
-  display: grid; grid-template-rows: auto 1fr auto;
-  background: var(--grund);
+  display: flex; flex-direction: column;
+  background: var(--buehne-tief); overflow: hidden; min-height: 0;
 }
 .ordnen[hidden] { display: none; }
 .ordnen-kopf {
-  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-  padding: .625rem 1rem;
-  background: var(--flaeche); border-bottom: 1px solid var(--linie);
+  display: flex; align-items: center; gap: 6px; flex: none;
+  height: 46px; padding: 0 12px;
+  background: var(--chrome-600); color: #fff;
+  overflow-x: auto; scrollbar-width: none;
 }
-.ordnen-titel { display: flex; align-items: baseline; gap: .625rem; }
-.ordnen-werkzeuge { display: flex; align-items: center; gap: .375rem; flex-wrap: wrap; flex: 1 1 auto; }
-.ordnen-trenner { width: 1px; height: 1.25rem; background: var(--linie); margin: 0 .25rem; }
-.ordnen-fertig { flex: 0 0 auto; }
+.ordnen-kopf::-webkit-scrollbar { display: none; }
+.ordnen-zahl {
+  font-size: 11.5px; font-weight: 500; white-space: nowrap; flex: none;
+  padding-right: 8px; margin-right: 4px; border-right: 1px solid rgba(255,255,255,.18);
+}
+.ordnen-knopf {
+  flex: none; height: 30px; padding: 0 11px; white-space: nowrap;
+  border: 1px solid rgba(255,255,255,.22); background: transparent; color: #fff;
+  font-size: 11.5px; cursor: pointer;
+}
+.ordnen-knopf:hover { background: rgba(255,255,255,.12); }
+.ordnen-knopf.ist-betont { background: var(--tally); border-color: var(--tally); }
+.ordnen-knopf.ist-betont:hover { background: var(--tally-hover); }
+.ordnen-hinweis {
+  margin-left: auto; flex: none; padding: 0 10px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .8px;
+  color: rgba(255,255,255,.45); white-space: nowrap;
+}
+.ordnen-fertig { flex: none; }
 .ordnen-gitter {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-  gap: 1rem; padding: 1rem; overflow-y: auto; align-content: start;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 18px; padding: 18px; overflow-y: auto; align-content: start; min-height: 0;
 }
 .ordnen-karte {
-  display: flex; flex-direction: column; align-items: center; gap: .375rem;
-  padding: .5rem; border: 2px solid transparent;
+  display: flex; flex-direction: column; gap: 6px;
   cursor: pointer; position: relative;
 }
-.ordnen-karte:hover { background: var(--flaeche-hoch); }
-.ordnen-karte.ist-gewaehlt { border-color: var(--tally); background: var(--tally-grund); }
+.ordnen-karte:hover .ordnen-blatt { outline: 1px solid rgba(255,255,255,.35); }
+.ordnen-karte.ist-gewaehlt .ordnen-blatt {
+  border-color: var(--tally); box-shadow: 0 0 0 2px rgba(15,118,110,.45);
+}
+/* Häkchen oben rechts auf der gewählten Karte — wie im Mockup. */
+.ordnen-karte.ist-gewaehlt::after {
+  content: '✓'; position: absolute; top: 6px; right: 6px;
+  width: 16px; height: 16px; display: grid; place-items: center;
+  background: var(--tally); color: #fff; font-size: 10px; line-height: 1;
+}
 .ordnen-karte.wird-gezogen { opacity: .4; }
 .ordnen-karte.ziel-vor::before,
 .ordnen-karte.ziel-nach::before {
-  content: ''; position: absolute; top: .25rem; bottom: .25rem; width: 3px;
-  background: var(--tally); border-radius: 2px;
+  content: ''; position: absolute; top: 0; bottom: 0; width: 3px;
+  background: var(--tally-hell);
 }
-.ordnen-karte.ziel-vor::before  { left: -.5rem; }
-.ordnen-karte.ziel-nach::before { right: -.5rem; }
+.ordnen-karte.ziel-vor::before  { left: -10px; }
+.ordnen-karte.ziel-nach::before { right: -10px; }
 .ordnen-blatt {
   /* Feste Hoehe, Inhalt zentriert: sonst stehen Quer- und Hochformat auf
-     verschiedenen Grundlinien und das Gitter franst aus. */
-  height: 14rem; width: 100%;
+     verschiedenen Grundlinien und das Gitter franst aus. Mockup: 172 px. */
+  height: 172px; width: 100%;
   display: flex; align-items: center; justify-content: center;
+  background: var(--papier); border: 1px solid rgba(0,0,0,.25);
+  overflow: hidden;
 }
 .ordnen-blatt canvas {
   display: block; max-width: 100%; max-height: 100%; width: auto; height: auto;
-  background: #fff; box-shadow: var(--schatten);
 }
-.ordnen-fuss { display: flex; align-items: center; gap: .375rem; font-size: .8125rem; }
-.ordnen-nummer { color: var(--tinte-leise); font-variant-numeric: tabular-nums; }
-.ordnen-haken { color: var(--tally); font-weight: 700; visibility: hidden; }
-.ordnen-karte.ist-gewaehlt .ordnen-haken { visibility: visible; }
-.ordnen-hinweis { margin: 0; padding: .5rem 1rem; border-top: 1px solid var(--linie); background: var(--flaeche); }
+/* Fußzeile der Karte in Mono auf dem dunklen Grund — Mockup: „1 · Deckblatt". */
+.ordnen-fuss {
+  display: flex; align-items: baseline; gap: 6px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .4px;
+  color: rgba(255,255,255,.62);
+}
+.ordnen-nummer { font-variant-numeric: tabular-nums; flex: none; }
+.ordnen-titel {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ordnen-titel::before { content: '· '; }
+/* Das Häkchen sitzt jetzt als Quadrat auf der Karte, nicht in der Fußzeile. */
+.ordnen-haken { display: none; }
 
 /* ---------- Fokus: nur gewählte Seiten ----------------------------------- */
 .blatt.ist-verborgen { display: none; }
@@ -946,16 +980,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Vergleich als eigene Ansicht -------------------------------- */
 /* Liegt in derselben Rasterzelle wie die Bühne und tritt an ihre Stelle. */
-.buehne, .vergleich-ansicht { grid-column: 2; grid-row: 1; min-height: 0; }
+/* Bühne, Seitenraster und Vergleich teilen sich dieselbe Zelle: es gibt genau
+   eine Mitte, und sie wird ausgetauscht. Ohne diese Zeile legt das Raster eine
+   zweite Rasterzeile an und schiebt alles auseinander. */
+.buehne, .ordnen, .vergleich-ansicht { grid-column: 2; grid-row: 1; min-height: 0; }
 .vergleich-ansicht {
   display: flex; flex-direction: column;
   background: var(--buehne-tief); overflow: hidden;
 }
 .vergleich-ansicht[hidden] { display: none; }
+/* Eine Zeile, 46 px, wie die Aktionsleiste des Seitenrasters — nicht zwei.
+   Im Mockup steht alles nebeneinander: Titel, Fassungen, Legende. */
 .vergleich-kopf {
-  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-  padding: 8px 12px; background: var(--chrome-600); color: #fff; flex: none;
+  display: flex; align-items: center; gap: 16px; flex: none;
+  height: 46px; padding: 0 12px;
+  background: var(--chrome-600); color: #fff;
+  overflow-x: auto; scrollbar-width: none; white-space: nowrap;
 }
+.vergleich-kopf::-webkit-scrollbar { display: none; }
 .vergleich-titel { display: flex; align-items: baseline; gap: 10px; }
 .vergleich-titel strong { font-size: 12px; font-weight: 600; }
 .vergleich-titel .mono { color: rgba(255,255,255,.66); font-size: 9.5px; letter-spacing: .4px; text-transform: uppercase; }
@@ -1024,7 +1066,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   }
   .leiste-links  { grid-column: 1; left: 0; }
   .leiste-rechts { grid-column: 1; right: 0; }
-  .buehne, .vergleich-ansicht { grid-column: 1; }
+  .buehne, .ordnen, .vergleich-ansicht { grid-column: 1; }
   /* Geschlossen heißt hier wirklich fort, nicht nur schmal. */
   .huelle[data-links="zu"] .leiste-links,
   .huelle[data-rechts="zu"] .leiste-rechts { display: none; }

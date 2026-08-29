@@ -106,7 +106,7 @@ export function baueMiniaturen() {
 /* Ein Wort, an dem die Seite wiederzuerkennen ist: die erste Zeile mit Text.
    Steht noch keiner da (der Text kommt asynchron), bleibt die Zeile leer —
    lieber leer als „Seite 3" doppelt neben der 3. */
-function kurztitel(eintrag) {
+export function kurztitel(eintrag) {
   const quelle = zustand.quellen.get(eintrag.quelleId);
   const roh = quelle?.textkarte.get(eintrag.index)?.roh || '';
   const zeilen = roh.split('\n').map((z) => z.trim()).filter((z) => z.length > 2);

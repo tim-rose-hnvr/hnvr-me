@@ -1,16 +1,21 @@
-/* Seiten ordnen — die große Ansicht zum Sortieren, Löschen, Drehen.
+/* Seiten ordnen — das Seitenraster.
 
-   Die Miniaturen in der Seitenleiste sind 100 Pixel breit und liegen in einer
-   Spalte. Damit lässt sich blättern, aber nicht ordnen: Wer Seite 14 vor
-   Seite 3 ziehen will, sieht beide nie gleichzeitig.
+   Die Miniaturen in der Seitenleiste sind schmal und liegen in einer Spalte.
+   Damit lässt sich blättern, aber nicht ordnen: Wer Seite 14 vor Seite 3
+   ziehen will, sieht beide nie gleichzeitig. Diese Ansicht legt alle Seiten
+   groß nebeneinander, mit Mehrfachauswahl und Ziehen zum Umsortieren. Sie
+   arbeitet auf demselben Zustand wie die Seitenleiste — dieselbe Auswahl,
+   dieselbe Rückgängig-Kette.
 
-   Diese Ansicht legt alle Seiten groß nebeneinander, mit Mehrfachauswahl,
-   Ziehen zum Umsortieren und den Aktionen daneben. Sie arbeitet auf demselben
-   Zustand wie die Seitenleiste — dieselbe Auswahl, dieselbe Rückgängig-Kette. */
+   **Sie sitzt in der Mitte, nicht über allem.** Vorher war sie ein weißes
+   Vollbild, das die ganze Anwendung verdeckte — Reiter, Leisten, Statuszeile.
+   Das Mockup lässt alles stehen und tauscht nur die Bühne: Aktionsleiste in
+   Chromefarbe, darunter das Raster auf dem dunkleren Bühnenton. Wer Seiten
+   ordnet, verliert damit nicht den Rest seines Dokuments aus dem Blick. */
 
 import { zustand, melde, hoer, el, $, sage } from './kern.js';
 import { holeSeite } from './dokument.js';
-import { sortiere, drehe, loesche, verdopple } from './seiten.js';
+import { sortiere, drehe, loesche, verdopple, kurztitel } from './seiten.js';
 
 let schirm = null;
 let gitter = null;
@@ -32,15 +37,21 @@ export function starteOrdnen() {
 export function oeffneOrdnen() {
   if (!schirm) return;
   if (!zustand.folge.length) { sage('Erst eine Datei öffnen', { art: 'warn' }); return; }
+  /* Es gibt genau eine Mitte: das Raster tritt an die Stelle der Bühne, wie
+     der Vergleich es auch tut. */
+  $('#buehne').hidden = true;
   schirm.hidden = false;
   baueKopf();
   baueGitter();
-  schirm.querySelector('.ordnen-fertig')?.focus();
+  /* `preventScroll`, sonst zieht der Browser die Aktionsleiste an ihr rechtes
+     Ende und die Zahl der gewählten Seiten steht außerhalb des Bildes. */
+  schirm.querySelector('.ordnen-fertig')?.focus({ preventScroll: true });
 }
 
 export function schliesseOrdnen() {
   if (!schirm || schirm.hidden) return;
   schirm.hidden = true;
+  $('#buehne').hidden = false;
   beobachter?.disconnect();
   beobachter = null;
   gezeichnet.clear();
@@ -57,48 +68,32 @@ export function umschalteOrdnen() {
 
 function baueKopf() {
   schirm.innerHTML = '';
-  kopfzahl = el('span', { klasse: 'leise klein', id: 'ordnen-zahl' });
+  kopfzahl = el('span', { klasse: 'ordnen-zahl', id: 'ordnen-zahl' });
 
-  const knopf = (text, title, tun, klasse = 'knopf knopf-klein') =>
+  const knopf = (text, title, tun, klasse = 'ordnen-knopf') =>
     el('button', { klasse, title, text, beiClick: tun });
 
+  /* Die Aktionsleiste des Mockups: links die Zahl der gewählten Seiten, dann
+     die Aktionen, rechts der Hinweis in Mono-Versalien. */
+  /* Die Aktionsleiste des Mockups: links die Zahl der gewählten Seiten, dann
+     vier Aktionen, rechts der Hinweis in Mono-Versalien. Vorher standen hier
+     sieben Knöpfe — bei 452 px Bühnenbreite scrollte die Hälfte aus dem Bild.
+     Alles auswählen und umkehren stehen im Menü „Seiten" und auf Strg+A. */
   const kopf = el('header', { klasse: 'ordnen-kopf' },
-    el('div', { klasse: 'ordnen-titel' },
-      el('strong', { text: 'Seiten ordnen' }),
-      kopfzahl),
-
-    el('div', { klasse: 'ordnen-werkzeuge' },
-      knopf('Alle', 'Alle Seiten wählen (Strg+A)', () => {
-        zustand.folge.forEach((e) => zustand.gewaehlteSeiten.add(e.id));
-        melde('auswahl:geaendert');
-      }),
-      knopf('Umkehren', 'Auswahl umkehren', () => {
-        const neu = new Set(zustand.folge.filter((e) => !zustand.gewaehlteSeiten.has(e.id)).map((e) => e.id));
-        zustand.gewaehlteSeiten.clear();
-        neu.forEach((id) => zustand.gewaehlteSeiten.add(id));
-        melde('auswahl:geaendert');
-      }),
-      knopf('Keine', 'Auswahl aufheben', () => {
-        zustand.gewaehlteSeiten.clear();
-        melde('auswahl:geaendert');
-      }),
-      el('span', { klasse: 'ordnen-trenner' }),
-      knopf('↺ Links', 'Gewählte Seiten links drehen', () => drehe(-90)),
-      knopf('↻ Rechts', 'Gewählte Seiten rechts drehen', () => drehe(90)),
-      knopf('⧉ Verdoppeln', 'Gewählte Seiten verdoppeln', verdopple),
-      knopf('Löschen', 'Gewählte Seiten löschen (Entf)', loesche, 'knopf knopf-klein knopf-gefahr'),
-      el('span', { klasse: 'ordnen-trenner' }),
-      knopf('Seiten einfügen …', 'Eine weitere PDF-Datei anhängen', () => $('#dateiwahl-anhang').click()),
-      knopf('Auswahl als Datei …', 'Die gewählten Seiten als neue PDF sichern',
-        () => melde('ordnen:auszug'))),
-
-    el('button', { klasse: 'knopf ordnen-fertig', text: 'Fertig', title: 'Schließen (Esc)', beiClick: schliesseOrdnen }));
+    kopfzahl,
+    knopf('Drehen', 'Gewählte Seiten rechts drehen', () => drehe(90)),
+    knopf('Löschen', 'Gewählte Seiten löschen (Entf)', loesche),
+    knopf('Verdoppeln', 'Gewählte Seiten verdoppeln', verdopple),
+    knopf('Als neues Dokument', 'Die gewählten Seiten als neue PDF sichern',
+      () => melde('ordnen:auszug'), 'ordnen-knopf ist-betont'),
+    el('span', { klasse: 'ordnen-hinweis', text: 'ZIEHEN ZUM SORTIEREN' }),
+    el('button', {
+      klasse: 'ordnen-knopf ordnen-fertig', text: 'Fertig',
+      title: 'Zurück zum Dokument (Esc)', beiClick: schliesseOrdnen,
+    }));
 
   gitter = el('div', { klasse: 'ordnen-gitter' });
-
-  schirm.append(kopf, gitter,
-    el('p', { klasse: 'ordnen-hinweis leise klein',
-      text: 'Ziehen sortiert um · Klick wählt, Umschalt wählt einen Bereich, Strg einzeln · Doppelklick springt zur Seite' }));
+  schirm.append(kopf, gitter);
 }
 
 function baueGitter() {
@@ -119,7 +114,9 @@ function baueGitter() {
       el('div', { klasse: 'ordnen-blatt' }, el('canvas', { width: 180, height: 250 })),
       el('div', { klasse: 'ordnen-fuss' },
         el('span', { klasse: 'ordnen-nummer', text: String(i + 1) }),
-        el('span', { klasse: 'ordnen-haken', 'aria-hidden': 'true', text: '✓' })));
+        /* Mockup: „1 · Deckblatt". Derselbe Kurztitel wie in der Seitenleiste
+           — die erste Zeile, die nicht auf jeder Seite steht. */
+        el('span', { klasse: 'ordnen-titel', text: kurztitel(eintrag) })));
 
     haengeZiehenAn(karte, eintrag);
     gitter.append(karte);
@@ -194,8 +191,10 @@ function markiere() {
   }
   const n = zustand.gewaehlteSeiten.size;
   if (kopfzahl) {
+    /* Mockup: „2 Seiten ausgewählt" — die Zahl der Auswahl steht vorn, weil
+       sich alle Knöpfe daneben auf sie beziehen. */
     kopfzahl.textContent = n
-      ? `${zustand.folge.length} Seiten · ${n} gewählt`
+      ? `${n} ${n === 1 ? 'Seite' : 'Seiten'} ausgewählt`
       : `${zustand.folge.length} Seiten`;
   }
 }

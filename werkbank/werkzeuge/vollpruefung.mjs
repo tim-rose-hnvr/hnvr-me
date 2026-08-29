@@ -1394,6 +1394,87 @@ await pruefe('Die Werkzeugknöpfe tragen die Wörter des Mockups', async () => {
   return worte.slice(0, 7).join(' · ');
 });
 
+await pruefe('Der Empfang trägt dieselbe Sprache wie das Programm', async () => {
+  /* Er war das Einzige, was nie ein Vorbild hatte: eine graue Fläche mit einer
+     weißen Karte, und der Knopf, den man drücken soll, war nicht einmal
+     akzentfarben. */
+  await seite.goto(BASIS);
+  await seite.waitForTimeout(1400);
+  const stand = await seite.evaluate(() => {
+    const kopf = document.querySelector('.empfang-kopf');
+    const oeffnen = document.querySelector('#knopf-oeffnen');
+    return {
+      kopfGrund: kopf ? getComputedStyle(kopf).backgroundColor : null,
+      kopfHoehe: kopf ? Math.round(kopf.getBoundingClientRect().height) : 0,
+      knopf: getComputedStyle(oeffnen).backgroundColor,
+      titelSchrift: getComputedStyle(document.querySelector('.empfang h1')).fontFamily,
+      ablage: !!document.querySelector('.empfang-ablage'),
+      formate: (document.querySelector('.empfang-ablage .mono')?.textContent || ''),
+    };
+  });
+  if (stand.kopfGrund !== HANDOFF.chrome900) throw new Error(`Kopf ist ${stand.kopfGrund}`);
+  if (stand.kopfHoehe !== 38) throw new Error(`Kopf ist ${stand.kopfHoehe} px`);
+  if (stand.knopf !== HANDOFF.akzent) throw new Error(`„Datei öffnen" ist ${stand.knopf}`);
+  if (!/Plex Serif/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
+  if (!stand.ablage) throw new Error('keine Ablegefläche');
+  if (!/DOCX/.test(stand.formate)) throw new Error(`Formate: ${stand.formate}`);
+  await ladeBeispiel();
+  return `Kopf ${stand.kopfHoehe} px, Knopf ${stand.knopf}`;
+});
+
+await pruefe('Leere Tafeln sagen, was dort stünde — und wie es dorthin kommt', async () => {
+  /* „Noch nichts geändert." allein ist eine Absage. Ein Leerzustand hat drei
+     Teile: Zeichen, Satz, Weg. */
+  const stand = await seite.evaluate(async () => {
+    const raus = {};
+    /* Das Beispiel bringt ein Formular mit — für den leeren Fall wird es
+       kurz beiseitegelegt und danach zurückgegeben. */
+    const felder = window.werkbank.zustand.formularfelder;
+    window.werkbank.zustand.formularfelder = [];
+    for (const [reiter, tafel] of [['verlauf', '#tafel-verlauf'], ['anmerkungen', '#tafel-kommentare'],
+      ['felder', '#tafel-felder']]) {
+      document.querySelector(`[data-rtafel="${reiter}"].reiter-knopf`).click();
+      await new Promise((l) => setTimeout(l, 300));
+      const bild = document.querySelector(`${tafel} .leerbild`);
+      raus[reiter] = bild ? {
+        zeichen: !!bild.querySelector('.leerbild-zeichen'),
+        titel: bild.querySelector('.leerbild-titel')?.textContent || '',
+        satz: (bild.querySelector('.leerbild-satz')?.textContent || '').length,
+        tat: bild.querySelector('.leerbild-tat')?.textContent || null,
+      } : null;
+    }
+    window.werkbank.zustand.formularfelder = felder;
+    document.querySelector('[data-rtafel="anmerkungen"].reiter-knopf').click();
+    return raus;
+  });
+  for (const [name, teil] of Object.entries(stand)) {
+    if (!teil) throw new Error(`${name} hat kein Leerbild`);
+    if (!teil.zeichen) throw new Error(`${name}: kein Zeichen`);
+    if (teil.satz < 30) throw new Error(`${name}: Satz zu kurz (${teil.satz})`);
+  }
+  if (!stand.anmerkungen.tat) throw new Error('Kommentare nennen keinen Weg');
+  if (!stand.felder.tat) throw new Error('Felder nennen keinen Weg');
+  return Object.entries(stand).map(([n, t]) => `${n}: „${t.titel}"`).join(' · ');
+});
+
+await pruefe('In der dunklen Fassung ist die Bühne der dunkelste Grund', async () => {
+  /* Sie war heller als die Tafeln daneben — dann liegt das Blatt nicht auf
+     einem Tisch, sondern in einem Kasten. */
+  const hell = (farbe) => farbe.match(/\d+/g).slice(0, 3).reduce((a, b) => a + Number(b), 0);
+  const werte = await seite.evaluate(() => {
+    document.documentElement.dataset.thema = 'dunkel';
+    const g = (s) => getComputedStyle(document.querySelector(s)).backgroundColor;
+    const raus = { buehne: g('#buehne'), tafel: g('.leiste-links'), chrome: g('.kopf'), blatt: g('.blatt') };
+    document.documentElement.dataset.thema = 'system';
+    return raus;
+  });
+  if (hell(werte.buehne) >= hell(werte.tafel)) {
+    throw new Error(`Bühne ${werte.buehne} ist nicht dunkler als die Tafel ${werte.tafel}`);
+  }
+  if (hell(werte.blatt) <= hell(werte.tafel)) throw new Error('das Blatt ist nicht das Hellste');
+  return `Bühne ${werte.buehne} < Tafel ${werte.tafel} < Blatt ${werte.blatt}`;
+});
+
 await pruefe('Der Primärknopf in der Titelleiste ist akzentfarben', async () => {
   /* Er war einmal weiß: `.knopf-voll` stand oberhalb von `.knopf` und wurde
      von dessen Grundwerten überschrieben. Gleiche Spezifität, spätere Regel

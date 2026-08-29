@@ -41,6 +41,25 @@ Dokumentreitern und akzentfarbenem Primärknopf, Menüleiste 27 px,
 Werkzeugzeile 46 px, dann Bühne mit den beiden Leisten (196 px links, 296 px
 rechts), unten Statusleiste 30 px.
 
+**Das Seitenraster sitzt in der Mitte, nicht über allem.** Es war einmal ein
+weißes Vollbild, das Reiter, Leisten und Statuszeile verdeckte. Jetzt tauscht
+es die Bühne aus, wie der Vergleich es auch tut: Aktionsleiste 46 px in
+Chromefarbe, darunter das Raster auf dem dunkleren Bühnenton, Karten mit
+Häkchen und Mono-Fußzeile.
+
+**Leere Tafeln sagen, was dort stünde — und wie es dorthin kommt.** „Noch
+nichts geändert." allein ist eine Absage. Ein Leerzustand hat drei Teile:
+Zeichen, Satz, Weg (`leerBild` im Kern). Der Weg ist der wichtigste.
+
+**Der Empfang trägt dieselbe Sprache wie das Programm** — dunkle Titelleiste
+38 px mit Wortmarke, kantige Karte, Mono-Zeile, Serif-Überschrift, der Knopf,
+den man drücken soll, akzentfarben. Er war das Einzige ohne Vorbild und sah
+danach aus.
+
+**In der dunklen Fassung ist die Bühne der dunkelste Grund.** Sie war heller
+als die Tafeln daneben — dann liegt das Blatt nicht auf einem Tisch, sondern
+in einem Kasten.
+
 **Die Seite steht auf der Bühne, sie füllt sie nicht.** 100 % heißt hier, was
 im Handoff steht: die Seite ist 720 px breit („Breite 720px × zoom/100"), und
 das ist die Voreinstellung — nicht „auf Fensterbreite". Der Unterschied ist
@@ -480,7 +499,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 128 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 113 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 116 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/live-pruefen.mjs   #  31 Prüfungen — was der Hoster ausliefert
 ```
 

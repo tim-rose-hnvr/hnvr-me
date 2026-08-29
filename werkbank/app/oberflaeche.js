@@ -7,7 +7,7 @@
 
 import {
   zustand, melde, hoer, $, $$, el, sage, zeigeDialog, schliesseDialog, frage,
-  merkeSchritt, schrittZurueck, schrittVor, groesse, datum, mitLader, sichereBytes,
+  merkeSchritt, schrittZurueck, schrittVor, groesse, datum, mitLader, sichereBytes, leerBild,
 } from './kern.js';
 import {
   oeffneDateien, ladeBeispiel, hatDokument, nummerVon, seitenText, ermittleFormularfelder, ermittleMerkmale,
@@ -486,7 +486,11 @@ function zeichneGliederung() {
   tafel.innerHTML = '';
   const gliederung = zustand.gliederung;
   if (!gliederung?.length) {
-    tafel.append(el('p', { klasse: 'hinweis', text: 'Dieses Dokument hat keine Lesezeichen.' }));
+    tafel.append(leerBild({
+      zeichen: 'M6 3h12v18l-6-4-6 4z',
+      titel: 'Keine Lesezeichen',
+      satz: 'Diese Datei bringt keine Gliederung mit. Beim Sichern bleiben vorhandene erhalten, solange die Seitenfolge steht.',
+    }));
     return;
   }
   const quelle = [...zustand.quellen.values()][0];
@@ -522,7 +526,11 @@ function zeichneDateientafel() {
   tafel.innerHTML = '';
 
   if (!zustand.quellen.size) {
-    tafel.append(el('p', { klasse: 'hinweis', text: 'Noch keine Datei geöffnet.' }));
+    tafel.append(leerBild({
+      titel: 'Noch keine Datei',
+      satz: 'Hier steht später, aus welchen Dateien das Arbeitsdokument besteht.',
+      tat: { beschriftung: 'Datei öffnen', tun: () => fuehreAus('datei:oeffnen') },
+    }));
     return;
   }
 
@@ -668,8 +676,18 @@ function zeichneKommentartafel() {
     }) : null));
 
   if (!gezeigt.length) {
-    tafel.append(el('p', { klasse: 'hinweis', text: zustand.kommentarfilter === 'erledigt'
-      ? 'Noch nichts abgehakt.' : 'Keine offenen Kommentare. Mit N eine Notiz setzen.' }));
+    tafel.append(zustand.kommentarfilter === 'erledigt'
+      ? leerBild({
+        zeichen: 'M4 12l5 5L20 6',
+        titel: 'Noch nichts abgehakt',
+        satz: 'Erledigte Kommentare wandern hierher — mit dem Knopf im offenen Faden.',
+      })
+      : leerBild({
+        zeichen: 'M4 4h16v11H9l-5 5z',
+        titel: 'Keine offenen Kommentare',
+        satz: 'Text markieren oder eine Notiz setzen — beides landet hier als Faden mit Antwort und Erledigt.',
+        tat: { beschriftung: 'Kommentar setzen (N)', tun: () => fuehreAus('werkzeug:notiz') },
+      }));
     return;
   }
 
@@ -735,7 +753,12 @@ function zeichneFeldertafel() {
   tafel.innerHTML = '';
 
   if (!zustand.formularfelder.length) {
-    tafel.append(el('p', { klasse: 'hinweis', text: 'Dieses Dokument hat kein Formular. Mit dem Werkzeug „Formularfeld" (K) lässt sich eines anlegen.' }));
+    tafel.append(leerBild({
+      zeichen: 'M3 7h18v10H3zM7 11h6',
+      titel: 'Kein Formular',
+      satz: 'Diese Datei bringt keine Felder mit. Anlegen geht mit dem Werkzeug „Formularfeld": Rahmen ziehen, Art wählen.',
+      tat: { beschriftung: 'Feld anlegen (K)', tun: () => fuehreAus('werkzeug:feld') },
+    }));
     return;
   }
 
@@ -769,7 +792,11 @@ function zeichneVerlauftafel() {
 
   const schritte = zustand.gedaechtnis.letzteAktionen;
   if (!schritte.length) {
-    tafel.append(el('p', { klasse: 'hinweis', text: 'Noch nichts geändert.' }));
+    tafel.append(leerBild({
+      zeichen: 'M12 7v5l3 3M21 12a9 9 0 1 1-9-9',
+      titel: 'Noch nichts geändert',
+      satz: 'Jeder Schritt steht hier mit Namen und Uhrzeit — und lässt sich von hier aus zurücknehmen.',
+    }));
     return;
   }
   for (const schritt of schritte) {

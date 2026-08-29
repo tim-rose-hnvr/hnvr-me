@@ -227,6 +227,30 @@ export function frage({ titel, text, jaText = 'Ja', neinText = 'Abbrechen', gefa
   });
 }
 
+/* ---------- Leerzustand ---------------------------------------------------- */
+
+/* Eine leere Tafel war ein nackter Satz in einer 296 Pixel breiten Leere:
+   „Noch nichts geändert." Das sagt, was fehlt, aber nicht, was zu tun ist —
+   und es sieht aus wie ein Fehler, nicht wie ein Anfang.
+
+   Ein Leerzustand besteht aus drei Teilen: einem Zeichen, damit die Fläche
+   nicht leer wirkt; einem Satz, der benennt, was hier stünde; und dem Weg
+   dorthin. Der Weg ist der wichtigste Teil — ohne ihn ist es eine Absage.
+
+   @param {{zeichen?: string, titel: string, satz?: string, tat?: {beschriftung: string, tun: Function}}} teile */
+export function leerBild({ zeichen = 'M6 2h8l4 4v16H6z M14 2v5h4', titel, satz = '', tat = null }) {
+  const knoten = el('div', { klasse: 'leerbild' });
+  knoten.innerHTML = `<svg viewBox="0 0 24 24" class="leerbild-zeichen" aria-hidden="true"><path d="${zeichen}"/></svg>`;
+  knoten.append(el('p', { klasse: 'leerbild-titel', text: titel }));
+  if (satz) knoten.append(el('p', { klasse: 'leerbild-satz', text: satz }));
+  if (tat) {
+    knoten.append(el('button', {
+      klasse: 'knopf knopf-klein leerbild-tat', text: tat.beschriftung, beiClick: tat.tun,
+    }));
+  }
+  return knoten;
+}
+
 /* ---------- Historie ------------------------------------------------------ */
 export function merkeSchritt(beschreibung, zurueck, vor) {
   zustand.historie.length = zustand.historieZeiger + 1;

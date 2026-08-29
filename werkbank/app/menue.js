@@ -31,7 +31,8 @@ const MENUES = [
     'drucken', T,
     'verkleinern', 'reparieren', 'linearisieren', T,
     'stapel', T,
-    'vergleich', 'eigenschaften',
+    'vergleich', 'eigenschaften', T,
+    'installieren',
   ]],
   ['Bearbeiten', [
     'rueckgaengig', 'wiederholen', T,

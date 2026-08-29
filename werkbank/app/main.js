@@ -18,11 +18,24 @@ async function start() {
   starteOberflaeche();
   document.documentElement.classList.add('ist-bereit');
 
+  /* Startbefehle aus der Adresse — die Verknüpfungen der installierten
+     Anwendung landen hier: „Datei öffnen", „Beispiel ansehen". */
+  const tun = new URLSearchParams(location.search).get('tun');
+  if (tun === 'oeffnen') fuehreAus('datei:oeffnen');
+  if (tun === 'beispiel') $('#knopf-beispiel')?.click();
+
   /* Erst die Oberfläche, dann die Frage nach der Anmeldung. In dieser
      Reihenfolge, weil die Werkbank auch dann startklar sein muss, wenn die
      Auskunft lange braucht oder gar nicht kommt. */
   const anmeldung = await frageAnmeldung();
-  if (anmeldung.noetig && !anmeldung.angemeldet) zeigeSchranke();
+  if (anmeldung.noetig && !anmeldung.angemeldet) {
+    zeigeSchranke({ ohneNetz: anmeldung.ausDemGedaechtnis });
+  } else if (anmeldung.ausDemGedaechtnis) {
+    /* Angemeldet laut Merkzettel, nicht laut Server. Das gehört gesagt —
+       einmal, leise, mit der Zahl, damit niemand vom Ablauf überrascht wird. */
+    sage(`Ohne Verbindung angemeldet — die Anmeldung hält noch ${anmeldung.tage} Tage.`,
+      { dauer: 8000 });
+  }
   // Zugang für Prüfläufe und für die Werkstatt: alles, was die Oberfläche
   // kann, ist hier auch ohne Mausweg erreichbar.
   globalThis.werkbank = { zustand, befehle, fuehreAus };

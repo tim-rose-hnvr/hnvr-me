@@ -50,7 +50,7 @@ nennt einen Abrufer ohne Sitzung ausdrücklich nicht angemeldet, die
 ausgelieferte Anwendung trägt die Schranken-Zeile, und `/api/auth/login` leitet
 auf die Anmeldung von Wix und von dort zurück auf diese Seite. Damit läuft dort
 dieselbe Anwendung, die `pruefen.mjs` und `vollpruefung.mjs` im Browser
-durchgemessen haben — 128 + 116 Prüfungen, darunter Texterkennung,
+durchgemessen haben — 128 + 130 Prüfungen, darunter Texterkennung,
 qpdf-Verschlüsselung, die digitale Unterschrift und ein eigener Abschnitt, der
 die Gestaltung gegen das Handoff nachmisst.
 

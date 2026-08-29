@@ -6,23 +6,16 @@
    Geprüft wird nicht die Oberfläche um ihrer selbst willen, sondern das
    Ergebnis: Was in der Datei steht, die am Ende herauskommt. */
 
-import { createServer } from 'node:http';
 import { readFile, mkdtemp, rm } from 'node:fs/promises';
-import { createReadStream } from 'node:fs';
+import { starteServer } from './dateiserver.mjs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { extname, join, dirname, resolve } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 
 const WURZEL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const lauf = promisify(execFile);
-const ARTEN = {
-  '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript',
-  '.css': 'text/css', '.pdf': 'application/pdf', '.json': 'application/json',
-  '.pfb': 'application/octet-stream', '.bcmap': 'application/octet-stream',
-  '.wasm': 'application/wasm', '.gz': 'application/gzip',
-};
 
 let bestanden = 0, gescheitert = 0;
 function pruefe(bedingung, was, zusatz = '') {
@@ -37,18 +30,8 @@ async function ladePlaywright() {
   throw new Error('playwright nicht gefunden — "npm i -D playwright" oder global installieren.');
 }
 
-const server = createServer((anfrage, antwort) => {
-  const pfad = join(WURZEL, decodeURIComponent(anfrage.url.split('?')[0]));
-  if (!pfad.startsWith(WURZEL)) { antwort.writeHead(403).end(); return; }
-  const strom = createReadStream(pfad);
-  strom.on('error', () => antwort.writeHead(404).end('nicht gefunden'));
-  strom.on('open', () => {
-    antwort.writeHead(200, { 'content-type': ARTEN[extname(pfad)] || 'application/octet-stream' });
-    strom.pipe(antwort);
-  });
-});
-await new Promise((l) => server.listen(0, '127.0.0.1', l));
-const basis = `http://127.0.0.1:${server.address().port}/index.html`;
+const { server, basis: wurzelAdresse } = await starteServer(WURZEL);
+const basis = `${wurzelAdresse}/index.html`;
 const ablage = await mkdtemp(join(tmpdir(), 'werkbank-pruefung-'));
 
 const { chromium } = await ladePlaywright();

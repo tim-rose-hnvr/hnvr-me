@@ -17,7 +17,7 @@ import { starte, abschluss } from './pruefstand.mjs';
 
 const GRUPPEN = [
   '01-bedienung', '02-dokument', '03-wege', '04-dialoge',
-  '05-gestaltung', '06-messen', '07-befehle', '08-anmeldung',
+  '05-gestaltung', '06-messen', '07-befehle', '08-anmeldung', '09-einrichten',
 ];
 
 const gewaehlt = process.argv.slice(2);

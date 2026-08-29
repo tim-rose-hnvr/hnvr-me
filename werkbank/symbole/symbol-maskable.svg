@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Werkbank</title>
+  <!-- Maskierbare Fassung: dieselbe Form, aber auf 60 % der Kantenlänge
+       zusammengezogen. Android schneidet je nach Gerät einen Kreis, ein
+       Quadrat oder eine Tropfenform heraus — was außerhalb der inneren 80 %
+       liegt, darf fehlen. -->
+  <rect width="512" height="512" fill="#1D2327"/>
+  <g transform="translate(184 178)">
+    <path d="M0 0 H98.6 L149.5 55.4 V184.7 H0 Z" fill="#0F766E"/>
+    <path d="M98.6 0 L149.5 55.4 H98.6 Z" fill="#7FD6CD"/>
+  </g>
+</svg>

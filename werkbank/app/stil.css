@@ -430,6 +430,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .fuss .knopf:hover { background: var(--chrome-600); }
 .fuss .feld { background: var(--chrome-800); border-color: var(--chrome-600); color: var(--chrome-text); }
 .fuss .leise { color: var(--chrome-leise); }
+/* Der Offline-Stand: ein Punkt und ein Wort. Grün heißt „liegt auf dem
+   Gerät", grau heißt „braucht Netz". Er steht in der Fußzeile, weil er eine
+   Eigenschaft ist und keine Nachricht — man sieht hin, wenn man es wissen
+   will, und wird sonst nicht behelligt. */
+.fuss-stand { display: inline-flex; align-items: center; gap: 5px; color: var(--chrome-leise); }
+.stand-punkt { width: 6px; height: 6px; background: var(--chrome-600); }
+.stand-punkt.ist-bereit { background: var(--tally-hell); }
+
 .fuss-fokus { gap: 8px; }
 .fuss-fokus[hidden] { display: none; }
 .fokus-marke {

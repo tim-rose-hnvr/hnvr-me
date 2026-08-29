@@ -424,6 +424,9 @@ Ehrlicher als eine lange Merkmalsliste:
 
 ```
 index.html          Gerüst
+manifest.json       macht die Werkbank installierbar (Name, Symbole, Verknüpfungen)
+dienst.js           Service Worker: legt die Werkbank aufs Gerät, damit sie ohne Netz läuft
+symbole/            das Blatt mit dem umgeschlagenen Eck, als SVG und PNG
 app/kern.js         Zustand, Ereignisse, Dialograhmen, Formularhelfer, Meldungen, Historie
 app/dokument.js     Quellen laden, Seitenfolge, Text, Merkmale, Formularfelder
 app/ansicht.js      Seitenfluss, Zoom, Textebene, Koordinatenwandlung
@@ -445,12 +448,14 @@ app/signieren.js    PKCS#12 lesen, CMS bauen, PDF signieren (PAdES)
 app/barrierefrei.js Barrierefreiheit pruefen und setzen, was ohne Raten geht
 app/mitdenken.js    Befunde und Vorschläge
 app/ausgabe.js      Schreiben über pdf-lib
+app/installieren.js Dienst anmelden, Einrichten anbieten, Vorrat holen, Dateien annehmen
 app/oberflaeche.js  Befehlsregister, Werkzeugleiste, Tastatur, Anschluss
 app/tafeln.js       die beiden Leisten: Lesezeichen, Dateien, Suche, Kommentare, Felder, Verlauf
 app/dialoge.js      alles, was sich als Fenster ueber die Werkbank legt
 fremd/              pdf.js, pdf-lib, tesseract.js, qpdf, node-forge — siehe fremd/HERKUNFT.md
 werkzeuge/          Beispieldatei bauen, Prüfläufe fahren, ZIP wieder aufmachen
-werkzeuge/pruefstand.mjs   Server, Browser, `pruefe()` — der Aufbau, den alle teilen
+werkzeuge/dateiserver.mjs  der kleine Server, den beide Prüfläufe benutzen
+werkzeuge/pruefstand.mjs   Browser, Seite, `pruefe()` — der Aufbau, den alle teilen
 werkzeuge/pruefungen/      die Prüfungen selbst, thematisch in acht Gruppen
 ```
 
@@ -496,6 +501,40 @@ Von dort holt die Anwendung dann PDF-Motor, Texterkennung, qpdf, Schriften
 und Sprachdaten. Am Rest ändert sich nichts. Der Server muss `.wasm` als
 `application/wasm` ausliefern, sonst startet die Texterkennung nicht.
 
+## Auf dem Gerät einrichten
+
+Die Werkbank lässt sich installieren wie ein Programm: eigenes Fenster ohne
+Adresszeile, Symbol im Dock oder Startmenü, und sie läuft ohne Verbindung.
+Menü **Datei → Auf diesem Gerät einrichten**; in Safari über „Teilen → Zum Dock
+hinzufügen", in Chrome und Edge über das Symbol in der Adresszeile.
+
+Es gibt bewusst **kein Installationsprogramm und kein ZIP**. Ein ausgepacktes
+Verzeichnis, per Doppelklick geöffnet, funktioniert nicht: ES-Module und
+WebAssembly brauchen einen Ursprung, über `file://` verweigert der Browser das.
+Wer die Werkbank selbst betreiben will, kopiert den Ordner und stellt einen
+statischen Server davor — dann gilt alles Folgende dort genauso.
+
+Was auf dem Gerät liegt, in zwei Stufen:
+
+| | Umfang | Wann |
+|---|---|---|
+| **Kern** | ~4 MB — Gerüst, alle Module, Schriften, PDF-Motor | beim Einrichten |
+| **Nachschub** | ~9 MB — Texterkennung, qpdf, Zeichentabellen, node-forge | beim ersten Gebrauch, oder vorab per Knopf |
+
+Wer nie eine Texterkennung laufen lässt, lädt sie nie. Wer offline damit
+arbeiten will, drückt vorher „Alles für offline sichern".
+
+Die Kernliste steht von Hand in `dienst.js` — und `vollpruefung.mjs` liest sie
+gegen `app/` gegen. Fehlt dort ein Modul, scheitert der Prüflauf, statt dass die
+installierte Fassung still kaputtgeht.
+
+**Anmeldung und Offline.** Erreicht die Werkbank die Auskunft nicht, entscheidet
+ein Merkzettel in `localStorage`: Wer sich schon einmal angemeldet hat, arbeitet
+30 Tage weiter; wer noch nie angemeldet war, sieht die Schranke — mit dem
+richtigen Text, denn dort fehlt das Netz, nicht der Wille. Der Merkzettel trägt
+einen Zeitstempel und sonst nichts und ist keine Sicherung; das hier ist eine
+Anmeldeschranke, keine Zugriffssperre.
+
 ## Prüfen
 
 Zwei Läufe in einem echten Chromium, beide ohne Netz, und ein dritter gegen
@@ -503,7 +542,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 128 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 119 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 130 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  31 Prüfungen — was der Hoster ausliefert
 ```

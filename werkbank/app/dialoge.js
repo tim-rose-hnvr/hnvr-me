@@ -32,6 +32,9 @@ import { alsWord } from './word.js';
 import { alsExcel } from './excel.js';
 import { pruefe as pruefeZugang, SPRACHEN } from './barrierefrei.js';
 import { oeffneAusweis } from './signieren.js';
+import {
+  istInstalliert, kannInstallieren, dienstLaeuft, frageInstallation, holeVorrat, vorratsGroesse,
+} from './installieren.js';
 /* Aus der Oberfläche: das Befehlsregister, die Einstellungen und die zwei
    Wege, die ein Dialog auslösen können muss. Der Ring ist unbedenklich —
    siehe oben. */
@@ -810,4 +813,79 @@ export function zeigePalette() {
   schirm.hidden = false;
   zeichne();
   feld.focus();
+}
+
+/* Auf diesem Gerät einrichten.
+
+   Drei Zustände, drei verschiedene Texte — und keiner davon lügt:
+
+   - Schon installiert: dann steht hier, was das heißt, und wie man Vorrat holt.
+   - Installierbar: der Browser hat sich gemeldet, es gibt einen echten Knopf.
+   - Nicht installierbar: dann sagen wir den Weg von Hand, statt einen Knopf
+     anzubieten, der nichts tut. Safari kennt kein `beforeinstallprompt`; dort
+     geht es über „Teilen → Zum Dock" bzw. „Zum Home-Bildschirm".
+
+   Der Vorrat ist ein eigener Knopf, nicht Teil des Einrichtens: neun Megabyte
+   ungefragt zu ziehen, weil jemand ein Symbol im Dock wollte, wäre unhöflich. */
+export function zeigeInstallDialog() {
+  const stand = el('p', { klasse: 'hinweis' });
+  const vorratKnopf = el('button', {
+    klasse: 'knopf knopf-klein',
+    text: 'Alles für offline sichern (9 MB)',
+    title: 'Texterkennung, qpdf und die Zeichentabellen vorab holen',
+    beiClick: async () => {
+      vorratKnopf.disabled = true;
+      try {
+        const { fertig, gesamt } = await holeVorrat(({ fertig: f, gesamt: g }) => {
+          stand.textContent = `${f} von ${g} Teilen gesichert …`;
+        });
+        stand.textContent = `${fertig} von ${gesamt} Teilen liegen jetzt auf dem Gerät.`;
+        sage('Texterkennung und Kennwortschutz laufen jetzt auch ohne Netz.', { dauer: 6000 });
+      } catch (fehler) {
+        stand.textContent = fehler.message;
+        vorratKnopf.disabled = false;
+      }
+    },
+  });
+
+  vorratsGroesse().then((bytes) => {
+    if (bytes) stand.textContent = `Zurzeit liegen ${groesse(bytes)} auf diesem Gerät.`;
+  });
+
+  const laeuft = dienstLaeuft();
+  const drin = istInstalliert();
+
+  const rumpf = el('div', {},
+    el('p', {}, drin
+      ? 'Die Werkbank ist auf diesem Gerät eingerichtet. Sie startet ohne Verbindung, '
+        + 'und die Dateien, die Sie öffnen, verlassen es weiterhin nicht.'
+      : 'Die Werkbank lässt sich einrichten wie ein Programm: eigenes Fenster ohne Adresszeile, '
+        + 'Symbol im Dock oder Startmenü, und sie läuft ohne Verbindung.'),
+    el('p', { klasse: 'hinweis' },
+      'Es wird nichts heruntergeladen, was Sie auspacken müssten. Der Browser legt die '
+      + 'Werkbank auf dem Gerät ab — rund 4 MB fürs Lesen, Ordnen, Anmerken und Ausfüllen. '
+      + 'Texterkennung und Kennwortschutz kommen beim ersten Gebrauch dazu.'),
+    laeuft ? null : el('p', { klasse: 'hinweis' },
+      'Auf dieser Adresse läuft noch kein Dienst — ohne ihn gibt es kein Offline. '
+      + 'Das ist so, wenn die Werkbank über file:// oder in einem fremden Rahmen geöffnet wurde.'),
+    drin || kannInstallieren() ? null : el('p', { klasse: 'hinweis' },
+      'Dieser Browser bietet das Einrichten nicht von selbst an. In Safari geht es über '
+      + '„Teilen → Zum Dock hinzufügen" (macOS) oder „Zum Home-Bildschirm" (iPhone, iPad); '
+      + 'in Chrome und Edge über das Symbol rechts in der Adresszeile.'),
+    zeile('Auf dem Gerät', stand),
+    zeile('Vorrat', vorratKnopf));
+
+  const knoepfe = [{ beschriftung: 'Schließen', betont: !kannInstallieren() }];
+  if (!drin && kannInstallieren()) {
+    knoepfe.push({
+      beschriftung: 'Einrichten',
+      betont: true,
+      tun: () => {
+        frageInstallation().then((antwort) => {
+          if (antwort === 'dismissed') sage('Nicht eingerichtet — der Befehl steht weiter im Menü „Datei".');
+        });
+      },
+    });
+  }
+  zeigeDialog({ titel: 'Auf diesem Gerät einrichten', rumpf, knoepfe });
 }

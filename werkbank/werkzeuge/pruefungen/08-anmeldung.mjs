@@ -52,11 +52,46 @@ export default async function ({ pruefe, seite, ladeBeispiel }) {
     return `${lage.text}… → ${lage.ziel.slice(0, 40)}`;
   });
 
-  await pruefe('Antwortet die Auskunft nicht, läuft die Werkbank trotzdem', async () => {
-    /* Eine Anwendung, die den Dienst verweigert, weil ein Server schweigt, wäre
-       das Gegenteil dessen, wofür sie gebaut ist. */
+  /* Ohne Netz entscheidet der Merkzettel. Zwei Fälle, und der Unterschied ist
+     der ganze Punkt: wer nie angemeldet war, kommt nicht hinein; wer es war,
+     arbeitet weiter. Sonst wäre die installierte Fassung beim ersten Funkloch
+     wertlos — oder die Anmeldung ohne Sinn. */
+  await pruefe('Ohne Netz und ohne Merkzettel: Schranke, und sie sagt warum', async () => {
+    const lage = await seite.evaluate(async () => {
+      const m = await import('./app/anmeldung.js');
+      localStorage.removeItem('werkbank:anmeldung');
+      const echt = window.fetch;
+      window.fetch = async () => { throw new Error('kein Netz'); };
+      const kopf = document.createElement('meta');
+      kopf.name = 'werkbank-anmeldung';
+      kopf.content = '/api/mitglied.json';
+      document.head.append(kopf);
+
+      const antwort = await m.frageAnmeldung();
+      if (antwort.noetig && !antwort.angemeldet) m.zeigeSchranke({ ohneNetz: antwort.ausDemGedaechtnis });
+      const schirm = document.querySelector('#anmeldeschranke');
+      const ergebnis = {
+        antwort,
+        ueberschrift: schirm?.querySelector('h1')?.textContent || '',
+        knopf: schirm?.querySelector('a')?.textContent || '',
+      };
+      m.entferneSchranke();
+      kopf.remove();
+      window.fetch = echt;
+      return ergebnis;
+    });
+    if (lage.antwort.angemeldet) throw new Error('sie lässt ohne jede Anmeldung durch');
+    if (!lage.antwort.ausDemGedaechtnis) throw new Error('sie merkt nicht, dass das Netz fehlt');
+    if (!/Ohne Netz/.test(lage.ueberschrift)) throw new Error(`Überschrift: „${lage.ueberschrift}"`);
+    /* Ein Knopf mit „Anmelden" wäre hier eine Lüge — es fehlt das Netz, nicht der Wille. */
+    if (lage.knopf !== 'Erneut versuchen') throw new Error(`Knopf sagt „${lage.knopf}"`);
+    return `„${lage.ueberschrift}" → ${lage.knopf}`;
+  });
+
+  await pruefe('Ohne Netz, aber mit frischem Merkzettel: sie arbeitet weiter', async () => {
     const antwort = await seite.evaluate(async () => {
       const m = await import('./app/anmeldung.js');
+      localStorage.setItem('werkbank:anmeldung', JSON.stringify({ zeit: Date.now(), name: 'Ada Musterfrau' }));
       const echt = window.fetch;
       window.fetch = async () => { throw new Error('kein Netz'); };
       const kopf = document.createElement('meta');
@@ -64,12 +99,39 @@ export default async function ({ pruefe, seite, ladeBeispiel }) {
       kopf.content = '/api/mitglied.json';
       document.head.append(kopf);
       const ergebnis = await m.frageAnmeldung();
+      const tage = m.verbleibendeTage();
+      localStorage.removeItem('werkbank:anmeldung');
       kopf.remove();
       window.fetch = echt;
-      return ergebnis;
+      return { ...ergebnis, tage };
     });
-    if (antwort.noetig) throw new Error('sie besteht auf einer Anmeldung, die niemand beantworten kann');
-    return 'fällt auf „läuft" zurück';
+    if (!antwort.angemeldet) throw new Error('der Merkzettel wird nicht gelesen');
+    if (!antwort.ausDemGedaechtnis) throw new Error('sie tut, als käme das vom Server');
+    if (antwort.tage !== 30) throw new Error(`Frist: ${antwort.tage} Tage statt 30`);
+    return `hält noch ${antwort.tage} Tage`;
+  });
+
+  await pruefe('Ein abgelaufener Merkzettel zählt nicht mehr', async () => {
+    const antwort = await seite.evaluate(async () => {
+      const m = await import('./app/anmeldung.js');
+      const vor40Tagen = Date.now() - 40 * 24 * 60 * 60 * 1000;
+      localStorage.setItem('werkbank:anmeldung', JSON.stringify({ zeit: vor40Tagen, name: 'Ada' }));
+      const echt = window.fetch;
+      window.fetch = async () => { throw new Error('kein Netz'); };
+      const kopf = document.createElement('meta');
+      kopf.name = 'werkbank-anmeldung';
+      kopf.content = '/api/mitglied.json';
+      document.head.append(kopf);
+      const ergebnis = await m.frageAnmeldung();
+      const tage = m.verbleibendeTage();
+      localStorage.removeItem('werkbank:anmeldung');
+      kopf.remove();
+      window.fetch = echt;
+      return { ...ergebnis, tage };
+    });
+    if (antwort.angemeldet) throw new Error('40 Tage alt und trotzdem gültig');
+    if (antwort.tage !== 0) throw new Error(`noch ${antwort.tage} Tage übrig`);
+    return 'nach 40 Tagen ist Schluss';
   });
 
   await pruefe('Angemeldet heißt: keine Schranke', async () => {
@@ -90,6 +152,15 @@ export default async function ({ pruefe, seite, ladeBeispiel }) {
     if (!antwort.noetig || !antwort.angemeldet) throw new Error(JSON.stringify(antwort));
     if (antwort.name !== 'Ada Musterfrau') throw new Error(`Name: ${antwort.name}`);
     if (await seite.evaluate(() => !!document.querySelector('#anmeldeschranke'))) throw new Error('trotzdem eine Schranke');
-    return `angemeldet als ${antwort.name}`;
+    /* Eine bestätigte Anmeldung schreibt den Merkzettel — sonst trägt sie
+       nichts in den Offline-Betrieb hinüber. */
+    const gemerkt = await seite.evaluate(() => {
+      const zettel = JSON.parse(localStorage.getItem('werkbank:anmeldung') || 'null');
+      localStorage.removeItem('werkbank:anmeldung');
+      return zettel;
+    });
+    if (!gemerkt?.zeit) throw new Error('kein Merkzettel geschrieben');
+    if (gemerkt.name !== 'Ada Musterfrau') throw new Error(`Merkzettel nennt „${gemerkt.name}"`);
+    return `angemeldet als ${antwort.name}, gemerkt`;
   });
 }

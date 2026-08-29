@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Werkbank</title>
+  <!-- Grund: die Chrome-Farbe des Programms, damit das Symbol im Dock
+       dieselbe Sprache spricht wie die Titelleiste. -->
+  <rect width="512" height="512" fill="#1D2327"/>
+  <!-- Das Blatt mit dem umgeschlagenen Eck — dieselbe Form wie die Wortmarke
+       in der Kopfzeile, nur in groß: 17 × 21 wird zu 204 × 252. -->
+  <g transform="translate(154 130)">
+    <path d="M0 0 H134.6 L204 75.6 V252 H0 Z" fill="#0F766E"/>
+    <path d="M134.6 0 L204 75.6 H134.6 Z" fill="#7FD6CD"/>
+  </g>
+</svg>

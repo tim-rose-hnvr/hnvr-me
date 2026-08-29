@@ -175,6 +175,42 @@ for (const weg of ['/werkbank/index.html', '/werkbank/', '/werkbank']) {
     `${weg} liefert die Anwendung`, `HTTP ${antwort.code}`);
 }
 
+/* ---------------------------------------------- Installierbar und offline-fest */
+
+/* Ein Manifest, das der Hoster nicht ausliefert, und ein Dienst, den er unter
+   dem falschen Typ schickt, sind beide unsichtbar kaputt: der Browser bietet
+   das Einrichten einfach nicht an, ohne ein Wort. Deshalb hier nachgesehen. */
+console.log('\n== Installierbar und offline-fest ==');
+{
+  const anwendung = await hole('/werkbank/index.html');
+  const html = anwendung.koerper.toString('utf8');
+  pruefe(/rel="manifest"/.test(html), 'die Seite verweist auf ihr Manifest');
+  pruefe(/name="theme-color"/.test(html), 'und nennt die Farbe der Titelleiste');
+
+  const manifest = await hole('/werkbank/manifest.json');
+  let gelesen = null;
+  try { gelesen = JSON.parse(manifest.koerper.toString('utf8')); } catch { /* unten gemeldet */ }
+  pruefe(manifest.code === 200 && gelesen?.display === 'standalone',
+    'das Manifest wird ausgeliefert und ist lesbar', `HTTP ${manifest.code}`);
+  pruefe((gelesen?.icons || []).length >= 2, 'es nennt seine Symbole',
+    `${gelesen?.icons?.length || 0} Symbole`);
+
+  for (const symbol of gelesen?.icons || []) {
+    const bild = await hole(`/werkbank/${symbol.src}`);
+    pruefe(bild.code === 200 && /image\/png/.test(bild.typ),
+      `Symbol ${symbol.sizes} kommt als PNG an`, `HTTP ${bild.code}, ${bild.typ}`);
+  }
+
+  const dienst = await hole('/werkbank/dienst.js');
+  pruefe(dienst.code === 200 && /javascript/.test(dienst.typ),
+    'der Dienst wird als Skript ausgeliefert', `HTTP ${dienst.code}, ${dienst.typ}`);
+  /* Ein Dienst, der über sein Verzeichnis hinaus greifen dürfte, wäre ein
+     Fehler — der Umfang ergibt sich aus dem Ort, und der ist /werkbank/. */
+  pruefe(/scope: '\.\/'/.test(dienst.koerper.toString('utf8'))
+    || /register\('dienst\.js'/.test((await hole('/werkbank/app/installieren.js')).koerper.toString('utf8')),
+    'und wird auf sein eigenes Verzeichnis begrenzt');
+}
+
 /* --------------------------------------------------- Jede Datei, Stück für Stück */
 
 console.log('\n== Ausgelieferte Dateien gegen die gebaute Fassung ==');

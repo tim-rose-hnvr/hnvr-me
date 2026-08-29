@@ -16,22 +16,13 @@
    bauen aufeinander auf. Wer eine neue Gruppe einhängt, hängt sie dorthin, wo
    der Zustand passt, den sie erwartet. */
 
-import { createServer } from 'node:http';
-import { readFile, mkdtemp, rm } from 'node:fs/promises';
-import { createReadStream } from 'node:fs';
-import { extname, join, dirname, resolve } from 'node:path';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
+import { starteServer } from './dateiserver.mjs';
 
 const WURZEL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const ARTEN = {
-  '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript',
-  '.css': 'text/css', '.pdf': 'application/pdf', '.json': 'application/json',
-  '.png': 'image/png', '.txt': 'text/plain',
-  '.wasm': 'application/wasm', '.gz': 'application/gzip',
-  '.pfb': 'application/octet-stream', '.bcmap': 'application/octet-stream',
-};
-
 
 async function ladePlaywright() {
   for (const ort of ['playwright', '/opt/node22/lib/node_modules/playwright/index.mjs']) {
@@ -44,18 +35,8 @@ async function ladePlaywright() {
    braucht. Ein einziges Objekt statt fünfzehn Modulvariablen — dann steht in
    jeder Prüfdatei oben, was sie tatsächlich benutzt. */
 export async function starte() {
-  const server = createServer((anfrage, antwort) => {
-    const pfad = join(WURZEL, decodeURIComponent(anfrage.url.split('?')[0]));
-    if (!pfad.startsWith(WURZEL)) { antwort.writeHead(403).end(); return; }
-    const strom = createReadStream(pfad);
-    strom.on('error', () => antwort.writeHead(404).end('nicht gefunden'));
-    strom.on('open', () => {
-      antwort.writeHead(200, { 'content-type': ARTEN[extname(pfad)] || 'application/octet-stream' });
-      strom.pipe(antwort);
-    });
-  });
-  await new Promise((l) => server.listen(0, '127.0.0.1', l));
-  const BASIS = `http://127.0.0.1:${server.address().port}/index.html`;
+  const { server, basis } = await starteServer(WURZEL);
+  const BASIS = `${basis}/index.html`;
   const HIER = await mkdtemp(join(tmpdir(), 'werkbank-vollpruefung-'));
 
   const { chromium } = await ladePlaywright();

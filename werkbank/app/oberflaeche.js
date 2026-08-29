@@ -35,6 +35,7 @@ import {
 import { zumNaechstenFeld } from './formulare.js';
 import { zeigeUnterschriftDialog } from './unterschrift.js';
 import { starteMitdenken, befunde, untersuche } from './mitdenken.js';
+import { starteInstallieren, zeichneStand } from './installieren.js';
 import {
   sichereDokument, seitenAusgeben, seiteAlsBild, vorschlagsname, baueDokument,
 } from './ausgabe.js';
@@ -51,6 +52,7 @@ import {
   zeigeMessungen, zeigeEinlesenDialog, zeigeEinstellungen, zeigeSignaturDialog,
   zeigeBarrierefreiDialog, zeigeExcelDialog, zeigeWordDialog, zeigeSchutzDialog,
   zeigeVerkleinernDialog, zeigeTeilenDialog, zeigeMusterDialog, zeigeHilfe, zeigePalette,
+  zeigeInstallDialog,
 } from './dialoge.js';
 
 
@@ -155,6 +157,7 @@ function baueBefehle() {
       : 'Das Dokument trug keinen Schutz; die Datei ist unverändert offen.', { dauer: 5000 });
   });
   befehl('einstellungen', 'Einstellungen …', 'Ansicht', () => zeigeEinstellungen());
+  befehl('installieren', 'Auf diesem Gerät einrichten …', 'Datei', zeigeInstallDialog);
   befehl('barrierefrei', 'Barrierefreiheit prüfen …', 'Hilfe', zeigeBarrierefreiDialog);
   befehl('signieren', 'Digital unterschreiben (Zertifikat) …', 'Schutz', zeigeSignaturDialog);
   befehl('schutz:zeigen', 'Schutz und Rechte anzeigen', 'Schutz', async () => {
@@ -1130,6 +1133,20 @@ export function starteOberflaeche() {
   hoer('ocr:geaendert', () => { zeichneRechteTafel(); aktualisiereFuss(); });
   hoer('formular:geaendert', () => { zeichneRechteTafel(); zeichneFeldertafel(); });
   hoer('werkzeug:gewechselt', zeichneWerkzeugleiste);
+  /* Vom Betriebssystem hereingereicht („Öffnen mit → Werkbank"). Derselbe
+     Weg wie der Dateiwähler — es gibt keinen zweiten Eingang. */
+  hoer('dateien:hereingereicht', (dateien) => oeffne(dateien, false));
+  /* Der Stand in der Fußzeile ändert sich genau dann, wenn sich am Dienst
+     oder an der Installation etwas tut. */
+  const standAnzeige = $('#fuss-stand');
+  if (standAnzeige) {
+    zeichneStand(standAnzeige);
+    for (const ereignis of ['installieren:moeglich', 'installieren:erledigt', 'installieren:beantwortet']) {
+      hoer(ereignis, () => zeichneStand(standAnzeige));
+    }
+    navigator.serviceWorker?.addEventListener?.('controllerchange', () => zeichneStand(standAnzeige));
+  }
+  starteInstallieren();
   // Klick in ein Unterschriftsfeld: anlegen und gleich passend einsetzen —
   // niemand soll danach noch einen Rahmen aufziehen müssen.
   hoer('unterschrift:anfordern', ({ seiteId, rechteck }) => {

@@ -185,10 +185,14 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
     if (werte.chrome !== 'rgb(29, 35, 39)') throw new Error(`Chrome ${werte.chrome}`);
     if (werte.buehne !== 'rgb(95, 104, 110)') throw new Error(`Bühne ${werte.buehne}`);
     if (werte.papier !== 'rgb(253, 252, 249)') throw new Error(`Papier ${werte.papier}`);
-    if (werte.radius !== '0px') throw new Error(`Radius ${werte.radius}`);
+    /* Farben, Höhen und Schrift folgen weiter dem Handoff; die Radien nicht
+       mehr — davon wurde auf Wunsch abgewichen, und die Staffel wird in
+       „Die Radien folgen der Staffel" geprüft. Hier steht nur, dass ein Knopf
+       den kleinsten Wert der Staffel trägt und nicht irgendeinen. */
+    if (werte.radius !== '4px') throw new Error(`Knopfradius ${werte.radius} statt 4px`);
     if (!werte.schrift.includes('IBM Plex Sans')) throw new Error(`Schrift ${werte.schrift}`);
     if (!werte.plex) throw new Error('IBM Plex wurde nicht geladen');
-    return 'Akzent, Chrome, Bühne, Papier, Radius 0, IBM Plex geladen';
+    return 'Akzent, Chrome, Bühne, Papier, Knopfradius 4, IBM Plex geladen';
   });
 
   await pruefe('Die Schriften kommen von hier, nicht aus dem Netz', async () => {

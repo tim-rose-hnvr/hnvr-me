@@ -85,6 +85,23 @@
   --fusshoehe: 30px;
   --leiste-links: 196px;
   --leiste-rechts: 296px;
+
+  /* Radien — eine Staffel, kein Pauschalwert.
+
+     Das Handoff schrieb „Radien: 0 (alles kantig)". Das ist eine bewusste
+     Abkehr davon, auf ausdrücklichen Wunsch. Damit sie nicht in Beliebigkeit
+     endet, gilt eine Regel:
+
+     Je kleiner und je öfter ein Ding vorkommt, desto kleiner sein Radius.
+     Ein Knopf ist klein und steht dutzendfach — 4 px. Ein Dialog ist groß
+     und steht einmal — 10 px. Und: **Papier bleibt eckig.** Ein Blatt ist
+     ein Blatt; eine gerundete Seite sähe aus wie ein Aufkleber. Ebenso die
+     Chrome-Leisten, die am Fensterrand kleben — ein Radius dort ergäbe einen
+     Spalt zum Rand, hinter dem nichts ist. */
+  --radius-klein: 4px;    /* Knöpfe, Felder, Marken, Chips */
+  --radius: 6px;          /* Karten, Menüs, Listenzeilen, Meldungen */
+  --radius-gross: 10px;   /* Dialoge, Empfangskarte, Kacheln */
+  --radius-voll: 999px;   /* Pillen und Punkte */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -298,7 +315,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .menue-knopf {
   border: 0; background: none; color: var(--tinte);
   font: inherit; font-size: 11.5px; padding: 0 10px;
-  cursor: pointer; white-space: nowrap; border-radius: 0;
+  cursor: pointer; white-space: nowrap; border-radius: var(--radius-klein);
 }
 .menue-knopf:hover { background: var(--flaeche-tief); }
 .menue.ist-offen .menue-knopf { background: var(--tally); color: #fff; }
@@ -329,7 +346,30 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: var(--flaeche-hoch);
   border-bottom: 1px solid var(--linie-stark);
   overflow-x: auto; scrollbar-width: thin;
+  position: relative;
 }
+/* Bei 944 px — der Breite der Mockup-Aufnahme — passen 12 von 15 Werkzeugen
+   in die Zeile. Die übrigen drei waren erreichbar, aber unsichtbar: die Zeile
+   scrollte, ohne es zu sagen. Ein verstecktes Werkzeug ist ein fehlendes.
+
+   Ein Verlauf an der Kante, an der noch etwas liegt. Er ist kein Schmuck: er
+   ist die einzige Stelle, an der das Programm zugibt, dass es weitergeht. */
+.werkzeugzeile-huelle { position: relative; min-width: 0; }
+/* Die Hülle steht jetzt in der Rasterzeile; die Zeile darin füllt sie aus. */
+.werkzeugzeile { height: 100%; }
+.werkzeugzeile-huelle::before,
+.werkzeugzeile-huelle::after {
+  content: ''; position: absolute; top: 0; bottom: 1px; width: 28px;
+  pointer-events: none; z-index: 2; opacity: 0; transition: opacity .12s;
+}
+.werkzeugzeile-huelle::before {
+  left: 0; background: linear-gradient(90deg, var(--flaeche-hoch), transparent);
+}
+.werkzeugzeile-huelle::after {
+  right: 0; background: linear-gradient(270deg, var(--flaeche-hoch), transparent);
+}
+.werkzeugzeile-huelle[data-mehr-links]::before,
+.werkzeugzeile-huelle[data-mehr-rechts]::after { opacity: 1; }
 .werkzeug {
   display: inline-flex; align-items: center; gap: 6px;
   height: 34px; padding: 0 10px; flex: none;
@@ -359,7 +399,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: inline-flex; align-items: center; gap: 6px;
   padding: 5px 10px;
   border: 1px solid var(--linie-stark);
-  border-radius: 0;
+  border-radius: var(--radius-klein);
   background: var(--flaeche);
   color: var(--tinte);
   cursor: pointer;
@@ -391,12 +431,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
   padding: 5px 11px; font-size: 11px; font-weight: 500;
 }
 .knopf-voll:hover { background: var(--tally-hover); border-color: var(--tally-hover); }
-.knopf-voll:disabled { opacity: .55; }
+/* Ein gesperrter Vollknopf war blasses Türkis mit weißer Schrift — er sah aus
+   wie ein Knopf, den man drücken kann, und las sich schlecht. Gesperrt heißt
+   grau: die Farbe ist das Versprechen, dass etwas passiert. */
+.knopf-voll:disabled, .knopf-voll[disabled] {
+  opacity: 1; background: var(--flaeche-tief); border-color: var(--linie-stark);
+  color: var(--tinte-leise); cursor: not-allowed;
+}
 
 .feld {
   padding: 4px 6px;
   border: 1px solid var(--linie-stark);
-  border-radius: 0;
+  border-radius: var(--radius-klein);
   background: var(--flaeche);
   color: var(--tinte);
   min-width: 0;
@@ -697,8 +743,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: flex; align-items: center; gap: 8px; padding: 0 12px;
   background: var(--chrome-900); color: var(--chrome-text);
 }
+/* Karte und Kacheln stehen untereinander in einem Rumpf, der bei Bedarf
+   rollt. Vorher lagen beide in derselben Rasterzeile und deckten einander. */
+.empfang-rumpf {
+  overflow-y: auto; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 0; padding: 32px 1rem;
+}
 .empfang-karte {
-  place-self: center; width: min(34rem, 100% - 2rem);
+  width: min(34rem, 100%); flex: none;
   background: var(--flaeche); border: 1px solid var(--linie-stark);
   box-shadow: var(--schatten-tafel); padding: 32px;
   display: flex; flex-direction: column; gap: 12px;
@@ -1221,6 +1273,125 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 
 
+
+
+/* ---------- Einzelwerkzeuge: der kurze Weg ------------------------------- */
+
+/* Kacheln unter der Empfangskarte, nicht darin: wer eine Datei hinlegen will,
+   soll das zuerst sehen. Der kurze Weg ist ein Angebot, keine Abzweigung. */
+.empfang-werkzeuge { width: min(46rem, 100%); margin-top: 28px; }
+.empfang-werkzeuge-titel {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--tinte-leise); font-weight: 600; margin: 0 0 10px; text-align: center;
+}
+.werkzeugkacheln {
+  display: grid; gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+}
+.werkzeugkachel {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 12px; text-decoration: none;
+  background: var(--flaeche); border: 1px solid var(--linie);
+  color: var(--tinte); font-size: 12px; line-height: 1.3;
+  transition: border-color .12s, background .12s, transform .12s;
+}
+.werkzeugkachel:hover {
+  border-color: var(--tally); background: var(--flaeche-hoch);
+  transform: translateY(-1px);
+}
+.werkzeugkachel-zeichen { flex: none; color: var(--tally); display: flex; }
+.werkzeugkachel-zeichen svg {
+  width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.werkzeugkachel-name { min-width: 0; }
+
+/* Die Ansicht eines einzelnen Werkzeugs: eine Karte, ein Weg, kein Menü. */
+.einzel { display: grid; place-items: center; width: 100%; }
+.einzel-karte {
+  width: min(30rem, 100%);
+  background: var(--flaeche); border: 1px solid var(--linie-stark);
+  border-radius: var(--radius-gross); box-shadow: var(--schatten);
+  padding: 28px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;
+}
+.einzel-zurueck {
+  font-size: 11px; color: var(--tinte-leise); text-decoration: none;
+  align-self: flex-start;
+}
+.einzel-zurueck:hover { color: var(--tally); }
+.einzel-zeichen { color: var(--tally); }
+.einzel-zeichen svg {
+  width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.einzel-karte h1 { font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 0; }
+.einzel-satz { margin: 0; color: var(--tinte-leise); line-height: 1.55; font-size: 12.5px; }
+.einzel-waehlen { align-self: stretch; justify-content: center; }
+.einzel-dateien { align-self: stretch; display: flex; flex-direction: column; gap: 4px; }
+.einzel-dateien:empty { display: none; }
+.einzel-datei {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; background: var(--flaeche-hoch);
+  border: 1px solid var(--linie); border-radius: var(--radius-klein);
+  font-size: 11.5px;
+}
+.einzel-datei-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.einzel-zusatz { align-self: stretch; display: flex; flex-direction: column; gap: 8px; }
+.einzel-zusatz:empty { display: none; }
+.einzel-feld { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.einzel-feld > span { min-width: 8rem; color: var(--tinte-leise); }
+.einzel-feld .feld { flex: 1; }
+.einzel-stand { margin: 0; min-height: 1.2em; }
+.einzel-stand:empty { display: none; }
+.einzel-karte > .knopf-voll { align-self: stretch; justify-content: center; }
+.einzel-fuss { margin: 4px 0 0; font-size: 11px; }
+.einzel-fuss a { color: var(--tally); }
+
+/* ---------- Radien: die Staffel wird angewandt --------------------------- */
+
+/* Sie steht hier gesammelt statt in jeder einzelnen Regel. Zwei Gründe: die
+   Abkehr vom kantigen Handoff bleibt an einer Stelle nachlesbar und an einer
+   Stelle rücknehmbar, und man sieht auf einen Blick, was **nicht** dabei ist.
+
+   Nicht dabei, und zwar mit Absicht:
+   .blatt und seine Leinwand  — Papier ist eckig
+   .kopf .menueleiste .werkzeugleiste .fuss — sie kleben am Fensterrand
+   .leiste-links .leiste-rechts — dasselbe, sie kleben an ihrer Kante
+   .textebene .malebene .aufdruckebene .feldebene — sie liegen auf dem Papier */
+
+/* Klein und oft: 4 px */
+.marke, .art-chip, .wertmarke, .miniatur-nummer, .dok-reiter, .dok-reiter-zu,
+.dok-reiter-neu, .werkzeug, .reiter-knopf, .menue-eintrag, .lader-balken,
+.lader-balken i, .schieber, .formularfeld, .eintrag, .feldzeile, .fundzeile,
+.leerbild-tat, .vorschlag-weg, .plan-marke {
+  border-radius: var(--radius-klein);
+}
+
+/* Flächen, die etwas zusammenhalten: 6 px */
+.menue-liste, .meldung, .miniatur, .miniatur-karte, .dateikarte, .vorschlag,
+.faden, .abschnitt, .fundliste, .ordnen-blatt, .leerbild, .lader,
+.empfang-ablage, .aufdruck-drei .feld, .verlauf-zeile {
+  border-radius: var(--radius);
+}
+
+/* Groß und selten: 10 px */
+.dialog, .empfang-karte, .anmeldekarte, .palette, .werkzeugkachel {
+  border-radius: var(--radius-gross);
+}
+
+/* Der dunkle Dialogkopf sitzt in einem gerundeten Kasten — ohne diese Zeile
+   schaut seine eckige Ecke über den Rand hinaus. `overflow: hidden` am Dialog
+   fängt das zwar, aber nur solange nichts hinausragen darf; besser, der Kopf
+   kennt seine eigene Form. */
+.dialog-kopf { border-radius: var(--radius-gross) var(--radius-gross) 0 0; }
+.dialog-fuss { border-radius: 0 0 var(--radius-gross) var(--radius-gross); }
+
+/* Papier bleibt Papier. */
+.blatt, .blatt canvas, .textebene, .malebene, .aufdruckebene, .feldebene,
+.kopf, .menueleiste, .werkzeugleiste, .fuss, .leiste, .buehne {
+  border-radius: 0;
+}
+
 /* ---------- Fokus, Bewegung, Trefferflächen -------------------------------- */
 
 /* **Fokus.** Von 52 bedienbaren Dingen zeigten 47 beim Tastaturfokus nichts an:
@@ -1236,7 +1407,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
   /* Auf dunklem Grund verschwindet der Akzent im Rand — ein heller Saum
      darunter trägt ihn. */
   box-shadow: 0 0 0 1px var(--grund);
-  border-radius: 0;
+  /* Der Ring folgt der Form, die er umgibt — `inherit` nimmt den Radius des
+     Elements selbst. Ein eckiger Ring um einen runden Knopf sieht falsch aus,
+     und zwar auf eine Art, die man nicht benennen kann. */
+  border-radius: inherit;
 }
 /* In der dunklen Chrome ist der Akzent zu dunkel; dort der helle Ton. */
 .kopf :focus-visible, .fuss :focus-visible, .menueleiste :focus-visible,

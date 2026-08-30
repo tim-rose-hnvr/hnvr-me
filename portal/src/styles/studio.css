@@ -27,6 +27,12 @@
   src: url('/schrift/plex-mono-500.woff2') format('woff2'); }
 
 :root {
+  /* Dieselbe Radien-Staffel wie die Anwendung (studio/app/stil.css). Seite und
+     Anwendung sollen wie ein Stück wirken — auch in den Ecken. */
+  --radius-klein: 4px;
+  --radius: 6px;
+  --radius-gross: 10px;
+
   --grund:        #ECEEF0;
   --flaeche:      #FFFFFF;
   --flaeche-tief: #F5F6F7;
@@ -169,7 +175,7 @@ p:last-child { margin-bottom: 0; }
 .stempel {
   display: inline-flex; flex-direction: column; align-items: center; gap: .1rem;
   border: 3px solid var(--tally); color: var(--tally);
-  border-radius: 0; padding: .7rem 1.4rem;
+  border-radius: var(--radius-klein); padding: .7rem 1.4rem;
   font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
   font-size: 1.05rem; line-height: 1.1;
   transform: rotate(-4deg);
@@ -188,7 +194,7 @@ p:last-child { margin-bottom: 0; }
    wie das Studio aussieht — vorher stand hier eine Liste von
    Werkzeugnamen, und die zeigt nur, dass es Werkzeuge gibt. */
 .fenster {
-  background: var(--chrome-900); padding: 8px; border-radius: 0;
+  background: var(--chrome-900); padding: 8px; border-radius: var(--radius-gross);
   box-shadow: 0 1px 2px rgba(20,26,28,.06), 0 14px 40px rgba(20,26,28,.16);
 }
 .fenster-kopf { display: flex; align-items: center; gap: .35rem; padding: 4px 6px 10px; }
@@ -260,7 +266,7 @@ p:last-child { margin-bottom: 0; }
 /* ---------- Mitdenken ----------------------------------------------------- */
 
 /* ---------- Tabelle ------------------------------------------------------- */
-.tabellenrahmen { overflow-x: auto; border: 1px solid var(--linie); border-radius: 0; background: var(--flaeche); }
+.tabellenrahmen { overflow-x: auto; border: 1px solid var(--linie); border-radius: var(--radius); background: var(--flaeche); }
 table { border-collapse: collapse; width: 100%; font-size: .9375rem; min-width: 34rem; }
 th, td { text-align: left; padding: .55rem .9rem; border-bottom: 1px solid var(--linie); vertical-align: top; }
 thead th {
@@ -293,7 +299,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 
 /* ---------- Offen / Abschluss --------------------------------------------- */
 .offen {
-  border: 2px dashed var(--linie-stark); border-radius: 0;
+  border: 2px dashed var(--linie-stark); border-radius: var(--radius);
   padding: 1.2rem 1.4rem; background: var(--flaeche);
 }
 .offen ul { margin: .6rem 0 0; padding-left: 1.1rem; color: var(--tinte-leise); font-size: .9375rem; }
@@ -342,7 +348,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
   .kopf-wege { display: none; }
 }
 .knopf-still {
-  border: 1px solid var(--linie-stark); border-radius: 0;
+  border: 1px solid var(--linie-stark); border-radius: var(--radius);
   padding: .3rem .75rem; font-size: .875rem; color: var(--tinte) !important;
 }
 .knopf-still:hover { background: var(--flaeche-tief); }
@@ -350,14 +356,14 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 /* ---------- Kundenbereich --------------------------------------------------- */
 .portal-karte {
   background: var(--flaeche); border: 1px solid var(--linie);
-  border-radius: 0; padding: clamp(1.4rem, 4vw, 2.2rem);
+  border-radius: var(--radius-gross); padding: clamp(1.4rem, 4vw, 2.2rem);
   max-width: 34rem;
 }
 .portal-karte h2 { margin-bottom: .75rem; }
 .knopf-voll {
   display: inline-block; margin-top: 1.2rem;
   background: var(--tally); color: #fff; text-decoration: none;
-  border-radius: 0; padding: .6rem 1.2rem; font-weight: 600;
+  border-radius: var(--radius-klein); padding: .6rem 1.2rem; font-weight: 600;
 }
 .knopf-voll:hover { filter: brightness(1.08); }
 .knopf-voll:focus-visible { outline: 2px solid var(--tinte); outline-offset: 2px; }
@@ -374,7 +380,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 /* ---------- Handlungsaufforderungen ----------------------------------------- */
 .knopf-reihe { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.8rem; }
 .knopf-rand {
-  display: inline-block; border: 1px solid var(--linie-stark); border-radius: 0;
+  display: inline-block; border: 1px solid var(--linie-stark); border-radius: var(--radius-klein);
   padding: .6rem 1.2rem; color: var(--tinte); text-decoration: none; font-weight: 600;
 }
 .knopf-rand:hover { background: var(--flaeche-tief); }
@@ -600,3 +606,25 @@ h3 { font-size: 1.06rem; font-weight: 600; }
   border-top: 1px solid var(--chrome-linie); font-size: 9.5px;
 }
 .fuss-rechts { margin-left: auto; }
+
+/* ---------- Radien auf der Seite ---------------------------------------- */
+/* Dieselbe Staffel wie in der Anwendung: klein und oft → 4, Flächen → 6,
+   groß und selten → 10. Was am Rand klebt, bleibt eckig. */
+.marke, .plan-marke, .stand, .raute, .punktzeile { border-radius: var(--radius-klein); }
+.karte, .plan, .vergleich-raster > div, .frage, .bilanz .zahl,
+.mini, .fenster-rumpf, .faden { border-radius: var(--radius); }
+.aufruf, .plaene > .ist-betont { border-radius: var(--radius-gross); }
+.band, .kopfleiste, .fussleiste { border-radius: 0; }
+
+/* Die Werkzeugliste: kurze Wege, dicht gesetzt. Kein Bild, keine Kachel —
+   es sind Links, und sie sollen wie Links aussehen. */
+.abschnitt-satz { max-width: 62ch; margin: 0 0 1.4rem; color: var(--tinte-leise); line-height: 1.7; }
+.werkzeugliste { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+.werkzeugliste a {
+  display: block; padding: .7rem .9rem; text-decoration: none;
+  background: var(--flaeche); border: 1px solid var(--linie);
+  border-radius: var(--radius); color: var(--tinte); font-size: .9375rem;
+  transition: border-color .12s, transform .12s;
+}
+.werkzeugliste a:hover { border-color: var(--tally); transform: translateY(-1px); }
+.werkzeugliste a::after { content: ' →'; color: var(--tally); }

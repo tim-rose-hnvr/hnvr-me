@@ -450,6 +450,7 @@ app/mitdenken.js    Befunde und Vorschläge
 app/ausgabe.js      Schreiben über pdf-lib
 app/absaetze.js     Textläufe zu Absätzen rechnen, damit Bearbeiten umbricht
 app/aufdruck.js     Wasserzeichen, Kopf- und Fußzeile, Seitenzählung
+app/einzelwerkzeuge.js Der kurze Weg: ein Werkzeug, eine Adresse, eine Aufgabe
 app/felderkennen.js Felder auf flachen und gescannten Formularen erkennen
 app/installieren.js Dienst anmelden, Einrichten anbieten, Vorrat holen, Dateien annehmen
 app/oberflaeche.js  Befehlsregister, Werkzeugleiste, Tastatur, Anschluss
@@ -594,6 +595,54 @@ Eine Lehre aus dem Prüflauf selbst gehört dazu: `element.focus()` löst
 Tastatur. Der erste Anlauf maß deshalb 47 fehlende Ringe, von denen es die
 meisten nicht gab. Die Prüfung tabbt jetzt wirklich.
 
+## Einzelwerkzeuge — der kurze Weg
+
+Das Studio ist eine Werkbank: man legt ein Dokument hinein und arbeitet daran.
+Richtig für den, der eine Stunde damit verbringt — zu viel für den, der zwei
+PDFs zusammenfügen will und danach wieder geht.
+
+Für den gibt es zwölf Werkzeuge mit **eigener Adresse**:
+
+```
+/studio/?werkzeug=zusammenfuegen     /studio/?werkzeug=texterkennung
+/studio/?werkzeug=teilen             /studio/?werkzeug=schuetzen
+/studio/?werkzeug=verkleinern        /studio/?werkzeug=entschuetzen
+/studio/?werkzeug=nach-word          /studio/?werkzeug=drehen
+/studio/?werkzeug=nach-excel         /studio/?werkzeug=felder-erkennen
+/studio/?werkzeug=nach-pdf           /studio/?werkzeug=bilder-zu-pdf
+```
+
+Dateien hinlegen, ein Knopf, fertige Datei. Kein Dokument öffnen, keine
+Werkzeugzeile, keine Leisten. Auf dem Empfang stehen sie als Kacheln, auf der
+Marketingseite als Liste — eine Adresse lässt sich verschicken, ablegen und
+verlinken; ein Menüeintrag nicht.
+
+**Gerechnet wird nichts Eigenes.** Jedes Werkzeug ruft dieselbe Stelle wie der
+lange Weg — `ausgabe.js`, `schutz.js`, `word.js` und so fort. Es gibt keine
+zweite Fassung des Zusammenfügens, die anders zusammenfügt als die erste. Der
+Prüflauf hält das fest: er lässt dieselbe Datei einmal über den kurzen und
+einmal über den langen Weg nach Word laufen und vergleicht den Text Zeichen
+für Zeichen.
+
+## Radien
+
+Das Handoff schrieb „Radien: 0 (alles kantig)". Davon wurde auf ausdrücklichen
+Wunsch abgewichen. Damit die Abkehr nicht in Beliebigkeit endet, gilt eine
+Staffel — und die Prüfung ist genauso streng wie vorher die Null:
+
+| | | |
+|---|---|---|
+| `--radius-klein` | 4 px | Knöpfe, Felder, Marken, Chips — klein und oft |
+| `--radius` | 6 px | Karten, Menüs, Listenzeilen, Meldungen |
+| `--radius-gross` | 10 px | Dialoge, Empfangskarte, Kacheln — groß und selten |
+| — | 0 | **Papier und Chrome** |
+
+Papier bleibt eckig: ein Blatt ist ein Blatt, eine gerundete Seite sähe aus wie
+ein Aufkleber. Ebenso die Leisten, die am Fensterrand kleben — ein Radius dort
+ergäbe einen Spalt, hinter dem nichts ist. Die Staffel gilt auch auf der
+Marketingseite; Seite und Anwendung sollen wie ein Stück wirken, auch in den
+Ecken.
+
 ## Auf dem Gerät einrichten
 
 Das Studio lässt sich installieren wie ein Programm: eigenes Fenster ohne
@@ -635,7 +684,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 151 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 158 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  31 Prüfungen — was der Hoster ausliefert
 ```

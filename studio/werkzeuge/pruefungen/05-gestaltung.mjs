@@ -232,20 +232,53 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     return `${stand.worte.length} Knöpfe: ${stand.worte.join(' · ')}`;
   });
 
-  await pruefe('Alles ist kantig — Radius 0 mit den vier Ausnahmen', async () => {
-    /* Handoff: „Radien: 0 (alles kantig)", Ausnahmen Umschalt-Pille 10 px,
-       Avatare 50 %, Kommentar-Nadel und aktive Werkzeugknöpfe 2 px. */
-    const rund = await seite.evaluate(() => {
-      const erlaubt = ['.pille', '.pille i', '.punkt', '.notiz-marke', '.lader-balken', '.lader-balken i'];
-      return [...document.querySelectorAll('#huelle *')]
-        .filter((k) => !erlaubt.some((s) => k.matches(s)))
-        .map((k) => ({ k, r: getComputedStyle(k).borderRadius }))
-        .filter(({ r }) => r && r !== '0px' && !/^[0-2]px$/.test(r))
-        .map(({ k, r }) => `${k.className || k.tagName}:${r}`)
-        .slice(0, 6);
+  await pruefe('Die Radien folgen der Staffel — und Papier bleibt eckig', async () => {
+    /* Das Handoff schrieb „Radien: 0 (alles kantig)". Davon wurde auf
+       ausdrücklichen Wunsch abgewichen. Damit die Abkehr nicht in
+       Beliebigkeit endet, prüft diese Stelle die Staffel genauso streng, wie
+       sie vorher die Null geprüft hat: erlaubt sind 0, 4, 6 und 10 px sowie
+       runde Punkte — nichts dazwischen.
+
+       Ein zweiter Wert wäre schnell hineingerutscht: irgendwo ein 5, dort ein
+       8, und nach drei Runden hat das Programm sieben Radien und keinen
+       Grund für einen davon. */
+    const ERLAUBT = [0, 4, 6, 10];
+    const abweichend = await seite.evaluate((erlaubt) => {
+      const rundeDinge = ['.punkt', '.stand-punkt', '.pille', '.pille i', '.notiz-marke'];
+      const raus = [];
+      for (const k of document.querySelectorAll('#huelle *')) {
+        if (rundeDinge.some((w) => k.matches(w))) continue;
+        const werte = getComputedStyle(k).borderRadius.split(/[\s/]+/).filter(Boolean);
+        for (const wert of werte) {
+          const px = parseFloat(wert);
+          if (!Number.isFinite(px)) continue;
+          if (!erlaubt.includes(Math.round(px))) {
+            raus.push(`${k.className || k.tagName}:${wert}`);
+            break;
+          }
+        }
+      }
+      return [...new Set(raus)].slice(0, 8);
+    }, ERLAUBT);
+    if (abweichend.length) throw new Error(`außerhalb der Staffel: ${abweichend.join(', ')}`);
+
+    /* Und die Ausnahmen von der Rundung selbst: Papier ist ein Blatt, kein
+       Aufkleber, und die Chrome-Leisten kleben am Fensterrand — ein Radius
+       dort ergäbe einen Spalt, hinter dem nichts ist. */
+    const eckig = await seite.evaluate(() => {
+      const muessenEckigSein = ['.blatt', '.blatt canvas', '.kopf', '.menueleiste',
+        '.werkzeugleiste', '.fuss', '.leiste-links', '.leiste-rechts', '#buehne'];
+      const falsch = [];
+      for (const wahl of muessenEckigSein) {
+        for (const k of document.querySelectorAll(wahl)) {
+          const r = getComputedStyle(k).borderRadius;
+          if (parseFloat(r) > 0) falsch.push(`${wahl}:${r}`);
+        }
+      }
+      return falsch;
     });
-    if (rund.length) throw new Error(rund.join(', '));
-    return 'kein runder Rahmen im Fenster';
+    if (eckig.length) throw new Error(`sollte eckig sein: ${eckig.join(', ')}`);
+    return `Staffel 0/4/6/10 eingehalten, Papier und Chrome eckig`;
   });
 
   await pruefe('Der Dialog hat den dunklen Kopf aus dem Handoff', async () => {
@@ -266,7 +299,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (stand.grund !== HANDOFF.chrome900) throw new Error(`Kopf ist ${stand.grund}`);
     if (stand.hoehe !== 42) throw new Error(`Kopf ist ${stand.hoehe} px statt 42`);
     if (!/Plex Serif/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
-    if (stand.radius !== '0px') throw new Error(`Ecken ${stand.radius}`);
+    if (stand.radius !== '10px') throw new Error(`Ecken ${stand.radius} statt 10px`);
     if (!stand.hinweis) throw new Error('kein Hinweis im Fuß');
     if (!/FASSUNG/.test(stand.fassung)) throw new Error('keine Fassung unter den Kategorien');
     await seite.keyboard.press('Escape');

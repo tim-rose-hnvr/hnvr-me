@@ -20,9 +20,22 @@ async function start() {
 
   /* Startbefehle aus der Adresse — die Verknüpfungen der installierten
      Anwendung landen hier: „Datei öffnen", „Beispiel ansehen". */
-  const tun = new URLSearchParams(location.search).get('tun');
+  const adresse = new URLSearchParams(location.search);
+  const tun = adresse.get('tun');
   if (tun === 'oeffnen') fuehreAus('datei:oeffnen');
   if (tun === 'beispiel') $('#knopf-beispiel')?.click();
+
+  /* Ein Werkzeug, eine Adresse: `?werkzeug=zusammenfuegen` führt direkt
+     dorthin, ohne den Umweg über die ganze Werkbank. Gibt es das Werkzeug
+     nicht, bleibt es beim gewohnten Empfang — eine falsche Adresse soll eine
+     Anwendung nicht ins Leere führen. */
+  const werkzeugId = adresse.get('werkzeug');
+  if (werkzeugId) {
+    const { zeigeEinzelwerkzeug } = await import('./einzelwerkzeuge.js');
+    if (!zeigeEinzelwerkzeug(werkzeugId)) {
+      sage(`Das Werkzeug „${werkzeugId}" gibt es nicht.`, { art: 'warn', dauer: 6000 });
+    }
+  }
 
   /* Erst die Oberfläche, dann die Frage nach der Anmeldung. In dieser
      Reihenfolge, weil das Studio auch dann startklar sein muss, wenn die

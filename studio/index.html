@@ -41,7 +41,9 @@
     <span class="menue-stand" id="menue-stand"></span>
   </nav>
 
-  <div class="werkzeugzeile" id="werkzeugleiste" role="toolbar" aria-label="Werkzeuge"></div>
+  <div class="werkzeugzeile-huelle" id="werkzeugzeile-huelle">
+    <div class="werkzeugzeile" id="werkzeugleiste" role="toolbar" aria-label="Werkzeuge"></div>
+  </div>
 
   <div class="rumpf">
 
@@ -133,6 +135,7 @@
     <span class="wortmarke-zeichen" aria-hidden="true"></span>
     <span class="wortmarke-wort">PDF Studio</span>
   </div>
+  <div class="empfang-rumpf" id="empfang-rumpf">
   <div class="empfang-karte">
     <span class="empfang-marke mono">PDF-ARBEIT AUF IHREM GERÄT</span>
     <h1>Legen Sie eine Datei hin.</h1>
@@ -153,6 +156,14 @@
       <span><b>18</b> Werkzeuge</span>
       <span><b>0</b> Uploads</span>
     </div>
+  </div>
+
+  <!-- Der kurze Weg: ein Werkzeug, eine Aufgabe, eine eigene Adresse. Für
+       den, der zwei PDFs zusammenfügen will und danach wieder geht. -->
+  <div class="empfang-werkzeuge">
+    <h2 class="empfang-werkzeuge-titel">Oder gleich ein Werkzeug</h2>
+    <div id="empfang-kacheln"></div>
+  </div>
   </div>
 </div>
 

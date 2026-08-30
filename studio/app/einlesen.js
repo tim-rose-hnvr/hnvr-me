@@ -605,3 +605,37 @@ export function spaltenBreiten(zeilen, spalten, verfuegbar, groesse, messer) {
   breiten = breiten.map((b) => (b / nach) * verfuegbar);
   return breiten;
 }
+
+/* Bilder zu einem PDF — je Bild eine Seite in seinem eigenen Format.
+
+   Stand bis eben in `oberflaeche.js` und lud direkt herunter. Der kurze Weg
+   braucht dieselbe Rechnung, aber die Bytes statt des Downloads — also gibt
+   sie hier die Bytes zurück, und beide Wege rufen dieselbe Stelle. */
+export async function bilderZuPdfBytes(dateien, beiFehler = null) {
+  const { starteSchreiber } = await import('./ausgabe.js');
+  const pdflib = await starteSchreiber();
+  const dokument = await pdflib.PDFDocument.create();
+  let gezaehlt = 0;
+
+  for (const datei of dateien) {
+    const bytes = new Uint8Array(await datei.arrayBuffer());
+    let bild;
+    try {
+      bild = /\.png$/i.test(datei.name) || datei.type === 'image/png'
+        ? await dokument.embedPng(bytes)
+        : await dokument.embedJpg(bytes);
+    } catch (fehler) {
+      beiFehler?.(datei, fehler);
+      continue;
+    }
+    /* Seite in Bildgröße, aber höchstens A4-Breite — sonst werden Fotos riesig. */
+    const hoechstBreite = 595.28;
+    const massstab = Math.min(1, hoechstBreite / bild.width);
+    const seite = dokument.addPage([bild.width * massstab, bild.height * massstab]);
+    seite.drawImage(bild, { x: 0, y: 0, width: bild.width * massstab, height: bild.height * massstab });
+    gezaehlt++;
+  }
+  if (!gezaehlt) throw new Error('Kein Bild ließ sich lesen.');
+  dokument.setProducer('PDF Studio');
+  return { bytes: await dokument.save(), seiten: gezaehlt };
+}

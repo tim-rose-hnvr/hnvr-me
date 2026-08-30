@@ -6,7 +6,7 @@
    erreichbar wäre. */
 
 import {
-  zustand, melde, hoer, $, $$, el, sage, zeigeDialog, schliesseDialog, frage, merkeSchritt,
+  zustand, melde, hoer, $, $$, el, sage, zeigeDialog, schliesseDialog, frage, merkeSchritt, drossel,
   schrittZurueck, schrittVor, groesse, mitLader, sichereBytes, zeile,
 } from './kern.js';
 import {
@@ -610,33 +610,11 @@ async function einlesenZuPdf(dateien) {
 
 async function bilderZuPdf(dateien) {
   await mitLader('Bilder werden eingebettet …', async () => {
-    const { starteSchreiber } = await import('./ausgabe.js');
-    const pdflib = await starteSchreiber();
-    const dokument = await pdflib.PDFDocument.create();
-    let gezaehlt = 0;
-
-    for (const datei of dateien) {
-      const bytes = new Uint8Array(await datei.arrayBuffer());
-      let bild;
-      try {
-        bild = /\.png$/i.test(datei.name) || datei.type === 'image/png'
-          ? await dokument.embedPng(bytes)
-          : await dokument.embedJpg(bytes);
-      } catch (fehler) {
-        sage(`${datei.name} ließ sich nicht einbetten (${fehler.message})`, { art: 'warn', dauer: 6000 });
-        continue;
-      }
-      // Seite in Bildgröße, aber höchstens A4-Breite — sonst werden Fotos riesig.
-      const hoechstBreite = 595.28;
-      const massstab = Math.min(1, hoechstBreite / bild.width);
-      const seite = dokument.addPage([bild.width * massstab, bild.height * massstab]);
-      seite.drawImage(bild, { x: 0, y: 0, width: bild.width * massstab, height: bild.height * massstab });
-      gezaehlt++;
-    }
-    if (!gezaehlt) throw new Error('Kein Bild ließ sich lesen.');
-    dokument.setProducer('PDF Studio');
-    sichereBytes(await dokument.save(), 'bilder.pdf');
-    sage(`${gezaehlt} Bild${gezaehlt === 1 ? '' : 'er'} zu einem PDF gemacht`);
+    const { bilderZuPdfBytes } = await import('./einlesen.js');
+    const { bytes, seiten } = await bilderZuPdfBytes(dateien, (datei, fehler) =>
+      sage(`${datei.name} ließ sich nicht einbetten (${fehler.message})`, { art: 'warn', dauer: 6000 }));
+    sichereBytes(bytes, 'bilder.pdf');
+    sage(`${seiten} Bild${seiten === 1 ? '' : 'er'} zu einem PDF gemacht`);
   });
 }
 
@@ -1237,6 +1215,12 @@ export function starteOberflaeche() {
     }
     navigator.serviceWorker?.addEventListener?.('controllerchange', () => zeichneStand(standAnzeige));
   }
+  zeigeUeberhang();
+  /* Die Kacheln auf dem Empfang. Sie stehen unter der Karte, nicht darin: wer
+     eine Datei hinlegen will, soll das zuerst sehen. */
+  import('./einzelwerkzeuge.js').then(({ werkzeugKacheln }) => {
+    $('#empfang-kacheln')?.append(werkzeugKacheln());
+  });
   starteInstallieren();
   // Klick in ein Unterschriftsfeld: anlegen und gleich passend einsetzen —
   // niemand soll danach noch einen Rahmen aufziehen müssen.
@@ -1373,6 +1357,28 @@ function aktualisiereRueckgaengig() {
   /* Die beiden Knöpfe stehen in der Werkzeugzeile und werden mit ihr
      gezeichnet — Zustand und Tooltip entstehen dort. */
   zeichneWerkzeugleiste();
+}
+
+
+/* Sagt der Werkzeugzeile an, auf welcher Seite noch etwas liegt. Bei 944 px
+   passen zwölf von fünfzehn Werkzeugen hinein; die drei übrigen waren
+   erreichbar, aber unsichtbar. Ein verstecktes Werkzeug ist ein fehlendes. */
+function zeigeUeberhang() {
+  const zeile = $('#werkzeugleiste');
+  const huelle = $('#werkzeugzeile-huelle');
+  if (!zeile || !huelle) return;
+  const pruefe = () => {
+    const rest = zeile.scrollWidth - zeile.clientWidth - Math.round(zeile.scrollLeft);
+    huelle.toggleAttribute('data-mehr-links', zeile.scrollLeft > 2);
+    huelle.toggleAttribute('data-mehr-rechts', rest > 2);
+  };
+  zeile.addEventListener('scroll', pruefe, { passive: true });
+  window.addEventListener('resize', drossel(pruefe, 120));
+  /* Auch nach jedem Neuzeichnen: die Zeile ändert ihre Breite, wenn ein
+     Werkzeug ein Wort dazubekommt. */
+  hoer('werkzeug:gewechselt', () => setTimeout(pruefe, 0));
+  hoer('dokument:geladen', () => setTimeout(pruefe, 0));
+  setTimeout(pruefe, 0);
 }
 
 /* ---------- Nur gewählte Seiten zeigen -------------------------------------- */

@@ -566,6 +566,34 @@ innerhalb des Absatzes. Beim Umbrechen verschieben sie sich, und geraten ist
 schlechter als weggelassen. Spalten werden nicht erkannt — zwei Spalten haben
 verschiedene linke Ränder und zerfallen in zwei Absätze, was richtig ist.
 
+## Bedienbarkeit
+
+Die Anwendung wurde einmal gemessen statt begutachtet, und der Befund war
+unangenehm: der Fokus verließ jeden Dialog nach dreizehn Sprüngen nach hinten,
+acht Reiter trugen `role="tab"` und keiner sagte, welcher offen ist, die
+Meldung kam animiert und verschwand schlagartig, und es gab keine einzige
+Regel für Menschen, die Bewegung abgestellt haben.
+
+Was daraus wurde:
+
+| | |
+|---|---|
+| **Fokus sichtbar** | ein Ring für alles Bedienbare, `:focus-visible` statt `:focus` — der Ring gehört der Tastatur, nicht der Maus. In der dunklen Chrome der helle Akzent, mit Saum, damit er nicht im Rand verschwindet |
+| **Fokusfalle** | Tab läuft im Dialog im Kreis. Beim Schließen geht der Fokus dorthin zurück, wo er herkam |
+| **Sprachausgabe** | `aria-selected` an jedem Reiter, `aria-expanded` an jedem Aufklapper, Escape schließt ihn und gibt den Fokus zurück |
+| **Bewegung** | `prefers-reduced-motion` räumt Übergänge und Animationen ab — nicht verkürzt, abgeräumt. Eine Animation in 200 statt 400 ms ist für jemanden mit Migräne dieselbe Animation |
+| **Trefferflächen** | auf groben Zeigern reicht ein unsichtbares Pseudo-Element auf 44 px. Das Bild bleibt Pixel für Pixel das Handoff, nur der Finger findet hin |
+| **Aussparung** | `env(safe-area-inset-*)` in Kopf, Fuß und Rasterzeile — die Seite reicht mit `viewport-fit=cover` bis unter Kamera und Gestenstreifen |
+
+Alle sechs Punkte fallen niemandem auf, der mit Maus und ohne Einschränkung
+arbeitet. Genau deshalb stehen sie in `werkzeuge/pruefungen/11-bedienbarkeit.mjs`
+und nicht in einer Liste guter Vorsätze.
+
+Eine Lehre aus dem Prüflauf selbst gehört dazu: `element.focus()` löst
+`:focus-visible` an einem Knopf **nicht** aus — der Zustand gehört der
+Tastatur. Der erste Anlauf maß deshalb 47 fehlende Ringe, von denen es die
+meisten nicht gab. Die Prüfung tabbt jetzt wirklich.
+
 ## Auf dem Gerät einrichten
 
 Das Studio lässt sich installieren wie ein Programm: eigenes Fenster ohne
@@ -607,7 +635,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 141 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 151 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  31 Prüfungen — was der Hoster ausliefert
 ```

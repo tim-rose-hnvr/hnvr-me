@@ -145,7 +145,7 @@ function baueMenue(titel, ids) {
   }
 
   const knopf = el('button', {
-    klasse: 'menue-knopf', 'aria-haspopf': 'true', 'aria-expanded': 'false', text: titel,
+    klasse: 'menue-knopf', 'aria-haspopup': 'true', 'aria-expanded': 'false', text: titel,
     beiClick: (e) => { e.stopPropagation(); umschalten(huelle); },
   });
 

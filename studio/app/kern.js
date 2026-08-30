@@ -145,7 +145,9 @@ export function sage(text, { art = 'gut', dauer = 3600, aktion = null } = {}) {
     }));
   }
   behaelter.append(knoten);
-  const weg = () => { knoten.style.opacity = '0'; setTimeout(() => knoten.remove(), 180); };
+  /* Ankunft und Abgang gehören zusammen. Vorher kam die Meldung animiert und
+     ging schlagartig — das Auge liest den Sprung als Fehler. */
+  const weg = () => { knoten.dataset.geht = ''; setTimeout(() => knoten.remove(), 200); };
   if (dauer) setTimeout(weg, dauer);
   return weg;
 }
@@ -178,6 +180,8 @@ export async function mitLader(text, arbeit) {
 /* ---------- Dialoge ------------------------------------------------------ */
 let dialogSchliessen = null;
 
+let zurueckZu = null;
+
 export function zeigeDialog({ titel, rumpf, knoepfe = [], breit = false, beiSchliessen = null, fussHinweis = '' }) {
   const schirm = $('#schirm');
   schirm.innerHTML = '';
@@ -202,9 +206,45 @@ export function zeigeDialog({ titel, rumpf, knoepfe = [], breit = false, beiSchl
   schirm.append(dialog);
   schirm.hidden = false;
   dialogSchliessen = beiSchliessen;
+
+  /* Woher der Dialog kam — dorthin geht der Fokus zurück. Ohne das landet er
+     nach dem Schließen am Anfang der Seite, und wer mit der Tastatur
+     arbeitet, sucht sich seinen Platz neu. */
+  zurueckZu = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
   const ersterFokus = dialog.querySelector('input, select, textarea, button.knopf');
   ersterFokus?.focus();
+  fangeFokus(dialog);
   return dialog;
+}
+
+/* Alles, was in einem Dialog den Fokus annehmen kann, in Reihenfolge. */
+const FOKUSSIERBAR = 'button, [href], input, select, textarea, summary, [tabindex]:not([tabindex="-1"])';
+function fokusKette(dialog) {
+  return [...dialog.querySelectorAll(FOKUSSIERBAR)]
+    .filter((k) => !k.disabled && k.offsetParent !== null);
+}
+
+/* Ein Dialog, aus dem Tab hinausführt, ist keiner: dahinter steht die
+   Anwendung, die gerade gesperrt sein soll. Gemessen waren es dreizehn
+   Sprünge bis nach draußen. Am Ende der Kette geht es wieder an den Anfang,
+   am Anfang rückwärts ans Ende. */
+function fangeFokus(dialog) {
+  dialog.addEventListener('keydown', (ereignis) => {
+    if (ereignis.key !== 'Tab') return;
+    const kette = fokusKette(dialog);
+    if (!kette.length) return;
+    const erster = kette[0];
+    const letzter = kette[kette.length - 1];
+    const jetzt = document.activeElement;
+    if (ereignis.shiftKey && (jetzt === erster || !dialog.contains(jetzt))) {
+      ereignis.preventDefault();
+      letzter.focus();
+    } else if (!ereignis.shiftKey && jetzt === letzter) {
+      ereignis.preventDefault();
+      erster.focus();
+    }
+  });
 }
 
 export function schliesseDialog() {
@@ -214,6 +254,10 @@ export function schliesseDialog() {
   schirm.innerHTML = '';
   dialogSchliessen?.();
   dialogSchliessen = null;
+  /* Zurück, woher der Dialog kam. `preventScroll`, weil ein Sprung der Bühne
+     beim Schließen wie ein zweiter, ungewollter Befehl aussieht. */
+  zurueckZu?.focus?.({ preventScroll: true });
+  zurueckZu = null;
 }
 
 export function frage({ titel, text, jaText = 'Ja', neinText = 'Abbrechen', gefahr = false }) {

@@ -183,7 +183,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- Grundgerüst ------------------------------------------------ */
 .huelle {
   display: grid;
-  grid-template-rows: var(--kopfhoehe) var(--menuehoehe) var(--werkzeughoehe) 1fr var(--fusshoehe);
+  grid-template-rows: var(--kopfhoehe) var(--menuehoehe) var(--werkzeughoehe) 1fr
+    calc(var(--fusshoehe) + env(safe-area-inset-bottom));
   height: 100dvh;
 }
 .rumpf {
@@ -216,7 +217,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .kopf {
   display: flex; align-items: stretch; gap: 0;
   background: var(--chrome-900); color: var(--chrome-text);
-  padding: 0 8px 0 0;
+  /* `viewport-fit=cover` steht im Kopf der Seite: die Anwendung reicht bis
+     unter die Aussparung. Ohne diesen Abstand liegt die Wortmarke auf einem
+     iPhone hinter der Kamera. Auf jedem anderen Gerät ist `env()` gleich
+     Null und die Zeile ändert nichts. */
+  padding: 0 calc(8px + env(safe-area-inset-right)) 0 env(safe-area-inset-left);
 }
 /* Die Wortmarke heißt .wortmarke, die Seitenzahl der Miniatur .miniatur-nummer.
    Beide hießen einmal .marke — ein Klassenname, zweimal benutzt, ist ein
@@ -417,6 +422,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: var(--chrome-fuss); color: var(--chrome-text);
   font-size: 11px; white-space: nowrap;
   justify-content: space-between;
+  /* Unten sitzt auf dem iPhone der Streifen für die Gestensteuerung. Die
+     Fußzeile behält ihre Höhe aus dem Handoff und legt den Abstand darunter. */
+  padding-left: calc(10px + env(safe-area-inset-left));
+  padding-right: calc(10px + env(safe-area-inset-right));
+  padding-bottom: env(safe-area-inset-bottom);
 }
 .fuss-gruppe { display: flex; align-items: center; gap: 6px; flex: none; }
 .fuss-mitte {
@@ -727,7 +737,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .dialog {
   background: var(--flaeche); border: 1px solid var(--linie-stark);
   box-shadow: var(--schatten-dialog); width: min(54rem, 100%); overflow: hidden;
+  /* Der Dialog kommt von oben herein, nicht aus dem Nichts. Sechs Pixel und
+     120 ms — genug, damit das Auge die Richtung liest, zu wenig, um zu
+     warten. Er sitzt ohnehin oben auf dem Schirm; die Bewegung folgt seinem
+     Weg dorthin, statt ihm einen eigenen zu erfinden. */
+  animation: dialog-herein .12s cubic-bezier(.2, .8, .3, 1);
 }
+@keyframes dialog-herein { from { opacity: 0; transform: translateY(-6px); } }
+.schirm { animation: schirm-herein .12s ease-out; }
+@keyframes schirm-herein { from { opacity: 0; } }
 .dialog-kopf {
   display: flex; align-items: center; gap: 10px;
   height: 42px; padding: 0 14px; flex: none;
@@ -830,12 +848,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .unterschrift-reiter { display: flex; gap: .25rem; margin-bottom: .625rem; }
 
 /* ---------- Meldungen, Lader ------------------------------------------- */
-.meldungen { position: fixed; bottom: calc(var(--fusshoehe) + .75rem); left: 50%; transform: translateX(-50%); z-index: 80; display: flex; flex-direction: column; gap: .4rem; align-items: center; pointer-events: none; }
+.meldungen { position: fixed; bottom: calc(var(--fusshoehe) + env(safe-area-inset-bottom) + .75rem); left: 50%; transform: translateX(-50%); z-index: 80; display: flex; flex-direction: column; gap: .4rem; align-items: center; pointer-events: none; }
 .meldung {
   background: var(--tinte); color: var(--grund); padding: .5rem .875rem;
   box-shadow: var(--schatten); font-size: .8125rem; pointer-events: auto;
   display: flex; align-items: center; gap: .75rem; animation: auftauchen .16s ease-out;
+  /* Sie kommt animiert und ging schlagartig: `sage()` setzt die Deckung auf
+     Null und entfernt nach 180 ms — ohne Übergang war das ein Sprung. */
+  transition: opacity .18s ease-in, transform .18s ease-in;
 }
+.meldung[data-geht] { opacity: 0; transform: translateY(4px); }
 .meldung button { border: 0; background: transparent; color: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
 .meldung.ist-warnung { background: var(--warn); color: #fff; }
 .meldung.ist-fehler { background: var(--tally); color: #fff; }
@@ -1197,6 +1219,72 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .einst-kategorie.ist-aktiv { border-left: 0; border-bottom-color: var(--tally); }
   .einst-inhalt { padding: 0; }
 }
+
+
+/* ---------- Fokus, Bewegung, Trefferflächen -------------------------------- */
+
+/* **Fokus.** Von 52 bedienbaren Dingen zeigten 47 beim Tastaturfokus nichts an:
+   `.knopf` und `.feld` hatten eine Regel, alles andere nicht — die Knöpfe der
+   Chrome, die Reiter, die Werkzeuge, die Menüs. Wer mit der Tastatur arbeitet,
+   sah nicht, wo er steht.
+
+   `:focus-visible` und nicht `:focus`: der Ring gehört der Tastatur. Ein
+   angeklickter Knopf, der einen Ring behält, sieht aus wie ein Fehler. */
+:where(button, a[href], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--tally);
+  outline-offset: 1px;
+  /* Auf dunklem Grund verschwindet der Akzent im Rand — ein heller Saum
+     darunter trägt ihn. */
+  box-shadow: 0 0 0 1px var(--grund);
+  border-radius: 0;
+}
+/* In der dunklen Chrome ist der Akzent zu dunkel; dort der helle Ton. */
+.kopf :focus-visible, .fuss :focus-visible, .menueleiste :focus-visible,
+.dialog-kopf :focus-visible, .ordnen-kopf :focus-visible {
+  outline-color: var(--tally-hell);
+  box-shadow: 0 0 0 1px var(--chrome-900);
+}
+
+/* **Bewegung.** Wer sie abgestellt hat, hat einen Grund — Schwindel,
+   Migräne, oder schlicht ein Gerät, dem sie nicht guttut. Die Anwendung
+   funktioniert ohne jede Animation vollständig; hier wird sie abgeräumt,
+   nicht bloß verkürzt. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* **Trefferflächen.** Die Chrome-Zeilen sind 38, 27, 46 und 30 px hoch — das
+   ist das Handoff und bleibt so. Ein Finger trifft darin aber nicht sicher:
+   ein Knopf von 22 × 24 px ist mit der Maus genau richtig und mit dem Daumen
+   Glücksspiel.
+
+   Also wird die Fläche vergrößert, nicht der Knopf: ein unsichtbares
+   Pseudo-Element legt sich darüber und reicht auf 44 px. Das Bild bleibt
+   Pixel für Pixel dasselbe, nur der Finger findet hin. Nur auf groben
+   Zeigern — die Maus braucht das nicht und würde sich an den überlappenden
+   Flächen stören. */
+@media (pointer: coarse) {
+  .kopf .knopf, .fuss .knopf, .menue-knopf, .werkzeug, .reiter-knopf,
+  .dok-reiter-zu, .dok-reiter-neu {
+    position: relative;
+  }
+  .kopf .knopf::after, .fuss .knopf::after, .menue-knopf::after, .werkzeug::after,
+  .reiter-knopf::after, .dok-reiter-zu::after, .dok-reiter-neu::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px; min-height: 44px;
+    width: 100%; height: 100%;
+  }
+}
+
+/* **Der Zeiger auf dem Blatt.** Ein Werkzeug, das gleich zeichnet, sagt das
+   mit seiner Zeigerform — sonst klickt jemand ins Papier und wundert sich. */
+.werkzeug-aktiv .textebene { cursor: crosshair; }
 
 /* ---------- Anmeldeschranke --------------------------------------------- */
 .anmeldeschranke {

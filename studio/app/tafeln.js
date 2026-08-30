@@ -39,7 +39,14 @@ export function zeigeLeiste(seite, tafelName) {
   const huelle = $('#huelle');
   huelle.dataset[seite] = 'auf';
   if (seite === 'links' && tafelName) {
-    $$('#reiter-links .reiter-knopf').forEach((k) => k.classList.toggle('ist-aktiv', k.dataset.tafel === tafelName));
+    /* `ist-aktiv` sagt es dem Auge, `aria-selected` der Sprachausgabe. Ohne
+       das zweite liest sie acht gleich klingende Reiter vor und keiner davon
+       ist der offene. */
+    $$('#reiter-links .reiter-knopf').forEach((k) => {
+      const an = k.dataset.tafel === tafelName;
+      k.classList.toggle('ist-aktiv', an);
+      k.setAttribute('aria-selected', an ? 'true' : 'false');
+    });
     $$('.leiste-links .tafel').forEach((t) => t.classList.toggle('ist-aktiv', t.dataset.tafel === tafelName));
   }
   baueNeu({ haltePosition: true });
@@ -203,7 +210,11 @@ async function anmerkungsBericht() {
    Vorschlaegen, Formular und Anmerkungen musste man scrollen, um irgendetwas
    zu finden. */
 export function zeigeRechteTafel(name) {
-  $$('#reiter-rechts .reiter-knopf').forEach((k) => k.classList.toggle('ist-aktiv', k.dataset.rtafel === name));
+  $$('#reiter-rechts .reiter-knopf').forEach((k) => {
+    const an = k.dataset.rtafel === name;
+    k.classList.toggle('ist-aktiv', an);
+    k.setAttribute('aria-selected', an ? 'true' : 'false');
+  });
   $$('.leiste-rechts .tafel').forEach((t) => t.classList.toggle('ist-aktiv', t.dataset.rtafel === name));
   zeichneRechteTafeln();
 }

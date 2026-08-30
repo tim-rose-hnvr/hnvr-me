@@ -47,10 +47,10 @@
 
     <aside class="leiste leiste-links" id="leiste-links">
       <nav class="reiter" id="reiter-links" role="tablist">
-        <button class="reiter-knopf ist-aktiv" data-tafel="miniaturen" role="tab">Seiten</button>
-        <button class="reiter-knopf" data-tafel="gliederung" role="tab">Marken</button>
-        <button class="reiter-knopf" data-tafel="dateien" role="tab">Dateien</button>
-        <button class="reiter-knopf" data-tafel="suche" role="tab">Suche</button>
+        <button class="reiter-knopf ist-aktiv" data-tafel="miniaturen" role="tab" aria-selected="true">Seiten</button>
+        <button class="reiter-knopf" data-tafel="gliederung" role="tab" aria-selected="false">Marken</button>
+        <button class="reiter-knopf" data-tafel="dateien" role="tab" aria-selected="false">Dateien</button>
+        <button class="reiter-knopf" data-tafel="suche" role="tab" aria-selected="false">Suche</button>
       </nav>
       <div class="tafel ist-aktiv" data-tafel="miniaturen" id="tafel-miniaturen"></div>
       <div class="tafel" data-tafel="gliederung" id="tafel-gliederung"></div>
@@ -72,10 +72,10 @@
 
     <aside class="leiste leiste-rechts" id="leiste-rechts">
       <nav class="reiter" id="reiter-rechts" role="tablist">
-        <button class="reiter-knopf ist-aktiv" data-rtafel="anmerkungen" role="tab">Kommentare</button>
-        <button class="reiter-knopf" data-rtafel="felder" role="tab">Felder</button>
-        <button class="reiter-knopf" data-rtafel="verlauf" role="tab">Verlauf</button>
-        <button class="reiter-knopf" data-rtafel="mitdenken" role="tab">Hinweise</button>
+        <button class="reiter-knopf ist-aktiv" data-rtafel="anmerkungen" role="tab" aria-selected="true">Kommentare</button>
+        <button class="reiter-knopf" data-rtafel="felder" role="tab" aria-selected="false">Felder</button>
+        <button class="reiter-knopf" data-rtafel="verlauf" role="tab" aria-selected="false">Verlauf</button>
+        <button class="reiter-knopf" data-rtafel="mitdenken" role="tab" aria-selected="false">Hinweise</button>
       </nav>
       <div class="tafel ist-aktiv" data-rtafel="anmerkungen" id="tafel-kommentare"></div>
       <div class="tafel" data-rtafel="felder" id="tafel-felder"></div>

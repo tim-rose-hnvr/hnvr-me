@@ -416,7 +416,7 @@ function zeichneWerkzeugleiste() {
   const mehrAktiv = WEITERE_WERKZEUGE.includes(zustand.werkzeug);
   const mehr = el('button', {
     klasse: `werkzeug ${mehrAktiv ? 'ist-aktiv' : ''}`,
-    title: 'Weitere Werkzeuge', 'aria-haspopup': 'true',
+    title: 'Weitere Werkzeuge', 'aria-haspopup': 'true', 'aria-expanded': 'false',
     beiClick: (ereignis) => zeigeWeitereWerkzeuge(ereignis.currentTarget),
   });
   const gewaehlt = WERKZEUGE.find((w) => w.id === zustand.werkzeug);
@@ -476,13 +476,27 @@ function zeigeWeitereWerkzeuge(knopf) {
   liste.style.left = `${Math.round(Math.max(rand, Math.min(kasten.left, window.innerWidth - breite - rand)))}px`;
   liste.style.maxHeight = `${Math.round(window.innerHeight - kasten.bottom - rand * 2)}px`;
 
+  knopf.setAttribute('aria-expanded', 'true');
+
   const zu = (ereignis) => {
     if (ereignis && liste.contains(ereignis.target)) return;
     liste.remove();
+    knopf.setAttribute('aria-expanded', 'false');
     document.removeEventListener('pointerdown', zu, true);
+    document.removeEventListener('keydown', beiTaste, true);
     window.removeEventListener('resize', zu);
   };
+  /* Escape schließt, und der Fokus geht dorthin zurück, wo er herkam. Ohne
+     das steht er nach dem Schließen auf einem Knopf, den es nicht mehr gibt,
+     und die Tastatur fängt oben auf der Seite wieder an. */
+  const beiTaste = (ereignis) => {
+    if (ereignis.key !== 'Escape') return;
+    ereignis.preventDefault();
+    zu();
+    knopf.focus();
+  };
   setTimeout(() => document.addEventListener('pointerdown', zu, true), 0);
+  document.addEventListener('keydown', beiTaste, true);
   window.addEventListener('resize', zu, { once: true });
   liste.querySelector('button')?.focus();
 }

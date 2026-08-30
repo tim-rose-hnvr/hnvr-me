@@ -27,16 +27,16 @@ const MENUES = [
     'einlesen', 'bilder:zuPdf', T,
     'sichern', 'sichern:als', 'sichern:einbrennen', T,
     'seiten:ausgeben', 'teilen', T,
-    'word:ausgeben', 'excel:ausgeben', 'text:ausgeben', 'bild:ausgeben', T,
+    'word:ausgeben', 'excel:ausgeben', 'powerpoint:ausgeben', 'text:ausgeben', 'bild:ausgeben', T,
     'drucken', T,
     'verkleinern', 'reparieren', 'linearisieren', T,
     'stapel', T,
-    'vergleich', 'eigenschaften', T,
+    'vergleich', 'eigenschaften', 'anhaenge', 'vorabpruefung', T,
     'installieren',
   ]],
   ['Bearbeiten', [
     'rueckgaengig', 'wiederholen', T,
-    'werkzeug:ersetzen', 'werkzeug:text', 'werkzeug:schwaerzen', T,
+    'werkzeug:ersetzen', 'werkzeug:text', 'werkzeug:schwaerzen', 'bilder', T,
     'texterkennung', T,
     'text:kopieren', 'text:alleKopieren', T,
     'anmerkungen:loeschen', 'anmerkungen:alleLoeschen',
@@ -51,7 +51,7 @@ const MENUES = [
     'seiten:ordnen', T,
     'seiten:drehenLinks', 'seiten:drehenRechts', 'seiten:verdoppeln', 'seiten:loeschen', T,
     'seiten:alleWaehlen', 'leere:waehlen', 'seiten:nurAuswahl', T,
-    'aufdruck',
+    'aufdruck', 'lesezeichen',
   ]],
   ['Werkzeuge', [
     'werkzeug:auswahl', T,
@@ -68,7 +68,7 @@ const MENUES = [
     'springe:unterschrift', 'muster:zeigen', 'formular:naechstes', T,
     'palette',
   ]],
-  ['Schutz', ['signieren', T, 'schutz:setzen', 'schutz:entfernen', 'schutz:zeigen']],
+  ['Schutz', ['signieren', 'versenden', T, 'schutz:setzen', 'schutz:entfernen', 'schutz:zeigen']],
   ['Hilfe', ['barrierefrei', T, 'hilfe']],
 ];
 

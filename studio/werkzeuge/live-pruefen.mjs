@@ -175,6 +175,67 @@ for (const weg of ['/studio/index.html', '/studio/', '/studio']) {
     `${weg} liefert die Anwendung`, `HTTP ${antwort.code}`);
 }
 
+/* ------------------------------------------------ Kontakt und Unterschrift */
+
+/* Die zwei Wege, die einen Server brauchen. Sie stehen hier und nicht in
+   `vollpruefung.mjs`, weil sie ohne Wix nicht laufen — der Prüfstand hat
+   keinen. Geprüft wird beides von außen, wie ein Fremder es sähe. */
+console.log('\n== Kontakt und Unterschrift ==');
+{
+  const post = async (weg, koerper) => {
+    const { stdout } = await lauf('curl', [
+      '-sS', '-X', 'POST', `${BASIS}${weg}`,
+      '-H', 'content-type: application/json',
+      '-d', JSON.stringify(koerper),
+      '-w', '\n%{http_code}',
+    ], { maxBuffer: 1024 * 1024 });
+    const teile = stdout.trim().split('\n');
+    const code = Number(teile.pop());
+    let daten = null;
+    try { daten = JSON.parse(teile.join('\n')); } catch { /* unten gemeldet */ }
+    return { code, daten };
+  };
+
+  const leer = await post('/api/kontakt.json', { name: 'Prüflauf' });
+  pruefe(leer.code === 400 && /Nachricht/.test(leer.daten?.fehler || ''),
+    'das Kontaktformular weist eine leere Nachricht ab', `HTTP ${leer.code}`);
+
+  const falsch = await post('/api/kontakt.json', { absender: 'keine-adresse', nachricht: 'hallo' });
+  pruefe(falsch.code === 400 && /Adresse/.test(falsch.daten?.fehler || ''),
+    'und eine Adresse, die keine ist', `HTTP ${falsch.code}`);
+
+  const echt = await post('/api/kontakt.json', {
+    name: 'Live-Prüflauf',
+    absender: 'pruefung@beispiel.de',
+    nachricht: `Selbsttest ${new Date().toISOString()}`,
+  });
+  pruefe(echt.code === 200 && echt.daten?.angekommen === true,
+    'eine echte Nachricht kommt an', `HTTP ${echt.code}`);
+
+  /* Ohne Anmeldung darf niemand einen Signaturauftrag anlegen: bei einer
+     Unterschrift ist „wer hat das losgeschickt" die erste Frage. */
+  const ohne = await post('/api/signatur/anlegen.json', {
+    titel: 'Prüflauf', empfaenger: 'a@b.de', datei: 'AAAA',
+  });
+  pruefe(ohne.code === 401 && /Anmeldung/.test(ohne.daten?.fehler || ''),
+    'ein Signaturauftrag ohne Anmeldung wird abgewiesen', `HTTP ${ohne.code}`);
+
+  const kurz = await hole('/api/signatur/holen.json?a=zukurz');
+  pruefe(kurz.code === 400, 'ein zu kurzer Zugangsschlüssel wird abgewiesen', `HTTP ${kurz.code}`);
+
+  const unbekannt = await hole(`/api/signatur/holen.json?a=${'a'.repeat(48)}`);
+  pruefe(unbekannt.code === 404, 'ein unbekannter Schlüssel führt ins Nichts, nicht in einen Fehler',
+    `HTTP ${unbekannt.code}`);
+
+  const seite = await hole('/unterschreiben?a=x');
+  const text = seite.koerper.toString('utf8');
+  pruefe(seite.code === 200, 'die Unterschriftsseite wird ausgeliefert', `HTTP ${seite.code}`);
+  /* Sie muss den Unterschied benennen — im Streitfall ist er der ganze
+     Unterschied. */
+  pruefe(/eIDAS/.test(text) && /keine qualifizierte/i.test(text),
+    'und sagt, dass es keine qualifizierte Signatur ist');
+}
+
 /* ---------------------------------------------- Installierbar und offline-fest */
 
 /* Ein Manifest, das der Hoster nicht ausliefert, und ein Dienst, den er unter

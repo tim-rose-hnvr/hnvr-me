@@ -36,7 +36,8 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           Knopfdruck.</strong>
           Dazu alles Übliche — schwärzen, unterschreiben, Formulare anlegen,
           nach Word und Excel ausgeben. Im Browser, ohne Installation, ohne
-          Konto, ohne dass eine Datei das Gerät verlässt.
+          Konto, ohne dass eine Datei das Gerät verlässt — bis auf einen Weg,
+          der es sagt, bevor er es tut.
         </p>
         <div class="knopf-reihe">
           <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fstudio%2Findex.html">Kostenlos anmelden und öffnen</a>
@@ -45,7 +46,9 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <p class="klein leise" style="margin-top:.8rem">
           Die Anwendung liegt auf derselben Seite und startet im Browserfenster.
           Die Anmeldung ist kostenlos und sagt uns nur, dass Sie da sind: Ihre
-          Datei wird auch danach nicht hochgeladen, weder zu uns noch sonstwohin.
+          Datei wird auch danach nicht hochgeladen. Ausnahme ist „Zur Unterschrift
+          versenden" — dort muss sie hochgeladen werden, damit der Empfänger sie
+          erreicht, und der Dialog sagt das, bevor etwas passiert.
         </p>
         <div class="stempel">
           Kostenlos
@@ -238,6 +241,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
   <section class="band band-grund" id="mitdenken"><div class="spur">
     <div class="abschnitt-kopf">
       <h2>Ein Dokument, vier Schritte, kein Hochladen</h2>
+      <span class="marke">EINE AUSNAHME, UND SIE SAGT ES</span>
     </div>
     <div class="ablauf">
       <div class="ablauf-karte">
@@ -308,10 +312,10 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       <div class="vergleich-tafel">
         <div class="vt-kopf">
           <div class="vt-kriterium">KRITERIUM</div>
-          <div class="vt-uns">WERKBANK</div>
+          <div class="vt-uns">PDF STUDIO</div>
           <div class="vt-die">SUITE-STANDARD</div>
         </div>
-        <div class="vt-zeile"><div>Datei verlässt das Gerät</div><div class="vt-uns">nie</div><div class="vt-die">Upload</div></div>
+        <div class="vt-zeile"><div>Datei verlässt das Gerät</div><div class="vt-uns">nur zum Versenden</div><div class="vt-die">immer</div></div>
         <div class="vt-zeile"><div>Installation</div><div class="vt-uns">keine</div><div class="vt-die">Rollout</div></div>
         <div class="vt-zeile"><div>Texterkennung</div><div class="vt-uns">im Gerät</div><div class="vt-die">im Dienst</div></div>
         <div class="vt-zeile"><div>Preis</div><div class="vt-uns">0 €</div><div class="vt-die">Abo</div></div>
@@ -327,13 +331,13 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
        (Haarlinienraster für die Bilanz, helle Tabelle darunter). -->
   <section class="band band-hell" id="abgleich"><div class="spur">
     <div class="abschnitt-kopf">
-      <h2>Dreißig Werkzeuge von Acrobat, ehrlich durchgezählt</h2>
+      <h2>Zweiunddreißig Werkzeuge von Acrobat, ehrlich durchgezählt</h2>
       <span class="marke">KEIN VERGLEICH, DER NUR EIGENE STÄRKEN ZEIGT</span>
     </div>
     <div class="bilanz">
-      <div class="zahl betont"><b>23</b><span>ganz vorhanden</span></div>
+      <div class="zahl betont"><b>21</b><span>ganz vorhanden</span></div>
       <div class="zahl"><b>5</b><span>teilweise</span></div>
-      <div class="zahl"><b>5</b><span>brauchen Server oder Dienst</span></div>
+      <div class="zahl"><b>4</b><span>brauchen Server oder Dienst</span></div>
       <div class="zahl"><b>2</b><span>bewusst abgelehnt</span></div>
     </div>
     <div class="tabellenrahmen">
@@ -342,7 +346,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           <tr><th scope="col">Acrobat</th><th scope="col">PDF Studio</th><th scope="col">Anmerkung</th></tr>
         </thead>
         <tbody>
-          <tr><td>PDF exportieren</td><td class="stand ja">ja</td><td class="grund">PDF, Word, Excel, Text, PNG</td></tr>
+          <tr><td>PDF exportieren</td><td class="stand ja">ja</td><td class="grund">PDF, Word, Excel, PowerPoint, Text, PNG</td></tr>
           <tr><td>Ausfüllen und Signieren</td><td class="stand ja">ja</td><td class="grund">Felder und sichtbare Unterschrift</td></tr>
           <tr><td>PDF erstellen</td><td class="stand ja">ja</td><td class="grund">aus Bildern, Word, Excel, CSV, Text, Markdown</td></tr>
           <tr><td>In PDF konvertieren</td><td class="stand ja">ja</td><td class="grund">Text und Tabellen, kein Layout</td></tr>
@@ -350,7 +354,9 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           <tr><td>Geführte Aktionen</td><td class="stand ja">ja</td><td class="grund">Stapel über viele Dateien, mit Bericht</td></tr>
           <tr><td>Dateien zusammenführen</td><td class="stand ja">ja</td><td class="grund"></td></tr>
           <tr><td>Seiten verwalten</td><td class="stand ja">ja</td><td class="grund">eigene Ordnen-Ansicht: sortieren, drehen, löschen, teilen</td></tr>
-          <tr><td>Wasserzeichen, Kopf- und Fußzeile</td><td class="stand ja">ja</td><td class="grund">mit Seitenzählung ab beliebiger Seite, sofort auf der Bühne sichtbar</td></tr>
+          <tr><td>Wasserzeichen, Kopf- und Fußzeile</td><td class="stand ja">ja</td><td class="grund">mit Seitenzählung ab beliebiger Seite und Bates-Nummerierung</td></tr>
+          <tr><td>Lesezeichen und Anhänge</td><td class="stand ja">ja</td><td class="grund">Gliederung anlegen und umbauen, Dateien im PDF ablegen und herausholen</td></tr>
+          <tr><td>Preflight</td><td class="stand ja">ja</td><td class="grund">Vorabprüfung: Schriften, Bildauflösung, Seitenmaße, Textebene — mit der Folge, nicht nur dem Zustand</td></tr>
           <tr><td>PDF-Datei schützen</td><td class="stand ja">ja</td><td class="grund">AES-256, Rechte</td></tr>
           <tr><td>PDF-Datei schwärzen</td><td class="stand ja">ja</td><td class="grund">mit Rasterung</td></tr>
           <tr><td>PDF komprimieren</td><td class="stand ja">ja</td><td class="grund">mit Vorher-Nachher</td></tr>
@@ -359,17 +365,17 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           <tr><td>Dateien vergleichen</td><td class="stand ja">ja</td><td class="grund">wortweise je Seite</td></tr>
           <tr><td>Formular vorbereiten</td><td class="stand ja">ja</td><td class="grund">sechs Feldarten; Felder auf flachen und gescannten Formularen werden erkannt</td></tr>
           <tr><td>Ein Zertifikat verwenden</td><td class="stand ja">ja</td><td class="grund">PAdES-B-B aus einer .p12; ohne Zeitstempeldienst</td></tr>
-          <tr><td>PDF bearbeiten</td><td class="stand teil">teilweise</td><td class="grund">Absätze bearbeiten mit Umbruch; Bilder im PDF nein</td></tr>
+          <tr><td>PDF bearbeiten</td><td class="stand ja">ja</td><td class="grund">Absätze mit Umbruch, Bilder ersetzen und entfernen; Bilder verschieben nein</td></tr>
           <tr><td>Scan &amp; OCR</td><td class="stand teil">teilweise</td><td class="grund">Erkennung ja, Scangerät nein</td></tr>
           <tr><td>Suchindex hinzufügen</td><td class="stand teil">teilweise</td><td class="grund">im Dokument ja, über Ordner nein</td></tr>
           <tr><td>Barrierefreiheit vorbereiten</td><td class="stand teil">teilweise</td><td class="grund">Prüfung, Sprache, Titel, Feldbeschriftungen; auszeichnen nein</td></tr>
           <tr><td>Benutzerdefiniertes Tool</td><td class="stand teil">teilweise</td><td class="grund">jede Fähigkeit ist ein Befehl</td></tr>
-          <tr><td>E-Signaturen anfordern</td><td class="stand nein">nein</td><td class="grund">braucht einen Server</td></tr>
+          <tr><td>E-Signaturen anfordern</td><td class="stand ja">ja</td><td class="grund">sichtbare Unterschrift mit Protokoll — <b>der einzige Weg, bei dem eine Datei das Gerät verlässt</b></td></tr>
           <tr><td>Zum Kommentieren senden</td><td class="stand nein">nein</td><td class="grund">braucht einen Server</td></tr>
           <tr><td>Diese PDF-Datei übersetzen</td><td class="stand nein">nein</td><td class="grund">braucht einen Dienst</td></tr>
           <tr><td>Diese PDF stilisieren</td><td class="stand nein">nein</td><td class="grund">braucht einen Dienst</td></tr>
           <tr><td>Druckproduktion</td><td class="stand nein">nein</td><td class="grund">Druckvorstufe, Farbauszüge</td></tr>
-          <tr><td>PDF-Standards anwenden</td><td class="stand nein">nein</td><td class="grund">PDF/A braucht ein ICC-Profil und eine Konformitätsprüfung</td></tr>
+          <tr><td>PDF-Standards anwenden</td><td class="stand teil">teilweise</td><td class="grund">PDF/A wird vorbereitet, nicht behauptet: Ausgabeabsicht und XMP ja, Prüfung nein</td></tr>
           <tr><td>Rich Media hinzufügen</td><td class="stand nein">nein</td><td class="grund">bewusst nicht: Video im PDF ist eine Sicherheitslücke mit Abspieltaste</td></tr>
           <tr><td>JavaScript verwenden</td><td class="stand nein">nein</td><td class="grund">bewusst nicht: seit Jahren ein Einfallstor</td></tr>
         </tbody>
@@ -392,10 +398,10 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         <p>Für alle, die ein PDF vor sich haben und es fertig bekommen wollen.</p>
         <div class="plan-linie"></div>
         <ul class="plan-liste">
-          <li>Alle 86 Befehle, keiner hinter einer Stufe</li>
+          <li>Alle 92 Befehle, keiner hinter einer Stufe</li>
           <li>Texterkennung, Unterschrift, Schwärzen inbegriffen</li>
           <li>Eine Anmeldung, keine Zahlungsdaten</li>
-          <li>Ihre Dateien bleiben auf Ihrem Gerät</li>
+          <li>Ihre Dateien bleiben auf Ihrem Gerät — außer beim Versenden</li>
         </ul>
         <a class="plan-knopf" href="/api/auth/login?returnToUrl=%2Fstudio%2Findex.html">Anmelden und öffnen</a>
       </div>
@@ -531,8 +537,34 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
       </div>
       <div class="karte">
         <h3>Lesezeichen beim Umbau</h3>
-        <p>Sie bleiben erhalten, solange Seitenfolge und Drehung unverändert
-        sind. Beides steht vor dem Sichern im Dialog.</p>
+        <p>Anlegen, umbenennen und umhängen geht. Vorhandene bleiben erhalten,
+        solange Seitenfolge und Drehung unverändert sind; sonst werden sie neu
+        geschrieben. Beides steht vor dem Sichern im Dialog.</p>
+      </div>
+      <div class="karte">
+        <h3>Versenden lädt hoch</h3>
+        <p>„Zur Unterschrift versenden" ist der einzige Weg, bei dem eine Datei
+        das Gerät verlässt — anders kann der Empfänger sie nicht erreichen. Der
+        Dialog sagt es, bevor etwas passiert, und ohne Bestätigung geschieht
+        nichts.</p>
+      </div>
+      <div class="karte">
+        <h3>Sichtbar, nicht qualifiziert</h3>
+        <p>Die versendete Unterschrift ist sichtbar und protokolliert, aber
+        keine qualifizierte elektronische Signatur nach eIDAS. Dafür braucht es
+        ein Zertifikat und eine Signaturkarte — dann ohne Server, über „Digital
+        unterschreiben".</p>
+      </div>
+      <div class="karte">
+        <h3>PDF/A vorbereitet, nicht geprüft</h3>
+        <p>Ausgabeabsicht, XMP und Markierung werden gesetzt. Ob die Datei die
+        Norm erfüllt, sagt veraPDF — nicht wir. Ohne eingebettetes ICC-Profil
+        bleibt die Ausgabeabsicht unvollständig.</p>
+      </div>
+      <div class="karte">
+        <h3>Bilder nur tauschen</h3>
+        <p>Ersetzen und entfernen ja, verschieben und zuschneiden nein. Dafür
+        müsste der Seitenstrom umgeschrieben werden.</p>
       </div>
     </div>
   </div></section>
@@ -547,12 +579,13 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           Drei Läufe: zwei fahren die Anwendung in einem echten Browser durch —
           einer prüft, was am Ende in der Datei steht, der andere, ob sich alles
           bedienen lässt. Der dritte holt jede ausgelieferte Datei von der
-          veröffentlichten Adresse und vergleicht die Prüfsumme. Alle schlagen
-          auch dann fehl, wenn in der Browserkonsole ein einziger Fehler steht.
+          veröffentlichten Adresse und vergleicht die Prüfsumme. Zusammen
+          <b>348 Prüfungen</b>. Alle schlagen auch dann fehl, wenn in der
+          Browserkonsole ein einziger Fehler steht.
         </p>
         <div class="punkte">
           <div class="punktzeile"><span class="raute"></span><span>openssl bestätigt die Unterschrift — ein geändertes Byte muss sie brechen.</span></div>
-          <div class="punktzeile"><span class="raute"></span><span>Jeder der 86 Befehle wird einmal ausgelöst; keiner darf werfen.</span></div>
+          <div class="punktzeile"><span class="raute"></span><span>Jeder der 92 Befehle wird einmal ausgelöst; keiner darf werfen.</span></div>
           <div class="punktzeile"><span class="raute"></span><span>Die Gestaltung wird gegen das Handoff nachgemessen: Höhen, Farben, Radien.</span></div>
         </div>
       </div>
@@ -627,6 +660,29 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
   </div></section>
 
   <!-- 10. Aufruf — Akzentfläche, weiß, zwei Knöpfe. -->
+  <!-- 10. Kontakt — ein Formular statt einer Adresse. -->
+  <section class="band band-hell" id="kontakt"><div class="spur">
+    <div class="abschnitt-kopf">
+      <h2>Etwas zu sagen?</h2>
+      <span class="marke">KEINE ADRESSE IM QUELLTEXT</span>
+    </div>
+    <p class="abschnitt-satz">Fehler, Wünsche, Fragen zum eigenen Betrieb. Hier steht
+    ein Formular und keine E-Mail-Adresse — eine Adresse im Quelltext wird binnen
+    Tagen von Sammlern gefunden. Die Nachricht landet direkt im Postfach dieser
+    Seite; eine Adresse ist keine Pflicht, ohne sie gibt es nur keine Antwort.</p>
+    <form class="kontaktform" id="kontaktform">
+      <div class="kontakt-reihe">
+        <label>Name <input type="text" name="name" autocomplete="name" placeholder="freiwillig"></label>
+        <label>E-Mail <input type="email" name="absender" autocomplete="email" placeholder="für eine Antwort"></label>
+      </div>
+      <label>Nachricht <textarea name="nachricht" rows="5" required placeholder="Was ist los?"></textarea></label>
+      <div class="kontakt-fuss">
+        <button class="knopf-voll" type="submit">Senden</button>
+        <span class="kontakt-stand" id="kontakt-stand" role="status"></span>
+      </div>
+    </form>
+  </div></section>
+
   <section class="band band-akzent" id="oeffnen"><div class="spur aufruf">
     <div>
       <h2>Einmal öffnen genügt.</h2>
@@ -642,3 +698,36 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
 
 </main>
 </Grundgeruest>
+
+<script>
+  /* Das Kontaktformular. Es schickt JSON an /api/kontakt.json und sagt, was
+     daraus wurde — kein Neuladen, keine Weiterleitung auf eine Dankeseite,
+     die niemand liest. */
+  const formular = document.getElementById('kontaktform');
+  const stand = document.getElementById('kontakt-stand');
+  formular?.addEventListener('submit', async (ereignis) => {
+    ereignis.preventDefault();
+    const knopf = formular.querySelector('button[type=submit]');
+    knopf.disabled = true;
+    stand.textContent = 'Wird gesendet …';
+    stand.className = 'kontakt-stand';
+    try {
+      const daten = Object.fromEntries(new FormData(formular));
+      const antwort = await fetch('/api/kontakt.json', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(daten),
+      });
+      const ergebnis = await antwort.json();
+      if (ergebnis.fehler) throw new Error(ergebnis.fehler);
+      formular.reset();
+      stand.textContent = 'Angekommen. Danke.';
+      stand.className = 'kontakt-stand ist-gut';
+    } catch (fehler) {
+      stand.textContent = fehler.message;
+      stand.className = 'kontakt-stand ist-warnung';
+    } finally {
+      knopf.disabled = false;
+    }
+  });
+</script>

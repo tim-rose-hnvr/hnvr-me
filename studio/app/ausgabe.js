@@ -89,6 +89,24 @@ export async function baueDokument(optionen = {}) {
   await legeNeueFelderAn(ziel, folge, versatzKarte);
   await maleAnmerkungen(ziel, folge, versatzKarte);
   await maleAufdruck(ziel, folge, versatzKarte);
+
+  /* Lesezeichen, Anhänge und PDF/A hängen am Dokument, nicht an einer Seite —
+     deshalb hier, nach allem, was auf die Seiten gemalt wird. */
+  const teile = await import('./dokumentteile.js');
+  /* `Array.isArray` und nicht `?.length`: eine **geleerte** Gliederung ist
+     auch eine Entscheidung. Vorher überlebte beim Ergänzen des Originals die
+     alte Gliederung, weil eine leere Liste als „nichts zu tun" galt — wer sie
+     löschte und sicherte, bekam sie zurück. */
+  if (Array.isArray(zustand.lesezeichen)) {
+    ziel.catalog.delete(pdflib.PDFName.of('Outlines'));
+    await teile.schreibeLesezeichen(ziel, pdflib, zustand.lesezeichen);
+  }
+  if (zustand.anhaenge?.length) await teile.schreibeAnhaenge(ziel, zustand.anhaenge);
+  if (zustand.bildauftraege?.length) {
+    const { tauscheBilder } = await import('./bilder.js');
+    await tauscheBilder(ziel, pdflib, zustand.bildauftraege);
+  }
+  if (optionen.pdfA || zustand.pdfA) await teile.bereitePdfAVor(ziel, pdflib, { fassung: '2B' });
   ziel.setProducer('PDF Studio');
   ziel.setModificationDate(new Date());
 

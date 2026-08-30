@@ -881,6 +881,32 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .fundzeile select.feld { flex: 0 0 11rem; }
 .fundzeile .mono { flex: 0 0 2.5rem; }
 
+/* Befunde der Vorabprüfung: Zeichen, was, und die Folge darunter. Die Folge
+   ist der wichtigere Teil — „Schrift nicht eingebettet" sagt niemandem etwas. */
+.befund { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--linie); }
+.befund:last-child { border-bottom: 0; }
+.befund-zeichen {
+  flex: none; width: 18px; height: 18px; display: grid; place-items: center;
+  border-radius: var(--radius-klein); font-size: 11px; font-weight: 700;
+}
+.befund.ist-fehler .befund-zeichen { background: var(--tally-grund); color: var(--gefahr); }
+.befund.ist-warnung .befund-zeichen { background: var(--warn-grund); color: var(--warn); }
+.befund.ist-gut .befund-zeichen { background: var(--gut-grund); color: var(--gut); }
+.befund-was { font-size: 12.5px; font-weight: 500; }
+.befund-folge { font-size: 11.5px; color: var(--tinte-leise); line-height: 1.5; margin-top: 2px; }
+
+/* Die Bildvorschau in der Liste. Ein JPEG zeigt sich selbst; alles andere
+   nennt seine Kodierung, statt ein falsches Bild zu zeigen. */
+.bildvorschau {
+  flex: none; width: 40px; height: 30px; object-fit: contain;
+  background: var(--flaeche-tief); border: 1px solid var(--linie);
+  border-radius: var(--radius-klein);
+}
+.bildvorschau.ist-ohne {
+  display: grid; place-items: center; color: var(--tinte-leise);
+  font-size: 8px; letter-spacing: .3px; text-align: center; overflow: hidden;
+}
+
 /* Ein Hinweis, der eine Folge ankündigt statt nur zu erklären — etwa: der
    Absatz wächst und überdeckt, was darunter steht. */
 .hinweis.ist-warnung { color: var(--warn, #A82E23); }

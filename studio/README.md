@@ -450,7 +450,10 @@ app/mitdenken.js    Befunde und Vorschläge
 app/ausgabe.js      Schreiben über pdf-lib
 app/absaetze.js     Textläufe zu Absätzen rechnen, damit Bearbeiten umbricht
 app/aufdruck.js     Wasserzeichen, Kopf- und Fußzeile, Seitenzählung
+app/bilder.js       Bilder im PDF finden, ersetzen, entfernen
+app/dokumentteile.js Lesezeichen, Dateianhänge, Vorabprüfung, PDF/A
 app/einzelwerkzeuge.js Der kurze Weg: ein Werkzeug, eine Adresse, eine Aufgabe
+app/powerpoint.js   Je Seite eine Folie, als .pptx
 app/felderkennen.js Felder auf flachen und gescannten Formularen erkennen
 app/installieren.js Dienst anmelden, Einrichten anbieten, Vorrat holen, Dateien annehmen
 app/oberflaeche.js  Befehlsregister, Werkzeugleiste, Tastatur, Anschluss
@@ -595,6 +598,87 @@ Eine Lehre aus dem Prüflauf selbst gehört dazu: `element.focus()` löst
 Tastatur. Der erste Anlauf maß deshalb 47 fehlende Ringe, von denen es die
 meisten nicht gab. Die Prüfung tabbt jetzt wirklich.
 
+## Am Dokument als Ganzem
+
+Vier Fähigkeiten, die nicht an einer Seite hängen, sondern am Dokument.
+
+**Lesezeichen** (`Seiten → Lesezeichen bearbeiten`) las das Studio bisher nur.
+Jetzt anlegen, umbenennen, verschieben, ein- und ausrücken. Eine flache Liste
+mit Einrückung statt eines Baums: das ist weniger schön und deutlich weniger
+fehleranfällig — ein Baum, den man mit der Maus umhängt, hat immer einen
+Zustand, in dem ein Ast im Nichts hängt. Der `/Outlines`-Baum wird von Hand
+gebaut, weil pdf-lib nichts dafür mitbringt; der Prüflauf liest die
+geschriebene Datei mit pdf.js gegen.
+
+**Dateianhänge** (`Datei → Dateianhänge`) sind Dateien *im* PDF. Vorhandene
+werden gelesen und mitgeschrieben — sonst löscht ein Sichern die Anhänge des
+Originals, ohne dass jemand danach gefragt hat.
+
+**Bates-Nummerierung** steckt im Aufdruck: Präfix, erste Zahl, Stellen,
+Suffix, eingesetzt über `{bates}`. Sie zählt nicht das Dokument, sondern den
+Vorgang und läuft über Dokumentgrenzen weiter — für den zweiten Band setzt man
+die erste Zahl auf die nach der letzten Seite des ersten.
+
+**Vorabprüfung** (`Datei → Vorabprüfung und PDF/A`) sieht nach, ohne zu
+ändern: Schriften eingebettet, Bildauflösung, Seitenmaße, Titel, Textebene,
+ungesicherte Schwärzungen. Jeder Befund nennt **die Folge**, nicht nur den
+Zustand — „Schrift nicht eingebettet" sagt niemandem etwas, „auf einem fremden
+Rechner wird sie ersetzt und der Umbruch verschiebt sich" schon.
+
+Gelesen wird der Dateiaufbau über pdf-lib, nicht die Zeichenbefehle über
+pdf.js. Der erste Anlauf ging über `page.commonObjs` — ein internes Feld, das
+leer blieb. Ein Prüfstand, der auf Interna baut, misst irgendwann etwas
+anderes als das Programm tut.
+
+**PDF/A** wird ausdrücklich *vorbereitet* und nicht behauptet: Ausgabeabsicht,
+XMP-Kennzeichnung und Markierung werden gesetzt. Ob die Datei die Norm
+erfüllt, sagt ein Prüfprogramm wie veraPDF — nicht wir. Ein „PDF/A" auf einem
+Knopf, hinter dem keine Prüfung steht, wäre eine Zusage, die niemand halten
+kann.
+
+## Bilder im PDF
+
+`Bearbeiten → Bilder im Dokument`. Ersetzen und entfernen, nicht verschieben.
+
+Der Trick ist, nichts zu verschieben: ein Bild wird im Seitenstrom über seinen
+Namen gezeichnet, davor steht eine Matrix mit Lage und Größe. Wer den Eintrag
+im Mittelverzeichnis auf ein anderes Bild zeigen lässt, tauscht das Bild aus,
+ohne den Strom anzufassen — Lage, Größe und Drehung bleiben.
+
+Entfernen heißt hier **unsichtbar machen**: der Eintrag wird auf einen weißen
+Bildpunkt gesetzt. Den Namen zu streichen wäre sauberer und geht schief — der
+Strom ruft ihn weiter auf, und manche Betrachter brechen dann die Seite ab.
+
+Verschieben und anders zuschneiden geht deshalb nicht. Dafür müsste die Matrix
+im Seitenstrom geändert werden, und der Strom ist ein Wust aus Zuständen, in
+den man nicht einfach hineinschreibt. Das steht im Dialog.
+
+## Zur Unterschrift versenden — der eine Weg nach draußen
+
+`Schutz → Zur Unterschrift versenden`. **Hier verlässt die Datei das Gerät.**
+
+Das ist der Bruch mit dem Versprechen, auf dem der Rest steht, und er ist
+unvermeidlich: ein Ablauf, bei dem ein anderer Mensch unterschreiben soll,
+braucht eine Stelle, die beide erreichen. Deshalb steht die Warnung als erster
+Absatz im Dialog, der Knopf heißt „Hochladen und versenden", und ohne Haken bei
+„Ich weiß, dass das Dokument dafür hochgeladen wird" passiert nichts.
+
+| | |
+|---|---|
+| Anlegen | nur angemeldet — bei einer Unterschrift ist „wer hat das losgeschickt" die erste Frage |
+| Zugang | ein zufälliger Schlüssel aus 24 Bytes im Link. Wer ihn hat, hat den Auftrag |
+| Unterschreiben | im Browser des Empfängers; der Server sieht das Dokument nie an |
+| Protokoll | wer, wann, von welcher Adresse |
+| E-Mail | verschickt der Server **nicht** — er soll in niemandes Namen schreiben. Der Link geht an den Absender zurück |
+
+**Es ist keine qualifizierte elektronische Signatur nach eIDAS.** Es ist eine
+sichtbare Unterschrift mit Protokoll. Wer eine qualifizierte braucht, nimmt
+`Digital unterschreiben` mit eigenem Zertifikat — das läuft ohne Server.
+
+Alle Aussagen auf der Seite und im Programm, die „nichts verlässt das Gerät"
+sagten, sind um diese Ausnahme ergänzt. Ein Versprechen mit einer
+unausgesprochenen Ausnahme ist keines.
+
 ## Einzelwerkzeuge — der kurze Weg
 
 Das Studio ist eine Werkbank: man legt ein Dokument hinein und arbeitet daran.
@@ -684,9 +768,9 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 158 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 166 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
-node werkzeuge/live-pruefen.mjs   #  31 Prüfungen — was der Hoster ausliefert
+node werkzeuge/live-pruefen.mjs   #  48 Prüfungen — was der Hoster ausliefert
 ```
 
 **`pruefen.mjs`** fragt: Stimmt, was herauskommt? Geschwärzte Seite ohne

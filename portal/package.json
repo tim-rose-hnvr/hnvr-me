@@ -19,7 +19,9 @@
     "skills": "wix skills"
   },
   "dependencies": {
+    "@wix/crm": "^1.0.1616",
     "@wix/dashboard": "^1.3.43",
+    "@wix/data": "^1.0.513",
     "@wix/essentials": "^0.1.23",
     "@wix/members": "^1.0.500",
     "@wix/sdk": "^1.15.23",

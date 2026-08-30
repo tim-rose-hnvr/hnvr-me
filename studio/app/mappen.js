@@ -23,6 +23,7 @@ const DOKUMENT_FELDER = [
   'formularfelder', 'name', 'geaendert', 'gliederung', 'eigenschaften',
   'aktuelleSeite', 'gewaehlteSeiten', 'gewaehlteAnmerkung',
   'historie', 'historieZeiger', 'zugang', 'nurAuswahl', 'massstab', 'aufdruck',
+  'lesezeichen', 'anhaenge', 'pdfA', 'bildauftraege',
 ];
 
 /** Frische, leere Ablage — dieselben Werte wie beim Start. */
@@ -33,7 +34,7 @@ function leererStand() {
     name: 'Ohne Titel', geaendert: false, gliederung: null, eigenschaften: null,
     aktuelleSeite: 1, gewaehlteSeiten: new Set(), gewaehlteAnmerkung: null,
     historie: [], historieZeiger: -1, zugang: null, nurAuswahl: false,
-    massstab: null, aufdruck: null,
+    massstab: null, aufdruck: null, lesezeichen: null, anhaenge: [], pdfA: false, bildauftraege: [],
   };
 }
 

@@ -17,6 +17,7 @@
      {seite}   die Nummer dieser Seite          {seiten}  wieviele es sind
      {datum}   heute, deutsch                   {zeit}    Uhrzeit
      {datei}   Name des Dokuments               {titel}   Titel aus den Merkmalen
+     {bates}   die Bates-Nummer dieser Seite
 
    Die Zählung ist nicht immer die Seitenzahl: „ab Seite 3 beginnen mit 1" ist
    der Normalfall in Gremienunterlagen, weil Deckblatt und Inhaltsverzeichnis
@@ -42,6 +43,16 @@ export const VORGABE = {
   },
   kopf: { links: '', mitte: '', rechts: '', groesse: 9, farbe: '#5F686E', abstand: 28 },
   fuss: { links: '', mitte: '', rechts: 'Seite {seite} von {seiten}', groesse: 9, farbe: '#5F686E', abstand: 28 },
+  /* Bates: die fortlaufende Nummer, die in Akten jede Seite eindeutig macht.
+     Anders als die Seitenzahl zählt sie nicht das Dokument, sondern den
+     Vorgang: sie beginnt bei einer festen Zahl, hat eine feste Stellenzahl
+     und läuft über Dokumentgrenzen hinweg weiter. Deshalb `beginn` und
+     `stellen` statt „Seite 1 von 5".
+
+     Zwei Vorgänge dürfen nie dieselbe Nummer tragen — das ist der ganze
+     Zweck. Wer den zweiten Band nummeriert, setzt `beginn` auf die Zahl nach
+     der letzten Seite des ersten. */
+  bates: { praefix: '', beginn: 1, stellen: 6, suffix: '' },
 };
 
 /** Was zurzeit aufgedruckt wird. `null` heißt: nichts. */
@@ -104,7 +115,15 @@ export function setzeFelder(muster, lage) {
   const gezeigt = nummer - ersteSeite + beginntBei;
   const gesamt = seitenzahl - ersteSeite + beginntBei;
   const jetzt = new Date();
+  const b = zustand.aufdruck?.bates;
+  /* Die Bates-Nummer zählt ab der ersten Seite im Bereich, nicht ab Seite 1
+     des Dokuments: wer „ab Seite 3" nummeriert, will, dass Seite 3 die erste
+     Nummer trägt. */
+  const bates = b
+    ? `${b.praefix || ''}${String((b.beginn ?? 1) + (nummer - ersteSeite)).padStart(b.stellen ?? 6, '0')}${b.suffix || ''}`
+    : '';
   return String(muster)
+    .replace(/\{bates\}/g, bates)
     .replace(/\{seite\}/g, String(gezeigt))
     .replace(/\{seiten\}/g, String(gesamt))
     .replace(/\{datum\}/g, jetzt.toLocaleDateString('de-DE'))

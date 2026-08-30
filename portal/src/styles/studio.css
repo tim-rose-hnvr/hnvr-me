@@ -628,3 +628,22 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 }
 .werkzeugliste a:hover { border-color: var(--tally); transform: translateY(-1px); }
 .werkzeugliste a::after { content: ' →'; color: var(--tally); }
+
+/* Das Kontaktformular. Ein Formular statt einer Adresse — eine Adresse im
+   Quelltext wird binnen Tagen von Sammlern gefunden. */
+.kontaktform { display: flex; flex-direction: column; gap: .8rem; max-width: 44rem; }
+.kontakt-reihe { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.kontaktform label { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: var(--tinte-leise); }
+.kontaktform input, .kontaktform textarea {
+  padding: .6rem .7rem; border: 1px solid var(--linie-stark);
+  border-radius: var(--radius-klein); font: inherit; font-size: .95rem;
+  background: var(--flaeche); color: var(--tinte); resize: vertical;
+}
+.kontaktform input:focus-visible, .kontaktform textarea:focus-visible {
+  outline: 2px solid var(--tally); outline-offset: 1px;
+}
+.kontakt-fuss { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; }
+.kontakt-fuss button:disabled { opacity: .55; cursor: not-allowed; }
+.kontakt-stand { font-size: .9rem; color: var(--tinte-leise); }
+.kontakt-stand.ist-gut { color: var(--tally); }
+.kontakt-stand.ist-warnung { color: var(--warn); }

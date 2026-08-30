@@ -53,6 +53,8 @@ import {
   zeigeBarrierefreiDialog, zeigeExcelDialog, zeigeWordDialog, zeigeSchutzDialog,
   zeigeVerkleinernDialog, zeigeTeilenDialog, zeigeMusterDialog, zeigeHilfe, zeigePalette,
   zeigeInstallDialog, zeigeAufdruckDialog, zeigeFelderkennung,
+  zeigeLesezeichenDialog, zeigeAnhangDialog, zeigeVorabpruefung, zeigePowerPointDialog,
+  zeigeBilderDialog, zeigeVersendenDialog,
 } from './dialoge.js';
 
 
@@ -160,6 +162,12 @@ function baueBefehle() {
   befehl('installieren', 'Auf diesem Gerät einrichten …', 'Datei', zeigeInstallDialog);
   befehl('aufdruck', 'Wasserzeichen, Kopf- und Fußzeile …', 'Seiten', zeigeAufdruckDialog);
   befehl('formular:erkennen', 'Formularfelder erkennen …', 'Werkzeuge', zeigeFelderkennung);
+  befehl('lesezeichen', 'Lesezeichen bearbeiten …', 'Seiten', zeigeLesezeichenDialog);
+  befehl('anhaenge', 'Dateianhänge …', 'Datei', zeigeAnhangDialog);
+  befehl('vorabpruefung', 'Vorabprüfung und PDF/A …', 'Datei', zeigeVorabpruefung);
+  befehl('powerpoint:ausgeben', 'Nach PowerPoint ausgeben (.pptx) …', 'Datei', zeigePowerPointDialog);
+  befehl('bilder', 'Bilder im Dokument …', 'Bearbeiten', zeigeBilderDialog);
+  befehl('versenden', 'Zur Unterschrift versenden …', 'Schutz', zeigeVersendenDialog);
   befehl('barrierefrei', 'Barrierefreiheit prüfen …', 'Hilfe', zeigeBarrierefreiDialog);
   befehl('signieren', 'Digital unterschreiben (Zertifikat) …', 'Schutz', zeigeSignaturDialog);
   befehl('schutz:zeigen', 'Schutz und Rechte anzeigen', 'Schutz', async () => {

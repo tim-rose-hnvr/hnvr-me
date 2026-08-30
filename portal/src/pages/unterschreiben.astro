@@ -1,0 +1,202 @@
+---
+/* Die Seite, auf der der Empfänger unterschreibt.
+
+   Sie ist bewusst karg: wer hierher kommt, hat einen Link bekommen und will
+   eine Sache erledigen. Kein Menü, keine Werbung, kein Konto.
+
+   Gerechnet wird im Browser des Empfängers — das PDF wird hier geladen, die
+   Unterschrift hineingezeichnet und das Ergebnis zurückgeschickt. Der Server
+   sieht das Dokument nie an; er hebt es auf und gibt es weiter. */
+import Grundgeruest from '../layouts/Grundgeruest.astro';
+export const prerender = false;
+---
+
+<Grundgeruest titel="Unterschreiben — PDF Studio" anmeldenZeigen={false}>
+  <section class="band band-grund"><div class="spur">
+    <div id="unterschreiben" class="unterschreiben">
+      <p class="hinweis-zeile">Der Auftrag wird geladen …</p>
+    </div>
+  </div></section>
+</Grundgeruest>
+
+<!-- `is:inline`: dieses Skript holt pdf-lib zur Laufzeit aus /studio/. Ohne
+     die Kennzeichnung versucht Vite, den Pfad beim Bauen aufzulösen, und
+     bricht ab — die Datei liegt dort erst, wenn die Anwendung eingebettet
+     ist. -->
+<script is:inline>
+  const wurzel = document.getElementById('unterschreiben');
+  const schluessel = new URLSearchParams(location.search).get('a') || '';
+
+  const sage = (text, art = '') => {
+    wurzel.innerHTML = `<p class="hinweis-zeile ${art}">${text}</p>`;
+  };
+
+  if (schluessel.length !== 48) {
+    sage('Dieser Link ist unvollständig. Bitten Sie den Absender um einen neuen.', 'ist-warnung');
+  } else {
+    starte().catch((f) => sage(`Es ging etwas schief: ${f.message}`, 'ist-warnung'));
+  }
+
+  async function starte() {
+    const antwort = await fetch(`/api/signatur/holen.json?a=${encodeURIComponent(schluessel)}`);
+    const auftrag = await antwort.json();
+    if (auftrag.fehler) return sage(auftrag.fehler, 'ist-warnung');
+
+    if (auftrag.stand === 'unterschrieben') {
+      wurzel.innerHTML = `
+        <h1>Bereits unterschrieben</h1>
+        <p>„${auftrag.titel}" wurde schon zurückgegeben. Sie können die Datei noch einmal herunterladen.</p>
+        <button class="knopf-voll" id="holen">Datei herunterladen</button>`;
+      document.getElementById('holen').addEventListener('click', () => lade(auftrag));
+      return;
+    }
+
+    wurzel.innerHTML = `
+      <span class="marke">ZUR UNTERSCHRIFT</span>
+      <h1>${auftrag.titel}</h1>
+      <p><b>${auftrag.absender}</b> bittet Sie, dieses Dokument zu unterschreiben.</p>
+      <p class="hinweis-zeile">Sehen Sie es zuerst an. Unterschreiben Sie nur, was Sie gelesen haben.</p>
+      <button class="knopf-umriss" id="ansehen">Dokument ansehen</button>
+      <div class="unterschrift-feld">
+        <label for="wer">Ihr Name</label>
+        <input id="wer" type="text" placeholder="Vorname Nachname" autocomplete="name">
+        <label for="strich">Ihre Unterschrift</label>
+        <canvas id="strich" width="600" height="180"></canvas>
+        <div class="unterschrift-knoepfe">
+          <button class="knopf-umriss" id="leeren">Nochmal</button>
+          <button class="knopf-voll" id="senden" disabled>Unterschreiben und zurücksenden</button>
+        </div>
+      </div>
+      <p class="hinweis-zeile">
+        Dies ist eine <b>sichtbare Unterschrift mit Protokoll</b> — wer, wann, von welcher
+        Adresse aus. Es ist <b>keine qualifizierte elektronische Signatur</b> nach eIDAS;
+        dafür braucht es ein Zertifikat und eine Signaturkarte. Im Streitfall ist das
+        der ganze Unterschied.
+      </p>
+      <p class="hinweis-zeile">
+        Wer diesen Link hat, hat den Auftrag — leiten Sie ihn nicht weiter.
+      </p>`;
+
+    document.getElementById('ansehen').addEventListener('click', () => lade(auftrag));
+
+    const leinwand = document.getElementById('strich');
+    const stift = leinwand.getContext('2d');
+    stift.lineWidth = 2.5; stift.lineCap = 'round'; stift.lineJoin = 'round'; stift.strokeStyle = '#171C20';
+    let malt = false; let etwasDa = false;
+
+    const punkt = (e) => {
+      const k = leinwand.getBoundingClientRect();
+      return { x: (e.clientX - k.left) * (leinwand.width / k.width), y: (e.clientY - k.top) * (leinwand.height / k.height) };
+    };
+    leinwand.addEventListener('pointerdown', (e) => {
+      malt = true; leinwand.setPointerCapture(e.pointerId);
+      const p = punkt(e); stift.beginPath(); stift.moveTo(p.x, p.y);
+    });
+    leinwand.addEventListener('pointermove', (e) => {
+      if (!malt) return;
+      const p = punkt(e); stift.lineTo(p.x, p.y); stift.stroke();
+      etwasDa = true; pruefe();
+    });
+    for (const art of ['pointerup', 'pointercancel', 'pointerleave']) {
+      leinwand.addEventListener(art, () => { malt = false; });
+    }
+    document.getElementById('leeren').addEventListener('click', () => {
+      stift.clearRect(0, 0, leinwand.width, leinwand.height); etwasDa = false; pruefe();
+    });
+    const wer = document.getElementById('wer');
+    wer.addEventListener('input', pruefe);
+    function pruefe() {
+      document.getElementById('senden').disabled = !(etwasDa && wer.value.trim().length > 1);
+    }
+
+    document.getElementById('senden').addEventListener('click', async () => {
+      const knopf = document.getElementById('senden');
+      knopf.disabled = true; knopf.textContent = 'Wird gesetzt …';
+      try {
+        const fertig = await setzeUnterschrift(auftrag, leinwand, wer.value.trim());
+        const rueck = await fetch('/api/signatur/unterschreiben.json', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ schluessel, datei: fertig, name: wer.value.trim() }),
+        });
+        const ergebnis = await rueck.json();
+        if (ergebnis.fehler) throw new Error(ergebnis.fehler);
+        wurzel.innerHTML = `<h1>Danke.</h1>
+          <p>„${auftrag.titel}" ist unterschrieben und zurückgegangen an ${auftrag.absender}.</p>`;
+      } catch (f) {
+        knopf.disabled = false; knopf.textContent = 'Unterschreiben und zurücksenden';
+        sage(`Die Unterschrift kam nicht durch: ${f.message}`, 'ist-warnung');
+      }
+    });
+  }
+
+  function bytesVon(base64) {
+    const roh = atob(base64);
+    const bytes = new Uint8Array(roh.length);
+    for (let i = 0; i < roh.length; i++) bytes[i] = roh.charCodeAt(i);
+    return bytes;
+  }
+
+  function lade(auftrag) {
+    const blob = new Blob([bytesVon(auftrag.datei)], { type: 'application/pdf' });
+    const weg = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = weg; a.download = auftrag.dateiname || 'dokument.pdf';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(weg), 4000);
+  }
+
+  /* Die Unterschrift wird hier hineingezeichnet, nicht auf dem Server. Sie
+     landet unten rechts auf der letzten Seite, mit Namen und Zeitpunkt
+     darunter — dort, wo eine Unterschrift auf Papier auch stünde. */
+  async function setzeUnterschrift(auftrag, leinwand, name) {
+    const { PDFDocument, StandardFonts, rgb } = await import('/studio/fremd/pdf-lib.mjs');
+    const dokument = await PDFDocument.load(bytesVon(auftrag.datei), { ignoreEncryption: true });
+    const bildBytes = bytesVon((leinwand.toDataURL('image/png').split(',')[1]));
+    const bild = await dokument.embedPng(bildBytes);
+    const schrift = await dokument.embedFont(StandardFonts.Helvetica);
+
+    const seite = dokument.getPage(dokument.getPageCount() - 1);
+    const breite = 180;
+    const hoehe = breite * (bild.height / bild.width);
+    const x = seite.getWidth() - breite - 56;
+    const y = 64;
+    seite.drawImage(bild, { x, y: y + 14, width: breite, height: hoehe });
+    seite.drawLine({ start: { x, y: y + 10 }, end: { x: x + breite, y: y + 10 }, thickness: 0.7, color: rgb(.35, .4, .42) });
+    seite.drawText(`${name} · ${new Date().toLocaleString('de-DE')}`, {
+      x, y, size: 7, font: schrift, color: rgb(.35, .4, .42),
+    });
+    dokument.setProducer('PDF Studio');
+    const bytes = await dokument.save();
+    let text = '';
+    for (let i = 0; i < bytes.length; i += 8192) {
+      text += String.fromCharCode(...bytes.subarray(i, i + 8192));
+    }
+    return btoa(text);
+  }
+</script>
+
+<style>
+  .unterschreiben { max-width: 44rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
+  .unterschreiben h1 { font-family: var(--serif); font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 0; }
+  .unterschreiben p { margin: 0; line-height: 1.7; }
+  .hinweis-zeile { color: var(--tinte-leise); font-size: .9rem; }
+  .hinweis-zeile.ist-warnung { color: var(--warn); }
+  .unterschrift-feld {
+    display: flex; flex-direction: column; gap: .5rem;
+    background: var(--flaeche); border: 1px solid var(--linie);
+    border-radius: var(--radius); padding: 1.2rem;
+  }
+  .unterschrift-feld label { font-size: .8rem; color: var(--tinte-leise); }
+  .unterschrift-feld input {
+    padding: .6rem .7rem; border: 1px solid var(--linie-stark);
+    border-radius: var(--radius-klein); font: inherit; background: var(--grund);
+  }
+  #strich {
+    width: 100%; height: auto; aspect-ratio: 600 / 180;
+    background: var(--grund); border: 1px dashed var(--linie-stark);
+    border-radius: var(--radius-klein); touch-action: none; cursor: crosshair;
+  }
+  .unterschrift-knoepfe { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .3rem; }
+  .unterschrift-knoepfe button:disabled { opacity: .5; cursor: not-allowed; }
+</style>

@@ -35,6 +35,10 @@ import { oeffneAusweis } from './signieren.js';
 import { VORGABE as AUFDRUCK_VORGABE, setzeAufdruck, hatAufdruck } from './aufdruck.js';
 import { erkenneFelder } from './felderkennen.js';
 import {
+  lesezeichenListe, setzeLesezeichen, anhaenge, fuegeAnhangAn, entferneAnhang,
+  lieseAnhaenge, vorabpruefung,
+} from './dokumentteile.js';
+import {
   istInstalliert, kannInstallieren, dienstLaeuft, frageInstallation, holeVorrat, vorratsGroesse,
 } from './installieren.js';
 /* Aus der Oberfläche: das Befehlsregister, die Einstellungen und die zwei
@@ -908,6 +912,7 @@ export function zeigeAufdruckDialog() {
   const w = { ...AUFDRUCK_VORGABE.wasserzeichen, ...(jetzt.wasserzeichen || {}), an: !!jetzt.wasserzeichen };
   const kopf = { ...AUFDRUCK_VORGABE.kopf, ...(jetzt.kopf || {}) };
   const fuss = { ...AUFDRUCK_VORGABE.fuss, ...(jetzt.fuss || {}) };
+  const bates = { ...AUFDRUCK_VORGABE.bates, ...(jetzt.bates || {}) };
 
   /* Die Felder werden beim Tippen wirksam: die Bühne zeigt mit. Erst beim
      Schließen wird der Stand endgültig — „Abbrechen" stellt den alten
@@ -929,6 +934,12 @@ export function zeigeAufdruckDialog() {
   const fFelder = { links: feld(fuss.links, 'links'), mitte: feld(fuss.mitte, 'mittig'), rechts: feld(fuss.rechts, 'rechts') };
   const abSeite = el('input', { klasse: 'feld', type: 'number', min: '1', max: String(zustand.folge.length), value: String(fuss.ersteSeite || 1), stil: { width: '5rem' } });
   const beginntBei = el('input', { klasse: 'feld', type: 'number', min: '0', value: String(fuss.beginntBei || 1), stil: { width: '5rem' } });
+  const bPraefix = feld(bates.praefix, 'z. B. AKTE-');
+  const bBeginn = el('input', { klasse: 'feld', type: 'number', min: '0', value: String(bates.beginn), stil: { width: '7rem' } });
+  const bStellen = el('input', { klasse: 'feld', type: 'number', min: '1', max: '12', value: String(bates.stellen), stil: { width: '5rem' } });
+  const bSuffix = feld(bates.suffix, 'z. B. -A');
+  const bProbe = el('span', { klasse: 'mono klein leise' });
+
   const bereich = el('select', { klasse: 'feld' },
     el('option', { value: 'alle', text: 'alle Seiten' }),
     el('option', { value: 'ungerade', text: 'nur ungerade' }),
@@ -944,6 +955,12 @@ export function zeigeAufdruckDialog() {
     const kopfLeer = !kFelder.links.value && !kFelder.mitte.value && !kFelder.rechts.value;
     const fussLeer = !fFelder.links.value && !fFelder.mitte.value && !fFelder.rechts.value;
     const stand = {
+      bates: {
+        praefix: bPraefix.value,
+        beginn: Number(bBeginn.value) || 0,
+        stellen: Math.max(1, Math.min(12, Number(bStellen.value) || 6)),
+        suffix: bSuffix.value,
+      },
       wasserzeichen: wAn.checked && wText.value.trim() ? {
         ...AUFDRUCK_VORGABE.wasserzeichen,
         text: wText.value,
@@ -971,10 +988,15 @@ export function zeigeAufdruckDialog() {
   const zeigeMit = () => {
     zustand.aufdruck = zusammen();
     wDeckungAnzeige.textContent = `${Math.round(Number(wDeckung.value) * 100)} %`;
+    const b = zustand.aufdruck?.bates;
+    bProbe.textContent = b
+      ? `erste Seite: ${b.praefix}${String(b.beginn).padStart(b.stellen, '0')}${b.suffix}`
+      : '';
     melde('aufdruck:geaendert');
     melde('seiten:geaendert');
   };
   for (const knoten of [wAn, wText, wGroesse, wWinkel, wDeckung, abSeite, beginntBei, bereich,
+    bPraefix, bBeginn, bStellen, bSuffix,
     ...Object.values(kFelder), ...Object.values(fFelder)]) {
     knoten.addEventListener('input', zeigeMit);
     knoten.addEventListener('change', zeigeMit);
@@ -994,7 +1016,17 @@ export function zeigeAufdruckDialog() {
       'Felder in geschweiften Klammern werden ersetzt: ',
       el('code', { text: '{seite}' }), ' ', el('code', { text: '{seiten}' }), ' ',
       el('code', { text: '{datum}' }), ' ', el('code', { text: '{zeit}' }), ' ',
-      el('code', { text: '{datei}' }), ' ', el('code', { text: '{titel}' }), '.'),
+      el('code', { text: '{datei}' }), ' ', el('code', { text: '{titel}' }), ' ',
+      el('code', { text: '{bates}' }), '.'),
+    el('div', { klasse: 'dialog-trenner' }),
+    zeile('Bates-Nummer', bPraefix, bBeginn, bStellen, bSuffix),
+    zeile('Ergibt', bProbe),
+    el('p', { klasse: 'hinweis' },
+      'Präfix, erste Zahl, Stellen, Suffix. Die Bates-Nummer zählt nicht das ',
+      'Dokument, sondern den Vorgang: sie läuft über Dokumentgrenzen hinweg weiter. ',
+      'Für den zweiten Band setzen Sie die erste Zahl auf die Zahl nach der letzten ',
+      'Seite des ersten — zwei Vorgänge dürfen nie dieselbe Nummer tragen. ',
+      'Eingesetzt wird sie über ', el('code', { text: '{bates}' }), ' in Kopf- oder Fußzeile.'),
     el('div', { klasse: 'dialog-trenner' }),
     zeile('Ab Seite', abSeite, el('span', { klasse: 'hinweis', text: `von ${zustand.folge.length}` })),
     zeile('Zählung beginnt bei', beginntBei),
@@ -1157,4 +1189,466 @@ export function zeigeFelderkennung() {
   /* Gleich losgehen: wer den Dialog öffnet, will das Ergebnis, nicht erst
      einen zweiten Knopf. */
   mitLader('Formular wird gelesen …', suchen);
+}
+
+/* Lesezeichen — anlegen, umbenennen, verschieben, löschen.
+
+   Das Studio las sie bisher nur. Bei einer 200-seitigen Sitzungsmappe ist das
+   der Unterschied zwischen brauchbar und unbrauchbar: die Gliederung ist der
+   einzige Weg, in einem so langen Dokument etwas wiederzufinden.
+
+   Eine flache Liste mit Einrückung statt eines Baums. Wer eine Ebene tiefer
+   will, drückt „→"; wer heraus will, „←". Das ist weniger schön als ein Baum
+   und deutlich weniger fehleranfällig — ein Baum, den man mit der Maus
+   umhängt, hat immer einen Zustand, in dem ein Ast im Nichts hängt. */
+export async function zeigeLesezeichenDialog() {
+  if (!zustand.folge.length) return sage('Kein Dokument geladen', { art: 'warn' });
+  const liste = [...await lesezeichenListe()];
+  const rumpf = el('div', {});
+  const tafel = el('div', { klasse: 'fundliste' });
+
+  const zeichne = () => {
+    tafel.innerHTML = '';
+    if (!liste.length) {
+      tafel.append(el('p', { klasse: 'hinweis', text: 'Noch keine Lesezeichen. „Aus aktueller Seite" legt das erste an.' }));
+      return;
+    }
+    for (const [i, punkt] of liste.entries()) {
+      const titel = el('input', { klasse: 'feld', value: punkt.titel });
+      titel.addEventListener('input', () => { punkt.titel = titel.value; });
+      const seite = el('input', {
+        klasse: 'feld', type: 'number', min: '1', max: String(zustand.folge.length),
+        value: String(punkt.seite), stil: { width: '5rem' },
+      });
+      seite.addEventListener('input', () => {
+        punkt.seite = Math.max(1, Math.min(zustand.folge.length, Number(seite.value) || 1));
+      });
+      const knopf = (text, titelText, tun, aus = false) => el('button', {
+        klasse: 'knopf knopf-klein knopf-still', text, title: titelText, disabled: aus,
+        beiClick: () => { tun(); zeichne(); },
+      });
+      tafel.append(el('div', { klasse: 'fundzeile' },
+        el('span', { klasse: 'mono klein leise', stil: { paddingLeft: `${punkt.ebene * 14}px` }, text: '•' }),
+        titel, seite,
+        knopf('←', 'Eine Ebene heraus', () => { punkt.ebene = Math.max(0, punkt.ebene - 1); }, punkt.ebene === 0),
+        /* Tiefer geht nur, wenn darüber etwas steht, worunter es passt —
+           sonst entsteht ein Ast ohne Stamm. */
+        knopf('→', 'Eine Ebene hinein', () => { punkt.ebene += 1; },
+          i === 0 || liste[i - 1].ebene < punkt.ebene),
+        knopf('↑', 'Nach oben', () => { [liste[i - 1], liste[i]] = [liste[i], liste[i - 1]]; }, i === 0),
+        knopf('↓', 'Nach unten', () => { [liste[i + 1], liste[i]] = [liste[i], liste[i + 1]]; }, i === liste.length - 1),
+        el('button', {
+          klasse: 'knopf knopf-klein knopf-gefahr', text: '✕', title: 'Löschen',
+          beiClick: () => { liste.splice(i, 1); zeichne(); },
+        })));
+    }
+  };
+  zeichne();
+
+  rumpf.append(
+    zeile('Hinzufügen',
+      el('button', {
+        klasse: 'knopf knopf-klein', text: 'Aus aktueller Seite',
+        beiClick: () => {
+          const seite = zustand.aktuelleSeite;
+          const eintrag = zustand.folge[seite - 1];
+          const kurz = zustand.ocr.get(eintrag?.id)?.zeilen?.[0]?.text
+            || `Seite ${seite}`;
+          liste.push({ titel: kurz.slice(0, 60), seite, ebene: 0 });
+          zeichne();
+        },
+      })),
+    tafel,
+    el('p', { klasse: 'hinweis' },
+      'Die Gliederung wird beim Sichern geschrieben. Sie überschreibt die vorhandene — ',
+      'wer sie hier leert und sichert, hat danach keine mehr. Untereinträge werden ',
+      'zugeklappt gespeichert; eine Mappe, die beim Öffnen ganz aufgeklappt ist, hilft niemandem.'));
+
+  zeigeDialog({
+    titel: 'Lesezeichen',
+    breit: true,
+    rumpf,
+    fussHinweis: `${zustand.folge.length} Seiten im Dokument`,
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Übernehmen', betont: true,
+        tun: () => {
+          setzeLesezeichen(liste.filter((p) => p.titel.trim()));
+          sage(liste.length ? `${liste.length} Lesezeichen — werden beim Sichern geschrieben` : 'Gliederung geleert');
+        },
+      },
+    ],
+  });
+}
+
+/* Dateianhänge — Dateien *im* PDF.
+
+   Die Rechnung im Vertrag, die Tabelle zum Bericht. Jeder Betrachter zeigt
+   sie als Büroklammer; wer das PDF weitergibt, gibt sie mit. Das ist etwas
+   anderes als ein zweites PDF im selben Ordner: der Ordner geht verloren,
+   das PDF nicht. */
+export async function zeigeAnhangDialog() {
+  if (!zustand.folge.length) return sage('Kein Dokument geladen', { art: 'warn' });
+  /* Was schon in der Datei steckt, gehört dazu — sonst löscht ein Sichern
+     die Anhänge des Originals, ohne dass jemand danach gefragt hat. */
+  if (!zustand.anhaenge?.length) {
+    const vorhandene = await lieseAnhaenge();
+    for (const a of vorhandene) fuegeAnhangAn(a);
+  }
+
+  const wahl = el('input', { type: 'file', hidden: true, multiple: true });
+  const tafel = el('div', { klasse: 'fundliste' });
+
+  const zeichne = () => {
+    tafel.innerHTML = '';
+    const alle = anhaenge();
+    if (!alle.length) {
+      tafel.append(el('p', { klasse: 'hinweis', text: 'Keine Anhänge. „Datei anhängen" legt die erste hinein.' }));
+      return;
+    }
+    for (const anhang of alle) {
+      tafel.append(el('div', { klasse: 'fundzeile' },
+        el('span', { klasse: 'einzel-datei-name', text: anhang.name }),
+        el('span', { klasse: 'mono klein leise', text: groesse(anhang.bytes?.length || 0) }),
+        anhang.ausDerDatei ? el('span', { klasse: 'marke', text: 'schon drin' }) : null,
+        el('button', {
+          klasse: 'knopf knopf-klein', text: 'Sichern', title: 'Den Anhang herausholen',
+          beiClick: () => sichereBytes(anhang.bytes, anhang.name, anhang.art),
+        }),
+        el('button', {
+          klasse: 'knopf knopf-klein knopf-gefahr', text: '✕', title: 'Entfernen',
+          beiClick: () => { entferneAnhang(anhang.name); zeichne(); },
+        })));
+    }
+  };
+  zeichne();
+
+  wahl.addEventListener('change', async (ereignis) => {
+    for (const datei of ereignis.target.files) {
+      fuegeAnhangAn({
+        name: datei.name,
+        bytes: new Uint8Array(await datei.arrayBuffer()),
+        art: datei.type || 'application/octet-stream',
+        beschreibung: '',
+      });
+    }
+    zeichne();
+  });
+
+  zeigeDialog({
+    titel: 'Dateianhänge',
+    breit: true,
+    fussHinweis: 'Anhänge werden beim Sichern in die Datei geschrieben.',
+    rumpf: el('div', {},
+      zeile('Hinzufügen', el('button', {
+        klasse: 'knopf knopf-klein', text: 'Datei anhängen', beiClick: () => wahl.click(),
+      })),
+      tafel,
+      el('p', { klasse: 'hinweis' },
+        'Angehängte Dateien liegen unverändert im PDF und werden mit ihm weitergegeben. ',
+        'Sie werden nicht durchsucht und nicht geprüft — ein angehängtes Programm bleibt ein Programm. ',
+        'Wer ein PDF aus fremder Hand öffnet, sollte seine Anhänge mit derselben Vorsicht behandeln wie einen E-Mail-Anhang.'),
+      wahl),
+    knoepfe: [{ beschriftung: 'Schließen', betont: true }],
+  });
+}
+
+/* Vorabprüfung — was der Datei zum Druck oder zur Archivierung fehlt.
+
+   Sie ändert nichts. Das ist der ganze Sinn: wer eine Datei weitergibt, will
+   vorher wissen, woran sie scheitert, nicht hinterher. Jeder Befund nennt die
+   Folge, nicht nur den Zustand — „Schrift nicht eingebettet" sagt nichts,
+   „auf einem fremden Rechner wird sie ersetzt" schon. */
+export function zeigeVorabpruefung() {
+  if (!zustand.folge.length) return sage('Kein Dokument geladen', { art: 'warn' });
+  const tafel = el('div', {});
+  const stand = el('p', { klasse: 'hinweis', text: 'Wird durchgesehen …' });
+  const pdfA = el('input', { type: 'checkbox', checked: !!zustand.pdfA });
+  pdfA.addEventListener('change', () => { zustand.pdfA = pdfA.checked; });
+
+  const rumpf = el('div', {}, stand, tafel,
+    el('div', { klasse: 'dialog-trenner' }),
+    zeile('PDF/A', el('label', { klasse: 'zeile-kasten' }, pdfA, 'beim Sichern vorbereiten')),
+    el('p', { klasse: 'hinweis' },
+      'Vorbereiten heißt: Ausgabeabsicht, XMP-Kennzeichnung und Markierung werden gesetzt. ',
+      'Ob die Datei danach die Norm erfüllt, sagt ein Prüfprogramm wie veraPDF — nicht wir. ',
+      'Ein „PDF/A" auf einem Knopf, hinter dem keine Prüfung steht, wäre eine Zusage, die niemand halten kann. ',
+      'Ohne eingebettetes ICC-Profil bleibt die Ausgabeabsicht außerdem unvollständig.'));
+
+  zeigeDialog({
+    titel: 'Vorabprüfung',
+    breit: true,
+    rumpf,
+    fussHinweis: 'Sieht nach, ändert nichts.',
+    knoepfe: [{ beschriftung: 'Schließen', betont: true }],
+  });
+
+  const ZEICHEN = { fehler: '✕', warnung: '!', gut: '✓' };
+  vorabpruefung(({ seite, gesamt }) => { stand.textContent = `Seite ${seite} von ${gesamt} …`; })
+    .then(({ befunde, zahlen }) => {
+      const schlimm = befunde.filter((b) => b.art === 'fehler').length;
+      const laut = befunde.filter((b) => b.art === 'warnung').length;
+      stand.textContent = schlimm
+        ? `${schlimm} Sache${schlimm === 1 ? '' : 'n'}, die dem Druck oder der Archivierung im Weg steht — und ${laut} zum Nachdenken.`
+        : laut ? `Nichts Blockierendes, ${laut} zum Nachdenken.`
+          : `${zahlen.seiten} Seiten, nichts zu beanstanden.`;
+      for (const b of befunde) {
+        tafel.append(el('div', { klasse: `befund ist-${b.art}` },
+          el('span', { klasse: 'befund-zeichen', text: ZEICHEN[b.art] }),
+          el('div', {},
+            el('div', { klasse: 'befund-was', text: b.was }),
+            b.folge ? el('div', { klasse: 'befund-folge', text: b.folge }) : null,
+            b.wo ? el('div', { klasse: 'mono klein leise', text: b.wo }) : null)));
+      }
+    })
+    .catch((fehler) => { stand.textContent = `Die Prüfung scheiterte: ${fehler.message}`; });
+}
+
+/* PowerPoint — je Seite eine Folie.
+
+   Was hier entsteht, ist keine Umwandlung des Layouts, sondern ein Umzug des
+   Textes: erste Zeile als Titel, der Rest als Aufzählung. Spalten, Bilder,
+   Farben und Tabellen bleiben zurück. Das steht im Dialog, weil eine Ausgabe,
+   die mehr verspricht, als sie hält, mehr Zeit kostet als eine, die es gar
+   nicht gibt. */
+export function zeigePowerPointDialog() {
+  zeigeFormular({
+    titel: 'Nach PowerPoint ausgeben',
+    felder: [
+      {
+        name: 'umfang', beschriftung: 'Umfang',
+        wahl: [
+          ['alle', `Alle Seiten (${zustand.folge.length})`],
+          ['auswahl', `Gewählte Seiten (${zustand.gewaehlteSeiten.size})`],
+        ],
+      },
+      {
+        name: 'zeilen', beschriftung: 'Zeilen je Folie', art: 'zahl', von: 3, bis: 30, wert: 12,
+        stil: { width: '6rem' },
+      },
+    ],
+    hinweise: [
+      'Je Seite eine Folie: die erste Zeile wird der Titel, der Rest eine Aufzählung. '
+      + 'Das trifft bei Berichten und Protokollen fast immer und ist bei Fließtext '
+      + 'höchstens unglücklich, nie falsch.',
+      'Nicht übernommen werden Spalten, Bilder, Farben und Tabellen — ein PDF beschreibt '
+      + 'Buchstaben an Punkten, keine Folien. Wer das Aussehen braucht, gibt das PDF weiter; '
+      + 'wer die Sätze in eine Präsentation heben will, nimmt diese Datei.',
+    ],
+    tat: {
+      beschriftung: 'Ausgeben',
+      tun: ({ umfang, zeilen }) => mitLader('Folien werden gebaut …', async () => {
+        const { alsPowerPoint } = await import('./powerpoint.js');
+        const { bytes, folien, leereFolien } = await alsPowerPoint({
+          seiten: umfang === 'auswahl' && zustand.gewaehlteSeiten.size ? [...zustand.gewaehlteSeiten] : null,
+          zeilenJeFolie: zeilen,
+        });
+        sichereBytes(bytes, vorschlagsname('').replace(/\.pdf$/i, '.pptx'),
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+        sage(leereFolien
+          ? `${folien} Folien — ${leereFolien} davon leer, weil die Seite keinen Text hat`
+          : `${folien} Folien ausgegeben`, { dauer: 6000 });
+      }),
+    },
+  });
+}
+
+/* Bilder im PDF — ersetzen und entfernen.
+
+   Getauscht wird der Eintrag im Mittelverzeichnis, nicht der Seitenstrom:
+   das Bild wechselt, Lage und Größe bleiben. Verschieben oder anders
+   zuschneiden geht deshalb nicht — dafür müsste die Matrix im Strom geändert
+   werden, und der Strom ist ein Wust aus Zuständen, in den man nicht einfach
+   hineinschreibt. Das steht im Dialog, damit niemand es erwartet. */
+export async function zeigeBilderDialog() {
+  if (!zustand.folge.length) return sage('Kein Dokument geladen', { art: 'warn' });
+  const { bilderImDokument, bildauftraege, setzeBildauftrag } = await import('./bilder.js');
+
+  const tafel = el('div', { klasse: 'fundliste' });
+  const stand = el('p', { klasse: 'hinweis', text: 'Wird durchgesehen …' });
+
+  zeigeDialog({
+    titel: 'Bilder im Dokument',
+    breit: true,
+    fussHinweis: 'Getauscht wird beim Sichern.',
+    rumpf: el('div', {}, stand, tafel,
+      el('p', { klasse: 'hinweis' },
+        'Ein Bild wird über seinen Namen gezeichnet; getauscht wird der Eintrag, nicht die Stelle. ',
+        'Deshalb behält das neue Bild Lage, Größe und Drehung des alten — und deshalb lässt sich ',
+        'ein Bild hier nicht verschieben oder anders zuschneiden. ',
+        'Passen die Seitenverhältnisse nicht zueinander, wird das neue Bild verzerrt.')),
+    knoepfe: [{ beschriftung: 'Schließen', betont: true }],
+  });
+
+  let bilder = [];
+  try {
+    bilder = await bilderImDokument();
+  } catch (fehler) {
+    stand.textContent = `Die Bilder ließen sich nicht lesen: ${fehler.message}`;
+    return;
+  }
+
+  if (!bilder.length) {
+    stand.textContent = 'Keine Bilder gefunden. Dieses Dokument besteht aus Text und Linien.';
+    return;
+  }
+  const grobe = bilder.filter((b) => b.dpi < 150).length;
+  stand.textContent = grobe
+    ? `${bilder.length} Bilder, ${grobe} davon unter 150 dpi.`
+    : `${bilder.length} Bilder, alle über 150 dpi.`;
+
+  for (const bild of bilder) {
+    const wahl = el('input', { type: 'file', accept: 'image/png,image/jpeg', hidden: true });
+    const marke = el('span', { klasse: 'marke' });
+    const zeigeMarke = () => {
+      const auftrag = bildauftraege().find((a) => a.seite === bild.seite && a.name === bild.name);
+      marke.textContent = auftrag ? (auftrag.entfernen ? 'wird entfernt' : 'wird ersetzt') : '';
+      marke.hidden = !auftrag;
+    };
+    zeigeMarke();
+
+    wahl.addEventListener('change', async (ereignis) => {
+      const datei = ereignis.target.files[0];
+      if (!datei) return;
+      setzeBildauftrag({
+        seite: bild.seite, name: bild.name,
+        ersatz: new Uint8Array(await datei.arrayBuffer()), entfernen: false,
+      });
+      zeigeMarke();
+      sage(`${datei.name} ersetzt beim Sichern das Bild auf Seite ${bild.seite}`);
+    });
+
+    /* Vorschau nur beim JPEG: sein Strom **ist** die Datei. Alles andere
+       müsste erst entpackt werden; lieber kein Bild als ein falsches. */
+    const vorschau = bild.bytes
+      ? el('img', {
+        klasse: 'bildvorschau',
+        src: URL.createObjectURL(new Blob([bild.bytes], { type: 'image/jpeg' })),
+        alt: `Bild auf Seite ${bild.seite}`,
+      })
+      : el('span', { klasse: 'bildvorschau ist-ohne mono klein', text: bild.art || '?' });
+
+    tafel.append(el('div', { klasse: 'fundzeile' },
+      vorschau,
+      el('span', { klasse: 'mono klein leise', text: `S.${bild.seite}` }),
+      el('span', { klasse: 'einzel-datei-name', text: `${bild.breite} × ${bild.hoehe} px · etwa ${bild.dpi} dpi` }),
+      marke,
+      el('button', { klasse: 'knopf knopf-klein', text: 'Ersetzen …', beiClick: () => wahl.click() }),
+      el('button', {
+        klasse: 'knopf knopf-klein knopf-gefahr', text: 'Entfernen',
+        beiClick: () => {
+          setzeBildauftrag({ seite: bild.seite, name: bild.name, ersatz: null, entfernen: true });
+          zeigeMarke();
+          sage(`Das Bild auf Seite ${bild.seite} wird beim Sichern weiß überdeckt`);
+        },
+      }),
+      el('button', {
+        klasse: 'knopf knopf-klein knopf-still', text: '↺', title: 'Zurücknehmen',
+        beiClick: () => {
+          setzeBildauftrag({ seite: bild.seite, name: bild.name, zuruecknehmen: true });
+          zeigeMarke();
+        },
+      }),
+      wahl));
+  }
+}
+
+/* Zur Unterschrift versenden.
+
+   **Hier verlässt die Datei das Gerät.** Alles andere in diesem Programm
+   rechnet im Browserfenster; dieser eine Weg nicht, und er kann es nicht:
+   ein Ablauf, bei dem ein anderer Mensch unterschreiben soll, braucht eine
+   Stelle, die beide erreichen.
+
+   Deshalb steht die Warnung nicht im Kleingedruckten, sondern als erster
+   Absatz, und der Knopf heißt „Hochladen und versenden" und nicht „Senden".
+   Wer das nicht will, hat zwei andere Wege: die Datei selbst verschicken, oder
+   digital unterschreiben mit eigenem Zertifikat — beides ohne Server. Auch
+   das steht da. */
+export function zeigeVersendenDialog() {
+  if (!zustand.folge.length) return sage('Kein Dokument geladen', { art: 'warn' });
+
+  const empfaenger = el('input', { klasse: 'feld', type: 'email', placeholder: 'name@beispiel.de', autocomplete: 'off' });
+  const titel = el('input', { klasse: 'feld', value: vorschlagsname('').replace(/\.pdf$/i, '') });
+  const verstanden = el('input', { type: 'checkbox' });
+  const ergebnis = el('div', {});
+
+  zeigeDialog({
+    titel: 'Zur Unterschrift versenden',
+    breit: true,
+    fussHinweis: 'Der einzige Weg in diesem Programm, bei dem eine Datei das Gerät verlässt.',
+    rumpf: el('div', {},
+      el('p', { klasse: 'hinweis ist-warnung' },
+        'Achtung: Für diesen einen Weg wird das Dokument auf den Server hochgeladen. ',
+        'Anders geht es nicht — der Empfänger muss es erreichen können. ',
+        'Alles andere in diesem Programm bleibt auf Ihrem Gerät; dies nicht.'),
+      el('p', { klasse: 'hinweis' },
+        'Der Empfänger bekommt einen Link mit einem zufälligen Schlüssel, sieht das Dokument, ',
+        'zeichnet seine Unterschrift und schickt es zurück. Wer den Link hat, hat den Auftrag — ',
+        'er ist so vertraulich wie die E-Mail, in der er steht.'),
+      el('p', { klasse: 'hinweis' },
+        'Das Ergebnis ist eine ', el('b', { text: 'sichtbare Unterschrift mit Protokoll' }),
+        ' — wer, wann, von welcher Adresse. Es ist ',
+        el('b', { text: 'keine qualifizierte elektronische Signatur' }),
+        ' nach eIDAS; dafür braucht es ein Zertifikat und eine Signaturkarte. ',
+        'Wer das braucht, nimmt „Digital unterschreiben" — das läuft ohne Server.'),
+      el('div', { klasse: 'dialog-trenner' }),
+      zeile('Titel', titel),
+      zeile('Empfänger', empfaenger),
+      zeile('Einverstanden', el('label', { klasse: 'zeile-kasten' }, verstanden,
+        'Ich weiß, dass das Dokument dafür hochgeladen wird')),
+      ergebnis),
+    knoepfe: [
+      { beschriftung: 'Abbrechen' },
+      {
+        beschriftung: 'Hochladen und versenden', betont: true,
+        tun: () => {
+          if (!verstanden.checked) { sage('Bitte bestätigen Sie zuerst, dass die Datei hochgeladen wird', { art: 'warn' }); return false; }
+          if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(empfaenger.value.trim())) {
+            sage('Ohne gültige Empfängeradresse gibt es niemanden zum Unterschreiben', { art: 'warn' });
+            return false;
+          }
+          mitLader('Dokument wird hochgeladen …', async () => {
+            try {
+              const bytes = await baueDokument({});
+              let text = '';
+              for (let i = 0; i < bytes.length; i += 8192) {
+                text += String.fromCharCode(...bytes.subarray(i, i + 8192));
+              }
+              const antwort = await fetch('/api/signatur/anlegen.json', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                  titel: titel.value.trim(),
+                  dateiname: vorschlagsname(''),
+                  empfaenger: empfaenger.value.trim(),
+                  datei: btoa(text),
+                }),
+              });
+              const stand = await antwort.json();
+              if (stand.fehler) throw new Error(stand.fehler);
+              const link = `${location.origin}${stand.weg}`;
+              /* Der Server verschickt keine E-Mail — er kennt den Absender
+                 nicht und soll in fremdem Namen nichts verschicken. Der Link
+                 geht deshalb an den Menschen zurück, der ihn weitergibt. */
+              ergebnis.innerHTML = '';
+              ergebnis.append(
+                el('div', { klasse: 'dialog-trenner' }),
+                el('p', {}, 'Der Auftrag steht bereit. Schicken Sie diesen Link an ',
+                  el('b', { text: empfaenger.value.trim() }), ':'),
+                zeile('Link', el('input', { klasse: 'feld', value: link, readonly: true })),
+                el('p', { klasse: 'hinweis' },
+                  'Wir verschicken die E-Mail nicht selbst — ein Server, der in Ihrem Namen ',
+                  'schreibt, ist ein Server, dem Sie mehr anvertrauen als nötig.'));
+              sage('Auftrag angelegt — den Link finden Sie im Dialog', { dauer: 9000 });
+            } catch (fehler) {
+              sage(fehler.message, { art: 'warn', dauer: 9000 });
+            }
+          });
+          return false;   /* offen lassen: der Link steht im Dialog */
+        },
+      },
+    ],
+  });
 }

@@ -115,6 +115,10 @@ export function leereDokument() {
   zustand.folge = [];
   zustand.anmerkungen = [];
   zustand.aufdruck = null;
+  zustand.lesezeichen = null;
+  zustand.anhaenge = [];
+  zustand.pdfA = false;
+  zustand.bildauftraege = [];
   zustand.formularfelder = [];
   zustand.formularwerte.clear();
   zustand.ocr.clear();

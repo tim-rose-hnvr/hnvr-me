@@ -49,6 +49,15 @@ export const zustand = {
   /** Aufdruck: Wasserzeichen, Kopf-, Fußzeile, Seitenzahlen. null = keiner.
       Eine Beschreibung, keine Liste — sie gilt für jede Seite im Bereich. */
   aufdruck: null,
+  /** Lesezeichen als flache Liste mit Ebene: [{ titel, seite, ebene }].
+      null = noch nicht gelesen; [] = ausdrücklich keine. */
+  lesezeichen: null,
+  /** Dateien *im* PDF: [{ name, bytes, art, beschreibung }] */
+  anhaenge: [],
+  /** Ob beim Sichern für PDF/A vorbereitet wird. */
+  pdfA: false,
+  /** Bilder, die beim Sichern getauscht werden: [{ seite, name, ersatz, entfernen }] */
+  bildauftraege: [],
   eigenschaften: null,
   /** Merkfähigkeit des Assistenten */
   gedaechtnis: {

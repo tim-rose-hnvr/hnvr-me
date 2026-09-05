@@ -401,7 +401,13 @@ export function zeigeEinzelwerkzeug(id) {
       wahl));
 
   /* Nur der Rumpf wird ersetzt — der Kopf mit der Wortmarke bleibt stehen.
-     Ein Werkzeug ist ein Teil des Studios, nicht ein anderes Programm. */
+     Ein Werkzeug ist ein Teil des Studios, nicht ein anderes Programm.
+
+     Der alte Rumpf wird aufgehoben, nicht weggeworfen: wer das Werkzeug
+     verlaesst und spaeter die letzte Mappe schliesst, landet sonst auf einem
+     leeren Empfang ohne Karte und ohne Kacheln — und kommt da nur mit einem
+     Neuladen wieder heraus. */
+  if (!rumpfVorher) rumpfVorher = rumpf.innerHTML;
   rumpf.innerHTML = '';
   rumpf.append(ansicht);
   empfang.hidden = false;
@@ -410,9 +416,22 @@ export function zeigeEinzelwerkzeug(id) {
   return true;
 }
 
+/** Was auf dem Empfang stand, bevor ein Werkzeug ihn belegt hat. */
+let rumpfVorher = null;
+
 /** Räumt die Einzelansicht weg und gibt das Studio frei. */
 export function verlasseEinzelwerkzeug() {
   $('#einzelwerkzeug')?.remove();
+  /* Den Empfang wiederherstellen, nicht nur verstecken. */
+  const rumpf = $('#empfang-rumpf');
+  if (rumpf && rumpfVorher !== null) {
+    rumpf.innerHTML = rumpfVorher;
+    rumpfVorher = null;
+    /* Die Kacheln sind aus Zeichenketten wieder da, aber ohne ihre
+       Ereignisse — sie sind Verweise, die brauchen keine. Die zwei Knoepfe
+       schon: sie werden neu verdrahtet. */
+    melde('empfang:wiederhergestellt');
+  }
   delete document.documentElement.dataset.einzelwerkzeug;
   document.title = 'PDF Studio';
   $('#empfang').hidden = true;

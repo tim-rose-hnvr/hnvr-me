@@ -383,7 +383,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .werkzeug .sinnbild { width: 15px; height: 15px; }
 .werkzeug-trenner {
-  width: 1px; height: 24px; background: #DBDFE2;
+  /* War #DBDFE2 fest — ein heller Strich, der in der dunklen Fassung als
+     falsche Naht stehenblieb. */
+  width: 1px; height: 24px; background: var(--linie);
   margin: 0 9px; flex: none;
 }
 /* Die rechte Gruppe bleibt erreichbar, auch wenn die Zeile scrollt. */

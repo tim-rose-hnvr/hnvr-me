@@ -1138,8 +1138,16 @@ export function starteOberflaeche() {
     e.target.value = '';
     if (dateien.length) await einlesenZuPdf(dateien);
   });
-  $('#knopf-oeffnen').addEventListener('click', () => $('#dateiwahl').click());
-  $('#knopf-beispiel').addEventListener('click', () => mitLader('Beispiel wird geladen …', ladeBeispiel));
+  /* Die zwei Knoepfe des Empfangs. Sie werden noch einmal verdrahtet, wenn der
+     Empfang nach einem Einzelwerkzeug aus seiner Sicherung zurueckkommt — dabei
+     entstehen neue Knoten, und die alten Zuhoerer haengen an den alten. */
+  const verdrahteEmpfang = () => {
+    $('#knopf-oeffnen')?.addEventListener('click', () => $('#dateiwahl').click());
+    $('#knopf-beispiel')?.addEventListener('click', () => mitLader('Beispiel wird geladen …', ladeBeispiel));
+    for (const knopf of [$('#knopf-oeffnen'), $('#knopf-beispiel')]) knopf?.removeAttribute('disabled');
+  };
+  verdrahteEmpfang();
+  hoer('empfang:wiederhergestellt', verdrahteEmpfang);
 
   // Ziehen und Ablegen
   let ziehZaehler = 0;

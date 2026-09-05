@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    /* Nichts wird nachgeladen. Gemeint sind Archivo Narrow (Bedienung)
+       und IBM Plex Mono (alles Zaehlbare); hier die naechsten Systemschriften. */
+    body { margin: 0; font-family: "Arial Narrow", "Helvetica Neue", system-ui, sans-serif; }
+  </style>
+</helmet>
+
+<!-- RICHTUNG „Registratur" — Amt und Akte.
+     Keine Radien, keine Schatten, keine Karten. Hierarchie nur aus
+     Haarlinie, Zeilenhoehe und Versalabstand. Alles Zaehlbare in Mono.
+     Dichte: Kopf 30, Menue 22, Werkzeugzeile 30, Zeile 22 statt 34. -->
+<div style="width:1280px;height:800px;display:flex;flex-direction:column;background:#E1E4E6;color:#1B2128;font-size:12px;overflow:hidden">
+
+  <!-- Kopf 30 px -->
+  <div style="height:30px;flex:none;display:flex;align-items:stretch;background:#21272C;color:#F4F6F8;border-bottom:1px solid #000">
+    <div style="display:flex;align-items:center;gap:8px;padding:0 12px;border-right:1px solid #3A4147">
+      <span style="width:13px;height:16px;background:#F4F6F8;flex:none"></span>
+      <span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;white-space:nowrap">PDF Studio</span>
+    </div>
+    <div style="display:flex;align-items:stretch;flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:8px;padding:0 12px;background:#2E353B;border-right:1px solid #3A4147;max-width:300px">
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Vertragsentwurf.pdf</span>
+        <span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#98A0A7;flex:none">5 S.</span>
+      </div>
+      <div style="display:flex;align-items:center;padding:0 12px;color:#98A0A7;border-right:1px solid #3A4147">Leistungsbeschreibung.pdf</div>
+    </div>
+    <div style="display:flex;align-items:stretch">
+      <span style="display:inline-flex;align-items:center;padding:0 12px;border-left:1px solid #3A4147;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase">Befehle&nbsp;<span style="color:#98A0A7">⌘K</span></span>
+      <span style="display:inline-flex;align-items:center;padding:0 14px;background:#3E5C96;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase">Sichern</span>
+      <span style="display:inline-flex;align-items:center;padding:0 12px;border-left:1px solid #3A4147;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase">Einstellungen</span>
+    </div>
+  </div>
+
+  <!-- Menue 22 px -->
+  <div style="height:22px;flex:none;display:flex;align-items:center;background:#EAEDF0;border-bottom:1px solid #D1D5D9;font-size:11.5px">
+    <span style="padding:0 9px;line-height:22px">Datei</span>
+    <span style="padding:0 9px;line-height:22px">Bearbeiten</span>
+    <span style="padding:0 9px;line-height:22px">Ansicht</span>
+    <span style="padding:0 9px;line-height:22px">Seiten</span>
+    <span style="padding:0 9px;line-height:22px">Werkzeuge</span>
+    <span style="padding:0 9px;line-height:22px">Gehe zu</span>
+    <span style="padding:0 9px;line-height:22px">Schutz</span>
+    <span style="padding:0 9px;line-height:22px">Hilfe</span>
+    <span style="margin-left:auto;padding-right:10px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:.6px;color:#696F76">AZ 2026/047-3 · Fassung 3 · Stand 05.09.2026 · gesichert</span>
+  </div>
+
+  <!-- Werkzeugzeile 30 px, Woerter in Versalien, Trennung durch Linien -->
+  <div style="height:30px;flex:none;display:flex;align-items:stretch;background:#F4F6F8;border-bottom:1px solid #B0B6BB;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:1.1px;text-transform:uppercase">
+    <span style="display:inline-flex;align-items:center;padding:0 11px;border-right:1px solid #D1D5D9;color:#696F76">↶</span>
+    <span style="display:inline-flex;align-items:center;padding:0 11px;border-right:1px solid #D1D5D9;color:#696F76">↷</span>
+    <span style="display:inline-flex;align-items:center;padding:0 13px;background:#3E5C96;color:#F4F6F8;border-right:1px solid #B0B6BB">Auswahl</span>
+    <span style="display:inline-flex;align-items:center;padding:0 13px;border-right:1px solid #D1D5D9">Text</span>
+    <span style="display:inline-flex;align-items:center;padding:0 13px;border-right:1px solid #D1D5D9">Markieren</span>
+    <span style="display:inline-flex;align-items:center;padding:0 13px;border-right:1px solid #D1D5D9">Kommentar</span>
+    <span style="display:inline-flex;align-items:center;padding:0 13px;border-right:1px solid #D1D5D9;color:#8D453E">Schwärzen</span>
+    <span style="display:inline-flex;align-items:center;padding:0 13px;border-right:1px solid #D1D5D9">Formularfeld</span>
+    <span style="display:inline-flex;align-items:center;padding:0 13px;border-right:1px solid #D1D5D9">Signieren</span>
+    <span style="margin-left:auto;display:flex;align-items:stretch">
+      <span style="display:inline-flex;align-items:center;padding:0 13px;border-left:1px solid #D1D5D9">OCR</span>
+      <span style="display:inline-flex;align-items:center;padding:0 13px;border-left:1px solid #D1D5D9">Export</span>
+    </span>
+  </div>
+
+  <!-- Rumpf: 220 · Buehne · 320 -->
+  <div style="flex:1;display:grid;grid-template-columns:220px 1fr 320px;min-height:0">
+
+    <!-- Links: Gliederung als Zeilen, nicht als Miniaturen. 22 px je Zeile. -->
+    <div style="background:#EAEDF0;border-right:1px solid #B0B6BB;display:flex;flex-direction:column;min-height:0">
+      <div style="display:flex;border-bottom:1px solid #B0B6BB;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:.9px;text-transform:uppercase">
+        <span style="flex:1;text-align:center;padding:6px 2px;color:#1B2128;background:#F4F6F8;border-bottom:2px solid #3E5C96">Seiten</span>
+        <span style="flex:1;text-align:center;padding:6px 2px;color:#696F76">Marken</span>
+        <span style="flex:1;text-align:center;padding:6px 2px;color:#696F76">Dateien</span>
+        <span style="flex:1;text-align:center;padding:6px 2px;color:#696F76">Suche</span>
+      </div>
+      <div style="display:flex;padding:0 8px;height:20px;align-items:center;border-bottom:1px solid #D1D5D9;background:#F4F6F8;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:#696F76">
+        <span style="width:22px">S.</span><span style="flex:1">Gliederung</span><span>Stand</span>
+      </div>
+      <div style="font-size:11.5px;line-height:22px">
+        <div style="display:flex;gap:6px;padding:0 8px;height:22px;background:rgba(62,92,150,.10);border-bottom:1px solid #D1D5D9"><span style="width:22px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#3E5C96;text-align:right">1</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Vertragsentwurf</span><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#696F76">05.09.</span></div>
+        <div style="display:flex;gap:6px;padding:0 8px;height:22px;border-bottom:1px solid #D1D5D9"><span style="width:22px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#696F76;text-align:right">2</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">§ 1 Gegenstand</span><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#696F76">05.09.</span></div>
+        <div style="display:flex;gap:6px;padding:0 8px;height:22px;border-bottom:1px solid #D1D5D9"><span style="width:22px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#696F76;text-align:right">3</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">§ 2 Vergütung</span><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#81520A">offen</span></div>
+        <div style="display:flex;gap:6px;padding:0 8px;height:22px;border-bottom:1px solid #D1D5D9"><span style="width:22px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#696F76;text-align:right">4</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Leistungsbeschreibung</span><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#696F76">04.09.</span></div>
+        <div style="display:flex;gap:6px;padding:0 8px;height:22px;border-bottom:1px solid #D1D5D9"><span style="width:22px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#696F76;text-align:right">5</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Abnahmeprotokoll</span><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#696F76">04.09.</span></div>
+        <div style="display:flex;gap:6px;padding:0 8px;height:22px;border-bottom:1px solid #D1D5D9;color:#696F76"><span style="width:22px;font-family:ui-monospace,Menlo,Consolas,monospace;text-align:right">6</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Anlage A — Preisblatt</span><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px">04.09.</span></div>
+        <div style="display:flex;gap:6px;padding:0 8px;height:22px;border-bottom:1px solid #D1D5D9;color:#696F76"><span style="width:22px;font-family:ui-monospace,Menlo,Consolas,monospace;text-align:right">7</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Anlage B — Zeitplan</span><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px">04.09.</span></div>
+        <div style="display:flex;gap:6px;padding:0 8px;height:22px;border-bottom:1px solid #D1D5D9;color:#696F76"><span style="width:22px;font-family:ui-monospace,Menlo,Consolas,monospace;text-align:right">8</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Anlage C — Wartung</span><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px">04.09.</span></div>
+        <div style="display:flex;gap:6px;padding:0 8px;height:22px;border-bottom:1px solid #D1D5D9;color:#696F76"><span style="width:22px;font-family:ui-monospace,Menlo,Consolas,monospace;text-align:right">9</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Unterschriftenblatt</span><span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px">04.09.</span></div>
+      </div>
+      <div style="margin-top:auto;border-top:1px solid #B0B6BB;background:#F4F6F8;padding:5px 8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:.6px;color:#696F76">9 von 312 Zeilen · Miniaturen aus</div>
+    </div>
+
+    <!-- Buehne mit Lineatur -->
+    <div style="background:#2E3338;background-image:linear-gradient(#363C41 1px,transparent 1px);background-size:100% 32px;overflow:hidden;display:flex;justify-content:center;padding-top:26px">
+      <div style="width:700px;background:#FDFCF9;border:1px solid #14181B;padding:52px 60px;font-family:ui-serif,Georgia,'Times New Roman',serif;color:#1B2128">
+        <div style="display:flex;justify-content:space-between;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#696F76;border-bottom:1px solid #D1D5D9;padding-bottom:7px;margin-bottom:26px">
+          <span>Muster &amp; Partner GmbH</span><span>AZ 2026/047-3 · Bl. 1</span>
+        </div>
+        <h1 style="font-size:25px;font-weight:600;margin:0 0 20px;line-height:1.28">Vertragsentwurf — Sitzungstechnik</h1>
+        <p style="font-size:13px;line-height:1.72;margin:0 0 13px">Zwischen der Muster &amp; Partner GmbH, Hauptstraße 12, 30159 Hannover, und der Beispiel-Kommune wird der folgende Vertrag über Lieferung und Betrieb einer Konferenzanlage geschlossen.</p>
+        <p style="font-size:13px;line-height:1.72;margin:0 0 13px"><b>Ansprechpartnerin:</b> Dr. Ada Musterfrau, geboren am 14.03.1979.</p>
+        <p style="font-size:13px;line-height:1.72;margin:0"><span style="background:rgba(129,82,10,.20);border-bottom:1px solid #81520A">Die Vergütung beträgt 84.500 EUR netto.</span> Zahlbar in drei Raten: 40 Prozent bei Auftrag, 40 Prozent bei Lieferung, 20 Prozent nach Abnahme.</p>
+      </div>
+    </div>
+
+    <!-- Rechts: Kommentare als Tabelle -->
+    <div style="background:#EAEDF0;border-left:1px solid #B0B6BB;display:flex;flex-direction:column;min-height:0">
+      <div style="display:flex;border-bottom:1px solid #B0B6BB;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:.9px;text-transform:uppercase">
+        <span style="flex:1;text-align:center;padding:6px 2px;background:#F4F6F8;border-bottom:2px solid #3E5C96">Komm. 4</span>
+        <span style="flex:1;text-align:center;padding:6px 2px;color:#696F76">Felder 6/9</span>
+        <span style="flex:1;text-align:center;padding:6px 2px;color:#696F76">Verlauf</span>
+        <span style="flex:1;text-align:center;padding:6px 2px;color:#696F76">Prüfung</span>
+      </div>
+      <div style="display:flex;padding:0 8px;height:20px;align-items:center;border-bottom:1px solid #D1D5D9;background:#F4F6F8;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:#696F76">
+        <span style="width:26px">Bl.</span><span style="width:34px">Krz.</span><span style="flex:1">Vermerk</span><span style="width:38px;text-align:right">Zeit</span>
+      </div>
+      <div style="font-size:11.5px">
+        <div style="display:flex;gap:6px;padding:5px 8px;border-bottom:1px solid #D1D5D9;background:rgba(62,92,150,.10)"><span style="width:26px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#3E5C96">1</span><span style="width:34px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#696F76">AM</span><span style="flex:1;line-height:1.45">Summe mit der Kalkulation abgleichen.</span><span style="width:38px;text-align:right;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#696F76">14:22</span></div>
+        <div style="display:flex;gap:6px;padding:5px 8px;border-bottom:1px solid #D1D5D9"><span style="width:26px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#696F76">1</span><span style="width:34px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#696F76">TR</span><span style="flex:1;line-height:1.45">Geburtsdatum vor Versand schwärzen.</span><span style="width:38px;text-align:right;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#696F76">14:31</span></div>
+        <div style="display:flex;gap:6px;padding:5px 8px;border-bottom:1px solid #D1D5D9"><span style="width:26px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#696F76">3</span><span style="width:34px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#696F76">AM</span><span style="flex:1;line-height:1.45">Ratenzahlung mit § 7 abstimmen.</span><span style="width:38px;text-align:right;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#696F76">14:44</span></div>
+        <div style="display:flex;gap:6px;padding:5px 8px;border-bottom:1px solid #D1D5D9;color:#696F76"><span style="width:26px;font-family:ui-monospace,Menlo,Consolas,monospace">9</span><span style="width:34px;font-family:ui-monospace,Menlo,Consolas,monospace">TR</span><span style="flex:1;line-height:1.45;text-decoration:line-through">Unterschriftsfeld fehlt.</span><span style="width:38px;text-align:right;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px">15:02</span></div>
+      </div>
+      <div style="margin-top:auto;border-top:1px solid #B0B6BB;background:#F4F6F8">
+        <div style="display:flex;padding:0 8px;height:20px;align-items:center;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:#696F76;border-bottom:1px solid #D1D5D9"><span style="flex:1">Formularstand</span><span>6 / 9</span></div>
+        <div style="display:flex;padding:5px 8px;gap:10px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px">
+          <span style="color:#236E44">✓ 6 gefüllt</span><span style="color:#81520A">◻ 2 offen</span><span style="color:#8D453E">✕ 1 Pflicht</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statuszeile 24 px, alles Zaehlbare tabellarisch -->
+  <div style="height:24px;flex:none;display:flex;align-items:center;background:#21272C;color:#F4F6F8;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:.8px">
+    <span style="display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-right:1px solid #3A4147">◂ <span style="color:#F4F6F8">Bl. 1</span> <span style="color:#98A0A7">von 312</span> ▸</span>
+    <span style="padding:0 10px;border-right:1px solid #3A4147;color:#98A0A7">Werkzeug Auswahl</span>
+    <span style="padding:0 10px;border-right:1px solid #3A4147;color:#98A0A7">Fassung 3</span>
+    <span style="padding:0 10px;border-right:1px solid #3A4147;color:#98A0A7">Frist in 4 Tagen</span>
+    <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-left:1px solid #3A4147;color:#98A0A7"><i style="width:5px;height:5px;background:#236E44;display:block"></i>läuft offline</span>
+    <span style="padding:0 10px;border-left:1px solid #3A4147">− 100 % +</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

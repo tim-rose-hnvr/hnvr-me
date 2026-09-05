@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    /* Gemeint sind Bodoni Moda (nur Aufmacher, ab 28 px), eine Grotesk fuer
+       die 11–15-px-Ebene und eine Mono fuer Etiketten. Nichts wird nachgeladen. */
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  </style>
+</helmet>
+
+<!-- RICHTUNG „Satzspiegel" — Redaktion.
+     Asymmetrische Stege statt symmetrischer Panels: links eine Marginalspalte
+     mit Woertern, rechts der Apparat. Keine gefuellten Knopfpillen, kein
+     Icon-Band, keine dunkle Titelleiste, kein Kartenraster. Farbe ist ein
+     seltenes Ereignis mit fester Bedeutung. -->
+<div style="width:1280px;height:800px;display:flex;flex-direction:column;background:#E9E3D7;color:#1B1815;font-size:12.5px;overflow:hidden">
+
+  <!-- Aufmacher 62 px: Didone-Zug, Haarlinie darunter, keine Flaechenfarbe -->
+  <div style="height:62px;flex:none;display:flex;align-items:flex-end;gap:18px;padding:0 30px 9px;background:#E9E3D7;border-bottom:1px solid #C3BBAA">
+    <span style="font-family:'Bodoni MT',Didot,'Playfair Display',ui-serif,Georgia,serif;font-size:29px;font-weight:400;letter-spacing:.6px;line-height:1">PDF Studio</span>
+    <span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:#6C665B;padding-bottom:6px">Ausgabe 3 · 05.09.2026</span>
+    <span style="margin-left:auto;display:flex;align-items:baseline;gap:20px;padding-bottom:5px;font-size:12.5px">
+      <span style="border-bottom:1px solid #1B1815;padding-bottom:2px">Sichern</span>
+      <span style="color:#6C665B">Befehle</span>
+      <span style="color:#6C665B">Einstellungen</span>
+    </span>
+  </div>
+
+  <!-- Kolumnenzeile 30 px: Dateien als Kolumnentitel, kein Reiterband -->
+  <div style="height:30px;flex:none;display:flex;align-items:center;gap:22px;padding:0 30px;border-bottom:1px solid #DCD5C7;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:1.6px;text-transform:uppercase">
+    <span style="border-bottom:2px solid #AB594D;padding:6px 0">Vertragsentwurf</span>
+    <span style="color:#6C665B">Leistungsbeschreibung</span>
+    <span style="color:#6C665B">+</span>
+    <span style="margin-left:auto;color:#6C665B">5 Seiten · gesichert · ohne Netz</span>
+  </div>
+
+  <!-- Rumpf: Marginalspalte 176 · Aussensteg · Buehne · Apparat 300 -->
+  <div style="flex:1;display:grid;grid-template-columns:176px 1fr 300px;min-height:0">
+
+    <!-- Marginalspalte: Woerter, keine Piktogramme, keine Flaeche -->
+    <div style="padding:20px 0 0 30px;display:flex;flex-direction:column;min-height:0">
+      <div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:#6C665B;padding-bottom:9px;border-bottom:1px solid #DCD5C7;margin-bottom:11px">Werkzeug</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <span style="color:#AB594D;border-bottom:1px solid #AB594D;padding-bottom:3px;align-self:flex-start">Auswahl</span>
+        <span>Text</span>
+        <span>Markieren</span>
+        <span>Kommentar</span>
+        <span>Schwärzen</span>
+        <span>Formularfeld</span>
+        <span>Signieren</span>
+        <span>Texterkennung</span>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:#6C665B;padding:16px 0 9px;border-bottom:1px solid #DCD5C7;margin-bottom:11px">Seiten</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12.5px">
+        <span style="display:flex;gap:9px"><i style="font-family:ui-monospace,Menlo,Consolas,monospace;font-style:normal;color:#AB594D">1</i>Vertragsentwurf</span>
+        <span style="display:flex;gap:9px;color:#6C665B"><i style="font-family:ui-monospace,Menlo,Consolas,monospace;font-style:normal">2</i>§ 1 Gegenstand</span>
+        <span style="display:flex;gap:9px;color:#6C665B"><i style="font-family:ui-monospace,Menlo,Consolas,monospace;font-style:normal">3</i>§ 2 Vergütung</span>
+        <span style="display:flex;gap:9px;color:#6C665B"><i style="font-family:ui-monospace,Menlo,Consolas,monospace;font-style:normal">4</i>Abnahme</span>
+        <span style="display:flex;gap:9px;color:#6C665B"><i style="font-family:ui-monospace,Menlo,Consolas,monospace;font-style:normal">5</i>Unterschriften</span>
+      </div>
+      <div style="margin-top:auto;padding:0 0 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:#9A9184">Dichte: Satz · <span style="color:#1B1815;border-bottom:1px solid #1B1815">Fahne</span></div>
+    </div>
+
+    <!-- Buehne: warme Druckerschwaerze, Kolumnentitel auf der Buehne -->
+    <div style="background:#241F1A;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:22px">
+      <div style="width:686px;display:flex;justify-content:space-between;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:#9A9184;padding-bottom:9px">
+        <span>Muster &amp; Partner</span><span>Seite 1</span>
+      </div>
+      <div style="width:686px;background:#FFFDF7;padding:54px 64px;font-family:ui-serif,Georgia,'Times New Roman',serif;color:#1B1815">
+        <h1 style="font-family:'Bodoni MT',Didot,'Playfair Display',ui-serif,Georgia,serif;font-size:34px;font-weight:400;margin:0 0 8px;line-height:1.14;letter-spacing:.2px">Vertragsentwurf<br>Sitzungstechnik</h1>
+        <div style="width:52px;height:1px;background:#AB594D;margin:0 0 24px"></div>
+        <p style="font-size:13.5px;line-height:1.8;margin:0 0 14px">Zwischen der Muster &amp; Partner GmbH, Hauptstraße 12, 30159 Hannover, und der Beispiel-Kommune wird der folgende Vertrag über Lieferung und Betrieb einer Konferenzanlage geschlossen.</p>
+        <p style="font-size:13.5px;line-height:1.8;margin:0 0 14px"><b>Ansprechpartnerin:</b> Dr. Ada Musterfrau, geboren am 14.03.1979.</p>
+        <p style="font-size:13.5px;line-height:1.8;margin:0"><span style="box-shadow:inset 0 -2px 0 #926E10">Die Vergütung beträgt 84.500 EUR netto.</span> Zahlbar in drei Raten: 40 Prozent bei Auftrag, 40 Prozent bei Lieferung, 20 Prozent nach Abnahme.</p>
+      </div>
+    </div>
+
+    <!-- Apparat: Kommentare als Fussnotenapparat, Haarlinien statt Karten -->
+    <div style="background:#E9E3D7;border-left:1px solid #C3BBAA;display:flex;flex-direction:column;min-height:0;padding:20px 22px 0">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:#6C665B;padding-bottom:9px;border-bottom:1px solid #C3BBAA;margin-bottom:13px">
+        <span>Apparat</span><span>3 offen · 1 erledigt</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:15px">
+        <div>
+          <div style="display:flex;gap:9px"><span style="font-family:ui-serif,Georgia,serif;font-size:12px;color:#AB594D;flex:none">1</span>
+            <div>
+              <p style="margin:0 0 4px;font-family:ui-serif,Georgia,serif;font-style:italic;font-size:12.5px;line-height:1.55;color:#6C665B">„…84.500 EUR netto…"</p>
+              <p style="margin:0;font-size:12.5px;line-height:1.6">Summe mit der Kalkulation abgleichen.</p>
+              <p style="margin:4px 0 0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:#9A9184">A. M. · S. 1 · 14:22</p>
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid #DCD5C7;padding-top:13px">
+          <div style="display:flex;gap:9px"><span style="font-family:ui-serif,Georgia,serif;font-size:12px;color:#AB594D;flex:none">2</span>
+            <div>
+              <p style="margin:0;font-size:12.5px;line-height:1.6">Geburtsdatum vor Versand schwärzen. <span style="color:#AB594D">Unumkehrbar.</span></p>
+              <p style="margin:4px 0 0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:#9A9184">T. R. · S. 1 · 14:31</p>
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid #DCD5C7;padding-top:13px">
+          <div style="display:flex;gap:9px"><span style="font-family:ui-serif,Georgia,serif;font-size:12px;color:#6C665B;flex:none">3</span>
+            <div>
+              <p style="margin:0;font-size:12.5px;line-height:1.6">Ratenzahlung mit § 7 abstimmen.</p>
+              <p style="margin:4px 0 0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:#9A9184">A. M. · S. 3 · 14:44</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:auto;border-top:1px solid #C3BBAA;padding:11px 0 13px;display:flex;gap:14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase">
+        <span style="color:#3F7A63">6 gefüllt</span><span style="color:#926E10">2 offen</span><span style="color:#AB594D">1 Pflicht</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kolophon 32 px -->
+  <div style="height:32px;flex:none;display:flex;align-items:center;gap:20px;padding:0 30px;border-top:1px solid #C3BBAA;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:#6C665B">
+    <span>◂ Seite 1 von 5 ▸</span>
+    <span>Werkzeug Auswahl</span>
+    <span style="margin-left:auto">Gesetzt auf diesem Gerät · nichts verlässt es</span>
+    <span>− 100 % +</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "artboards": [
+    { "file": "Heute.dc.html",       "x": 0,    "y": 0,    "w": 1280, "h": 800, "title": "Heute — Ist-Zustand" },
+    { "file": "Main.dc.html",        "x": 1400, "y": 0,    "w": 1280, "h": 800, "title": "Registratur — Empfehlung" },
+    { "file": "Setzkasten.dc.html",  "x": 0,    "y": 1000, "w": 1280, "h": 800, "title": "Setzkasten — Werkstatt" },
+    { "file": "Leuchttisch.dc.html", "x": 1400, "y": 1000, "w": 1280, "h": 800, "title": "Leuchttisch — Studio, nur dunkel" },
+    { "file": "Satzspiegel.dc.html", "x": 2800, "y": 1000, "w": 1280, "h": 800, "title": "Satzspiegel — Redaktion" }
+  ],
+  "annotations": [
+    { "id": "auftrag", "x": 0, "y": -230, "w": 300,
+      "text": "Gleiche Ansicht, fünfmal: Vertragsentwurf, Seite 1, Werkzeug Auswahl, ein Kommentar offen. Nur so ist der Vergleich ehrlich. Keine Schrift wird nachgeladen — die Leinwand hat kein Netz, deshalb stehen hier Systemschriften statt EB Garamond, Archivo Narrow und Bodoni Moda." },
+    { "id": "heute", "x": 340, "y": -230, "w": 300,
+      "text": "HEUTE: Türkis #0F766E, dunkle Chrome #1D2327, Radien 4/6/10, IBM Plex. Pixelgenau aus stil.css übernommen. Zwei belegte Mängel: --gut ist byteweise dasselbe wie --tally (eine Gutmeldung sieht aus wie ein Akzent), und das Portal setzt im Dunkeln #F0705C statt #7FD6CD." },
+    { "id": "empfehlung", "x": 1400, "y": -230, "w": 340,
+      "text": "EMPFEHLUNG Registratur. Keine Radien, keine Schatten, keine Karten — Hierarchie nur aus Haarlinie, Zeilenhöhe, Versalabstand. Zeile 22 statt 34 px: links 9 Gliederungszeilen statt 3 Miniaturen, rechts 4 Vermerke statt 1 Karte. Alles Zählbare in Mono, damit Spalten fluchten. Preis: eine zweite Fassung „Weit\" fürs iPad, und deutsche Komposita sprengen feste Spalten." },
+    { "id": "setzkasten", "x": 0, "y": 1860, "w": 300,
+      "text": "Setzkasten. Chrome in Papierfarben, Serifen überall, ein Zinnober = Korrektur, Blatt mit Beschnittmarken auf gebeiztem Holz. Warnung: Gefahr trägt hier denselben Zinnober wie der Akzent — „Schwärzen\" sieht aus wie „aktives Werkzeug\". Das ist eine Fehlbedienung mit Ansage; ich würde den Farbton für Gefahr trennen, bevor das gebaut wird." },
+    { "id": "leuchttisch", "x": 1400, "y": 1860, "w": 300,
+      "text": "Leuchttisch. Je näher am Blatt, desto dunkler: Bühne unter Chrome unter Tafel. Sechs Werkzeuge in einer Schiene statt einer Werkzeugzeile. Preis, ehrlich benannt: kein volles Hellthema mehr, spiegelnde Bildschirme in hellen Kanzleiräumen, und Bildschirmfotos in weißen Word-Protokollen wirken wie ein Fremdkörper." },
+    { "id": "satzspiegel", "x": 2800, "y": 1860, "w": 300,
+      "text": "Satzspiegel. Asymmetrische Stege, Wörter statt Piktogrammen, Didone nur im Aufmacher — unter 28 px trägt sie nicht, die Bedienung läuft in Grotesk. Preis: die Marginalspalte frisst auf 13 Zoll Breite, deshalb ist der Dichteschalter „Fahne\" Pflichtteil, nicht Extra." }
+  ],
+  "launch": { "view": "canvas" }
+}

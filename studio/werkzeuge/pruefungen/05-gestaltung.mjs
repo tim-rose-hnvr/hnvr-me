@@ -10,8 +10,39 @@
 
 import { join } from 'node:path';
 
-export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, ablage }) {
+export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, ablage, WURZEL }) {
   console.log('\n== Gestaltung nach der Richtung ==');
+
+  await pruefe('Schrift und Abstand halten sich an die Staffel', async () => {
+    /* Vorher standen 21 Schriftgrößen und 15 Abstandswerte nebeneinander,
+       teils px, teils rem. Keiner war falsch; zusammen waren sie keine
+       Gestaltung, sondern eine Ansammlung.
+
+       Diese Prüfung liest den Quelltext, nicht den Bildschirm — eine Größe
+       schleicht sich beim Schreiben ein, nicht beim Rendern. Sie ist die
+       einzige Stelle, an der eine neue Stufe verhandelt werden muss. */
+    const { readFile } = await import('node:fs/promises');
+    const css = await readFile(join(WURZEL, 'app', 'stil.css'), 'utf8');
+
+    const frei = [...css.matchAll(/font-size: (?!var\()([^;]+)/g)].map((t) => t[1].trim());
+    if (frei.length) throw new Error(`Schriftgröße ohne Staffel: ${[...new Set(frei)].join(', ')}`);
+
+    /* Die Staffel selbst darf Zahlen nennen — sie ist die Staffel. Geprüft
+       wird alles danach. */
+    const ohneWurzel = css.slice(css.indexOf('* { box-sizing'));
+    const STUFEN = new Set([1, 2, 4, 6, 8, 10, 12, 16, 24, 32]);
+    const daneben = new Set();
+    for (const t of ohneWurzel.matchAll(/\b(?:padding|margin|gap)(?:-[a-z]+)?: ([^;{}]+)/g)) {
+      /* `calc()` rechnet mit Umgebungswerten (Aussparung, Leistenhöhe) und
+         wird hier nicht zerlegt — die Zahl darin ist ein Zuschlag, kein Maß. */
+      if (t[1].includes('calc(')) continue;
+      for (const zahl of t[1].matchAll(/\b([0-9.]+)px/g)) {
+        if (!STUFEN.has(Number(zahl[1]))) daneben.add(`${zahl[1]}px`);
+      }
+    }
+    if (daneben.size) throw new Error(`Abstand außerhalb der Staffel: ${[...daneben].join(', ')}`);
+    return `10 Schriftstufen, 9 Raumstufen, ${css.match(/font-size: var\(/g).length} Stellen ziehen daraus`;
+  });
 
   /* Die Richtung nennt Höhen, Breiten und Farben auf den Pixel und den Hexwert
      genau. Sie hier nachzumessen ist der einzige Weg, der nicht darauf

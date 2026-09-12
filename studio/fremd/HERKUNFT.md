@@ -19,6 +19,7 @@ Nachladen zur Laufzeit (Leitprinzip 2 der Projektanweisung).
 | `sprachen/eng.traineddata.gz` | `tessdata_fast` (eng) | 4.0.0 | Apache-2.0 |
 | `qpdf.wasm`, `qpdf.js`, `qpdf.mjs`, `browser.js` | `@jspawn/qpdf-wasm` | 0.0.2 | Apache-2.0 |
 | `forge.mjs` | `node-forge/dist/forge.min.js` | 1.4.0 | BSD-3-Clause (oder GPL-2.0) |
+| `schrift/plex-*.woff2` | `@fontsource/ibm-plex-sans`, `-condensed`, `-serif`, `-mono` (Teilmenge `latin`) | 5.2.5 | OFL-1.1 |
 
 Arbeitsteilung: `pdf.js` liest und zeichnet, `pdf-lib` schreibt, `tesseract.js`
 erkennt Text in Bildern, `qpdf` verschlüsselt, entschlüsselt, repariert und

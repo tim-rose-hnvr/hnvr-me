@@ -136,7 +136,10 @@ export default async function ({ pruefe, seite, browser, BASIS, ladeBeispiel }) 
     const stand = await seite.evaluate(async () => {
       const kern = await import('./app/kern.js');
       const weg = kern.sage('Probe', { dauer: 0 });
-      const knoten = document.querySelector('#meldungen .meldung');
+      /* Die letzte, nicht die erste: aus einer früheren Prüfung kann noch eine
+         Meldung stehen, und dann wurde die falsche gemessen. */
+      const alle = document.querySelectorAll('#meldungen .meldung');
+      const knoten = alle[alle.length - 1];
       const beimKommen = getComputedStyle(knoten).animationName;
       const uebergang = getComputedStyle(knoten).transitionDuration;
       weg();

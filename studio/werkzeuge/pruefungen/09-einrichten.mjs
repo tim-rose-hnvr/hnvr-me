@@ -19,7 +19,7 @@ export default async function ({ pruefe, seite, ladeBeispiel, WURZEL, BASIS }) {
       if (!m[feld]) throw new Error(`${feld} fehlt`);
     }
     if (m.display !== 'standalone') throw new Error(`display: ${m.display}`);
-    if (m.theme_color !== '#1D2327') throw new Error(`theme_color: ${m.theme_color}`);
+    if (m.theme_color !== '#21272C') throw new Error(`theme_color: ${m.theme_color}`);
     const groessen = m.icons.map((s) => s.sizes);
     if (!groessen.includes('192x192') || !groessen.includes('512x512')) {
       throw new Error(`Symbolgrößen: ${groessen.join(', ')}`);

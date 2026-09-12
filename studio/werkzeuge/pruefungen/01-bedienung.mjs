@@ -120,11 +120,13 @@ export default async function ({ pruefe, seite, blatt, ladungVon, befehle }) {
     return text.trim().replace(/\s+/g, ' ').slice(0, 40);
   });
   await pruefe('Reiter Seiten', async () => {
+    /* Die Seitenliste steht ab „Registratur" als Zeilen. Gezählt wird deshalb
+       die Zeile, nicht das Bild — das Bild ist eine Wahl, die Zeile nicht. */
     await seite.click('[data-tafel="miniaturen"].reiter-knopf');
     await seite.waitForTimeout(400);
-    const n = await seite.evaluate(() => document.querySelectorAll('.miniatur canvas').length);
+    const n = await seite.evaluate(() => document.querySelectorAll('.miniatur').length);
     if (n !== 5) throw new Error(String(n));
-    return `${n} Miniaturen`;
+    return `${n} Seitenzeilen`;
   });
 
   /* --- Werkzeuge ------------------------------------------------------------ */

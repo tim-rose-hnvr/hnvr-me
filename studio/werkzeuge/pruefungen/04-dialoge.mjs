@@ -178,21 +178,19 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
         papier: getComputedStyle(document.querySelector('.blatt')).backgroundColor,
         radius: getComputedStyle(document.querySelector('.knopf')).borderRadius,
         schrift: getComputedStyle(document.body).fontFamily,
-        plex: document.fonts.check('12px "IBM Plex Sans"') && document.fonts.check('12px "IBM Plex Mono"'),
+        plex: document.fonts.check('12px "IBM Plex Sans Condensed"') && document.fonts.check('12px "IBM Plex Mono"'),
       };
     });
-    if (werte.akzent.toLowerCase() !== '#0f766e') throw new Error(`Akzent ${werte.akzent}`);
-    if (werte.chrome !== 'rgb(29, 35, 39)') throw new Error(`Chrome ${werte.chrome}`);
-    if (werte.buehne !== 'rgb(95, 104, 110)') throw new Error(`Bühne ${werte.buehne}`);
+    if (werte.akzent.toLowerCase() !== '#3e5c96') throw new Error(`Akzent ${werte.akzent}`);
+    if (werte.chrome !== 'rgb(33, 39, 44)') throw new Error(`Chrome ${werte.chrome}`);
+    if (werte.buehne !== 'rgb(46, 51, 56)') throw new Error(`Bühne ${werte.buehne}`);
     if (werte.papier !== 'rgb(253, 252, 249)') throw new Error(`Papier ${werte.papier}`);
-    /* Farben, Höhen und Schrift folgen weiter dem Handoff; die Radien nicht
-       mehr — davon wurde auf Wunsch abgewichen, und die Staffel wird in
-       „Die Radien folgen der Staffel" geprüft. Hier steht nur, dass ein Knopf
-       den kleinsten Wert der Staffel trägt und nicht irgendeinen. */
-    if (werte.radius !== '4px') throw new Error(`Knopfradius ${werte.radius} statt 4px`);
-    if (!werte.schrift.includes('IBM Plex Sans')) throw new Error(`Schrift ${werte.schrift}`);
+    /* Registratur kennt keine Radien. Nicht „kleine": keine. Diese Zeile ist
+       die Sperre dagegen, dass sich einer zurückschleicht. */
+    if (werte.radius !== '0px') throw new Error(`Knopfradius ${werte.radius} statt 0`);
+    if (!werte.schrift.includes('IBM Plex Sans Condensed')) throw new Error(`Schrift ${werte.schrift}`);
     if (!werte.plex) throw new Error('IBM Plex wurde nicht geladen');
-    return 'Akzent, Chrome, Bühne, Papier, Knopfradius 4, IBM Plex geladen';
+    return 'Akzent, Chrome, Bühne, Papier, kein Radius, IBM Plex geladen';
   });
 
   await pruefe('Die Schriften kommen von hier, nicht aus dem Netz', async () => {

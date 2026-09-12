@@ -1,7 +1,7 @@
 /* PDF Studio — Gestaltung der Seite.
 
    Farben, Schriften und Formen folgen demselben Handoff wie die Anwendung
-   (studio/app/stil.css): Akzent #0f766e, dunkle Chrome #1d2327, IBM Plex,
+   (studio/app/stil.css): Akzent #3E5C96, dunkle Chrome #21272C, IBM Plex,
    Radius 0. Seite und Anwendung sollen wie ein Stück wirken — wer auf
    „PDF Studio öffnen" klickt, soll nicht das Gefühl haben, ein anderes Haus
    zu betreten.
@@ -15,6 +15,12 @@
   src: url('/schrift/plex-sans-500.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 600; font-display: swap;
   src: url('/schrift/plex-sans-600.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans Condensed'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('/schrift/plex-sans-cond-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans Condensed'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('/schrift/plex-sans-cond-500.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans Condensed'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('/schrift/plex-sans-cond-600.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Serif'; font-style: normal; font-weight: 400; font-display: swap;
   src: url('/schrift/plex-serif-400.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Serif'; font-style: italic; font-weight: 400; font-display: swap;
@@ -27,74 +33,94 @@
   src: url('/schrift/plex-mono-500.woff2') format('woff2'); }
 
 :root {
-  /* Dieselbe Radien-Staffel wie die Anwendung (studio/app/stil.css). Seite und
-     Anwendung sollen wie ein Stück wirken — auch in den Ecken. */
-  --radius-klein: 4px;
-  --radius: 6px;
-  --radius-gross: 10px;
+  /* „Registratur" — dieselbe Richtung wie die Anwendung (studio/app/stil.css).
+     Es gibt keine Radien; Hierarchie tragen Haarlinien und Zeilenhöhe.
 
-  --grund:        #ECEEF0;
-  --flaeche:      #FFFFFF;
-  --flaeche-tief: #F5F6F7;
-  --tinte:        #15191C;
-  --tinte-leise:  #59636A;
-  --linie:        #D7DBDE;
-  --linie-stark:  #C3C9CD;
-  --tally:        #0F766E;
-  --tally-grund:  rgba(15,118,110,.10);
-  --tally-hell:   #7FD6CD;
-  --gut:          #0F766E;
-  --gut-grund:    rgba(15,118,110,.10);
-  --warn:         #B4530A;
-  --chrome-900:   #1D2327;
-  --chrome-800:   #22292E;
-  --chrome-linie: #2C3438;
-  --chrome-leise: #8B979C;
+     Ein Unterschied ist Absicht: die Anwendung setzt ihre Bedienung in der
+     schmalen Plex, weil dort Dichte zählt. Eine Verkaufsseite wird gelesen,
+     nicht abgearbeitet — der Fließtext bleibt in der normalen Breite, schmal
+     ist nur, was Etikett ist. */
+  --radius-klein: 0;
+  --radius: 0;
+  --radius-gross: 0;
 
-  /* Aus dem Handoff, für die Fenster-Attrappe im Aufmacher: dieselben Werte,
-     die auch in der Anwendung gelten. */
-  --tafel:        #EFF1F2;
-  --buehne:       #5F686E;
+  --grund:        #E1E4E6;
+  --flaeche:      #F4F6F8;
+  --flaeche-tief: #EAEDF0;
+  --tinte:        #1B2128;
+  --tinte-leise:  #696F76;
+  --linie:        #D1D5D9;
+  --linie-stark:  #B0B6BB;
+  --tally:        #3E5C96;
+  --tally-grund:  rgba(62,92,150,.10);
+  --tally-hell:   #A8BCE0;
+  --gut:          #236E44;
+  --gut-grund:    rgba(35,110,68,.12);
+  --warn:         #81520A;
+  --chrome-900:   #21272C;
+  --chrome-800:   #2E353B;
+  --chrome-linie: #3A4147;
+  --chrome-leise: #98A0A7;
+
+  /* Für die Fenster-Attrappe im Aufmacher: dieselben Werte wie im Programm. */
+  --tafel:        #EAEDF0;
+  --buehne:       #2E3338;
   --papier:       #FDFCF9;
 
-  --sans: 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
-  --serif: 'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
-  --mono: 'IBM Plex Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans:   'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
+  --schmal: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
+  --serif:  'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
+  --mono:   'IBM Plex Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   --spur: 75rem;
   --lauf: 34rem;
 }
 
+/* Zweimal geschrieben, weil CSS keine Verzweigung auf eine Variable kennt —
+   aber Wort für Wort dieselbe Liste, und Wort für Wort die der Anwendung.
+   Vorher standen hier zwei verschiedene Fassungen: die Seite leuchtete im
+   Dunkeln orangerot, das Programm türkis. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --grund:        #14191C;
-    --flaeche:      #1D2327;
-    --flaeche-tief: #22292E;
-    --tinte:        #E4E9EA;
-    --tinte-leise:  #93A1A7;
-    --linie:        #2A3438;
-    --linie-stark:  #47555A;
-    --tally:        #7FD6CD;
-    --tally-grund:  rgba(127,214,205,.14);
-    --tally-hell:   #7FD6CD;
-    --gut:          #7FD6CD;
-    --gut-grund:    rgba(127,214,205,.14);
-    --warn:         #E2B15C;
+    --grund:        #14181B;
+    --flaeche:      #1B2126;
+    --flaeche-tief: #232A30;
+    --tinte:        #E2E6E9;
+    --tinte-leise:  #949CA3;
+    --linie:        #2A3238;
+    --linie-stark:  #3C444B;
+    --tally:        #9DB4E0;
+    --tally-grund:  rgba(157,180,224,.14);
+    --tally-hell:   #9DB4E0;
+    --gut:          #6FC292;
+    --gut-grund:    rgba(111,194,146,.14);
+    --warn:         #D7A54E;
+    --chrome-900:   #10151A;
+    --chrome-800:   #1B2126;
+    --chrome-linie: #232A30;
+    --tafel:        #191F24;
+    --buehne:       #0C1013;
   }
 }
 :root[data-theme="dark"] {
-  --grund:        #111618;
-  --flaeche:      #192023;
-  --flaeche-tief: #212A2E;
-  --tinte:        #E4E9EA;
-  --tinte-leise:  #93A1A7;
-  --linie:        #2A3438;
-  --linie-stark:  #47555A;
-  --tally:        #F0705C;
-  --tally-grund:  #37211E;
-  --gut:          #63BFA9;
-  --gut-grund:    #14302B;
-  --warn:         #E2B15C;
+    --grund:        #14181B;
+    --flaeche:      #1B2126;
+    --flaeche-tief: #232A30;
+    --tinte:        #E2E6E9;
+    --tinte-leise:  #949CA3;
+    --linie:        #2A3238;
+    --linie-stark:  #3C444B;
+    --tally:        #9DB4E0;
+    --tally-grund:  rgba(157,180,224,.14);
+    --tally-hell:   #9DB4E0;
+    --gut:          #6FC292;
+    --gut-grund:    rgba(111,194,146,.14);
+    --warn:         #D7A54E;
+    --chrome-900:   #10151A;
+    --chrome-800:   #1B2126;
+    --chrome-linie: #232A30;
+    --tafel:        #191F24;
+    --buehne:       #0C1013;
 }
 
 * { box-sizing: border-box; }
@@ -198,7 +224,7 @@ p:last-child { margin-bottom: 0; }
   box-shadow: 0 1px 2px rgba(20,26,28,.06), 0 14px 40px rgba(20,26,28,.16);
 }
 .fenster-kopf { display: flex; align-items: center; gap: .35rem; padding: 4px 6px 10px; }
-.ampel { width: .5rem; height: .5rem; border-radius: 50%; background: #4b5459; flex: none; }
+.ampel { width: .5rem; height: .5rem; border-radius: 0; background: #4b5459; flex: none; }
 .fenster-titel {
   font-family: var(--mono); font-size: .6875rem; color: #98a3a8;
   margin-left: .5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -231,7 +257,7 @@ p:last-child { margin-bottom: 0; }
 .nadel {
   position: absolute; right: -9px; top: 46%;
   width: 18px; height: 18px; background: var(--tally); color: #fff;
-  border-radius: 50% 50% 50% 2px;
+  border-radius: 0;
   display: grid; place-items: center; font-family: var(--mono); font-size: .55rem;
 }
 
@@ -311,7 +337,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 /* Navigation nach dem Handoff: Leiste 56 px, Punkte mit Aufklappmenü beim
    Überfahren. Kein JavaScript — :hover und :focus-within genügen, und
    letzteres macht die Menüs mit der Tastatur erreichbar. */
-.kopf-wege { display: flex; align-items: stretch; gap: 0; flex: 1; min-width: 0; }
+.kopf-wege { display: flex; align-items: stretch; gap: 0; flex: 1; min-width: 0; font-family: var(--schmal); }
 .kopf-weg { position: relative; display: flex; align-items: center; border-bottom: 2px solid transparent; }
 .kopf-weg > a {
   font-size: 12.5px; padding: 0 10px; text-decoration: none; color: #A9B4B9;
@@ -363,7 +389,9 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .knopf-voll {
   display: inline-block; margin-top: 1.2rem;
   background: var(--tally); color: #fff; text-decoration: none;
-  border-radius: var(--radius-klein); padding: .6rem 1.2rem; font-weight: 600;
+  border-radius: var(--radius-klein); padding: .6rem 1.3rem;
+  font-family: var(--mono); font-size: .82rem; font-weight: 500;
+  letter-spacing: .09em; text-transform: uppercase;
 }
 .knopf-voll:hover { filter: brightness(1.08); }
 .knopf-voll:focus-visible { outline: 2px solid var(--tinte); outline-offset: 2px; }
@@ -372,7 +400,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .schritt b { font-weight: 600; }
 .schritt .nr {
   font-family: var(--mono); font-size: .75rem; color: var(--tally);
-  border: 1px solid var(--tally); border-radius: 50%;
+  border: 1px solid var(--tally); border-radius: 0;
   width: 1.5rem; height: 1.5rem; display: grid; place-items: center;
 }
 .schritt p { font-size: .9375rem; color: var(--tinte-leise); margin: .1rem 0 0; }

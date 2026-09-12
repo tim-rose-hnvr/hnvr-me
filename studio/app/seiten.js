@@ -5,12 +5,31 @@ import { holeSeite, verschiebeSeiten, dreheSeiten, loescheSeiten, verdoppleSeite
 
 let behaelter = null;
 let gitter = null;
+/* Registratur zeigt die Seiten als Zeilen: auf demselben Bildschirm stehen so
+   rund zwanzig statt drei. Die Miniaturen sind nicht weg — sie sind eine
+   Wahl, und die Wahl überlebt den Neustart. */
+let eng = localStorage.getItem('studio-seitenansicht') !== 'miniaturen';
 const miniaturen = new Map();
 let beobachter = null;
 let letzteGeklickt = null;
 
+export function istEngeSeitenliste() { return eng; }
+
+export function setzeSeitenansicht(engeAnsicht) {
+  eng = engeAnsicht;
+  localStorage.setItem('studio-seitenansicht', eng ? 'zeilen' : 'miniaturen');
+  const knopf = $('#knopf-seitenansicht');
+  if (knopf) {
+    knopf.textContent = eng ? 'Miniaturen' : 'Zeilen';
+    knopf.setAttribute('aria-pressed', String(!eng));
+  }
+  baueMiniaturen();
+}
+
 export function starteSeiten() {
   behaelter = $('#tafel-miniaturen');
+  $('#knopf-seitenansicht')?.addEventListener('click', () => setzeSeitenansicht(!eng));
+  setzeSeitenansicht(eng);
   hoer('dokument:geladen', baueMiniaturen);
   hoer('seiten:geaendert', baueMiniaturen);
   hoer('seite:gewechselt', markiereAktuelle);
@@ -39,10 +58,20 @@ export function baueMiniaturen() {
 
      Erreichbar bleibt alles: Menü „Seiten", Werkzeugzeile, Tastenkürzel. */
 
-  gitter = el('div', { klasse: 'miniaturen' });
+  gitter = el('div', { klasse: eng ? 'miniaturen ist-eng' : 'miniaturen' });
+  if (eng) {
+    /* Der Spaltenkopf gehört zur Zeilenansicht: ohne ihn ist eine Zahlenspalte
+       eine Spalte Zahlen ohne Bedeutung. */
+    behaelter.append(el('div', { klasse: 'spaltenkopf' },
+      el('span', { text: 'S.' }), el('span', { klasse: 'waechst', text: 'Gliederung' }),
+      el('span', { text: 'Anm.' })));
+  }
   behaelter.append(gitter);
 
   beobachter = new IntersectionObserver((eintraege) => {
+    /* In der Zeilenansicht gibt es kein Bild zu zeichnen — dann bleibt auch
+       das Rechenwerk aus. */
+    if (eng) return;
     for (const e of eintraege) if (e.isIntersecting) zeichneMiniatur(e.target.dataset.seite);
   }, { root: behaelter, rootMargin: '200px' });
 
@@ -56,7 +85,7 @@ export function baueMiniaturen() {
       klasse: 'miniatur', daten: { seite: eintrag.id }, draggable: 'true', title: `Seite ${i + 1}`,
       beiClick: (ereignis) => beiKlick(ereignis, eintrag, i),
     },
-      el('div', { klasse: 'miniatur-karte' }, el('canvas', { width: 100, height: 140 })),
+      eng ? null : el('div', { klasse: 'miniatur-karte' }, el('canvas', { width: 100, height: 140 })),
       el('div', { klasse: 'miniatur-zeile' },
         el('span', { klasse: 'miniatur-nummer', text: String(i + 1) }),
         el('span', { klasse: 'miniatur-titel', text: kurztitel(eintrag) }),

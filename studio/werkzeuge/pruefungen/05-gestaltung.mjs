@@ -1,27 +1,32 @@
-/* Gestaltung — gegen das Handoff gelegt, nicht gegen die eigene Meinung.
+/* Gestaltung — gegen die vereinbarte Richtung gelegt, nicht gegen die eigene
+   Meinung.
 
    Diese Gruppe misst gerenderte Pixel: Farben, Zeilenhöhen, Spaltenbreiten,
    Radien, Schriftschnitte. Sie ist entstanden, nachdem zweimal behauptet
-   wurde, die Gestaltung stimme — und zweimal stimmte sie nicht. */
+   wurde, die Gestaltung stimme — und zweimal stimmte sie nicht.
+
+   Die Richtung heißt „Registratur": keine Radien, keine Schatten, keine
+   Karten. Hierarchie tragen Haarlinie, Zeilenhöhe und Versalabstand. */
 
 import { join } from 'node:path';
 
 export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, ablage }) {
-  console.log('\n== Gestaltung nach dem Handoff ==');
+  console.log('\n== Gestaltung nach der Richtung ==');
 
-  /* Das Handoff nennt Höhen, Breiten und Farben auf den Pixel und den Hexwert
+  /* Die Richtung nennt Höhen, Breiten und Farben auf den Pixel und den Hexwert
      genau. Sie hier nachzumessen ist der einzige Weg, der nicht darauf
      hinausläuft, zwei Bildschirmabzüge nebeneinanderzuhalten. */
-  const HANDOFF = {
-    kopf: 38, menue: 27, werkzeuge: 46, fuss: 30,
-    links: 196, rechts: 296,
-    chrome900: 'rgb(29, 35, 39)',
-    menueGrund: 'rgb(231, 233, 235)',
-    werkzeugGrund: 'rgb(244, 245, 246)',
-    buehne: 'rgb(95, 104, 110)',
-    fussGrund: 'rgb(51, 59, 64)',
+  const REG = {
+    kopf: 30, menue: 22, werkzeuge: 30, fuss: 24,
+    links: 220, rechts: 300,
+    chrome900: 'rgb(33, 39, 44)',
+    menueGrund: 'rgb(234, 237, 240)',
+    werkzeugGrund: 'rgb(244, 246, 248)',
+    buehne: 'rgb(46, 51, 56)',
+    fussGrund: 'rgb(33, 39, 44)',
     papier: 'rgb(253, 252, 249)',
-    akzent: 'rgb(15, 118, 110)',
+    akzent: 'rgb(62, 92, 150)',
+    chromeText: 'rgb(244, 246, 248)',
   };
 
   await pruefe('Die Höhen der Chrome stimmen auf den Pixel', async () => {
@@ -32,7 +37,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       return { kopf: h('.kopf'), menue: h('.menueleiste'), werkzeuge: h('.werkzeugzeile'),
         fuss: h('.fuss'), links: b('.leiste-links'), rechts: b('.leiste-rechts') };
     });
-    for (const [name, soll] of Object.entries(HANDOFF)) {
+    for (const [name, soll] of Object.entries(REG)) {
       if (typeof soll !== 'number') continue;
       if (masse[name] !== soll) throw new Error(`${name}: ${masse[name]} statt ${soll}`);
     }
@@ -46,8 +51,8 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
         buehne: f('#buehne'), fuss: f('.fuss'), blatt: f('.blatt') };
     });
     const soll = {
-      kopf: HANDOFF.chrome900, menue: HANDOFF.menueGrund, werkzeuge: HANDOFF.werkzeugGrund,
-      buehne: HANDOFF.buehne, fuss: HANDOFF.fussGrund, blatt: HANDOFF.papier,
+      kopf: REG.chrome900, menue: REG.menueGrund, werkzeuge: REG.werkzeugGrund,
+      buehne: REG.buehne, fuss: REG.fussGrund, blatt: REG.papier,
     };
     for (const [name, wert] of Object.entries(soll)) {
       if (farben[name] !== wert) throw new Error(`${name}: ${farben[name]} statt ${wert}`);
@@ -78,9 +83,10 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
   });
 
   await pruefe('Bei der Fensterbreite des Mockups stehen beide Leisten', async () => {
-    /* Die Mockup-Aufnahme ist 924 px breit und zeigt beide Leisten: links 196,
-       rechts 296. Unser Umbruchpunkt lag darüber — bei dieser Breite klappten
-       beide Leisten weg, und der Vergleich verglich zwei verschiedene Dinge. */
+    /* Die Mockup-Aufnahme ist 924 px breit und zeigt beide Leisten. Unser
+       Umbruchpunkt lag einmal darüber — bei dieser Breite klappten beide
+       Leisten weg, und der Vergleich verglich zwei verschiedene Dinge.
+       Registratur macht die Leisten breiter, weil dort Spalten stehen. */
     await seite.setViewportSize({ width: 944, height: 700 });
     await seite.waitForTimeout(900);
     const lage = await seite.evaluate(() => {
@@ -95,10 +101,10 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     });
     await seite.setViewportSize({ width: 1500, height: 950 });
     await seite.waitForTimeout(900);
-    if (lage.links !== 196) throw new Error(`linke Leiste ${lage.links} px`);
-    if (lage.rechts !== 296) throw new Error(`rechte Leiste ${lage.rechts} px`);
+    if (lage.links !== REG.links) throw new Error(`linke Leiste ${lage.links} px`);
+    if (lage.rechts !== REG.rechts) throw new Error(`rechte Leiste ${lage.rechts} px`);
     if (!lage.linksSteht || !lage.rechtsSteht) throw new Error('eine Leiste liegt über der Bühne');
-    return `196 + ${lage.buehne} + 296`;
+    return `${REG.links} + ${lage.buehne} + ${REG.rechts}`;
   });
 
   await pruefe('Die Werkzeugknöpfe tragen die Wörter des Mockups', async () => {
@@ -131,9 +137,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
         formate: (document.querySelector('.empfang-ablage .mono')?.textContent || ''),
       };
     });
-    if (stand.kopfGrund !== HANDOFF.chrome900) throw new Error(`Kopf ist ${stand.kopfGrund}`);
-    if (stand.kopfHoehe !== 38) throw new Error(`Kopf ist ${stand.kopfHoehe} px`);
-    if (stand.knopf !== HANDOFF.akzent) throw new Error(`„Datei öffnen" ist ${stand.knopf}`);
+    if (stand.kopfGrund !== REG.chrome900) throw new Error(`Kopf ist ${stand.kopfGrund}`);
+    if (stand.kopfHoehe !== REG.kopf) throw new Error(`Kopf ist ${stand.kopfHoehe} px`);
+    if (stand.knopf !== REG.akzent) throw new Error(`„Datei öffnen" ist ${stand.knopf}`);
     if (!/Plex Serif/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
     if (!stand.ablage) throw new Error('keine Ablegefläche');
     if (!/DOCX/.test(stand.formate)) throw new Error(`Formate: ${stand.formate}`);
@@ -180,12 +186,17 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     /* Sie war heller als die Tafeln daneben — dann liegt das Blatt nicht auf
        einem Tisch, sondern in einem Kasten. */
     const hell = (farbe) => farbe.match(/\d+/g).slice(0, 3).reduce((a, b) => a + Number(b), 0);
+    await ladeBeispiel();
     const werte = await seite.evaluate(() => {
       document.documentElement.dataset.thema = 'dunkel';
-      const g = (s) => getComputedStyle(document.querySelector(s)).backgroundColor;
-      const raus = { buehne: g('#buehne'), tafel: g('.leiste-links'), chrome: g('.kopf'), blatt: g('.blatt') };
-      document.documentElement.dataset.thema = 'system';
-      return raus;
+      try {
+        const g = (s) => getComputedStyle(document.querySelector(s)).backgroundColor;
+        return { buehne: g('#buehne'), tafel: g('.leiste-links'), chrome: g('.kopf'), blatt: g('.blatt') };
+      } finally {
+        /* Ohne dieses `finally` blieb nach einem Fehlschlag die dunkle Fassung
+           stehen, und jede folgende Farbmessung maß das Falsche. */
+        document.documentElement.dataset.thema = 'system';
+      }
     });
     if (hell(werte.buehne) >= hell(werte.tafel)) {
       throw new Error(`Bühne ${werte.buehne} ist nicht dunkler als die Tafel ${werte.tafel}`);
@@ -203,9 +214,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       const chrome = getComputedStyle(document.querySelector('#knopf-einstellungen'));
       return { voll: voll.backgroundColor, vollText: voll.color, chromeText: chrome.color };
     });
-    if (stand.voll !== HANDOFF.akzent) throw new Error(`Sichern ist ${stand.voll}`);
-    if (stand.vollText !== 'rgb(255, 255, 255)') throw new Error(`Schrift ist ${stand.vollText}`);
-    if (stand.chromeText !== 'rgb(255, 255, 255)') throw new Error(`Einstellungen ist ${stand.chromeText}`);
+    if (stand.voll !== REG.akzent) throw new Error(`Sichern ist ${stand.voll}`);
+    if (stand.vollText !== REG.chromeText) throw new Error(`Schrift ist ${stand.vollText}`);
+    if (stand.chromeText !== REG.chromeText) throw new Error(`Einstellungen ist ${stand.chromeText}`);
     return `Sichern ${stand.voll}`;
   });
 
@@ -227,58 +238,30 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       };
     });
     if (stand.ohneWort.length) throw new Error(`ohne Wort: ${stand.ohneWort.join(', ')}`);
-    if (stand.hoehen.some((h) => h !== 34)) throw new Error(`Höhen ${stand.hoehen.join('/')} statt 34`);
+    if (stand.hoehen.some((h) => h !== REG.werkzeuge - 1)) {
+      throw new Error(`Höhen ${stand.hoehen.join('/')} statt ${REG.werkzeuge - 1}`);
+    }
     if (stand.trenner < 4) throw new Error(`nur ${stand.trenner} Gruppentrenner`);
     return `${stand.worte.length} Knöpfe: ${stand.worte.join(' · ')}`;
   });
 
-  await pruefe('Die Radien folgen der Staffel — und Papier bleibt eckig', async () => {
-    /* Das Handoff schrieb „Radien: 0 (alles kantig)". Davon wurde auf
-       ausdrücklichen Wunsch abgewichen. Damit die Abkehr nicht in
-       Beliebigkeit endet, prüft diese Stelle die Staffel genauso streng, wie
-       sie vorher die Null geprüft hat: erlaubt sind 0, 4, 6 und 10 px sowie
-       runde Punkte — nichts dazwischen.
-
-       Ein zweiter Wert wäre schnell hineingerutscht: irgendwo ein 5, dort ein
-       8, und nach drei Runden hat das Programm sieben Radien und keinen
-       Grund für einen davon. */
-    const ERLAUBT = [0, 4, 6, 10];
-    const abweichend = await seite.evaluate((erlaubt) => {
-      const rundeDinge = ['.punkt', '.stand-punkt', '.pille', '.pille i', '.notiz-marke'];
+  await pruefe('Es gibt keine Radien — ausnahmslos', async () => {
+    /* Registratur hat keine gerundeten Ecken. Nicht „kleine": keine. Diese
+       Prüfung ist die Sperre dagegen, dass sich einer zurückschleicht — ein 4
+       hier, ein 6 dort, und nach drei Runden ist die Richtung weg, ohne dass
+       jemand eine Entscheidung getroffen hätte. */
+    const rund = await seite.evaluate(() => {
       const raus = [];
       for (const k of document.querySelectorAll('#huelle *')) {
-        if (rundeDinge.some((w) => k.matches(w))) continue;
         const werte = getComputedStyle(k).borderRadius.split(/[\s/]+/).filter(Boolean);
-        for (const wert of werte) {
-          const px = parseFloat(wert);
-          if (!Number.isFinite(px)) continue;
-          if (!erlaubt.includes(Math.round(px))) {
-            raus.push(`${k.className || k.tagName}:${wert}`);
-            break;
-          }
+        if (werte.some((w) => parseFloat(w) > 0)) {
+          raus.push(`${k.className || k.tagName}:${getComputedStyle(k).borderRadius}`);
         }
       }
       return [...new Set(raus)].slice(0, 8);
-    }, ERLAUBT);
-    if (abweichend.length) throw new Error(`außerhalb der Staffel: ${abweichend.join(', ')}`);
-
-    /* Und die Ausnahmen von der Rundung selbst: Papier ist ein Blatt, kein
-       Aufkleber, und die Chrome-Leisten kleben am Fensterrand — ein Radius
-       dort ergäbe einen Spalt, hinter dem nichts ist. */
-    const eckig = await seite.evaluate(() => {
-      const muessenEckigSein = ['.blatt', '.blatt canvas', '.kopf', '.menueleiste',
-        '.werkzeugleiste', '.fuss', '.leiste-links', '.leiste-rechts', '#buehne'];
-      const falsch = [];
-      for (const wahl of muessenEckigSein) {
-        for (const k of document.querySelectorAll(wahl)) {
-          const r = getComputedStyle(k).borderRadius;
-          if (parseFloat(r) > 0) falsch.push(`${wahl}:${r}`);
-        }
-      }
-      return falsch;
     });
-    if (eckig.length) throw new Error(`sollte eckig sein: ${eckig.join(', ')}`);
-    return `Staffel 0/4/6/10 eingehalten, Papier und Chrome eckig`;
+    if (rund.length) throw new Error(`gerundet: ${rund.join(', ')}`);
+    return 'kein einziger Radius im ganzen Fenster';
   });
 
   await pruefe('Der Dialog hat den dunklen Kopf aus dem Handoff', async () => {
@@ -296,10 +279,10 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
         fassung: document.querySelector('.einst-fassung')?.textContent || '',
       };
     });
-    if (stand.grund !== HANDOFF.chrome900) throw new Error(`Kopf ist ${stand.grund}`);
-    if (stand.hoehe !== 42) throw new Error(`Kopf ist ${stand.hoehe} px statt 42`);
-    if (!/Plex Serif/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
-    if (stand.radius !== '10px') throw new Error(`Ecken ${stand.radius} statt 10px`);
+    if (stand.grund !== REG.chrome900) throw new Error(`Kopf ist ${stand.grund}`);
+    if (stand.hoehe !== 34) throw new Error(`Kopf ist ${stand.hoehe} px statt 34`);
+    if (!/Plex Mono/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
+    if (stand.radius !== '0px') throw new Error(`Ecken ${stand.radius} statt 0`);
     if (!stand.hinweis) throw new Error('kein Hinweis im Fuß');
     if (!/FASSUNG/.test(stand.fassung)) throw new Error('keine Fassung unter den Kategorien');
     await seite.keyboard.press('Escape');
@@ -307,24 +290,49 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     return `${stand.hoehe} px, ${stand.grund}, Fuß: „${stand.hinweis}"`;
   });
 
-  await pruefe('Die Seitenliste ist einspaltig, mit Zahl und Kurztitel', async () => {
-    const stand = await seite.evaluate(() => {
+  await pruefe('Die Seitenliste steht als Zeilen — und die Miniaturen bleiben erreichbar', async () => {
+    /* Der Dichtegewinn der Richtung steckt genau hier: 22-px-Zeilen statt
+       120-px-Karten. Das Bild ist damit nicht verboten, sondern eine Wahl —
+       und diese Prüfung besteht darauf, dass die Wahl beide Wege kann. */
+    const zeilen = await seite.evaluate(() => {
       const erste = document.querySelector('.miniatur');
       const zweite = document.querySelectorAll('.miniatur')[1];
       return {
         untereinander: zweite.getBoundingClientRect().top > erste.getBoundingClientRect().bottom - 2,
-        karte: Math.round(erste.querySelector('.miniatur-karte').getBoundingClientRect().height),
+        hoehe: Math.round(erste.getBoundingClientRect().height),
+        karte: !!erste.querySelector('.miniatur-karte'),
+        kopf: (document.querySelector('#tafel-miniaturen .spaltenkopf')?.textContent || ''),
         nummer: erste.querySelector('.miniatur-nummer')?.textContent,
         titel: erste.querySelector('.miniatur-titel')?.textContent || '',
-        titelSchrift: getComputedStyle(erste.querySelector('.miniatur-nummer')).fontFamily,
+        zahlSchrift: getComputedStyle(erste.querySelector('.miniatur-nummer')).fontFamily,
       };
     });
-    if (!stand.untereinander) throw new Error('die Miniaturen stehen nebeneinander');
-    if (stand.karte !== 112) throw new Error(`Karte ${stand.karte} px statt 112`);
-    if (stand.nummer !== '1') throw new Error(`Nummer „${stand.nummer}"`);
-    if (stand.titel.length < 4) throw new Error(`kein Kurztitel: „${stand.titel}"`);
-    if (!/Plex Mono/.test(stand.titelSchrift)) throw new Error(`Zahl in ${stand.titelSchrift}`);
-    return `112 px, „${stand.nummer} ${stand.titel}"`;
+    if (!zeilen.untereinander) throw new Error('die Zeilen stehen nebeneinander');
+    if (zeilen.hoehe !== 22) throw new Error(`Zeile ${zeilen.hoehe} px statt 22`);
+    if (zeilen.karte) throw new Error('in der Zeilenansicht steht noch eine Karte');
+    if (!/Gliederung/.test(zeilen.kopf)) throw new Error(`kein Spaltenkopf: „${zeilen.kopf}"`);
+    if (zeilen.nummer !== '1') throw new Error(`Nummer „${zeilen.nummer}"`);
+    if (zeilen.titel.length < 4) throw new Error(`kein Kurztitel: „${zeilen.titel}"`);
+    if (!/Plex Mono/.test(zeilen.zahlSchrift)) throw new Error(`Zahl in ${zeilen.zahlSchrift}`);
+
+    /* Und zurück: der Knopf im Fuß der Leiste holt die Karten wieder. */
+    const bilder = await seite.evaluate(async () => {
+      document.querySelector('#knopf-seitenansicht').click();
+      await new Promise((l) => setTimeout(l, 700));
+      const raus = {
+        karten: document.querySelectorAll('.miniatur-karte').length,
+        hoehe: Math.round(document.querySelector('.miniatur-karte').getBoundingClientRect().height),
+        gemerkt: localStorage.getItem('studio-seitenansicht'),
+      };
+      document.querySelector('#knopf-seitenansicht').click();
+      await new Promise((l) => setTimeout(l, 700));
+      return { ...raus, wiederZeilen: !document.querySelector('.miniatur-karte') };
+    });
+    if (bilder.karten !== 5) throw new Error(`${bilder.karten} Miniaturen statt 5`);
+    if (bilder.hoehe !== 112) throw new Error(`Karte ${bilder.hoehe} px statt 112`);
+    if (bilder.gemerkt !== 'miniaturen') throw new Error('die Wahl wird nicht gemerkt');
+    if (!bilder.wiederZeilen) throw new Error('der Weg zurück zu den Zeilen fehlt');
+    return `22-px-Zeilen mit „${zeilen.nummer} ${zeilen.titel}", Miniaturen auf Wunsch (112 px)`;
   });
 
   await pruefe('Die drei Ansichten stehen als Gruppe in der Zeile', async () => {

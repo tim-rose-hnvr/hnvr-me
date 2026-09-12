@@ -23,6 +23,12 @@
   src: url('../fremd/schrift/plex-sans-500.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 600; font-display: swap;
   src: url('../fremd/schrift/plex-sans-600.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans Condensed'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../fremd/schrift/plex-sans-cond-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans Condensed'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('../fremd/schrift/plex-sans-cond-500.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans Condensed'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('../fremd/schrift/plex-sans-cond-600.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Serif'; font-style: normal; font-weight: 400; font-display: swap;
   src: url('../fremd/schrift/plex-serif-400.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Serif'; font-style: italic; font-weight: 400; font-display: swap;
@@ -35,73 +41,83 @@
   src: url('../fremd/schrift/plex-mono-500.woff2') format('woff2'); }
 
 :root {
-  --grund:        #E9EAEC;
-  --flaeche:      #FFFFFF;
-  --flaeche-tief: #E6E9EB;
-  --flaeche-hoch: #F4F5F6;
-  --tafel:        #EFF1F2;
-  --menue-grund:  #E7E9EB;
-  --tinte:        #171C20;
-  --tinte-leise:  #77828A;
-  --linie:        #DDE1E4;
-  --linie-stark:  #CFD4D8;
-  --tally:        #0F766E;
-  --tally-hover:  #0E6B64;
-  --tally-hell:   #7FD6CD;
-  --tally-grund:  rgba(15,118,110,.10);
-  --warn:         #B4530A;
-  --warn-grund:   rgba(180,83,10,.10);
-  --gut:          #0F766E;
-  --gut-grund:    rgba(15,118,110,.10);
-  --gefahr:       #8B3A3A;
+  /* ---- Registratur ---------------------------------------------------
+     Amt und Akte. Es gibt keine Karten, keine Radien, keine Schatten und
+     keine Verläufe. Hierarchie tragen ausschließlich Haarlinien, Zeilenhöhe
+     und Versalabstand. Alles Zählbare steht in Mono, damit Spalten fluchten.
+
+     Die Ausnahme ist das Blatt: es ist das einzige helle, warme Ding im
+     Fenster, und es bleibt es. */
+  --grund:        #E1E4E6;   /* Fenstergrund, Karton hinter allem */
+  --flaeche:      #F4F6F8;   /* Tabellen, Listen, Felder, Dialogrumpf */
+  --flaeche-tief: #EAEDF0;   /* Zebrastreifen, Hover, Tabellenkopf */
+  --flaeche-hoch: #F4F6F8;   /* Werkzeugzeile, Menüliste, Dialogfuß */
+  --tafel:        #EAEDF0;   /* Seitenleisten, Reiterzeile */
+  --menue-grund:  #EAEDF0;   /* Menüleiste */
+  --tinte:        #1B2128;
+  --tinte-leise:  #696F76;   /* Etiketten, Einheiten, Randvermerk */
+  --linie:        #D1D5D9;   /* Zeilenlinie, Fuge zwischen Feldern */
+  --linie-stark:  #B0B6BB;   /* Rahmen von Feld, Knopf, Leiste, Spaltenkante */
+
+  --tally:        #3E5C96;   /* Amtsblau: aktive Zeile, Marke, Fokus, Verweis */
+  --tally-hover:  #344E80;
+  --tally-hell:   #A8BCE0;   /* Akzent auf der dunklen Chrome */
+  --tally-grund:  rgba(62,92,150,.10);
+  --warn:         #81520A;   /* Frist, offener Formularstand, ungeprüft */
+  --warn-grund:   rgba(129,82,10,.12);
+
+  /* --gut war byteweise --tally und damit keine eigene Meldung.
+     Kanzleigrün ist jetzt ein eigener Farbton. */
+  --gut:          #236E44;
+  --gut-grund:    rgba(35,110,68,.12);
+  --gefahr:       #8D453E;   /* Schwärzung anwenden, Fassung verwerfen */
+  --gefahr-grund: rgba(141,69,62,.12);
 
   /* Dunkle Chrome: Titelleiste, Statusleiste, Aktionsleisten. */
-  --chrome-900:   #1D2327;
-  --chrome-800:   #22292E;
-  --chrome-700:   #2A3236;
-  --chrome-600:   #3F474C;
-  --chrome-linie: #2C3438;
-  --chrome-fuss:  #333B40;   /* Handoff: Statusleiste */
-  --chrome-text:  #FFFFFF;
-  --chrome-leise: #8B979C;
+  --chrome-900:   #21272C;
+  --chrome-800:   #2E353B;
+  --chrome-700:   #363E44;
+  --chrome-600:   #3A4147;
+  --chrome-linie: #3A4147;
+  --chrome-fuss:  #21272C;   /* Statusleiste — gleich der Titelleiste */
+  --chrome-text:  #F4F6F8;
+  --chrome-leise: #98A0A7;
 
-  --buehne:       #5F686E;
-  --buehne-tief:  #4F585E;
+  --buehne:       #2E3338;
+  --buehne-tief:  #262A2E;
+  --lineatur:     #363C41;   /* Bühnenraster, 1 px alle 32 px */
   --papier:       #FDFCF9;
+  --blattkante:   #14181B;
 
-  --schatten:     0 1px 3px rgba(0,0,0,.06);
-  --schatten-blatt: 0 6px 22px rgba(0,0,0,.34);
-  --schatten-tafel: 0 14px 30px rgba(18,24,28,.26);
-  --schatten-dialog: 0 24px 60px rgba(0,0,0,.4);
+  /* Es gibt keine Schatten. Was schwebt, trägt eine Linie.
+     Die Namen bleiben, damit die Bauteile nicht alle angefasst werden müssen. */
+  --schatten:        0 0 0 1px var(--linie-stark);
+  --schatten-blatt:  0 0 0 1px var(--blattkante);
+  --schatten-tafel:  0 0 0 1px var(--linie-stark);
+  --schatten-dialog: 0 0 0 1px var(--linie-stark);
 
-  --sans: 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
+  --sans:  'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
+  --breit: 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
   --serif: 'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
-  --mono: 'IBM Plex Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --mono:  'IBM Plex Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
-  /* Handoff: Titelleiste 38, Menü 27, Werkzeuge 46, Status 30. */
-  --kopfhoehe: 38px;
-  --menuehoehe: 27px;
-  --werkzeughoehe: 46px;
-  --fusshoehe: 30px;
-  --leiste-links: 196px;
-  --leiste-rechts: 296px;
+  /* Dichte statt Luft: Kopf 30, Menü 22, Werkzeuge 30, Status 24.
+     Das sind 39 px weniger Rand als vorher — knapp zwei Listenzeilen. */
+  --kopfhoehe: 30px;
+  --menuehoehe: 22px;
+  --werkzeughoehe: 30px;
+  --fusshoehe: 24px;
+  --leiste-links: 220px;
+  --leiste-rechts: 300px;
+  --zeile: 22px;          /* eine Listenzeile — das Maß der Dichte */
+  --zeile-kopf: 20px;     /* Spaltenkopf über einer Liste */
 
-  /* Radien — eine Staffel, kein Pauschalwert.
-
-     Das Handoff schrieb „Radien: 0 (alles kantig)". Das ist eine bewusste
-     Abkehr davon, auf ausdrücklichen Wunsch. Damit sie nicht in Beliebigkeit
-     endet, gilt eine Regel:
-
-     Je kleiner und je öfter ein Ding vorkommt, desto kleiner sein Radius.
-     Ein Knopf ist klein und steht dutzendfach — 4 px. Ein Dialog ist groß
-     und steht einmal — 10 px. Und: **Papier bleibt eckig.** Ein Blatt ist
-     ein Blatt; eine gerundete Seite sähe aus wie ein Aufkleber. Ebenso die
-     Chrome-Leisten, die am Fensterrand kleben — ein Radius dort ergäbe einen
-     Spalt zum Rand, hinter dem nichts ist. */
-  --radius-klein: 4px;    /* Knöpfe, Felder, Marken, Chips */
-  --radius: 6px;          /* Karten, Menüs, Listenzeilen, Meldungen */
-  --radius-gross: 10px;   /* Dialoge, Empfangskarte, Kacheln */
-  --radius-voll: 999px;   /* Pillen und Punkte */
+  /* Es gibt keine Radien. Die Namen bleiben stehen, damit die Regel an
+     genau einer Stelle steht und nicht an hundert. */
+  --radius-klein: 0;
+  --radius: 0;
+  --radius-gross: 0;
+  --radius-voll: 0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -110,74 +126,73 @@
 :root[data-thema="dunkel"] { --dunkel: 1; }
 
 /* Die dunkle Fassung erbt Aufbau und Abstände und tauscht nur die Farben.
-   Doppelt geschrieben, weil CSS keine Verzweigung auf eine Variable kennt. */
+   Zweimal geschrieben, weil CSS keine Verzweigung auf eine Variable kennt —
+   aber Wort für Wort dieselbe Liste. Wer eine Zeile ändert, ändert beide. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-thema="hell"]) {
-    --grund:        #14191C;
-    --flaeche:      #1D2327;
-    --flaeche-tief: #262E33;
-    --flaeche-hoch: #22292E;
-    --tafel:        #1A2024;
-    --menue-grund:  #191F23;
-    --tinte:        #E4E9EA;
-    --tinte-leise:  #8B979C;
-    --linie:        #2C3438;
-    --linie-stark:  #3F474C;
-    --tally:        #7FD6CD;
-    --tally-hover:  #A2E4DD;
-    --tally-hell:   #7FD6CD;
-    --tally-grund:  rgba(127,214,205,.14);
-    --warn:         #E2B15C;
-    --warn-grund:   rgba(226,177,92,.14);
-    --gut:          #7FD6CD;
-    --gut-grund:    rgba(127,214,205,.14);
-    --gefahr:       #E38B8B;
-    --chrome-900:   #12171A;
-    --chrome-800:   #171C20;
-    --chrome-700:   #1F262A;
-    --chrome-600:   #2C3438;
-    --chrome-linie: #232B2F;
-    --chrome-fuss:  #1F262A;
-    --buehne:       #0E1215;
-    --buehne-tief:  #0A0D0F;
-    --schatten:     0 1px 3px rgba(0,0,0,.5);
-    --schatten-blatt: 0 6px 22px rgba(0,0,0,.6);
-    --schatten-tafel: 0 14px 30px rgba(0,0,0,.6);
-    --schatten-dialog: 0 24px 60px rgba(0,0,0,.7);
+    --grund:        #14181B;
+    --flaeche:      #1B2126;
+    --flaeche-tief: #232A30;
+    --flaeche-hoch: #1B2126;
+    --tafel:        #191F24;
+    --menue-grund:  #191F24;
+    --tinte:        #E2E6E9;
+    --tinte-leise:  #949CA3;
+    --linie:        #2A3238;
+    --linie-stark:  #3C444B;
+    --tally:        #9DB4E0;
+    --tally-hover:  #BACCEE;
+    --tally-hell:   #9DB4E0;
+    --tally-grund:  rgba(157,180,224,.14);
+    --warn:         #D7A54E;
+    --warn-grund:   rgba(215,165,78,.14);
+    --gut:          #6FC292;
+    --gut-grund:    rgba(111,194,146,.14);
+    --gefahr:       #E08A82;
+    --gefahr-grund: rgba(224,138,130,.14);
+    --chrome-900:   #10151A;
+    --chrome-800:   #1B2126;
+    --chrome-700:   #232A30;
+    --chrome-600:   #3C444B;
+    --chrome-linie: #232A30;
+    --chrome-fuss:  #10151A;
+    --buehne:       #0C1013;
+    --buehne-tief:  #080B0D;
+    --lineatur:     #161B1F;
+    --blattkante:   #000000;
   }
 }
 :root[data-thema="dunkel"] {
-  --grund:        #14191C;
-  --flaeche:      #1D2327;
-  --flaeche-tief: #262E33;
-  --flaeche-hoch: #22292E;
-  --tafel:        #1A2024;
-  --menue-grund:  #191F23;
-  --tinte:        #E4E9EA;
-  --tinte-leise:  #8B979C;
-  --linie:        #2C3438;
-  --linie-stark:  #3F474C;
-  --tally:        #7FD6CD;
-  --tally-hover:  #A2E4DD;
-  --tally-hell:   #7FD6CD;
-  --tally-grund:  rgba(127,214,205,.14);
-  --warn:         #E2B15C;
-  --warn-grund:   rgba(226,177,92,.14);
-  --gut:          #7FD6CD;
-  --gut-grund:    rgba(127,214,205,.14);
-  --gefahr:       #E38B8B;
-  --chrome-900:   #12171A;
-  --chrome-800:   #171C20;
-  --chrome-700:   #1F262A;
-  --chrome-600:   #2C3438;
-  --chrome-linie: #232B2F;
-  --chrome-fuss:  #1F262A;
-  --buehne:       #0E1215;
-  --buehne-tief:  #0A0D0F;
-  --schatten:     0 1px 3px rgba(0,0,0,.5);
-  --schatten-blatt: 0 6px 22px rgba(0,0,0,.6);
-  --schatten-tafel: 0 14px 30px rgba(0,0,0,.6);
-  --schatten-dialog: 0 24px 60px rgba(0,0,0,.7);
+    --grund:        #14181B;
+    --flaeche:      #1B2126;
+    --flaeche-tief: #232A30;
+    --flaeche-hoch: #1B2126;
+    --tafel:        #191F24;
+    --menue-grund:  #191F24;
+    --tinte:        #E2E6E9;
+    --tinte-leise:  #949CA3;
+    --linie:        #2A3238;
+    --linie-stark:  #3C444B;
+    --tally:        #9DB4E0;
+    --tally-hover:  #BACCEE;
+    --tally-hell:   #9DB4E0;
+    --tally-grund:  rgba(157,180,224,.14);
+    --warn:         #D7A54E;
+    --warn-grund:   rgba(215,165,78,.14);
+    --gut:          #6FC292;
+    --gut-grund:    rgba(111,194,146,.14);
+    --gefahr:       #E08A82;
+    --gefahr-grund: rgba(224,138,130,.14);
+    --chrome-900:   #10151A;
+    --chrome-800:   #1B2126;
+    --chrome-700:   #232A30;
+    --chrome-600:   #3C444B;
+    --chrome-linie: #232A30;
+    --chrome-fuss:  #10151A;
+    --buehne:       #0C1013;
+    --buehne-tief:  #080B0D;
+    --lineatur:     #161B1F;
+    --blattkante:   #000000;
 }
 
 * { box-sizing: border-box; }
@@ -341,8 +356,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Werkzeugzeile ----------------------------------------------- */
 .werkzeugzeile {
-  display: flex; align-items: center; gap: 2px;
-  padding: 0 0 0 8px;
+  display: flex; align-items: stretch; gap: 0;
+  padding: 0;
   background: var(--flaeche-hoch);
   border-bottom: 1px solid var(--linie-stark);
   overflow-x: auto; scrollbar-width: thin;
@@ -372,14 +387,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .werkzeugzeile-huelle[data-mehr-rechts]::after { opacity: 1; }
 .werkzeug {
   display: inline-flex; align-items: center; gap: 6px;
-  height: 34px; padding: 0 10px; flex: none;
-  border: 1px solid var(--linie); background: var(--flaeche);
+  height: 100%; padding: 0 12px; flex: none;
+  border: 0; border-right: 1px solid var(--linie); background: transparent;
   color: var(--tinte); font-size: 11.5px; cursor: pointer;
 }
 .werkzeug:hover { background: var(--flaeche-tief); }
 .werkzeug.ist-aktiv {
-  background: var(--tally); border-color: var(--tally); color: #fff;
-  box-shadow: inset 0 -2px 0 rgba(0,0,0,.22);
+  background: var(--tally); border-right-color: var(--linie-stark);
+  color: var(--chrome-text);
 }
 .werkzeug .sinnbild { width: 15px; height: 15px; }
 .werkzeug-trenner {
@@ -393,7 +408,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   position: sticky; right: 0; margin-left: auto; flex: none;
   display: flex; align-items: center; gap: 2px;
   padding: 0 8px 0 6px; background: var(--flaeche-hoch);
-  box-shadow: -12px 0 12px -6px rgba(0,0,0,.10);
+  border-left: 1px solid var(--linie-stark);
 }
 
 /* ---------- Bedienelemente --------------------------------------------- */
@@ -416,7 +431,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .knopf-klein { padding: 3px 7px; font-size: 11px; }
 .knopf-gross { padding: 8px 16px; font-weight: 600; font-size: 13px; }
 .knopf[disabled] { opacity: .45; cursor: not-allowed; }
-.knopf.ist-aktiv { background: var(--tally); border-color: var(--tally); color: #fff; }
+.knopf.ist-aktiv { background: var(--tally); border-color: var(--tally); color: var(--chrome-text); }
 .knopf-gefahr { color: var(--gefahr); }
 
 /* Diese beiden standen einmal oberhalb von `.knopf` — und wurden von dessen
@@ -429,8 +444,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .knopf-chrome:hover { background: var(--chrome-700); }
 .knopf-voll {
-  border: 1px solid var(--tally); background: var(--tally); color: #fff;
-  padding: 5px 11px; font-size: 11px; font-weight: 500;
+  border: 1px solid var(--tally); background: var(--tally); color: var(--chrome-text);
+  padding: 4px 12px; font-size: 11px; font-weight: 500;
+  font-family: var(--mono); letter-spacing: .9px; text-transform: uppercase;
 }
 .knopf-voll:hover { background: var(--tally-hover); border-color: var(--tally-hover); }
 /* Ein gesperrter Vollknopf war blasses Türkis mit weißer Schrift — er sah aus
@@ -454,12 +470,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .reiter { display: flex; border-bottom: 1px solid var(--linie-stark); flex: none; background: var(--tafel); }
 .reiter-knopf {
-  flex: 1; padding: 7px 4px; border: 0; background: transparent; cursor: pointer;
-  font-size: 11px; font-weight: 500; color: var(--tinte-leise); border-bottom: 2px solid transparent;
+  flex: 1; padding: 6px 2px; border: 0; background: transparent; cursor: pointer;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .9px; text-transform: uppercase;
+  color: var(--tinte-leise); border-bottom: 2px solid transparent;
 }
 .reiter-knopf:hover { color: var(--tinte); }
 .reiter-knopf.ist-aktiv { color: var(--tally); border-bottom-color: var(--tally); }
-.tafel { display: none; overflow: auto; flex: 1; min-height: 0; padding: 8px; }
+.tafel { display: none; overflow: auto; flex: 1; min-height: 0; padding: 0; }
 .tafel.ist-aktiv { display: block; }
 .tafel[hidden] { display: none; }
 
@@ -551,8 +568,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
   color: transparent; position: absolute; white-space: pre; cursor: text;
   transform-origin: 0% 0%;
 }
-.textebene ::selection { background: rgba(0,110,255,.35); }
-.textebene .treffer { background: rgba(255,196,0,.45); border-radius: 2px; }
+.textebene ::selection { background: var(--tally-grund); }
+.textebene .treffer { background: rgba(255,196,0,.45); border-radius: 0; }
 .textebene .treffer-aktiv { background: rgba(255,120,0,.65); }
 .werkzeug-aktiv .textebene { pointer-events: none; }
 .werkzeug-text .textebene { pointer-events: auto; }
@@ -572,13 +589,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Text ersetzen: die Textebene wird bedienbar, die Malebene tritt zurück. */
 .werkzeug-ersetzen .textebene { pointer-events: auto; cursor: pointer; }
 .werkzeug-ersetzen .malebene { pointer-events: none; }
-.werkzeug-ersetzen .textebene span:hover { background: var(--tally-grund); outline: 1px solid var(--tally); border-radius: 2px; }
+.werkzeug-ersetzen .textebene span:hover { background: var(--tally-grund); outline: 1px solid var(--tally); border-radius: 0; }
 .anmerkung-griff { pointer-events: auto; cursor: pointer; }
 .anmerkung-griff.ist-gewaehlt { filter: drop-shadow(0 0 0 var(--tally)); }
 .notiz-marke {
-  position: absolute; width: 1.5rem; height: 1.5rem; border-radius: 50% 50% 50% 2px;
+  position: absolute; width: 1.5rem; height: 1.5rem; border-radius: 0;
   display: grid; place-items: center; font-size: .75rem; color: #3a2c00;
-  box-shadow: 0 1px 3px rgba(0,0,0,.35); pointer-events: auto; cursor: pointer;
+  box-shadow: 0 0 0 1px var(--chrome-600); pointer-events: auto; cursor: pointer;
   transform: translate(-2px, -100%);
 }
 /* Stempel: Rahmen und Wort, wie ein Gummistempel — bewusst schlicht. */
@@ -602,8 +619,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .feldebene { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .formularfeld {
-  position: absolute; pointer-events: auto; border: 1px solid rgba(0,110,255,.55);
-  background: rgba(0,110,255,.07); border-radius: 2px; padding: 0 2px;
+  position: absolute; pointer-events: auto; border: 1px solid var(--tally);
+  background: rgba(0,110,255,.07); border-radius: 0; padding: 0 2px;
   font-family: var(--sans); color: #111; font-size: 12px;
 }
 .formularfeld:focus { outline: 2px solid var(--tally); background: #fff; }
@@ -622,7 +639,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .miniatur-karte {
   position: relative; height: 112px; overflow: hidden;
   background: var(--papier); border: 1px solid var(--linie-stark);
-  box-shadow: 0 1px 2px rgba(0,0,0,.07);
+  box-shadow: 0 0 0 1px var(--linie-stark);
   display: grid; place-items: center;
   transition: transform .18s;
 }
@@ -647,6 +664,33 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .miniatur.wird-gezogen { opacity: .4; }
 .miniatur.ziel-vor { box-shadow: inset 0 3px 0 var(--tally); }
 .miniatur.ziel-nach { box-shadow: inset 0 -3px 0 var(--tally); }
+
+/* **Die Zeilenansicht.** Dasselbe Ding, ohne Bild: eine Zeile von 22 px mit
+   Seitenzahl, Kurztitel und der Zahl der Anmerkungen. Auf einem 13-Zoll-Gerät
+   stehen so rund zwanzig Seiten statt drei — das ist der ganze Unterschied
+   zwischen Blättern und Zählen.
+
+   Die Knoten sind dieselben wie bei den Miniaturen: Ziehen, Auswahl und
+   Tastatur funktionieren unverändert, es fällt nur die Karte weg. */
+.spaltenkopf {
+  display: flex; align-items: center; gap: 6px;
+  height: var(--zeile-kopf); padding: 0 8px;
+  background: var(--flaeche); border-bottom: 1px solid var(--linie);
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--tinte-leise);
+  position: sticky; top: 0; z-index: 1;
+}
+.spaltenkopf .waechst { flex: 1; min-width: 0; }
+.miniaturen.ist-eng .miniatur {
+  padding: 0 8px; height: var(--zeile);
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--linie);
+}
+.miniaturen.ist-eng .miniatur-zeile { flex: 1; min-width: 0; gap: 6px; padding: 0; }
+.miniaturen.ist-eng .miniatur-titel { font-size: 11.5px; color: var(--tinte); }
+.miniaturen.ist-eng .miniatur-nummer { min-width: 18px; text-align: right; }
+.miniaturen.ist-eng .miniatur.ist-gewaehlt { background: var(--tally-grund); }
+.miniaturen.ist-eng .miniatur.ist-gewaehlt .miniatur-nummer { color: var(--tally); }
 
 /* Karten in der Tafel „Dateien" — Name, Maß, darunter eine Ablegefläche mit
    gestricheltem Rand, wie im Handoff. */
@@ -691,7 +735,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .eintrag-kopf { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; }
 .eintrag-zeile { font-size: .8125rem; color: var(--tinte-leise); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .gliederung-ebene { padding-left: .75rem; border-left: 1px solid var(--linie); margin-left: .35rem; }
-.punkt { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; flex: none; }
+.punkt { display: inline-block; width: .6rem; height: .6rem; border-radius: 0; flex: none; }
 
 /* ---------- Rechte Tafel: Mitdenken ------------------------------------ */
 .abschnitt { border-bottom: 1px solid var(--linie); padding: .625rem .75rem; }
@@ -777,7 +821,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .empfang-fuss b { font-family: var(--serif); font-size: 15px; letter-spacing: 0; color: var(--tinte); }
 
-.ablegeschirm { position: fixed; inset: 0; z-index: 60; background: rgba(168,46,35,.12); backdrop-filter: blur(2px); display: grid; place-items: center; pointer-events: none; }
+.ablegeschirm { position: fixed; inset: 0; z-index: 60; background: var(--gefahr-grund); backdrop-filter: blur(2px); display: grid; place-items: center; pointer-events: none; }
 .ablegeschirm[hidden] { display: none; }
 .ablegeschirm div { background: var(--flaeche); border: 2px dashed var(--tally); padding: 2rem 3rem; font-weight: 600; }
 
@@ -802,14 +846,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @keyframes schirm-herein { from { opacity: 0; } }
 .dialog-kopf {
   display: flex; align-items: center; gap: 10px;
-  height: 42px; padding: 0 14px; flex: none;
+  height: 34px; padding: 0 12px; flex: none;
   background: var(--chrome-900); color: var(--chrome-text);
 }
 .dialog-kopf::before {
-  content: ''; width: 10px; height: 10px; flex: none;
-  background: var(--tally-hell); transform: rotate(45deg);
+  content: ''; width: 8px; height: 8px; flex: none;
+  background: var(--tally-hell);
 }
-.dialog-kopf h2 { margin: 0; font-family: var(--serif); font-size: 13px; font-weight: 600; }
+.dialog-kopf h2 {
+  margin: 0; font-family: var(--mono); font-size: 11px; font-weight: 500;
+  letter-spacing: 1.1px; text-transform: uppercase;
+}
 .dialog-kopf .knopf {
   margin-left: auto; border-color: transparent; background: transparent; color: var(--chrome-leise);
 }
@@ -911,7 +958,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Ein Hinweis, der eine Folge ankündigt statt nur zu erklären — etwa: der
    Absatz wächst und überdeckt, was darunter steht. */
-.hinweis.ist-warnung { color: var(--warn, #A82E23); }
+.hinweis.ist-warnung { color: var(--warn); }
 
 .palette { width: min(38rem, 100%); }
 .palette input {
@@ -1012,7 +1059,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .ordnen-karte:hover .ordnen-blatt { outline: 1px solid rgba(255,255,255,.35); }
 .ordnen-karte.ist-gewaehlt .ordnen-blatt {
-  border-color: var(--tally); box-shadow: 0 0 0 2px rgba(15,118,110,.45);
+  border-color: var(--tally); box-shadow: 0 0 0 2px var(--tally);
 }
 /* Häkchen oben rechts auf der gewählten Karte — wie im Mockup. */
 .ordnen-karte.ist-gewaehlt::after {
@@ -1060,7 +1107,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .feld-entwurf {
   border: 1.5px dashed var(--tally);
   background: color-mix(in srgb, var(--tally) 8%, transparent);
-  border-radius: .1875rem;
+  border-radius: 0;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
@@ -1153,7 +1200,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pille {
   width: 38px; height: 20px; flex: none; cursor: pointer;
   border: 1px solid var(--linie-stark); background: var(--flaeche-tief);
-  border-radius: 10px; padding: 1px; display: flex; align-items: center;
+  border-radius: 0; padding: 1px; display: flex; align-items: center;
 }
 .pille i { width: 16px; height: 16px; background: var(--tinte-leise); display: block; transition: transform .12s, background .12s; }
 .pille.ist-an { background: var(--tally); border-color: var(--tally); }
@@ -1217,12 +1264,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .vergleich-seite { background: var(--papier); box-shadow: var(--schatten-blatt); padding: 0 0 18px; }
 .vergleich-kennung {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding: 10px 18px; border-bottom: 1px solid #d8d3c9;
-  font-size: 9.5px; letter-spacing: .6px; text-transform: uppercase; color: #8b8478;
+  padding: 10px 18px; border-bottom: 1px solid var(--linie);
+  font-size: 9.5px; letter-spacing: .6px; text-transform: uppercase; color: var(--tinte-leise);
 }
 .vergleich-spalte {
   padding: 16px 18px 0; font-family: var(--serif); font-size: 12.5px; line-height: 1.78;
-  color: #22282c; white-space: pre-wrap; word-break: break-word;
+  color: var(--tinte); white-space: pre-wrap; word-break: break-word;
 }
 .diff-weg { background: rgba(139,58,58,.14); text-decoration: line-through; }
 .diff-neu { background: rgba(15,118,110,.13); }
@@ -1471,6 +1518,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
    Zeigern — die Maus braucht das nicht und würde sich an den überlappenden
    Flächen stören. */
 @media (pointer: coarse) {
+  /* Registratur ist eng: 22-px-Zeilen und 30-px-Knöpfe sind mit dem Finger
+     nicht zu treffen. Statt einer zweiten, gepflegten Fassung entscheidet das
+     Gerät: derselbe Quelltext, andere Maße. */
+  :root {
+    --zeile: 34px; --zeile-kopf: 28px;
+    --kopfhoehe: 44px; --menuehoehe: 34px; --werkzeughoehe: 44px; --fusshoehe: 36px;
+  }
   .kopf .knopf, .fuss .knopf, .menue-knopf, .werkzeug, .reiter-knopf,
   .dok-reiter-zu, .dok-reiter-neu {
     position: relative;

@@ -50,6 +50,8 @@ const KERN = [
   'app/tafeln.js', 'app/texterkennung.js', 'app/unterschrift.js',
   'app/vergleich.js', 'app/word.js', 'app/zip.js',
   'fremd/pdf.mjs', 'fremd/pdf.worker.mjs', 'fremd/pdf-lib.mjs',
+  'fremd/schrift/plex-sans-cond-400.woff2', 'fremd/schrift/plex-sans-cond-500.woff2',
+  'fremd/schrift/plex-sans-cond-600.woff2',
   'fremd/schrift/plex-sans-400.woff2', 'fremd/schrift/plex-sans-500.woff2',
   'fremd/schrift/plex-sans-600.woff2', 'fremd/schrift/plex-serif-400.woff2',
   'fremd/schrift/plex-serif-400-italic.woff2', 'fremd/schrift/plex-serif-600.woff2',

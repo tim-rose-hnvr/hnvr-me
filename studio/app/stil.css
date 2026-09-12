@@ -1157,14 +1157,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .zugang-gut strong { color: var(--gut); }
 
 /* ---------- Rechte Tafeln: Faden, Felder, Verlauf ------------------------ */
-.filterreihe { display: flex; gap: 4px; margin-bottom: 8px; }
-.faden {
-  background: var(--flaeche); border: 1px solid var(--linie);
-  border-left: 3px solid var(--linie-stark);
-  padding: 8px 10px; margin-bottom: 6px; cursor: pointer;
+.filterreihe {
+  display: flex; gap: 4px; margin: 0; padding: 6px 8px;
+  border-bottom: 1px solid var(--linie); background: var(--flaeche);
 }
-.faden:hover { border-left-color: var(--tally); }
-.faden.ist-aktiv { border-left-color: var(--tally); box-shadow: inset 0 0 0 1px var(--tally-grund); }
+.faden {
+  background: transparent; border: 0;
+  border-bottom: 1px solid var(--linie);
+  border-left: 2px solid transparent;
+  padding: 6px 8px; margin: 0; cursor: pointer;
+}
+.faden:hover { background: var(--flaeche-tief); }
+.faden.ist-aktiv { background: var(--tally-grund); border-left-color: var(--tally); }
 .faden-kopf { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 /* Art-Chip nach dem Handoff: Mono, 8,5 px, Versalien, gesperrt. */
 .art-chip {
@@ -1175,7 +1179,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Zitat aus der Seite: Serif kursiv, goldene Kante links — das Gold ist
    dieselbe Markierungsfarbe wie auf dem Papier. */
 .faden-zitat {
-  margin: 6px 0 0; padding: 2px 0 2px 8px;
+  margin: 4px 0 0; padding: 0 0 0 8px;
   border-left: 2px solid rgba(212,175,55,.85);
   font-family: var(--serif); font-style: italic;
   font-size: var(--satz-bedien); line-height: 1.5; color: var(--tinte-leise);
@@ -1185,11 +1189,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
   margin: 6px 0 0 10px; padding-left: 8px; border-left: 1px solid var(--linie);
 }
 .faden-antwort p { margin: 2px 0 0; font-size: var(--satz-bedien); line-height: 1.5; }
-.faden-fuss { display: flex; gap: 4px; margin-top: 8px; }
+.faden-fuss { display: flex; gap: 4px; margin-top: 6px; }
 
 .feldzeile {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 8px 4px; border-bottom: 1px solid var(--linie); cursor: pointer;
+  min-height: var(--zeile); padding: 2px 8px;
+  border-bottom: 1px solid var(--linie); cursor: pointer;
 }
 .feldzeile:hover { background: var(--flaeche-tief); }
 .feldzeile-name { font-size: var(--satz-bedien); font-weight: 500; }
@@ -1199,7 +1204,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .wertmarke.ist-offen { background: var(--warn-grund); color: var(--warn); font-weight: 500; }
 
-.verlauf-zeile { display: flex; gap: 10px; padding: 6px 2px; }
+.verlauf-zeile { display: flex; gap: 10px; padding: 4px 8px; border-bottom: 1px solid var(--linie); }
 .verlauf-marke {
   width: 8px; height: 8px; background: var(--tally); flex: none; margin-top: 4px;
   box-shadow: 0 12px 0 -3.5px var(--linie-stark);

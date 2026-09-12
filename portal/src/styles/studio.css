@@ -103,24 +103,24 @@
   }
 }
 :root[data-theme="dark"] {
-    --grund:        #14181B;
-    --flaeche:      #1B2126;
-    --flaeche-tief: #232A30;
-    --tinte:        #E2E6E9;
-    --tinte-leise:  #949CA3;
-    --linie:        #2A3238;
-    --linie-stark:  #3C444B;
-    --tally:        #9DB4E0;
-    --tally-grund:  rgba(157,180,224,.14);
-    --tally-hell:   #9DB4E0;
-    --gut:          #6FC292;
-    --gut-grund:    rgba(111,194,146,.14);
-    --warn:         #D7A54E;
-    --chrome-900:   #10151A;
-    --chrome-800:   #1B2126;
-    --chrome-linie: #232A30;
-    --tafel:        #191F24;
-    --buehne:       #0C1013;
+  --grund:        #14181B;
+  --flaeche:      #1B2126;
+  --flaeche-tief: #232A30;
+  --tinte:        #E2E6E9;
+  --tinte-leise:  #949CA3;
+  --linie:        #2A3238;
+  --linie-stark:  #3C444B;
+  --tally:        #9DB4E0;
+  --tally-grund:  rgba(157,180,224,.14);
+  --tally-hell:   #9DB4E0;
+  --gut:          #6FC292;
+  --gut-grund:    rgba(111,194,146,.14);
+  --warn:         #D7A54E;
+  --chrome-900:   #10151A;
+  --chrome-800:   #1B2126;
+  --chrome-linie: #232A30;
+  --tafel:        #191F24;
+  --buehne:       #0C1013;
 }
 
 * { box-sizing: border-box; }

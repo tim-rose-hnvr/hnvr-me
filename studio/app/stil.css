@@ -461,7 +461,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .knopf-still { border-color: transparent; background: transparent; }
 .knopf-still:hover { background: var(--flaeche-tief); }
 .knopf-klein { padding: 4px 6px; font-size: var(--satz-neben); }
-.knopf-gross { padding: 8px 16px; font-weight: 600; font-size: var(--satz-lauf); }
+/* Groß heißt: der Knopf, um den es auf dieser Fläche geht. Er trägt denselben
+   Schnitt wie der Vollknopf — zwei Knöpfe nebeneinander, von denen einer in
+   Versalien steht und der andere nicht, lesen sich wie zwei Programme.
+   Die kleinen Knöpfe der Werkzeugzeile bleiben gemischt gesetzt; Versalien
+   überall wären keine Strenge, sondern Geschrei. */
+.knopf-gross {
+  padding: 8px 16px; font-family: var(--mono); font-weight: 500;
+  font-size: var(--satz-neben); letter-spacing: 1px; text-transform: uppercase;
+}
 .knopf[disabled] { opacity: .45; cursor: not-allowed; }
 .knopf.ist-aktiv { background: var(--tally); border-color: var(--tally); color: var(--chrome-text); }
 .knopf-gefahr { color: var(--gefahr); }

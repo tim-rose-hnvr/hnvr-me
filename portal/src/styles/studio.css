@@ -407,9 +407,14 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 
 /* ---------- Handlungsaufforderungen ----------------------------------------- */
 .knopf-reihe { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.8rem; }
+/* Derselbe Schnitt wie der Vollknopf: zwei Knöpfe nebeneinander, von denen
+   einer in Versalien steht und der andere nicht, lesen sich wie zwei
+   verschiedene Programme. */
 .knopf-rand {
   display: inline-block; border: 1px solid var(--linie-stark); border-radius: var(--radius-klein);
-  padding: .6rem 1.2rem; color: var(--tinte); text-decoration: none; font-weight: 600;
+  padding: .6rem 1.3rem; color: var(--tinte); text-decoration: none;
+  font-family: var(--mono); font-size: .82rem; font-weight: 500;
+  letter-spacing: .09em; text-transform: uppercase; background: var(--flaeche);
 }
 .knopf-rand:hover { background: var(--flaeche-tief); }
 .knopf-rand:focus-visible, .knopf-voll:focus-visible { outline: 2px solid var(--tally); outline-offset: 2px; }

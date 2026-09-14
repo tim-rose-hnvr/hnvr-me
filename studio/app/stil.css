@@ -63,8 +63,10 @@
   --tally-hover:  #344E80;
   --tally-hell:   #A8BCE0;   /* Akzent auf der dunklen Chrome */
   --tally-grund:  rgba(62,92,150,.10);
+  --tally-text:   #F4F6F8;   /* Schrift auf dem Akzent — folgt ihm, nicht dem Weiß */
   --warn:         #81520A;   /* Frist, offener Formularstand, ungeprüft */
   --warn-grund:   rgba(129,82,10,.12);
+  --warn-text:    #F4F6F8;
 
   /* --gut war byteweise --tally und damit keine eigene Meldung.
      Kanzleigrün ist jetzt ein eigener Farbton. */
@@ -176,8 +178,10 @@
     --tally-hover:  #BACCEE;
     --tally-hell:   #9DB4E0;
     --tally-grund:  rgba(157,180,224,.14);
+    --tally-text:   #14181B;
     --warn:         #D7A54E;
     --warn-grund:   rgba(215,165,78,.14);
+    --warn-text:    #14181B;
     --gut:          #6FC292;
     --gut-grund:    rgba(111,194,146,.14);
     --gefahr:       #E08A82;
@@ -209,8 +213,10 @@
     --tally-hover:  #BACCEE;
     --tally-hell:   #9DB4E0;
     --tally-grund:  rgba(157,180,224,.14);
+    --tally-text:   #14181B;
     --warn:         #D7A54E;
     --warn-grund:   rgba(215,165,78,.14);
+    --warn-text:    #14181B;
     --gut:          #6FC292;
     --gut-grund:    rgba(111,194,146,.14);
     --gefahr:       #E08A82;
@@ -272,7 +278,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .huelle[data-links="zu"] .leiste-links,
 .huelle[data-rechts="zu"] .leiste-rechts { display: none; }
 .leiste-fuss {
-  display: flex; gap: 6px; padding: 8px; flex: none;
+  display: flex; gap: var(--raum-3); padding: var(--raum-4); flex: none;
   border-top: 1px solid var(--linie); background: var(--tafel);
 }
 .leiste-fuss .knopf { flex: 1; justify-content: center; }
@@ -291,8 +297,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
    Beide hießen einmal .marke — ein Klassenname, zweimal benutzt, ist ein
    Fehler, den erst der Bildschirmabzug zeigt. */
 .wortmarke {
-  display: flex; align-items: center; gap: 8px;
-  padding: 0 12px; border-right: 1px solid var(--chrome-linie); flex: none;
+  display: flex; align-items: center; gap: var(--raum-4);
+  padding: 0 var(--raum-6); border-right: 1px solid var(--chrome-linie); flex: none;
 }
 /* Gefaltete Seite, nach der Beschreibung im Handoff: Rechteck 4:5 mit
    abgeschnittener Ecke, darauf das hellere Fold-Dreieck. */
@@ -314,8 +320,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .dokument-reiter::-webkit-scrollbar { display: none; }
 .dok-reiter {
-  display: flex; align-items: center; gap: 8px;
-  padding: 0 10px; border: 0; background: none; cursor: pointer;
+  display: flex; align-items: center; gap: var(--raum-4);
+  padding: 0 var(--raum-5); border: 0; background: none; cursor: pointer;
   color: var(--chrome-leise); font-size: var(--satz-bedien); max-width: 15rem; flex: none;
   border-right: 1px solid var(--chrome-linie);
 }
@@ -328,21 +334,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .dok-reiter-zahl { font-family: var(--mono); font-size: var(--satz-etikett); color: var(--chrome-leise); flex: none; }
 .dok-reiter-zu {
   border: 0; background: none; color: var(--chrome-leise); cursor: pointer;
-  font-size: var(--satz-lauf); line-height: 1; padding: 2px 4px; flex: none;
+  font-size: var(--satz-lauf); line-height: 1; padding: var(--raum-1) var(--raum-2); flex: none;
 }
 .dok-reiter-zu:hover { color: var(--chrome-text); background: var(--chrome-600); }
 .dok-reiter-neu {
   border: 0; background: none; color: var(--chrome-leise); cursor: pointer;
-  padding: 0 12px; font-size: var(--satz-titel); flex: none;
+  padding: 0 var(--raum-6); font-size: var(--satz-titel); flex: none;
 }
 .dok-reiter-neu:hover { color: var(--chrome-text); background: var(--chrome-800); }
 
-.kopf-rechts { display: flex; align-items: center; gap: 6px; flex: none; }
+.kopf-rechts { display: flex; align-items: center; gap: var(--raum-3); flex: none; }
 
 /* ---------- Menüleiste -------------------------------------------------- */
 .menueleiste {
   display: flex; align-items: stretch; gap: 0;
-  padding: 0 4px;
+  padding: 0 var(--raum-2);
   background: var(--menue-grund);
   border-bottom: 1px solid var(--linie-stark);
   /* Darf jetzt scrollen: die Listen hängen am Fenster, nicht an der Leiste. */
@@ -350,7 +356,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .menueleiste::-webkit-scrollbar { display: none; }
 .menue-stand {
-  margin-left: auto; align-self: center; padding: 0 10px;
+  margin-left: auto; align-self: center; padding: 0 var(--raum-5);
   font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .8px;
   text-transform: uppercase; color: var(--tinte-leise); white-space: nowrap;
   /* Die Menüleiste muss overflow:visible tragen, damit die Listen aufklappen
@@ -361,21 +367,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .menue { position: relative; display: flex; }
 .menue-knopf {
   border: 0; background: none; color: var(--tinte);
-  font: inherit; font-size: var(--satz-bedien); padding: 0 10px;
+  font: inherit; font-size: var(--satz-bedien); padding: 0 var(--raum-5);
   cursor: pointer; white-space: nowrap; border-radius: var(--radius-klein);
 }
 .menue-knopf:hover { background: var(--flaeche-tief); }
-.menue.ist-offen .menue-knopf { background: var(--tally); color: #fff; }
+.menue.ist-offen .menue-knopf { background: var(--tally); color: var(--tally-text); }
 .menue-liste {
   position: fixed; z-index: 60;
   min-width: 250px; max-height: 70vh; overflow-y: auto;
-  padding: 4px 0;
+  padding: var(--raum-2) 0;
   background: var(--flaeche-hoch); border: 1px solid var(--linie-stark);
   box-shadow: var(--schatten-tafel);
 }
 .menue-eintrag {
-  display: flex; align-items: center; justify-content: space-between; gap: 24px;
-  width: 100%; padding: 6px 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--raum-8);
+  width: 100%; padding: var(--raum-3) var(--raum-7);
   border: 0; background: none; color: var(--tinte);
   font: inherit; font-size: var(--satz-bedien); text-align: left; cursor: pointer;
 }
@@ -384,7 +390,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .menue-eintrag.ist-an .menue-name::before { content: '✓ '; }
 .menue-name { white-space: nowrap; }
 .menue-kuerzel { font-family: var(--mono); font-size: var(--satz-etikett); color: var(--tinte-leise); white-space: nowrap; }
-.menue-trenner { margin: 4px 0; border: 0; border-top: 1px solid var(--linie); }
+.menue-trenner { margin: var(--raum-2) 0; border: 0; border-top: 1px solid var(--linie); }
 
 /* ---------- Werkzeugzeile ----------------------------------------------- */
 .werkzeugzeile {
@@ -418,35 +424,35 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .werkzeugzeile-huelle[data-mehr-links]::before,
 .werkzeugzeile-huelle[data-mehr-rechts]::after { opacity: 1; }
 .werkzeug {
-  display: inline-flex; align-items: center; gap: 6px;
-  height: 100%; padding: 0 12px; flex: none;
+  display: inline-flex; align-items: center; gap: var(--raum-3);
+  height: 100%; padding: 0 var(--raum-6); flex: none;
   border: 0; border-right: 1px solid var(--linie); background: transparent;
   color: var(--tinte); font-size: var(--satz-bedien); cursor: pointer;
 }
 .werkzeug:hover { background: var(--flaeche-tief); }
 .werkzeug.ist-aktiv {
   background: var(--tally); border-right-color: var(--linie-stark);
-  color: var(--chrome-text);
+  color: var(--tally-text);
 }
 .werkzeug .sinnbild { width: 15px; height: 15px; }
 .werkzeug-trenner {
   /* War #DBDFE2 fest — ein heller Strich, der in der dunklen Fassung als
      falsche Naht stehenblieb. */
   width: 1px; height: 24px; background: var(--linie);
-  margin: 0 8px; flex: none;
+  margin: 0 var(--raum-4); flex: none;
 }
 /* Die rechte Gruppe bleibt erreichbar, auch wenn die Zeile scrollt. */
 .werkzeug-rechts {
   position: sticky; right: 0; margin-left: auto; flex: none;
-  display: flex; align-items: center; gap: 2px;
-  padding: 0 8px 0 6px; background: var(--flaeche-hoch);
+  display: flex; align-items: center; gap: var(--raum-1);
+  padding: 0 var(--raum-4) 0 var(--raum-3); background: var(--flaeche-hoch);
   border-left: 1px solid var(--linie-stark);
 }
 
 /* ---------- Bedienelemente --------------------------------------------- */
 .knopf {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 10px;
+  display: inline-flex; align-items: center; gap: var(--raum-3);
+  padding: var(--raum-3) var(--raum-5);
   border: 1px solid var(--linie-stark);
   border-radius: var(--radius-klein);
   background: var(--flaeche);
@@ -460,18 +466,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .knopf:focus-visible { outline: 2px solid var(--tally); outline-offset: 1px; }
 .knopf-still { border-color: transparent; background: transparent; }
 .knopf-still:hover { background: var(--flaeche-tief); }
-.knopf-klein { padding: 4px 6px; font-size: var(--satz-neben); }
+.knopf-klein { padding: var(--raum-2) var(--raum-3); font-size: var(--satz-neben); }
 /* Groß heißt: der Knopf, um den es auf dieser Fläche geht. Er trägt denselben
    Schnitt wie der Vollknopf — zwei Knöpfe nebeneinander, von denen einer in
    Versalien steht und der andere nicht, lesen sich wie zwei Programme.
    Die kleinen Knöpfe der Werkzeugzeile bleiben gemischt gesetzt; Versalien
    überall wären keine Strenge, sondern Geschrei. */
 .knopf-gross {
-  padding: 8px 16px; font-family: var(--mono); font-weight: 500;
+  padding: var(--raum-4) var(--raum-7); font-family: var(--mono); font-weight: 500;
   font-size: var(--satz-neben); letter-spacing: 1px; text-transform: uppercase;
 }
 .knopf[disabled] { opacity: .45; cursor: not-allowed; }
-.knopf.ist-aktiv { background: var(--tally); border-color: var(--tally); color: var(--chrome-text); }
+.knopf.ist-aktiv { background: var(--tally); border-color: var(--tally); color: var(--tally-text); }
 .knopf-gefahr { color: var(--gefahr); }
 
 /* Diese beiden standen einmal oberhalb von `.knopf` — und wurden von dessen
@@ -480,12 +486,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
    gehoeren deshalb hierhin, hinter die Grundform. */
 .knopf-chrome {
   border: 1px solid var(--chrome-600); background: transparent; color: var(--chrome-text);
-  padding: 4px 8px; font-size: var(--satz-neben);
+  padding: var(--raum-2) var(--raum-4); font-size: var(--satz-neben);
 }
 .knopf-chrome:hover { background: var(--chrome-700); }
 .knopf-voll {
-  border: 1px solid var(--tally); background: var(--tally); color: var(--chrome-text);
-  padding: 4px 12px; font-size: var(--satz-neben); font-weight: 500;
+  border: 1px solid var(--tally); background: var(--tally); color: var(--tally-text);
+  padding: var(--raum-2) var(--raum-6); font-size: var(--satz-neben); font-weight: 500;
   font-family: var(--mono); letter-spacing: .9px; text-transform: uppercase;
 }
 .knopf-voll:hover { background: var(--tally-hover); border-color: var(--tally-hover); }
@@ -498,7 +504,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 
 .feld {
-  padding: 4px 6px;
+  padding: var(--raum-2) var(--raum-3);
   border: 1px solid var(--linie-stark);
   border-radius: var(--radius-klein);
   background: var(--flaeche);
@@ -510,7 +516,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .reiter { display: flex; border-bottom: 1px solid var(--linie-stark); flex: none; background: var(--tafel); }
 .reiter-knopf {
-  flex: 1; padding: 6px 2px; border: 0; background: transparent; cursor: pointer;
+  flex: 1; padding: var(--raum-3) var(--raum-1); border: 0; background: transparent; cursor: pointer;
   font-family: var(--mono); font-size: var(--satz-kopf); letter-spacing: .9px; text-transform: uppercase;
   color: var(--tinte-leise); border-bottom: 2px solid transparent;
 }
@@ -522,8 +528,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Statusleiste ------------------------------------------------ */
 .fuss {
-  display: flex; align-items: center; gap: 10px;
-  padding: 0 10px;
+  display: flex; align-items: center; gap: var(--raum-5);
+  padding: 0 var(--raum-5);
   background: var(--chrome-fuss); color: var(--chrome-text);
   font-size: var(--satz-neben); white-space: nowrap;
   justify-content: space-between;
@@ -533,9 +539,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   padding-right: calc(10px + env(safe-area-inset-right));
   padding-bottom: env(safe-area-inset-bottom);
 }
-.fuss-gruppe { display: flex; align-items: center; gap: 6px; flex: none; }
+.fuss-gruppe { display: flex; align-items: center; gap: var(--raum-3); flex: none; }
 .fuss-mitte {
-  display: flex; align-items: center; gap: 16px;
+  display: flex; align-items: center; gap: var(--raum-7);
   flex: 1 1 auto; min-width: 0; overflow: hidden;
   color: var(--chrome-leise); font-family: var(--mono); font-size: var(--satz-etikett);
   letter-spacing: .4px; text-transform: uppercase;
@@ -549,14 +555,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
    Gerät", grau heißt „braucht Netz". Er steht in der Fußzeile, weil er eine
    Eigenschaft ist und keine Nachricht — man sieht hin, wenn man es wissen
    will, und wird sonst nicht behelligt. */
-.fuss-stand { display: inline-flex; align-items: center; gap: 6px; color: var(--chrome-leise); }
+.fuss-stand { display: inline-flex; align-items: center; gap: var(--raum-3); color: var(--chrome-leise); }
 .stand-punkt { width: 6px; height: 6px; background: var(--chrome-600); }
 .stand-punkt.ist-bereit { background: var(--tally-hell); }
 
-.fuss-fokus { gap: 8px; }
+.fuss-fokus { gap: var(--raum-4); }
 .fuss-fokus[hidden] { display: none; }
 .fokus-marke {
-  padding: 1px 6px; background: var(--tally); color: #fff;
+  padding: 1px var(--raum-3); background: var(--tally); color: var(--tally-text);
   font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .4px; text-transform: uppercase;
 }
 .mono { font-family: var(--mono); }
@@ -578,9 +584,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
    dort steht, ist nicht mehr erreichbar. Mit `auto` liegt der Überhang
    rechts und lässt sich scrollen. */
 .spur {
-  display: block; padding: 24px 24px 32px; min-height: 100%;
+  display: block; padding: var(--raum-8) var(--raum-8) var(--raum-9); min-height: 100%;
 }
-.spur > * { margin: 0 auto 16px; }
+.spur > * { margin: 0 auto var(--raum-7); }
 .spur > *:last-child { margin-bottom: 0; }
 
 .blatt {
@@ -660,7 +666,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .feldebene { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .formularfeld {
   position: absolute; pointer-events: auto; border: 1px solid var(--tally);
-  background: rgba(0,110,255,.07); border-radius: 0; padding: 0 2px;
+  background: rgba(0,110,255,.07); border-radius: 0; padding: 0 var(--raum-1);
   font-family: var(--sans); color: #111; font-size: var(--satz-bedien);
 }
 .formularfeld:focus { outline: 2px solid var(--tally); background: #fff; }
@@ -672,7 +678,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
    Kurztitel (kürzt sich) und Kommentarzahl auf Akzent. Kantig. */
 .miniaturen { display: block; }
 .miniatur {
-  position: relative; padding: 6px 16px 8px; cursor: pointer;
+  position: relative; padding: var(--raum-3) var(--raum-7) var(--raum-4); cursor: pointer;
   border: 0; background: transparent;
 }
 .miniatur:hover { background: var(--flaeche-tief); }
@@ -684,14 +690,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   transition: transform .18s;
 }
 .miniatur canvas { display: block; max-width: 100%; max-height: 112px; width: auto; height: auto; }
-.miniatur-zeile { display: flex; align-items: center; gap: 6px; padding: 4px 2px 0; }
+.miniatur-zeile { display: flex; align-items: center; gap: var(--raum-3); padding: var(--raum-2) var(--raum-1) 0; }
 .miniatur-titel {
   font-size: var(--satz-etikett); color: var(--tinte-leise); flex: 1; min-width: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .miniatur-zahl {
-  font-family: var(--mono); font-size: var(--satz-etikett); background: var(--tally); color: #fff;
-  padding: 1px 4px; flex: none;
+  font-family: var(--mono); font-size: var(--satz-etikett); background: var(--tally); color: var(--tally-text);
+  padding: 1px var(--raum-2); flex: none;
 }
 .miniatur-nummer {
   font-family: var(--mono); font-size: var(--satz-etikett); color: var(--tinte-leise);
@@ -713,8 +719,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
    Die Knoten sind dieselben wie bei den Miniaturen: Ziehen, Auswahl und
    Tastatur funktionieren unverändert, es fällt nur die Karte weg. */
 .spaltenkopf {
-  display: flex; align-items: center; gap: 6px;
-  height: var(--zeile-kopf); padding: 0 8px;
+  display: flex; align-items: center; gap: var(--raum-3);
+  height: var(--zeile-kopf); padding: 0 var(--raum-4);
   background: var(--flaeche); border-bottom: 1px solid var(--linie);
   font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .8px;
   text-transform: uppercase; color: var(--tinte-leise);
@@ -722,11 +728,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .spaltenkopf .waechst { flex: 1; min-width: 0; }
 .miniaturen.ist-eng .miniatur {
-  padding: 0 8px; height: var(--zeile);
+  padding: 0 var(--raum-4); height: var(--zeile);
   display: flex; align-items: center;
   border-bottom: 1px solid var(--linie);
 }
-.miniaturen.ist-eng .miniatur-zeile { flex: 1; min-width: 0; gap: 6px; padding: 0; }
+.miniaturen.ist-eng .miniatur-zeile { flex: 1; min-width: 0; gap: var(--raum-3); padding: 0; }
 .miniaturen.ist-eng .miniatur-titel { font-size: var(--satz-bedien); color: var(--tinte); }
 .miniaturen.ist-eng .miniatur-nummer { min-width: 18px; text-align: right; }
 .miniaturen.ist-eng .miniatur.ist-gewaehlt { background: var(--tally-grund); }
@@ -735,7 +741,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Karten in der Tafel „Dateien" — Name, Maß, darunter eine Ablegefläche mit
    gestricheltem Rand, wie im Handoff. */
 .dateikarte {
-  padding: 8px 10px; margin-bottom: 6px; cursor: pointer;
+  padding: var(--raum-4) var(--raum-5); margin-bottom: var(--raum-3); cursor: pointer;
   background: var(--flaeche); border: 1px solid var(--linie);
   border-left: 3px solid var(--linie-stark);
 }
@@ -743,9 +749,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .dateikarte-name {
   font-size: var(--satz-bedien); font-weight: 500; word-break: break-word; line-height: 1.35;
 }
-.dateikarte-mass { font-size: var(--satz-etikett); color: var(--tinte-leise); letter-spacing: .3px; margin-top: 2px; }
+.dateikarte-mass { font-size: var(--satz-etikett); color: var(--tinte-leise); letter-spacing: .3px; margin-top: var(--raum-1); }
 .ablegeflaeche {
-  display: block; width: 100%; margin-top: 8px; padding: 16px 8px;
+  display: block; width: 100%; margin-top: var(--raum-4); padding: var(--raum-7) var(--raum-4);
   border: 1px dashed var(--linie-stark); background: transparent;
   color: var(--tinte-leise); font-size: var(--satz-neben); cursor: pointer;
 }
@@ -755,7 +761,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
    Mitte der Höhe — er soll oben stehen, wo der Inhalt begonnen hätte. */
 .leerbild {
   display: flex; flex-direction: column; align-items: center; text-align: center;
-  gap: 8px; padding: 32px 16px;
+  gap: var(--raum-4); padding: var(--raum-9) var(--raum-7);
 }
 .leerbild-zeichen {
   width: 28px; height: 28px; fill: none; stroke: var(--linie-stark);
@@ -763,7 +769,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .leerbild-titel { margin: 0; font-size: var(--satz-bedien); font-weight: 500; color: var(--tinte); }
 .leerbild-satz { margin: 0; font-size: var(--satz-neben); line-height: 1.5; color: var(--tinte-leise); max-width: 24ch; }
-.leerbild-tat { margin-top: 4px; }
+.leerbild-tat { margin-top: var(--raum-2); }
 
 /* ---------- Listen in Tafeln ------------------------------------------- */
 .eintrag {
@@ -807,7 +813,29 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .farbreihe { display: flex; gap: .3rem; flex-wrap: wrap; }
 .farbtupf { width: 1.4rem; height: 1.4rem; border: 2px solid transparent; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
 .farbtupf.ist-aktiv { border-color: var(--tinte); }
-.schieber { width: 100%; }
+/* Der Schieber war das letzte runde Ding im Fenster: Bahn und Griff kommen
+   vom Browser, und der Browser macht sie rund. Die Radienprüfung sieht sie
+   nicht — sie liegen im Schatten-DOM und sind mit querySelectorAll nicht zu
+   erreichen. Deshalb steht hier die vollständige eigene Fassung: 2-px-Bahn,
+   ein 10 × 16 px großer Griff, beides kantig. */
+.schieber {
+  width: 100%; appearance: none; -webkit-appearance: none;
+  background: transparent; height: 16px; cursor: pointer;
+}
+.schieber::-webkit-slider-runnable-track {
+  height: 2px; background: var(--linie-stark); border-radius: 0;
+}
+.schieber::-moz-range-track { height: 2px; background: var(--linie-stark); border-radius: 0; }
+.schieber::-moz-range-progress { height: 2px; background: var(--tally); }
+.schieber::-webkit-slider-thumb {
+  appearance: none; -webkit-appearance: none;
+  width: 10px; height: 16px; margin-top: calc((2px - 16px) / 2);
+  background: var(--tally); border: 0; border-radius: 0;
+}
+.schieber::-moz-range-thumb {
+  width: 10px; height: 16px; background: var(--tally); border: 0; border-radius: 0;
+}
+.schieber:focus-visible { outline: 2px solid var(--tally); outline-offset: 2px; }
 
 /* ---------- Empfang ---------------------------------------------------- */
 /* Empfang — das Erste, was jemand sieht. Es hatte nie ein Vorbild und sah
@@ -826,20 +854,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .empfang[hidden] { display: none; }
 .empfang-kopf {
-  display: flex; align-items: center; gap: 8px; padding: 0 12px;
+  display: flex; align-items: center; gap: var(--raum-4); padding: 0 var(--raum-6);
   background: var(--chrome-900); color: var(--chrome-text);
 }
 /* Karte und Kacheln stehen untereinander in einem Rumpf, der bei Bedarf
    rollt. Vorher lagen beide in derselben Rasterzeile und deckten einander. */
 .empfang-rumpf {
   overflow-y: auto; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 0; padding: 32px 1rem;
+  justify-content: center; gap: 0; padding: var(--raum-9) 1rem;
 }
 .empfang-karte {
   width: min(34rem, 100%); flex: none;
   background: var(--flaeche); border: 1px solid var(--linie-stark);
-  box-shadow: var(--schatten-tafel); padding: 32px;
-  display: flex; flex-direction: column; gap: 12px;
+  box-shadow: var(--schatten-tafel); padding: var(--raum-9);
+  display: flex; flex-direction: column; gap: var(--raum-6);
 }
 /* Nicht `.marke` — die ist im Programm ein Chip mit Hintergrund. Hier soll
    die Zeile nur eine Zeile sein. */
@@ -848,14 +876,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .empfang h1 { font-family: var(--serif); font-size: var(--satz-riesig); font-weight: 600; margin: 0; letter-spacing: -.3px; }
 .empfang p { margin: 0; font-size: var(--satz-grund); line-height: 1.65; color: var(--tinte-leise); max-width: 46ch; }
-.empfang-knoepfe { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.empfang-knoepfe { display: flex; gap: var(--raum-4); flex-wrap: wrap; margin-top: var(--raum-2); }
 .empfang-ablage {
-  border: 1px dashed var(--linie-stark); padding: 16px;
+  border: 1px dashed var(--linie-stark); padding: var(--raum-7);
   font-size: var(--satz-bedien); color: var(--tinte-leise); text-align: center;
 }
-.empfang-ablage .mono { font-size: var(--satz-etikett); letter-spacing: .8px; display: block; margin-top: 4px; }
+.empfang-ablage .mono { font-size: var(--satz-etikett); letter-spacing: .8px; display: block; margin-top: var(--raum-2); }
 .empfang-fuss {
-  display: flex; gap: 24px; padding-top: 12px; border-top: 1px solid var(--linie);
+  display: flex; gap: var(--raum-8); padding-top: var(--raum-6); border-top: 1px solid var(--linie);
   font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .8px;
   text-transform: uppercase; color: var(--tinte-leise);
 }
@@ -885,8 +913,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .schirm { animation: schirm-herein .12s ease-out; }
 @keyframes schirm-herein { from { opacity: 0; } }
 .dialog-kopf {
-  display: flex; align-items: center; gap: 10px;
-  height: 34px; padding: 0 12px; flex: none;
+  display: flex; align-items: center; gap: var(--raum-5);
+  height: 34px; padding: 0 var(--raum-6); flex: none;
   background: var(--chrome-900); color: var(--chrome-text);
 }
 .dialog-kopf::before {
@@ -901,10 +929,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
   margin-left: auto; border-color: transparent; background: transparent; color: var(--chrome-leise);
 }
 .dialog-kopf .knopf:hover { background: var(--chrome-700); color: var(--chrome-text); }
-.dialog-rumpf { padding: 16px; max-height: 70vh; overflow: auto; }
+.dialog-rumpf { padding: var(--raum-7); max-height: 70vh; overflow: auto; }
 .dialog-fuss {
-  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
-  padding: 12px 16px; border-top: 1px solid var(--linie); background: var(--flaeche-hoch);
+  display: flex; align-items: center; justify-content: flex-end; gap: var(--raum-4);
+  padding: var(--raum-6) var(--raum-7); border-top: 1px solid var(--linie); background: var(--flaeche-hoch);
 }
 .dialog-fuss-hinweis {
   margin-right: auto; font-family: var(--mono); font-size: var(--satz-etikett);
@@ -913,14 +941,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Abzeichen an einer Kategorie: die Zahl der Dinge, die dort offen sind. */
 .einst-abzeichen {
   font-family: var(--mono); font-size: var(--satz-etikett); line-height: 1;
-  background: var(--tally); color: #fff; padding: 4px 6px; flex: none;
+  background: var(--tally); color: var(--tally-text); padding: var(--raum-2) var(--raum-3); flex: none;
 }
 
 .einst-fassung {
-  margin-top: auto; padding: 16px 16px 12px; border-top: 1px solid var(--linie);
+  margin-top: auto; padding: var(--raum-7) var(--raum-7) var(--raum-6); border-top: 1px solid var(--linie);
   font-size: var(--satz-etikett); letter-spacing: .8px; color: var(--tinte-leise);
 }
-.einst-fassung div:first-child { margin-bottom: 4px; }
+.einst-fassung div:first-child { margin-bottom: var(--raum-2); }
 /* Ein Schritt im Stapel: Kasten, Name, Begründung. Die Begründung steht
    daneben und nicht in einem Hilfetext, weil sie beim Anklicken zählt. */
 .stapel-schritt {
@@ -948,21 +976,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Drei gleich breite Felder nebeneinander: links, mittig, rechts — so, wie
    sie später auf der Seite stehen. Das Feld sagt seine Lage durch seinen
    Platz, nicht durch eine Beschriftung. */
-.aufdruck-drei { display: flex; gap: 4px; flex: 1; min-width: 0; }
+.aufdruck-drei { display: flex; gap: var(--raum-2); flex: 1; min-width: 0; }
 .aufdruck-drei .feld { flex: 1; min-width: 0; }
 .aufdruck-drei .feld:nth-child(2) { text-align: center; }
 .aufdruck-drei .feld:nth-child(3) { text-align: right; }
 
 /* Ein Strich zwischen zwei Gedanken im selben Dialog. */
-.dialog-trenner { height: 1px; background: var(--linie); margin: 16px 0; }
+.dialog-trenner { height: 1px; background: var(--linie); margin: var(--raum-7) 0; }
 
 /* Die Fundliste der Felderkennung: eine Zeile je Vorschlag, mit Haken,
    Seitenzahl, Name, Art und dem Grund, aus dem sie gefunden wurde. Der Grund
    steht dabei — wer einen Fehlgriff sieht, soll auch sehen, warum. */
 .fundliste { max-height: 22rem; overflow-y: auto; border: 1px solid var(--linie); }
 .fundzeile {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 8px; border-bottom: 1px solid var(--linie);
+  display: flex; align-items: center; gap: var(--raum-4);
+  padding: var(--raum-3) var(--raum-4); border-bottom: 1px solid var(--linie);
 }
 .fundzeile:last-child { border-bottom: 0; }
 .fundzeile:nth-child(even) { background: var(--flaeche-tief, transparent); }
@@ -972,7 +1000,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Befunde der Vorabprüfung: Zeichen, was, und die Folge darunter. Die Folge
    ist der wichtigere Teil — „Schrift nicht eingebettet" sagt niemandem etwas. */
-.befund { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--linie); }
+.befund { display: flex; gap: var(--raum-5); padding: var(--raum-4) 0; border-bottom: 1px solid var(--linie); }
 .befund:last-child { border-bottom: 0; }
 .befund-zeichen {
   flex: none; width: 18px; height: 18px; display: grid; place-items: center;
@@ -982,7 +1010,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .befund.ist-warnung .befund-zeichen { background: var(--warn-grund); color: var(--warn); }
 .befund.ist-gut .befund-zeichen { background: var(--gut-grund); color: var(--gut); }
 .befund-was { font-size: var(--satz-grund); font-weight: 500; }
-.befund-folge { font-size: var(--satz-bedien); color: var(--tinte-leise); line-height: 1.5; margin-top: 2px; }
+.befund-folge { font-size: var(--satz-bedien); color: var(--tinte-leise); line-height: 1.5; margin-top: var(--raum-1); }
 
 /* Die Bildvorschau in der Liste. Ein JPEG zeigt sich selbst; alles andere
    nennt seine Kodierung, statt ein falsches Bild zu zeigen. */
@@ -1026,8 +1054,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .meldung[data-geht] { opacity: 0; transform: translateY(4px); }
 .meldung button { border: 0; background: transparent; color: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
-.meldung.ist-warnung { background: var(--warn); color: #fff; }
-.meldung.ist-fehler { background: var(--tally); color: #fff; }
+.meldung.ist-warnung { background: var(--warn); color: var(--warn-text); }
+.meldung.ist-fehler { background: var(--tally); color: var(--tally-text); }
 @keyframes auftauchen { from { opacity: 0; transform: translateY(6px); } }
 
 .lader { position: fixed; inset: auto 0 0 0; z-index: 90; display: flex; align-items: center; gap: .75rem; padding: .5rem 1rem; background: var(--flaeche); border-top: 1px solid var(--linie); font-size: var(--satz-lauf); }
@@ -1065,18 +1093,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .ordnen[hidden] { display: none; }
 .ordnen-kopf {
-  display: flex; align-items: center; gap: 6px; flex: none;
-  height: 46px; padding: 0 12px;
+  display: flex; align-items: center; gap: var(--raum-3); flex: none;
+  height: 46px; padding: 0 var(--raum-6);
   background: var(--chrome-600); color: #fff;
   overflow-x: auto; scrollbar-width: none;
 }
 .ordnen-kopf::-webkit-scrollbar { display: none; }
 .ordnen-zahl {
   font-size: var(--satz-bedien); font-weight: 500; white-space: nowrap; flex: none;
-  padding-right: 8px; margin-right: 4px; border-right: 1px solid rgba(255,255,255,.18);
+  padding-right: var(--raum-4); margin-right: var(--raum-2); border-right: 1px solid rgba(255,255,255,.18);
 }
 .ordnen-knopf {
-  flex: none; height: 30px; padding: 0 12px; white-space: nowrap;
+  flex: none; height: 30px; padding: 0 var(--raum-6); white-space: nowrap;
   border: 1px solid rgba(255,255,255,.22); background: transparent; color: #fff;
   font-size: var(--satz-bedien); cursor: pointer;
 }
@@ -1084,17 +1112,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ordnen-knopf.ist-betont { background: var(--tally); border-color: var(--tally); }
 .ordnen-knopf.ist-betont:hover { background: var(--tally-hover); }
 .ordnen-hinweis {
-  margin-left: auto; flex: none; padding: 0 10px;
+  margin-left: auto; flex: none; padding: 0 var(--raum-5);
   font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .8px;
   color: rgba(255,255,255,.45); white-space: nowrap;
 }
 .ordnen-fertig { flex: none; }
 .ordnen-gitter {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-  gap: 16px; padding: 16px; overflow-y: auto; align-content: start; min-height: 0;
+  gap: var(--raum-7); padding: var(--raum-7); overflow-y: auto; align-content: start; min-height: 0;
 }
 .ordnen-karte {
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column; gap: var(--raum-3);
   cursor: pointer; position: relative;
 }
 .ordnen-karte:hover .ordnen-blatt { outline: 1px solid rgba(255,255,255,.35); }
@@ -1105,7 +1133,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ordnen-karte.ist-gewaehlt::after {
   content: '✓'; position: absolute; top: 6px; right: 6px;
   width: 16px; height: 16px; display: grid; place-items: center;
-  background: var(--tally); color: #fff; font-size: var(--satz-kopf); line-height: 1;
+  background: var(--tally); color: var(--tally-text); font-size: var(--satz-kopf); line-height: 1;
 }
 .ordnen-karte.wird-gezogen { opacity: .4; }
 .ordnen-karte.ziel-vor::before,
@@ -1128,7 +1156,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 /* Fußzeile der Karte in Mono auf dem dunklen Grund — Mockup: „1 · Deckblatt". */
 .ordnen-fuss {
-  display: flex; align-items: baseline; gap: 6px;
+  display: flex; align-items: baseline; gap: var(--raum-3);
   font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .4px;
   color: rgba(255,255,255,.62);
 }
@@ -1166,55 +1194,55 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Rechte Tafeln: Faden, Felder, Verlauf ------------------------ */
 .filterreihe {
-  display: flex; gap: 4px; margin: 0; padding: 6px 8px;
+  display: flex; gap: var(--raum-2); margin: 0; padding: var(--raum-3) var(--raum-4);
   border-bottom: 1px solid var(--linie); background: var(--flaeche);
 }
 .faden {
   background: transparent; border: 0;
   border-bottom: 1px solid var(--linie);
   border-left: 2px solid transparent;
-  padding: 6px 8px; margin: 0; cursor: pointer;
+  padding: var(--raum-3) var(--raum-4); margin: 0; cursor: pointer;
 }
 .faden:hover { background: var(--flaeche-tief); }
 .faden.ist-aktiv { background: var(--tally-grund); border-left-color: var(--tally); }
-.faden-kopf { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.faden-kopf { display: flex; align-items: baseline; justify-content: space-between; gap: var(--raum-4); }
 /* Art-Chip nach dem Handoff: Mono, 8,5 px, Versalien, gesperrt. */
 .art-chip {
   font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .6px;
   text-transform: uppercase; color: var(--tally);
-  background: var(--tally-grund); padding: 1px 6px; flex: none;
+  background: var(--tally-grund); padding: 1px var(--raum-3); flex: none;
 }
 /* Zitat aus der Seite: Serif kursiv, goldene Kante links — das Gold ist
    dieselbe Markierungsfarbe wie auf dem Papier. */
 .faden-zitat {
-  margin: 4px 0 0; padding: 0 0 0 8px;
+  margin: var(--raum-2) 0 0; padding: 0 0 0 var(--raum-4);
   border-left: 2px solid rgba(212,175,55,.85);
   font-family: var(--serif); font-style: italic;
   font-size: var(--satz-bedien); line-height: 1.5; color: var(--tinte-leise);
 }
-.faden-text { margin: 4px 0 0; font-size: var(--satz-bedien); line-height: 1.55; }
+.faden-text { margin: var(--raum-2) 0 0; font-size: var(--satz-bedien); line-height: 1.55; }
 .faden-antwort {
-  margin: 6px 0 0 10px; padding-left: 8px; border-left: 1px solid var(--linie);
+  margin: var(--raum-3) 0 0 var(--raum-5); padding-left: var(--raum-4); border-left: 1px solid var(--linie);
 }
-.faden-antwort p { margin: 2px 0 0; font-size: var(--satz-bedien); line-height: 1.5; }
-.faden-fuss { display: flex; gap: 4px; margin-top: 6px; }
+.faden-antwort p { margin: var(--raum-1) 0 0; font-size: var(--satz-bedien); line-height: 1.5; }
+.faden-fuss { display: flex; gap: var(--raum-2); margin-top: var(--raum-3); }
 
 .feldzeile {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  min-height: var(--zeile); padding: 2px 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--raum-5);
+  min-height: var(--zeile); padding: var(--raum-1) var(--raum-4);
   border-bottom: 1px solid var(--linie); cursor: pointer;
 }
 .feldzeile:hover { background: var(--flaeche-tief); }
 .feldzeile-name { font-size: var(--satz-bedien); font-weight: 500; }
 .wertmarke {
-  font-family: var(--mono); font-size: var(--satz-etikett); padding: 2px 6px;
+  font-family: var(--mono); font-size: var(--satz-etikett); padding: var(--raum-1) var(--raum-3);
   background: var(--flaeche-tief); color: var(--tinte-leise); white-space: nowrap;
 }
 .wertmarke.ist-offen { background: var(--warn-grund); color: var(--warn); font-weight: 500; }
 
-.verlauf-zeile { display: flex; gap: 10px; padding: 4px 8px; border-bottom: 1px solid var(--linie); }
+.verlauf-zeile { display: flex; gap: var(--raum-5); padding: var(--raum-2) var(--raum-4); border-bottom: 1px solid var(--linie); }
 .verlauf-marke {
-  width: 8px; height: 8px; background: var(--tally); flex: none; margin-top: 4px;
+  width: 8px; height: 8px; background: var(--tally); flex: none; margin-top: var(--raum-2);
   box-shadow: 0 12px 0 -3.5px var(--linie-stark);
 }
 .verlauf-zeile > div { font-size: var(--satz-bedien); }
@@ -1223,24 +1251,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .einstellungen { display: grid; grid-template-columns: 206px 1fr; min-height: 26rem; }
 .einst-kategorien {
   display: flex; flex-direction: column; border-right: 1px solid var(--linie);
-  background: var(--tafel); margin: -16px 0 -16px -16px; padding: 8px 0;
+  background: var(--tafel); margin: -var(--raum-7) 0 -var(--raum-7) -var(--raum-7); padding: var(--raum-4) 0;
 }
 .einst-kategorie {
   border: 0; background: none; text-align: left; cursor: pointer;
-  padding: 8px 16px; font-size: var(--satz-bedien); color: var(--tinte);
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: var(--raum-4) var(--raum-7); font-size: var(--satz-bedien); color: var(--tinte);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--raum-4);
   border-left: 2px solid transparent;
 }
 .einst-kategorie:hover { background: var(--flaeche-tief); }
 .einst-kategorie.ist-aktiv { color: var(--tally); background: var(--flaeche-tief); border-left-color: var(--tally); font-weight: 500; }
-.einst-inhalt { padding: 0 4px 0 16px; overflow-y: auto; max-height: 60vh; }
-.einst-inhalt h3 { font-family: var(--serif); font-size: var(--satz-gross); font-weight: 600; margin: 0 0 10px; }
+.einst-inhalt { padding: 0 var(--raum-2) 0 var(--raum-7); overflow-y: auto; max-height: 60vh; }
+.einst-inhalt h3 { font-family: var(--serif); font-size: var(--satz-gross); font-weight: 600; margin: 0 0 var(--raum-5); }
 .einst-zeile {
-  display: flex; align-items: center; justify-content: space-between; gap: 24px;
-  padding: 12px 0; border-bottom: 1px solid var(--linie);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--raum-8);
+  padding: var(--raum-6) 0; border-bottom: 1px solid var(--linie);
 }
 .einst-name { font-size: var(--satz-bedien); font-weight: 500; }
-.einst-hinweis { font-size: var(--satz-neben); color: var(--tinte-leise); margin-top: 2px; }
+.einst-hinweis { font-size: var(--satz-neben); color: var(--tinte-leise); margin-top: var(--raum-1); }
 
 .pille {
   width: 38px; height: 20px; flex: none; cursor: pointer;
@@ -1253,15 +1281,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .segmente { display: flex; border: 1px solid var(--linie-stark); background: var(--flaeche); flex: none; }
 .segment {
-  border: 0; background: none; cursor: pointer; padding: 4px 10px;
+  border: 0; background: none; cursor: pointer; padding: var(--raum-2) var(--raum-5);
   font-size: var(--satz-neben); color: var(--tinte); border-right: 1px solid var(--linie);
 }
 .segment:last-child { border-right: 0; }
 .segment:hover { background: var(--flaeche-tief); }
-.segment.ist-an { background: var(--tally); color: #fff; }
+.segment.ist-an { background: var(--tally); color: var(--tally-text); }
 
 .ohne-seitenzahlen .blatt-nummer { display: none; }
-.werkzeug-schmal { padding: 0 8px; }
+.werkzeug-schmal { padding: 0 var(--raum-4); }
 .werkzeug[disabled] { opacity: .4; cursor: not-allowed; }
 
 /* ---------- Vergleich als eigene Ansicht -------------------------------- */
@@ -1278,42 +1306,42 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Eine Zeile, 46 px, wie die Aktionsleiste des Seitenrasters — nicht zwei.
    Im Mockup steht alles nebeneinander: Titel, Fassungen, Legende. */
 .vergleich-kopf {
-  display: flex; align-items: center; gap: 16px; flex: none;
-  height: 46px; padding: 0 12px;
+  display: flex; align-items: center; gap: var(--raum-7); flex: none;
+  height: 46px; padding: 0 var(--raum-6);
   background: var(--chrome-600); color: #fff;
   overflow-x: auto; scrollbar-width: none; white-space: nowrap;
 }
 .vergleich-kopf::-webkit-scrollbar { display: none; }
-.vergleich-titel { display: flex; align-items: baseline; gap: 10px; }
+.vergleich-titel { display: flex; align-items: baseline; gap: var(--raum-5); }
 .vergleich-titel strong { font-size: var(--satz-bedien); font-weight: 600; }
 .vergleich-titel .mono { color: rgba(255,255,255,.66); font-size: var(--satz-etikett); letter-spacing: .4px; text-transform: uppercase; }
-.vergleich-legende { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; }
+.vergleich-legende { display: flex; align-items: center; gap: var(--raum-5); flex: 1 1 auto; }
 .vergleich-legende .leise { color: rgba(255,255,255,.6); }
-.vergleich-nav { display: flex; gap: 4px; flex: none; }
+.vergleich-nav { display: flex; gap: var(--raum-2); flex: none; }
 .vergleich-nav .knopf { color: #fff; border-color: rgba(255,255,255,.28); background: transparent; }
 .vergleich-nav .knopf:hover { background: rgba(255,255,255,.14); }
 .diff-marke {
   font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .4px; text-transform: uppercase;
-  padding: 2px 6px; white-space: nowrap;
+  padding: var(--raum-1) var(--raum-3); white-space: nowrap;
 }
 .diff-marke-neu { background: rgba(15,118,110,.34); color: var(--tally-hell); }
 .diff-marke-weg { background: rgba(139,58,58,.34); color: #f0a9a9; }
 .vergleich-hinweis {
-  margin: 0; padding: 8px 12px; flex: none;
+  margin: 0; padding: var(--raum-4) var(--raum-6); flex: none;
   background: var(--chrome-700); color: rgba(255,255,255,.78); font-size: var(--satz-bedien);
 }
 .vergleich {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-  padding: 16px; overflow: auto; flex: 1; min-height: 0; align-content: start;
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--raum-7);
+  padding: var(--raum-7); overflow: auto; flex: 1; min-height: 0; align-content: start;
 }
-.vergleich-seite { background: var(--papier); box-shadow: var(--schatten-blatt); padding: 0 0 16px; }
+.vergleich-seite { background: var(--papier); box-shadow: var(--schatten-blatt); padding: 0 0 var(--raum-7); }
 .vergleich-kennung {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding: 10px 16px; border-bottom: 1px solid var(--linie);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--raum-4);
+  padding: var(--raum-5) var(--raum-7); border-bottom: 1px solid var(--linie);
   font-size: var(--satz-etikett); letter-spacing: .6px; text-transform: uppercase; color: var(--tinte-leise);
 }
 .vergleich-spalte {
-  padding: 16px 16px 0; font-family: var(--serif); font-size: var(--satz-grund); line-height: 1.78;
+  padding: var(--raum-7) var(--raum-7) 0; font-family: var(--serif); font-size: var(--satz-grund); line-height: 1.78;
   color: var(--tinte); white-space: pre-wrap; word-break: break-word;
 }
 .diff-weg { background: rgba(139,58,58,.14); text-decoration: line-through; }
@@ -1373,9 +1401,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   #knopf-drehen, #knopf-thema { display: none; }
   .wortmarke-wort { display: none; }
   .werkzeug span { display: none; }
-  .werkzeug { padding: 0 8px; }
+  .werkzeug { padding: 0 var(--raum-4); }
   .werkzeug-rechts .werkzeug span { display: inline; }
-  .menue-knopf { padding: 0 6px; }
+  .menue-knopf { padding: 0 var(--raum-3); }
   .menue-stand { display: none; }
   .dok-reiter { max-width: 11rem; }
 }
@@ -1385,7 +1413,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .ordnen-gitter { grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); }
   .ordnen-blatt { height: 10rem; }
   .einstellungen { grid-template-columns: 1fr; }
-  .einst-kategorien { flex-direction: row; overflow-x: auto; margin: -16px -16px 8px; border-right: 0; border-bottom: 1px solid var(--linie); }
+  .einst-kategorien { flex-direction: row; overflow-x: auto; margin: -var(--raum-7) -var(--raum-7) var(--raum-4); border-right: 0; border-bottom: 1px solid var(--linie); }
   .einst-fassung { display: none; }
   .einst-kategorie { white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; }
   .einst-kategorie.ist-aktiv { border-left: 0; border-bottom-color: var(--tally); }
@@ -1399,18 +1427,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Kacheln unter der Empfangskarte, nicht darin: wer eine Datei hinlegen will,
    soll das zuerst sehen. Der kurze Weg ist ein Angebot, keine Abzweigung. */
-.empfang-werkzeuge { width: min(46rem, 100%); margin-top: 32px; }
+.empfang-werkzeuge { width: min(46rem, 100%); margin-top: var(--raum-9); }
 .empfang-werkzeuge-titel {
   font-size: var(--satz-neben); text-transform: uppercase; letter-spacing: .08em;
-  color: var(--tinte-leise); font-weight: 600; margin: 0 0 10px; text-align: center;
+  color: var(--tinte-leise); font-weight: 600; margin: 0 0 var(--raum-5); text-align: center;
 }
 .werkzeugkacheln {
-  display: grid; gap: 8px;
+  display: grid; gap: var(--raum-4);
   grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
 }
 .werkzeugkachel {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 12px; text-decoration: none;
+  display: flex; align-items: center; gap: var(--raum-4);
+  padding: var(--raum-5) var(--raum-6); text-decoration: none;
   background: var(--flaeche); border: 1px solid var(--linie);
   color: var(--tinte); font-size: var(--satz-bedien); line-height: 1.3;
   transition: border-color .12s, background .12s, transform .12s;
@@ -1432,7 +1460,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   width: min(30rem, 100%);
   background: var(--flaeche); border: 1px solid var(--linie-stark);
   border-radius: var(--radius-gross); box-shadow: var(--schatten);
-  padding: 32px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;
+  padding: var(--raum-9); display: flex; flex-direction: column; gap: var(--raum-6); align-items: flex-start;
 }
 .einzel-zurueck {
   font-size: var(--satz-neben); color: var(--tinte-leise); text-decoration: none;
@@ -1447,24 +1475,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .einzel-karte h1 { font-family: var(--serif); font-size: var(--satz-anzeige); font-weight: 600; margin: 0; }
 .einzel-satz { margin: 0; color: var(--tinte-leise); line-height: 1.55; font-size: var(--satz-grund); }
 .einzel-waehlen { align-self: stretch; justify-content: center; }
-.einzel-dateien { align-self: stretch; display: flex; flex-direction: column; gap: 4px; }
+.einzel-dateien { align-self: stretch; display: flex; flex-direction: column; gap: var(--raum-2); }
 .einzel-dateien:empty { display: none; }
 .einzel-datei {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 8px; background: var(--flaeche-hoch);
+  display: flex; align-items: center; gap: var(--raum-4);
+  padding: var(--raum-3) var(--raum-4); background: var(--flaeche-hoch);
   border: 1px solid var(--linie); border-radius: var(--radius-klein);
   font-size: var(--satz-bedien);
 }
 .einzel-datei-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.einzel-zusatz { align-self: stretch; display: flex; flex-direction: column; gap: 8px; }
+.einzel-zusatz { align-self: stretch; display: flex; flex-direction: column; gap: var(--raum-4); }
 .einzel-zusatz:empty { display: none; }
-.einzel-feld { display: flex; align-items: center; gap: 8px; font-size: var(--satz-bedien); }
+.einzel-feld { display: flex; align-items: center; gap: var(--raum-4); font-size: var(--satz-bedien); }
 .einzel-feld > span { min-width: 8rem; color: var(--tinte-leise); }
 .einzel-feld .feld { flex: 1; }
 .einzel-stand { margin: 0; min-height: 1.2em; }
 .einzel-stand:empty { display: none; }
 .einzel-karte > .knopf-voll { align-self: stretch; justify-content: center; }
-.einzel-fuss { margin: 4px 0 0; font-size: var(--satz-neben); }
+.einzel-fuss { margin: var(--raum-2) 0 0; font-size: var(--satz-neben); }
 .einzel-fuss a { color: var(--tally); }
 
 /* ---------- Radien: die Staffel wird angewandt --------------------------- */
@@ -1482,7 +1510,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Klein und oft: 4 px */
 .marke, .art-chip, .wertmarke, .miniatur-nummer, .dok-reiter, .dok-reiter-zu,
 .dok-reiter-neu, .werkzeug, .reiter-knopf, .menue-eintrag, .lader-balken,
-.lader-balken i, .schieber, .formularfeld, .eintrag, .feldzeile, .fundzeile,
+.lader-balken i, .formularfeld, .eintrag, .feldzeile, .fundzeile,
 .leerbild-tat, .vorschlag-weg, .plan-marke {
   border-radius: var(--radius-klein);
 }
@@ -1591,19 +1619,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .anmeldeschranke {
   position: fixed; inset: 0; z-index: 200;
   display: flex; align-items: center; justify-content: center;
-  padding: 24px;
+  padding: var(--raum-8);
   background: rgba(18,24,28,.72);
   backdrop-filter: blur(3px);
 }
 .anmeldekarte {
   background: var(--flaeche); border: 1px solid var(--linie-stark);
   box-shadow: var(--schatten-dialog);
-  padding: 32px; max-width: 30rem; text-align: left;
-  display: flex; flex-direction: column; gap: 12px;
+  padding: var(--raum-9); max-width: 30rem; text-align: left;
+  display: flex; flex-direction: column; gap: var(--raum-6);
 }
-.anmeldekarte h1 { font-family: var(--serif); font-size: var(--satz-anzeige); font-weight: 600; margin: 4px 0 0; }
+.anmeldekarte h1 { font-family: var(--serif); font-size: var(--satz-anzeige); font-weight: 600; margin: var(--raum-2) 0 0; }
 .anmeldekarte p { margin: 0; line-height: 1.6; }
-.anmeldekarte .knopf { align-self: flex-start; margin-top: 8px; }
-.anmeldekarte .knopf-voll { background: var(--tally); border-color: var(--tally); color: #fff; }
+.anmeldekarte .knopf { align-self: flex-start; margin-top: var(--raum-4); }
+.anmeldekarte .knopf-voll { background: var(--tally); border-color: var(--tally); color: var(--tally-text); }
 .anmeldekarte .knopf-voll:hover { background: var(--tally-hover); border-color: var(--tally-hover); }
 .anmeldekarte .wortmarke-zeichen { width: 23px; height: 28px; }

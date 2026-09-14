@@ -30,18 +30,32 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     /* Die Staffel selbst darf Zahlen nennen — sie ist die Staffel. Geprüft
        wird alles danach. */
     const ohneWurzel = css.slice(css.indexOf('* { box-sizing'));
-    const STUFEN = new Set([1, 2, 4, 6, 8, 10, 12, 16, 24, 32]);
     const daneben = new Set();
     for (const t of ohneWurzel.matchAll(/\b(?:padding|margin|gap)(?:-[a-z]+)?: ([^;{}]+)/g)) {
-      /* `calc()` rechnet mit Umgebungswerten (Aussparung, Leistenhöhe) und
-         wird hier nicht zerlegt — die Zahl darin ist ein Zuschlag, kein Maß. */
+      /* `calc()` rechnet mit Umgebungswerten (Aussparung, Leistenhöhe, halbe
+         Griffhöhe) und wird hier nicht zerlegt — die Zahl darin ist ein
+         Zuschlag, kein Maß. Und 1 px ist die Haarlinie, keine Stufe. */
       if (t[1].includes('calc(')) continue;
       for (const zahl of t[1].matchAll(/\b([0-9.]+)px/g)) {
-        if (!STUFEN.has(Number(zahl[1]))) daneben.add(`${zahl[1]}px`);
+        if (zahl[1] !== '1') daneben.add(`${zahl[1]}px`);
       }
     }
     if (daneben.size) throw new Error(`Abstand außerhalb der Staffel: ${[...daneben].join(', ')}`);
-    return `10 Schriftstufen, 9 Raumstufen, ${css.match(/font-size: var\(/g).length} Stellen ziehen daraus`;
+
+    /* Und die Radien im Quelltext. „Es gibt keine Radien" prüft den Bildschirm
+       und kommt an das Schatten-DOM nicht heran — Bahn und Griff eines
+       Schiebereglers liegen dort, und der Browser macht sie rund, wenn man
+       ihn lässt. Hier zählt, was geschrieben steht. */
+    const rundeWerte = [...css.matchAll(/border-radius: ([^;]+)/g)]
+      .map((t) => t[1].trim())
+      /* Was aus der Staffel kommt oder erbt, ist in Ordnung — die Staffel ist
+         null. Übrig bleiben darf dann nur noch eine Null. */
+      .filter((w) => w.replace(/var\(--radius[a-z-]*\)/g, '').replace(/\binherit\b/g, '')
+        .replace(/\b0\b/g, '').trim() !== '');
+    if (rundeWerte.length) throw new Error(`Radius im Quelltext: ${[...new Set(rundeWerte)].join(', ')}`);
+    const ausStufe = (css.match(/var\(--raum-/g) || []).length;
+    return `10 Schriftstufen an ${css.match(/font-size: var\(/g).length} Stellen, `
+      + `9 Raumstufen an ${ausStufe}`;
   });
 
   /* Die Richtung nennt Höhen, Breiten und Farben auf den Pixel und den Hexwert
@@ -234,6 +248,55 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     }
     if (hell(werte.blatt) <= hell(werte.tafel)) throw new Error('das Blatt ist nicht das Hellste');
     return `Bühne ${werte.buehne} < Tafel ${werte.tafel} < Blatt ${werte.blatt}`;
+  });
+
+  await pruefe('Schrift auf dem Akzent ist in beiden Fassungen lesbar', async () => {
+    /* Der Vollknopf trug `color: #fff`. Im Hellen liegt der Akzent dunkel und
+       das stimmt; im Dunkeln liegt er hell, und weiße Schrift darauf kam auf
+       1,6:1 — sichtbar erst im Bildschirmabzug, nie im Quelltext.
+
+       Gemessen wird nach WCAG: Leuchtdichte beider Farben, Verhältnis. Alles
+       unter 4,5:1 ist durchgefallen. */
+    await ladeBeispiel();
+    const werte = {};
+    for (const thema of ['hell', 'dunkel']) {
+      await seite.evaluate((t) => { document.documentElement.dataset.thema = t; }, thema);
+      /* Der Knopf blendet seine Farbe in 120 ms um. Wer sofort misst, misst
+         einen Zwischenstand — 2,7:1 zwischen zwei Farben, die beide gut sind.
+         Das hat diese Prüfung beim ersten Lauf selbst getan. */
+      await seite.waitForTimeout(300);
+      werte[thema] = await seite.evaluate(() => {
+        const leucht = (farbe) => {
+          const [r, g, b] = farbe.match(/\d+/g).slice(0, 3).map(Number)
+            .map((k) => k / 255).map((k) => (k <= .03928 ? k / 12.92 : ((k + .055) / 1.055) ** 2.4));
+          return .2126 * r + .7152 * g + .0722 * b;
+        };
+        const verhaeltnis = (a, b) => {
+          const [x, y] = [leucht(a), leucht(b)].sort((p, q) => q - p);
+          return (x + .05) / (y + .05);
+        };
+        const raus = {};
+        for (const [name, wahl] of [['sichern', '#knopf-sichern'],
+          ['werkzeug', '.werkzeug.ist-aktiv'], ['marke', '.art-chip']]) {
+          const k = document.querySelector(wahl);
+          if (!k) continue;
+          const stil = getComputedStyle(k);
+          raus[name] = Math.round(verhaeltnis(stil.backgroundColor, stil.color) * 10) / 10;
+        }
+        return raus;
+      });
+    }
+    await seite.evaluate(() => { document.documentElement.dataset.thema = 'system'; });
+    await seite.waitForTimeout(300);
+    const schwach = [];
+    for (const [thema, stellen] of Object.entries(werte)) {
+      for (const [name, wert] of Object.entries(stellen)) {
+        if (wert < 4.5) schwach.push(`${thema}/${name}: ${wert}:1`);
+      }
+    }
+    if (schwach.length) throw new Error(`zu schwach: ${schwach.join(', ')}`);
+    return Object.entries(werte).map(([t, w]) =>
+      `${t} ${Object.entries(w).map(([n, v]) => `${n} ${v}:1`).join(' · ')}`).join(' | ');
   });
 
   await pruefe('Der Primärknopf in der Titelleiste ist akzentfarben', async () => {

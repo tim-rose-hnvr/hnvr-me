@@ -53,6 +53,7 @@
   --linie-stark:  #B0B6BB;
   --tally:        #3E5C96;
   --tally-grund:  rgba(62,92,150,.10);
+  --tally-text:   #F4F6F8;   /* Schrift auf dem Akzent — folgt ihm, nicht dem Weiß */
   --tally-hell:   #A8BCE0;
   --gut:          #236E44;
   --gut-grund:    rgba(35,110,68,.12);
@@ -91,6 +92,7 @@
     --linie-stark:  #3C444B;
     --tally:        #9DB4E0;
     --tally-grund:  rgba(157,180,224,.14);
+    --tally-text:   #14181B;
     --tally-hell:   #9DB4E0;
     --gut:          #6FC292;
     --gut-grund:    rgba(111,194,146,.14);
@@ -112,6 +114,7 @@
   --linie-stark:  #3C444B;
   --tally:        #9DB4E0;
   --tally-grund:  rgba(157,180,224,.14);
+  --tally-text:   #14181B;
   --tally-hell:   #9DB4E0;
   --gut:          #6FC292;
   --gut-grund:    rgba(111,194,146,.14);
@@ -145,8 +148,9 @@ body {
 .band-grund  { background: var(--grund); }
 .band-hell   { background: var(--flaeche-tief); }
 .band-dunkel { background: var(--chrome-900); color: #DFE4E6; border-bottom-color: #000; }
-.band-akzent { background: var(--tally); color: #fff; border-bottom-color: var(--tally); }
-.band-dunkel h2, .band-akzent h2 { color: #fff; }
+.band-akzent { background: var(--tally); color: var(--tally-text); border-bottom-color: var(--tally); }
+.band-dunkel h2 { color: #fff; }
+.band-akzent h2 { color: var(--tally-text); }
 .band-dunkel .leise { color: #A9B4B9; }
 
 /* Abschnittskopf: Serif-Überschrift 31 px und eine Mono-Beifügung daneben. */
@@ -256,7 +260,7 @@ p:last-child { margin-bottom: 0; }
 .zeile.schwarz { background: #12181c; height: 5px; }
 .nadel {
   position: absolute; right: -9px; top: 46%;
-  width: 18px; height: 18px; background: var(--tally); color: #fff;
+  width: 18px; height: 18px; background: var(--tally); color: var(--tally-text);
   border-radius: 0;
   display: grid; place-items: center; font-family: var(--mono); font-size: .55rem;
 }
@@ -388,7 +392,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .portal-karte h2 { margin-bottom: .75rem; }
 .knopf-voll {
   display: inline-block; margin-top: 1.2rem;
-  background: var(--tally); color: #fff; text-decoration: none;
+  background: var(--tally); color: var(--tally-text); text-decoration: none;
   border-radius: var(--radius-klein); padding: .6rem 1.3rem;
   font-family: var(--mono); font-size: .82rem; font-weight: 500;
   letter-spacing: .09em; text-transform: uppercase;

@@ -299,6 +299,65 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       `${t} ${Object.entries(w).map(([n, v]) => `${n} ${v}:1`).join(' · ')}`).join(' | ');
   });
 
+  await pruefe('Was auf dem Papier liegt, folgt der Fassung nicht', async () => {
+    /* Das Blatt ist in beiden Fassungen dasselbe Blatt — die Seite wird als
+       Bild gezeichnet und kippt nicht mit. Alles, was darüberliegt, muss
+       deshalb eigene Werte haben.
+
+       Aufgefallen ist das erst, als derselbe Bildschirm in Figma einmal hell
+       und einmal dunkel nebeneinander stand: weiße Schrift auf weißem Papier.
+       Nachgemessen war der Formularfeldrahmen in der dunklen Fassung bei
+       2,0:1 und die Tinte bei 1,2:1. */
+    await ladeBeispiel();
+    const werte = {};
+    for (const thema of ['hell', 'dunkel']) {
+      await seite.evaluate((t) => { document.documentElement.dataset.thema = t; }, thema);
+      await seite.waitForTimeout(300);
+      werte[thema] = await seite.evaluate(() => {
+        const leucht = (f) => {
+          const [r, g, b] = f.match(/\d+/g).slice(0, 3).map(Number).map((k) => k / 255)
+            .map((k) => (k <= .03928 ? k / 12.92 : ((k + .055) / 1.055) ** 2.4));
+          return .2126 * r + .7152 * g + .0722 * b;
+        };
+        const verh = (a, b) => {
+          const [x, y] = [leucht(a), leucht(b)].sort((p, q) => q - p);
+          return Math.round((x + .05) / (y + .05) * 10) / 10;
+        };
+        const hexZuRgb = (h) => {
+          const n = parseInt(h.trim().slice(1), 16);
+          return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+        };
+        const w = getComputedStyle(document.documentElement);
+        const papier = getComputedStyle(document.querySelector('.blatt')).backgroundColor;
+        const raus = { papier };
+        for (const name of ['papier-tinte', 'papier-leise', 'papier-akzent']) {
+          raus[name] = verh(papier, hexZuRgb(w.getPropertyValue('--' + name)));
+        }
+        return raus;
+      });
+    }
+    await seite.evaluate(() => { document.documentElement.dataset.thema = 'system'; });
+    await seite.waitForTimeout(300);
+
+    if (werte.hell.papier !== werte.dunkel.papier) {
+      throw new Error(`das Blatt wechselt die Farbe: ${werte.hell.papier} / ${werte.dunkel.papier}`);
+    }
+    const schwach = [];
+    for (const [thema, stellen] of Object.entries(werte)) {
+      for (const [name, wert] of Object.entries(stellen)) {
+        if (name === 'papier') continue;
+        const grenze = name === 'papier-leise' ? 4.5 : 4.5;
+        if (wert < grenze) schwach.push(`${thema}/${name}: ${wert}:1`);
+        if (werte.hell[name] !== werte.dunkel[name]) {
+          schwach.push(`${name} unterscheidet sich zwischen den Fassungen`);
+        }
+      }
+    }
+    if (schwach.length) throw new Error([...new Set(schwach)].join(', '));
+    return `Papier ${werte.hell.papier} in beiden · Tinte ${werte.hell['papier-tinte']}:1 · `
+      + `Randvermerk ${werte.hell['papier-leise']}:1 · Feldrahmen ${werte.hell['papier-akzent']}:1`;
+  });
+
   await pruefe('Der Primärknopf in der Titelleiste ist akzentfarben', async () => {
     /* Er war einmal weiß: `.knopf-voll` stand oberhalb von `.knopf` und wurde
        von dessen Grundwerten überschrieben. Gleiche Spezifität, spätere Regel

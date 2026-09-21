@@ -91,6 +91,18 @@
   --papier:       #FDFCF9;
   --blattkante:   #14181B;
 
+  /* **Was auf dem Papier liegt, folgt der Fassung nicht.** Das Blatt ist in
+     beiden Fassungen dasselbe Blatt — die Seite wird als Bild gezeichnet und
+     kippt nicht mit. Alles, was darüberliegt (Formularfeld, Auswahl,
+     Randvermerk), muss deshalb eigene Werte haben. Sonst wird in der dunklen
+     Fassung ein Rahmen daraus, der auf 2,0:1 fällt, und Schrift, die auf
+     1,2:1 verschwindet. Beides war so, beides ist nachgemessen. */
+  --papier-tinte:  #1B2128;
+  --papier-leise:  #696F76;
+  --papier-linie:  #D1D5D9;
+  --papier-akzent: #3E5C96;
+  --papier-akzent-grund: rgba(62,92,150,.08);
+
   /* Es gibt keine Schatten. Was schwebt, trägt eine Linie.
      Die Namen bleiben, damit die Bauteile nicht alle angefasst werden müssen. */
   --schatten:        0 0 0 1px var(--linie-stark);
@@ -597,7 +609,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   --seiten-schub: 0;
 }
 .blatt canvas { display: block; width: 100%; height: 100%; }
-.blatt.ist-gewaehlt { outline: 2px solid var(--tally); outline-offset: 3px; }
+.blatt.ist-gewaehlt { outline: 2px solid var(--tally-hell); outline-offset: 3px; }
 .blatt-nummer {
   position: absolute; left: 50%; transform: translateX(-50%); bottom: -18px;
   font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .4px;
@@ -614,7 +626,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   color: transparent; position: absolute; white-space: pre; cursor: text;
   transform-origin: 0% 0%;
 }
-.textebene ::selection { background: var(--tally-grund); }
+.textebene ::selection { background: var(--papier-akzent-grund); }
 .textebene .treffer { background: rgba(255,196,0,.45); border-radius: 0; }
 .textebene .treffer-aktiv { background: rgba(255,120,0,.65); }
 .werkzeug-aktiv .textebene { pointer-events: none; }
@@ -635,7 +647,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Text ersetzen: die Textebene wird bedienbar, die Malebene tritt zurück. */
 .werkzeug-ersetzen .textebene { pointer-events: auto; cursor: pointer; }
 .werkzeug-ersetzen .malebene { pointer-events: none; }
-.werkzeug-ersetzen .textebene span:hover { background: var(--tally-grund); outline: 1px solid var(--tally); border-radius: 0; }
+.werkzeug-ersetzen .textebene span:hover { background: var(--papier-akzent-grund); outline: 1px solid var(--papier-akzent); border-radius: 0; }
 .anmerkung-griff { pointer-events: auto; cursor: pointer; }
 .anmerkung-griff.ist-gewaehlt { filter: drop-shadow(0 0 0 var(--tally)); }
 .notiz-marke {
@@ -665,11 +677,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .feldebene { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .formularfeld {
-  position: absolute; pointer-events: auto; border: 1px solid var(--tally);
-  background: rgba(0,110,255,.07); border-radius: 0; padding: 0 var(--raum-1);
-  font-family: var(--sans); color: #111; font-size: var(--satz-bedien);
+  position: absolute; pointer-events: auto; border: 1px solid var(--papier-akzent);
+  background: var(--papier-akzent-grund); border-radius: 0; padding: 0 var(--raum-1);
+  font-family: var(--sans); color: var(--papier-tinte); font-size: var(--satz-bedien);
 }
-.formularfeld:focus { outline: 2px solid var(--tally); background: #fff; }
+.formularfeld:focus { outline: 2px solid var(--papier-akzent); background: var(--papier); }
 .formularfeld[type="checkbox"] { width: auto; height: auto; }
 
 /* ---------- Miniaturen -------------------------------------------------- */

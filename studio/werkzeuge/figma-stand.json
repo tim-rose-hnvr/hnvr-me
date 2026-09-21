@@ -1,0 +1,86 @@
+{
+  "runId": "registratur-2026-09",
+  "fileKey": "CvhOPK3NKn28gWvlUYU3dh",
+  "fileUrl": "https://www.figma.com/design/CvhOPK3NKn28gWvlUYU3dh",
+  "phase": "phase4",
+  "step": "abgeschlossen",
+  "entities": {
+    "collections": {
+      "Grundwerte": "VariableCollectionId:2:2",
+      "Farbe": "VariableCollectionId:2:43",
+      "Raum": "VariableCollectionId:2:79",
+      "Satz": "VariableCollectionId:2:97",
+      "Radius": "VariableCollectionId:2:108"
+    },
+    "modi": {
+      "hell": "2:1",
+      "dunkel": "2:2"
+    },
+    "pages": {
+      "Deckblatt": "0:1",
+      "Loslegen": "4:2",
+      "Fundamente — Farbe": "4:3",
+      "Fundamente — Satz & Raum": "4:4",
+      "--- Bauteile": "4:5",
+      "Knopf": "4:6",
+      "Werkzeugzeile": "4:7",
+      "Reiter & Spaltenkopf": "4:8",
+      "Zeilen": "4:9",
+      "Faden": "4:10",
+      "Marke & Meldung": "4:11",
+      "Feld, Schalter, Schieber": "4:12",
+      "Dialog": "4:13",
+      "--- Bildschirme": "4:14",
+      "Bildschirme": "4:15"
+    },
+    "components": {
+      "Knopf": "10:33",
+      "Knopf groß": "10:49",
+      "Werkzeug": "12:23",
+      "Reiter": "14:8",
+      "Spaltenkopf": "14:9",
+      "Seitenzeile": "15:18",
+      "Feldzeile": "15:31",
+      "Faden": "16:26"
+    },
+    "styles": {
+      "anzahl": 15
+    },
+    "screens": {
+      "Studio — Hell": "17:2",
+      "Studio — Dunkel": "19:105"
+    }
+  },
+  "zahlen": {
+    "variablen": 106,
+    "textstile": 16,
+    "effektstile": 0,
+    "bauteile": 8,
+    "sinnbilder": 8
+  },
+  "completedSteps": [
+    "P0.a",
+    "P0.b",
+    "P0.c",
+    "P0.d",
+    "P0.f",
+    "P1.a",
+    "P1.b",
+    "P1.c",
+    "P1.d",
+    "P1.e",
+    "P1.f",
+    "P1.g",
+    "P1.h",
+    "P2.a",
+    "P2.b",
+    "P2.c"
+  ],
+  "offen": [
+    "Marke & Meldung",
+    "Feld, Schalter, Schieber",
+    "Dialog",
+    "Empfang",
+    "Portal"
+  ]
+}

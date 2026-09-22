@@ -39,6 +39,11 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       for (const zahl of t[1].matchAll(/\b([0-9.]+)px/g)) {
         if (zahl[1] !== '1') daneben.add(`${zahl[1]}px`);
       }
+      /* Diese Prüfung hat lange nur px gesehen. Zwanzig Abstände standen in
+         rem und kamen ungeprüft durch — das ist der Unterschied zwischen
+         einer Regel und einer Behauptung. Andere Einheiten (vh, %, ch)
+         beziehen sich auf das Fenster oder den Text und sind keine Stufen. */
+      for (const zahl of t[1].matchAll(/\b([0-9.]+)rem/g)) daneben.add(`${zahl[1]}rem`);
     }
     if (daneben.size) throw new Error(`Abstand außerhalb der Staffel: ${[...daneben].join(', ')}`);
 

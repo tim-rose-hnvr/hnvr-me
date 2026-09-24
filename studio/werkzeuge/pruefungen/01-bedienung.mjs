@@ -223,7 +223,10 @@ export default async function ({ pruefe, seite, blatt, ladungVon, befehle }) {
   });
   await pruefe('Anmerkung wählen und verschieben', async () => {
     await seite.evaluate(() => window.studio.fuehreAus('werkzeug:auswahl'));
-    await seite.waitForTimeout(200);
+    /* Der Werkzeugwechsel zeichnet die Anmerkungsebene neu. Wer zu früh
+       zugreift, greift auf den alten Knoten — dann bewegt sich nichts, und
+       die Prüfung meldet einen Fehler, den es nicht gibt. */
+    await seite.waitForTimeout(500);
     const id = await seite.evaluate(() => {
       const a = window.studio.zustand.anmerkungen.find((x) => x.art === 'ellipse');
       return a?.id;
@@ -234,8 +237,10 @@ export default async function ({ pruefe, seite, blatt, ladungVon, befehle }) {
     }, id);
     const griff = await seite.locator(`[data-anmerkung="${id}"]`).first().boundingBox();
     if (!griff) throw new Error('Griff nicht sichtbar');
-    // Erst die Linie greifen (so macht es ein Mensch), dann ziehen.
-    const rand = { x: griff.x, y: griff.y + griff.height / 2 };
+    /* Erst die Linie greifen (so macht es ein Mensch), dann ziehen. Einen
+       Pixel nach innen: genau auf der Kante liegt der Treffer auf der
+       Rundung des Rahmens und trifft mal so, mal so. */
+    const rand = { x: griff.x + 1, y: griff.y + griff.height / 2 };
     await seite.mouse.move(rand.x, rand.y);
     await seite.mouse.down();
     await seite.mouse.move(rand.x + 40, rand.y + 25, { steps: 8 });

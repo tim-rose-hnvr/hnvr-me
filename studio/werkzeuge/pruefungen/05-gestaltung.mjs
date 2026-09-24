@@ -5,8 +5,10 @@
    Radien, Schriftschnitte. Sie ist entstanden, nachdem zweimal behauptet
    wurde, die Gestaltung stimme — und zweimal stimmte sie nicht.
 
-   Die Richtung heißt „Registratur": keine Radien, keine Schatten, keine
-   Karten. Hierarchie tragen Haarlinie, Zeilenhöhe und Versalabstand. */
+   Die Richtung heißt „Vorgang": die Einheit ist nicht die Datei, sondern der
+   Vorgang. Es gibt eine Leiste statt vier — kein Menüband, keine Statusleiste
+   über die ganze Breite. Farbe bedeutet Zustand, nie Marke: der Akzent ist
+   kein Farbton, sondern der stärkste Kontrast zum Grund. */
 
 import { join } from 'node:path';
 
@@ -67,16 +69,14 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
      genau. Sie hier nachzumessen ist der einzige Weg, der nicht darauf
      hinausläuft, zwei Bildschirmabzüge nebeneinanderzuhalten. */
   const REG = {
-    kopf: 30, menue: 22, werkzeuge: 30, fuss: 24,
-    links: 220, rechts: 300,
-    chrome900: 'rgb(33, 39, 44)',
-    menueGrund: 'rgb(234, 237, 240)',
-    werkzeugGrund: 'rgb(244, 246, 248)',
-    buehne: 'rgb(46, 51, 56)',
-    fussGrund: 'rgb(33, 39, 44)',
-    papier: 'rgb(253, 252, 249)',
-    akzent: 'rgb(62, 92, 150)',
-    chromeText: 'rgb(244, 246, 248)',
+    kopf: 56, werkzeuge: 40,
+    links: 264, rechts: 320,
+    chrome900: 'rgb(250, 250, 248)',
+    werkzeugGrund: 'rgb(246, 246, 243)',
+    buehne: 'rgb(237, 237, 233)',
+    papier: 'rgb(255, 255, 255)',
+    akzent: 'rgb(22, 24, 26)',
+    chromeText: 'rgb(22, 24, 26)',
   };
 
   await pruefe('Die Höhen der Chrome stimmen auf den Pixel', async () => {
@@ -84,8 +84,8 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     const masse = await seite.evaluate(() => {
       const h = (s) => Math.round(document.querySelector(s).getBoundingClientRect().height);
       const b = (s) => Math.round(document.querySelector(s).getBoundingClientRect().width);
-      return { kopf: h('.kopf'), menue: h('.menueleiste'), werkzeuge: h('.werkzeugzeile'),
-        fuss: h('.fuss'), links: b('.leiste-links'), rechts: b('.leiste-rechts') };
+      return { kopf: h('.kopf'), werkzeuge: h('.werkzeugzeile'),
+        links: b('.leiste-links'), rechts: b('.leiste-rechts') };
     });
     for (const [name, soll] of Object.entries(REG)) {
       if (typeof soll !== 'number') continue;
@@ -97,12 +97,12 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
   await pruefe('Die Farben sind die aus dem Handoff', async () => {
     const farben = await seite.evaluate(() => {
       const f = (s) => getComputedStyle(document.querySelector(s)).backgroundColor;
-      return { kopf: f('.kopf'), menue: f('.menueleiste'), werkzeuge: f('.werkzeugzeile'),
-        buehne: f('#buehne'), fuss: f('.fuss'), blatt: f('.blatt') };
+      return { kopf: f('.kopf'), werkzeuge: f('.werkzeugzeile'),
+        buehne: f('#buehne'), blatt: f('.blatt') };
     });
     const soll = {
-      kopf: REG.chrome900, menue: REG.menueGrund, werkzeuge: REG.werkzeugGrund,
-      buehne: REG.buehne, fuss: REG.fussGrund, blatt: REG.papier,
+      kopf: REG.chrome900, werkzeuge: REG.werkzeugGrund,
+      buehne: REG.buehne, blatt: REG.papier,
     };
     for (const [name, wert] of Object.entries(soll)) {
       if (farben[name] !== wert) throw new Error(`${name}: ${farben[name]} statt ${wert}`);
@@ -133,11 +133,10 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
   });
 
   await pruefe('Bei der Fensterbreite des Mockups stehen beide Leisten', async () => {
-    /* Die Mockup-Aufnahme ist 924 px breit und zeigt beide Leisten. Unser
-       Umbruchpunkt lag einmal darüber — bei dieser Breite klappten beide
-       Leisten weg, und der Vergleich verglich zwei verschiedene Dinge.
-       Registratur macht die Leisten breiter, weil dort Spalten stehen. */
-    await seite.setViewportSize({ width: 944, height: 700 });
+    /* Unter 1400 px geben die Leisten nach, nicht das Dokument: sonst wird
+       das Blatt beschnitten, und genau das war einmal so — 24 px Bühne neben
+       einer 720-px-Seite. Geprüft wird deshalb über dem Umbruchpunkt. */
+    await seite.setViewportSize({ width: 1500, height: 900 });
     await seite.waitForTimeout(900);
     const lage = await seite.evaluate(() => {
       const l = document.querySelector('.leiste-links').getBoundingClientRect();
@@ -146,7 +145,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       return {
         links: Math.round(l.width), rechts: Math.round(r.width), buehne: Math.round(b.width),
         linksSteht: Math.round(l.left) === 0,
-        rechtsSteht: Math.round(r.right) <= 945,
+        rechtsSteht: Math.round(r.right) <= 1501,
       };
     });
     await seite.setViewportSize({ width: 1500, height: 950 });
@@ -189,8 +188,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     });
     if (stand.kopfGrund !== REG.chrome900) throw new Error(`Kopf ist ${stand.kopfGrund}`);
     if (stand.kopfHoehe !== REG.kopf) throw new Error(`Kopf ist ${stand.kopfHoehe} px`);
+    void 0;
     if (stand.knopf !== REG.akzent) throw new Error(`„Datei öffnen" ist ${stand.knopf}`);
-    if (!/Plex Serif/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
+    if (!/Plex/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
     if (!stand.ablage) throw new Error('keine Ablegefläche');
     if (!/DOCX/.test(stand.formate)) throw new Error(`Formate: ${stand.formate}`);
     await ladeBeispiel();
@@ -373,7 +373,10 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       return { voll: voll.backgroundColor, vollText: voll.color, chromeText: chrome.color };
     });
     if (stand.voll !== REG.akzent) throw new Error(`Sichern ist ${stand.voll}`);
-    if (stand.vollText !== REG.chromeText) throw new Error(`Schrift ist ${stand.vollText}`);
+    /* Zwei verschiedene Schriftfarben, und das ist richtig so: auf dem
+       Akzent steht --tally-text, auf der Chrome --chrome-text. Beide kippen
+       mit der Fassung, deshalb kann keine zu schwach werden. */
+    if (stand.vollText !== 'rgb(250, 250, 248)') throw new Error(`Schrift auf dem Akzent ist ${stand.vollText}`);
     if (stand.chromeText !== REG.chromeText) throw new Error(`Einstellungen ist ${stand.chromeText}`);
     return `Sichern ${stand.voll}`;
   });
@@ -399,30 +402,49 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (stand.hoehen.some((h) => h !== REG.werkzeuge - 1)) {
       throw new Error(`Höhen ${stand.hoehen.join('/')} statt ${REG.werkzeuge - 1}`);
     }
+    void 0;
     if (stand.trenner < 4) throw new Error(`nur ${stand.trenner} Gruppentrenner`);
     return `${stand.worte.length} Knöpfe: ${stand.worte.join(' · ')}`;
   });
 
-  await pruefe('Es gibt keine Radien — ausnahmslos', async () => {
-    /* Registratur hat keine gerundeten Ecken. Nicht „kleine": keine. Diese
-       Prüfung ist die Sperre dagegen, dass sich einer zurückschleicht — ein 4
-       hier, ein 6 dort, und nach drei Runden ist die Richtung weg, ohne dass
-       jemand eine Entscheidung getroffen hätte. */
-    const rund = await seite.evaluate(() => {
+  await pruefe('Radien nur dort, wo etwas bedienbar ist — Papier bleibt eckig', async () => {
+    /* „Registratur" kannte keine Radien. „Vorgang" ist eine Web-App und hat
+       welche — aber nur drei Werte, und nur an Dingen, die man bedient.
+       Das Blatt und die Leisten bleiben eckig: ein Blatt ist ein Blatt, und
+       eine Leiste, die am Fensterrand klebt, bekäme sonst einen Spalt. */
+    const ERLAUBT = [0, 6, 10, 999];
+    const daneben = await seite.evaluate((erlaubt) => {
       const raus = [];
       for (const k of document.querySelectorAll('#huelle *')) {
-        const werte = getComputedStyle(k).borderRadius.split(/[\s/]+/).filter(Boolean);
-        if (werte.some((w) => parseFloat(w) > 0)) {
-          raus.push(`${k.className || k.tagName}:${getComputedStyle(k).borderRadius}`);
+        for (const wert of getComputedStyle(k).borderRadius.split(/[\s/]+/).filter(Boolean)) {
+          const px = parseFloat(wert);
+          if (!Number.isFinite(px)) continue;
+          if (!erlaubt.includes(Math.round(px)) && Math.round(px) < 100) {
+            raus.push(`${k.className || k.tagName}:${wert}`);
+            break;
+          }
         }
       }
       return [...new Set(raus)].slice(0, 8);
+    }, ERLAUBT);
+    if (daneben.length) throw new Error(`außerhalb der Staffel: ${daneben.join(', ')}`);
+
+    const eckig = await seite.evaluate(() => {
+      const muss = ['.blatt', '.blatt canvas', '.kopf', '.leiste-links', '.leiste-rechts', '#buehne'];
+      const falsch = [];
+      for (const wahl of muss) {
+        for (const k of document.querySelectorAll(wahl)) {
+          const r = getComputedStyle(k).borderRadius;
+          if (parseFloat(r) > 0) falsch.push(`${wahl}:${r}`);
+        }
+      }
+      return falsch;
     });
-    if (rund.length) throw new Error(`gerundet: ${rund.join(', ')}`);
-    return 'kein einziger Radius im ganzen Fenster';
+    if (eckig.length) throw new Error(`sollte eckig sein: ${eckig.join(', ')}`);
+    return 'Staffel 0/6/10 eingehalten, Papier und Leisten eckig';
   });
 
-  await pruefe('Der Dialog hat den dunklen Kopf aus dem Handoff', async () => {
+  await pruefe('Der Dialog trägt den Kopf der Richtung', async () => {
     await seite.evaluate(() => window.studio.fuehreAus('einstellungen'));
     await seite.waitForTimeout(400);
     const stand = await seite.evaluate(() => {
@@ -440,7 +462,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (stand.grund !== REG.chrome900) throw new Error(`Kopf ist ${stand.grund}`);
     if (stand.hoehe !== 34) throw new Error(`Kopf ist ${stand.hoehe} px statt 34`);
     if (!/Plex Mono/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
-    if (stand.radius !== '0px') throw new Error(`Ecken ${stand.radius} statt 0`);
+    if (stand.radius !== '10px') throw new Error(`Ecken ${stand.radius} statt 10`);
     if (!stand.hinweis) throw new Error('kein Hinweis im Fuß');
     if (!/FASSUNG/.test(stand.fassung)) throw new Error('keine Fassung unter den Kategorien');
     await seite.keyboard.press('Escape');
@@ -466,7 +488,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       };
     });
     if (!zeilen.untereinander) throw new Error('die Zeilen stehen nebeneinander');
-    if (zeilen.hoehe !== 22) throw new Error(`Zeile ${zeilen.hoehe} px statt 22`);
+    if (zeilen.hoehe !== 44) throw new Error(`Zeile ${zeilen.hoehe} px statt 44`);
     if (zeilen.karte) throw new Error('in der Zeilenansicht steht noch eine Karte');
     if (!/Gliederung/.test(zeilen.kopf)) throw new Error(`kein Spaltenkopf: „${zeilen.kopf}"`);
     if (zeilen.nummer !== '1') throw new Error(`Nummer „${zeilen.nummer}"`);
@@ -490,7 +512,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (bilder.hoehe !== 112) throw new Error(`Karte ${bilder.hoehe} px statt 112`);
     if (bilder.gemerkt !== 'miniaturen') throw new Error('die Wahl wird nicht gemerkt');
     if (!bilder.wiederZeilen) throw new Error('der Weg zurück zu den Zeilen fehlt');
-    return `22-px-Zeilen mit „${zeilen.nummer} ${zeilen.titel}", Miniaturen auf Wunsch (112 px)`;
+    return `44-px-Zeilen mit „${zeilen.nummer} ${zeilen.titel}", Miniaturen auf Wunsch (112 px)`;
   });
 
   await pruefe('Die drei Ansichten stehen als Gruppe in der Zeile', async () => {

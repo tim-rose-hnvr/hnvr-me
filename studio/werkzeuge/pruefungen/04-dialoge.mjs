@@ -168,7 +168,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
     return `${kategorien.length} Kategorien, Schalter und Wahl greifen`;
   });
 
-  await pruefe('Die Gestaltung folgt dem Handoff', async () => {
+  await pruefe('Die Gestaltung folgt der Richtung', async () => {
     const werte = await seite.evaluate(() => {
       const wurzel = getComputedStyle(document.documentElement);
       return {
@@ -178,19 +178,18 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
         papier: getComputedStyle(document.querySelector('.blatt')).backgroundColor,
         radius: getComputedStyle(document.querySelector('.knopf')).borderRadius,
         schrift: getComputedStyle(document.body).fontFamily,
-        plex: document.fonts.check('12px "IBM Plex Sans Condensed"') && document.fonts.check('12px "IBM Plex Mono"'),
+        plex: document.fonts.check('12px "IBM Plex Sans"') && document.fonts.check('12px "IBM Plex Mono"'),
       };
     });
-    if (werte.akzent.toLowerCase() !== '#3e5c96') throw new Error(`Akzent ${werte.akzent}`);
-    if (werte.chrome !== 'rgb(33, 39, 44)') throw new Error(`Chrome ${werte.chrome}`);
-    if (werte.buehne !== 'rgb(46, 51, 56)') throw new Error(`Bühne ${werte.buehne}`);
-    if (werte.papier !== 'rgb(253, 252, 249)') throw new Error(`Papier ${werte.papier}`);
-    /* Registratur kennt keine Radien. Nicht „kleine": keine. Diese Zeile ist
-       die Sperre dagegen, dass sich einer zurückschleicht. */
-    if (werte.radius !== '0px') throw new Error(`Knopfradius ${werte.radius} statt 0`);
-    if (!werte.schrift.includes('IBM Plex Sans Condensed')) throw new Error(`Schrift ${werte.schrift}`);
+    if (werte.akzent.toLowerCase() !== '#16181a') throw new Error(`Akzent ${werte.akzent}`);
+    if (werte.chrome !== 'rgb(250, 250, 248)') throw new Error(`Chrome ${werte.chrome}`);
+    if (werte.buehne !== 'rgb(237, 237, 233)') throw new Error(`Bühne ${werte.buehne}`);
+    if (werte.papier !== 'rgb(255, 255, 255)') throw new Error(`Papier ${werte.papier}`);
+    /* „Vorgang" hat Radien — aber nur drei Werte, und nur an Bedienbarem. */
+    if (werte.radius !== '6px') throw new Error(`Knopfradius ${werte.radius} statt 6`);
+    if (!werte.schrift.includes('IBM Plex Sans')) throw new Error(`Schrift ${werte.schrift}`);
     if (!werte.plex) throw new Error('IBM Plex wurde nicht geladen');
-    return 'Akzent, Chrome, Bühne, Papier, kein Radius, IBM Plex geladen';
+    return 'Akzent, Chrome, Bühne, Papier, Radius 6, IBM Plex geladen';
   });
 
   await pruefe('Die Schriften kommen von hier, nicht aus dem Netz', async () => {
@@ -279,29 +278,28 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
     return befunde.join(', ');
   });
 
-  await pruefe('Auch auf dem Telefon klappt jedes Menü sichtbar auf', async () => {
+  await pruefe('Auf dem Telefon bleibt das Befehlsfeld erreichbar und im Fenster', async () => {
+    /* Früher stand hier, dass jedes der acht Menüs auf 402 px sichtbar
+       aufklappt. Die Menüleiste gibt es nicht mehr; geprüft wird jetzt, dass
+       ihr Ersatz auf demselben Gerät trägt. */
     await seite.setViewportSize({ width: 402, height: 874 });
     await seite.waitForTimeout(900);
-    const geprueft = [];
-    for (const i of [0, 4, 7]) {
-      await seite.locator('#menueleiste .menue-knopf').nth(i).click();
-      await seite.waitForTimeout(250);
-      const lage = await seite.evaluate(() => {
-        const liste = document.querySelector('.menue.ist-offen .menue-liste');
-        if (!liste || liste.hidden) return null;
-        const k = liste.getBoundingClientRect();
-        const oben = document.elementFromPoint(k.x + 10, k.y + 10);
-        return { links: Math.round(k.x), rechts: Math.round(k.right), traegt: !!oben?.closest('.menue-liste') };
-      });
-      if (!lage) throw new Error(`Menü ${i} bleibt zu`);
-      if (!lage.traegt) throw new Error(`Menü ${i} ist verdeckt`);
-      if (lage.links < 0 || lage.rechts > 402) throw new Error(`Menü ${i} ragt hinaus (${lage.links}…${lage.rechts})`);
-      geprueft.push(`${i}: ${lage.links}…${lage.rechts}`);
-      await seite.keyboard.press('Escape');
-      await seite.waitForTimeout(150);
-    }
+    await seite.click('#knopf-befehle');
+    await seite.waitForTimeout(350);
+    const lage = await seite.evaluate(() => {
+      const p2 = document.querySelector('.dialog');
+      if (!p2 || p2.hidden) return null;
+      const k = p2.getBoundingClientRect();
+      const oben = document.elementFromPoint(k.x + 10, k.y + 10);
+      return { links: Math.round(k.x), rechts: Math.round(k.right),
+        breite: Math.round(k.width), traegt: !!oben?.closest('.dialog') };
+    });
+    await seite.keyboard.press('Escape');
     await seite.setViewportSize({ width: 1500, height: 950 });
     await seite.waitForTimeout(900);
-    return geprueft.join(' · ');
+    if (!lage) throw new Error('das Befehlsfeld öffnet nicht');
+    if (!lage.traegt) throw new Error('das Befehlsfeld ist verdeckt');
+    if (lage.links < 0 || lage.rechts > 402) throw new Error(`ragt hinaus (${lage.links}…${lage.rechts})`);
+    return `${lage.breite} px breit, ganz im Fenster`;
   });
 }

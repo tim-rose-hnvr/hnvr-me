@@ -183,8 +183,11 @@ export default async function ({ pruefe, seite, browser, BASIS, ladeBeispiel }) 
     const stil = await seite.evaluate(async () => (await fetch('app/stil.css')).text());
     const stellen = (stil.match(/env\(safe-area-inset-/g) || []).length;
     if (stellen < 3) throw new Error(`nur ${stellen} Stellen mit safe-area`);
-    if (!/grid-template-rows:[^;]*safe-area-inset-bottom/s.test(stil)) {
-      throw new Error('die Fußzeile rechnet den Streifen nicht in ihre Rasterzeile');
+    /* Die Fußzeile ist keine Rasterzeile mehr, sondern ein schwebendes
+       Bedienteil über der Bühne. Den Gestenstreifen muss sie trotzdem
+       mitrechnen — jetzt in ihrem Abstand nach unten, nicht in der Zeile. */
+    if (!/\.fuss\s*\{[^}]*bottom:[^;]*safe-area-inset-bottom/s.test(stil)) {
+      throw new Error('das schwebende Bedienteil rechnet den Gestenstreifen nicht mit');
     }
     return `${stellen} Stellen, Fußzeile rechnet ihn mit`;
   });

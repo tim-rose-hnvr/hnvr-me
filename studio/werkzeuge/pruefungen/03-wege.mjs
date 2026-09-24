@@ -127,22 +127,34 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, ladungVon, 
     return `${befehle} Befehle, ${anzahl} Menueeintraege`;
   });
 
-  await pruefe('Menue klappt sichtbar auf und wird nicht beschnitten', async () => {
-    await seite.click('#menueleiste .menue-knopf >> nth=2');
-    const lage = await seite.evaluate(() => {
-      const liste = document.querySelector('.menue.ist-offen .menue-liste');
-      if (!liste || liste.hidden) return null;
-      const kasten = liste.getBoundingClientRect();
-      /* Nicht nur "im DOM": an einem Punkt der Liste muss die Liste auch das
-         oberste Element sein. Frueher schnitt die Leiste sie auf 2rem ab. */
-      const oben = document.elementFromPoint(kasten.x + 20, kasten.y + 12);
-      return { hoehe: Math.round(kasten.height), traegt: !!oben?.closest('.menue-liste') };
+  await pruefe('Ohne Menüleiste bleibt jeder Befehl erreichbar', async () => {
+    /* Die Menüleiste mit acht Wörtern ist weg — das war Desktop-Erbe, kein
+       Web. Ihre Aufgabe hat das Befehlsfeld übernommen. Diese Prüfung hält
+       fest, dass dabei nichts verlorenging: die Leiste ist wirklich fort,
+       und die Befehle sind wirklich da. */
+    const leiste = await seite.evaluate(() => {
+      const m = document.querySelector('#menueleiste');
+      return m ? getComputedStyle(m).display : 'fehlt';
     });
-    if (!lage) throw new Error('Liste bleibt zu');
-    if (!lage.traegt) throw new Error('Liste ist verdeckt oder beschnitten');
-    if (lage.hoehe < 100) throw new Error(`nur ${lage.hoehe} px hoch`);
+    if (leiste !== 'none' && leiste !== 'fehlt') throw new Error(`Menüleiste steht noch: ${leiste}`);
+
+    await seite.click('#knopf-befehle');
+    await seite.waitForTimeout(300);
+    const stand = await seite.evaluate(async () => {
+      const feld = document.querySelector('.dialog input');
+      if (!feld) return null;
+      feld.value = 'dreh';
+      feld.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise((l) => setTimeout(l, 250));
+      const treffer = [...document.querySelectorAll('.palette-treffer')]
+        .map((k) => k.textContent.trim()).filter(Boolean);
+      return { treffer: treffer.slice(0, 5), anzahl: treffer.length };
+    });
     await seite.keyboard.press('Escape');
-    return `${lage.hoehe} px hoch, oben auf`;
+    await seite.waitForTimeout(200);
+    if (!stand) throw new Error('das Befehlsfeld öffnet kein Eingabefeld');
+    if (!stand.anzahl) throw new Error('„dreh" findet keinen Befehl');
+    return `Menüleiste fort, „dreh" findet ${stand.anzahl}: ${stand.treffer[0]}`;
   });
 
   await pruefe('Rueckgaengig-Knopf im Kopf folgt der Historie', async () => {

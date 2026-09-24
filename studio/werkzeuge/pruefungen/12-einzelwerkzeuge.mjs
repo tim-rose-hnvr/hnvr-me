@@ -12,8 +12,91 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-export default async function ({ pruefe, seite, browser, BASIS, ladungVon, WURZEL }) {
+export default async function ({ pruefe, seite, browser, BASIS, ladungVon, WURZEL, ladeBeispiel }) {
   console.log('\n== Einzelwerkzeuge ==');
+
+  await pruefe('Die Vorgangsschiene rechnet mit dem Dokument, nicht mit Vorräten', async () => {
+    /* Sie beantwortet nicht „was kann ich tun", sondern „was steht noch an".
+       Deshalb müssen die Zahlen aus dem Dokument kommen: Seitenzahl,
+       gefundene personenbezogene Angaben, Stand der Formularfelder. Eine
+       erfundene Zahl wäre schlimmer als keine. */
+    await ladeBeispiel();
+    await seite.waitForTimeout(1400);
+    const stand = await seite.evaluate(() => {
+      const zeilen = [...document.querySelectorAll('.schritt')].map((k) => ({
+        wort: k.querySelector('.schritt-wort').textContent,
+        stand: k.querySelector('.schritt-stand')?.textContent || '',
+        art: [...k.classList].find((c) => c.startsWith('ist-') && c !== 'ist-aktiv') || '',
+      }));
+      return {
+        zeilen,
+        seiten: window.studio.zustand.folge.length,
+        felder: window.studio.zustand.formularfelder.length,
+      };
+    });
+    const worte = stand.zeilen.map((z) => z.wort);
+    for (const soll of ['Lesen', 'Prüfen', 'Schwärzen', 'Ausfüllen', 'Unterschreiben', 'Ausgeben']) {
+      if (!worte.includes(soll)) throw new Error(`Schritt „${soll}" fehlt — da steht: ${worte.join(', ')}`);
+    }
+    const lesen = stand.zeilen.find((z) => z.wort === 'Lesen');
+    if (lesen.stand !== `${stand.seiten} S.`) {
+      throw new Error(`„Lesen" sagt „${lesen.stand}", das Dokument hat ${stand.seiten} Seiten`);
+    }
+    const ausfuellen = stand.zeilen.find((z) => z.wort === 'Ausfüllen');
+    if (stand.felder && !new RegExp(`von ${stand.felder}$`).test(ausfuellen.stand)) {
+      throw new Error(`„Ausfüllen" sagt „${ausfuellen.stand}", es gibt ${stand.felder} Felder`);
+    }
+    /* Und das Gegenstück: ein Schritt ohne Grund im Dokument zeigt keine Zahl. */
+    const warten = stand.zeilen.filter((z) => z.art === 'ist-wartet' || z.art === 'ist-nichts');
+    if (warten.some((z) => z.stand)) throw new Error('ein wartender Schritt zeigt eine Zahl');
+    return stand.zeilen.map((z) => `${z.wort}${z.stand ? ' ' + z.stand : ''}`).join(' · ');
+  });
+
+  await pruefe('Die Werkzeugblase erscheint an der Auswahl — und nur dort', async () => {
+    /* Der Unterschied zur Werkzeugzeile: die bot fünfzehn Werkzeuge auf
+       Vorrat an, ohne zu wissen, ob eines davon gerade passt. Die Blase
+       erscheint erst, wenn es etwas gibt, worauf sie sich bezieht. */
+    const vorher = await seite.evaluate(() => {
+      const b = document.querySelector('#werkzeugblase');
+      return b ? b.hidden : null;
+    });
+    if (vorher === null) throw new Error('es gibt keine Werkzeugblase');
+    if (vorher !== true) throw new Error('die Blase steht da, ohne dass etwas gewählt ist');
+
+    const lage = await seite.evaluate(() => {
+      const spans = [...document.querySelectorAll('.blatt .textebene span')];
+      const a = spans[6], b = spans[9];
+      if (!a || !b) return { fehler: `nur ${spans.length} Textstellen` };
+      const r = document.createRange();
+      r.setStart(a.firstChild || a, 0);
+      r.setEnd(b.firstChild || b, (b.textContent || '').length);
+      const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      document.dispatchEvent(new Event('selectionchange'));
+      const blase = document.querySelector('#werkzeugblase');
+      const k = blase.getBoundingClientRect();
+      const aus = r.getBoundingClientRect();
+      return {
+        versteckt: blase.hidden,
+        knoepfe: [...blase.children].map((x) => x.textContent),
+        imFenster: k.left >= 0 && k.right <= window.innerWidth,
+        ueberDerAuswahl: k.bottom <= aus.top + 1 || k.top >= aus.bottom - 1,
+      };
+    });
+    if (lage.fehler) throw new Error(lage.fehler);
+    if (lage.versteckt) throw new Error('die Blase bleibt verborgen, obwohl Text gewählt ist');
+    if (!lage.imFenster) throw new Error('die Blase ragt aus dem Fenster');
+    if (!lage.ueberDerAuswahl) throw new Error('die Blase liegt auf der Auswahl statt daneben');
+    for (const soll of ['Markieren', 'Schwärzen']) {
+      if (!lage.knoepfe.includes(soll)) throw new Error(`„${soll}" fehlt — da steht: ${lage.knoepfe.join(', ')}`);
+    }
+    /* Escape räumt sie weg, ohne etwas anzustellen. */
+    await seite.keyboard.press('Escape');
+    await seite.waitForTimeout(200);
+    const danach = await seite.evaluate(() => document.querySelector('#werkzeugblase').hidden);
+    if (!danach) throw new Error('Escape schließt die Blase nicht');
+    await seite.evaluate(() => window.getSelection().removeAllRanges());
+    return `${lage.knoepfe.length} Taten: ${lage.knoepfe.join(' · ')}`;
+  });
 
   const beispiel = join(WURZEL, 'beispiel', 'beispiel.pdf');
   const flach = join(WURZEL, 'beispiel', 'flachformular.pdf');

@@ -719,6 +719,82 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .formularfeld:focus { outline: 2px solid var(--papier-akzent); background: var(--papier); }
 .formularfeld[type="checkbox"] { width: auto; height: auto; }
 
+/* ---------- Vorgangsschiene und Werkzeugblase ----------------------------
+   Die Schiene beantwortet nicht „was kann ich tun", sondern „was steht noch
+   an". Sechs Zeilen, jede mit ihrem Stand. Die Blase erscheint an einer
+   Textauswahl und bietet an, was mit dieser Auswahl geht — statt fünfzehn
+   Werkzeugen auf Vorrat. */
+.vorgangsschiene {
+  display: flex; flex-direction: column; flex: none;
+  padding: var(--raum-4) var(--raum-3) var(--raum-3);
+  border-bottom: 1px solid var(--linie);
+}
+.schienenkopf {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 0 var(--raum-4) var(--raum-3);
+}
+.schienenkopf-wort {
+  font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .8px;
+  text-transform: uppercase; color: var(--tinte-leise);
+}
+.schienenkopf-zahl {
+  font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .8px;
+  text-transform: uppercase; color: var(--tinte-still);
+}
+.schritt {
+  display: flex; align-items: center; gap: var(--raum-6);
+  height: var(--zeile); padding: 0 var(--raum-4);
+  border: 0; background: transparent; cursor: pointer;
+  border-radius: var(--radius-klein);
+  color: var(--tinte); font: inherit; font-size: var(--satz-grund);
+  text-align: left; width: 100%;
+}
+.schritt:hover { background: var(--flaeche-tief); }
+.schritt.ist-aktiv { background: var(--tally-grund); font-weight: 500; }
+.schritt-punkt {
+  width: 8px; height: 8px; flex: none; border-radius: var(--radius-voll);
+  background: var(--linie-stark);
+}
+.schritt.ist-erledigt .schritt-punkt { background: var(--gut); }
+.schritt.ist-offen .schritt-punkt { background: var(--warn); }
+.schritt.ist-laeuft .schritt-punkt { background: var(--tinte-still); }
+.schritt.ist-aktiv .schritt-punkt { background: var(--tally); }
+.schritt.ist-wartet, .schritt.ist-nichts { color: var(--tinte-still); }
+.schritt.ist-wartet .schritt-punkt, .schritt.ist-nichts .schritt-punkt {
+  background: transparent; box-shadow: inset 0 0 0 1px var(--linie-stark);
+}
+.schritt-wort { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.schritt-stand {
+  font-family: var(--mono); font-size: var(--satz-etikett); letter-spacing: .6px;
+  text-transform: uppercase; flex: none;
+  padding: var(--raum-1) var(--raum-4); border-radius: var(--radius-voll);
+  color: var(--tinte-still);
+}
+.schritt.ist-offen .schritt-stand { background: var(--warn-grund); color: var(--warn); }
+.schritt.ist-erledigt .schritt-stand { background: var(--gut-grund); color: var(--gut); }
+
+/* Sie liegt wirklich über der Seite — hier ist ein Schatten am Platz. */
+.werkzeugblase {
+  position: fixed; z-index: 60;
+  display: flex; align-items: center; gap: var(--raum-1);
+  padding: var(--raum-3) var(--raum-3);
+  background: var(--flaeche);
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius-gross);
+  box-shadow: var(--schatten-tafel);
+}
+.werkzeugblase[hidden] { display: none; }
+.blasen-knopf {
+  border: 0; background: transparent; cursor: pointer;
+  padding: var(--raum-3) var(--raum-5);
+  border-radius: var(--radius-klein);
+  font: inherit; font-size: var(--satz-bedien); color: var(--tinte);
+  white-space: nowrap;
+}
+.blasen-knopf:hover { background: var(--flaeche-tief); }
+.blasen-knopf.ist-gefahr { color: var(--gefahr); }
+.blasen-knopf.ist-gefahr:hover { background: var(--gefahr-grund); }
+
 /* ---------- Miniaturen -------------------------------------------------- */
 /* Handoff: eine Spalte, Karte 112 px hoch auf Papierfarbe mit 1 px Rahmen,
    aktiv Akzentrahmen plus 1-px-Ring; darunter eine Zeile mit Mono-Seitenzahl,

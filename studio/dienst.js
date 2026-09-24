@@ -47,7 +47,7 @@ const KERN = [
   'app/mitdenken.js', 'app/oberflaeche.js', 'app/ordnen.js', 'app/powerpoint.js',
   'app/schutz.js',
   'app/seiten.js', 'app/signieren.js', 'app/stapel.js', 'app/suche.js',
-  'app/tafeln.js', 'app/texterkennung.js', 'app/unterschrift.js',
+  'app/tafeln.js', 'app/vorgang.js', 'app/texterkennung.js', 'app/unterschrift.js',
   'app/vergleich.js', 'app/word.js', 'app/zip.js',
   'fremd/pdf.mjs', 'fremd/pdf.worker.mjs', 'fremd/pdf-lib.mjs',
   'fremd/schrift/plex-sans-cond-400.woff2', 'fremd/schrift/plex-sans-cond-500.woff2',

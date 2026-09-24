@@ -111,24 +111,44 @@ export default async function ({ pruefe, seite, browser, BASIS, ladeBeispiel }) 
   });
 
   await pruefe('Aufklapper sagen, ob sie offen sind — und Escape schließt sie', async () => {
+    /* Der Aufklapper war der Knopf „Mehr" der Werkzeugzeile. Die Zeile ist
+       aufgelöst; jetzt ist jeder Schritt des Vorgangs der Aufklapper: er trägt
+       seine Werkzeuge unter sich, sagt über aria-expanded, ob sie offen sind,
+       und gibt den Fokus nach Escape dorthin zurück, wo er herkam. */
     await seite.evaluate(() => document.querySelector('.reiter-knopf[data-tafel="miniaturen"]').click());
-    const zu = await seite.evaluate(() =>
-      [...document.querySelectorAll('.werkzeug')].find((k) => /Mehr|Bereich|Stempel/.test(k.textContent))?.getAttribute('aria-expanded'));
-    await seite.evaluate(() =>
-      [...document.querySelectorAll('.werkzeug')].find((k) => /Mehr|Bereich|Stempel/.test(k.textContent)).click());
-    await seite.waitForSelector('#weitere-werkzeuge');
-    const auf = await seite.evaluate(() =>
-      [...document.querySelectorAll('.werkzeug')].find((k) => k.getAttribute('aria-expanded') === 'true') ? 'true' : 'false');
+    const zu = await seite.evaluate(() => {
+      const offen = document.querySelector('.schritt[aria-expanded="true"]');
+      if (offen) offen.click();
+      const schritt = [...document.querySelectorAll('.schritt')].find((k) => /Prüfen/.test(k.textContent));
+      return schritt.getAttribute('aria-expanded');
+    });
+    const auf = await seite.evaluate(async () => {
+      const schritt = [...document.querySelectorAll('.schritt')].find((k) => /Prüfen/.test(k.textContent));
+      schritt.click();
+      await new Promise((l) => setTimeout(l, 250));
+      const jetzt = [...document.querySelectorAll('.schritt')].find((k) => /Prüfen/.test(k.textContent));
+      jetzt.focus();
+      return {
+        gemeldet: jetzt.getAttribute('aria-expanded'),
+        kasten: !!document.querySelector(`#${jetzt.getAttribute('aria-controls')}`),
+      };
+    });
     await seite.keyboard.press('Escape');
     await seite.waitForTimeout(250);
-    const danach = await seite.evaluate(() => ({
-      liste: !!document.querySelector('#weitere-werkzeuge'),
-      fokusAufKnopf: document.activeElement?.classList.contains('werkzeug'),
-    }));
+    const danach = await seite.evaluate(() => {
+      const schritt = [...document.querySelectorAll('.schritt')].find((k) => /Prüfen/.test(k.textContent));
+      return {
+        gemeldet: schritt.getAttribute('aria-expanded'),
+        werkzeuge: document.querySelectorAll('.schritt-werkzeug').length,
+        fokusAufSchritt: document.activeElement?.classList.contains('schritt'),
+      };
+    });
     if (zu !== 'false') throw new Error(`geschlossen meldet aria-expanded=${zu}`);
-    if (auf !== 'true') throw new Error('offen meldet kein aria-expanded=true');
-    if (danach.liste) throw new Error('Escape hat die Liste nicht geschlossen');
-    if (!danach.fokusAufKnopf) throw new Error('nach Escape steht der Fokus nicht auf dem Knopf');
+    if (auf.gemeldet !== 'true') throw new Error('offen meldet kein aria-expanded=true');
+    if (!auf.kasten) throw new Error('aria-controls zeigt auf nichts');
+    if (danach.gemeldet !== 'false') throw new Error('nach Escape meldet der Schritt weiter offen');
+    if (danach.werkzeuge) throw new Error('Escape hat die Werkzeuge nicht geschlossen');
+    if (!danach.fokusAufSchritt) throw new Error('nach Escape steht der Fokus nicht auf dem Schritt');
     return 'false → true → Escape → false, Fokus zurück';
   });
 

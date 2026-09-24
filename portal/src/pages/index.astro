@@ -56,23 +56,38 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         </div>
       </div>
 
-      <!-- Das Fenster aus dem Handoff: Titelzeile mit drei Punkten und
-           Dateinamen, darunter drei Spalten — Seitenleiste, Dokument auf der
-           Bühnenfarbe, Kommentare. Es zeigt die Anwendung, nicht eine Liste
-           ihrer Werkzeugnamen: wer sich fragt, wie das aussieht, bekommt hier
-           die Antwort und nicht das Inhaltsverzeichnis. -->
+      <!-- Das Fenster: ein Kopf, darunter drei Spalten — der Vorgang, das
+           Dokument auf der Bühnenfarbe, die Kommentare. Es zeigt die
+           Anwendung, nicht eine Liste ihrer Werkzeugnamen: wer sich fragt, wie
+           das aussieht, bekommt hier die Antwort und nicht das
+           Inhaltsverzeichnis.
+
+           Vorher stand hier ein dunkler Rahmen mit drei Ampelpunkten und eine
+           Spalte Seitenminiaturen. Beides gibt es in der Anwendung nicht mehr:
+           die Chrome ist hell, und links steht der Vorgang. -->
       <div>
-      <div class="fenster" role="img" aria-label="Das Studio mit Seitenleiste, Dokument und Kommentaren">
+      <div class="fenster" role="img" aria-label="Das Studio: links der Vorgang mit seinen sechs Schritten, in der Mitte das Dokument, rechts die Kommentare">
         <div class="fenster-kopf">
-          <i class="ampel"></i><i class="ampel"></i><i class="ampel"></i>
-          <span class="fenster-titel">Vertragsentwurf.pdf — PDF Studio</span>
+          <span class="fenster-marke">PDF Studio</span>
+          <span class="fenster-reiter">Vertragsentwurf.pdf <b>5 S.</b></span>
+          <span class="fenster-kopfrechts"><i class="fenster-chip">Befehle</i><i class="fenster-chip ist-voll">Sichern</i></span>
         </div>
         <div class="fenster-rumpf">
-          <div class="fenster-seiten">
-            <div class="mini"><i style="width:62%"></i><i></i><i style="width:88%"></i><i style="width:94%"></i></div>
-            <div class="mini ist-aktiv"><i style="width:54%"></i><i></i><i style="width:92%"></i><i style="width:70%"></i></div>
-            <div class="mini"><i style="width:58%"></i><i></i><i style="width:86%"></i><i style="width:96%"></i></div>
-            <div class="mini"><i style="width:48%"></i><i></i><i style="width:90%"></i><i style="width:64%"></i></div>
+          <!-- Die linke Spalte ist nicht mehr eine Liste von Seiten, sondern
+               der Vorgang: was erledigt ist, was offen, was noch wartet. Genau
+               das ist der Unterschied zur alten Fassung — und damit das
+               Einzige, was ein Bild hier zeigen muss. -->
+          <div class="fenster-vorgang">
+            <span class="fv-kopf">Vorgang <b>1 von 6</b></span>
+            <span class="fv-schritt ist-gut"><i></i>Lesen<b>5 S.</b></span>
+            <span class="fv-schritt ist-aktiv"><i></i>Prüfen<b>8</b></span>
+            <span class="fv-taten">
+              <i>Texterkennung (OCR)</i><i class="ist-an">Markieren</i><i>Kommentar</i>
+            </span>
+            <span class="fv-schritt ist-warn"><i></i>Schwärzen<b>6</b></span>
+            <span class="fv-schritt ist-warn"><i></i>Ausfüllen<b>2 von 10</b></span>
+            <span class="fv-schritt ist-still"><i></i>Unterschreiben</span>
+            <span class="fv-schritt ist-still"><i></i>Ausgeben</span>
           </div>
           <div class="fenster-buehne">
             <div class="fenster-blatt">
@@ -105,7 +120,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
         </div>
       </div>
       <p class="fenster-bildzeile">
-        Seitenleiste · Dokument · Kommentare — <a href="/studio/index.html">die laufende Anwendung öffnen</a>
+        Vorgang · Dokument · Kommentare — <a href="/studio/index.html">die laufende Anwendung öffnen</a>
       </p>
       </div>
     </div>
@@ -580,7 +595,7 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           einer prüft, was am Ende in der Datei steht, der andere, ob sich alles
           bedienen lässt. Der dritte holt jede ausgelieferte Datei von der
           veröffentlichten Adresse und vergleicht die Prüfsumme. Zusammen
-          <b>348 Prüfungen</b>. Alle schlagen auch dann fehl, wenn in der
+          <b>354 Prüfungen</b>. Alle schlagen auch dann fehl, wenn in der
           Browserkonsole ein einziger Fehler steht.
         </p>
         <div class="punkte">
@@ -595,9 +610,9 @@ import Grundgeruest from '../layouts/Grundgeruest.astro';
           <div class="vt-uns">PRÜFUNGEN</div>
           <div class="vt-die">OFFEN</div>
         </div>
-        <div class="vt-zeile"><div>Ergebnis in der Datei</div><div class="vt-uns">128</div><div class="vt-die">0</div></div>
-        <div class="vt-zeile"><div>Bedienung und Gestaltung</div><div class="vt-uns">107</div><div class="vt-die">0</div></div>
-        <div class="vt-zeile"><div>Veröffentlichte Seite</div><div class="vt-uns">31</div><div class="vt-die">0</div></div>
+        <div class="vt-zeile"><div>Ergebnis in der Datei</div><div class="vt-uns">134</div><div class="vt-die">0</div></div>
+        <div class="vt-zeile"><div>Bedienung und Gestaltung</div><div class="vt-uns">172</div><div class="vt-die">0</div></div>
+        <div class="vt-zeile"><div>Veröffentlichte Seite</div><div class="vt-uns">48</div><div class="vt-die">0</div></div>
         <div class="vt-zeile"><div>Konsolenfehler</div><div class="vt-uns">0</div><div class="vt-die">0</div></div>
       </div>
     </div>

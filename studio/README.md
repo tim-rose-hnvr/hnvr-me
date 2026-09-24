@@ -768,7 +768,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 166 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 172 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  48 Prüfungen — was der Hoster ausliefert
 ```
@@ -836,12 +836,17 @@ Grundwerten überschrieben, der Primärknopf war weiß statt akzentfarben.
 
 **`live-pruefen.mjs`** fragt: Kommt draußen an, was hier gebaut wurde? Beim
 Hoster entscheiden Dinge, die örtlich nie auffallen — MIME-Typen,
-Verzeichnisregister, Zwischenspeicher. Der Lauf holt jede der 241 Dateien von
+Verzeichnisregister, Zwischenspeicher. Der Lauf holt jede der 261 Dateien von
 der veröffentlichten Adresse und vergleicht die Prüfsumme mit der gebauten
 Fassung; stimmen alle überein, läuft dort dieselbe Anwendung, die die beiden
 anderen Läufe durchgemessen haben. Zusätzlich geprüft: `.wasm` als
 `application/wasm`, die Sprachdaten als `application/gzip`, und dass alle
 Wege in die Anwendung offen sind.
+
+Dieser dritte Lauf ist naturgemäß rot, solange der Stand hier neuer ist als
+der veröffentlichte: er misst nicht das Repository, sondern den Hoster. Er
+wird grün, nachdem `npm run build && npx wix release` im Ordner `portal`
+gelaufen ist — und er ist der einzige Lauf, der nicht ohne Netz auskommt.
 
 Bei einem Fehlschlag legt `vollpruefung.mjs` ein Bildschirmfoto und einen
 Zustandsauszug ab und nennt den Pfad. Beide Browserläufe schlagen auch dann

@@ -69,10 +69,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
      genau. Sie hier nachzumessen ist der einzige Weg, der nicht darauf
      hinausläuft, zwei Bildschirmabzüge nebeneinanderzuhalten. */
   const REG = {
-    kopf: 56, werkzeuge: 40,
+    kopf: 56,
     links: 264, rechts: 320,
     chrome900: 'rgb(250, 250, 248)',
-    werkzeugGrund: 'rgb(246, 246, 243)',
     buehne: 'rgb(237, 237, 233)',
     papier: 'rgb(255, 255, 255)',
     akzent: 'rgb(22, 24, 26)',
@@ -84,7 +83,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     const masse = await seite.evaluate(() => {
       const h = (s) => Math.round(document.querySelector(s).getBoundingClientRect().height);
       const b = (s) => Math.round(document.querySelector(s).getBoundingClientRect().width);
-      return { kopf: h('.kopf'), werkzeuge: h('.werkzeugzeile'),
+      return { kopf: h('.kopf'),
         links: b('.leiste-links'), rechts: b('.leiste-rechts') };
     });
     for (const [name, soll] of Object.entries(REG)) {
@@ -97,13 +96,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
   await pruefe('Die Farben sind die aus dem Handoff', async () => {
     const farben = await seite.evaluate(() => {
       const f = (s) => getComputedStyle(document.querySelector(s)).backgroundColor;
-      return { kopf: f('.kopf'), werkzeuge: f('.werkzeugzeile'),
-        buehne: f('#buehne'), blatt: f('.blatt') };
+      return { kopf: f('.kopf'), buehne: f('#buehne'), blatt: f('.blatt') };
     });
-    const soll = {
-      kopf: REG.chrome900, werkzeuge: REG.werkzeugGrund,
-      buehne: REG.buehne, blatt: REG.papier,
-    };
+    const soll = { kopf: REG.chrome900, buehne: REG.buehne, blatt: REG.papier };
     for (const [name, wert] of Object.entries(soll)) {
       if (farben[name] !== wert) throw new Error(`${name}: ${farben[name]} statt ${wert}`);
     }
@@ -156,16 +151,33 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     return `${REG.links} + ${lage.buehne} + ${REG.rechts}`;
   });
 
-  await pruefe('Die Werkzeugknöpfe tragen die Wörter des Mockups', async () => {
+  await pruefe('Die Werkzeuge tragen die Wörter des Mockups — jetzt in der Schiene', async () => {
     /* Markieren, Kommentar, Redigieren, Signieren — nicht unsere eigenen
-       Wörter. Wer den Entwurf neben die Anwendung legt, soll dasselbe lesen. */
-    const worte = await seite.evaluate(() =>
-      [...document.querySelectorAll('.werkzeugzeile .werkzeug span')].map((k) => k.textContent.trim()));
+       Wörter. Wer den Entwurf neben die Anwendung legt, soll dasselbe lesen.
+
+       Sie standen in der Werkzeugzeile, solange es eine gab. Jetzt steht jedes
+       Werkzeug unter dem Schritt des Vorgangs, zu dem es gehört; die Prüfung
+       klappt deshalb jeden Schritt auf und sammelt ein, was darunter steht. */
+    const worte = await seite.evaluate(async () => {
+      const gesammelt = [];
+      const kennungen = [...document.querySelectorAll('.schritt')].map((k) => k.dataset.schritt);
+      for (const kennung of kennungen) {
+        /* Nur aufklappen, was zu ist — ein zweiter Druck würde den Schritt
+           wieder schließen, und wir bekämen seine Werkzeuge nie zu sehen. */
+        const zeile = document.querySelector(`.schritt[data-schritt="${kennung}"]`);
+        if (zeile.getAttribute('aria-expanded') === 'false') zeile.click();
+        await new Promise((l) => setTimeout(l, 150));
+        gesammelt.push(...[...document.querySelectorAll('.schritt-werkzeug')]
+          .map((k) => k.textContent.trim()));
+      }
+      return gesammelt;
+    });
     for (const wort of ['Auswahl', 'Text', 'Markieren', 'Kommentar', 'Redigieren',
-      'Formularfeld', 'Signieren', 'Seiten', 'Vergleichen', 'Dokument']) {
+      'Formularfeld anlegen', 'Signieren', 'Seiten ordnen']) {
       if (!worte.includes(wort)) throw new Error(`„${wort}" fehlt — da steht: ${worte.join(', ')}`);
     }
-    return worte.slice(0, 7).join(' · ');
+    await ladeBeispiel();
+    return worte.filter((w) => w !== 'Weitere Werkzeuge …').join(' · ');
   });
 
   await pruefe('Der Empfang trägt dieselbe Sprache wie das Programm', async () => {
@@ -381,30 +393,57 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     return `Sichern ${stand.voll}`;
   });
 
-  await pruefe('Jeder Knopf der Werkzeugzeile trägt ein Wort', async () => {
-    /* Das Handoff zeigt neun beschriftete Knöpfe. Ein Sinnbild ohne Wort ist
-       die stille Annahme, jeder wisse schon, was es bedeutet.
+  await pruefe('Rückgängig und Wiederholen stehen im Kopf, nicht im Vorgang', async () => {
+    /* Sie standen in der Werkzeugzeile. Die gibt es nicht mehr, und in die
+       Vorgangsschiene gehören sie nicht: ein Fehler gehört zu keinem Schritt,
+       er gehört zum Dokument. Also in den Kopf, neben „Sichern".
 
-       Ausgenommen sind Rückgängig und Wiederholen (`.werkzeug-schmal`): sie
-       stehen gar nicht im Handoff, sondern sind eine Zutat — und die beiden
-       Pfeile sind die zwei Zeichen, bei denen die Annahme wirklich trägt. */
+       Die beiden sind außerdem die einzigen Knöpfe ohne Wort, die bleiben
+       durften — zwei Pfeile sind das einzige Zeichenpaar, bei dem die stille
+       Annahme wirklich trägt. */
     const stand = await seite.evaluate(() => {
-      const knoepfe = [...document.querySelectorAll('.werkzeugzeile .werkzeug:not(.werkzeug-schmal)')];
+      const feld = document.querySelector('#kopf-verlauf');
+      const knoepfe = [...(feld?.querySelectorAll('button') || [])];
+      const kopf = document.querySelector('.kopf').getBoundingClientRect();
       return {
-        ohneWort: knoepfe.filter((k) => !k.querySelector('span')?.textContent.trim())
-          .map((k) => k.getAttribute('aria-label') || k.title),
-        hoehen: [...new Set(knoepfe.map((k) => Math.round(k.getBoundingClientRect().height)))],
-        worte: knoepfe.map((k) => k.querySelector('span')?.textContent.trim()).filter(Boolean),
-        trenner: document.querySelectorAll('.werkzeugzeile .werkzeug-trenner').length,
+        imKopf: knoepfe.length > 0 && knoepfe.every((k) => {
+          const kasten = k.getBoundingClientRect();
+          return kasten.top >= kopf.top - 1 && kasten.bottom <= kopf.bottom + 1;
+        }),
+        namen: knoepfe.map((k) => k.getAttribute('aria-label')),
+        gesperrt: knoepfe.map((k) => k.disabled),
+        inSchiene: document.querySelectorAll('#vorgangsschiene #knopf-rueckgaengig').length,
       };
     });
-    if (stand.ohneWort.length) throw new Error(`ohne Wort: ${stand.ohneWort.join(', ')}`);
-    if (stand.hoehen.some((h) => h !== REG.werkzeuge - 1)) {
-      throw new Error(`Höhen ${stand.hoehen.join('/')} statt ${REG.werkzeuge - 1}`);
-    }
-    void 0;
-    if (stand.trenner < 4) throw new Error(`nur ${stand.trenner} Gruppentrenner`);
-    return `${stand.worte.length} Knöpfe: ${stand.worte.join(' · ')}`;
+    if (stand.namen.join() !== 'Rückgängig,Wiederholen') throw new Error(`da steht: ${stand.namen.join(', ')}`);
+    if (!stand.imKopf) throw new Error('ein Knopf steht nicht im Kopf');
+    if (stand.inSchiene) throw new Error('der Verlauf steht in der Schiene');
+    /* Solange nichts geschehen ist, sind beide gesperrt. Ein Knopf, der nichts
+       tun kann und trotzdem bedienbar aussieht, ist ein Versprechen ins Leere. */
+    if (!stand.gesperrt.every(Boolean)) throw new Error('ohne Historie ist ein Knopf bedienbar');
+    return `${stand.namen.join(' · ')}, beide gesperrt, solange nichts geschah`;
+  });
+
+  await pruefe('Es gibt keine Werkzeugzeile mehr — und kein Werkzeug ging verloren', async () => {
+    /* Die Zeile trug fünfzehn Werkzeuge, von denen bei 944 px zwölf sichtbar
+       waren. Sie ist aufgelöst. Der Beweis, dass das kein Verlust war: jedes
+       Werkzeug ist über das Befehlsfeld erreichbar. */
+    const stand = await seite.evaluate(async () => {
+      const zeile = document.querySelector('.werkzeugzeile');
+      document.querySelector('#knopf-befehle').click();
+      await new Promise((l) => setTimeout(l, 300));
+      const feld = document.querySelector('.dialog input');
+      feld.value = 'Werkzeug:';
+      feld.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise((l) => setTimeout(l, 300));
+      const treffer = [...document.querySelectorAll('.palette-treffer')].map((k) => k.textContent);
+      return { zeile: !!zeile, treffer: treffer.length };
+    });
+    await seite.keyboard.press('Escape');
+    await seite.waitForTimeout(200);
+    if (stand.zeile) throw new Error('die Werkzeugzeile steht noch im Baum');
+    if (stand.treffer < 15) throw new Error(`nur ${stand.treffer} Werkzeuge im Befehlsfeld`);
+    return `keine Zeile, ${stand.treffer} Werkzeuge im Befehlsfeld`;
   });
 
   await pruefe('Radien nur dort, wo etwas bedienbar ist — Papier bleibt eckig', async () => {
@@ -515,45 +554,55 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     return `44-px-Zeilen mit „${zeilen.nummer} ${zeilen.titel}", Miniaturen auf Wunsch (112 px)`;
   });
 
-  await pruefe('Die drei Ansichten stehen als Gruppe in der Zeile', async () => {
-    const knoepfe = await seite.evaluate(() =>
-      [...document.querySelectorAll('.werkzeugzeile .werkzeug span')].map((s) => s.textContent.trim()));
-    for (const wort of ['Seiten', 'Vergleichen', 'Dokument']) {
-      if (!knoepfe.includes(wort)) throw new Error(`„${wort}" fehlt`);
+  await pruefe('Seitenordner und Vergleich stehen unter „Lesen"', async () => {
+    /* Sie waren die vierte Gruppe der Werkzeugzeile: Seiten, Vergleichen,
+       Dokument. „Dokument" ist weggefallen — der Ordner und der Vergleich
+       schließen sich selbst, mit ihrem eigenen Knopf und mit Escape. Ein
+       dritter Knopf, der nur „zurück" bedeutet, war eine Zutat der Zeile. */
+    await ladeBeispiel();
+    const worte = await seite.evaluate(async () => {
+      [...document.querySelectorAll('.schritt')].find((k) => /Lesen/.test(k.textContent)).click();
+      await new Promise((l) => setTimeout(l, 200));
+      return [...document.querySelectorAll('.schritt-werkzeug')].map((k) => k.textContent.trim());
+    });
+    for (const wort of ['Seiten ordnen', 'Mit anderer Datei vergleichen']) {
+      if (!worte.includes(wort)) throw new Error(`„${wort}" fehlt — da steht: ${worte.join(', ')}`);
     }
-    /* Und der Knopf „Seiten" öffnet den Seitenordner. */
     const offen = await seite.evaluate(async () => {
-      [...document.querySelectorAll('.werkzeugzeile .werkzeug')]
-        .find((k) => k.textContent.trim() === 'Seiten').click();
-      await new Promise((l) => setTimeout(l, 400));
+      [...document.querySelectorAll('.schritt-werkzeug')]
+        .find((k) => k.textContent.trim() === 'Seiten ordnen').click();
+      await new Promise((l) => setTimeout(l, 600));
       const auf = !document.querySelector('#ordnen').hidden;
-      [...document.querySelectorAll('.werkzeugzeile .werkzeug')]
-        .find((k) => k.textContent.trim() === 'Dokument').click();
-      await new Promise((l) => setTimeout(l, 300));
+      document.querySelector('#ordnen button[title*="Zurück"]')?.click();
+      await new Promise((l) => setTimeout(l, 500));
       return { auf, wiederZu: document.querySelector('#ordnen').hidden };
     });
-    if (!offen.auf) throw new Error('„Seiten" öffnet den Ordner nicht');
-    if (!offen.wiederZu) throw new Error('„Dokument" schließt ihn nicht');
-    return knoepfe.join(' · ');
+    if (!offen.auf) throw new Error('„Seiten ordnen" öffnet den Ordner nicht');
+    if (!offen.wiederZu) throw new Error('der Ordner schließt sich nicht selbst');
+    return worte.join(' · ');
   });
 
-  await pruefe('„Mehr" führt zu den übrigen Werkzeugen', async () => {
+  await pruefe('„Weitere Werkzeuge …" führt zum Befehlsfeld', async () => {
+    /* Der Knopf „Mehr" der Zeile klappte eine eigene Liste auf — eine zweite
+       Sammelstelle neben dem Befehlsfeld. Es gibt jetzt nur noch eine. */
     const stand = await seite.evaluate(async () => {
-      [...document.querySelectorAll('.werkzeugzeile .werkzeug')]
-        .find((k) => /Mehr|messen|Freihand|Stempel/.test(k.textContent)).click();
-      await new Promise((l) => setTimeout(l, 250));
-      const liste = document.querySelector('#weitere-werkzeuge');
-      const namen = [...(liste?.querySelectorAll('.menue-name') || [])].map((k) => k.textContent);
-      const kasten = liste?.getBoundingClientRect();
-      return { namen, sichtbar: !!kasten && kasten.width > 40 && kasten.right <= window.innerWidth + 1 };
+      [...document.querySelectorAll('.schritt-werkzeug')]
+        .find((k) => /Weitere Werkzeuge/.test(k.textContent)).click();
+      await new Promise((l) => setTimeout(l, 400));
+      const feld = document.querySelector('.dialog input');
+      if (!feld) return { offen: false, namen: [] };
+      feld.value = 'messen';
+      feld.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise((l) => setTimeout(l, 300));
+      return { offen: true, namen: [...document.querySelectorAll('.palette-treffer')].map((k) => k.textContent) };
     });
-    if (!stand.sichtbar) throw new Error('die Liste klappt nicht sichtbar auf');
-    for (const wort of ['Freihand', 'Stempel', 'Strecke messen']) {
-      if (!stand.namen.includes(wort)) throw new Error(`„${wort}" fehlt in der Liste`);
+    if (!stand.offen) throw new Error('das Befehlsfeld öffnet sich nicht');
+    if (!stand.namen.some((n) => /Strecke messen/.test(n))) {
+      throw new Error(`„Strecke messen" fehlt — da steht: ${stand.namen.join(', ')}`);
     }
     await seite.keyboard.press('Escape');
-    await seite.mouse.click(700, 500);
     await seite.waitForTimeout(200);
-    return `${stand.namen.length} weitere Werkzeuge`;
+    return `${stand.namen.length} Treffer zu „messen"`;
   });
+
 }

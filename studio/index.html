@@ -4,7 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PDF Studio</title>
-<meta name="theme-color" content="#1D2327">
+<!-- Die Leiste des Browsers trägt dieselbe Farbe wie die Chrome der
+     Anwendung. Seit „Vorgang" ist die hell. -->
+<meta name="theme-color" content="#FAFAF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101214" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="PDF Studio">
 <link rel="manifest" href="manifest.json">
@@ -25,6 +28,10 @@
     <div class="dokument-reiter" id="dokument-reiter" role="tablist" aria-label="Geöffnete Dateien"></div>
 
     <div class="kopf-rechts">
+      <!-- Rückgängig und Wiederholen. Sie standen in der Werkzeugzeile; die
+           gibt es nicht mehr. Ein Fehler betrifft das ganze Dokument, nicht
+           einen Schritt des Vorgangs — deshalb stehen sie im Kopf. -->
+      <div class="kopf-verlauf" id="kopf-verlauf" role="group" aria-label="Verlauf"></div>
       <button class="knopf knopf-chrome" id="knopf-befehle" title="Befehle (Strg+K)">
         <svg viewBox="0 0 24 24" class="sinnbild"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg>
         <span class="nur-breit">Befehle</span>
@@ -40,10 +47,6 @@
   <nav class="menueleiste" id="menueleiste" aria-label="Menü">
     <span class="menue-stand" id="menue-stand"></span>
   </nav>
-
-  <div class="werkzeugzeile-huelle" id="werkzeugzeile-huelle">
-    <div class="werkzeugzeile" id="werkzeugleiste" role="toolbar" aria-label="Werkzeuge"></div>
-  </div>
 
   <div class="rumpf">
 

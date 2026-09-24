@@ -1,8 +1,9 @@
 /* PDF Studio — Gestaltung der Seite.
 
-   Farben, Schriften und Formen folgen demselben Handoff wie die Anwendung
-   (studio/app/stil.css): Akzent #3E5C96, dunkle Chrome #21272C, IBM Plex,
-   Radius 0. Seite und Anwendung sollen wie ein Stück wirken — wer auf
+   Farben, Schriften und Formen folgen derselben Richtung wie die Anwendung
+   (studio/app/stil.css): „Vorgang" — der Akzent ist kein Farbton, sondern der
+   stärkste Kontrast zum Grund; Farbe bedeutet Zustand, nie Marke; Radien nur
+   dort, wo etwas bedienbar ist. Seite und Anwendung sollen wie ein Stück wirken — wer auf
    „PDF Studio öffnen" klickt, soll nicht das Gefühl haben, ein anderes Haus
    zu betreten.
 
@@ -33,40 +34,66 @@
   src: url('/schrift/plex-mono-500.woff2') format('woff2'); }
 
 :root {
-  /* „Registratur" — dieselbe Richtung wie die Anwendung (studio/app/stil.css).
-     Es gibt keine Radien; Hierarchie tragen Haarlinien und Zeilenhöhe.
+  /* „Vorgang" — dieselbe Richtung wie die Anwendung (studio/app/stil.css).
+     Wort für Wort dieselbe Liste; wer auf „PDF Studio öffnen" klickt, soll
+     nicht das Gefühl haben, ein anderes Haus zu betreten.
 
-     Ein Unterschied ist Absicht: die Anwendung setzt ihre Bedienung in der
-     schmalen Plex, weil dort Dichte zählt. Eine Verkaufsseite wird gelesen,
-     nicht abgearbeitet — der Fließtext bleibt in der normalen Breite, schmal
-     ist nur, was Etikett ist. */
-  --radius-klein: 0;
-  --radius: 0;
-  --radius-gross: 0;
+     **Farbe bedeutet Zustand, nie Marke.** Ocker heißt offen, Grün heißt
+     erledigt, Rot heißt unumkehrbar. Der Akzent ist kein Farbton, sondern
+     der stärkste Kontrast zum Grund — fast schwarz hell, fast weiß dunkel.
+     Damit kann er in keiner Fassung zu schwach werden.
 
-  --grund:        #E1E4E6;
-  --flaeche:      #F4F6F8;
-  --flaeche-tief: #EAEDF0;
-  --tinte:        #1B2128;
-  --tinte-leise:  #696F76;
-  --linie:        #D1D5D9;
-  --linie-stark:  #B0B6BB;
-  --tally:        #3E5C96;
-  --tally-grund:  rgba(62,92,150,.10);
-  --tally-text:   #F4F6F8;   /* Schrift auf dem Akzent — folgt ihm, nicht dem Weiß */
-  --tally-hell:   #A8BCE0;
-  --gut:          #236E44;
-  --gut-grund:    rgba(35,110,68,.12);
-  --warn:         #81520A;
-  --chrome-900:   #21272C;
-  --chrome-800:   #2E353B;
-  --chrome-linie: #3A4147;
-  --chrome-leise: #98A0A7;
+     Radien gibt es wieder, aber nur dort, wo etwas bedienbar ist. Papier
+     bleibt eckig.
+
+     Ein Unterschied zur Anwendung ist Absicht: die Anwendung setzt ihre
+     Bedienung dicht, eine Seite wird gelesen. Der Fließtext steht hier
+     größer, schmal ist nur, was Etikett ist. */
+  --radius-klein: 6px;
+  --radius: 6px;
+  --radius-gross: 10px;
+
+  --grund:        #FAFAF8;
+  --flaeche:      #FFFFFF;
+  --flaeche-tief: #F1F1EE;
+  --flaeche-hoch: #F6F6F3;
+  --tinte:        #16181A;
+  --tinte-leise:  #6B6F72;
+  --tinte-still:  #9A9E9F;
+  --linie:        #E4E4DF;
+  --linie-stark:  #CFCFC8;
+
+  --tally:        #16181A;
+  --tally-hover:  #2C2F32;
+  --tally-grund:  rgba(22,24,26,.06);
+  --tally-text:   #FAFAF8;
+  --tally-hell:   #16181A;
+
+  --gut:          #1E6B45;
+  --gut-grund:    rgba(30,107,69,.10);
+  --warn:         #8A5A00;
+  --warn-grund:   rgba(138,90,0,.10);
+  --gefahr:       #9B2C25;
+
+  /* Die Chrome ist nicht mehr dunkel. Die Namen bleiben, weil Regeln daran
+     hängen; --chrome-text und --chrome-leise kippen mit, sodass jede dieser
+     Regeln weiter stimmt. Genau diese Kopplung fehlte vorher: das Band
+     „dunkel" setzte #DFE4E6 fest und wäre hell auf hell gelandet. */
+  --chrome-900:   #FAFAF8;
+  --chrome-800:   #F1F1EE;
+  --chrome-linie: #E4E4DF;
+  --chrome-text:  #16181A;
+  --chrome-leise: #6B6F72;
 
   /* Für die Fenster-Attrappe im Aufmacher: dieselben Werte wie im Programm. */
-  --tafel:        #EAEDF0;
-  --buehne:       #2E3338;
-  --papier:       #FDFCF9;
+  --tafel:        #FAFAF8;
+  --buehne:       #EDEDE9;
+  --papier:       #FFFFFF;
+  --papier-tinte: #16181A;
+  --papier-leise: #6B6F72;
+  --papier-linie: #E4E4DF;
+
+  --schatten-tafel: 0 8px 24px -4px rgba(22,24,26,.10), 0 1px 3px rgba(22,24,26,.06);
 
   --sans:   'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
   --schmal: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
@@ -83,47 +110,69 @@
    Dunkeln orangerot, das Programm türkis. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --grund:        #14181B;
-    --flaeche:      #1B2126;
-    --flaeche-tief: #232A30;
-    --tinte:        #E2E6E9;
-    --tinte-leise:  #949CA3;
-    --linie:        #2A3238;
-    --linie-stark:  #3C444B;
-    --tally:        #9DB4E0;
-    --tally-grund:  rgba(157,180,224,.14);
-    --tally-text:   #14181B;
-    --tally-hell:   #9DB4E0;
-    --gut:          #6FC292;
-    --gut-grund:    rgba(111,194,146,.14);
-    --warn:         #D7A54E;
-    --chrome-900:   #10151A;
-    --chrome-800:   #1B2126;
-    --chrome-linie: #232A30;
-    --tafel:        #191F24;
-    --buehne:       #0C1013;
+    --grund:        #101214;
+    --flaeche:      #17191C;
+    --flaeche-tief: #1E2125;
+    --flaeche-hoch: #1A1D20;
+    --tinte:        #E8E9EA;
+    --tinte-leise:  #9BA0A4;
+    --tinte-still:  #6E7378;
+    --linie:        #26292D;
+    --linie-stark:  #3A3E43;
+    --tally:        #E8E9EA;
+    --tally-hover:  #FFFFFF;
+    --tally-grund:  rgba(232,233,234,.10);
+    --tally-text:   #101214;
+    --tally-hell:   #E8E9EA;
+    --gut:          #5FBF8C;
+    --gut-grund:    rgba(95,191,140,.14);
+    --warn:         #D9A441;
+    --warn-grund:   rgba(217,164,65,.14);
+    --gefahr:       #E08A82;
+    --chrome-900:   #101214;
+    --chrome-800:   #1E2125;
+    --chrome-linie: #26292D;
+    --chrome-text:  #E8E9EA;
+    --chrome-leise: #9BA0A4;
+    --tafel:        #101214;
+    --buehne:       #0B0D0E;
+    /* Das Blatt bleibt in beiden Fassungen weiß, und alles, was darauf liegt,
+       bleibt dunkel. Genau das ging in der alten Runde verloren: das Papier
+       blieb weiß, die Schrift darauf kippte mit — 1,2:1. */
+    --schatten-tafel: 0 8px 24px -4px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.4);
   }
 }
 :root[data-theme="dark"] {
-  --grund:        #14181B;
-  --flaeche:      #1B2126;
-  --flaeche-tief: #232A30;
-  --tinte:        #E2E6E9;
-  --tinte-leise:  #949CA3;
-  --linie:        #2A3238;
-  --linie-stark:  #3C444B;
-  --tally:        #9DB4E0;
-  --tally-grund:  rgba(157,180,224,.14);
-  --tally-text:   #14181B;
-  --tally-hell:   #9DB4E0;
-  --gut:          #6FC292;
-  --gut-grund:    rgba(111,194,146,.14);
-  --warn:         #D7A54E;
-  --chrome-900:   #10151A;
-  --chrome-800:   #1B2126;
-  --chrome-linie: #232A30;
-  --tafel:        #191F24;
-  --buehne:       #0C1013;
+  --grund:        #101214;
+  --flaeche:      #17191C;
+  --flaeche-tief: #1E2125;
+  --flaeche-hoch: #1A1D20;
+  --tinte:        #E8E9EA;
+  --tinte-leise:  #9BA0A4;
+  --tinte-still:  #6E7378;
+  --linie:        #26292D;
+  --linie-stark:  #3A3E43;
+  --tally:        #E8E9EA;
+  --tally-hover:  #FFFFFF;
+  --tally-grund:  rgba(232,233,234,.10);
+  --tally-text:   #101214;
+  --tally-hell:   #E8E9EA;
+  --gut:          #5FBF8C;
+  --gut-grund:    rgba(95,191,140,.14);
+  --warn:         #D9A441;
+  --warn-grund:   rgba(217,164,65,.14);
+  --gefahr:       #E08A82;
+  --chrome-900:   #101214;
+  --chrome-800:   #1E2125;
+  --chrome-linie: #26292D;
+  --chrome-text:  #E8E9EA;
+  --chrome-leise: #9BA0A4;
+  --tafel:        #101214;
+  --buehne:       #0B0D0E;
+  /* Das Blatt bleibt in beiden Fassungen weiß, und alles, was darauf liegt,
+     bleibt dunkel. Genau das ging in der alten Runde verloren: das Papier
+     blieb weiß, die Schrift darauf kippte mit — 1,2:1. */
+  --schatten-tafel: 0 8px 24px -4px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.4);
 }
 
 * { box-sizing: border-box; }
@@ -147,11 +196,17 @@ body {
 .band > .spur { padding: clamp(3rem, 5vw, 3.9rem) 0 clamp(3.2rem, 5.4vw, 4.25rem); }
 .band-grund  { background: var(--grund); }
 .band-hell   { background: var(--flaeche-tief); }
-.band-dunkel { background: var(--chrome-900); color: #DFE4E6; border-bottom-color: #000; }
+/* Zwei Stufen Gewicht, und genau eine Umkehrung auf der ganzen Seite — am
+   Ende, wo der Aufruf steht. Vorher war „dunkel" ein fester dunkler Wert;
+   seit die Chrome hell ist, wäre das ein heller Streifen auf hellem Grund
+   gewesen, also gar kein Band mehr. Jetzt trägt „dunkel" die Bühnenfarbe
+   (ruhiger als der Grund, in beiden Fassungen) und „akzent" den stärksten
+   Kontrast zum Grund — fast schwarz hell, fast weiß dunkel. */
+.band-dunkel { background: var(--buehne); color: var(--tinte); border-bottom-color: var(--linie-stark); }
 .band-akzent { background: var(--tally); color: var(--tally-text); border-bottom-color: var(--tally); }
-.band-dunkel h2 { color: #fff; }
+.band-dunkel h2 { color: var(--tinte); }
 .band-akzent h2 { color: var(--tally-text); }
-.band-dunkel .leise { color: #A9B4B9; }
+.band-dunkel .leise { color: var(--tinte-leise); }
 
 /* Abschnittskopf: Serif-Überschrift 31 px und eine Mono-Beifügung daneben. */
 .abschnitt-kopf {
@@ -219,45 +274,110 @@ p:last-child { margin-bottom: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .stempel { animation: none; } }
 
-/* Fenster-Attrappe im Aufmacher, nach dem Handoff: dunkler Rahmen mit drei
-   Punkten und Dateinamen, darin die drei Spalten der Anwendung. Sie zeigt,
-   wie das Studio aussieht — vorher stand hier eine Liste von
-   Werkzeugnamen, und die zeigt nur, dass es Werkzeuge gibt. */
-.fenster {
-  background: var(--chrome-900); padding: 8px; border-radius: var(--radius-gross);
-  box-shadow: 0 1px 2px rgba(20,26,28,.06), 0 14px 40px rgba(20,26,28,.16);
-}
-.fenster-kopf { display: flex; align-items: center; gap: .35rem; padding: 4px 6px 10px; }
-.ampel { width: .5rem; height: .5rem; border-radius: 0; background: #4b5459; flex: none; }
-.fenster-titel {
-  font-family: var(--mono); font-size: .6875rem; color: #98a3a8;
-  margin-left: .5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.fenster-rumpf { display: grid; grid-template-columns: 1fr 1.7fr 1.25fr; background: var(--flaeche); }
+/* Fenster-Attrappe im Aufmacher. Sie zeigt, wie das Studio aussieht —
+   vorher stand hier eine Liste von Werkzeugnamen, und die zeigt nur, dass es
+   Werkzeuge gibt.
 
-.fenster-seiten { background: var(--tafel); padding: 8px; display: grid; gap: 8px; align-content: start; }
-.mini {
-  background: var(--papier); border: 1px solid var(--linie-stark);
-  height: 3.4rem; padding: 6px 7px; display: grid; gap: 3px; align-content: start;
+   Seit der Richtung „Vorgang" ist die Chrome hell, es gibt keine drei
+   Ampelpunkte mehr, und links steht nicht mehr eine Spalte Seitenminiaturen,
+   sondern der Vorgang mit seinen sechs Schritten. Ein Bild, das noch die alte
+   Anwendung zeigt, ist schlimmer als kein Bild. */
+.fenster {
+  background: var(--chrome-900); padding: 1px; border-radius: var(--radius-gross);
+  border: 1px solid var(--linie-stark);
+  box-shadow: var(--schatten-tafel);
 }
-.mini.ist-aktiv { border-color: var(--tally); box-shadow: 0 0 0 1px var(--tally); }
-.mini i { display: block; height: 2px; width: 100%; background: #c9ced2; }
-.mini i:first-child { height: 4px; background: #5c666d; margin-bottom: 2px; }
+.fenster-kopf {
+  display: flex; align-items: center; gap: .5rem;
+  padding: 7px 10px; border-bottom: 1px solid var(--chrome-linie);
+}
+.fenster-marke { font-family: var(--serif); font-weight: 600; font-size: .8125rem; color: var(--chrome-text); }
+.fenster-reiter {
+  font-size: .6875rem; color: var(--chrome-text);
+  background: var(--flaeche); border: 1px solid var(--linie);
+  border-radius: var(--radius-klein); padding: 3px 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fenster-reiter b { font-family: var(--mono); font-weight: 400; color: var(--chrome-leise); margin-left: .3rem; }
+.fenster-kopfrechts { margin-left: auto; display: flex; gap: .3rem; flex: none; }
+.fenster-chip {
+  font-style: normal; font-size: .625rem; padding: 3px 8px;
+  border: 1px solid var(--linie-stark); border-radius: var(--radius-klein);
+  color: var(--chrome-text); white-space: nowrap;
+}
+.fenster-chip.ist-voll {
+  background: var(--tally); border-color: var(--tally); color: var(--tally-text);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.fenster-rumpf { display: grid; grid-template-columns: 1.15fr 1.7fr 1.15fr; background: var(--flaeche); }
+
+/* Die Schiene. Die Farbe sagt den Zustand, nicht die Marke: Grün erledigt,
+   Ocker offen, Grau wartet noch. */
+.fenster-vorgang {
+  background: var(--tafel); border-right: 1px solid var(--linie);
+  padding: 10px 8px; display: grid; gap: 1px; align-content: start;
+}
+.fv-kopf {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-family: var(--mono); font-size: .5625rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--tinte-leise);
+  padding: 0 4px 8px;
+}
+.fv-kopf b { font-weight: 400; }
+.fv-schritt {
+  display: flex; align-items: center; gap: .45rem;
+  font-size: .6875rem; color: var(--tinte);
+  padding: 5px 6px; border-radius: var(--radius-klein);
+}
+.fv-schritt > i {
+  width: .4rem; height: .4rem; border-radius: 999px; flex: none;
+  background: var(--tinte-still);
+}
+.fv-schritt > b {
+  margin-left: auto; font-family: var(--mono); font-weight: 400;
+  font-size: .5625rem; color: var(--tinte-leise);
+  background: var(--flaeche-tief); border-radius: var(--radius-klein); padding: 1px 5px;
+}
+.fv-schritt.ist-gut > i  { background: var(--gut); }
+.fv-schritt.ist-warn > i { background: var(--warn); }
+.fv-schritt.ist-still    { color: var(--tinte-leise); }
+.fv-schritt.ist-aktiv    { background: var(--tally-grund); font-weight: 500; }
+.fv-schritt.ist-aktiv > i { background: var(--tinte); }
+.fv-taten {
+  display: grid; gap: 1px; margin: 2px 0 6px .85rem;
+  padding-left: .55rem; border-left: 1px solid var(--linie);
+}
+.fv-taten i {
+  font-style: normal; font-size: .625rem; color: var(--tinte-leise);
+  padding: 3px 5px; border-radius: var(--radius-klein);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fv-taten i.ist-an { background: var(--tally-grund); color: var(--tinte); font-weight: 500; }
 
 .fenster-buehne { background: var(--buehne); padding: 12px 10px; display: grid; place-items: start center; }
 .fenster-blatt {
   position: relative; width: 100%; background: var(--papier);
   padding: 12px 14px 18px; display: grid; gap: 5px; align-content: start;
-  box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  border-radius: 0;
+  box-shadow: var(--schatten-tafel);
 }
 .blatt-kopf {
-  font-family: var(--mono); font-size: .5rem; letter-spacing: .12em; color: #8b8478;
-  border-bottom: 1px solid #e6e2d9; padding-bottom: 5px; margin-bottom: 3px;
+  font-family: var(--mono); font-size: .5rem; letter-spacing: .12em; color: var(--papier-leise);
+  border-bottom: 1px solid var(--papier-linie); padding-bottom: 5px; margin-bottom: 3px;
 }
-.blatt-nummer { font-family: var(--mono); font-size: .6rem; color: var(--tally); }
-.blatt-titel { font-family: var(--serif); font-size: .95rem; font-weight: 600; margin-bottom: 3px; }
-.zeile.hebt { background: rgba(212,175,55,.55); height: 5px; }
-.zeile.schwarz { background: #12181c; height: 5px; }
+.blatt-nummer { font-family: var(--mono); font-size: .6rem; color: var(--papier-leise); }
+.blatt-titel { font-family: var(--serif); font-size: .95rem; font-weight: 600; margin-bottom: 3px; color: var(--papier-tinte); }
+/* Die Textzeilen im Blatt und in den Kommentarfäden. Vorher gab es nur
+   `.zeile.hebt` und `.zeile.schwarz` — die schlichte `.zeile` hatte gar keine
+   Regel und war damit unsichtbar: das Blatt zeigte eine Überschrift und zwei
+   Markierungen, die dazwischen standen im Nichts. */
+.fenster-blatt .zeile, .faden .zeile {
+  display: block; width: 100%; height: 3px; border-radius: 1px;
+  background: var(--papier-linie);
+}
+.faden .zeile { background: var(--linie); }
+.zeile.hebt { background: rgba(138,90,0,.30); height: 5px; }
+.zeile.schwarz { background: var(--papier-tinte); height: 5px; }
 .nadel {
   position: absolute; right: -9px; top: 46%;
   width: 18px; height: 18px; background: var(--tally); color: var(--tally-text);
@@ -344,15 +464,15 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .kopf-wege { display: flex; align-items: stretch; gap: 0; flex: 1; min-width: 0; font-family: var(--schmal); }
 .kopf-weg { position: relative; display: flex; align-items: center; border-bottom: 2px solid transparent; }
 .kopf-weg > a {
-  font-size: 12.5px; padding: 0 10px; text-decoration: none; color: #A9B4B9;
+  font-size: 12.5px; padding: 0 10px; text-decoration: none; color: var(--chrome-leise);
   white-space: nowrap;
 }
 .kopf-weg:hover, .kopf-weg:focus-within { border-bottom-color: var(--tally); }
-.kopf-weg:hover > a, .kopf-weg:focus-within > a { color: #fff; }
+.kopf-weg:hover > a, .kopf-weg:focus-within > a { color: var(--chrome-text); }
 .klappe {
   position: absolute; left: 0; top: 100%; min-width: 262px; z-index: 50;
-  background: var(--flaeche-tief); border: 1px solid #B9C0C5;
-  box-shadow: 0 18px 40px rgba(18,24,28,.3); padding: 7px 0;
+  background: var(--flaeche); border: 1px solid var(--linie-stark);
+  border-radius: var(--radius); box-shadow: var(--schatten-tafel); padding: 7px 0;
   visibility: hidden; opacity: 0; transition: opacity .12s;
 }
 .kopf-weg:hover .klappe, .kopf-weg:focus-within .klappe { visibility: visible; opacity: 1; }
@@ -365,8 +485,8 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .klappe-hinweis { font-size: 10.5px; line-height: 1.4; color: var(--tinte-leise); }
 
 .kopf-rechts { margin-left: auto; display: flex; align-items: center; gap: 14px; flex: none; }
-.kopf-still { font-size: 12.5px; color: #A9B4B9; text-decoration: none; white-space: nowrap; }
-.kopf-still:hover { color: #fff; }
+.kopf-still { font-size: 12.5px; color: var(--chrome-leise); text-decoration: none; white-space: nowrap; }
+.kopf-still:hover { color: var(--chrome-text); }
 .kopf-wege a:focus-visible { outline: 2px solid var(--tally); outline-offset: 2px; }
 
 @media (max-width: 60rem) {
@@ -426,13 +546,20 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 /* ---------- Abbinder --------------------------------------------------------- */
 
 /* ---------- Handoff-Nachzug: dunkle Nav, kantige Karten, Mono-Marken ----- */
-/* Das Handoff setzt die Navigation auf #1d2327 und macht die Vergleichs-
-   sektion invers. Beides trägt die Aussage: die Seite gehört zu einem
-   Werkzeug, nicht zu einer Broschüre. */
+/* Kopf und Fuß tragen die Chrome — dieselbe wie in der Anwendung, also seit
+   „Vorgang" hell. Damit braucht der Kopf eine Haarlinie: ohne sie stünde er
+   ohne Kante auf demselben Grund wie der Abschnitt darunter, und beim
+   Scrollen liefe der Text einfach darunter durch. */
 .kopf {
-  background: var(--chrome-900); border-bottom: 0; position: sticky; top: 0; z-index: 40;
+  background: var(--chrome-900); border-bottom: 1px solid var(--linie);
+  position: sticky; top: 0; z-index: 40;
 }
-.kopf a, .kopf strong, .kopf .leise { color: #fff; }
+.kopf a, .kopf strong, .kopf .leise { color: var(--chrome-text); }
+/* Der Knopf im Kopf ist ein Akzentkörper, kein Kopftext: ohne diese Zeile
+   erbt er --chrome-text und stünde fast schwarz auf fast schwarz. Genau
+   dieser Fehler — Schrift, die der Fläche unter ihr nicht folgt — war der
+   Grund, die Palette überhaupt umzubauen. */
+.kopf a.knopf-voll, .kopf a.knopf-voll:hover { color: var(--tally-text); }
 .kopf .leise { color: var(--chrome-leise); }
 .kopf-wege a:hover { color: var(--tally-hell); }
 
@@ -441,9 +568,9 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
    Anwendung, an derselben Stelle, mit demselben Bild als Beweis. */
 .markenzug {
   display: inline-flex; align-items: center; gap: .6rem;
-  text-decoration: none; color: #fff;
+  text-decoration: none; color: var(--chrome-text);
 }
-.markenzug:hover { color: #fff; }
+.markenzug:hover { color: var(--chrome-text); }
 .markenzug-zeichen {
   width: 23px; height: 28px; position: relative; flex: none;
   background: var(--tally);
@@ -470,10 +597,10 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 .kopf .spur.kopfzeile { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: .7rem; padding-bottom: .7rem; }
 .kopf-wege { display: flex; align-items: center; gap: 1.1rem; }
 .knopf-voll {
-  background: var(--tally); color: #fff; border: 1px solid var(--tally);
+  background: var(--tally); color: var(--tally-text); border: 1px solid var(--tally);
   padding: .35rem .8rem; text-decoration: none; font-size: .8125rem; font-weight: 500;
 }
-.knopf-voll:hover { background: #0E6B64; color: #fff; }
+.knopf-voll:hover { background: var(--tally-hover); color: var(--tally-text); }
 .raster-zwei { grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); }
 
 /* ---------- Muster aus dem Handoff --------------------------------------- */
@@ -537,30 +664,35 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 }
 .vergleich-text { display: flex; flex-direction: column; gap: 16px; }
 .vergleich-text h2 { margin: 0; }
-.vergleich-text p { font-size: 13.5px; line-height: 1.7; margin: 0; color: #A9B4B9; }
+.vergleich-text p { font-size: 13.5px; line-height: 1.7; margin: 0; color: var(--tinte-leise); }
 .punkte { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
-.punktzeile { display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; line-height: 1.55; color: #C8D0D4; }
+.punktzeile { display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; line-height: 1.55; color: var(--tinte-leise); }
 .punktzeile .raute { margin-top: 5px; }
 
-.vergleich-tafel { border: 1px solid #333C41; background: var(--chrome-800); overflow-x: auto; }
+/* Die Vergleichstafel. Der Kopf ist die einzige umgekehrte Zeile: er trennt
+   die Frage von den beiden Antworten. Vorher standen hier feste dunkle Werte
+   (#2A3236, #333C41) und ein türkiser Rest einer längst abgelegten Palette
+   (rgba(15,118,110,.1)) — beides überlebte zwei Umbauten, weil keine Regel
+   sie an etwas gebunden hatte. */
+.vergleich-tafel { border: 1px solid var(--linie-stark); background: var(--flaeche); overflow-x: auto; }
 .vt-kopf, .vt-zeile { display: grid; grid-template-columns: minmax(0, 1.5fr) 118px 118px; }
-.vt-kopf { background: #2A3236; border-bottom: 1px solid #333C41; }
+.vt-kopf { background: var(--tally); border-bottom: 1px solid var(--tally); }
 .vt-kopf > div {
   font-family: var(--mono); font-size: 9px; letter-spacing: .8px;
-  color: var(--chrome-leise); padding: 11px 16px;
+  color: var(--tally-text); padding: 11px 16px;
 }
-.vt-kopf .vt-uns { color: #fff; background: var(--tally); text-align: center; padding: 11px 12px; }
-.vt-kopf .vt-die { text-align: center; padding: 11px 12px; }
-.vt-zeile { border-bottom: 1px solid var(--chrome-linie); }
+.vt-kopf .vt-uns { text-align: center; padding: 11px 12px; font-weight: 500; }
+.vt-kopf .vt-die { text-align: center; padding: 11px 12px; opacity: .72; }
+.vt-zeile { border-bottom: 1px solid var(--linie); }
 .vt-zeile:last-child { border-bottom: 0; }
-.vt-zeile > div { font-size: 12.5px; padding: 12px 16px; color: #DFE4E6; }
+.vt-zeile > div { font-size: 12.5px; padding: 12px 16px; color: var(--tinte); }
 .vt-zeile .vt-uns {
   font-family: var(--mono); font-size: 11px; padding: 12px; text-align: center;
-  color: var(--tally-hell); background: rgba(15,118,110,.1);
+  color: var(--tinte); background: var(--tally-grund);
 }
 .vt-zeile .vt-die {
   font-family: var(--mono); font-size: 11px; padding: 12px; text-align: center;
-  color: var(--chrome-leise);
+  color: var(--tinte-leise);
 }
 
 /* Pläne: die Kartenform des Handoffs, eine hervorgehoben. */
@@ -569,7 +701,7 @@ h3 { font-size: 1.06rem; font-weight: 600; }
   display: flex; flex-direction: column; gap: 11px; padding: 24px;
   background: var(--flaeche); border: 1px solid var(--linie);
 }
-.plan.ist-betont { border-color: var(--tally); box-shadow: 0 8px 24px rgba(15,118,110,.14); }
+.plan.ist-betont { border-color: var(--tally); box-shadow: var(--schatten-tafel); }
 .plan h3 { font-family: var(--serif); font-size: 21px; font-weight: 600; margin: 0; }
 .plan-marke { color: var(--tinte-leise); }
 .plan.ist-betont .plan-marke { color: var(--tally); }
@@ -583,9 +715,9 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 .plan-liste li::before { content: ''; width: 6px; height: 6px; flex: none; background: var(--tally); margin-top: 5px; }
 .plan-knopf {
   margin-top: auto; text-align: center; font-size: 12.5px; font-weight: 500;
-  padding: 11px 0; background: var(--tally); color: #fff; text-decoration: none;
+  padding: 11px 0; background: var(--tally); color: var(--tally-text); text-decoration: none;
 }
-.plan-knopf:hover { background: var(--tally-hover, #0E6B64); color: #fff; }
+.plan-knopf:hover { background: var(--tally-hover); color: var(--tally-text); }
 .plan-knopf-still {
   background: var(--flaeche-tief); color: var(--tinte); border: 1px solid var(--linie-stark);
 }
@@ -616,28 +748,28 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 .aufruf { display: flex; align-items: center; gap: 34px; flex-wrap: wrap; }
 .aufruf > div:first-child { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 9px; }
 .aufruf h2 { font-size: 29px; margin: 0; }
-.aufruf p { font-size: 13.5px; line-height: 1.6; margin: 0; color: rgba(255,255,255,.85); max-width: 52ch; }
+.aufruf p { font-size: 13.5px; line-height: 1.6; margin: 0; color: var(--tally-text); opacity: .85; max-width: 52ch; }
 .knopf-weiss, .knopf-umriss {
   font-size: 13px; font-weight: 500; padding: 13px 22px; text-decoration: none; display: inline-block;
 }
-.knopf-weiss { background: #fff; color: #0B5C55; }
-.knopf-weiss:hover { background: #EAFAF7; color: #0B5C55; }
-.knopf-umriss { color: #fff; border: 1px solid rgba(255,255,255,.55); }
-.knopf-umriss:hover { border-color: #fff; color: #fff; }
+.knopf-weiss { background: var(--tally-text); color: var(--tally); }
+.knopf-weiss:hover { background: var(--tally-text); color: var(--tally); opacity: .88; }
+.knopf-umriss { color: var(--tally-text); border: 1px solid currentColor; opacity: .75; }
+.knopf-umriss:hover { opacity: 1; }
 
 /* Fuß: Marke plus drei Linkspalten, darunter eine Zeile. */
-.fuss { background: var(--chrome-900); color: var(--chrome-leise); }
+.fuss { background: var(--chrome-900); color: var(--chrome-leise); border-top: 1px solid var(--linie); }
 .fuss-raster { display: grid; gap: 32px; padding: 40px 0 30px; }
 @media (min-width: 52rem) {
   .fuss-raster { grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr)); }
 }
 .fuss-marke { display: flex; flex-direction: column; gap: 12px; }
 .fuss-marke p { font-size: 11.5px; line-height: 1.6; margin: 0; max-width: 34ch; }
-.fuss .markenzug-wort { color: #DFE4E6; }
+.fuss .markenzug-wort { color: var(--chrome-text); }
 .fuss-spalte { display: flex; flex-direction: column; gap: 8px; }
-.fuss-spalte .marke { color: #5F6A70; }
-.fuss-spalte a { font-size: 11.5px; color: #A9B4B9; text-decoration: none; }
-.fuss-spalte a:hover { color: #fff; }
+.fuss-spalte .marke { color: var(--tinte-still); }
+.fuss-spalte a { font-size: 11.5px; color: var(--chrome-leise); text-decoration: none; }
+.fuss-spalte a:hover { color: var(--chrome-text); }
 .fuss-zeile {
   display: flex; gap: 18px; flex-wrap: wrap; padding: 16px 0 34px;
   border-top: 1px solid var(--chrome-linie); font-size: 9.5px;
@@ -649,7 +781,7 @@ h3 { font-size: 1.06rem; font-weight: 600; }
    groß und selten → 10. Was am Rand klebt, bleibt eckig. */
 .marke, .plan-marke, .stand, .raute, .punktzeile { border-radius: var(--radius-klein); }
 .karte, .plan, .vergleich-raster > div, .frage, .bilanz .zahl,
-.mini, .fenster-rumpf, .faden { border-radius: var(--radius); }
+.fenster-rumpf, .faden { border-radius: var(--radius); }
 .aufruf, .plaene > .ist-betont { border-radius: var(--radius-gross); }
 .band, .kopfleiste, .fussleiste { border-radius: 0; }
 

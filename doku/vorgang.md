@@ -46,10 +46,29 @@ liegen). Zwei Bildschirme: Studio hell und dunkel, derselbe Rahmen mit einem
 Moduswechsel. Dazu der Aufmacher der Webseite, die dieselbe Sprache spricht
 und die laufende Anwendung zeigt statt einer Zeichnung davon.
 
+## Was gebaut ist (Stand dieser Runde)
+
+Die Richtung steht nicht mehr nur in Figma, sie läuft:
+
+- **Die Menüleiste ist weg.** `#menueleiste` rechnet zu `display: none`; jeder
+  Befehl bleibt über das Befehlsfeld erreichbar (geprüft in `03-wege`).
+- **Die Statusleiste ist weg.** An ihrer Stelle schwebt eine Pille unten
+  rechts, die auf Hover voll deckt.
+- **Die Werkzeugzeile ist weg.** Sie trug fünfzehn Werkzeuge, von denen bei
+  944 px zwölf sichtbar waren. Jedes Werkzeug steht jetzt unter dem Schritt
+  des Vorgangs, zu dem es gehört; was in keinen Schritt gehört, findet das
+  Befehlsfeld. Rückgängig und Wiederholen sind in den Kopf gezogen — sie
+  gehören zu keinem Schritt, sondern zum Dokument.
+- **Die Vorgangsschiene** rechnet ihren Stand aus dem Dokument, nicht aus
+  Vorräten: Seitenzahl, Befunde, offene Felder, Unterschrift.
+- **Die Werkzeugblase** erscheint an der Textauswahl — und nur dort.
+- Jeder Schritt ist ein Aufklapper: `aria-expanded`, zweiter Druck schließt,
+  Escape schließt und gibt den Fokus zurück.
+
+Das Raster hat dadurch zwei Zeilen statt fünf: Kopf und Rumpf.
+
 ## Was noch nicht existiert
 
-Die Bauteilbibliothek, die übrigen Bildschirme (Empfang, Einzelwerkzeuge,
-Dialoge) — und **nichts davon ist gebaut**. Die laufende Anwendung trägt
-weiterhin Registratur. Was aus der alten Runde bleibt und wiederverwendet
-wird: die Token-Staffeln als Gerüst, die Bauteilstruktur und die 169
-Prüfungen, die gerenderte Pixel messen.
+Die Bauteilbibliothek in Figma und die übrigen Bildschirme dort (Empfang,
+Einzelwerkzeuge, Dialoge). Aus der alten Runde bleiben: die Token-Staffeln als
+Gerüst, die Bauteilstruktur und die Prüfungen, die gerenderte Pixel messen.

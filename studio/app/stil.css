@@ -117,7 +117,7 @@
   /* Eine Leiste statt vier. */
   --kopfhoehe: 56px;
   --menuehoehe: 0px;
-  --werkzeughoehe: 40px;
+  --werkzeughoehe: 0px;   /* die Werkzeugzeile ist keine Zeile mehr */
   --fusshoehe: 0px;   /* die Statusleiste ist keine Zeile mehr */
   --leiste-links: 264px;
   --leiste-rechts: 320px;
@@ -269,10 +269,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- Grundgerüst ------------------------------------------------ */
 .huelle {
   display: grid;
-  /* Drei Zeilen statt fünf. Das Menü ist in das Befehlsfeld gewandert, die
-     Statusleiste schwebt über der Bühne. Die Werkzeugzeile bleibt vorerst —
-     sie weicht der Vorgangsschiene, sobald die gebaut ist. */
-  grid-template-rows: var(--kopfhoehe) var(--werkzeughoehe) 1fr;
+  /* Zwei Zeilen statt fünf. Das Menü steht im Befehlsfeld, die Werkzeuge in
+     der Vorgangsschiene unter ihrem Schritt, die Statusleiste schwebt über
+     der Bühne. Übrig bleibt ein Kopf und der Rumpf. */
+  grid-template-rows: var(--kopfhoehe) 1fr;
   position: relative;
   height: 100dvh;
 }
@@ -412,62 +412,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .menue-kuerzel { font-family: var(--mono); font-size: var(--satz-etikett); color: var(--tinte-leise); white-space: nowrap; }
 .menue-trenner { margin: var(--raum-2) 0; border: 0; border-top: 1px solid var(--linie); }
 
-/* ---------- Werkzeugzeile ----------------------------------------------- */
-.werkzeugzeile {
-  display: flex; align-items: stretch; gap: 0;
-  padding: 0;
-  background: var(--flaeche-hoch);
-  border-bottom: 1px solid var(--linie-stark);
-  overflow-x: auto; scrollbar-width: thin;
-  position: relative;
+/* ---------- Verlauf im Kopf ---------------------------------------------
+   Hier stand die Werkzeugzeile: fünfzehn Werkzeuge nebeneinander, von denen
+   bei 944 px nur zwölf sichtbar waren. Sie ist aufgelöst — jedes Werkzeug
+   steht jetzt unter dem Schritt des Vorgangs, zu dem es gehört, und was
+   nirgends hingehört, findet das Befehlsfeld. Übrig bleiben Rückgängig und
+   Wiederholen: die gehören zu keinem Schritt, sondern zum Dokument. */
+.kopf-verlauf {
+  display: inline-flex; align-items: center; gap: var(--raum-1);
+  margin-right: var(--raum-3);
 }
-/* Bei 944 px — der Breite der Mockup-Aufnahme — passen 12 von 15 Werkzeugen
-   in die Zeile. Die übrigen drei waren erreichbar, aber unsichtbar: die Zeile
-   scrollte, ohne es zu sagen. Ein verstecktes Werkzeug ist ein fehlendes.
-
-   Ein Verlauf an der Kante, an der noch etwas liegt. Er ist kein Schmuck: er
-   ist die einzige Stelle, an der das Programm zugibt, dass es weitergeht. */
-.werkzeugzeile-huelle { position: relative; min-width: 0; }
-/* Die Hülle steht jetzt in der Rasterzeile; die Zeile darin füllt sie aus. */
-.werkzeugzeile { height: 100%; }
-.werkzeugzeile-huelle::before,
-.werkzeugzeile-huelle::after {
-  content: ''; position: absolute; top: 0; bottom: 1px; width: 28px;
-  pointer-events: none; z-index: 2; opacity: 0; transition: opacity .12s;
-}
-.werkzeugzeile-huelle::before {
-  left: 0; background: linear-gradient(90deg, var(--flaeche-hoch), transparent);
-}
-.werkzeugzeile-huelle::after {
-  right: 0; background: linear-gradient(270deg, var(--flaeche-hoch), transparent);
-}
-.werkzeugzeile-huelle[data-mehr-links]::before,
-.werkzeugzeile-huelle[data-mehr-rechts]::after { opacity: 1; }
-.werkzeug {
-  display: inline-flex; align-items: center; gap: var(--raum-3);
-  height: 100%; padding: 0 var(--raum-6); flex: none;
-  border: 0; border-right: 1px solid var(--linie); background: transparent;
-  color: var(--tinte); font-size: var(--satz-bedien); cursor: pointer;
-}
-.werkzeug:hover { background: var(--flaeche-tief); }
-.werkzeug.ist-aktiv {
-  background: var(--tally); border-right-color: var(--linie-stark);
-  color: var(--tally-text);
-}
-.werkzeug .sinnbild { width: 15px; height: 15px; }
-.werkzeug-trenner {
-  /* War #DBDFE2 fest — ein heller Strich, der in der dunklen Fassung als
-     falsche Naht stehenblieb. */
-  width: 1px; height: 24px; background: var(--linie);
-  margin: 0 var(--raum-4); flex: none;
-}
-/* Die rechte Gruppe bleibt erreichbar, auch wenn die Zeile scrollt. */
-.werkzeug-rechts {
-  position: sticky; right: 0; margin-left: auto; flex: none;
-  display: flex; align-items: center; gap: var(--raum-1);
-  padding: 0 var(--raum-4) 0 var(--raum-3); background: var(--flaeche-hoch);
-  border-left: 1px solid var(--linie-stark);
-}
+.knopf-verlauf { padding: 0 var(--raum-4); }
+.knopf-verlauf[disabled] { opacity: .4; cursor: not-allowed; }
 
 /* ---------- Bedienelemente --------------------------------------------- */
 .knopf {
@@ -772,6 +728,27 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .schritt.ist-offen .schritt-stand { background: var(--warn-grund); color: var(--warn); }
 .schritt.ist-erledigt .schritt-stand { background: var(--gut-grund); color: var(--gut); }
+
+/* Die Werkzeuge des aktiven Schritts. Eingerückt unter ihm, weil sie zu ihm
+   gehören — und nur zu ihm. */
+.schritt-werkzeuge {
+  display: flex; flex-direction: column;
+  padding: var(--raum-2) 0 var(--raum-4) var(--raum-8);
+  margin-left: var(--raum-4);
+  border-left: 1px solid var(--linie);
+}
+.schritt-werkzeug {
+  border: 0; background: transparent; cursor: pointer; text-align: left;
+  padding: var(--raum-3) var(--raum-4);
+  border-radius: var(--radius-klein);
+  font: inherit; font-size: var(--satz-bedien); color: var(--tinte-leise);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.schritt-werkzeug:hover { background: var(--flaeche-tief); color: var(--tinte); }
+.schritt-werkzeug.ist-aktiv { background: var(--tally-grund); color: var(--tinte); font-weight: 500; }
+/* „Weitere Werkzeuge …" ist eine Tat, kein Hinweis: --tinte-still wäre auf
+   der Fläche 2,6:1 und läse sich als gesperrt. */
+.schritt-werkzeug.ist-weiter { color: var(--tinte-leise); font-style: italic; }
 
 /* Sie liegt wirklich über der Seite — hier ist ein Schatten am Platz. */
 .werkzeugblase {
@@ -1412,8 +1389,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .segment.ist-an { background: var(--tally); color: var(--tally-text); }
 
 .ohne-seitenzahlen .blatt-nummer { display: none; }
-.werkzeug-schmal { padding: 0 var(--raum-4); }
-.werkzeug[disabled] { opacity: .4; cursor: not-allowed; }
 
 /* ---------- Vergleich als eigene Ansicht -------------------------------- */
 /* Liegt in derselben Rasterzelle wie die Bühne und tritt an ihre Stelle. */
@@ -1481,7 +1456,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
    waagerechtem Bildlauf über alles. Ein `min-width: 0` an der richtigen
    Stelle ist die halbe Antwort. */
 .huelle { min-width: 0; }
-.kopf, .menueleiste, .werkzeugzeile, .fuss, .rumpf { min-width: 0; }
+.kopf, .menueleiste, .fuss, .rumpf { min-width: 0; }
 .fuss-mitte { min-width: 0; }
 .fuss > * { min-width: 0; }
 
@@ -1529,9 +1504,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
   /* Ansichtsdrehung und Thema stehen im Menü „Ansicht"; unten fehlt der Platz. */
   #knopf-drehen, #knopf-thema { display: none; }
   .wortmarke-wort { display: none; }
-  .werkzeug span { display: none; }
-  .werkzeug { padding: 0 var(--raum-4); }
-  .werkzeug-rechts .werkzeug span { display: inline; }
   .menue-knopf { padding: 0 var(--raum-3); }
   .menue-stand { display: none; }
   .dok-reiter { max-width: 11rem; }
@@ -1632,13 +1604,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
    Nicht dabei, und zwar mit Absicht:
    .blatt und seine Leinwand  — Papier ist eckig
-   .kopf .menueleiste .werkzeugleiste .fuss — sie kleben am Fensterrand
+   .kopf .menueleiste .fuss — sie kleben am Fensterrand
    .leiste-links .leiste-rechts — dasselbe, sie kleben an ihrer Kante
    .textebene .malebene .aufdruckebene .feldebene — sie liegen auf dem Papier */
 
 /* Klein und oft: 4 px */
 .marke, .art-chip, .wertmarke, .miniatur-nummer, .dok-reiter, .dok-reiter-zu,
-.dok-reiter-neu, .werkzeug, .reiter-knopf, .menue-eintrag, .lader-balken,
+.dok-reiter-neu, .reiter-knopf, .menue-eintrag, .lader-balken,
 .lader-balken i, .formularfeld, .eintrag, .feldzeile, .fundzeile,
 .leerbild-tat, .vorschlag-weg, .plan-marke {
   border-radius: var(--radius-klein);
@@ -1665,7 +1637,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Papier bleibt Papier. */
 .blatt, .blatt canvas, .textebene, .malebene, .aufdruckebene, .feldebene,
-.kopf, .menueleiste, .werkzeugleiste, .fuss, .leiste, .buehne {
+.kopf, .menueleiste, .fuss, .leiste, .buehne {
   border-radius: 0;
 }
 
@@ -1727,11 +1699,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
     --zeile: 34px; --zeile-kopf: 28px;
     --kopfhoehe: 44px; --menuehoehe: 34px; --werkzeughoehe: 44px; --fusshoehe: 36px;
   }
-  .kopf .knopf, .fuss .knopf, .menue-knopf, .werkzeug, .reiter-knopf,
+  .kopf .knopf, .fuss .knopf, .menue-knopf, .reiter-knopf,
   .dok-reiter-zu, .dok-reiter-neu {
     position: relative;
   }
-  .kopf .knopf::after, .fuss .knopf::after, .menue-knopf::after, .werkzeug::after,
+  .kopf .knopf::after, .fuss .knopf::after, .menue-knopf::after,
   .reiter-knopf::after, .dok-reiter-zu::after, .dok-reiter-neu::after {
     content: ''; position: absolute; left: 50%; top: 50%;
     transform: translate(-50%, -50%);

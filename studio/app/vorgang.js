@@ -72,6 +72,52 @@ const SCHRITTE = [
   },
 ];
 
+/* **Die Werkzeuge liegen unter ihrem Schritt.** Das ist der Rest des
+   Umbaus: statt fünfzehn Werkzeugen auf Vorrat in einer Zeile zeigt die
+   Schiene die, die zum aktiven Schritt gehören. Verloren geht keines —
+   jedes steht weiter im Befehlsfeld, und die selteneren unter „Weitere". */
+const WERKZEUGE_JE_SCHRITT = {
+  lesen: [
+    ['werkzeug:auswahl', 'Auswahl'],
+    ['werkzeug:text', 'Text'],
+    ['werkzeug:bereich', 'Bereich kopieren'],
+    ['seiten:ordnen', 'Seiten ordnen'],
+    ['vergleich', 'Mit anderer Datei vergleichen'],
+  ],
+  pruefen: [
+    ['texterkennung', 'Texterkennung (OCR)'],
+    ['werkzeug:hervor', 'Markieren'],
+    ['werkzeug:unterstrich', 'Unterstreichen'],
+    ['werkzeug:notiz', 'Kommentar'],
+    ['werkzeug:freihand', 'Freihand'],
+  ],
+  schwaerzen: [
+    ['werkzeug:schwaerzen', 'Redigieren'],
+    ['werkzeug:ersetzen', 'Text bearbeiten'],
+  ],
+  ausfuellen: [
+    ['werkzeug:feld', 'Formularfeld anlegen'],
+  ],
+  unterschreiben: [
+    ['werkzeug:unterschrift', 'Signieren'],
+    ['werkzeug:stempel', 'Stempel'],
+  ],
+  ausgeben: [
+    ['sichern:als', 'Sichern unter …'],
+    ['aufdruck', 'Aufdruck: Wasserzeichen, Kopf- und Fußzeile'],
+  ],
+};
+
+
+/* Wer ein Werkzeug über die Tastatur wählt, springt damit auch im Vorgang.
+   Sonst leuchtet ein Werkzeug in einem Schritt auf, den niemand sieht. */
+function schrittZumWerkzeug(werkzeugId) {
+  for (const [schrittId, taten] of Object.entries(WERKZEUGE_JE_SCHRITT)) {
+    if (taten.some(([befehlId]) => befehlId === `werkzeug:${werkzeugId}`)) return schrittId;
+  }
+  return null;
+}
+
 function zaehleBefunde() {
   return befunde.muster.length
     + (befunde.gescannt ? 1 : 0)
@@ -98,16 +144,48 @@ export function zeichneSchiene() {
   for (const schritt of SCHRITTE) {
     const stand = schritt.stand();
     const ist = schritt.id === aktiverSchritt;
+    const hatTaten = (WERKZEUGE_JE_SCHRITT[schritt.id] || []).length > 0;
+    /* Der Schritt ist ein Aufklapper: er sagt, ob seine Werkzeuge offen sind,
+       und ein zweiter Druck schließt sie wieder. Ohne das gäbe es einen
+       Aufklapper, der sich nur öffnen lässt — und die Schiene wüchse mit
+       jedem Klick, ohne je wieder schmaler zu werden. */
     const zeile = el('button', {
       klasse: `schritt ist-${stand.art} ${ist ? 'ist-aktiv' : ''}`,
       daten: { schritt: schritt.id },
       'aria-current': ist ? 'step' : 'false',
-      beiClick: () => { aktiverSchritt = schritt.id; schritt.tun(); zeichneSchiene(); },
+      'aria-expanded': hatTaten ? (ist ? 'true' : 'false') : null,
+      'aria-controls': hatTaten ? `schritt-werkzeuge-${schritt.id}` : null,
+      beiClick: () => {
+        if (ist) { aktiverSchritt = null; zeichneSchiene(); return; }
+        aktiverSchritt = schritt.id;
+        schritt.tun();
+        zeichneSchiene();
+      },
     },
       el('i', { klasse: 'schritt-punkt', 'aria-hidden': 'true' }),
       el('span', { klasse: 'schritt-wort', text: schritt.wort }),
       stand.text ? el('span', { klasse: 'schritt-stand', text: stand.text }) : null);
     schiene.append(zeile);
+
+    /* Unter dem aktiven Schritt stehen seine Werkzeuge — und nur seine. */
+    if (!ist) continue;
+    const taten = WERKZEUGE_JE_SCHRITT[schritt.id] || [];
+    if (!taten.length) continue;
+    const kasten = el('div', { klasse: 'schritt-werkzeuge', id: `schritt-werkzeuge-${schritt.id}` });
+    for (const [befehlId, wortlaut] of taten) {
+      kasten.append(el('button', {
+        klasse: `schritt-werkzeug ${zustand.werkzeug === befehlId.replace('werkzeug:', '') ? 'ist-aktiv' : ''}`,
+        text: wortlaut,
+        daten: { befehl: befehlId },
+        beiClick: () => { window.studio?.fuehreAus?.(befehlId); zeichneSchiene(); },
+      }));
+    }
+    kasten.append(el('button', {
+      klasse: 'schritt-werkzeug ist-weiter',
+      text: 'Weitere Werkzeuge …',
+      beiClick: () => window.studio?.fuehreAus?.('palette'),
+    }));
+    schiene.append(kasten);
   }
 }
 
@@ -186,7 +264,27 @@ export function starteVorgang() {
   });
   window.addEventListener('scroll', verbergeBlase, true);
 
+  /* Escape in der Schiene klappt den Schritt wieder zu — und der Fokus bleibt,
+     wo er war. Ohne das steht er nach dem Schließen auf einem Knopf, den es
+     nicht mehr gibt, und die Tastatur fängt oben auf der Seite wieder an. */
+  schiene?.addEventListener('keydown', (ereignis) => {
+    if (ereignis.key !== 'Escape' || !aktiverSchritt) return;
+    ereignis.preventDefault();
+    const id = aktiverSchritt;
+    aktiverSchritt = null;
+    zeichneSchiene();
+    schiene.querySelector(`.schritt[data-schritt="${id}"]`)?.focus();
+  });
+
+  /* „werkzeug:gewechselt" steht mit in der Liste, seit die Werkzeuge in der
+     Schiene stehen: wer ein Werkzeug über die Tastatur wählt, soll es in der
+     Schiene aufleuchten sehen. */
   for (const ereignis of ['dokument:geladen', 'seiten:geaendert', 'anmerkungen:geaendert',
     'formular:geaendert', 'mitdenken:geaendert']) hoer(ereignis, zeichneSchiene);
+  hoer('werkzeug:gewechselt', (id) => {
+    const schritt = schrittZumWerkzeug(id);
+    if (schritt) aktiverSchritt = schritt;
+    zeichneSchiene();
+  });
   zeichneSchiene();
 }

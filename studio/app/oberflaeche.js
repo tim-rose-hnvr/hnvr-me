@@ -6,7 +6,7 @@
    erreichbar wäre. */
 
 import {
-  zustand, melde, hoer, $, $$, el, sage, zeigeDialog, schliesseDialog, frage, merkeSchritt, drossel,
+  zustand, melde, hoer, $, $$, el, sage, zeigeDialog, schliesseDialog, frage, merkeSchritt,
   schrittZurueck, schrittVor, groesse, mitLader, sichereBytes, zeile,
 } from './kern.js';
 import {
@@ -23,7 +23,7 @@ import {
 } from './anmerkungen.js';
 import { starteSeiten, drehe, loesche, verdopple, gewaehlteOderAktuelle } from './seiten.js';
 import {
-  starteOrdnen, umschalteOrdnen, schliesseOrdnen, oeffneOrdnen, ordnenOffen,
+  starteOrdnen, umschalteOrdnen, schliesseOrdnen,
 } from './ordnen.js';
 import { starteMenue } from './menue.js';
 import {
@@ -281,41 +281,8 @@ export function setzeWerkzeug(id) {
     zeigeUnterschriftDialog(() => sage('Jetzt einen Rahmen auf der Seite aufziehen'));
   }
   melde('werkzeug:gewechselt', id);
-  zeichneWerkzeugleiste();
   zeichneRechteTafel();
 }
-
-/* Die Werkzeugzeile nach dem Handoff: vier Gruppen, durch eine Haarlinie
-   getrennt, jeder Knopf mit Sinnbild **und** Wort, rechts eine Gruppe, die
-   beim Scrollen stehen bleibt.
-
-   Sie trug einmal sechzehn Knöpfe, sechs davon nur als Zeichen. Das war ein
-   anderes Programm als das gezeichnete: das Handoff zeigt neun beschriftete
-   Knöpfe und nichts sonst. Was jetzt nicht mehr in der Zeile steht, ist
-   deshalb nicht fort — es steht hinter „Mehr" und im Menü Werkzeuge. */
-const WERKZEUGGRUPPEN = [
-  [['auswahl', true], ['text', true]],
-  [['hervor', true], ['notiz', true], ['schwaerzen', true]],
-  [['feld', true], ['unterschrift', true]],
-];
-
-/* Die vierte Gruppe im Handoff sind keine Werkzeuge, sondern die drei
-   Ansichten: Seiten, Vergleichen, Dokument. Genau die drei hat das Studio
-   auch — der Seitenordner, der Vergleich und die Leseansicht. */
-const ANSICHTEN = [
-  ['ordnen', 'Seiten', 'M4 4h6v7H4zM14 4h6v7h-6zM4 13h6v7H4zM14 13h6v7h-6z'],
-  ['vergleich', 'Vergleichen', 'M4 4h6v16H4zM14 4h6v16h-6z'],
-  ['dokument', 'Dokument', 'M6 2h8l4 4v16H6zM14 2v5h4'],
-];
-
-/* Alles, was nicht in die vier Gruppen passt, steht hinter einem beschrifteten
-   Knopf statt als Sinnbild ohne Wort in der Zeile. Das Handoff kennt keine
-   unbeschrifteten Werkzeuge; ein Zeichen ohne Wort ist die stille Annahme,
-   jeder wisse schon, was es bedeutet. */
-const WEITERE_WERKZEUGE = [
-  'unterstrich', 'durchstrich', 'freihand', 'rechteck', 'ellipse', 'pfeil',
-  'ersetzen', 'stempel', 'bereich', 'messen', 'flaeche',
-];
 
 /* Die Dokumentreiter in der Titelleiste. Sie sind die einzige Stelle, an der
    sichtbar wird, dass mehrere Dateien offen sein koennen. */
@@ -355,14 +322,15 @@ function zeichneDokumentreiter() {
   }));
 }
 
-function zeichneWerkzeugleiste() {
-  const leiste = $('#werkzeugleiste');
-  if (!leiste) return;
-  leiste.innerHTML = '';
+/* Rückgängig und Wiederholen im Kopf. Sie standen in der Werkzeugzeile,
+   solange es eine gab. Die Vorgangsschiene trägt Werkzeuge, keinen Verlauf:
+   ein Fehler gehört nicht zu einem Schritt, er gehört zum Dokument. Deshalb
+   stehen die beiden oben, neben „Sichern". */
+function zeichneVerlaufsknoepfe() {
+  const feld = $('#kopf-verlauf');
+  if (!feld) return;
+  feld.innerHTML = '';
 
-  /* Rückgängig und Wiederholen stehen ganz links, vor den Werkzeugen. Das
-     Handoff sieht sie nicht vor; sie hier wegzulassen wäre aber ein Rückschritt
-     hinter das, was das Studio schon konnte. */
   for (const [id, name, zeichen] of [
     ['rueckgaengig', 'Rückgängig', 'M9 14L4 9l5-5M4 9h9a6 6 0 0 1 0 12H8'],
     ['wiederholen', 'Wiederholen', 'M15 14l5-5-5-5M20 9h-9a6 6 0 0 0 0 12h5'],
@@ -371,7 +339,7 @@ function zeichneWerkzeugleiste() {
       ? zustand.historie[zustand.historieZeiger]
       : zustand.historie[zustand.historieZeiger + 1];
     const knopf = el('button', {
-      klasse: 'werkzeug werkzeug-schmal', id: `knopf-${id}`,
+      klasse: 'knopf knopf-chrome knopf-verlauf', id: `knopf-${id}`,
       title: naechster ? `${name}: ${naechster.beschreibung}` : name,
       'aria-label': name,
       disabled: id === 'rueckgaengig'
@@ -380,133 +348,8 @@ function zeichneWerkzeugleiste() {
       beiClick: () => fuehreAus(id),
     });
     knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${zeichen}"/></svg>`;
-    leiste.append(knopf);
+    feld.append(knopf);
   }
-  leiste.append(el('span', { klasse: 'werkzeug-trenner' }));
-
-  const werkzeugKnopf = (id) => {
-    const werkzeug = WERKZEUGE.find((w) => w.id === id);
-    if (!werkzeug) return null;
-    const aktiv = zustand.werkzeug === werkzeug.id;
-    const knopf = el('button', {
-      klasse: `werkzeug ${aktiv ? 'ist-aktiv' : ''}`,
-      title: `${werkzeug.name} (${werkzeug.kuerzel})`,
-      'aria-label': werkzeug.name,
-      'aria-pressed': aktiv ? 'true' : 'false',
-      beiClick: () => setzeWerkzeug(werkzeug.id),
-    });
-    const kurz = werkzeug.name.replace(' anlegen', '').replace(' kopieren', '');
-    knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${werkzeug.zeichen}"/></svg><span>${kurz}</span>`;
-    return knopf;
-  };
-
-  for (const gruppe of WERKZEUGGRUPPEN) {
-    for (const [id] of gruppe) leiste.append(werkzeugKnopf(id));
-    leiste.append(el('span', { klasse: 'werkzeug-trenner' }));
-  }
-
-  /* Vierte Gruppe: die drei Ansichten. */
-  for (const [id, name, zeichen] of ANSICHTEN) {
-    const aktiv = (id === 'ordnen' && ordnenOffen())
-      || (id === 'vergleich' && vergleichOffen())
-      || (id === 'dokument' && !ordnenOffen() && !vergleichOffen());
-    const knopf = el('button', {
-      klasse: `werkzeug ${aktiv ? 'ist-aktiv' : ''}`,
-      title: name, 'aria-pressed': aktiv ? 'true' : 'false',
-      beiClick: () => wechsleAnsicht(id),
-    });
-    knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${zeichen}"/></svg><span>${name}</span>`;
-    leiste.append(knopf);
-  }
-  leiste.append(el('span', { klasse: 'werkzeug-trenner' }));
-
-  /* „Mehr": die übrigen Werkzeuge, beschriftet, in einer Liste am Fenster. */
-  const mehrAktiv = WEITERE_WERKZEUGE.includes(zustand.werkzeug);
-  const mehr = el('button', {
-    klasse: `werkzeug ${mehrAktiv ? 'ist-aktiv' : ''}`,
-    title: 'Weitere Werkzeuge', 'aria-haspopup': 'true', 'aria-expanded': 'false',
-    beiClick: (ereignis) => zeigeWeitereWerkzeuge(ereignis.currentTarget),
-  });
-  const gewaehlt = WERKZEUGE.find((w) => w.id === zustand.werkzeug);
-  mehr.innerHTML = '<svg viewBox="0 0 24 24" class="sinnbild"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>'
-    + `<span>${mehrAktiv ? gewaehlt.name.replace(' kopieren', '') : 'Mehr'}</span>`;
-  leiste.append(mehr);
-
-  const rechts = el('div', { klasse: 'werkzeug-rechts' });
-  for (const [id, name, zeichen] of [
-    ['texterkennung', 'OCR ausführen', 'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M8 10h8M8 14h5'],
-    ['sichern:als', 'Exportieren', 'M12 3v11M8 11l4 4 4-4M4 20h16'],
-  ]) {
-    const knopf = el('button', { klasse: 'werkzeug', title: name, beiClick: () => fuehreAus(id) });
-    knopf.innerHTML = `<svg viewBox="0 0 24 24" class="sinnbild"><path d="${zeichen}"/></svg><span>${name}</span>`;
-    rechts.append(knopf);
-  }
-  leiste.append(rechts);
-}
-
-/* Die drei Ansichten schließen einander aus: es gibt genau eine Bühne. */
-function wechsleAnsicht(id) {
-  if (id === 'ordnen') {
-    if (vergleichOffen()) schliesseVergleich();
-    if (!ordnenOffen()) oeffneOrdnen();
-  } else if (id === 'vergleich') {
-    if (ordnenOffen()) schliesseOrdnen();
-    if (!vergleichOffen()) $('#dateiwahl-vergleich').click();
-  } else {
-    if (ordnenOffen()) schliesseOrdnen();
-    if (vergleichOffen()) schliesseVergleich();
-  }
-  zeichneWerkzeugleiste();
-}
-
-/* Die übrigen Werkzeuge als Liste am Knopf — beschriftet, mit Kürzel, wie
-   ein Menü. Sie hängt am Fenster, nicht an der Zeile: die Zeile darf scrollen. */
-function zeigeWeitereWerkzeuge(knopf) {
-  $('#weitere-werkzeuge')?.remove();
-  const liste = el('div', { klasse: 'menue-liste', id: 'weitere-werkzeuge', role: 'menu' });
-  for (const id of WEITERE_WERKZEUGE) {
-    const werkzeug = WERKZEUGE.find((w) => w.id === id);
-    if (!werkzeug) continue;
-    liste.append(el('button', {
-      klasse: `menue-eintrag ${zustand.werkzeug === id ? 'ist-an' : ''}`,
-      role: 'menuitem',
-      beiClick: () => { liste.remove(); setzeWerkzeug(id); },
-    },
-      el('span', { klasse: 'menue-name', text: werkzeug.name }),
-      el('span', { klasse: 'menue-kuerzel', text: werkzeug.kuerzel })));
-  }
-  document.body.append(liste);
-
-  const kasten = knopf.getBoundingClientRect();
-  const breite = liste.getBoundingClientRect().width;
-  const rand = 8;
-  liste.style.top = `${Math.round(kasten.bottom + 2)}px`;
-  liste.style.left = `${Math.round(Math.max(rand, Math.min(kasten.left, window.innerWidth - breite - rand)))}px`;
-  liste.style.maxHeight = `${Math.round(window.innerHeight - kasten.bottom - rand * 2)}px`;
-
-  knopf.setAttribute('aria-expanded', 'true');
-
-  const zu = (ereignis) => {
-    if (ereignis && liste.contains(ereignis.target)) return;
-    liste.remove();
-    knopf.setAttribute('aria-expanded', 'false');
-    document.removeEventListener('pointerdown', zu, true);
-    document.removeEventListener('keydown', beiTaste, true);
-    window.removeEventListener('resize', zu);
-  };
-  /* Escape schließt, und der Fokus geht dorthin zurück, wo er herkam. Ohne
-     das steht er nach dem Schließen auf einem Knopf, den es nicht mehr gibt,
-     und die Tastatur fängt oben auf der Seite wieder an. */
-  const beiTaste = (ereignis) => {
-    if (ereignis.key !== 'Escape') return;
-    ereignis.preventDefault();
-    zu();
-    knopf.focus();
-  };
-  setTimeout(() => document.addEventListener('pointerdown', zu, true), 0);
-  document.addEventListener('keydown', beiTaste, true);
-  window.addEventListener('resize', zu, { once: true });
-  liste.querySelector('button')?.focus();
 }
 
 /* ---------- Dialoge --------------------------------------------------------- */
@@ -1082,7 +925,7 @@ export function starteOberflaeche() {
   starteWerkzeuge($('#spur'), zuPdfPunkt);
   starteTastatur();
   setzeKennwortFrager(frageKennwort);
-  zeichneWerkzeugleiste();
+  zeichneVerlaufsknoepfe();
 
   // Kopf und Fuß
   $('#knopf-seitenleiste').addEventListener('click', () => fuehreAus('leiste:umschalten'));
@@ -1217,7 +1060,6 @@ export function starteOberflaeche() {
   hoer('mitdenken:geaendert', zeichneRechteTafel);
   hoer('ocr:geaendert', () => { zeichneRechteTafel(); aktualisiereFuss(); });
   hoer('formular:geaendert', () => { zeichneRechteTafel(); zeichneFeldertafel(); });
-  hoer('werkzeug:gewechselt', zeichneWerkzeugleiste);
   /* Vom Betriebssystem hereingereicht („Öffnen mit → PDF Studio"). Derselbe
      Weg wie der Dateiwähler — es gibt keinen zweiten Eingang. */
   hoer('dateien:hereingereicht', (dateien) => oeffne(dateien, false));
@@ -1231,7 +1073,6 @@ export function starteOberflaeche() {
     }
     navigator.serviceWorker?.addEventListener?.('controllerchange', () => zeichneStand(standAnzeige));
   }
-  zeigeUeberhang();
   /* Die Kacheln auf dem Empfang. Sie stehen unter der Karte, nicht darin: wer
      eine Datei hinlegen will, soll das zuerst sehen. */
   import('./einzelwerkzeuge.js').then(({ werkzeugKacheln }) => {
@@ -1370,32 +1211,9 @@ function seitenformat(eintrag) {
 /* Zwei Knöpfe, die vorher nur als Tastenkombination existierten. Ein Mensch,
    der einen Fehler gemacht hat, sucht einen Knopf, keine Kombination. */
 function aktualisiereRueckgaengig() {
-  /* Die beiden Knöpfe stehen in der Werkzeugzeile und werden mit ihr
-     gezeichnet — Zustand und Tooltip entstehen dort. */
-  zeichneWerkzeugleiste();
+  zeichneVerlaufsknoepfe();
 }
 
-
-/* Sagt der Werkzeugzeile an, auf welcher Seite noch etwas liegt. Bei 944 px
-   passen zwölf von fünfzehn Werkzeugen hinein; die drei übrigen waren
-   erreichbar, aber unsichtbar. Ein verstecktes Werkzeug ist ein fehlendes. */
-function zeigeUeberhang() {
-  const zeile = $('#werkzeugleiste');
-  const huelle = $('#werkzeugzeile-huelle');
-  if (!zeile || !huelle) return;
-  const pruefe = () => {
-    const rest = zeile.scrollWidth - zeile.clientWidth - Math.round(zeile.scrollLeft);
-    huelle.toggleAttribute('data-mehr-links', zeile.scrollLeft > 2);
-    huelle.toggleAttribute('data-mehr-rechts', rest > 2);
-  };
-  zeile.addEventListener('scroll', pruefe, { passive: true });
-  window.addEventListener('resize', drossel(pruefe, 120));
-  /* Auch nach jedem Neuzeichnen: die Zeile ändert ihre Breite, wenn ein
-     Werkzeug ein Wort dazubekommt. */
-  hoer('werkzeug:gewechselt', () => setTimeout(pruefe, 0));
-  hoer('dokument:geladen', () => setTimeout(pruefe, 0));
-  setTimeout(pruefe, 0);
-}
 
 /* ---------- Nur gewählte Seiten zeigen -------------------------------------- */
 

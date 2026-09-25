@@ -33,28 +33,31 @@ ohne eine eigene Datei zu suchen.
 
 ## Gestaltung
 
-Oberfläche und Marketingseite folgen dem Handoff „PDF Studio": Akzent
-`#0f766e`, dunkle Chrome `#1d2327`, Bühne `#5f686e`, Papier `#fdfcf9`,
-Statusleiste `#333b40`, IBM Plex in Sans, Serif und Mono, nur 4er-Schritte im
-Raster, **Radius 0** — alles kantig. Aufbau von oben: Titelleiste 38 px mit
-Dokumentreitern und akzentfarbenem Primärknopf, Menüleiste 27 px,
-Werkzeugzeile 46 px, dann Bühne mit den beiden Leisten (196 px links, 296 px
-rechts), unten Statusleiste 30 px.
+Oberfläche und Webseite stehen in der **Apple-Anmutung** auf der Richtung
+„Vorgang" (ausführlich in `doku/vorgang.md`): helle, ruhige Flächen, Blau
+(`#0066CC` als Schrift, `#0071E3` als Fläche) für alles Bedienbare,
+Orange/Grün/Rot nur für Zustände, Radien wie in macOS (8/10/14, Kapseln für
+Schalter und Meldungen), weiche weite Schatten, keine Versalien. Die Schrift
+ist die des Geräts — auf Apple-Geräten SF Pro, sonst die beiliegende Inter;
+SF selbst darf nicht mitgeliefert werden. Aufbau: ein Kopf von 56 px mit
+Dokumentreitern, Verlauf, Befehlsfeld und „Sichern", darunter die
+Vorgangsschiene links (264 px), die Bühne und die rechte Leiste (320 px);
+Seitenzahl und Zoom schweben als Pille über der Bühne. Unter 900 px werden
+die Leisten zu Schubladen.
 
 **Das Seitenraster sitzt in der Mitte, nicht über allem.** Es war einmal ein
 weißes Vollbild, das Reiter, Leisten und Statuszeile verdeckte. Jetzt tauscht
-es die Bühne aus, wie der Vergleich es auch tut: Aktionsleiste 46 px in
-Chromefarbe, darunter das Raster auf dem dunkleren Bühnenton, Karten mit
-Häkchen und Mono-Fußzeile.
+es die Bühne aus, wie der Vergleich es auch tut: oben eine Werkzeugleiste,
+darunter das Raster auf dem Bühnenton, Karten mit rundem Häkchen und
+Seitentitel.
 
 **Leere Tafeln sagen, was dort stünde — und wie es dorthin kommt.** „Noch
 nichts geändert." allein ist eine Absage. Ein Leerzustand hat drei Teile:
 Zeichen, Satz, Weg (`leerBild` im Kern). Der Weg ist der wichtigste.
 
-**Der Empfang trägt dieselbe Sprache wie das Programm** — dunkle Titelleiste
-38 px mit Wortmarke, kantige Karte, Mono-Zeile, Serif-Überschrift, der Knopf,
-den man drücken soll, akzentfarben. Er war das Einzige ohne Vorbild und sah
-danach aus.
+**Der Empfang trägt dieselbe Sprache wie das Programm** — derselbe Kopf,
+eine Karte mit großer fetter Überschrift in der Systemschrift, der Knopf, den
+man drücken soll, blau. Er war das Einzige ohne Vorbild und sah danach aus.
 
 **In der dunklen Fassung ist die Bühne der dunkelste Grund.** Sie war heller
 als die Tafeln daneben — dann liegt das Blatt nicht auf einem Tisch, sondern

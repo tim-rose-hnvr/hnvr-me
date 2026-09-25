@@ -404,7 +404,7 @@ export function zeigeEinstellungen(kategorie = offeneKategorie) {
   /* Das Handoff setzt die Fassung unter die Kategorien. Sie steht hier, weil
      es der einzige Ort ist, an dem jemand danach sucht. */
   liste.append(el('div', { klasse: 'einst-fassung' },
-    el('div', { klasse: 'mono', text: 'FASSUNG' }),
+    el('div', { text: 'Fassung' }),
     el('div', { klasse: 'mono', text: `${FASSUNG} · örtlich` })));
 
   zeichneInhalt();

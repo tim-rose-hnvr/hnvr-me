@@ -20,6 +20,14 @@ Nachladen zur Laufzeit (Leitprinzip 2 der Projektanweisung).
 | `qpdf.wasm`, `qpdf.js`, `qpdf.mjs`, `browser.js` | `@jspawn/qpdf-wasm` | 0.0.2 | Apache-2.0 |
 | `forge.mjs` | `node-forge/dist/forge.min.js` | 1.4.0 | BSD-3-Clause (oder GPL-2.0) |
 | `schrift/plex-*.woff2` | `@fontsource/ibm-plex-sans`, `-condensed`, `-serif`, `-mono` (Teilmenge `latin`) | 5.2.5 | OFL-1.1 |
+| `schrift/inter-latin-wght.woff2`, `schrift/INTER-OFL.txt` | `@fontsource-variable/inter` (`files/inter-latin-wght-normal.woff2`, variable Achse Gewicht) | 5.3.0 | OFL-1.1 |
+
+Zur Schrift: Die Oberfläche steht auf Apple-Geräten in der Systemschrift
+(`-apple-system` — das ist SF Pro). SF Pro selbst liegt hier **nicht**: Apples
+Lizenz erlaubt sie nur für Oberflächen auf Apple-Plattformen, nicht zum
+Ausliefern mit einer Web-Anwendung. Auf allen anderen Geräten greift Inter —
+sie ist SF in Maß und Anmutung am nächsten und steht unter der OFL. Die
+Plex-Schnitte bleiben für Ziffern (Mono) und für die Seitenattrappen.
 
 Arbeitsteilung: `pdf.js` liest und zeichnet, `pdf-lib` schreibt, `tesseract.js`
 erkennt Text in Bildern, `qpdf` verschlüsselt, entschlüsselt, repariert und
@@ -77,6 +85,9 @@ cp node_modules/tesseract.js-core/tesseract-core-simd-lstm.{js,wasm}  studio/fre
 #   gzip -9 -c deu.traineddata > studio/fremd/sprachen/deu.traineddata.gz
 #   gzip -9 -c eng.traineddata > studio/fremd/sprachen/eng.traineddata.gz
 cp node_modules/@jspawn/qpdf-wasm/{qpdf.wasm,qpdf.js,qpdf.mjs,browser.js} studio/fremd/
+# Inter: npm pack @fontsource-variable/inter
+#   cp package/files/inter-latin-wght-normal.woff2 studio/fremd/schrift/inter-latin-wght.woff2
+#   cp package/LICENSE                             studio/fremd/schrift/INTER-OFL.txt
 # node-forge: UMD in ein ES-Modul wickeln (Kopf mit module/exports, Fuss mit export default)
 #   siehe Kopfkommentar in studio/fremd/forge.mjs
 node studio/werkzeuge/pruefen.mjs                  # danach den Prüflauf fahren

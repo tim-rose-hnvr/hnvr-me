@@ -85,6 +85,47 @@ gelesen. Ihre Vorgabe heißt jetzt **Passend zum Fenster** — 100 %, wo die
 Seite samt Rand auf die Bühne passt, sonst Breite. Auf dem Desktop ändert
 sich nichts, auf dem Telefon passt das Blatt ins Fenster.
 
+## Apple-Anmutung
+
+Die Richtung bleibt „Vorgang" — die Schiene, die Blase, die Schubladen. Neu
+ist die Hand, in der sie gezeichnet ist: näher an macOS und iPadOS, weil das
+Studio dort zu Hause ist.
+
+| Was | Vorher | Jetzt |
+|---|---|---|
+| Akzent | fast Schwarz, stärkster Kontrast zum Grund | Blau: `#0066CC` als Schrift, `#0071E3` als Fläche |
+| Schrift | IBM Plex Sans, Mono für Etiketten | Systemschrift (SF Pro auf Apple-Geräten), sonst Inter; Ziffern tabellarisch |
+| Etiketten | Mono, Versalien, gesperrt | halbfett, normale Schreibung |
+| Radien | 6 / 10 | 8 / 10 / 14, Kapseln für Schalter und Meldungen |
+| Reiter | Strich unter dem Wort | Segmentsteuerung |
+| Schalter | eckig, blau | iOS-Schalter, grün |
+| Blase an der Auswahl | helle Tafel | dunkles HUD wie das Bearbeiten-Menü auf dem iPhone |
+| Dialoge | dunkler Kopfbalken | Blatt mit Titel auf der Fläche, runder Schließknopf, Grund verwischt |
+| Pille, Meldungen | Fläche | Material: durchscheinend mit Unschärfe |
+
+**Die Farbregel wird genauer, nicht aufgegeben.** Blau heißt bedienbar,
+Orange/Grün/Rot heißen Zustand. Blau gibt es zweimal, aus einem gerechneten
+Grund: in der dunklen Fassung gibt es keinen Blauton, der als Schrift auf
+Dunkel *und* als Fläche unter weißer Schrift je 4,5:1 schafft — die Bereiche
+überlappen nicht. Also `--tally` für Schrift und Linie, `--tally-voll` für
+Flächen.
+
+**SF Pro liegt nicht bei.** Apples Lizenz erlaubt sie nur für Oberflächen auf
+Apple-Plattformen. Auf einem Mac oder iPad nimmt das Studio sie vom Gerät,
+überall sonst greift Inter (OFL, ein variabler Schnitt, 48 kB).
+
+Beim Umbau kamen Fehler heraus, die älter sind als er:
+
+- Der Einstellungsknopf im Kopf reichte das Klick-Ereignis als Kategorie
+  durch — der Dialog zeigte „[object PointerEvent]" und keine Einstellung.
+- Seitenordnung und Vergleich trugen weiße Schrift auf `--chrome-600`, gebaut
+  für die dunkle Chrome der Registratur. Seit „Vorgang" stand das grau auf
+  grau.
+- Auf der Webseite hob eine spätere Regel die Ausblendung der Navigation
+  auf dem Telefon wieder auf; die Punkte lagen hinter dem Kopfknopf.
+- Fünf feste Farbwerte auf der Webseite hätten in der dunklen Fassung dunkle
+  Schrift auf Dunkel ergeben.
+
 ## Was noch nicht existiert
 
 Die Bauteilbibliothek in Figma und die übrigen Bildschirme dort (Empfang,

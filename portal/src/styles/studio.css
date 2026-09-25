@@ -1,15 +1,16 @@
 /* PDF Studio — Gestaltung der Seite.
 
-   Farben, Schriften und Formen folgen derselben Richtung wie die Anwendung
-   (studio/app/stil.css): „Vorgang" — der Akzent ist kein Farbton, sondern der
-   stärkste Kontrast zum Grund; Farbe bedeutet Zustand, nie Marke; Radien nur
-   dort, wo etwas bedienbar ist. Seite und Anwendung sollen wie ein Stück wirken — wer auf
-   „PDF Studio öffnen" klickt, soll nicht das Gefühl haben, ein anderes Haus
-   zu betreten.
+   Apple-Anmutung, dieselbe Liste wie die Anwendung (studio/app/stil.css):
+   Blau für alles Bedienbare, Orange/Grün/Rot für Zustände, große fette
+   Überschriften, Kapselknöpfe, weiche Schatten, keine Versalien. Auf
+   Apple-Geräten die Systemschrift (SF Pro), sonst Inter.
 
    Die Schriften liegen unter public/schrift und kommen nicht von Google:
-   dieselbe Regel, nach der das Studio gebaut ist, gilt auch für diese Seite. */
+   dieselbe Regel, nach der das Studio gebaut ist, gilt auch für diese Seite.
+   SF Pro selbst liegt nicht bei — Apples Lizenz erlaubt das nicht. */
 
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('/schrift/inter-latin-wght.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap;
   src: url('/schrift/plex-sans-400.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 500; font-display: swap;
@@ -34,71 +35,70 @@
   src: url('/schrift/plex-mono-500.woff2') format('woff2'); }
 
 :root {
-  /* „Vorgang" — dieselbe Richtung wie die Anwendung (studio/app/stil.css).
-     Wort für Wort dieselbe Liste; wer auf „PDF Studio öffnen" klickt, soll
-     nicht das Gefühl haben, ein anderes Haus zu betreten.
+  /* Apple-Anmutung — dieselbe Liste wie die Anwendung (studio/app/stil.css).
+     Wer auf „PDF Studio öffnen" klickt, soll nicht das Gefühl haben, ein
+     anderes Haus zu betreten.
 
-     **Farbe bedeutet Zustand, nie Marke.** Ocker heißt offen, Grün heißt
-     erledigt, Rot heißt unumkehrbar. Der Akzent ist kein Farbton, sondern
-     der stärkste Kontrast zum Grund — fast schwarz hell, fast weiß dunkel.
-     Damit kann er in keiner Fassung zu schwach werden.
+     **Blau heißt bedienbar, Orange/Grün/Rot heißen Zustand.** Blau gibt es
+     zweimal: --tally als Schrift und Linie, --tally-voll als Fläche unter
+     weißer Schrift. In der dunklen Fassung gibt es keinen Blauton, der
+     beides mit 4,5:1 schafft — die Bereiche überlappen nicht.
 
-     Radien gibt es wieder, aber nur dort, wo etwas bedienbar ist. Papier
-     bleibt eckig.
+     Eine Seite wird gelesen, nicht abgearbeitet: die Überschriften stehen
+     groß, fett und eng gesetzt wie auf Apples Produktseiten, der Fließtext
+     in 17 px. Knöpfe sind Kapseln. Papier bleibt eckig. */
+  --radius-klein: 8px;
+  --radius: 12px;
+  --radius-gross: 18px;
+  --radius-voll: 980px;
 
-     Ein Unterschied zur Anwendung ist Absicht: die Anwendung setzt ihre
-     Bedienung dicht, eine Seite wird gelesen. Der Fließtext steht hier
-     größer, schmal ist nur, was Etikett ist. */
-  --radius-klein: 6px;
-  --radius: 6px;
-  --radius-gross: 10px;
-
-  --grund:        #FAFAF8;
+  --grund:        #FFFFFF;
   --flaeche:      #FFFFFF;
-  --flaeche-tief: #F1F1EE;
-  --flaeche-hoch: #F6F6F3;
-  --tinte:        #16181A;
-  --tinte-leise:  #6B6F72;
-  --tinte-still:  #9A9E9F;
-  --linie:        #E4E4DF;
-  --linie-stark:  #CFCFC8;
+  --flaeche-tief: #F5F5F7;
+  --flaeche-hoch: #FAFAFC;
+  --tinte:        #1D1D1F;
+  --tinte-leise:  #6E6E73;
+  --tinte-still:  #AEAEB2;
+  --linie:        #E5E5EA;
+  --linie-stark:  #D1D1D6;
 
-  --tally:        #16181A;
-  --tally-hover:  #2C2F32;
-  --tally-grund:  rgba(22,24,26,.06);
-  --tally-text:   #FAFAF8;
-  --tally-hell:   #16181A;
+  --tally:        #0066CC;
+  --tally-voll:   #0071E3;
+  --tally-hover:  #0077ED;
+  --tally-grund:  rgba(0, 113, 227, .10);
+  --tally-text:   #FFFFFF;
+  --tally-hell:   #0066CC;
 
-  --gut:          #1E6B45;
-  --gut-grund:    rgba(30,107,69,.10);
-  --warn:         #8A5A00;
-  --warn-grund:   rgba(138,90,0,.10);
-  --gefahr:       #9B2C25;
+  --gut:          #1D7F3B;
+  --gut-grund:    rgba(52, 199, 89, .14);
+  --warn:         #B25000;
+  --warn-grund:   rgba(255, 149, 0, .14);
+  --gefahr:       #D70015;
 
-  /* Die Chrome ist nicht mehr dunkel. Die Namen bleiben, weil Regeln daran
-     hängen; --chrome-text und --chrome-leise kippen mit, sodass jede dieser
-     Regeln weiter stimmt. Genau diese Kopplung fehlte vorher: das Band
-     „dunkel" setzte #DFE4E6 fest und wäre hell auf hell gelandet. */
-  --chrome-900:   #FAFAF8;
-  --chrome-800:   #F1F1EE;
-  --chrome-linie: #E4E4DF;
-  --chrome-text:  #16181A;
-  --chrome-leise: #6B6F72;
+  --chrome-900:   rgba(255, 255, 255, .8);
+  --chrome-800:   #F5F5F7;
+  --chrome-linie: rgba(0, 0, 0, .08);
+  --chrome-text:  #1D1D1F;
+  --chrome-leise: #6E6E73;
+  --material:     saturate(180%) blur(20px);
 
   /* Für die Fenster-Attrappe im Aufmacher: dieselben Werte wie im Programm. */
-  --tafel:        #FAFAF8;
-  --buehne:       #EDEDE9;
+  --tafel:        #F5F5F7;
+  --buehne:       #E8E8ED;
   --papier:       #FFFFFF;
-  --papier-tinte: #16181A;
-  --papier-leise: #6B6F72;
-  --papier-linie: #E4E4DF;
+  --papier-tinte: #1D1D1F;
+  --papier-leise: #6E6E73;
+  --papier-linie: #E5E5EA;
 
-  --schatten-tafel: 0 8px 24px -4px rgba(22,24,26,.10), 0 1px 3px rgba(22,24,26,.06);
+  --schatten-tafel: 0 0 0 .5px rgba(0, 0, 0, .08), 0 4px 12px rgba(0, 0, 0, .06), 0 20px 48px rgba(0, 0, 0, .10);
+  --schatten-karte: 0 2px 8px rgba(0, 0, 0, .04), 0 12px 32px rgba(0, 0, 0, .06);
 
-  --sans:   'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
-  --schmal: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, -apple-system, "Segoe UI", Arial, sans-serif;
+  /* Auf Apple-Geräten SF Pro aus dem System, sonst Inter — die liegt bei. */
+  --sans:   -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --breit:  -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --schmal: var(--sans);
   --serif:  'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
-  --mono:   'IBM Plex Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --mono:   ui-monospace, "SF Mono", 'IBM Plex Mono', Menlo, Consolas, monospace;
 
   --spur: 75rem;
   --lauf: 34rem;
@@ -110,69 +110,67 @@
    Dunkeln orangerot, das Programm türkis. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --grund:        #101214;
-    --flaeche:      #17191C;
-    --flaeche-tief: #1E2125;
-    --flaeche-hoch: #1A1D20;
-    --tinte:        #E8E9EA;
-    --tinte-leise:  #9BA0A4;
-    --tinte-still:  #6E7378;
-    --linie:        #26292D;
-    --linie-stark:  #3A3E43;
-    --tally:        #E8E9EA;
-    --tally-hover:  #FFFFFF;
-    --tally-grund:  rgba(232,233,234,.10);
-    --tally-text:   #101214;
-    --tally-hell:   #E8E9EA;
-    --gut:          #5FBF8C;
-    --gut-grund:    rgba(95,191,140,.14);
-    --warn:         #D9A441;
-    --warn-grund:   rgba(217,164,65,.14);
-    --gefahr:       #E08A82;
-    --chrome-900:   #101214;
-    --chrome-800:   #1E2125;
-    --chrome-linie: #26292D;
-    --chrome-text:  #E8E9EA;
-    --chrome-leise: #9BA0A4;
-    --tafel:        #101214;
-    --buehne:       #0B0D0E;
-    /* Das Blatt bleibt in beiden Fassungen weiß, und alles, was darauf liegt,
-       bleibt dunkel. Genau das ging in der alten Runde verloren: das Papier
-       blieb weiß, die Schrift darauf kippte mit — 1,2:1. */
-    --schatten-tafel: 0 8px 24px -4px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.4);
+    --grund:        #000000;
+    --flaeche:      #1C1C1E;
+    --flaeche-tief: #161617;
+    --flaeche-hoch: #1F1F21;
+    --tinte:        #F5F5F7;
+    --tinte-leise:  #A1A1A6;
+    --tinte-still:  #636366;
+    --linie:        #38383A;
+    --linie-stark:  #48484A;
+    --tally:        #409CFF;
+    --tally-voll:   #0071E3;
+    --tally-hover:  #0077ED;
+    --tally-grund:  rgba(64, 156, 255, .18);
+    --tally-text:   #FFFFFF;
+    --tally-hell:   #409CFF;
+    --gut:          #30D158;
+    --gut-grund:    rgba(48, 209, 88, .16);
+    --warn:         #FF9F0A;
+    --warn-grund:   rgba(255, 159, 10, .16);
+    --gefahr:       #FF6961;
+    --chrome-900:   rgba(22, 22, 23, .8);
+    --chrome-800:   #1C1C1E;
+    --chrome-linie: rgba(255, 255, 255, .10);
+    --chrome-text:  #F5F5F7;
+    --chrome-leise: #A1A1A6;
+    --tafel:        #1C1C1E;
+    --buehne:       #0E0E0F;
+    --schatten-tafel: 0 0 0 .5px rgba(255, 255, 255, .10), 0 20px 48px rgba(0, 0, 0, .6);
+    --schatten-karte: 0 0 0 .5px rgba(255, 255, 255, .08), 0 12px 32px rgba(0, 0, 0, .5);
   }
 }
 :root[data-theme="dark"] {
-  --grund:        #101214;
-  --flaeche:      #17191C;
-  --flaeche-tief: #1E2125;
-  --flaeche-hoch: #1A1D20;
-  --tinte:        #E8E9EA;
-  --tinte-leise:  #9BA0A4;
-  --tinte-still:  #6E7378;
-  --linie:        #26292D;
-  --linie-stark:  #3A3E43;
-  --tally:        #E8E9EA;
-  --tally-hover:  #FFFFFF;
-  --tally-grund:  rgba(232,233,234,.10);
-  --tally-text:   #101214;
-  --tally-hell:   #E8E9EA;
-  --gut:          #5FBF8C;
-  --gut-grund:    rgba(95,191,140,.14);
-  --warn:         #D9A441;
-  --warn-grund:   rgba(217,164,65,.14);
-  --gefahr:       #E08A82;
-  --chrome-900:   #101214;
-  --chrome-800:   #1E2125;
-  --chrome-linie: #26292D;
-  --chrome-text:  #E8E9EA;
-  --chrome-leise: #9BA0A4;
-  --tafel:        #101214;
-  --buehne:       #0B0D0E;
-  /* Das Blatt bleibt in beiden Fassungen weiß, und alles, was darauf liegt,
-     bleibt dunkel. Genau das ging in der alten Runde verloren: das Papier
-     blieb weiß, die Schrift darauf kippte mit — 1,2:1. */
-  --schatten-tafel: 0 8px 24px -4px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.4);
+  --grund:        #000000;
+  --flaeche:      #1C1C1E;
+  --flaeche-tief: #161617;
+  --flaeche-hoch: #1F1F21;
+  --tinte:        #F5F5F7;
+  --tinte-leise:  #A1A1A6;
+  --tinte-still:  #636366;
+  --linie:        #38383A;
+  --linie-stark:  #48484A;
+  --tally:        #409CFF;
+  --tally-voll:   #0071E3;
+  --tally-hover:  #0077ED;
+  --tally-grund:  rgba(64, 156, 255, .18);
+  --tally-text:   #FFFFFF;
+  --tally-hell:   #409CFF;
+  --gut:          #30D158;
+  --gut-grund:    rgba(48, 209, 88, .16);
+  --warn:         #FF9F0A;
+  --warn-grund:   rgba(255, 159, 10, .16);
+  --gefahr:       #FF6961;
+  --chrome-900:   rgba(22, 22, 23, .8);
+  --chrome-800:   #1C1C1E;
+  --chrome-linie: rgba(255, 255, 255, .10);
+  --chrome-text:  #F5F5F7;
+  --chrome-leise: #A1A1A6;
+  --tafel:        #1C1C1E;
+  --buehne:       #0E0E0F;
+  --schatten-tafel: 0 0 0 .5px rgba(255, 255, 255, .10), 0 20px 48px rgba(0, 0, 0, .6);
+  --schatten-karte: 0 0 0 .5px rgba(255, 255, 255, .08), 0 12px 32px rgba(0, 0, 0, .5);
 }
 
 * { box-sizing: border-box; }
@@ -203,7 +201,7 @@ body {
    (ruhiger als der Grund, in beiden Fassungen) und „akzent" den stärksten
    Kontrast zum Grund — fast schwarz hell, fast weiß dunkel. */
 .band-dunkel { background: var(--buehne); color: var(--tinte); border-bottom-color: var(--linie-stark); }
-.band-akzent { background: var(--tally); color: var(--tally-text); border-bottom-color: var(--tally); }
+.band-akzent { background: var(--tally-voll); color: var(--tally-text); border-bottom-color: var(--tally); }
 .band-dunkel h2 { color: var(--tinte); }
 .band-akzent h2 { color: var(--tally-text); }
 .band-dunkel .leise { color: var(--tinte-leise); }
@@ -215,18 +213,19 @@ body {
 }
 .abschnitt-kopf h2 { margin-bottom: 0; }
 
-h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
+h1, h2, h3 { font-family: var(--breit); font-weight: 600; text-wrap: balance; margin: 0; }
 h1 { font-size: clamp(2.6rem, 7vw, 4.4rem); line-height: 1.02; letter-spacing: -.02em; }
 h2 { font-size: clamp(1.6rem, 3.4vw, 2.3rem); line-height: 1.15; margin-bottom: 1rem; }
 h3 { font-size: 1.0625rem; font-family: var(--sans); font-weight: 600; margin-bottom: .25rem; }
 p { margin: 0 0 1rem; }
 p:last-child { margin-bottom: 0; }
 
+/* Die Zeile über einer Überschrift: halbfett, zurückhaltend, ohne Versalien. */
 .marke {
-  font-family: var(--mono);
-  font-size: .75rem;
-  letter-spacing: .14em;
-  text-transform: uppercase;
+  font-family: var(--sans); font-weight: 600;
+  font-size: .9375rem;
+ 
+ 
   color: var(--tinte-leise);
   display: block;
   margin-bottom: .9rem;
@@ -240,7 +239,7 @@ p:last-child { margin-bottom: 0; }
   gap: 1rem; padding: 1.1rem 0; border-bottom: 1px solid var(--linie);
 }
 .wortmarke {
-  font-family: var(--serif); font-size: 1.2rem; font-weight: 600;
+  font-family: var(--breit); font-size: 1.2rem; font-weight: 600;
   display: flex; align-items: center; gap: .55rem;
 }
 .wortmarke svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: var(--tally); stroke-width: 1.5; }
@@ -255,24 +254,17 @@ p:last-child { margin-bottom: 0; }
 .these { font-size: 1.2rem; margin-top: 1.5rem; max-width: 32rem; }
 .these strong { font-weight: 600; }
 
-/* Der Stempel — das einzige laute Element der Seite. Er stammt aus der
-   Anwendung: dort setzt man damit „Genehmigt" oder „Entwurf" auf eine Seite. */
+/* Früher ein schräger Stempel in Versalien — das einzige laute Element der
+   Seite. In der Apple-Anmutung ist es eine ruhige Kapsel: grün getönt,
+   weil „kostenlos" ein Zustand ist, keine Handlung. */
 .stempel {
-  display: inline-flex; flex-direction: column; align-items: center; gap: .1rem;
-  border: 3px solid var(--tally); color: var(--tally);
-  border-radius: var(--radius-klein); padding: .7rem 1.4rem;
-  font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  font-size: 1.05rem; line-height: 1.1;
-  transform: rotate(-4deg);
-  margin-top: 2.2rem;
-  animation: aufdruck .5s cubic-bezier(.2, 1.5, .4, 1) both;
+  display: inline-flex; align-items: baseline; gap: .5rem;
+  background: var(--gut-grund); color: var(--gut);
+  border-radius: var(--radius-voll); padding: .45rem 1rem;
+  font-weight: 600; font-size: .9375rem; line-height: 1.2;
+  margin-top: 2rem;
 }
-.stempel span { font-size: .6rem; letter-spacing: .18em; opacity: .85; font-weight: 600; }
-@keyframes aufdruck {
-  from { transform: rotate(-4deg) scale(1.35); opacity: 0; }
-  to   { transform: rotate(-4deg) scale(1); opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) { .stempel { animation: none; } }
+.stempel span { font-weight: 500; opacity: .9; }
 
 /* Fenster-Attrappe im Aufmacher. Sie zeigt, wie das Studio aussieht —
    vorher stand hier eine Liste von Werkzeugnamen, und die zeigt nur, dass es
@@ -291,14 +283,14 @@ p:last-child { margin-bottom: 0; }
   display: flex; align-items: center; gap: .5rem;
   padding: 7px 10px; border-bottom: 1px solid var(--chrome-linie);
 }
-.fenster-marke { font-family: var(--serif); font-weight: 600; font-size: .8125rem; color: var(--chrome-text); }
+.fenster-marke { font-family: var(--breit); font-weight: 600; font-size: .8125rem; color: var(--chrome-text); }
 .fenster-reiter {
   font-size: .6875rem; color: var(--chrome-text);
   background: var(--flaeche); border: 1px solid var(--linie);
   border-radius: var(--radius-klein); padding: 3px 8px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.fenster-reiter b { font-family: var(--mono); font-weight: 400; color: var(--chrome-leise); margin-left: .3rem; }
+.fenster-reiter b { font-family: var(--sans); font-variant-numeric: tabular-nums; font-weight: 400; color: var(--chrome-leise); margin-left: .3rem; }
 .fenster-kopfrechts { margin-left: auto; display: flex; gap: .3rem; flex: none; }
 .fenster-chip {
   font-style: normal; font-size: .625rem; padding: 3px 8px;
@@ -306,8 +298,8 @@ p:last-child { margin-bottom: 0; }
   color: var(--chrome-text); white-space: nowrap;
 }
 .fenster-chip.ist-voll {
-  background: var(--tally); border-color: var(--tally); color: var(--tally-text);
-  letter-spacing: .06em; text-transform: uppercase;
+  background: var(--tally-voll); border-color: var(--tally); color: var(--tally-text);
+ 
 }
 .fenster-rumpf { display: grid; grid-template-columns: 1.15fr 1.7fr 1.15fr; background: var(--flaeche); }
 
@@ -319,8 +311,8 @@ p:last-child { margin-bottom: 0; }
 }
 .fv-kopf {
   display: flex; justify-content: space-between; align-items: baseline;
-  font-family: var(--mono); font-size: .5625rem; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--tinte-leise);
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .5625rem;
+  color: var(--tinte-leise);
   padding: 0 4px 8px;
 }
 .fv-kopf b { font-weight: 400; }
@@ -334,7 +326,7 @@ p:last-child { margin-bottom: 0; }
   background: var(--tinte-still);
 }
 .fv-schritt > b {
-  margin-left: auto; font-family: var(--mono); font-weight: 400;
+  margin-left: auto; font-family: var(--sans); font-variant-numeric: tabular-nums; font-weight: 400;
   font-size: .5625rem; color: var(--tinte-leise);
   background: var(--flaeche-tief); border-radius: var(--radius-klein); padding: 1px 5px;
 }
@@ -362,11 +354,11 @@ p:last-child { margin-bottom: 0; }
   box-shadow: var(--schatten-tafel);
 }
 .blatt-kopf {
-  font-family: var(--mono); font-size: .5rem; letter-spacing: .12em; color: var(--papier-leise);
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .5rem; color: var(--papier-leise);
   border-bottom: 1px solid var(--papier-linie); padding-bottom: 5px; margin-bottom: 3px;
 }
-.blatt-nummer { font-family: var(--mono); font-size: .6rem; color: var(--papier-leise); }
-.blatt-titel { font-family: var(--serif); font-size: .95rem; font-weight: 600; margin-bottom: 3px; color: var(--papier-tinte); }
+.blatt-nummer { font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .6rem; color: var(--papier-leise); }
+.blatt-titel { font-family: var(--breit); font-size: .95rem; font-weight: 600; margin-bottom: 3px; color: var(--papier-tinte); }
 /* Die Textzeilen im Blatt und in den Kommentarfäden. Vorher gab es nur
    `.zeile.hebt` und `.zeile.schwarz` — die schlichte `.zeile` hatte gar keine
    Regel und war damit unsichtbar: das Blatt zeigte eine Überschrift und zwei
@@ -380,9 +372,9 @@ p:last-child { margin-bottom: 0; }
 .zeile.schwarz { background: var(--papier-tinte); height: 5px; }
 .nadel {
   position: absolute; right: -9px; top: 46%;
-  width: 18px; height: 18px; background: var(--tally); color: var(--tally-text);
+  width: 18px; height: 18px; background: var(--tally-voll); color: var(--tally-text);
   border-radius: 0;
-  display: grid; place-items: center; font-family: var(--mono); font-size: .55rem;
+  display: grid; place-items: center; font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .55rem;
 }
 
 .fenster-kommentare { background: var(--flaeche); padding: 8px; display: grid; gap: 6px; align-content: start; }
@@ -392,12 +384,12 @@ p:last-child { margin-bottom: 0; }
 }
 .faden.ist-aktiv { border-left-color: var(--tally); }
 .faden-art {
-  font-family: var(--mono); font-size: .5rem; letter-spacing: .1em; text-transform: uppercase;
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .5rem;
   color: var(--tally); background: var(--tally-grund); padding: 1px 4px; justify-self: start;
 }
 .fenster-bildzeile {
-  margin: .7rem 0 0; font-family: var(--mono); font-size: .6875rem;
-  letter-spacing: .08em; text-transform: uppercase; color: var(--tinte-leise);
+  margin: .7rem 0 0; font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .6875rem;
+  color: var(--tinte-leise);
 }
 .fenster-bildzeile a { color: var(--tally); }
 
@@ -420,8 +412,8 @@ p:last-child { margin-bottom: 0; }
 table { border-collapse: collapse; width: 100%; font-size: .9375rem; min-width: 34rem; }
 th, td { text-align: left; padding: .55rem .9rem; border-bottom: 1px solid var(--linie); vertical-align: top; }
 thead th {
-  font-family: var(--mono); font-size: .6875rem; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--tinte-leise); font-weight: 500;
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .6875rem;
+  color: var(--tinte-leise); font-weight: 500;
   background: var(--flaeche-tief); position: sticky; top: 0;
 }
 tbody tr:last-child td { border-bottom: 0; }
@@ -436,7 +428,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .zahl {
   border-left: 3px solid var(--linie-stark); padding-left: .8rem;
 }
-.zahl b { display: block; font-family: var(--serif); font-size: 1.9rem; line-height: 1; }
+.zahl b { display: block; font-family: var(--breit); font-size: 1.9rem; line-height: 1; }
 .zahl span { font-size: .8125rem; color: var(--tinte-leise); }
 .zahl.betont { border-left-color: var(--tally); }
 .zahl.betont b { color: var(--tally); }
@@ -480,8 +472,8 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
   display: flex; flex-direction: column; gap: 2px; padding: 8px 14px;
   text-decoration: none; border-left: 2px solid transparent;
 }
-.klappe a:hover, .klappe a:focus-visible { background: #E6E9EB; border-left-color: var(--tally); outline: none; }
-.klappe-name { font-size: 12px; font-weight: 500; color: #1E252A; }
+.klappe a:hover, .klappe a:focus-visible { background: var(--flaeche-tief); border-left-color: var(--tally); outline: none; }
+.klappe-name { font-size: 13px; font-weight: 500; color: var(--tinte); }
 .klappe-hinweis { font-size: 10.5px; line-height: 1.4; color: var(--tinte-leise); }
 
 .kopf-rechts { margin-left: auto; display: flex; align-items: center; gap: 14px; flex: none; }
@@ -512,10 +504,10 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .portal-karte h2 { margin-bottom: .75rem; }
 .knopf-voll {
   display: inline-block; margin-top: 1.2rem;
-  background: var(--tally); color: var(--tally-text); text-decoration: none;
+  background: var(--tally-voll); color: var(--tally-text); text-decoration: none;
   border-radius: var(--radius-klein); padding: .6rem 1.3rem;
-  font-family: var(--mono); font-size: .82rem; font-weight: 500;
-  letter-spacing: .09em; text-transform: uppercase;
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .82rem; font-weight: 500;
+ 
 }
 .knopf-voll:hover { filter: brightness(1.08); }
 .knopf-voll:focus-visible { outline: 2px solid var(--tinte); outline-offset: 2px; }
@@ -523,22 +515,25 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .schritt { display: grid; grid-template-columns: 1.6rem 1fr; gap: .8rem; align-items: start; }
 .schritt b { font-weight: 600; }
 .schritt .nr {
-  font-family: var(--mono); font-size: .75rem; color: var(--tally);
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .75rem; color: var(--tally);
   border: 1px solid var(--tally); border-radius: 0;
   width: 1.5rem; height: 1.5rem; display: grid; place-items: center;
 }
 .schritt p { font-size: .9375rem; color: var(--tinte-leise); margin: .1rem 0 0; }
 
 /* ---------- Handlungsaufforderungen ----------------------------------------- */
-.knopf-reihe { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.8rem; }
+.knopf-reihe { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 1.8rem; }
+/* Der Vollknopf bringt aus dem Kundenbereich einen oberen Abstand mit; in
+   einer Reihe stünde er dadurch tiefer als sein Nachbar. */
+.knopf-reihe > * { margin-top: 0; }
 /* Derselbe Schnitt wie der Vollknopf: zwei Knöpfe nebeneinander, von denen
    einer in Versalien steht und der andere nicht, lesen sich wie zwei
    verschiedene Programme. */
 .knopf-rand {
   display: inline-block; border: 1px solid var(--linie-stark); border-radius: var(--radius-klein);
   padding: .6rem 1.3rem; color: var(--tinte); text-decoration: none;
-  font-family: var(--mono); font-size: .82rem; font-weight: 500;
-  letter-spacing: .09em; text-transform: uppercase; background: var(--flaeche);
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .82rem; font-weight: 500;
+  background: var(--flaeche);
 }
 .knopf-rand:hover { background: var(--flaeche-tief); }
 .knopf-rand:focus-visible, .knopf-voll:focus-visible { outline: 2px solid var(--tally); outline-offset: 2px; }
@@ -550,8 +545,12 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
    „Vorgang" hell. Damit braucht der Kopf eine Haarlinie: ohne sie stünde er
    ohne Kante auf demselben Grund wie der Abschnitt darunter, und beim
    Scrollen liefe der Text einfach darunter durch. */
+/* Die Kopfleiste ist Glas, wie auf apple.com: durchscheinend, mit
+   Unschärfe dahinter. Unter ihr scrollt die Seite — hier hat das Material
+   etwas zu verwischen, anders als in der Anwendung. */
 .kopf {
-  background: var(--chrome-900); border-bottom: 1px solid var(--linie);
+  background: var(--chrome-900); border-bottom: 1px solid var(--chrome-linie);
+  -webkit-backdrop-filter: var(--material); backdrop-filter: var(--material);
   position: sticky; top: 0; z-index: 40;
 }
 .kopf a, .kopf strong, .kopf .leise { color: var(--chrome-text); }
@@ -573,7 +572,7 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
 .markenzug:hover { color: var(--chrome-text); }
 .markenzug-zeichen {
   width: 23px; height: 28px; position: relative; flex: none;
-  background: var(--tally);
+  background: var(--tally-voll);
   clip-path: polygon(0 0, 66% 0, 100% 30%, 100% 100%, 0 100%);
 }
 .markenzug-zeichen::after {
@@ -581,23 +580,28 @@ td.grund { color: var(--tinte-leise); font-size: .875rem; }
   width: 34%; height: 30%; background: var(--tally-hell);
   clip-path: polygon(0 0, 100% 100%, 0 100%);
 }
-.markenzug-wort { font-family: var(--serif); font-weight: 600; font-size: 1.05rem; letter-spacing: 0; text-transform: none; display: block; }
+.markenzug-wort { font-family: var(--breit); font-weight: 600; font-size: 1.05rem; letter-spacing: 0; text-transform: none; display: block; }
 .markenzug-unterzeile {
-  font-family: var(--mono); font-size: .5rem; letter-spacing: 1.6px;
-  text-transform: uppercase; color: var(--chrome-leise); display: block;
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: .5rem;
+  color: var(--chrome-leise); display: block;
 }
 
-h1, h2, h3 { font-family: var(--serif); }
-h1 { font-size: clamp(2.2rem, 5vw, 3.44rem); line-height: 1.06; letter-spacing: -.6px; font-weight: 600; }
-h2 { font-size: clamp(1.5rem, 3vw, 1.94rem); letter-spacing: -.3px; font-weight: 600; }
+h1, h2, h3 { font-family: var(--breit); }
+/* Überschriften wie auf Apples Produktseiten: groß, fett, eng gesetzt. */
+h1 { font-size: clamp(2.5rem, 5.6vw, 4rem); line-height: 1.05; letter-spacing: -.03em; font-weight: 700; }
+h2 { font-size: clamp(1.75rem, 3.4vw, 2.5rem); line-height: 1.1; letter-spacing: -.02em; font-weight: 700; }
 h3 { font-size: 1.06rem; font-weight: 600; }
-.marke, .mono, .stempel, .markenzug-unterzeile { font-family: var(--mono); }
+.marke, .mono, .stempel, .markenzug-unterzeile { font-family: var(--sans); font-variant-numeric: tabular-nums; }
 
 /* Die invers gesetzte Vergleichssektion. */
 .kopf .spur.kopfzeile { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: .7rem; padding-bottom: .7rem; }
 .kopf-wege { display: flex; align-items: center; gap: 1.1rem; }
+/* Muss hinter der Regel darüber stehen: sie steht später in der Datei und
+   hob die Ausblendung weiter oben wieder auf — auf dem Telefon lagen die
+   Navigationspunkte hinter dem Knopf „Kostenlos öffnen". */
+@media (max-width: 40rem) { .kopf-wege { display: none; } }
 .knopf-voll {
-  background: var(--tally); color: var(--tally-text); border: 1px solid var(--tally);
+  background: var(--tally-voll); color: var(--tally-text); border: 1px solid var(--tally);
   padding: .35rem .8rem; text-decoration: none; font-size: .8125rem; font-weight: 500;
 }
 .knopf-voll:hover { background: var(--tally-hover); color: var(--tally-text); }
@@ -605,23 +609,25 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 
 /* ---------- Muster aus dem Handoff --------------------------------------- */
 
-/* Karten im Haarlinienraster: 1 px Fugen auf der Rasterfarbe, Karten weiß.
-   Handoff: auto-fit minmax(262px, 1fr), gap 1px, Rahmen in derselben Farbe. */
+/* Kacheln wie auf apple.com: frei stehend mit Luft dazwischen. Vorher ein
+   Haarlinienraster mit 1-px-Fugen — mit runden Ecken stießen die Karten
+   dort Ecke an Ecke aneinander. */
 .karten {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(262px, 1fr));
-  gap: 1px; background: var(--linie); border: 1px solid var(--linie);
+  gap: 1rem;
 }
 .karte {
-  background: var(--flaeche); padding: 22px 22px 24px;
-  display: flex; flex-direction: column; gap: 9px;
+  background: var(--flaeche); padding: 26px 24px 28px;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: transform .2s, box-shadow .2s;
 }
-.karte:hover { background: #FBFCFC; }
-.karte h3 { font-family: var(--serif); font-size: 17px; font-weight: 600; margin: 0; }
-.karte p { font-size: 12.5px; line-height: 1.6; margin: 0; color: var(--tinte-leise); }
+.karte:hover { transform: translateY(-2px); }
+.karte h3 { font-family: var(--breit); font-size: 19px; font-weight: 600; letter-spacing: -.01em; margin: 0; }
+.karte p { font-size: 14px; line-height: 1.55; margin: 0; color: var(--tinte-leise); }
 .karte-kopf { display: flex; align-items: center; gap: 10px; }
 .kachel {
-  width: 32px; height: 32px; flex: none; display: grid; place-items: center;
-  background: var(--tally-grund); color: var(--tally);
+  width: 36px; height: 36px; flex: none; display: grid; place-items: center;
+  background: var(--tally-grund); color: var(--tally); border-radius: var(--radius-klein);
 }
 .kachel svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.4; }
 .kachel svg rect { fill: currentColor; stroke: none; }
@@ -632,25 +638,25 @@ h3 { font-size: 1.06rem; font-weight: 600; }
   display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px;
 }
 .ablauf-karte {
-  background: var(--flaeche); border: 1px solid var(--linie); padding: 20px;
-  display: flex; flex-direction: column; gap: 11px;
-}
-.ablauf-kopf { display: flex; align-items: center; gap: 9px; }
-.ablauf-kopf i { flex: 1; height: 1px; background: #E4E8EA; }
-.ablauf-karte h3 { font-family: var(--serif); font-size: 16px; font-weight: 600; margin: 0; }
-.ablauf-karte p { font-size: 12px; line-height: 1.6; margin: 0; color: var(--tinte-leise); }
-.ablauf-fuss { margin-top: auto; color: #9AA3A8; }
-.raute { width: 8px; height: 8px; flex: none; background: var(--tally); transform: rotate(45deg); }
-
-/* Aussagenblock: weiß, 3 px Akzentkante links, Serif 17 px. Im Handoff steht
-   hier das Zitat einer Kundin — eine erfundene Kundin steht hier nicht. */
-.aussage {
-  margin: 28px 0 0; max-width: 760px;
-  background: var(--flaeche); border: 1px solid var(--linie);
-  border-left: 3px solid var(--tally); padding: 24px 26px;
+  background: var(--flaeche-tief); border: 0; border-radius: var(--radius-gross); padding: 24px;
   display: flex; flex-direction: column; gap: 12px;
 }
-.aussage p { font-family: var(--serif); font-size: 17px; line-height: 1.6; margin: 0; }
+.ablauf-kopf { display: flex; align-items: center; gap: 9px; color: var(--tally); font-weight: 600; }
+.ablauf-kopf i { flex: 1; height: 1px; background: var(--linie); }
+.ablauf-karte h3 { font-family: var(--breit); font-size: 19px; font-weight: 600; letter-spacing: -.01em; margin: 0; }
+.ablauf-karte p { font-size: 14px; line-height: 1.55; margin: 0; color: var(--tinte-leise); }
+.ablauf-fuss { margin-top: auto; color: var(--tinte-leise); font-size: 13px; }
+.raute { width: 8px; height: 8px; flex: none; background: var(--tally-voll); border-radius: var(--radius-voll); }
+
+/* Aussagenblock: ein Satz, groß gesetzt, ohne Kasten — wie ein Zitat auf
+   einer Apple-Seite. Im Handoff steht hier das Zitat einer Kundin — eine
+   erfundene Kundin steht hier nicht. */
+.aussage {
+  margin: 40px 0 0; max-width: 820px;
+  background: none; border: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.aussage p { font-family: var(--breit); font-size: clamp(1.25rem, 2.2vw, 1.6rem); font-weight: 600; letter-spacing: -.015em; line-height: 1.35; margin: 0; }
 .aussage footer {
   display: flex; align-items: center; gap: 9px;
   font-size: 11.5px; color: var(--tinte-leise);
@@ -676,9 +682,9 @@ h3 { font-size: 1.06rem; font-weight: 600; }
    sie an etwas gebunden hatte. */
 .vergleich-tafel { border: 1px solid var(--linie-stark); background: var(--flaeche); overflow-x: auto; }
 .vt-kopf, .vt-zeile { display: grid; grid-template-columns: minmax(0, 1.5fr) 118px 118px; }
-.vt-kopf { background: var(--tally); border-bottom: 1px solid var(--tally); }
+.vt-kopf { background: var(--tally-voll); border-bottom: 1px solid var(--tally); }
 .vt-kopf > div {
-  font-family: var(--mono); font-size: 9px; letter-spacing: .8px;
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: 9px;
   color: var(--tally-text); padding: 11px 16px;
 }
 .vt-kopf .vt-uns { text-align: center; padding: 11px 12px; font-weight: 500; }
@@ -687,11 +693,11 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 .vt-zeile:last-child { border-bottom: 0; }
 .vt-zeile > div { font-size: 12.5px; padding: 12px 16px; color: var(--tinte); }
 .vt-zeile .vt-uns {
-  font-family: var(--mono); font-size: 11px; padding: 12px; text-align: center;
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: 11px; padding: 12px; text-align: center;
   color: var(--tinte); background: var(--tally-grund);
 }
 .vt-zeile .vt-die {
-  font-family: var(--mono); font-size: 11px; padding: 12px; text-align: center;
+  font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: 11px; padding: 12px; text-align: center;
   color: var(--tinte-leise);
 }
 
@@ -702,20 +708,20 @@ h3 { font-size: 1.06rem; font-weight: 600; }
   background: var(--flaeche); border: 1px solid var(--linie);
 }
 .plan.ist-betont { border-color: var(--tally); box-shadow: var(--schatten-tafel); }
-.plan h3 { font-family: var(--serif); font-size: 21px; font-weight: 600; margin: 0; }
+.plan h3 { font-family: var(--breit); font-size: 21px; font-weight: 600; margin: 0; }
 .plan-marke { color: var(--tinte-leise); }
 .plan.ist-betont .plan-marke { color: var(--tally); }
 .plan-preis { display: flex; align-items: baseline; gap: 5px; }
-.plan-preis b { font-family: var(--serif); font-size: 36px; font-weight: 600; letter-spacing: -1px; }
+.plan-preis b { font-family: var(--breit); font-size: 36px; font-weight: 600; letter-spacing: -1px; }
 .plan-preis span { font-size: 11.5px; color: var(--tinte-leise); }
 .plan p { font-size: 12px; line-height: 1.6; margin: 0; color: var(--tinte-leise); }
-.plan-linie { height: 1px; background: #E4E8EA; margin: 2px 0; }
+.plan-linie { height: 1px; background: var(--linie); margin: 2px 0; }
 .plan-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
-.plan-liste li { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; line-height: 1.5; color: #3F4A51; }
-.plan-liste li::before { content: ''; width: 6px; height: 6px; flex: none; background: var(--tally); margin-top: 5px; }
+.plan-liste li { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.5; color: var(--tinte-leise); }
+.plan-liste li::before { content: ''; width: 6px; height: 6px; flex: none; background: var(--tally-voll); margin-top: 5px; }
 .plan-knopf {
   margin-top: auto; text-align: center; font-size: 12.5px; font-weight: 500;
-  padding: 11px 0; background: var(--tally); color: var(--tally-text); text-decoration: none;
+  padding: 11px 0; background: var(--tally-voll); color: var(--tally-text); text-decoration: none;
 }
 .plan-knopf:hover { background: var(--tally-hover); color: var(--tally-text); }
 .plan-knopf-still {
@@ -736,12 +742,12 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 }
 .fragen summary::-webkit-details-marker { display: none; }
 .fragen summary .marke { min-width: 18px; color: var(--tally); }
-.frage-text { font-size: 14px; font-weight: 500; color: #1E252A; flex: 1; }
+.frage-text { font-size: 17px; font-weight: 600; color: var(--tinte); flex: 1; }
 .fragen summary::after { content: '+'; font-size: 14px; color: var(--tinte-leise); }
 .fragen details[open] summary::after { content: '−'; }
 .fragen details p {
-  font-family: var(--serif); font-size: 13px; line-height: 1.7;
-  margin: 10px 0 0; padding-left: 30px; color: #4A545B; max-width: 70ch;
+  font-family: var(--breit); font-size: 13px; line-height: 1.7;
+  margin: 10px 0 0; padding-left: 30px; color: var(--tinte-leise); max-width: 70ch;
 }
 
 /* Aufruf auf der Akzentfläche. */
@@ -777,26 +783,58 @@ h3 { font-size: 1.06rem; font-weight: 600; }
 .fuss-rechts { margin-left: auto; }
 
 /* ---------- Radien auf der Seite ---------------------------------------- */
-/* Dieselbe Staffel wie in der Anwendung: klein und oft → 4, Flächen → 6,
-   groß und selten → 10. Was am Rand klebt, bleibt eckig. */
-.marke, .plan-marke, .stand, .raute, .punktzeile { border-radius: var(--radius-klein); }
-.karte, .plan, .vergleich-raster > div, .frage, .bilanz .zahl,
-.fenster-rumpf, .faden { border-radius: var(--radius); }
-.aufruf, .plaene > .ist-betont { border-radius: var(--radius-gross); }
+/* Die Staffel der Seite liegt eine Stufe über der Anwendung, weil hier
+   größer gesetzt wird: 8 für Kleines, 12 für Flächen, 18 für Karten und
+   Kacheln wie auf Apples Produktseiten. Was am Rand klebt, bleibt eckig. */
+.plan-marke, .stand, .raute, .punktzeile { border-radius: var(--radius-klein); }
+.fenster-rumpf, .faden, .frage, .bilanz .zahl { border-radius: var(--radius); }
+.karte, .plan, .vergleich-raster > div, .aufruf, .plaene > .ist-betont,
+.vergleich-tafel, .tabellenrahmen { border-radius: var(--radius-gross); }
 .band, .kopfleiste, .fussleiste { border-radius: 0; }
+
+/* ---------- Kapseln ---------------------------------------------------------
+   Jeder Knopf der Seite ist eine Kapsel, wie auf apple.com: blau gefüllt für
+   die eine Handlung, um die es geht, sonst grau hinterlegt. Die Regel steht
+   am Ende, weil sechs Knopfarten über die Datei verstreut ihre eigenen
+   Ecken, Schriften und Rahmen mitbrachten. */
+.knopf-voll, .knopf-still, .knopf-rand, .plan-knopf, .plan-knopf-still,
+.knopf-weiss, .knopf-umriss, .kontakt-fuss button {
+  border-radius: var(--radius-voll);
+  font-family: var(--sans); font-size: 1rem; font-weight: 500;
+  padding: .7rem 1.35rem; line-height: 1.2;
+  transition: background .2s, color .2s, transform .1s;
+}
+.knopf-voll:active, .knopf-rand:active, .plan-knopf:active { transform: scale(.98); }
+.knopf-rand, .knopf-still, .plan-knopf-still {
+  background: var(--flaeche-tief); color: var(--tinte) !important; border: 0;
+}
+.knopf-rand:hover, .knopf-still:hover, .plan-knopf-still:hover { background: var(--linie); }
+.kopf .knopf-voll, .kopf .knopf-still { font-size: .875rem; padding: .45rem 1rem; }
+.knopf-voll:focus-visible, .knopf-rand:focus-visible, .knopf-still:focus-visible,
+.plan-knopf:focus-visible, .werkzeugliste a:focus-visible {
+  outline: 3px solid rgba(0, 113, 227, .45); outline-offset: 2px;
+}
+
+/* Karten wie Kacheln auf apple.com: ohne Rahmen, auf hellgrauem Grund
+   weiß, auf weißem Grund hellgrau. */
+.band-grund .karte, .band-grund .plan { background: var(--flaeche-tief); border-color: transparent; }
+.band-hell .karte, .band-hell .plan { background: var(--flaeche); border-color: transparent; box-shadow: var(--schatten-karte); }
+/* Ein Zweitknopf auf einer grauen Karte wäre grau auf grau — dort weiß. */
+.band-grund .plan .plan-knopf-still, .band-grund .karte .knopf-rand { background: var(--flaeche); }
 
 /* Die Werkzeugliste: kurze Wege, dicht gesetzt. Kein Bild, keine Kachel —
    es sind Links, und sie sollen wie Links aussehen. */
 .abschnitt-satz { max-width: 62ch; margin: 0 0 1.4rem; color: var(--tinte-leise); line-height: 1.7; }
 .werkzeugliste { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
 .werkzeugliste a {
-  display: block; padding: .7rem .9rem; text-decoration: none;
-  background: var(--flaeche); border: 1px solid var(--linie);
+  display: block; padding: .85rem 1rem; text-decoration: none;
+  background: var(--flaeche); border: 0; box-shadow: var(--schatten-karte);
   border-radius: var(--radius); color: var(--tinte); font-size: .9375rem;
-  transition: border-color .12s, transform .12s;
+  transition: box-shadow .2s, transform .2s;
 }
-.werkzeugliste a:hover { border-color: var(--tally); transform: translateY(-1px); }
-.werkzeugliste a::after { content: ' →'; color: var(--tally); }
+.werkzeugliste a:hover { transform: translateY(-2px); }
+/* Der Pfeil wie auf apple.com: ein schmaler Winkel hinter dem Wort. */
+.werkzeugliste a::after { content: ' ›'; color: var(--tally); font-weight: 600; }
 
 /* Das Kontaktformular. Ein Formular statt einer Adresse — eine Adresse im
    Quelltext wird binnen Tagen von Sammlern gefunden. */
@@ -809,10 +847,10 @@ h3 { font-size: 1.06rem; font-weight: 600; }
   background: var(--flaeche); color: var(--tinte); resize: vertical;
 }
 .kontaktform input:focus-visible, .kontaktform textarea:focus-visible {
-  outline: 2px solid var(--tally); outline-offset: 1px;
+  outline: none; border-color: var(--tally); box-shadow: 0 0 0 3px rgba(0, 113, 227, .3);
 }
 .kontakt-fuss { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; }
 .kontakt-fuss button:disabled { opacity: .55; cursor: not-allowed; }
 .kontakt-stand { font-size: .9rem; color: var(--tinte-leise); }
-.kontakt-stand.ist-gut { color: var(--tally); }
+.kontakt-stand.ist-gut { color: var(--gut); }
 .kontakt-stand.ist-warnung { color: var(--warn); }

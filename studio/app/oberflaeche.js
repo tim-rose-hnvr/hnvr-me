@@ -1015,7 +1015,10 @@ export function starteOberflaeche() {
   $('#knopf-befehle').addEventListener('click', zeigePalette);
   $('#knopf-sichern').addEventListener('click', () => fuehreAus('sichern'));
   $('#knopf-fokus-aus').addEventListener('click', () => setzeFokus(false));
-  $('#knopf-einstellungen').addEventListener('click', zeigeEinstellungen);
+  /* Nicht `zeigeEinstellungen` direkt: der Knopf reichte sonst das
+     Klick-Ereignis als Kategorie durch, und der Dialog zeigte als Titel
+     „[object PointerEvent]" und darunter keine einzige Einstellung. */
+  $('#knopf-einstellungen').addEventListener('click', () => zeigeEinstellungen());
   $('#knopf-einfuegen').addEventListener('click', () => fuehreAus('datei:anhaengen'));
   $('#knopf-aufteilen').addEventListener('click', () => fuehreAus('teilen'));
   $('#knopf-zurueck').addEventListener('click', () => zeigeSeite(zustand.aktuelleSeite - 1));

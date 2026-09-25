@@ -71,11 +71,13 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
   const REG = {
     kopf: 56,
     links: 264, rechts: 320,
-    chrome900: 'rgb(250, 250, 248)',
-    buehne: 'rgb(237, 237, 233)',
+    chrome900: 'rgb(246, 246, 248)',
+    buehne: 'rgb(232, 232, 237)',
     papier: 'rgb(255, 255, 255)',
-    akzent: 'rgb(22, 24, 26)',
-    chromeText: 'rgb(22, 24, 26)',
+    /* Seit der Apple-Anmutung ist der Akzent Blau — als Fläche #0071E3,
+       als Schrift #0066CC. Gemessen wird hier die Fläche. */
+    akzent: 'rgb(0, 113, 227)',
+    chromeText: 'rgb(29, 29, 31)',
   };
 
   await pruefe('Die Höhen der Chrome stimmen auf den Pixel', async () => {
@@ -202,7 +204,8 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (stand.kopfHoehe !== REG.kopf) throw new Error(`Kopf ist ${stand.kopfHoehe} px`);
     void 0;
     if (stand.knopf !== REG.akzent) throw new Error(`„Datei öffnen" ist ${stand.knopf}`);
-    if (!/Plex/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
+    /* Der Titel steht in derselben Schrift wie das Programm — SF auf Apple-Geräten, sonst Inter. */
+    if (!/apple-system|Inter/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
     if (!stand.ablage) throw new Error('keine Ablegefläche');
     if (!/DOCX/.test(stand.formate)) throw new Error(`Formate: ${stand.formate}`);
     await ladeBeispiel();
@@ -388,7 +391,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     /* Zwei verschiedene Schriftfarben, und das ist richtig so: auf dem
        Akzent steht --tally-text, auf der Chrome --chrome-text. Beide kippen
        mit der Fassung, deshalb kann keine zu schwach werden. */
-    if (stand.vollText !== 'rgb(250, 250, 248)') throw new Error(`Schrift auf dem Akzent ist ${stand.vollText}`);
+    if (stand.vollText !== 'rgb(255, 255, 255)') throw new Error(`Schrift auf dem Akzent ist ${stand.vollText}`);
     if (stand.chromeText !== REG.chromeText) throw new Error(`Einstellungen ist ${stand.chromeText}`);
     return `Sichern ${stand.voll}`;
   });
@@ -447,11 +450,13 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
   });
 
   await pruefe('Radien nur dort, wo etwas bedienbar ist — Papier bleibt eckig', async () => {
-    /* „Registratur" kannte keine Radien. „Vorgang" ist eine Web-App und hat
-       welche — aber nur drei Werte, und nur an Dingen, die man bedient.
+    /* „Registratur" kannte keine Radien. Die Apple-Anmutung hat vier Stufen
+       wie macOS — 8 für Knöpfe und Felder, 10 für Karten, 14 für Fenster,
+       rund für Kapseln — und 6 für das Segment in seiner Rinne (8 minus die
+       2 px Innenabstand, sonst stoßen die Ecken aneinander).
        Das Blatt und die Leisten bleiben eckig: ein Blatt ist ein Blatt, und
        eine Leiste, die am Fensterrand klebt, bekäme sonst einen Spalt. */
-    const ERLAUBT = [0, 6, 10, 999];
+    const ERLAUBT = [0, 6, 8, 10, 14, 999];
     const daneben = await seite.evaluate((erlaubt) => {
       const raus = [];
       for (const k of document.querySelectorAll('#huelle *')) {
@@ -480,10 +485,24 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       return falsch;
     });
     if (eckig.length) throw new Error(`sollte eckig sein: ${eckig.join(', ')}`);
-    return 'Staffel 0/6/10 eingehalten, Papier und Leisten eckig';
+    return 'Staffel 0/6/8/10/14 eingehalten, Papier und Leisten eckig';
   });
 
-  await pruefe('Der Dialog trägt den Kopf der Richtung', async () => {
+  await pruefe('Der Dialog ist ein Blatt wie in macOS — und der Knopf im Kopf öffnet ihn richtig', async () => {
+    /* Über den Knopf, nicht über den Befehl: der Knopf reichte das
+       Klick-Ereignis als Kategorie durch, und der Dialog zeigte als Titel
+       „[object PointerEvent]" und darunter nichts. Der Befehl ging immer. */
+    await seite.click('#knopf-einstellungen');
+    await seite.waitForTimeout(400);
+    const ueberKnopf = await seite.evaluate(() => ({
+      titel: document.querySelector('.einst-inhalt h3')?.textContent || '',
+      zeilen: document.querySelectorAll('.einst-inhalt .einst-zeile').length,
+    }));
+    await seite.keyboard.press('Escape');
+    await seite.waitForTimeout(200);
+    if (/object/i.test(ueberKnopf.titel) || !ueberKnopf.zeilen) {
+      throw new Error(`über den Knopf: Titel „${ueberKnopf.titel}", ${ueberKnopf.zeilen} Einstellungen`);
+    }
     await seite.evaluate(() => window.studio.fuehreAus('einstellungen'));
     await seite.waitForTimeout(400);
     const stand = await seite.evaluate(() => {
@@ -498,15 +517,17 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
         fassung: document.querySelector('.einst-fassung')?.textContent || '',
       };
     });
-    if (stand.grund !== REG.chrome900) throw new Error(`Kopf ist ${stand.grund}`);
-    if (stand.hoehe !== 34) throw new Error(`Kopf ist ${stand.hoehe} px statt 34`);
-    if (!/Plex Mono/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
-    if (stand.radius !== '10px') throw new Error(`Ecken ${stand.radius} statt 10`);
+    /* Kein dunkler Balken mehr: der Titel steht auf der Fläche des Dialogs,
+       halbfett in der Systemschrift, die Ecken wie ein Fenster in macOS. */
+    if (stand.grund !== REG.papier) throw new Error(`Kopf ist ${stand.grund}`);
+    if (stand.hoehe !== 48) throw new Error(`Kopf ist ${stand.hoehe} px statt 48`);
+    if (!/apple-system|Inter/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
+    if (stand.radius !== '14px') throw new Error(`Ecken ${stand.radius} statt 14`);
     if (!stand.hinweis) throw new Error('kein Hinweis im Fuß');
-    if (!/FASSUNG/.test(stand.fassung)) throw new Error('keine Fassung unter den Kategorien');
+    if (!/Fassung/.test(stand.fassung)) throw new Error('keine Fassung unter den Kategorien');
     await seite.keyboard.press('Escape');
     await seite.waitForTimeout(200);
-    return `${stand.hoehe} px, ${stand.grund}, Fuß: „${stand.hinweis}"`;
+    return `über den Knopf „${ueberKnopf.titel}" mit ${ueberKnopf.zeilen} Einstellungen; Kopf ${stand.hoehe} px, Ecken ${stand.radius}`;
   });
 
   await pruefe('Die Seitenliste steht als Zeilen — und die Miniaturen bleiben erreichbar', async () => {
@@ -532,7 +553,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (!/Gliederung/.test(zeilen.kopf)) throw new Error(`kein Spaltenkopf: „${zeilen.kopf}"`);
     if (zeilen.nummer !== '1') throw new Error(`Nummer „${zeilen.nummer}"`);
     if (zeilen.titel.length < 4) throw new Error(`kein Kurztitel: „${zeilen.titel}"`);
-    if (!/Plex Mono/.test(zeilen.zahlSchrift)) throw new Error(`Zahl in ${zeilen.zahlSchrift}`);
+    /* Die Zahl steht in der Schrift der Oberfläche, mit Tabellenziffern —
+       so stehen 1 und 11 übereinander, ohne dass es eine zweite Schrift braucht. */
+    if (!/apple-system|Inter/.test(zeilen.zahlSchrift)) throw new Error(`Zahl in ${zeilen.zahlSchrift}`);
 
     /* Und zurück: der Knopf im Fuß der Leiste holt die Karten wieder. */
     const bilder = await seite.evaluate(async () => {

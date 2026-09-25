@@ -172,7 +172,10 @@ export default async function ({ pruefe, melde, seite, blatt, ladeBeispiel, ladu
     if (karte.neigung !== 'italic') throw new Error(`Zitat ist ${karte.neigung}`);
     if (!/212, 175, 55/.test(karte.kante)) throw new Error(`Kante ist ${karte.kante}`);
     if (karte.chip !== 'Markieren') throw new Error(`Chip sagt „${karte.chip}"`);
-    if (!/Plex Mono/.test(karte.chipSchrift)) throw new Error(`Chip in ${karte.chipSchrift}`);
+    /* Das Zitat bleibt in der Serifenschrift — es ist Text aus dem Dokument,
+       nicht aus der Oberfläche. Der Chip dagegen ist Oberfläche und steht
+       seit der Apple-Anmutung in der Systemschrift. */
+    if (!/apple-system|Inter/.test(karte.chipSchrift)) throw new Error(`Chip in ${karte.chipSchrift}`);
     return `„${karte.zitat.slice(0, 40)}…", Chip ${karte.chip}`;
   });
 

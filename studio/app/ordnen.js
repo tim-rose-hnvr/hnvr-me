@@ -86,7 +86,7 @@ function baueKopf() {
     knopf('Verdoppeln', 'Gewählte Seiten verdoppeln', verdopple),
     knopf('Als neues Dokument', 'Die gewählten Seiten als neue PDF sichern',
       () => melde('ordnen:auszug'), 'ordnen-knopf ist-betont'),
-    el('span', { klasse: 'ordnen-hinweis', text: 'ZIEHEN ZUM SORTIEREN' }),
+    el('span', { klasse: 'ordnen-hinweis', text: 'Ziehen zum Sortieren' }),
     el('button', {
       klasse: 'ordnen-knopf ordnen-fertig', text: 'Fertig',
       title: 'Zurück zum Dokument (Esc)', beiClick: schliesseOrdnen,

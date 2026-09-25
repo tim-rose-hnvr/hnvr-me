@@ -82,6 +82,9 @@ export async function oeffneDateien(dateien, { anhaengen = false } = {}) {
 
   await ermittleMerkmale();
   await ermittleFormularfelder();
+  /* „frisch" vor „geladen": wer eine Datei neu öffnet, bekommt die
+     Anfangsansicht aus den Einstellungen — wer eine anhängt, behält seine. */
+  if (!anhaengen) melde('dokument:frisch');
   melde('dokument:geladen');
   melde('dokument:geaendert');
   return zustand.folge.length;
@@ -104,6 +107,7 @@ export async function oeffneBytes(bytes, name) {
   zustand.geaendert = true;
   await ermittleMerkmale();
   await ermittleFormularfelder();
+  melde('dokument:frisch');
   melde('dokument:geladen');
   melde('dokument:geaendert');
   return quelle.seitenzahl;
@@ -335,6 +339,7 @@ export async function ladeBeispiel() {
   zustand.name = quelle.name;
   await ermittleMerkmale();
   await ermittleFormularfelder();
+  melde('dokument:frisch');
   melde('dokument:geladen');
   melde('dokument:geaendert');
   sage('Beispiel geladen');

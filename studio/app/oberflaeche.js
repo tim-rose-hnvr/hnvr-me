@@ -234,16 +234,8 @@ function baueBefehle() {
   befehl('ansicht:drehen', 'Ansicht drehen', 'Ansicht', () => dreheAnsicht(90), 'Strg+Umschalt+R');
   befehl('ansicht:thema', 'Hell / Dunkel wechseln', 'Ansicht', wechsleThema);
   befehl('leiste:seiten', 'Seitenleiste: Seiten', 'Ansicht', () => zeigeLeiste('links', 'miniaturen'));
-  befehl('leiste:umschalten', 'Seitenleiste ein/aus', 'Ansicht', () => {
-    const huelle = $('#huelle');
-    huelle.dataset.links = huelle.dataset.links === 'zu' ? 'auf' : 'zu';
-    baueNeu({ haltePosition: true });
-  }, 'F4');
-  befehl('leiste:rechtsUmschalten', 'Rechte Leiste ein/aus', 'Ansicht', () => {
-    const huelle = $('#huelle');
-    huelle.dataset.rechts = huelle.dataset.rechts === 'zu' ? 'auf' : 'zu';
-    baueNeu({ haltePosition: true });
-  }, 'F5');
+  befehl('leiste:umschalten', 'Seitenleiste ein/aus', 'Ansicht', () => schalteLeiste('links'), 'F4');
+  befehl('leiste:rechtsUmschalten', 'Rechte Leiste ein/aus', 'Ansicht', () => schalteLeiste('rechts'), 'F5');
 
   befehl('palette', 'Befehle suchen …', 'Gehe zu', zeigePalette, 'Strg+K');
   befehl('gehezu:vor', 'Nächste Seite', 'Gehe zu', () => zeigeSeite(zustand.aktuelleSeite + 1), 'Bild ab');
@@ -270,6 +262,94 @@ export function fuehreAus(id) {
   const gefunden = befehle.find((b) => b.id === id);
   if (!gefunden) { console.warn('Unbekannter Befehl', id); return; }
   gefunden.tun();
+}
+
+/* ---------- Schmale Fenster --------------------------------------------------
+
+   Unter 900 px sind die Leisten keine Spalten mehr, sondern liegen über der
+   Bühne. Bisher schloss sie dort niemand: auf dem Telefon lagen beide offen
+   übereinander, und vom Dokument war nichts zu sehen — ein Fehler, der älter
+   ist als „Vorgang", aber erst sichtbar wurde, als die Statusleiste zur Pille
+   wurde und ihr Leistenschalter mit der rechten Leiste aus dem Fenster rückte.
+
+   Jetzt gilt dort: das Dokument steht vorn, höchstens eine Leiste liegt
+   darüber, und ein Tipp auf die Bühne oder Escape räumt sie weg. Wird das
+   Fenster wieder breit, kommt der Stand zurück, den es vorher hatte. */
+const SCHMAL = window.matchMedia('(max-width: 900px)');
+
+function schalteLeiste(seite) {
+  const huelle = $('#huelle');
+  const andere = seite === 'links' ? 'rechts' : 'links';
+  const oeffnet = huelle.dataset[seite] === 'zu';
+  huelle.dataset[seite] = oeffnet ? 'auf' : 'zu';
+  if (oeffnet && SCHMAL.matches) huelle.dataset[andere] = 'zu';
+  baueNeu({ haltePosition: true });
+}
+
+function leisteOffen() {
+  const huelle = $('#huelle');
+  return huelle.dataset.links !== 'zu' || huelle.dataset.rechts !== 'zu';
+}
+
+function schliesseUeberlagerung() {
+  if (!SCHMAL.matches || !leisteOffen()) return false;
+  const huelle = $('#huelle');
+  huelle.dataset.links = 'zu';
+  huelle.dataset.rechts = 'zu';
+  baueNeu({ haltePosition: true });
+  return true;
+}
+
+function starteSchmaleFenster() {
+  const huelle = $('#huelle');
+  let breiterStand = null;
+  const passe = () => {
+    if (SCHMAL.matches) {
+      breiterStand = { links: huelle.dataset.links || 'auf', rechts: huelle.dataset.rechts || 'auf' };
+      huelle.dataset.links = 'zu';
+      huelle.dataset.rechts = 'zu';
+    } else if (breiterStand) {
+      huelle.dataset.links = breiterStand.links;
+      huelle.dataset.rechts = breiterStand.rechts;
+      breiterStand = null;
+    }
+  };
+  passe();
+  SCHMAL.addEventListener('change', () => { passe(); baueNeu({ haltePosition: true }); });
+
+  /* Ein Tipp auf das, was von der Bühne zu sehen ist, schließt die Leiste —
+     wie bei jeder Schublade. Der Tipp tut sonst nichts: wer die Leiste
+     wegwischen will, will nicht gleichzeitig eine Markierung setzen. */
+  $('#buehne').addEventListener('pointerdown', (ereignis) => {
+    if (schliesseUeberlagerung()) { ereignis.preventDefault(); ereignis.stopPropagation(); }
+  }, true);
+
+  /* Escape erst, wenn niemand sonst es wollte: ein offener Dialog und ein
+     aufgeklappter Schritt der Schiene gehen vor. */
+  document.addEventListener('keydown', (ereignis) => {
+    if (ereignis.key !== 'Escape' || ereignis.defaultPrevented) return;
+    if (!$('#schirm')?.hidden) return;
+    if (schliesseUeberlagerung()) ereignis.preventDefault();
+  });
+}
+
+/* „Zoom beim Öffnen" stand in den Einstellungen, mit der Vorgabe „Breite" —
+   und niemand las sie: jede Datei öffnete bei 100 %. Auf dem Desktop ist das
+   gewollt (die Seite steht auf der Bühne wie auf einem Leuchttisch), auf dem
+   Telefon heißt es 720 px Blatt in einem 390-px-Fenster.
+
+   Die Vorgabe heißt deshalb jetzt „Passend zum Fenster": 100 %, wenn die
+   Seite bei 100 % mitsamt Rand auf die Bühne passt, sonst Breite. Gerechnet
+   wird aus der Fensterbreite und den Leistenbreiten, nicht aus der Bühne —
+   beim ersten Öffnen ist die Hülle noch verborgen und die Bühne 0 px breit. */
+function zoomBeimOeffnen() {
+  const wahl = String(einstellung('anzeige.zoom') || 'passend');
+  if (wahl === 'breite' || wahl === 'seite') return wahl;
+  if (wahl !== 'passend') return Number(wahl) || 1;
+  const stil = getComputedStyle($('#huelle'));
+  const px = (name) => parseFloat(stil.getPropertyValue(name)) || 0;
+  const leisten = SCHMAL.matches ? 0 : px('--leiste-links') + px('--leiste-rechts');
+  return window.innerWidth - leisten - 52 >= 720 ? 1 : 'breite';
 }
 
 /* ---------- Werkzeuge ------------------------------------------------------ */
@@ -481,7 +561,7 @@ async function bilderZuPdf(dateien) {
    das Studio verspricht, nichts zu hinterlassen. */
 export const EINSTELLUNGEN = {
   'anzeige.thema':        { kategorie: 'Anzeige & Lesen', name: 'Erscheinung', hinweis: 'Hell, dunkel oder nach Systemeinstellung', art: 'wahl', werte: [['system', 'System'], ['hell', 'Hell'], ['dunkel', 'Dunkel']], wert: 'system' },
-  'anzeige.zoom':         { kategorie: 'Anzeige & Lesen', name: 'Zoom beim Öffnen', hinweis: 'Womit eine frisch geöffnete Datei beginnt', art: 'wahl', werte: [['breite', 'Breite'], ['seite', 'Ganze Seite'], ['1', '100 %']], wert: 'breite' },
+  'anzeige.zoom':         { kategorie: 'Anzeige & Lesen', name: 'Zoom beim Öffnen', hinweis: 'Womit eine frisch geöffnete Datei beginnt', art: 'wahl', werte: [['passend', 'Passend zum Fenster'], ['breite', 'Breite'], ['seite', 'Ganze Seite'], ['1', '100 %']], wert: 'passend' },
   'anzeige.nummern':      { kategorie: 'Anzeige & Lesen', name: 'Seitenzahlen unter dem Blatt', hinweis: '', art: 'schalter', wert: true },
 
   'anmerkung.staerke':    { kategorie: 'Anmerkungen', name: 'Strichstärke', hinweis: 'Für Freihand, Rechteck, Ellipse, Pfeil', art: 'wahl', werte: [['1', 'Dünn'], ['2', 'Normal'], ['4', 'Dick']], wert: '2' },
@@ -913,7 +993,9 @@ function starteTastatur() {
 /* ---------- Anschluss ---------------------------------------------------------- */
 
 export function starteOberflaeche() {
+  starteSchmaleFenster();
   baueBefehle();
+  hoer('dokument:frisch', () => { zustand.zoom = zoomBeimOeffnen(); aktualisiereZoomAnzeige(); });
   starteMappen();
   starteAnsicht();
   starteSeiten();
@@ -929,6 +1011,7 @@ export function starteOberflaeche() {
 
   // Kopf und Fuß
   $('#knopf-seitenleiste').addEventListener('click', () => fuehreAus('leiste:umschalten'));
+  $('#knopf-rechte-leiste').addEventListener('click', () => fuehreAus('leiste:rechtsUmschalten'));
   $('#knopf-befehle').addEventListener('click', zeigePalette);
   $('#knopf-sichern').addEventListener('click', () => fuehreAus('sichern'));
   $('#knopf-fokus-aus').addEventListener('click', () => setzeFokus(false));

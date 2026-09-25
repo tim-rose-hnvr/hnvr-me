@@ -302,4 +302,89 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
     if (lage.links < 0 || lage.rechts > 402) throw new Error(`ragt hinaus (${lage.links}…${lage.rechts})`);
     return `${lage.breite} px breit, ganz im Fenster`;
   });
+
+  await pruefe('Auf dem Telefon steht das Dokument vorn — die Leisten liegen darüber, nicht davor', async () => {
+    /* Unter 900 px sind die Leisten Überlagerungen. Bis hierher schloss sie
+       dort niemand: beide lagen offen übereinander, und vom Dokument war
+       nichts zu sehen. Die Prüfung davor sah nur nach dem Befehlsfeld und
+       fand deshalb nichts.
+
+       Geprüft wird wie mit dem Daumen: eine frisch geöffnete Datei passt ins
+       Fenster, die Pille mit beiden Leistenschaltern auch, höchstens eine
+       Leiste liegt offen, und ein Tipp auf die Bühne oder Escape räumt sie
+       weg. Und wird das Fenster wieder breit, stehen beide Leisten wieder. */
+    await seite.setViewportSize({ width: 390, height: 844 });
+    await seite.waitForTimeout(600);
+    await ladeBeispiel();
+    const lage = () => seite.evaluate(() => {
+      const h = document.querySelector('#huelle');
+      const f = document.querySelector('.fuss');
+      const fk = f.getBoundingClientRect();
+      const blatt = document.querySelector('.blatt').getBoundingClientRect();
+      const imFenster = (q) => { const r = document.querySelector(q).getBoundingClientRect();
+        return r.width > 0 && r.left >= 0 && r.right <= window.innerWidth; };
+      return { links: h.dataset.links, rechts: h.dataset.rechts,
+        pille: getComputedStyle(f).display !== 'none' && fk.left >= 0 && fk.right <= window.innerWidth,
+        schalter: imFenster('#knopf-seitenleiste') && imFenster('#knopf-rechte-leiste'),
+        blattPasst: blatt.left >= 0 && blatt.right <= window.innerWidth,
+        zoom: String(window.studio.zustand.zoom) };
+    });
+    const start = await lage();
+    await seite.click('#knopf-seitenleiste');
+    await seite.waitForTimeout(300);
+    const linksAuf = await lage();
+    await seite.evaluate(() => window.studio.fuehreAus('leiste:rechtsUmschalten'));
+    await seite.waitForTimeout(300);
+    const rechtsAuf = await lage();
+    await seite.mouse.click(40, 400);
+    await seite.waitForTimeout(300);
+    const nachTipp = await lage();
+    await seite.click('#knopf-rechte-leiste');
+    await seite.waitForTimeout(300);
+    await seite.keyboard.press('Escape');
+    await seite.waitForTimeout(300);
+    const nachEscape = await lage();
+    await seite.setViewportSize({ width: 1500, height: 950 });
+    await seite.waitForTimeout(900);
+    const breit = await lage();
+    await ladeBeispiel();
+
+    if (start.links !== 'zu' || start.rechts !== 'zu') throw new Error(`beim Start offen: links ${start.links}, rechts ${start.rechts}`);
+    if (!start.blattPasst) throw new Error(`das Blatt ragt aus dem Fenster (Zoom ${start.zoom})`);
+    if (!start.pille || !start.schalter) throw new Error('Pille oder Leistenschalter außerhalb des Fensters');
+    if (linksAuf.links !== 'auf') throw new Error('der linke Schalter öffnet die Schiene nicht');
+    if (rechtsAuf.rechts !== 'auf' || rechtsAuf.links !== 'zu') throw new Error('zwei Leisten liegen zugleich offen');
+    if (nachTipp.links !== 'zu' || nachTipp.rechts !== 'zu') throw new Error('ein Tipp auf die Bühne schließt die Leiste nicht');
+    if (nachEscape.rechts !== 'zu') throw new Error('Escape schließt die Leiste nicht');
+    if (breit.links !== 'auf' || breit.rechts !== 'auf') throw new Error('breit geworden, stehen die Leisten nicht wieder');
+    return `Zoom „${start.zoom}", Blatt im Fenster; auf → andere zu → Tipp zu → Escape zu → breit wieder beide`;
+  });
+
+  await pruefe('„Zoom beim Öffnen" wirkt — und passt die Seite dem Fenster an', async () => {
+    /* Die Einstellung stand da, mit der Vorgabe „Breite", und niemand las
+       sie. Jetzt heißt die Vorgabe „Passend zum Fenster": 100 %, wo die Seite
+       samt Rand auf die Bühne passt, sonst Breite. Und wer „Ganze Seite"
+       wählt, bekommt beim nächsten Öffnen die ganze Seite — gewählt im
+       echten Dialog, geöffnet über die echte Dateiwahl. */
+    const vorgabe = await seite.evaluate(() => String(window.studio.zustand.zoom));
+    await seite.click('#knopf-einstellungen');
+    await seite.waitForTimeout(300);
+    await seite.click('.einst-kategorie[data-kategorie="Anzeige & Lesen"]');
+    await seite.waitForTimeout(200);
+    const angeboten = await seite.evaluate(() =>
+      [...document.querySelectorAll('[data-einstellung="anzeige.zoom"] .segment')].map((k) => k.textContent));
+    await seite.evaluate(() => [...document.querySelectorAll('[data-einstellung="anzeige.zoom"] .segment')]
+      .find((k) => k.textContent === 'Ganze Seite')?.click());
+    await seite.keyboard.press('Escape');
+    await seite.waitForTimeout(300);
+    await seite.setInputFiles('#dateiwahl', join(WURZEL, 'beispiel', 'beispiel.pdf'));
+    await seite.waitForSelector('.blatt canvas');
+    await seite.waitForTimeout(1200);
+    const danach = await seite.evaluate(() => String(window.studio.zustand.zoom));
+    await ladeBeispiel();
+    if (angeboten[0] !== 'Passend zum Fenster') throw new Error(`angeboten: ${angeboten.join(', ')}`);
+    if (vorgabe !== '1') throw new Error(`bei 1500 px ist die Vorgabe „${vorgabe}" statt 100 %`);
+    if (danach !== 'seite') throw new Error(`„Ganze Seite" gewählt, geöffnet mit „${danach}"`);
+    return `Vorgabe bei 1500 px: 100 %; „Ganze Seite" gewählt → geöffnet mit „${danach}"`;
+  });
 }

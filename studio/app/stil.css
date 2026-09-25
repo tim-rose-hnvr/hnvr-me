@@ -533,7 +533,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-size: var(--satz-bedien);
 }
 .fuss .fuss-mitte { display: none; }   /* „Werkzeug Auswahl" sagt die Schiene */
-.fuss #knopf-seitenleiste { display: none; }  /* die Leiste hat ihren eigenen Griff */
+/* Die beiden Leistenschalter stehen in der Pille, links und rechts außen —
+   wie die Leisten selbst. Der linke war hier eine Weile ausgeblendet, mit der
+   Begründung, die Leiste habe „ihren eigenen Griff". Den gab es nie; auf dem
+   Telefon war die Schiene damit nur über das Befehlsfeld zu erreichen. */
 .fuss .knopf-klein { padding: var(--raum-1) var(--raum-3); }
 .fuss .feld-schmal { width: 36px; padding: var(--raum-1) var(--raum-2); }
 .fuss #feld-zoom { padding: var(--raum-1) var(--raum-2); font-size: var(--satz-neben); }
@@ -1491,6 +1494,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .huelle[data-links="zu"]  { --leiste-links: 0px; }
   .huelle[data-rechts="zu"] { --leiste-rechts: 0px; }
   .vergleich { grid-template-columns: 1fr; }
+
+  /* Die Pille rechnet hier nicht mit der rechten Leiste: die ist keine
+     Spalte, sondern liegt darüber. Vorher stand die Pille auf dem Telefon bei
+     x = −184 — mitsamt dem Schalter, der die Leiste hätte schließen können. */
+  .fuss {
+    right: calc(var(--raum-6) + env(safe-area-inset-right));
+    max-width: calc(100vw - 2 * var(--raum-6));
+    opacity: 1;
+  }
+  /* Liegt eine Leiste über der Bühne, tritt die Pille zurück, und die Bühne
+     dunkelt ab: so ist sichtbar, dass ein Tipp daneben die Leiste schließt. */
+  .huelle[data-links="auf"] .fuss,
+  .huelle[data-rechts="auf"] .fuss { display: none; }
+  .huelle[data-links="auf"] .rumpf::after,
+  .huelle[data-rechts="auf"] .rumpf::after {
+    content: ''; position: absolute; inset: 0; z-index: 25;
+    background: rgba(0, 0, 0, .18); pointer-events: none;
+  }
 }
 
 @media (max-width: 760px) {

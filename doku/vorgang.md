@@ -67,6 +67,24 @@ Die Richtung steht nicht mehr nur in Figma, sie läuft:
 
 Das Raster hat dadurch zwei Zeilen statt fünf: Kopf und Rumpf.
 
+### Schmale Fenster
+
+Unter 900 px sind die Leisten Schubladen, keine Spalten. Das Dokument steht
+vorn; höchstens eine Leiste liegt darüber, die Bühne dunkelt dahinter ab, und
+ein Tipp daneben oder Escape räumt sie weg. Beide Leistenschalter stehen in
+der Pille, links und rechts außen — wie die Leisten selbst.
+
+Das war vorher kaputt, und zwar schon vor „Vorgang": auf dem Telefon lagen
+beide Leisten offen übereinander, und vom Dokument war nichts zu sehen. Der
+Umbau hat es verschlimmert — die Pille rechnete ihren Abstand von der rechten
+Leiste aus und stand bei x = −184, der linke Schalter war per CSS
+ausgeblendet („die Leiste hat ihren eigenen Griff" — den gab es nie).
+
+Dazu die Einstellung „Zoom beim Öffnen": sie wurde angeboten und nirgends
+gelesen. Ihre Vorgabe heißt jetzt **Passend zum Fenster** — 100 %, wo die
+Seite samt Rand auf die Bühne passt, sonst Breite. Auf dem Desktop ändert
+sich nichts, auf dem Telefon passt das Blatt ins Fenster.
+
 ## Was noch nicht existiert
 
 Die Bauteilbibliothek in Figma und die übrigen Bildschirme dort (Empfang,

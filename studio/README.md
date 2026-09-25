@@ -768,7 +768,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 172 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 174 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  48 Prüfungen — was der Hoster ausliefert
 ```

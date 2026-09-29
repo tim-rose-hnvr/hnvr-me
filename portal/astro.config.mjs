@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 
 import react from '@astrojs/react';
 import wix from '@wix/astro';
@@ -25,6 +25,20 @@ export default defineConfig({
   redirects: {
     '/studio': '/studio/index.html',
     '/studio/': '/studio/index.html',
+  },
+  /* HNVR_CLIENT_ID: die Kennung des Zugangs „PDF Studio" im Wix-Projekt von
+     www.hnvr.me. Über ihn meldet das Studio mit dem hnvr.me-Konto an
+     (src/hnvr.js). Sie ist nicht geheim — eine Client-Kennung steht in jedem
+     Anmeldelink —, aber sie ist Pflicht: ohne sie bricht der Bau ab. Eine
+     Fassung, die veröffentlicht wird und dann niemanden anmelden kann, soll
+     es nicht geben.
+
+     Setzen: in .env (örtlich) oder mit `npx wix env set --key HNVR_CLIENT_ID
+     --value …` für den Bau über die Wix-CLI. */
+  env: {
+    schema: {
+      HNVR_CLIENT_ID: envField.string({ context: 'server', access: 'public' }),
+    },
   },
   integrations: [react(), wix()],
   adapter: wixHostingAdapter(),

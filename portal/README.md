@@ -47,8 +47,9 @@ IBM Plex ist eingebunden, ein Verweis auf Google Fonts steht nirgends, der
 Akzent `#0f766e` ist gesetzt, und die Schnitte kommen als `font/woff2` von
 derselben Seite. Geprüft wird auch die Anmeldung: die Auskunft antwortet, sie
 nennt einen Abrufer ohne Sitzung ausdrücklich nicht angemeldet, die
-ausgelieferte Anwendung trägt die Schranken-Zeile, und `/api/auth/login` leitet
-auf die Anmeldung von Wix und von dort zurück auf diese Seite. Damit läuft dort
+ausgelieferte Anwendung trägt die Schranken-Zeilen, und `/api/hnvr/anmelden`
+leitet auf die Anmeldung des **hnvr.me-Projekts** und von dort zurück auf diese
+Seite (siehe unten). Damit läuft dort
 dieselbe Anwendung, die `pruefen.mjs` und `vollpruefung.mjs` im Browser
 durchgemessen haben — 134 + 166 Prüfungen, darunter Texterkennung,
 qpdf-Verschlüsselung, die digitale Unterschrift und ein eigener Abschnitt, der
@@ -102,9 +103,11 @@ nicht unterstützt. Dieses Projekt ist bewusst auf Astro 5 festgelegt.
 ## Was Wix danach übernimmt
 
 - **Hosting** der gebauten Seite, mit Zwischenspeicher. `release` leert ihn.
-- **Anmeldung**: die Astro-Integration stellt `/api/auth/login` und
-  `/api/auth/logout` bereit und verwaltet die Sitzung. Auf der Seite ist beides
-  schon verlinkt — vor dem Anhängen laufen die Wege ins Leere.
+- **Anmeldung**: nicht mehr über die eigene Site, sondern mit dem
+  **hnvr.me-Konto** — eigene Routen unter `/api/hnvr/`, ein Zugang im
+  hnvr.me-Projekt, Kennung in `HNVR_CLIENT_ID`. Einrichten und Gründe:
+  `doku/anmeldung-hnvr.md`. Die Wege `/api/auth/*` der Astro-Integration gibt
+  es weiter; die Seite verlinkt sie nicht mehr.
 - **Zugangsdaten**: eine private App als OAuth-Handler, deren Schlüssel als
   Umgebungsvariablen im Projekt liegen. Nichts davon gehört ins Repository.
 
@@ -175,13 +178,15 @@ Zwei Abschnitte tragen bewusst andere Inhalte:
 ## Die Anmeldeschranke
 
 Kostenlos, aber nicht anonym: das Studio fragt beim Start `/api/mitglied.json`
-(`src/pages/api/mitglied.json.js`, liest `members.getCurrentMember()`) und legt
-eine Schranke über sich, wenn niemand angemeldet ist. Eingeschaltet wird sie
+(`src/pages/api/mitglied.json.js`, fragt über `src/hnvr.js` bei hnvr.me nach)
+und legt eine Schranke über sich, wenn niemand angemeldet ist. Eingeschaltet wird sie
 durch eine Zeile im Kopf der Anwendung, die `skripte/app-einbetten.mjs` **nur in
 die ausgelieferte Kopie** schreibt:
 
 ```html
 <meta name="studio-anmeldung" content="/api/mitglied.json">
+<meta name="studio-anmeldung-weg" content="/api/hnvr/anmelden">
+<meta name="studio-anmeldung-konto" content="hnvr.me">
 ```
 
 Ohne diese Zeile — also überall dort, wo das Studio ohne dieses Portal läuft —
@@ -192,9 +197,10 @@ Unmissverständlich: **das ist eine Anmeldeschranke, keine Zugriffssperre.** Die
 Dateien liegen offen; wer ihre Adressen kennt, kann sie laden. Wer echten
 Zugriffsschutz braucht, legt ihn vor die Dateien, nicht in die Oberfläche.
 
-Nach der Anmeldung bringt Wix den Menschen zurück: `returnToUrl` wandert in ein
-Sitzungs-Plätzchen und wird vom Rückweg `/api/auth/callback` angesteuert. Nur
-seitenrelative Adressen sind erlaubt — `/studio/index.html` ist eine.
+Nach der Anmeldung bringt Wix den Menschen zurück: `returnToUrl` wandert in
+einen HttpOnly-Keks und wird vom Rückweg `/api/hnvr/rueckkehr` angesteuert. Nur
+seitenrelative Adressen sind erlaubt — `/studio/index.html` ist eine,
+`//fremd.example` nicht (`npm run pruefen:hnvr`).
 
 Eine E-Mail-Adresse steht bewusst nicht darauf — sie ist nicht abgestimmt.
 Sie gehört in `src/pages/index.astro` in den Abschnitt „Kontakt", sobald klar

@@ -14,8 +14,8 @@
    das losgeschickt" die erste Frage. */
 
 import { items } from '@wix/data';
-import { members } from '@wix/members';
 import { auth } from '@wix/essentials';
+import { hnvrMitglied } from '../../../hnvr.js';
 import { sorgeFuerSammlung, neuerSchluessel, antwort } from '../../../lager.js';
 
 export const prerender = false;
@@ -25,11 +25,8 @@ export const prerender = false;
 const HOECHSTGROESSE = 9 * 1024 * 1024;
 
 export async function POST({ request }) {
-  let anmelder;
-  try {
-    const { member } = await members.getCurrentMember();
-    anmelder = member;
-  } catch { anmelder = null; }
+  /* Wer losschickt, ist ein hnvr.me-Konto — dieselbe Anmeldung wie überall. */
+  const { mitglied: anmelder } = await hnvrMitglied(request);
   if (!anmelder) {
     return antwort({ fehler: 'Zum Versenden ist eine Anmeldung nötig — bei einer Unterschrift muss feststehen, wer sie angefordert hat.' }, 401);
   }

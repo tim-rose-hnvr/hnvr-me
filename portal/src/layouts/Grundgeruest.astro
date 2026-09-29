@@ -10,8 +10,10 @@
    Die Aufklappmenüs kommen ohne JavaScript aus: sie hängen an :hover und
    :focus-within, damit sie auch mit der Tastatur erreichbar sind.
 
-   Die Anmeldung zeigt auf /api/auth/login — diesen Weg stellt Wix'
-   Astro-Integration bereit, sobald das Projekt angehängt ist. */
+   Die Anmeldung zeigt auf /api/hnvr/anmelden — angemeldet wird mit dem
+   hnvr.me-Konto (src/hnvr.js). Vorher war es /api/auth/login der
+   Wix-Astro-Integration, mit einer eigenen, von hnvr.me getrennten
+   Mitgliederbasis. */
 const { titel, beschreibung = 'PDF-Arbeit, die auf Ihrem Gerät bleibt. Kein Konto, kein Upload, kein Abo.', anmeldenZeigen = true } = Astro.props;
 import '../styles/studio.css';
 
@@ -43,7 +45,7 @@ const wege = [
     { name: 'Alle zwölf Werkzeuge', hinweis: 'Je eine eigene Adresse', weg: '/#werkzeuge' },
   ] },
   { id: 'pruefstand', name: 'Prüfstand', weg: '/#pruefstand', punkte: [
-    { name: '356 Prüfungen', hinweis: 'Ergebnis, Bedienung, veröffentlichte Seite', weg: '/#pruefstand' },
+    { name: '359 Prüfungen', hinweis: 'Ergebnis, Bedienung, veröffentlichte Seite', weg: '/#pruefstand' },
     { name: 'Kontakt', hinweis: 'Ein Formular, keine Adresse im Quelltext', weg: '/#kontakt' },
     { name: 'Kundenbereich', hinweis: 'Nach der Anmeldung', weg: '/portal' },
   ] },
@@ -63,7 +65,7 @@ const fussspalten = [
     { name: 'Häufige Fragen', weg: '/#fragen' },
   ] },
   { titel: 'Zugang', links: [
-    { name: 'Anmelden', weg: '/api/auth/login' },
+    { name: 'Anmelden mit hnvr.me', weg: '/api/hnvr/anmelden?returnToUrl=%2Fportal' },
     { name: 'Kundenbereich', weg: '/portal' },
   ] },
 ];
@@ -108,7 +110,7 @@ const fussspalten = [
 
       <div class="kopf-rechts">
         <a class="kopf-still" href="/portal">Kundenbereich</a>
-        {anmeldenZeigen && <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fstudio%2Findex.html">Kostenlos öffnen</a>}
+        {anmeldenZeigen && <a class="knopf-voll" href="/api/hnvr/anmelden?returnToUrl=%2Fstudio%2Findex.html">Kostenlos öffnen</a>}
       </div>
     </div>
   </header>

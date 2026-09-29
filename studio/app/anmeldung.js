@@ -7,7 +7,14 @@
 
      <meta name="studio-anmeldung" content="/api/mitglied.json">
 
-   **Ohne diese Zeile gibt es keine Schranke.** Das ist keine Nachlässigkeit,
+   Zwei Zeilen sind wahlweise: wohin der Anmeldeknopf führt, und mit welchem
+   Konto angemeldet wird. Die Seite, die das Studio einbettet, meldet über
+   hnvr.me an und setzt beide:
+
+     <meta name="studio-anmeldung-weg" content="/api/hnvr/anmelden">
+     <meta name="studio-anmeldung-konto" content="hnvr.me">
+
+   **Ohne die erste Zeile gibt es keine Schranke.** Das ist keine Nachlässigkeit,
    sondern Leitprinzip 2: das Studio muss in einem abgeschotteten Netz
    vollständig starten. Wer es auf einen eigenen Server legt, an dem es keine
    Mitgliederverwaltung gibt, bekommt es ohne Anmeldung — und soll das auch.
@@ -39,6 +46,17 @@ const TAG = 24 * 60 * 60 * 1000;
 function auskunftsWeg() {
   const eigene = document.querySelector('meta[name="studio-anmeldung"]')?.content?.trim();
   return eigene || null;
+}
+
+/** Wohin der Anmeldeknopf führt. Nur Pfade auf derselben Seite. */
+function anmeldeWegAusKopf() {
+  const eigene = document.querySelector('meta[name="studio-anmeldung-weg"]')?.content?.trim();
+  return eigene && eigene.startsWith('/') && !eigene.startsWith('//') ? eigene : null;
+}
+
+/** Bei wem das Konto liegt, z. B. „hnvr.me" — nur für die Beschriftung. */
+function kontoAusKopf() {
+  return document.querySelector('meta[name="studio-anmeldung-konto"]')?.content?.trim().slice(0, 40) || null;
 }
 
 /** Wie lange eine bestätigte Anmeldung ohne Netz vorhält, in Tagen. */
@@ -110,8 +128,9 @@ export async function frageAnmeldung() {
  *   oder abgelaufen. Dann hilft der Anmeldeknopf nicht — es fehlt das Netz,
  *   nicht der Wille. Das muss dastehen, sonst drückt jemand fünfmal darauf.
  */
-export function zeigeSchranke({ anmeldeWeg = '/api/auth/login', ohneNetz = false } = {}) {
+export function zeigeSchranke({ anmeldeWeg = anmeldeWegAusKopf() || '/api/auth/login', ohneNetz = false } = {}) {
   if ($('#anmeldeschranke')) return;
+  const konto = kontoAusKopf();
 
   const ziel = encodeURIComponent(`${location.pathname}${location.search}`);
   const karte = ohneNetz
@@ -130,14 +149,15 @@ export function zeigeSchranke({ anmeldeWeg = '/api/auth/login', ohneNetz = false
       el('h1', { text: 'Kostenlos — mit Anmeldung' }),
       el('p', { klasse: 'leise' },
         'Das Studio kostet nichts. Wir möchten nur wissen, wer es benutzt: eine Anmeldung, ',
-        'ein Konto, keine Zahlungsdaten.'),
+        konto ? `mit Ihrem Konto bei ${konto}, ` : 'ein Konto, ',
+        'keine Zahlungsdaten.'),
       el('p', { klasse: 'leise klein' },
         'Ihre Dateien bleiben davon unberührt. Sie werden auch nach der Anmeldung nicht ',
         'hochgeladen — die Anmeldung sagt uns, dass Sie da sind, nicht, was Sie tun. ',
         'Die einzige Ausnahme ist „Zur Unterschrift versenden", und dieser Dialog sagt es, ',
         'bevor er es tut.'),
       el('a', { klasse: 'knopf knopf-voll knopf-gross', href: `${anmeldeWeg}?returnToUrl=${ziel}` },
-        'Anmelden oder Konto anlegen'),
+        konto ? `Mit ${konto} anmelden` : 'Anmelden oder Konto anlegen'),
       el('p', { klasse: 'leise klein' },
         'Schon angemeldet und es steht trotzdem hier? Dann ist die Sitzung abgelaufen — ',
         'derselbe Knopf hilft.'),

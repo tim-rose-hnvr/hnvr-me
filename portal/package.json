@@ -16,7 +16,8 @@
     "release": "wix release",
     "generate": "wix generate",
     "env": "wix env",
-    "skills": "wix skills"
+    "skills": "wix skills",
+    "pruefen:hnvr": "node skripte/pruefe-hnvr.mjs"
   },
   "dependencies": {
     "@wix/crm": "^1.0.1616",

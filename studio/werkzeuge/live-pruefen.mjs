@@ -159,13 +159,28 @@ console.log('\n== Anmeldung ==');
   /* Ohne `-L`: der Anmeldeweg *ist* die Umleitung. Wer ihr folgt, landet in
      der Anmeldemaske, und die antwortet einem Abrufer ohne Browser mit 400 —
      das wäre kein Fehler der Seite, sondern einer der Prüfung. */
-  const anmelden = await hole('/api/auth/login?returnToUrl=%2Fstudio%2Findex.html',
+  const html = anwendung.koerper.toString('utf8');
+  pruefe(/name="studio-anmeldung-weg" content="\/api\/hnvr\/anmelden"/.test(html)
+    && /name="studio-anmeldung-konto" content="hnvr\.me"/.test(html),
+  'die Schranke schickt zur Anmeldung mit dem hnvr.me-Konto');
+
+  /* Angemeldet wird mit dem hnvr.me-Konto (doku/anmeldung-hnvr.md). Die
+     Umleitung muss deshalb zur Anmeldung des hnvr.me-Projekts führen — mit
+     dessen Zugang „PDF Studio" und einer Rückkehr auf diese Seite.
+     Ohne `-L`: der Anmeldeweg *ist* die Umleitung. */
+  const anmelden = await hole('/api/hnvr/anmelden?returnToUrl=%2Fstudio%2Findex.html',
     { folgen: false });
   pruefe(anmelden.code === 302, 'der Weg zur Anmeldung ist da', `HTTP ${anmelden.code}`);
   pruefe(/oauth2\/authorize/.test(anmelden.ziel),
     'er führt zur Anmeldung von Wix', anmelden.ziel.split('?')[0]);
-  pruefe(/redirectUri=[^&]*%2Fapi%2Fauth%2Fcallback/.test(anmelden.ziel),
+  pruefe(/redirectUri=[^&]*%2Fapi%2Fhnvr%2Frueckkehr/.test(anmelden.ziel),
     'und kommt danach auf diese Seite zurück');
+  /* Der Anmeldelink trägt die Client-ID. Die des Studio-eigenen Projekts
+     hieße: die Umstellung ist nicht angekommen, es wird wieder getrennt
+     angemeldet. */
+  const eigene = '5bbcd6b7-bd16-4ef4-a81c-35d78353bb17';
+  pruefe(/clientId=[0-9a-f-]{36}/.test(anmelden.ziel) && !anmelden.ziel.includes(eigene),
+    'angemeldet wird beim hnvr.me-Projekt, nicht bei der eigenen Site');
 }
 
 console.log('\n== Wege in die Anwendung ==');

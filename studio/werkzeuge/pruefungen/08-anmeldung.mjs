@@ -52,6 +52,41 @@ export default async function ({ pruefe, seite, ladeBeispiel }) {
     return `${lage.text}… → ${lage.ziel.slice(0, 40)}`;
   });
 
+  await pruefe('Mit Anmeldeweg und Konto im Kopf führt die Schranke zu hnvr.me', async () => {
+    /* Die Seite, die das Studio einbettet, meldet mit dem hnvr.me-Konto an und
+       setzt dafür zwei Kopfzeilen. Das Studio im Repository weiß davon
+       nichts — es liest nur, was im Kopf steht. Ein Weg, der nicht mit genau
+       einem Schrägstrich beginnt, wird nicht übernommen: sonst wäre die
+       Schranke ein Umleiter auf eine fremde Seite. */
+    const lage = await seite.evaluate(async () => {
+      const m = await import('./app/anmeldung.js');
+      const setze = (name, inhalt) => {
+        const k = document.createElement('meta');
+        k.name = name; k.content = inhalt; document.head.append(k); return k;
+      };
+      const lies = () => {
+        m.zeigeSchranke();
+        const schirm = document.querySelector('#anmeldeschranke');
+        const knopf = [...schirm.querySelectorAll('a')].pop();
+        const ergebnis = { ziel: knopf?.getAttribute('href'), wort: knopf?.textContent, text: schirm.textContent };
+        m.entferneSchranke();
+        return ergebnis;
+      };
+      const weg = setze('studio-anmeldung-weg', '/api/hnvr/anmelden');
+      const konto = setze('studio-anmeldung-konto', 'hnvr.me');
+      const mitHnvr = lies();
+      weg.content = '//fremd.example/anmelden';
+      const fremd = lies();
+      weg.remove(); konto.remove();
+      return { mitHnvr, fremd };
+    });
+    if (!/^\/api\/hnvr\/anmelden\?returnToUrl=/.test(lage.mitHnvr.ziel || '')) throw new Error(`Ziel: ${lage.mitHnvr.ziel}`);
+    if (lage.mitHnvr.wort !== 'Mit hnvr.me anmelden') throw new Error(`Knopf sagt „${lage.mitHnvr.wort}"`);
+    if (!/Konto bei hnvr\.me/.test(lage.mitHnvr.text)) throw new Error('der Text nennt das Konto nicht');
+    if (!/^\/api\/auth\/login/.test(lage.fremd.ziel || '')) throw new Error(`fremder Weg übernommen: ${lage.fremd.ziel}`);
+    return `→ ${lage.mitHnvr.ziel.slice(0, 44)}…, „${lage.mitHnvr.wort}"; fremder Weg abgewiesen`;
+  });
+
   /* Ohne Netz entscheidet der Merkzettel. Zwei Fälle, und der Unterschied ist
      der ganze Punkt: wer nie angemeldet war, kommt nicht hinein; wer es war,
      arbeitet weiter. Sonst wäre die installierte Fassung beim ersten Funkloch

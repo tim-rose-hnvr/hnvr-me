@@ -1,30 +1,24 @@
 ---
-/* Kundenbereich — jetzt mit echter Anmeldung.
+/* Kundenbereich — angemeldet mit dem hnvr.me-Konto.
 
    `prerender = false` heißt: die Seite wird bei jedem Aufruf gerechnet. Nur so
    kennt sie den angemeldeten Menschen; als vorgebackene Datei wäre sie für
-   alle dieselbe. Die Anmeldung selbst übernimmt die Wix-Astro-Integration mit
-   /api/auth/login und /api/auth/logout — Konten und Kennwörter liegen dort,
-   nicht in einer selbstgebauten Benutzerverwaltung. */
+   alle dieselbe.
+
+   Konten und Kennwörter liegen bei hnvr.me, nicht hier: angemeldet wird über
+   /api/hnvr/anmelden, und wer bei hnvr.me schon angemeldet ist, kommt ohne
+   Formular durch. Das Konto selbst — Name, Adresse, Kennwort — verwaltet
+   die Konsole auf www.hnvr.me. */
 export const prerender = false;
 
 import Grundgeruest from '../layouts/Grundgeruest.astro';
-import { members } from '@wix/members';
+import { hnvrMitglied } from '../hnvr.js';
 
-let mitglied = null;
-let fehler = null;
-try {
-  const ergebnis = await members.getCurrentMember();
-  mitglied = ergebnis?.member ?? null;
-} catch (e) {
-  /* Noch nicht eingerichtet oder keine Sitzung — beides heißt: abgemeldet. */
-  fehler = e?.message ?? String(e);
-}
+const { mitglied, name, kekse, unerreichbar } = await hnvrMitglied(Astro.request);
+for (const k of kekse) Astro.response.headers.append('Set-Cookie', k);
 
-const name = mitglied?.profile?.nickname
-  || [mitglied?.contact?.firstName, mitglied?.contact?.lastName].filter(Boolean).join(' ')
-  || mitglied?.loginEmail
-  || null;
+const hinweis = Astro.url.searchParams.get('anmeldung');
+const KONSOLE = 'https://www.hnvr.me/konsole';
 ---
 <Grundgeruest titel="Kundenbereich — PDF Studio" anmeldenZeigen={false}>
   <main>
@@ -37,23 +31,28 @@ const name = mitglied?.profile?.nickname
           <div class="portal-karte">
             <h2>Das Studio steht bereit</h2>
             <p class="leise">
-              Kostenlos, ohne Stufen, ohne Zahlungsdaten. Alles, was es kann,
-              ist jetzt offen — und Ihre Dateien bleiben dabei auf Ihrem Gerät.
+              Sie sind mit Ihrem hnvr.me-Konto angemeldet. Kostenlos, ohne
+              Stufen, ohne Zahlungsdaten — und Ihre Dateien bleiben dabei auf
+              Ihrem Gerät.
             </p>
             <div class="knopf-reihe" style="margin-top:1rem">
               <a class="knopf-voll" href="/studio/index.html">PDF Studio öffnen</a>
-              <form method="post" action="/api/auth/logout?returnToUrl=%2F" style="display:inline">
+              <a class="knopf-rand" href={KONSOLE}>Konto bei hnvr.me</a>
+              <form method="post" action="/api/hnvr/abmelden?returnToUrl=%2F" style="display:inline">
                 <button class="knopf-rand" type="submit">Abmelden</button>
               </form>
             </div>
+            <p class="klein leise" style="margin-top:1rem">
+              Abmelden meldet Sie auch bei hnvr.me ab — es ist dieselbe Anmeldung.
+            </p>
           </div>
 
           <h2 class="lauf" style="margin-top:3rem">Was Ihre Anmeldung bedeutet</h2>
           <div class="raster raster-zwei">
             <div class="eintrag">
-              <h3>Sie kostet nichts</h3>
-              <p>Kein Abo, keine Stufen, keine Zahlungsdaten. Es gibt keine
-              Funktion, die hinter einer Bezahlschranke liegt.</p>
+              <h3>Ein Konto für alles bei hnvr.me</h3>
+              <p>Dasselbe Konto wie in der Konsole auf www.hnvr.me. Name,
+              Adresse und Kennwort ändern Sie dort.</p>
             </div>
             <div class="eintrag">
               <h3>Ihre Dateien bleiben, wo sie sind</h3>
@@ -66,18 +65,25 @@ const name = mitglied?.profile?.nickname
         <>
           <h2 class="lauf">Anmelden</h2>
           <div class="portal-karte">
-            <h2>Kostenlos — mit Anmeldung</h2>
+            <h2>Mit Ihrem hnvr.me-Konto</h2>
             <p class="leise">
-              Das Studio kostet nichts. Wir möchten nur wissen, wer sie
-              benutzt: ein Konto, keine Zahlungsdaten. Ihre Dateien werden auch
-              danach nicht hochgeladen.
+              Das Studio kostet nichts. Angemeldet wird mit dem Konto, das Sie
+              bei hnvr.me haben — wer dort schon angemeldet ist, kommt ohne
+              Formular durch. Noch kein Konto? Auf der Anmeldeseite lässt sich
+              eins anlegen. Ihre Dateien werden auch danach nicht hochgeladen.
             </p>
-            <a class="knopf-voll" href="/api/auth/login?returnToUrl=%2Fportal">Anmelden oder Konto anlegen</a>
-            {fehler && (
+            <a class="knopf-voll" href="/api/hnvr/anmelden?returnToUrl=%2Fportal">Mit hnvr.me anmelden</a>
+            {hinweis === 'abgebrochen' && (
               <p class="klein leise" style="margin-top:1rem">
-                Die Mitgliederverwaltung antwortet gerade nicht
-                (<code>{fehler.slice(0, 90)}</code>). Das Studio selbst läuft
-                davon unabhängig.
+                Die Anmeldung wurde nicht abgeschlossen. Ein zweiter Versuch
+                beginnt wieder bei hnvr.me.
+              </p>
+            )}
+            {(hinweis === 'unerreichbar' || unerreichbar) && (
+              <p class="klein leise" style="margin-top:1rem">
+                hnvr.me antwortet gerade nicht. Das Studio selbst läuft davon
+                unabhängig; wer sich in den letzten 30 Tagen angemeldet hat,
+                arbeitet darin weiter.
               </p>
             )}
           </div>

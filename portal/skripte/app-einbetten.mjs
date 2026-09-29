@@ -77,13 +77,20 @@ await cp(QUELLE, ZIEL, {
    bekommt die Zeile — dort gibt es eine Mitgliederverwaltung, die sie
    beantworten kann. */
 const AUSKUNFT = '/api/mitglied.json';
+/* Angemeldet wird mit dem hnvr.me-Konto (src/hnvr.js). Die Schranke im
+   Studio schickt deshalb dorthin und sagt, bei wem das Konto liegt. */
+const ANMELDEWEG = '/api/hnvr/anmelden';
+const KONTO = 'hnvr.me';
 {
   const weg = join(ZIEL, 'index.html');
   const html = await readFile(weg, 'utf8');
   if (!html.includes('studio-anmeldung')) {
     await writeFile(weg, html.replace('<link rel="stylesheet" href="app/stil.css">',
-      `<meta name="studio-anmeldung" content="${AUSKUNFT}">\n<link rel="stylesheet" href="app/stil.css">`));
-    console.log(`  Anmeldeschranke eingesetzt: fragt ${AUSKUNFT}`);
+      `<meta name="studio-anmeldung" content="${AUSKUNFT}">\n`
+      + `<meta name="studio-anmeldung-weg" content="${ANMELDEWEG}">\n`
+      + `<meta name="studio-anmeldung-konto" content="${KONTO}">\n`
+      + '<link rel="stylesheet" href="app/stil.css">'));
+    console.log(`  Anmeldeschranke eingesetzt: fragt ${AUSKUNFT}, meldet an über ${ANMELDEWEG} (${KONTO})`);
   }
 }
 

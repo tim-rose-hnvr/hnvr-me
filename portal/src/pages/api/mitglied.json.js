@@ -13,34 +13,29 @@
    richtige Abwägung. Sie steht hier, damit sie niemand später für ein
    Sicherheitsversprechen hält. */
 
-import { members } from '@wix/members';
+import { hnvrMitglied } from '../../hnvr.js';
 
 export const prerender = false;
 
-export async function GET() {
-  const antwort = (koerper) => new Response(JSON.stringify(koerper), {
-    status: 200,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      /* Nie zwischenspeichern: sonst zeigt der Browser einem Abgemeldeten die
-         Auskunft des vorigen Menschen. */
-      'cache-control': 'no-store',
-    },
-  });
+/* Die Auskunft kommt seit der Verbindung mit hnvr.me von dort: angemeldet ist,
+   wer ein hnvr.me-Konto hat und sich damit angemeldet hat. Die Antwort hat
+   dieselbe Form wie vorher, damit das Studio nichts davon wissen muss.
 
-  try {
-    const { member } = await members.getCurrentMember();
-    if (!member) return antwort({ angemeldet: false });
-    return antwort({
-      angemeldet: true,
-      name: member.profile?.nickname
-        || [member.contact?.firstName, member.contact?.lastName].filter(Boolean).join(' ')
-        || member.loginEmail
-        || 'Angemeldet',
-    });
-  } catch {
-    /* Kein Mitglied, keine Sitzung, oder die Anmeldung ist nicht eingerichtet.
-       Alles drei heißt für die Anwendung dasselbe: nicht angemeldet. */
-    return antwort({ angemeldet: false });
+   Antwortet hnvr.me nicht, ist das 503 und nicht „abgemeldet": dann greift im
+   Studio der Merkzettel, und wer sich in den letzten 30 Tagen angemeldet hat,
+   arbeitet weiter, statt wegen eines Aussetzers ausgesperrt zu werden. */
+export async function GET({ request }) {
+  const { name, mitglied, kekse, unerreichbar } = await hnvrMitglied(request);
+  const kopf = new Headers({
+    'content-type': 'application/json; charset=utf-8',
+    /* Nie zwischenspeichern: sonst zeigt der Browser einem Abgemeldeten die
+       Auskunft des vorigen Menschen. */
+    'cache-control': 'no-store',
+  });
+  for (const k of kekse) kopf.append('Set-Cookie', k);
+  if (unerreichbar) {
+    return new Response(JSON.stringify({ angemeldet: false, unerreichbar: true }), { status: 503, headers: kopf });
   }
+  const koerper = mitglied ? { angemeldet: true, name, ueber: 'hnvr.me' } : { angemeldet: false };
+  return new Response(JSON.stringify(koerper), { status: 200, headers: kopf });
 }

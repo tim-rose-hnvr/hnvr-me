@@ -1,0 +1,73 @@
+<!-- App-Kachel „PDF Studio“ — zum Einsetzen auf www.hnvr.me/tools (dunkel)
+     und in der Konsole unter „hnvr.me Apps“ (hell, ohne Zusatzklasse).
+
+     Werte aus dem Rebrand (Figma „Atelier OS“, Komponente App-Kachel):
+     Orange #FF7120 nur als Fläche, darauf Tinte #172124 — nie Weiß auf Orange.
+     Keine Schrift wird hier geladen: die Seite, die die Kachel einsetzt, hat
+     Space Grotesk und Inter schon; sonst greift die Systemschrift.
+
+     Text, Fakten und Ziel stehen in manifest.json. Wer sie ändert, ändert sie
+     dort und hier — `node hnvr-app/pruefe-app.mjs` merkt, wenn beide
+     auseinanderlaufen. -->
+<style>
+  .hnvr-app-kachel {
+    --k-grund: #FFFFFF; --k-linie: #DEE6E7; --k-titel: #172124; --k-text: #4F5B5E; --k-leise: #5A6669;
+    --k-preis-grund: #E9F4EE; --k-preis: #276E53;
+    box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;
+    width: 100%; max-width: 360px; padding: 24px; border-radius: 16px;
+    background: var(--k-grund); border: 1px solid var(--k-linie);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; color: var(--k-text);
+  }
+  .hnvr-app-kachel--dunkel {
+    --k-grund: #141C1E; --k-linie: #2A3639; --k-titel: #F3F7F7; --k-text: #A2B0B3; --k-leise: #A2B0B3;
+    --k-preis-grund: #1F3A2E; --k-preis: #5BBF8E;
+  }
+  .hnvr-app-kachel * { box-sizing: border-box; margin: 0; }
+  .hnvr-app-kachel__kopf { display: flex; align-items: center; gap: 12px; }
+  .hnvr-app-kachel__zeichen {
+    position: relative; flex: none; width: 44px; height: 44px; border-radius: 12px; background: #FF7120;
+  }
+  .hnvr-app-kachel__zeichen::after {
+    content: ''; position: absolute; inset: 9px 11px; background: #172124;
+    clip-path: polygon(0 0, 62% 0, 100% 30%, 100% 100%, 0 100%);
+  }
+  .hnvr-app-kachel__name { flex: 1; min-width: 0; }
+  .hnvr-app-kachel__name h3 {
+    font: 700 20px/1.2 'Space Grotesk', 'Inter', system-ui, sans-serif; letter-spacing: -.01em; color: var(--k-titel);
+  }
+  .hnvr-app-kachel__anbieter {
+    font: 500 11px/1.4 'Inter', system-ui, sans-serif; letter-spacing: .5px; text-transform: uppercase; color: var(--k-leise);
+  }
+  .hnvr-app-kachel__preis {
+    flex: none; padding: 3px 8px; border-radius: 999px; background: var(--k-preis-grund); color: var(--k-preis);
+    font: 600 11px/1.4 'Inter', system-ui, sans-serif;
+  }
+  .hnvr-app-kachel__text { font: 400 14px/1.5 'Inter', system-ui, sans-serif; }
+  .hnvr-app-kachel__fakten { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
+  .hnvr-app-kachel__fakten li {
+    padding: 3px 8px; border-radius: 999px; border: 1px solid var(--k-linie); font: 500 11px/1.4 'Inter', system-ui, sans-serif;
+  }
+  .hnvr-app-kachel__oeffnen {
+    align-self: flex-start; display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 8px;
+    background: #FF7120; color: #172124; font: 600 13px/1 'Inter', system-ui, sans-serif; text-decoration: none;
+  }
+  .hnvr-app-kachel__oeffnen:hover { background: #F2651A; }
+  .hnvr-app-kachel__oeffnen:focus-visible { outline: 2px solid #FF7120; outline-offset: 3px; }
+</style>
+<article class="hnvr-app-kachel hnvr-app-kachel--dunkel" data-app="pdf-studio">
+  <div class="hnvr-app-kachel__kopf">
+    <span class="hnvr-app-kachel__zeichen" aria-hidden="true"></span>
+    <div class="hnvr-app-kachel__name">
+      <h3>PDF Studio</h3>
+      <p class="hnvr-app-kachel__anbieter">App von hnvr.me</p>
+    </div>
+    <span class="hnvr-app-kachel__preis">Kostenlos</span>
+  </div>
+  <p class="hnvr-app-kachel__text">PDFs lesen, prüfen, schwärzen, ausfüllen und unterschreiben — im Browser. Die Dateien bleiben auf dem Gerät.</p>
+  <ul class="hnvr-app-kachel__fakten">
+    <li>Offline</li>
+    <li>Ohne Hochladen</li>
+    <li>Mit hnvr.me-Konto</li>
+  </ul>
+  <a class="hnvr-app-kachel__oeffnen" href="https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/studio/index.html">PDF Studio öffnen →</a>
+</article>

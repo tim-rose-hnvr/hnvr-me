@@ -25,10 +25,11 @@ Browser ──► PDF-Studio-Site (eigenes Wix-Projekt „pdf studio", eigenes H
 - **Hosting und Serverrouten mit erhöhten Rechten bleiben im eigenen Projekt.**
   Die beiden Zugänge zu mischen — Anmeldung und erhöhte Rechte über denselben
   fremden Client — ist kein dokumentierter Weg; deshalb getrennt.
-- **Das Studio selbst weiß nichts von hnvr.me.** Es liest drei Kopfzeilen, die
+- **Das Studio selbst weiß nichts von hnvr.me.** Es liest Kopfzeilen, die
   `portal/skripte/app-einbetten.mjs` beim Einbetten setzt:
-  `studio-anmeldung` (Auskunft), `studio-anmeldung-weg` (Anmeldeknopf) und
-  `studio-anmeldung-konto` (Beschriftung „Mit hnvr.me anmelden").
+  `studio-anmeldung` (Auskunft), `studio-anmeldung-weg` (Anmeldeknopf),
+  `studio-anmeldung-konto` (Beschriftung „Mit hnvr.me anmelden") sowie
+  `studio-heimat` und `studio-heimat-name` (Rückweg in die Konsole).
 
 Die Regeln, die schiefgehen können, ohne dass es jemand sieht — kein offener
 Umleiter, keine Anmeldeschleife, Kekse nur HttpOnly —, stehen in
@@ -73,6 +74,14 @@ laufenden Site. Das legt niemand außer dir an.
 **`pdf-studio.me` erst eintragen, wenn die Domain dir gehört und
 angeschlossen ist.** Eine erlaubte Rücksprungadresse auf einer fremden Domain
 schickt Anmeldecodes von hnvr.me-Konten an den, dem sie gehört.
+
+## Als App in der Konsole
+
+Wie das Studio als Bereich in der Konsole und als Kachel auf www.hnvr.me/tools
+erscheint — Manifest, Symbol, Kachel, Anleitung — steht in `hnvr-app/`
+(`node hnvr-app/pruefe-app.mjs`). Eingebettet setzt `app-einbetten.mjs`
+zusätzlich `studio-heimat` und `studio-heimat-name`; dann führt
+„KONSOLE / PDF STUDIO“ im Kopf zurück nach www.hnvr.me/konsole.
 
 ## Offen, mit Grund
 

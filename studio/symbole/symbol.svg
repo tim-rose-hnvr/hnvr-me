@@ -1,12 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <title>Werkbank</title>
-  <!-- Grund: die Chrome-Farbe des Programms, damit das Symbol im Dock
-       dieselbe Sprache spricht wie die Titelleiste. -->
-  <rect width="512" height="512" fill="#1D2327"/>
-  <!-- Das Blatt mit dem umgeschlagenen Eck — dieselbe Form wie die Wortmarke
-       in der Kopfzeile, nur in groß: 17 × 21 wird zu 204 × 252. -->
-  <g transform="translate(154 130)">
-    <path d="M0 0 H134.6 L204 75.6 V252 H0 Z" fill="#0F766E"/>
-    <path d="M134.6 0 L204 75.6 H134.6 Z" fill="#7FD6CD"/>
-  </g>
+  <title>PDF Studio</title>
+  <!-- Rebrand von hnvr.me: die orange Kachel des Bereichssymbols in der
+       Konsole, darauf das Blatt in der Farbe der Leiste (#172124). Dieselbe
+       Form wie die Wortmarke im Kopf — Blatt mit abgeschnittener Ecke,
+       62 % / 30 %. Tinte auf Orange, nie Weiß. -->
+  <rect width="512" height="512" fill="#FF7120"/>
+  <path d="M146 118 H282.4 L366 194.8 V394 H146 Z" fill="#172124"/>
 </svg>

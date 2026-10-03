@@ -1,0 +1,40 @@
+{
+  "id": "pdf-studio",
+  "fassung": 1,
+  "name": "PDF Studio",
+  "anbieter": "hnvr.me",
+  "beschreibung": "PDFs lesen, prüfen, schwärzen, ausfüllen und unterschreiben — im Browser. Die Dateien bleiben auf dem Gerät.",
+  "fakten": ["Offline", "Ohne Hochladen", "Mit hnvr.me-Konto"],
+  "preis": "kostenlos",
+  "einstieg": "https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/studio/index.html",
+  "oeffnen": "ganzes-fenster",
+  "rueckweg": {
+    "kopfzeile": "studio-heimat",
+    "ziel": "https://www.hnvr.me/konsole",
+    "name": "Konsole"
+  },
+  "bereich": {
+    "abschnitt": "weitere-bereiche",
+    "beschriftung": "PDF Studio",
+    "symbol": "bereichssymbol.svg",
+    "zaehler": null
+  },
+  "rechte": {
+    "stufen": ["aendern", "keine"],
+    "standard": {
+      "inhaber": "aendern",
+      "bearbeitung": "aendern",
+      "nur-lesen": "aendern"
+    }
+  },
+  "schnellaktionen": [
+    { "beschriftung": "PDFs zusammenfügen", "ziel": "?werkzeug=zusammenfuegen" },
+    { "beschriftung": "PDF öffnen", "ziel": "?tun=oeffnen" }
+  ],
+  "tagesfokus": [],
+  "kennzahlen": [],
+  "hauptseite": {
+    "pfad": "/tools",
+    "kachel": "kachel.html"
+  }
+}

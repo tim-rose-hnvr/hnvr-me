@@ -51,6 +51,8 @@ const KERN = [
   'app/vergleich.js', 'app/word.js', 'app/zip.js',
   'fremd/pdf.mjs', 'fremd/pdf.worker.mjs', 'fremd/pdf-lib.mjs',
   'fremd/schrift/inter-latin-wght.woff2',
+  'fremd/schrift/space-grotesk-latin-wght.woff2', 'fremd/schrift/geist-mono-400.woff2',
+  'fremd/schrift/geist-mono-500.woff2',
   'fremd/schrift/plex-sans-cond-400.woff2', 'fremd/schrift/plex-sans-cond-500.woff2',
   'fremd/schrift/plex-sans-cond-600.woff2',
   'fremd/schrift/plex-sans-400.woff2', 'fremd/schrift/plex-sans-500.woff2',

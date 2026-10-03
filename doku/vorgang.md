@@ -85,7 +85,36 @@ gelesen. Ihre Vorgabe heißt jetzt **Passend zum Fenster** — 100 %, wo die
 Seite samt Rand auf die Bühne passt, sonst Breite. Auf dem Desktop ändert
 sich nichts, auf dem Telefon passt das Blatt ins Fenster.
 
-## Apple-Anmutung
+## hnvr.me-Rebrand
+
+Seit das Studio eine App von hnvr.me ist, trägt es dieselbe Hand wie die
+Konsole (Figma „Atelier OS", Seite Rebrand; Werte aus `plattform.css`). Die
+Richtung bleibt „Vorgang".
+
+| Was | Apple-Anmutung | Rebrand |
+|---|---|---|
+| Kopf, Vorgangsschiene | hell | dunkel wie die Leiste der Konsole: `#172124`, Flächen `#263438`, Text `#F3F7F7` |
+| Akzent | Blau | Orange `#FF7120` als Fläche mit Tinte `#172124` darauf; `#A83C05` als Schrift auf Hell |
+| Aktiver Schritt | blaue Tönung | volle orange Fläche wie der aktive Menüpunkt der Konsole |
+| Zähler | Systemschrift | Geist Mono, orange — wie die Zähler im Menü der Konsole |
+| Etiketten | halbfett | 10 px Versalien, gesperrt („VORGANG", „S. GLIEDERUNG") |
+| Titel / Text | System / Inter | Space Grotesk / Inter |
+| Befehlsfeld | Knopf | weißes Suchfeld „Suchen oder Befehl … ⌘K" |
+| Radien | 8 / 10 / 14 | 8 / 12 / 16 |
+| Bühne | Grau | Verlauf `#EFF3F3 → #E6EBEC → #DCE4E5` wie die Arbeitsfläche der Konsole |
+
+**Weiß auf Orange gibt es nicht.** `#FF7120` erreicht mit Weiß nur 2,9:1,
+mit Tinte 5,97:1. Auf der dunklen Leiste trägt Orange auch als Schrift (5,97:1
+auf `#172124`, 4,68:1 auf `#263438`); auf Hell nur das dunkle `#A83C05`
+(6,34:1).
+
+**Als App von hnvr.me** setzt die einbettende Seite zwei Kopfzeilen,
+`studio-heimat` und `studio-heimat-name`. Dann steht im Kopf
+„KONSOLE / PDF STUDIO" und führt zurück — wie der Pfad oben in der Konsole.
+Erlaubt sind nur https-Adressen und Pfade derselben Seite. Ohne die Zeilen
+bleibt der Kopf ohne Pfad: das Studio im Repository weiß nichts von hnvr.me.
+
+## Apple-Anmutung (abgelöst)
 
 Die Richtung bleibt „Vorgang" — die Schiene, die Blase, die Schubladen. Neu
 ist die Hand, in der sie gezeichnet ist: näher an macOS und iPadOS, weil das

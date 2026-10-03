@@ -6,8 +6,7 @@
 <title>PDF Studio</title>
 <!-- Die Leiste des Browsers trägt dieselbe Farbe wie die Chrome der
      Anwendung. Seit „Vorgang" ist die hell. -->
-<meta name="theme-color" content="#F6F6F8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1E1E20" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#172124">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="PDF Studio">
 <link rel="manifest" href="manifest.json">
@@ -24,6 +23,9 @@
       <span class="wortmarke-zeichen" aria-hidden="true"></span>
       <span class="wortmarke-wort">PDF Studio</span>
     </div>
+    <!-- Der Weg zurück in die Konsole von hnvr.me. Sichtbar nur, wenn die
+         Seite, die das Studio einbettet, ihn im Kopf nennt (studio-heimat). -->
+    <a class="heimat" id="heimat" href="#" hidden>Konsole <span class="heimat-trenner">/</span> PDF Studio</a>
 
     <div class="dokument-reiter" id="dokument-reiter" role="tablist" aria-label="Geöffnete Dateien"></div>
 
@@ -34,7 +36,8 @@
       <div class="kopf-verlauf" id="kopf-verlauf" role="group" aria-label="Verlauf"></div>
       <button class="knopf knopf-chrome" id="knopf-befehle" title="Befehle (Strg+K)">
         <svg viewBox="0 0 24 24" class="sinnbild"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg>
-        <span class="nur-breit">Befehle</span>
+        <span class="nur-breit">Suchen oder Befehl …</span>
+        <kbd class="befehle-kuerzel nur-breit" aria-hidden="true">⌘K</kbd>
       </button>
       <button class="knopf knopf-voll" id="knopf-sichern" title="Sichern (Strg+S)">Sichern</button>
       <button class="knopf knopf-chrome" id="knopf-einstellungen" title="Einstellungen">

@@ -174,3 +174,26 @@ export function zeigeSchranke({ anmeldeWeg = anmeldeWegAusKopf() || '/api/auth/l
 export function entferneSchranke() {
   $('#anmeldeschranke')?.remove();
 }
+
+/* Läuft das Studio als App von hnvr.me, nennt die einbettende Seite im Kopf,
+   wohin es zurückgeht:
+
+     <meta name="studio-heimat" content="https://www.hnvr.me/konsole">
+     <meta name="studio-heimat-name" content="Konsole">
+
+   Dann steht im Kopf „Konsole / PDF Studio", wie der Pfad in der Kopfleiste
+   der Konsole. Ohne die Zeile bleibt der Kopf, wie er ist — das Studio im
+   Repository weiß nichts von hnvr.me. Erlaubt sind nur https-Adressen und
+   Pfade dieser Seite: ein javascript:-Link im Kopf wäre ein Einfallstor. */
+export function zeigeHeimat() {
+  const ziel = document.querySelector('meta[name="studio-heimat"]')?.content?.trim();
+  const link = $('#heimat');
+  if (!ziel || !link) return;
+  let adresse;
+  try { adresse = new URL(ziel, location.href); } catch { return; }
+  if (adresse.protocol !== 'https:' && adresse.origin !== location.origin) return;
+  const name = document.querySelector('meta[name="studio-heimat-name"]')?.content?.trim().slice(0, 30);
+  link.href = adresse.href;
+  if (name) link.firstChild.textContent = `${name} `;
+  link.hidden = false;
+}

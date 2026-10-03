@@ -33,14 +33,15 @@ ohne eine eigene Datei zu suchen.
 
 ## Gestaltung
 
-Oberfläche und Webseite stehen in der **Apple-Anmutung** auf der Richtung
-„Vorgang" (ausführlich in `doku/vorgang.md`): helle, ruhige Flächen, Blau
-(`#0066CC` als Schrift, `#0071E3` als Fläche) für alles Bedienbare,
-Orange/Grün/Rot nur für Zustände, Radien wie in macOS (8/10/14, Kapseln für
-Schalter und Meldungen), weiche weite Schatten, keine Versalien. Die Schrift
-ist die des Geräts — auf Apple-Geräten SF Pro, sonst die beiliegende Inter;
-SF selbst darf nicht mitgeliefert werden. Aufbau: ein Kopf von 56 px mit
-Dokumentreitern, Verlauf, Befehlsfeld und „Sichern", darunter die
+Die Oberfläche steht im **Rebrand von hnvr.me** (Figma „Atelier OS",
+ausführlich in `doku/vorgang.md`), auf der Richtung „Vorgang": dunkler Kopf
+und dunkle Vorgangsschiene wie die Leiste der Konsole (`#172124`), helle
+Arbeitsfläche mit Verlauf, Orange `#FF7120` als Fläche mit Tinte darauf (nie
+Weiß auf Orange), `#A83C05` als Schrift auf Hell. Etiketten klein in
+Versalien wie „WEITERE BEREICHE", Titel in Space Grotesk, Text in Inter,
+Zahlen in Geist Mono — alle drei liegen bei, keine Schrift kommt aus dem Netz.
+Radien 8 / 12 / 16. Aufbau: ein Kopf von 56 px mit Dokumentreitern, Verlauf,
+Suchfeld „Suchen oder Befehl … ⌘K" und „Sichern", darunter die
 Vorgangsschiene links (264 px), die Bühne und die rechte Leiste (320 px);
 Seitenzahl und Zoom schweben als Pille über der Bühne. Unter 900 px werden
 die Leisten zu Schubladen.
@@ -771,7 +772,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 175 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 176 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  50 Prüfungen — was der Hoster ausliefert
 ```

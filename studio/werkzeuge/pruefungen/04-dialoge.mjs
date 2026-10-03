@@ -181,17 +181,17 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
         inter: document.fonts.check('12px "Inter"'),
       };
     });
-    /* Apple-Anmutung: Blau als Akzent, helle Chrome, Knöpfe mit 8 px.
-       Die Schrift ist die des Geräts — auf Apple-Geräten SF Pro, sonst die
-       beiliegende Inter. Hier, unter Linux, muss also Inter geladen sein. */
-    if (werte.akzent.toLowerCase() !== '#0066cc') throw new Error(`Akzent ${werte.akzent}`);
-    if (werte.chrome !== 'rgb(246, 246, 248)') throw new Error(`Chrome ${werte.chrome}`);
-    if (werte.buehne !== 'rgb(232, 232, 237)') throw new Error(`Bühne ${werte.buehne}`);
+    /* hnvr.me-Rebrand: Orange als Zustand (als Schrift auf Hell #A83C05),
+       die dunkle Leiste der Konsole als Chrome, Knöpfe mit 8 px, Inter für
+       den Text — beiliegend, nicht aus dem Netz. */
+    if (werte.akzent.toLowerCase() !== '#a83c05') throw new Error(`Akzent ${werte.akzent}`);
+    if (werte.chrome !== 'rgb(23, 33, 36)') throw new Error(`Chrome ${werte.chrome}`);
+    if (werte.buehne !== 'rgb(230, 235, 236)') throw new Error(`Bühne ${werte.buehne}`);
     if (werte.papier !== 'rgb(255, 255, 255)') throw new Error(`Papier ${werte.papier}`);
     if (werte.radius !== '8px') throw new Error(`Knopfradius ${werte.radius} statt 8`);
-    if (!/^-apple-system/.test(werte.schrift)) throw new Error(`Schrift ${werte.schrift}`);
+    if (!/^Inter/.test(werte.schrift)) throw new Error(`Schrift ${werte.schrift}`);
     if (!werte.inter) throw new Error('Inter wurde nicht geladen');
-    return 'Akzent #0066CC, Chrome, Bühne, Papier, Radius 8, Systemschrift mit Inter';
+    return 'Akzent #A83C05, Chrome #172124, Bühne, Papier, Radius 8, Inter';
   });
 
   await pruefe('Die Schriften kommen von hier, nicht aus dem Netz', async () => {

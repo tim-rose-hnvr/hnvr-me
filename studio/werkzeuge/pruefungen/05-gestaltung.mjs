@@ -71,13 +71,15 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
   const REG = {
     kopf: 56,
     links: 264, rechts: 320,
-    chrome900: 'rgb(246, 246, 248)',
-    buehne: 'rgb(232, 232, 237)',
+    /* Seit dem hnvr.me-Rebrand: die Leiste der Konsole (#172124), die
+       Arbeitsfläche darunter (#E6EBEC, mit Verlauf), Orange #FF7120 als
+       Fläche mit Tinte darauf — nie Weiß auf Orange. */
+    chrome900: 'rgb(23, 33, 36)',
+    buehne: 'rgb(230, 235, 236)',
     papier: 'rgb(255, 255, 255)',
-    /* Seit der Apple-Anmutung ist der Akzent Blau — als Fläche #0071E3,
-       als Schrift #0066CC. Gemessen wird hier die Fläche. */
-    akzent: 'rgb(0, 113, 227)',
-    chromeText: 'rgb(29, 29, 31)',
+    akzent: 'rgb(255, 113, 32)',
+    akzentText: 'rgb(23, 33, 36)',
+    chromeText: 'rgb(243, 247, 247)',
   };
 
   await pruefe('Die Höhen der Chrome stimmen auf den Pixel', async () => {
@@ -391,7 +393,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     /* Zwei verschiedene Schriftfarben, und das ist richtig so: auf dem
        Akzent steht --tally-text, auf der Chrome --chrome-text. Beide kippen
        mit der Fassung, deshalb kann keine zu schwach werden. */
-    if (stand.vollText !== 'rgb(255, 255, 255)') throw new Error(`Schrift auf dem Akzent ist ${stand.vollText}`);
+    if (stand.vollText !== REG.akzentText) throw new Error(`Schrift auf dem Akzent ist ${stand.vollText}`);
     if (stand.chromeText !== REG.chromeText) throw new Error(`Einstellungen ist ${stand.chromeText}`);
     return `Sichern ${stand.voll}`;
   });
@@ -456,7 +458,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
        2 px Innenabstand, sonst stoßen die Ecken aneinander).
        Das Blatt und die Leisten bleiben eckig: ein Blatt ist ein Blatt, und
        eine Leiste, die am Fensterrand klebt, bekäme sonst einen Spalt. */
-    const ERLAUBT = [0, 6, 8, 10, 14, 999];
+    /* Seit dem Rebrand die Stufen der Konsole: 8 klein, 12 Menüs und
+       Karten in Tafeln, 16 große Karten und Dialoge. */
+    const ERLAUBT = [0, 6, 8, 12, 16, 999];
     const daneben = await seite.evaluate((erlaubt) => {
       const raus = [];
       for (const k of document.querySelectorAll('#huelle *')) {
@@ -522,7 +526,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (stand.grund !== REG.papier) throw new Error(`Kopf ist ${stand.grund}`);
     if (stand.hoehe !== 48) throw new Error(`Kopf ist ${stand.hoehe} px statt 48`);
     if (!/apple-system|Inter/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
-    if (stand.radius !== '14px') throw new Error(`Ecken ${stand.radius} statt 14`);
+    if (stand.radius !== '16px') throw new Error(`Ecken ${stand.radius} statt 16`);
     if (!stand.hinweis) throw new Error('kein Hinweis im Fuß');
     if (!/Fassung/.test(stand.fassung)) throw new Error('keine Fassung unter den Kategorien');
     await seite.keyboard.press('Escape');
@@ -553,9 +557,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (!/Gliederung/.test(zeilen.kopf)) throw new Error(`kein Spaltenkopf: „${zeilen.kopf}"`);
     if (zeilen.nummer !== '1') throw new Error(`Nummer „${zeilen.nummer}"`);
     if (zeilen.titel.length < 4) throw new Error(`kein Kurztitel: „${zeilen.titel}"`);
-    /* Die Zahl steht in der Schrift der Oberfläche, mit Tabellenziffern —
-       so stehen 1 und 11 übereinander, ohne dass es eine zweite Schrift braucht. */
-    if (!/apple-system|Inter/.test(zeilen.zahlSchrift)) throw new Error(`Zahl in ${zeilen.zahlSchrift}`);
+    /* Zahlen stehen wie in der Konsole in Geist Mono — gleich breite
+       Ziffern, so stehen 1 und 11 übereinander. */
+    if (!/Geist Mono/.test(zeilen.zahlSchrift)) throw new Error(`Zahl in ${zeilen.zahlSchrift}`);
 
     /* Und zurück: der Knopf im Fuß der Leiste holt die Karten wieder. */
     const bilder = await seite.evaluate(async () => {

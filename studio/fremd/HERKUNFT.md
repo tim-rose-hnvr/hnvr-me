@@ -21,8 +21,15 @@ Nachladen zur Laufzeit (Leitprinzip 2 der Projektanweisung).
 | `forge.mjs` | `node-forge/dist/forge.min.js` | 1.4.0 | BSD-3-Clause (oder GPL-2.0) |
 | `schrift/plex-*.woff2` | `@fontsource/ibm-plex-sans`, `-condensed`, `-serif`, `-mono` (Teilmenge `latin`) | 5.2.5 | OFL-1.1 |
 | `schrift/inter-latin-wght.woff2`, `schrift/INTER-OFL.txt` | `@fontsource-variable/inter` (`files/inter-latin-wght-normal.woff2`, variable Achse Gewicht) | 5.3.0 | OFL-1.1 |
+| `schrift/space-grotesk-latin-wght.woff2`, `schrift/SPACE-GROTESK-OFL.txt` | `@fontsource-variable/space-grotesk` (`files/space-grotesk-latin-wght-normal.woff2`) | 5.3.0 | OFL-1.1 |
+| `schrift/geist-mono-400.woff2`, `schrift/geist-mono-500.woff2`, `schrift/GEIST-MONO-OFL.txt` | `@fontsource/geist-mono` (`files/geist-mono-latin-{400,500}-normal.woff2`) | 5.3.0 | OFL-1.1 |
 
-Zur Schrift: Die Oberfläche steht auf Apple-Geräten in der Systemschrift
+Zur Schrift: Seit das Studio eine App von hnvr.me ist, trägt es die Schriften
+des hnvr.me-Rebrand (Figma `JkiPNR4yuZr9VdL50YPnkg`, Seite „Rebrand"):
+Space Grotesk für Titel, Inter für Text, Geist Mono für Zahlen — dieselben
+Schnitte, die die Konsole unter /konsole-dateien/schrift/ ausliefert.
+
+Vorher, in der Apple-Anmutung: Die Oberfläche stand auf Apple-Geräten in der Systemschrift
 (`-apple-system` — das ist SF Pro). SF Pro selbst liegt hier **nicht**: Apples
 Lizenz erlaubt sie nur für Oberflächen auf Apple-Plattformen, nicht zum
 Ausliefern mit einer Web-Anwendung. Auf allen anderen Geräten greift Inter —

@@ -1,5 +1,9 @@
 /* PDF Studio — Gestaltung.
 
+   **Seit dem 03.10.2026 trägt das Studio das hnvr.me-Rebrand** (siehe :root
+   und „hnvr.me Rebrand — Bauteile"). Was folgt, beschreibt die Apple-Anmutung,
+   auf der die Bauteile gebaut sind; das Rebrand belegt sie neu.
+
    Apple-Anmutung auf der Richtung „Vorgang": helle, ruhige Flächen, eine
    durchscheinende Kopfleiste, Blau für alles Bedienbare, Orange/Grün/Rot für
    Zustände, Radien wie in macOS (8/10/14), weiche weite Schatten, keine
@@ -17,6 +21,13 @@
 /* ---------- Schriften (liegen bei, kein CDN) ---------------------------- */
 /* Inter, variabel von 100 bis 900 — die Ersatzschrift für SF auf allem, was
    kein Apple-Gerät ist. Ein Schnitt statt acht. */
+/* Die Schriften des hnvr.me-Rebrand — dieselben Schnitte wie die Konsole. */
+@font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700; font-display: swap;
+  src: url('../fremd/schrift/space-grotesk-latin-wght.woff2') format('woff2'); }
+@font-face { font-family: 'Geist Mono'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../fremd/schrift/geist-mono-400.woff2') format('woff2'); }
+@font-face { font-family: 'Geist Mono'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('../fremd/schrift/geist-mono-500.woff2') format('woff2'); }
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap;
   src: url('../fremd/schrift/inter-latin-wght.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap;
@@ -43,104 +54,106 @@
   src: url('../fremd/schrift/plex-mono-500.woff2') format('woff2'); }
 
 :root {
-  /* ---- Apple-Anmutung -------------------------------------------------
-     Die Richtung „Vorgang" bleibt: die Einheit ist der Vorgang, nicht die
-     Datei, und die Schiene links sagt, was ansteht. Geändert hat sich die
-     Hand, in der das gezeichnet ist — näher an macOS und iPadOS, weil das
-     Studio dort zu Hause ist (die Sprechstellen im Saal sind iPads).
+  /* ---- hnvr.me Rebrand -------------------------------------------------
+     Das Studio ist eine App von hnvr.me und trägt deshalb das Rebrand der
+     Plattform (Figma JkiPNR4yuZr9VdL50YPnkg, Seite „Rebrand", Screens
+     „Atelier OS" und „Control Studio") — Wert für Wert wie die Konsole
+     (www.hnvr.me/konsole-dateien/plattform.css), damit wer aus der Konsole
+     ins Studio wechselt, nicht das Haus wechselt.
 
-     Die Farbregel wird dabei genauer, nicht aufgegeben:
-       · **Blau heißt bedienbar.** Knöpfe, Auswahl, Fokus, das aktive
-         Werkzeug — wie der Tint in Apples Oberflächen.
-       · **Orange, Grün, Rot heißen Zustand.** Offen, erledigt, unumkehrbar.
-         Diese drei tragen nie eine Handlung allein.
+     · Dunkle Leiste und Kopfleiste #172124, heller Arbeitsbereich im Verlauf
+       #EFF3F3 → #E6EBEC → #DCE4E5, weiße Karten mit Radius 16 und weichem
+       Schatten.
+     · Orange #FF7120 ist **Fläche**, nie Schrift auf Hell: darauf steht
+       immer Tinte (5,97:1) — kein weißer Text auf Orange. Als Schrift auf
+       Hell steht --tally (#A83C05, 6,34:1 auf Weiß).
+     · Grün, Ocker, Rot heißen Zustand: erledigt, offen, unumkehrbar.
+     · Titel in Space Grotesk, Text in Inter, Zahlen in Geist Mono.
 
-     Blau gibt es zweimal, aus einem gerechneten Grund: in der dunklen
-     Fassung gibt es keinen Blauton, der als Schrift auf Dunkel *und* als
-     Fläche unter weißer Schrift je 4,5:1 schafft — die beiden Bereiche
-     überlappen nicht. --tally ist Blau als Schrift, Linie und Punkt;
-     --tally-voll ist Blau als Fläche, auf der --tally-text steht. */
-  --grund:        #F5F5F7;
+     Die dunklen Zonen (Kopf, linke Leiste) belegen dieselben Variablen neu
+     — siehe „Dunkle Zonen" unten. Jede Regel gilt so in beiden Zonen, ohne
+     zweimal geschrieben zu werden. */
+  --grund:        #EEF3F3;
   --flaeche:      #FFFFFF;
-  --flaeche-tief: #EDEDF0;
-  --flaeche-hoch: #FAFAFC;
-  --tafel:        #F5F5F7;
+  --flaeche-tief: #F4F7F7;
+  --flaeche-hoch: #F9FBFB;
+  --tafel:        #FFFFFF;
   --menue-grund:  #FFFFFF;
-  --tinte:        #1D1D1F;
-  --tinte-leise:  #6E6E73;
-  --tinte-still:  #AEAEB2;
-  --linie:        #E5E5EA;
-  --linie-stark:  #D1D1D6;
+  --tinte:        #172124;
+  --tinte-leise:  #4F5B5E;
+  --tinte-still:  #5A6669;
+  --linie:        #DEE6E7;
+  --linie-stark:  #C8D2D4;
 
-  --tally:        #0066CC;
-  --tally-voll:   #0071E3;
-  --tally-hover:  #0077ED;
-  --tally-hell:   #0066CC;
-  --tally-grund:  rgba(0, 113, 227, .10);
-  --tally-text:   #FFFFFF;
-  --fokus:        rgba(0, 113, 227, .45);
+  /* --tally: Orange als Schrift und Linie. --tally-voll: Orange als Fläche,
+     darauf --tally-text (Tinte). --tally-hell: Orange für Punkte und Balken. */
+  --tally:        #A83C05;
+  --tally-voll:   #FF7120;
+  --tally-hover:  #FF8A47;
+  --tally-hell:   #FF7120;
+  --tally-grund:  #FFE3D2;
+  --tally-text:   #172124;
+  --fokus:        rgba(255, 113, 32, .55);
 
-  --warn:         #B25000;
-  --warn-grund:   rgba(255, 149, 0, .14);
+  --warn:         #8A5A00;
+  --warn-grund:   #FBF2DE;
   --warn-text:    #FFFFFF;
-  --gut:          #1D7F3B;
-  --gut-grund:    rgba(52, 199, 89, .14);
-  --gefahr:       #D70015;
-  --gefahr-grund: rgba(255, 59, 48, .10);
-  /* Der Schalter, der „an" ist, ist grün — wie auf jedem iPhone. Er ist
-     die einzige Stelle, an der Grün eine Handlung trägt; dafür trägt er kein
-     Wort, sondern eine Stellung. */
-  --schalter-an:  #34C759;
+  --gut:          #276E53;
+  --gut-grund:    #E9F4EE;
+  --gefahr:       #A63F36;
+  --gefahr-grund: #F9EBE8;
+  /* Die Schalter in „Menü und Bereiche" sind orange, wenn sie an sind. */
+  --schalter-an:  #FF7120;
 
-  /* Die Kopfleiste ist eine feste Fläche — unter ihr scrollt nichts, ein
-     Material hätte nichts zu verwischen. Durchscheinend mit Unschärfe
-     (--material) ist nur, was wirklich über dem Dokument schwebt: die Pille,
-     die Blase, der Grund hinter Dialogen. */
-  --chrome-900:   #F6F6F8;
-  --chrome-800:   #EDEDF0;
-  --chrome-700:   #EDEDF0;
-  --chrome-600:   #D1D1D6;
-  --chrome-linie: rgba(0, 0, 0, .10);
-  --chrome-fuss:  #F5F5F7;
-  --chrome-text:  #1D1D1F;
-  --chrome-leise: #6E6E73;
-  --material:     saturate(180%) blur(20px);
-  --material-grund: rgba(255, 255, 255, .72);
-  /* Das HUD ist in beiden Fassungen dunkel — wie das Bearbeiten-Menü an
-     einer Textauswahl auf dem iPhone. Es liegt über dem Blatt, und das Blatt
-     ist immer weiß. */
-  --hud:          rgba(30, 30, 32, .92);
-  --hud-text:     #FFFFFF;
-  --hud-linie:    rgba(255, 255, 255, .16);
-  --hud-gefahr:   #FF6961;
+  /* Die Leiste — Kopf und linke Spalte, wie in der Konsole. */
+  --leiste:         #172124;
+  --leiste-flaeche: #263438;
+  --leiste-hover:   #1F2B2F;
+  --leiste-linie:   #364347;
+  --leiste-text:    #F3F7F7;
+  --leiste-leise:   #A2B0B3;
 
-  --buehne:       #E8E8ED;
-  --buehne-tief:  #E0E0E5;
-  --lineatur:     #E5E5EA;
+  --chrome-900:   #172124;
+  --chrome-800:   #1F2B2F;
+  --chrome-700:   #263438;
+  --chrome-600:   #364347;
+  --chrome-linie: #364347;
+  --chrome-fuss:  #172124;
+  --chrome-text:  #F3F7F7;
+  --chrome-leise: #A2B0B3;
+  --material:     saturate(160%) blur(16px);
+  --material-grund: rgba(255, 255, 255, .88);
+
+  /* Das HUD an der Textauswahl ist eine dunkle Karte wie „.dunkel-karte"
+     in der Konsole — in beiden Fassungen. */
+  --hud:          #172124;
+  --hud-text:     #F3F7F7;
+  --hud-linie:    #364347;
+  --hud-gefahr:   #FF8F85;
+
+  --buehne:       #E6EBEC;
+  --buehne-verlauf: linear-gradient(180deg, #EFF3F3 0%, #E6EBEC 60%, #DCE4E5 100%);
+  --buehne-tief:  #DCE4E5;
+  --lineatur:     #DEE6E7;
 
   --papier:       #FFFFFF;
-  --blattkante:   rgba(0, 0, 0, .10);
-  --papier-tinte:  #1D1D1F;
-  --papier-leise:  #6E6E73;
-  --papier-linie:  #E5E5EA;
-  --papier-akzent: #0066CC;
-  --papier-akzent-grund: rgba(0, 113, 227, .08);
+  --blattkante:   rgba(23, 33, 36, .08);
+  --papier-tinte:  #172124;
+  --papier-leise:  #4F5B5E;
+  --papier-linie:  #DEE6E7;
+  --papier-akzent: #A83C05;
+  --papier-akzent-grund: rgba(255, 113, 32, .10);
 
-  /* Schatten weich und weit, wie bei Fenstern in macOS: ein naher dünner
-     und ein ferner breiter. Das Blatt bekommt wieder einen — es liegt auf
-     der Bühne wie ein Blatt in Vorschau. */
-  --schatten:        0 1px 2px rgba(0, 0, 0, .06);
-  --schatten-blatt:  0 0 0 .5px rgba(0, 0, 0, .10), 0 2px 6px rgba(0, 0, 0, .06), 0 12px 32px rgba(0, 0, 0, .08);
-  --schatten-tafel:  0 0 0 .5px rgba(0, 0, 0, .08), 0 4px 12px rgba(0, 0, 0, .08), 0 16px 40px rgba(0, 0, 0, .10);
-  --schatten-dialog: 0 0 0 .5px rgba(0, 0, 0, .12), 0 24px 80px rgba(0, 0, 0, .22);
+  /* Weich, wie in der Konsole: ein ferner heller und ein naher Hauch. */
+  --schatten:        0 8px 32px rgba(23, 33, 36, .04), 0 0 0 1px rgba(23, 33, 36, .035);
+  --schatten-blatt:  0 0 0 1px rgba(23, 33, 36, .06), 0 12px 32px rgba(23, 33, 36, .08);
+  --schatten-tafel:  0 0 0 1px rgba(23, 33, 36, .05), 0 12px 40px rgba(23, 33, 36, .10);
+  --schatten-dialog: 0 0 0 1px rgba(23, 33, 36, .06), 0 24px 80px rgba(23, 33, 36, .25);
 
-  /* Auf Apple-Geräten die Systemschrift — das ist SF Pro. SF selbst darf
-     nicht mitgeliefert werden (Apples Lizenz gilt nur für Oberflächen auf
-     Apple-Plattformen); überall sonst trägt Inter, die liegt bei. */
-  --sans:  -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-  --breit: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --sans:  'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+  --breit: 'Space Grotesk', 'Inter', system-ui, sans-serif;
   --serif: 'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
-  --mono:  ui-monospace, "SF Mono", 'IBM Plex Mono', Menlo, Consolas, monospace;
+  --mono:  'Geist Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   --kopfhoehe: 56px;
   --menuehoehe: 0px;
@@ -151,7 +164,6 @@
   --zeile: 44px;
   --zeile-kopf: 32px;
 
-  /* Satzstaffel wie in macOS: 13 ist die Bedienung, 11 das Kleingedruckte. */
   --satz-etikett:  11px;
   --satz-kopf:     11px;
   --satz-neben:    12px;
@@ -173,15 +185,13 @@
   --raum-8: 24px;
   --raum-9: 32px;
 
-  /* Radien wie in macOS: 8 für Knöpfe und Felder, 10 für Karten, 14 für
-     Fenster und Tafeln, rund für Kapseln und Schalter.
+  /* Radien der Konsole: 8 für Knöpfe und Felder, 16 für Karten; 12 für
+     Flächen dazwischen; rund für Pillen und Schalter.
      **Papier bleibt eckig.** Ein Blatt ist ein Blatt. */
   --radius-klein: 8px;
-  /* Das Segment in seiner Rinne: 8 minus die 2 px Innenabstand, sonst
-     stoßen die Ecken von Rinne und Segment aneinander. */
   --radius-segment: 6px;
-  --radius: 10px;
-  --radius-gross: 14px;
+  --radius: 12px;
+  --radius-gross: 16px;
   --radius-voll: 999px;
 }
 
@@ -198,95 +208,103 @@
    Seite wird als Bild gezeichnet und kippt nicht mit. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-thema="hell"]) {
-    --grund:        #161617;
-    --flaeche:      #242426;
-    --flaeche-tief: #2C2C2E;
-    --flaeche-hoch: #1F1F21;
-    --tafel:        #1C1C1E;
-    --menue-grund:  #2C2C2E;
-    --tinte:        #F5F5F7;
-    --tinte-leise:  #A1A1A6;
-    --tinte-still:  #636366;
-    --linie:        #38383A;
-    --linie-stark:  #48484A;
-    --tally:        #409CFF;
-    --tally-voll:   #0071E3;
-    --tally-hover:  #0077ED;
-    --tally-hell:   #409CFF;
-    --tally-grund:  rgba(64, 156, 255, .18);
-    --tally-text:   #FFFFFF;
-    --fokus:        rgba(64, 156, 255, .55);
-    --warn:         #FF9F0A;
-    --warn-grund:   rgba(255, 159, 10, .16);
-    --warn-text:    #1C1C1E;
-    --gut:          #30D158;
-    --gut-grund:    rgba(48, 209, 88, .16);
-    --gefahr:       #FF6961;
-    --gefahr-grund: rgba(255, 105, 97, .16);
-    --schalter-an:  #30D158;
-    --chrome-900:   #1E1E20;
-    --chrome-800:   #2C2C2E;
-    --chrome-700:   #2C2C2E;
-    --chrome-600:   #48484A;
-    --chrome-linie: rgba(255, 255, 255, .10);
-    --chrome-fuss:  #1C1C1E;
-    --chrome-text:  #F5F5F7;
-    --chrome-leise: #A1A1A6;
-    --material-grund: rgba(44, 44, 46, .72);
-    --buehne:       #0E0E0F;
-    --buehne-tief:  #0A0A0B;
-    --lineatur:     #1F1F21;
-    --blattkante:   rgba(255, 255, 255, .12);
-    --schatten:        0 1px 2px rgba(0, 0, 0, .4);
-    --schatten-blatt:  0 0 0 .5px rgba(255, 255, 255, .10), 0 12px 32px rgba(0, 0, 0, .5);
-    --schatten-tafel:  0 0 0 .5px rgba(255, 255, 255, .10), 0 16px 40px rgba(0, 0, 0, .55);
-    --schatten-dialog: 0 0 0 .5px rgba(255, 255, 255, .14), 0 24px 80px rgba(0, 0, 0, .7);
+    /* Die Konsole kennt nur eine helle Fassung. Die dunkle des Studios ist
+       aus der Leiste abgeleitet: der Arbeitsbereich nimmt deren Töne an,
+       Orange bleibt Fläche mit Tinte darauf und trägt als Schrift auch hier
+       (5,28:1 auf #1F2B2F). */
+    --grund:        #0F1719;
+    --flaeche:      #1F2B2F;
+    --flaeche-tief: #263438;
+    --flaeche-hoch: #1B2629;
+    --tafel:        #1F2B2F;
+    --menue-grund:  #263438;
+    --tinte:        #F3F7F7;
+    --tinte-leise:  #A2B0B3;
+    --tinte-still:  #8C9A9E;
+    --linie:        #364347;
+    --linie-stark:  #46555A;
+    --tally:        #FF7120;
+    --tally-voll:   #FF7120;
+    --tally-hover:  #FF8A47;
+    --tally-hell:   #FF7120;
+    --tally-grund:  rgba(255, 113, 32, .18);
+    --tally-text:   #172124;
+    --fokus:        rgba(255, 113, 32, .6);
+    --warn:         #E0A43B;
+    --warn-grund:   rgba(224, 164, 59, .16);
+    --warn-text:    #172124;
+    --gut:          #5BBF8E;
+    --gut-grund:    rgba(91, 191, 142, .16);
+    --gefahr:       #F08A80;
+    --gefahr-grund: rgba(240, 138, 128, .16);
+    --chrome-900:   #172124;
+    --chrome-800:   #1F2B2F;
+    --chrome-700:   #263438;
+    --chrome-600:   #364347;
+    --chrome-linie: #364347;
+    --chrome-fuss:  #172124;
+    --chrome-text:  #F3F7F7;
+    --chrome-leise: #A2B0B3;
+    --material-grund: rgba(31, 43, 47, .9);
+    --buehne:       #0B1214;
+    --buehne-verlauf: linear-gradient(180deg, #111A1C 0%, #0D1517 60%, #0A1113 100%);
+    --buehne-tief:  #0A1113;
+    --lineatur:     #1F2B2F;
+    --blattkante:   rgba(243, 247, 247, .10);
+    --schatten:        0 8px 32px rgba(0, 0, 0, .3), 0 0 0 1px rgba(243, 247, 247, .05);
+    --schatten-blatt:  0 0 0 1px rgba(243, 247, 247, .08), 0 12px 32px rgba(0, 0, 0, .5);
+    --schatten-tafel:  0 0 0 1px rgba(243, 247, 247, .08), 0 16px 40px rgba(0, 0, 0, .55);
+    --schatten-dialog: 0 0 0 1px rgba(243, 247, 247, .10), 0 24px 80px rgba(0, 0, 0, .7);
   }
 }
 :root[data-thema="dunkel"] {
-    --grund:        #161617;
-    --flaeche:      #242426;
-    --flaeche-tief: #2C2C2E;
-    --flaeche-hoch: #1F1F21;
-    --tafel:        #1C1C1E;
-    --menue-grund:  #2C2C2E;
-    --tinte:        #F5F5F7;
-    --tinte-leise:  #A1A1A6;
-    --tinte-still:  #636366;
-    --linie:        #38383A;
-    --linie-stark:  #48484A;
-    --tally:        #409CFF;
-    --tally-voll:   #0071E3;
-    --tally-hover:  #0077ED;
-    --tally-hell:   #409CFF;
-    --tally-grund:  rgba(64, 156, 255, .18);
-    --tally-text:   #FFFFFF;
-    --fokus:        rgba(64, 156, 255, .55);
-    --warn:         #FF9F0A;
-    --warn-grund:   rgba(255, 159, 10, .16);
-    --warn-text:    #1C1C1E;
-    --gut:          #30D158;
-    --gut-grund:    rgba(48, 209, 88, .16);
-    --gefahr:       #FF6961;
-    --gefahr-grund: rgba(255, 105, 97, .16);
-    --schalter-an:  #30D158;
-    --chrome-900:   #1E1E20;
-    --chrome-800:   #2C2C2E;
-    --chrome-700:   #2C2C2E;
-    --chrome-600:   #48484A;
-    --chrome-linie: rgba(255, 255, 255, .10);
-    --chrome-fuss:  #1C1C1E;
-    --chrome-text:  #F5F5F7;
-    --chrome-leise: #A1A1A6;
-    --material-grund: rgba(44, 44, 46, .72);
-    --buehne:       #0E0E0F;
-    --buehne-tief:  #0A0A0B;
-    --lineatur:     #1F1F21;
-    --blattkante:   rgba(255, 255, 255, .12);
-    --schatten:        0 1px 2px rgba(0, 0, 0, .4);
-    --schatten-blatt:  0 0 0 .5px rgba(255, 255, 255, .10), 0 12px 32px rgba(0, 0, 0, .5);
-    --schatten-tafel:  0 0 0 .5px rgba(255, 255, 255, .10), 0 16px 40px rgba(0, 0, 0, .55);
-    --schatten-dialog: 0 0 0 .5px rgba(255, 255, 255, .14), 0 24px 80px rgba(0, 0, 0, .7);
+    /* Die Konsole kennt nur eine helle Fassung. Die dunkle des Studios ist
+       aus der Leiste abgeleitet: der Arbeitsbereich nimmt deren Töne an,
+       Orange bleibt Fläche mit Tinte darauf und trägt als Schrift auch hier
+       (5,28:1 auf #1F2B2F). */
+    --grund:        #0F1719;
+    --flaeche:      #1F2B2F;
+    --flaeche-tief: #263438;
+    --flaeche-hoch: #1B2629;
+    --tafel:        #1F2B2F;
+    --menue-grund:  #263438;
+    --tinte:        #F3F7F7;
+    --tinte-leise:  #A2B0B3;
+    --tinte-still:  #8C9A9E;
+    --linie:        #364347;
+    --linie-stark:  #46555A;
+    --tally:        #FF7120;
+    --tally-voll:   #FF7120;
+    --tally-hover:  #FF8A47;
+    --tally-hell:   #FF7120;
+    --tally-grund:  rgba(255, 113, 32, .18);
+    --tally-text:   #172124;
+    --fokus:        rgba(255, 113, 32, .6);
+    --warn:         #E0A43B;
+    --warn-grund:   rgba(224, 164, 59, .16);
+    --warn-text:    #172124;
+    --gut:          #5BBF8E;
+    --gut-grund:    rgba(91, 191, 142, .16);
+    --gefahr:       #F08A80;
+    --gefahr-grund: rgba(240, 138, 128, .16);
+    --chrome-900:   #172124;
+    --chrome-800:   #1F2B2F;
+    --chrome-700:   #263438;
+    --chrome-600:   #364347;
+    --chrome-linie: #364347;
+    --chrome-fuss:  #172124;
+    --chrome-text:  #F3F7F7;
+    --chrome-leise: #A2B0B3;
+    --material-grund: rgba(31, 43, 47, .9);
+    --buehne:       #0B1214;
+    --buehne-verlauf: linear-gradient(180deg, #111A1C 0%, #0D1517 60%, #0A1113 100%);
+    --buehne-tief:  #0A1113;
+    --lineatur:     #1F2B2F;
+    --blattkante:   rgba(243, 247, 247, .10);
+    --schatten:        0 8px 32px rgba(0, 0, 0, .3), 0 0 0 1px rgba(243, 247, 247, .05);
+    --schatten-blatt:  0 0 0 1px rgba(243, 247, 247, .08), 0 12px 32px rgba(0, 0, 0, .5);
+    --schatten-tafel:  0 0 0 1px rgba(243, 247, 247, .08), 0 16px 40px rgba(0, 0, 0, .55);
+    --schatten-dialog: 0 0 0 1px rgba(243, 247, 247, .10), 0 24px 80px rgba(0, 0, 0, .7);
 }
 
 * { box-sizing: border-box; }
@@ -1572,6 +1590,173 @@ button, input, select, textarea { font: inherit; color: inherit; }
    Schubfächer über die Bühne. Sonst bliebe für das Blatt nichts übrig.
    Darüber stehen sie nebeneinander — bei 944 px wie in der Mockup-Aufnahme:
    196 links, 296 rechts, der Rest Bühne. */
+/* ======================================================================
+   hnvr.me Rebrand — Bauteile
+   ======================================================================
+   Wie die Konsole (Atelier OS): dunkle Leiste links und oben, heller
+   Arbeitsbereich, weiße Karten. Die Werte stehen oben in :root; hier steht,
+   wo sie hingehören. */
+
+/* ---------- Dunkle Zonen ------------------------------------------------
+   Kopf und linke Leiste belegen dieselben Variablen mit den Leistentönen.
+   Was darin steht — Knöpfe, Segmente, Zeilen, Zähler — passt sich damit von
+   selbst an, statt jede Regel ein zweites Mal für Dunkel zu schreiben. Das
+   Blatt darin (Miniaturen) bleibt Papier. */
+.kopf, .empfang-kopf, .leiste-links, .ordnen-kopf, .vergleich-kopf {
+  --flaeche: var(--leiste-flaeche);
+  --flaeche-tief: var(--leiste-hover);
+  --flaeche-hoch: var(--leiste-hover);
+  --tafel: var(--leiste);
+  --menue-grund: var(--leiste-flaeche);
+  --tinte: var(--leiste-text);
+  --tinte-leise: var(--leiste-leise);
+  --tinte-still: var(--leiste-leise);
+  --linie: var(--leiste-linie);
+  --linie-stark: var(--leiste-linie);
+  /* Orange trägt auf der Leiste auch als Schrift (5,97:1). */
+  --tally: var(--tally-voll);
+  --tally-grund: rgba(255, 113, 32, .16);
+  --gut: #5BBF8E;
+  --gut-grund: rgba(91, 191, 142, .16);
+  --warn: #E0A43B;
+  --warn-grund: rgba(224, 164, 59, .16);
+  --gefahr: #F08A80;
+  --gefahr-grund: rgba(240, 138, 128, .16);
+  color: var(--tinte);
+}
+.leiste-links { background: var(--leiste); border-right: 0; }
+.leiste-links .leiste-fuss { background: var(--leiste); border-top-color: var(--leiste-linie); }
+/* Gewählte Zeilen auf der Leiste: Fläche wie „hover" in der Konsole, Orange
+   nur als Kante — volles Orange gehört dem aktiven Schritt. */
+.leiste-links .eintrag.ist-aktiv,
+.leiste-links .miniatur.ist-aktuell { background: var(--leiste-flaeche); border-color: transparent; box-shadow: inset 3px 0 0 var(--tally-voll); }
+
+/* Etiketten wie „WEITERE BEREICHE" in der Konsole: klein, halbfett,
+   Versalien, leicht gesperrt — und nie die einzige Auskunft. */
+.schienenkopf-wort, .spaltenkopf, .empfang-marke, .empfang-werkzeuge-titel,
+.dialog-fuss-hinweis, .einst-fassung div:first-child {
+  font: 600 10px/14px var(--sans); letter-spacing: .6px; text-transform: uppercase;
+}
+.schienenkopf-zahl { font-family: var(--mono); font-size: var(--satz-etikett); }
+
+/* Titel in Space Grotesk, Zahlen in Geist Mono — wie in der Konsole. */
+.empfang h1, .einzel-karte h1, .anmeldekarte h1, .einst-inhalt h3, .dialog-kopf h2,
+.wortmarke-wort, .empfang-fuss b { font-family: var(--breit); letter-spacing: -.01em; }
+.empfang h1 { font-weight: 500; letter-spacing: -.02em; }
+.empfang-fuss b, .dok-reiter-zahl, .schritt-stand, .miniatur-nummer, .fuss .feld-schmal,
+#anzeige-seitenzahl, .ordnen-nummer { font-family: var(--mono); }
+
+/* ---------- Kopf: die Werkzeugleiste der Konsole ------------------------- */
+.kopf { background: var(--leiste); border-bottom: 0; }
+.wortmarke-zeichen {
+  width: 28px; height: 28px; border-radius: var(--radius-klein);
+  background: var(--tally-voll); clip-path: none;
+}
+.wortmarke-zeichen::after {
+  /* Das gefaltete Blatt, klein, auf der orangen Kachel. */
+  content: ''; position: absolute; inset: 7px 8px 7px 8px; width: auto; height: auto;
+  background: var(--leiste); clip-path: polygon(0 0, 62% 0, 100% 30%, 100% 100%, 0 100%);
+}
+.wortmarke-wort { font-weight: 600; font-size: var(--satz-lauf); color: var(--leiste-text); }
+/* Der Weg zurück in die Konsole — nur, wenn das Studio als App von hnvr.me
+   läuft (Kopfzeile `studio-heimat`). */
+.heimat {
+  display: inline-flex; align-items: center; gap: var(--raum-3); padding: 0 var(--raum-6);
+  font: 500 11px/15px var(--sans); letter-spacing: .5px; text-transform: uppercase;
+  color: var(--leiste-leise); text-decoration: none; white-space: nowrap; flex: none;
+}
+.heimat:hover { color: var(--leiste-text); }
+.heimat-trenner { color: var(--leiste-leise); text-transform: none; letter-spacing: 0; }
+.heimat[hidden] { display: none; }
+
+.dok-reiter.ist-aktiv { background: var(--leiste-flaeche); box-shadow: none; color: var(--leiste-text); }
+.dok-reiter:hover { background: var(--leiste-hover); }
+
+/* Das Befehlsfeld ist das Suchfeld der Konsole: weiß, 40 px, mit ⌘K. */
+#knopf-befehle {
+  background: #FFFFFF; color: #172124; border: 1px solid #DEE6E7; box-shadow: none;
+  min-width: 240px; height: 36px; justify-content: flex-start; font-weight: 400;
+}
+#knopf-befehle:hover { border-color: #172124; background: #FFFFFF; }
+#knopf-befehle .befehle-kuerzel {
+  margin-left: auto; font: 500 11px/1 var(--mono); color: #5A6669;
+}
+/* Schmal bleibt davon die Lupe — sonst schiebt das Feld den Kopf aus dem Fenster. */
+@media (max-width: 52rem) { #knopf-befehle { min-width: 0; } }
+
+/* ---------- Knöpfe wie in der Konsole ------------------------------------ */
+.knopf {
+  background: var(--flaeche); color: var(--tinte); font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--linie);
+}
+.knopf:hover { background: var(--flaeche); box-shadow: inset 0 0 0 1px var(--tinte); }
+.knopf-still, .knopf-chrome { box-shadow: none; background: transparent; font-weight: 500; }
+.knopf-still:hover, .knopf-chrome:hover { background: var(--flaeche-tief); box-shadow: none; }
+.knopf-voll, .knopf.ist-aktiv { background: var(--tally-voll); color: var(--tally-text); box-shadow: none; font-weight: 600; }
+.knopf-voll:hover { background: #F2651A; }
+.kopf .knopf-voll { padding: var(--raum-3) var(--raum-7); }
+
+/* ---------- Linke Leiste: die Navigation der Konsole --------------------- */
+.vorgangsschiene { padding: var(--raum-7) var(--raum-6) var(--raum-4); }
+.schienenkopf { padding: 0 var(--raum-4) var(--raum-4); }
+.schienenkopf-wort { color: var(--leiste-leise); }
+.schienenkopf-zahl { color: var(--leiste-leise); }
+.schritt { height: 42px; padding: 0 var(--raum-6); font-size: var(--satz-grund); color: var(--leiste-text); }
+.schritt:hover { background: var(--leiste-hover); }
+/* Aktiv wie „Start" in der Konsole: orange Fläche, Tinte darauf. */
+.schritt.ist-aktiv { background: var(--tally-voll); color: var(--tally-text); font-weight: 600; }
+.schritt.ist-aktiv .schritt-punkt { background: var(--tally-text); box-shadow: none; }
+.schritt.ist-wartet, .schritt.ist-nichts { color: var(--leiste-leise); }
+/* Der Stand ist ein Zähler wie „Bestellungen 3": Mono, ohne Kapsel. */
+.schritt-stand { background: none; padding: 0 var(--raum-1); font-weight: 600; font-size: var(--satz-neben); color: var(--leiste-leise); }
+.schritt.ist-offen .schritt-stand { background: none; color: var(--tally-voll); }
+.schritt.ist-erledigt .schritt-stand { background: none; color: #5BBF8E; }
+.schritt.ist-aktiv .schritt-stand { color: var(--tally-text); }
+/* Werkzeuge des Schritts wie „Start anpassen" unter „Start": klein, eingerückt. */
+.schritt-werkzeuge { padding: var(--raum-2) 0 var(--raum-4) calc(var(--raum-9) + var(--raum-4)); }
+.schritt-werkzeug { font-size: var(--satz-neben); color: var(--leiste-leise); padding: var(--raum-3) var(--raum-4); }
+.schritt-werkzeug:hover { background: var(--leiste-hover); color: var(--leiste-text); }
+.schritt-werkzeug.ist-aktiv { background: var(--leiste-flaeche); color: var(--leiste-text); }
+.schritt-werkzeug.ist-weiter { color: var(--tally-voll); }
+
+/* Reiter in der Leiste: Pillen wie „Aktiv · Pausiert" — die gewählte dunkel. */
+.reiter { background: var(--flaeche-tief); }
+.reiter-knopf.ist-aktiv { background: var(--flaeche); color: var(--tinte); box-shadow: none; }
+.leiste-rechts .reiter { background: var(--flaeche-tief); }
+.leiste-rechts .reiter-knopf.ist-aktiv { background: var(--tinte); color: var(--flaeche); }
+.spaltenkopf { background: transparent; color: var(--tinte-still); }
+
+/* ---------- Arbeitsbereich ------------------------------------------------ */
+.buehne { background: var(--buehne) var(--buehne-verlauf); }
+/* Die rechte Leiste ist eine Karte auf dem Verlauf, wie die Karten der
+   Konsole: weiß, Radius 16, weicher Schatten. */
+.leiste-rechts { background: var(--flaeche); border-left: 1px solid var(--linie); }
+.filterreihe { background: var(--flaeche); }
+.filterreihe .knopf.ist-aktiv { background: var(--tinte); color: var(--flaeche); }
+.faden { box-shadow: inset 0 0 0 1px var(--linie); }
+
+/* Die Pille unten ist eine Karte der Konsole. */
+.fuss { background: var(--flaeche); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: var(--schatten-tafel); }
+
+/* Schalter wie in „Menü und Bereiche": orange, wenn an. */
+.pille.ist-an { background: var(--schalter-an); }
+
+/* Segmente wie „Aktiv · Pausiert": das gewählte als dunkle Pille. */
+.segmente { background: var(--flaeche-tief); border-radius: var(--radius-voll); }
+.segment { border-radius: var(--radius-voll); }
+.segment.ist-an { background: var(--tinte); color: var(--flaeche); box-shadow: none; }
+
+/* Einstellungen: die gewählte Kategorie wie der aktive Menüpunkt. */
+.einst-kategorie.ist-aktiv { background: var(--tally-voll); color: var(--tally-text); }
+
+/* Empfang: Kopf dunkel wie die Konsole, Karte weiß mit Radius 16. */
+.empfang { background: var(--buehne) var(--buehne-verlauf); }
+.empfang-kopf { background: var(--leiste); border-bottom: 0; }
+.empfang-marke { color: var(--tally); }
+
+/* Dialoge: Titel in Space Grotesk, Fuß hell. */
+.dialog-kopf h2 { font-weight: 500; font-size: var(--satz-lauf); }
+
 /* Zwischen 900 und 1400 px quetschten beide Leisten die Bühne, bis das Blatt
    beschnitten wurde — 24 px Bühne neben einer 720-px-Seite. Die Leisten geben
    zuerst nach, nicht das Dokument. */

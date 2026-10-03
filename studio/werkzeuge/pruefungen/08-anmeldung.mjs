@@ -87,6 +87,41 @@ export default async function ({ pruefe, seite, ladeBeispiel }) {
     return `→ ${lage.mitHnvr.ziel.slice(0, 44)}…, „${lage.mitHnvr.wort}"; fremder Weg abgewiesen`;
   });
 
+  await pruefe('Als App von hnvr.me führt der Kopf zurück in die Konsole', async () => {
+    /* Der Brotkrumen „Konsole / PDF Studio" steht nur, wenn die einbettende
+       Seite ihn nennt — und nur mit https oder einem Pfad dieser Seite. */
+    const lage = await seite.evaluate(async () => {
+      const m = await import('./app/anmeldung.js');
+      const link = document.querySelector('#heimat');
+      const vorher = link.hidden;
+      const setze = (name, inhalt) => {
+        const k = document.createElement('meta');
+        k.name = name; k.content = inhalt; document.head.append(k); return k;
+      };
+      const lies = () => {
+        link.hidden = true; link.removeAttribute('href');
+        m.zeigeHeimat();
+        return { sichtbar: !link.hidden, ziel: link.getAttribute('href'), text: link.textContent.replace(/\s+/g, ' ').trim() };
+      };
+      const ziel = setze('studio-heimat', 'https://www.hnvr.me/konsole');
+      const name = setze('studio-heimat-name', 'Konsole');
+      const echt = lies();
+      ziel.content = 'javascript:alert(1)';
+      const boese = lies();
+      ziel.content = 'http://fremd.example/';
+      const ohneTls = lies();
+      ziel.remove(); name.remove();
+      link.hidden = true; link.setAttribute('href', '#');
+      return { vorher, echt, boese, ohneTls };
+    });
+    if (!lage.vorher) throw new Error('ohne Kopfzeile steht der Brotkrumen schon da');
+    if (!lage.echt.sichtbar || lage.echt.ziel !== 'https://www.hnvr.me/konsole') throw new Error(`Ziel: ${lage.echt.ziel}`);
+    if (lage.echt.text !== 'Konsole / PDF Studio') throw new Error(`Text: „${lage.echt.text}"`);
+    if (lage.boese.sichtbar) throw new Error('javascript:-Ziel übernommen');
+    if (lage.ohneTls.sichtbar) throw new Error('fremdes http-Ziel übernommen');
+    return `„${lage.echt.text}" → ${lage.echt.ziel}; javascript: und fremdes http abgewiesen`;
+  });
+
   /* Ohne Netz entscheidet der Merkzettel. Zwei Fälle, und der Unterschied ist
      der ganze Punkt: wer nie angemeldet war, kommt nicht hinein; wer es war,
      arbeitet weiter. Sonst wäre die installierte Fassung beim ersten Funkloch

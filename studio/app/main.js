@@ -3,7 +3,7 @@
 import { sage, $, zustand } from './kern.js';
 import { starteMotor } from './dokument.js';
 import { starteOberflaeche, befehle, fuehreAus } from './oberflaeche.js';
-import { frageAnmeldung, zeigeSchranke } from './anmeldung.js';
+import { frageAnmeldung, zeigeSchranke, zeigeHeimat } from './anmeldung.js';
 import { starteVorgang } from './vorgang.js';
 
 async function start() {
@@ -18,6 +18,7 @@ async function start() {
   }
   starteOberflaeche();
   starteVorgang();
+  zeigeHeimat();
   document.documentElement.classList.add('ist-bereit');
 
   /* Startbefehle aus der Adresse — die Verknüpfungen der installierten

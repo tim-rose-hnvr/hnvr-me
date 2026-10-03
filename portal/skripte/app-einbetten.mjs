@@ -81,6 +81,10 @@ const AUSKUNFT = '/api/mitglied.json';
    Studio schickt deshalb dorthin und sagt, bei wem das Konto liegt. */
 const ANMELDEWEG = '/api/hnvr/anmelden';
 const KONTO = 'hnvr.me';
+/* Das Studio ist ein Bereich der Konsole auf www.hnvr.me. Der Brotkrumen im
+   Kopf („Konsole / PDF Studio") führt dorthin zurück. */
+const HEIMAT = 'https://www.hnvr.me/konsole';
+const HEIMAT_NAME = 'Konsole';
 {
   const weg = join(ZIEL, 'index.html');
   const html = await readFile(weg, 'utf8');
@@ -89,8 +93,10 @@ const KONTO = 'hnvr.me';
       `<meta name="studio-anmeldung" content="${AUSKUNFT}">\n`
       + `<meta name="studio-anmeldung-weg" content="${ANMELDEWEG}">\n`
       + `<meta name="studio-anmeldung-konto" content="${KONTO}">\n`
+      + `<meta name="studio-heimat" content="${HEIMAT}">\n`
+      + `<meta name="studio-heimat-name" content="${HEIMAT_NAME}">\n`
       + '<link rel="stylesheet" href="app/stil.css">'));
-    console.log(`  Anmeldeschranke eingesetzt: fragt ${AUSKUNFT}, meldet an über ${ANMELDEWEG} (${KONTO})`);
+    console.log(`  Anmeldeschranke eingesetzt: fragt ${AUSKUNFT}, meldet an über ${ANMELDEWEG} (${KONTO}), zurück in die ${HEIMAT_NAME}`);
   }
 }
 

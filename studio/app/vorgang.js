@@ -1,36 +1,37 @@
-/* Vorgang — die Schiene und die Blase.
+/* Vorgang — die Modusleiste und die Blase.
 
    Die Einheit ist nicht die Datei, sondern der Vorgang: dieses Dokument, was
-   daran offen ist, was erledigt ist, was als Nächstes kommt. Daraus folgen
-   die beiden Dinge in dieser Datei:
+   daran offen ist, was erledigt ist, was als Nächstes kommt.
 
-   **Die Schiene** zeigt sechs Schritte mit ihrem Stand. Sie ersetzt keine
-   Werkzeugliste, sie beantwortet eine andere Frage: nicht „was kann ich tun",
-   sondern „was steht noch an". Die Zahlen kommen aus dem Dokument selbst —
-   aus `mitdenken`, aus den Formularfeldern, aus den Anmerkungen. Ein Schritt
-   ohne Grund im Dokument zeigt keine Zahl.
+   **Die Modusleiste** (Atelier-Entwurf) ersetzt die Schiene mit sechs
+   Schritten. Vier Modi — Bearbeiten, Kommentieren, Organisieren,
+   Exportieren — sagen, womit man gerade umgeht; ihre Werkzeuge stehen oben
+   in der rechten Leiste, dem Inspektor. Was am Dokument noch ansteht, zählt
+   weiter das Dokument selbst (`vorgangsstand`): offene Hinweise und
+   Schwärzungsfunde am Reiter „Hinweise", leere Pflichtfelder an „Felder".
+   Kein Werkzeug ging dabei verloren — jedes steht unter einem Modus, im Menü
+   und im Befehlsfeld.
 
    **Die Blase** erscheint an einer Textauswahl und bietet an, was mit dieser
-   Auswahl geht. Das ist der Unterschied zur Werkzeugzeile: die bot fünfzehn
-   Werkzeuge auf Vorrat an, ohne zu wissen, ob eines davon gerade passt. */
+   Auswahl geht. */
 
 import { zustand, melde, hoer, el, $ } from './kern.js';
 import { befunde } from './mitdenken.js';
 import { offeneFelder, hatFormular } from './formulare.js';
 import { uebernehmeAuswahl, hatUnterschrift } from './anmerkungen.js';
 
-let schiene = null;
+let modi = null;
+let inspektor = null;
 let blase = null;
-let aktiverSchritt = 'pruefen';
+let aktiverModus = 'kommentieren';
 
-/* Jeder Schritt sagt, was er tut, und rechnet seinen Stand aus dem Dokument
-   aus. `stand` liefert eine von vier Antworten: erledigt, offen mit Zahl,
-   wartet, oder nichts zu tun. */
+/* Der Stand des Vorgangs, aus dem Dokument gerechnet. Jede Zeile beantwortet
+   eine Frage mit einer von vier Antworten: erledigt, offen mit Zahl, wartet,
+   oder nichts zu tun. Ein Schritt ohne Grund im Dokument zeigt keine Zahl. */
 const SCHRITTE = [
   {
     id: 'lesen', wort: 'Lesen',
     stand: () => (zustand.folge.length ? { art: 'erledigt', text: `${zustand.folge.length} S.` } : { art: 'wartet' }),
-    tun: () => { zeigeTafel('links', 'miniaturen'); },
   },
   {
     id: 'pruefen', wort: 'Prüfen',
@@ -39,7 +40,6 @@ const SCHRITTE = [
       const offen = zaehleBefunde();
       return offen ? { art: 'offen', text: String(offen) } : { art: 'erledigt', text: 'nichts' };
     },
-    tun: () => { zeigeTafel('rechts', 'mitdenken'); },
   },
   {
     id: 'schwaerzen', wort: 'Schwärzen',
@@ -48,7 +48,6 @@ const SCHRITTE = [
       if (!befunde.untersucht) return { art: 'laeuft', text: '…' };
       return n ? { art: 'offen', text: String(n) } : { art: 'nichts' };
     },
-    tun: () => { zeigeTafel('rechts', 'mitdenken'); window.studio?.fuehreAus?.('werkzeug:schwaerzen'); },
   },
   {
     id: 'ausfuellen', wort: 'Ausfüllen',
@@ -58,64 +57,88 @@ const SCHRITTE = [
       const alle = zustand.formularfelder.length;
       return offen ? { art: 'offen', text: `${alle - offen} von ${alle}` } : { art: 'erledigt', text: `${alle} von ${alle}` };
     },
-    tun: () => { zeigeTafel('rechts', 'felder'); },
   },
   {
     id: 'unterschreiben', wort: 'Unterschreiben',
     stand: () => (hatUnterschrift() ? { art: 'erledigt', text: 'gesetzt' } : { art: 'wartet' }),
-    tun: () => { window.studio?.fuehreAus?.('werkzeug:unterschrift'); },
   },
   {
     id: 'ausgeben', wort: 'Ausgeben',
     stand: () => ({ art: 'wartet' }),
-    tun: () => { window.studio?.fuehreAus?.('export:word'); },
   },
 ];
 
-/* **Die Werkzeuge liegen unter ihrem Schritt.** Das ist der Rest des
-   Umbaus: statt fünfzehn Werkzeugen auf Vorrat in einer Zeile zeigt die
-   Schiene die, die zum aktiven Schritt gehören. Verloren geht keines —
-   jedes steht weiter im Befehlsfeld, und die selteneren unter „Weitere". */
-const WERKZEUGE_JE_SCHRITT = {
-  lesen: [
-    ['werkzeug:auswahl', 'Auswahl'],
-    ['werkzeug:text', 'Text'],
-    ['werkzeug:bereich', 'Bereich kopieren'],
-    ['seiten:ordnen', 'Seiten ordnen'],
-    ['vergleich', 'Mit anderer Datei vergleichen'],
-  ],
-  pruefen: [
-    ['texterkennung', 'Texterkennung (OCR)'],
-    ['werkzeug:hervor', 'Markieren'],
-    ['werkzeug:unterstrich', 'Unterstreichen'],
-    ['werkzeug:notiz', 'Kommentar'],
-    ['werkzeug:freihand', 'Freihand'],
-  ],
-  schwaerzen: [
-    ['werkzeug:schwaerzen', 'Redigieren'],
-    ['werkzeug:ersetzen', 'Text bearbeiten'],
-  ],
-  ausfuellen: [
-    ['werkzeug:feld', 'Formularfeld anlegen'],
-  ],
-  unterschreiben: [
-    ['werkzeug:unterschrift', 'Signieren'],
-    ['werkzeug:stempel', 'Stempel'],
-  ],
-  ausgeben: [
-    ['sichern:als', 'Sichern unter …'],
-    ['aufdruck', 'Aufdruck: Wasserzeichen, Kopf- und Fußzeile'],
-  ],
-};
+/** Der Stand jedes Schritts — für Zähler, Prüfungen und die Startseite. */
+export function vorgangsstand() {
+  return SCHRITTE.map((s) => ({ id: s.id, wort: s.wort, ...s.stand() }));
+}
 
+/* Vier Modi wie im Entwurf. Jeder bringt seine Werkzeuge mit; der erste
+   Eintrag ist das, was ein Druck auf den Modus gleich einschaltet — oder
+   nichts, wenn der Modus nur eine Auswahl anbietet. */
+const MODI = [
+  {
+    id: 'bearbeiten', wort: 'Bearbeiten', kuerzel: '⌘ E', titel: 'Bearbeiten', start: 'werkzeug:ersetzen',
+    tafel: 'verlauf',
+    werkzeuge: [
+      ['werkzeug:ersetzen', 'Text bearbeiten'],
+      ['werkzeug:text', 'Text einfügen'],
+      ['bilder', 'Bilder'],
+      ['texterkennung', 'Texterkennung (OCR)'],
+      ['werkzeug:feld', 'Formularfeld anlegen'],
+      ['formular:erkennen', 'Felder erkennen'],
+      ['aufdruck', 'Wasserzeichen, Kopf- und Fußzeile'],
+    ],
+  },
+  {
+    id: 'kommentieren', wort: 'Kommentieren', titel: 'Kommentieren', start: null,
+    tafel: 'anmerkungen',
+    werkzeuge: [
+      ['werkzeug:auswahl', 'Auswahl'],
+      ['werkzeug:hervor', 'Markieren'],
+      ['werkzeug:unterstrich', 'Unterstreichen'],
+      ['werkzeug:notiz', 'Kommentar'],
+      ['werkzeug:freihand', 'Freihand'],
+      ['werkzeug:rechteck', 'Rechteck'],
+      ['werkzeug:pfeil', 'Pfeil'],
+      ['werkzeug:stempel', 'Stempel'],
+      ['formular:naechstes', 'Formular ausfüllen'],
+    ],
+  },
+  {
+    id: 'organisieren', wort: 'Organisieren', titel: 'Organisieren', start: null,
+    tafel: 'mitdenken',
+    werkzeuge: [
+      ['seiten:ordnen', 'Seiten ordnen'],
+      ['datei:anhaengen', 'Datei anhängen'],
+      ['teilen', 'Dokument teilen'],
+      ['seiten:drehenRechts', 'Seiten drehen'],
+      ['lesezeichen', 'Lesezeichen'],
+      ['vergleich', 'Mit anderer Datei vergleichen'],
+      ['werkzeug:bereich', 'Bereich kopieren'],
+    ],
+  },
+  {
+    id: 'exportieren', wort: 'Exportieren', titel: 'Exportieren', start: null,
+    tafel: 'verlauf',
+    werkzeuge: [
+      ['sichern:als', 'Sichern unter …'],
+      ['word:ausgeben', 'Word (.docx)'],
+      ['excel:ausgeben', 'Excel (.xlsx)'],
+      ['powerpoint:ausgeben', 'PowerPoint (.pptx)'],
+      ['bild:ausgeben', 'Seite als Bild'],
+      ['verkleinern', 'Verkleinern'],
+      ['schutz:setzen', 'Mit Kennwort schützen'],
+      ['drucken', 'Drucken'],
+    ],
+  },
+];
 
-/* Wer ein Werkzeug über die Tastatur wählt, springt damit auch im Vorgang.
-   Sonst leuchtet ein Werkzeug in einem Schritt auf, den niemand sieht. */
-function schrittZumWerkzeug(werkzeugId) {
-  for (const [schrittId, taten] of Object.entries(WERKZEUGE_JE_SCHRITT)) {
-    if (taten.some(([befehlId]) => befehlId === `werkzeug:${werkzeugId}`)) return schrittId;
-  }
-  return null;
+/* Wer ein Werkzeug über die Tastatur wählt, springt damit auch in dessen
+   Modus. Sonst leuchtet ein Werkzeug in einem Modus auf, den niemand sieht. */
+function modusZumWerkzeug(werkzeugId) {
+  const id = `werkzeug:${werkzeugId}`;
+  return MODI.find((m) => m.werkzeuge.some(([befehlId]) => befehlId === id))?.id || null;
 }
 
 function zaehleBefunde() {
@@ -125,68 +148,84 @@ function zaehleBefunde() {
     + (hatFormular() && offeneFelder().length ? 1 : 0);
 }
 
-function zeigeTafel(seite, name) {
-  const wahl = seite === 'links' ? `[data-tafel="${name}"].reiter-knopf` : `[data-rtafel="${name}"].reiter-knopf`;
-  document.querySelector(wahl)?.click();
+function zeigeTafel(name) {
+  document.querySelector(`[data-rtafel="${name}"].reiter-knopf`)?.click();
 }
 
-/* ---------- Die Schiene ------------------------------------------------- */
+/** Schaltet einen Modus ein — mit seinem ersten Werkzeug, wenn er eines hat. */
+export function setzeModus(id) {
+  const modus = MODI.find((m) => m.id === id);
+  if (!modus) return;
+  aktiverModus = id;
+  if (modus.start) window.studio?.fuehreAus?.(modus.start);
+  zeigeTafel(modus.tafel);
+  zeichneModi();
+}
 
-export function zeichneSchiene() {
-  if (!schiene) return;
-  schiene.innerHTML = '';
-  const fertig = SCHRITTE.filter((s) => s.stand().art === 'erledigt').length;
+/* ---------- Die Modusleiste und der Inspektor ---------------------------- */
 
-  schiene.append(el('div', { klasse: 'schienenkopf' },
-    el('span', { klasse: 'schienenkopf-wort', text: 'Vorgang' }),
-    el('span', { klasse: 'schienenkopf-zahl', text: `${fertig} von ${SCHRITTE.length}` })));
-
-  for (const schritt of SCHRITTE) {
-    const stand = schritt.stand();
-    const ist = schritt.id === aktiverSchritt;
-    const hatTaten = (WERKZEUGE_JE_SCHRITT[schritt.id] || []).length > 0;
-    /* Der Schritt ist ein Aufklapper: er sagt, ob seine Werkzeuge offen sind,
-       und ein zweiter Druck schließt sie wieder. Ohne das gäbe es einen
-       Aufklapper, der sich nur öffnen lässt — und die Schiene wüchse mit
-       jedem Klick, ohne je wieder schmaler zu werden. */
-    const zeile = el('button', {
-      klasse: `schritt ist-${stand.art} ${ist ? 'ist-aktiv' : ''}`,
-      daten: { schritt: schritt.id },
-      'aria-current': ist ? 'step' : 'false',
-      'aria-expanded': hatTaten ? (ist ? 'true' : 'false') : null,
-      'aria-controls': hatTaten ? `schritt-werkzeuge-${schritt.id}` : null,
-      beiClick: () => {
-        if (ist) { aktiverSchritt = null; zeichneSchiene(); return; }
-        aktiverSchritt = schritt.id;
-        schritt.tun();
-        zeichneSchiene();
+export function zeichneModi() {
+  if (modi) {
+    modi.innerHTML = '';
+    for (const modus of MODI) {
+      const ist = modus.id === aktiverModus;
+      modi.append(el('button', {
+        klasse: `modus ${ist ? 'ist-aktiv' : ''}`,
+        role: 'tab',
+        'aria-selected': ist ? 'true' : 'false',
+        /* Eine Tab-Liste ist ein Halt für die Tabulatortaste, nicht vier:
+           hinein mit Tab, zwischen den Modi mit den Pfeilen. */
+        tabindex: ist ? '0' : '-1',
+        daten: { modus: modus.id },
+        beiClick: () => setzeModus(modus.id),
       },
-    },
-      el('i', { klasse: 'schritt-punkt', 'aria-hidden': 'true' }),
-      el('span', { klasse: 'schritt-wort', text: schritt.wort }),
-      stand.text ? el('span', { klasse: 'schritt-stand', text: stand.text }) : null);
-    schiene.append(zeile);
-
-    /* Unter dem aktiven Schritt stehen seine Werkzeuge — und nur seine. */
-    if (!ist) continue;
-    const taten = WERKZEUGE_JE_SCHRITT[schritt.id] || [];
-    if (!taten.length) continue;
-    const kasten = el('div', { klasse: 'schritt-werkzeuge', id: `schritt-werkzeuge-${schritt.id}` });
-    for (const [befehlId, wortlaut] of taten) {
-      kasten.append(el('button', {
-        klasse: `schritt-werkzeug ${zustand.werkzeug === befehlId.replace('werkzeug:', '') ? 'ist-aktiv' : ''}`,
+        el('span', { text: modus.wort }),
+        modus.kuerzel ? el('kbd', { klasse: 'modus-kuerzel', text: modus.kuerzel, 'aria-hidden': 'true' }) : null));
+    }
+  }
+  if (inspektor) {
+    const modus = MODI.find((m) => m.id === aktiverModus);
+    inspektor.innerHTML = '';
+    if (!modus) return;
+    inspektor.append(el('h2', { klasse: 'inspektor-titel', text: modus.titel }));
+    const liste = el('div', { klasse: 'inspektor-werkzeuge', role: 'group', 'aria-label': `Werkzeuge: ${modus.titel}` });
+    for (const [befehlId, wortlaut] of modus.werkzeuge) {
+      const werkzeug = befehlId.startsWith('werkzeug:') ? befehlId.slice(9) : null;
+      const an = werkzeug && zustand.werkzeug === werkzeug;
+      liste.append(el('button', {
+        klasse: `inspektor-werkzeug ${an ? 'ist-aktiv' : ''}`,
         text: wortlaut,
         daten: { befehl: befehlId },
-        beiClick: () => { window.studio?.fuehreAus?.(befehlId); zeichneSchiene(); },
+        'aria-pressed': werkzeug ? (an ? 'true' : 'false') : null,
+        beiClick: () => { window.studio?.fuehreAus?.(befehlId); zeichneModi(); },
       }));
     }
-    kasten.append(el('button', {
-      klasse: 'schritt-werkzeug ist-weiter',
+    liste.append(el('button', {
+      klasse: 'inspektor-werkzeug ist-weiter',
       text: 'Weitere Werkzeuge …',
       beiClick: () => window.studio?.fuehreAus?.('palette'),
     }));
-    schiene.append(kasten);
+    inspektor.append(liste);
   }
+  zeichneZaehler();
+}
+
+/* Der Stand des Vorgangs als Zahl am Reiter: „Hinweise 8", „Felder 2/10". */
+function zeichneZaehler() {
+  const stand = Object.fromEntries(vorgangsstand().map((s) => [s.id, s]));
+  const setze = (tafel, text) => {
+    const knopf = document.querySelector(`[data-rtafel="${tafel}"].reiter-knopf`);
+    if (!knopf) return;
+    let zahl = knopf.querySelector('.reiter-zahl');
+    if (!text) { zahl?.remove(); return; }
+    if (!zahl) { zahl = el('span', { klasse: 'reiter-zahl' }); knopf.append(zahl); }
+    /* Mit Leerzeichen davor: vorgelesen wird „Hinweise 8“, nicht „Hinweise8“. */
+    zahl.textContent = ` ${text}`;
+  };
+  const pruefen = stand.pruefen;
+  setze('mitdenken', pruefen?.art === 'offen' ? pruefen.text : '');
+  const felder = stand.ausfuellen;
+  setze('felder', felder?.art === 'offen' ? felder.text.replace(' von ', '/') : '');
 }
 
 /* ---------- Die Blase --------------------------------------------------- */
@@ -224,7 +263,19 @@ function zeigeBlase() {
 }
 
 export function starteVorgang() {
-  schiene = $('#vorgangsschiene');
+  modi = $('#modi');
+  inspektor = $('#inspektor-kopf');
+  modi?.addEventListener('keydown', (ereignis) => {
+    const schritt = { ArrowRight: 1, ArrowLeft: -1, Home: -Infinity, End: Infinity }[ereignis.key];
+    if (schritt === undefined) return;
+    ereignis.preventDefault();
+    const i = MODI.findIndex((m) => m.id === aktiverModus);
+    const ziel = Number.isFinite(schritt)
+      ? (i + schritt + MODI.length) % MODI.length
+      : (schritt < 0 ? 0 : MODI.length - 1);
+    setzeModus(MODI[ziel].id);
+    modi.querySelector(`.modus[data-modus="${MODI[ziel].id}"]`)?.focus();
+  });
 
   blase = el('div', { klasse: 'werkzeugblase', id: 'werkzeugblase', role: 'toolbar',
     'aria-label': 'Was mit dieser Auswahl geht', hidden: true });
@@ -264,27 +315,14 @@ export function starteVorgang() {
   });
   window.addEventListener('scroll', verbergeBlase, true);
 
-  /* Escape in der Schiene klappt den Schritt wieder zu — und der Fokus bleibt,
-     wo er war. Ohne das steht er nach dem Schließen auf einem Knopf, den es
-     nicht mehr gibt, und die Tastatur fängt oben auf der Seite wieder an. */
-  schiene?.addEventListener('keydown', (ereignis) => {
-    if (ereignis.key !== 'Escape' || !aktiverSchritt) return;
-    ereignis.preventDefault();
-    const id = aktiverSchritt;
-    aktiverSchritt = null;
-    zeichneSchiene();
-    schiene.querySelector(`.schritt[data-schritt="${id}"]`)?.focus();
-  });
-
-  /* „werkzeug:gewechselt" steht mit in der Liste, seit die Werkzeuge in der
-     Schiene stehen: wer ein Werkzeug über die Tastatur wählt, soll es in der
-     Schiene aufleuchten sehen. */
+  /* Wer ein Werkzeug über die Tastatur wählt, soll es im Inspektor
+     aufleuchten sehen — und den Modus dazu. */
   for (const ereignis of ['dokument:geladen', 'seiten:geaendert', 'anmerkungen:geaendert',
-    'formular:geaendert', 'mitdenken:geaendert']) hoer(ereignis, zeichneSchiene);
+    'formular:geaendert', 'mitdenken:geaendert']) hoer(ereignis, zeichneModi);
   hoer('werkzeug:gewechselt', (id) => {
-    const schritt = schrittZumWerkzeug(id);
-    if (schritt) aktiverSchritt = schritt;
-    zeichneSchiene();
+    const modus = modusZumWerkzeug(id);
+    if (modus) aktiverModus = modus;
+    zeichneModi();
   });
-  zeichneSchiene();
+  zeichneModi();
 }

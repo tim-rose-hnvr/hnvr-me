@@ -6,7 +6,7 @@
   "beschreibung": "PDFs lesen, prüfen, schwärzen, ausfüllen und unterschreiben — im Browser. Die Dateien bleiben auf dem Gerät.",
   "fakten": ["Offline", "Ohne Hochladen", "Mit hnvr.me-Konto"],
   "preis": "kostenlos",
-  "einstieg": "https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/studio/index.html",
+  "einstieg": "https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/studio/index.html?von=hnvr",
   "oeffnen": "ganzes-fenster",
   "rueckweg": {
     "kopfzeile": "studio-heimat",

@@ -106,8 +106,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
   await ladeBeispiel();
 
   await pruefe('Rechte Leiste hat vier Reiter, jeder mit Inhalt', async () => {
-    /* Die drei Reiter des Handoffs zuerst, unser vierter dahinter. */
-    const namen = await seite.$$eval('#reiter-rechts .reiter-knopf', (k) => k.map((x) => x.textContent));
+    /* Die drei Reiter des Handoffs zuerst, unser vierter dahinter. Was am
+       Reiter dahinter steht („Hinweise 8"), ist der Stand des Vorgangs. */
+    const namen = await seite.$$eval('#reiter-rechts .reiter-knopf', (k) => k.map((x) => x.childNodes[0].textContent.trim()));
     if (namen.join('|') !== 'Kommentare|Felder|Verlauf|Hinweise') throw new Error(namen.join('|'));
     const inhalte = [];
     for (const [tafel, id] of [['anmerkungen', '#tafel-kommentare'], ['felder', '#tafel-felder'],
@@ -168,30 +169,51 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
     return `${kategorien.length} Kategorien, Schalter und Wahl greifen`;
   });
 
-  await pruefe('Die Gestaltung folgt der Richtung', async () => {
-    const werte = await seite.evaluate(() => {
+  await pruefe('Die Gestaltung folgt der Richtung — in beiden Händen', async () => {
+    /* Eigenständig das Atelier (Papier, Kupfer, Rost, Bodoni), als App von
+       hnvr.me die Konsole (Leiste #172124, Orange). Dasselbe Programm, nur
+       andere Werte — gemessen wird beides, indem die Hand umgeschaltet wird. */
+    const miss = () => seite.evaluate(async () => {
       const wurzel = getComputedStyle(document.documentElement);
       return {
         akzent: wurzel.getPropertyValue('--tally').trim(),
         chrome: getComputedStyle(document.querySelector('.kopf')).backgroundColor,
+        navi: getComputedStyle(document.querySelector('.atelier-navi')).backgroundColor,
         buehne: getComputedStyle(document.querySelector('#buehne')).backgroundColor,
         papier: getComputedStyle(document.querySelector('.blatt')).backgroundColor,
         radius: getComputedStyle(document.querySelector('.knopf')).borderRadius,
         schrift: getComputedStyle(document.body).fontFamily,
+        anzeige: wurzel.getPropertyValue('--anzeige').trim(),
         inter: document.fonts.check('12px "Inter"'),
+        bodoni: (await document.fonts.load('italic 40px "Bodoni Moda"')).length > 0,
       };
     });
-    /* hnvr.me-Rebrand: Orange als Zustand (als Schrift auf Hell #A83C05),
-       die dunkle Leiste der Konsole als Chrome, Knöpfe mit 8 px, Inter für
-       den Text — beiliegend, nicht aus dem Netz. */
-    if (werte.akzent.toLowerCase() !== '#a83c05') throw new Error(`Akzent ${werte.akzent}`);
-    if (werte.chrome !== 'rgb(23, 33, 36)') throw new Error(`Chrome ${werte.chrome}`);
-    if (werte.buehne !== 'rgb(230, 235, 236)') throw new Error(`Bühne ${werte.buehne}`);
-    if (werte.papier !== 'rgb(255, 255, 255)') throw new Error(`Papier ${werte.papier}`);
-    if (werte.radius !== '8px') throw new Error(`Knopfradius ${werte.radius} statt 8`);
-    if (!/^Inter/.test(werte.schrift)) throw new Error(`Schrift ${werte.schrift}`);
-    if (!werte.inter) throw new Error('Inter wurde nicht geladen');
-    return 'Akzent #A83C05, Chrome #172124, Bühne, Papier, Radius 8, Inter';
+    const atelier = await miss();
+    await seite.evaluate(() => { document.documentElement.dataset.gestalt = 'hnvr'; });
+    await seite.waitForTimeout(150);
+    const hnvr = await miss();
+    await seite.evaluate(() => { delete document.documentElement.dataset.gestalt; });
+    await seite.waitForTimeout(150);
+
+    if (atelier.akzent.toLowerCase() !== '#ae4e2d') throw new Error(`Atelier: Akzent ${atelier.akzent}`);
+    if (atelier.chrome !== 'rgb(43, 47, 42)') throw new Error(`Atelier: Menüleiste ${atelier.chrome}`);
+    if (atelier.navi !== 'rgb(43, 47, 42)') throw new Error(`Atelier: Navigation ${atelier.navi}`);
+    if (atelier.buehne !== 'rgb(232, 223, 210)') throw new Error(`Atelier: Bühne ${atelier.buehne}`);
+    if (atelier.radius !== '4px') throw new Error(`Atelier: Knopfradius ${atelier.radius} statt 4`);
+    if (!/^'?"?Bodoni Moda/.test(atelier.anzeige)) throw new Error(`Atelier: Anzeigeschrift ${atelier.anzeige}`);
+    if (!atelier.bodoni) throw new Error('Bodoni Moda wurde nicht geladen');
+
+    if (hnvr.akzent.toLowerCase() !== '#a83c05') throw new Error(`hnvr.me: Akzent ${hnvr.akzent}`);
+    if (hnvr.chrome !== 'rgb(23, 33, 36)') throw new Error(`hnvr.me: Menüleiste ${hnvr.chrome}`);
+    if (hnvr.buehne !== 'rgb(230, 235, 236)') throw new Error(`hnvr.me: Bühne ${hnvr.buehne}`);
+    if (hnvr.radius !== '8px') throw new Error(`hnvr.me: Knopfradius ${hnvr.radius} statt 8`);
+
+    for (const w of [atelier, hnvr]) {
+      if (w.papier !== 'rgb(255, 255, 255)') throw new Error(`Papier ${w.papier}`);
+      if (!/^Inter/.test(w.schrift)) throw new Error(`Schrift ${w.schrift}`);
+    }
+    if (!atelier.inter) throw new Error('Inter wurde nicht geladen');
+    return 'Atelier: Rost, Leiste #2B2F2A, Bühne #E8DFD2, Radius 4, Bodoni · hnvr.me: Orange, #172124, Radius 8';
   });
 
   await pruefe('Die Schriften kommen von hier, nicht aus dem Netz', async () => {

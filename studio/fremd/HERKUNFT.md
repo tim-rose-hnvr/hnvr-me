@@ -23,8 +23,11 @@ Nachladen zur Laufzeit (Leitprinzip 2 der Projektanweisung).
 | `schrift/inter-latin-wght.woff2`, `schrift/INTER-OFL.txt` | `@fontsource-variable/inter` (`files/inter-latin-wght-normal.woff2`, variable Achse Gewicht) | 5.3.0 | OFL-1.1 |
 | `schrift/space-grotesk-latin-wght.woff2`, `schrift/SPACE-GROTESK-OFL.txt` | `@fontsource-variable/space-grotesk` (`files/space-grotesk-latin-wght-normal.woff2`) | 5.3.0 | OFL-1.1 |
 | `schrift/geist-mono-400.woff2`, `schrift/geist-mono-500.woff2`, `schrift/GEIST-MONO-OFL.txt` | `@fontsource/geist-mono` (`files/geist-mono-latin-{400,500}-normal.woff2`) | 5.3.0 | OFL-1.1 |
+| `schrift/bodoni-moda-latin-opsz-wght.woff2`, `schrift/bodoni-moda-latin-opsz-wght-italic.woff2`, `schrift/BODONI-MODA-OFL.txt` | `@fontsource-variable/bodoni-moda` (`files/bodoni-moda-latin-standard-{normal,italic}.woff2`, Achsen Gewicht und optische Größe) | 5.3.0 | OFL-1.1 |
 
-Zur Schrift: Seit das Studio eine App von hnvr.me ist, trägt es die Schriften
+Zur Schrift: Eigenständig trägt das Studio die Atelier-Gestaltung (Figma
+`P8MrdGvfyH1ZBjFtTl2zrC`, „PDF Studio — Vorgang"): Bodoni Moda für die
+Anzeigeschrift, Inter für alles andere. Als App von hnvr.me trägt es die Schriften
 des hnvr.me-Rebrand (Figma `JkiPNR4yuZr9VdL50YPnkg`, Seite „Rebrand"):
 Space Grotesk für Titel, Inter für Text, Geist Mono für Zahlen — dieselben
 Schnitte, die die Konsole unter /konsole-dateien/schrift/ ausliefert.

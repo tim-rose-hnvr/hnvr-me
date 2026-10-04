@@ -20,6 +20,7 @@
    im Studio, wäre der kurze Weg eine Falle. */
 
 import { zustand, el, $, sage, sichereBytes, mitLader, groesse, melde } from './kern.js';
+import { zeigeAnsicht } from './atelier.js';
 
 /** Ein Dateiname mit anderer Endung — „vertrag.pdf" wird zu „vertrag.docx". */
 const mitEndung = (name, endung) => `${String(name).replace(/\.[^.]+$/, '')}${endung}`;
@@ -400,7 +401,8 @@ export function zeigeEinzelwerkzeug(id) {
         el('a', { href: './', text: 'Zum vollen Studio' }), '.'),
       wahl));
 
-  /* Nur der Rumpf wird ersetzt — der Kopf mit der Wortmarke bleibt stehen.
+  /* Nur der Rumpf der Startansicht wird ersetzt — Menüleiste und
+     Navigation bleiben stehen.
      Ein Werkzeug ist ein Teil des Studios, nicht ein anderes Programm.
 
      Der alte Rumpf wird aufgehoben, nicht weggeworfen: wer das Werkzeug
@@ -410,7 +412,7 @@ export function zeigeEinzelwerkzeug(id) {
   if (!rumpfVorher) rumpfVorher = rumpf.innerHTML;
   rumpf.innerHTML = '';
   rumpf.append(ansicht);
-  empfang.hidden = false;
+  zeigeAnsicht('start');
   document.documentElement.dataset.einzelwerkzeug = werkzeug.id;
   document.title = `${werkzeug.name} — PDF Studio`;
   return true;
@@ -434,8 +436,7 @@ export function verlasseEinzelwerkzeug() {
   }
   delete document.documentElement.dataset.einzelwerkzeug;
   document.title = 'PDF Studio';
-  $('#empfang').hidden = true;
-  $('#huelle').hidden = false;
+  zeigeAnsicht('editor');
 }
 
 /** Die Kacheln für den Empfang. */

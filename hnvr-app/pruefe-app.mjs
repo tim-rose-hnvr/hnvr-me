@@ -45,6 +45,9 @@ pruefe('Der Einstieg ist https und zeigt auf das Studio', () => {
   const url = new URL(manifest.einstieg);
   assert.equal(url.protocol, 'https:');
   assert.equal(url.pathname, '/studio/index.html');
+  /* Mit `von=hnvr` trägt das Studio die Hand der Konsole (app/gestalt.js)
+     und zeigt den Rückweg. Ohne wäre es das Atelier — ein anderes Haus. */
+  assert.equal(url.searchParams.get('von'), 'hnvr', 'Einstieg ohne ?von=hnvr');
 });
 pruefe('Die Domain des Einstiegs ist die, für die die Anmeldung eingerichtet wird', () => {
   /* Ein Einstieg auf einer anderen Domain landete bei einem Rücksprung, den
@@ -81,6 +84,10 @@ for (const aktion of manifest.schnellaktionen) {
     assert.ok(werkzeug || tun, 'weder werkzeug noch tun');
     if (werkzeug) assert.ok(werkzeugIds.includes(werkzeug), `kein Werkzeug „${werkzeug}“ — da sind: ${werkzeugIds.join(', ')}`);
     if (tun) assert.ok(start.includes(`tun === '${tun}'`), `main.js kennt tun=${tun} nicht`);
+    /* Zusammengesetzt wie in der Anleitung: der Einstieg behält von=hnvr. */
+    const ganz = new URL(manifest.einstieg);
+    for (const [k, v] of suche) ganz.searchParams.set(k, v);
+    assert.equal(ganz.searchParams.get('von'), 'hnvr');
   });
 }
 

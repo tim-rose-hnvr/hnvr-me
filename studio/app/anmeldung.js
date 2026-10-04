@@ -182,13 +182,18 @@ export function entferneSchranke() {
      <meta name="studio-heimat-name" content="Konsole">
 
    Dann steht im Kopf „Konsole / PDF Studio", wie der Pfad in der Kopfleiste
-   der Konsole. Ohne die Zeile bleibt der Kopf, wie er ist — das Studio im
-   Repository weiß nichts von hnvr.me. Erlaubt sind nur https-Adressen und
-   Pfade dieser Seite: ein javascript:-Link im Kopf wäre ein Einfallstor. */
+   der Konsole — aber nur in der Hand der Konsole (`data-gestalt="hnvr"`,
+   gesetzt von app/gestalt.js, wenn der Einstieg `?von=hnvr` trägt). Wer das
+   Studio direkt aufruft, ist nicht aus der Konsole gekommen und braucht
+   keinen Weg dorthin zurück. Ohne die Zeile bleibt der Kopf, wie er ist —
+   das Studio im Repository weiß nichts von hnvr.me. Erlaubt sind nur
+   https-Adressen und Pfade dieser Seite: ein javascript:-Link im Kopf wäre
+   ein Einfallstor. */
 export function zeigeHeimat() {
   const ziel = document.querySelector('meta[name="studio-heimat"]')?.content?.trim();
   const link = $('#heimat');
   if (!ziel || !link) return;
+  if (document.documentElement.dataset.gestalt !== 'hnvr') return;
   let adresse;
   try { adresse = new URL(ziel, location.href); } catch { return; }
   if (adresse.protocol !== 'https:' && adresse.origin !== location.origin) return;

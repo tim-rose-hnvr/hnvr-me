@@ -33,18 +33,28 @@ ohne eine eigene Datei zu suchen.
 
 ## Gestaltung
 
-Die Oberfläche steht im **Rebrand von hnvr.me** (Figma „Atelier OS",
-ausführlich in `doku/vorgang.md`), auf der Richtung „Vorgang": dunkler Kopf
-und dunkle Vorgangsschiene wie die Leiste der Konsole (`#172124`), helle
-Arbeitsfläche mit Verlauf, Orange `#FF7120` als Fläche mit Tinte darauf (nie
-Weiß auf Orange), `#A83C05` als Schrift auf Hell. Etiketten klein in
-Versalien wie „WEITERE BEREICHE", Titel in Space Grotesk, Text in Inter,
-Zahlen in Geist Mono — alle drei liegen bei, keine Schrift kommt aus dem Netz.
-Radien 8 / 12 / 16. Aufbau: ein Kopf von 56 px mit Dokumentreitern, Verlauf,
-Suchfeld „Suchen oder Befehl … ⌘K" und „Sichern", darunter die
-Vorgangsschiene links (264 px), die Bühne und die rechte Leiste (320 px);
-Seitenzahl und Zoom schweben als Pille über der Bühne. Unter 900 px werden
-die Leisten zu Schubladen.
+Das Studio hat **zwei Hände, ein Programm** (ausführlich in `doku/vorgang.md`):
+
+- **Atelier** (eigenständig, Standard — Figma `P8MrdGvfyH1ZBjFtTl2zrC`):
+  warmes Papier `#F6F1E8`, olivgraue Leiste `#2B2F2A` oben und links,
+  Kupfer `#C78B5F` als Fläche mit Tinte darauf, Rost `#AE4E2D` als
+  Auszeichnung, Bodoni Moda kursiv als Anzeigeschrift, sonst Inter. Kanten
+  3/4 px, Linien statt Schatten.
+- **hnvr.me** (aus der Konsole, `?von=hnvr`): die Werte der Konsole —
+  Leiste `#172124`, Orange `#FF7120`, Space Grotesk, Radien 8/12/16 — und
+  oben der Rückweg „KONSOLE / PDF STUDIO".
+
+Gesetzt wird die Hand von `app/gestalt.js` vor dem ersten Zeichnen; alles
+Weitere sind Variablen in `stil.css`. Alle Schriften liegen bei.
+
+Aufbau wie im Entwurf: Menüleiste oben (64 px: Datei, Bearbeiten, Ansicht,
+Hilfe, Suche, „Lokal auf diesem Gerät", Konto), Navigation links (190 px:
+Start, Editor, Einstellungen), rechts die Ansicht. Der Editor: Dokumentkopf
+mit Signieren, Schwärzen, Sichern; Modusleiste mit Bearbeiten (⌘E),
+Kommentieren, Organisieren, Exportieren, Verlauf, Seite und Zoom; darunter
+Seiten | Bühne | Inspektor mit den Werkzeugen des Modus; unten eine
+Statuszeile. Unter 1100 px rückt die Navigation zu Symbolen zusammen, unter
+900 px verschwindet sie und die Leisten werden Schubladen.
 
 **Das Seitenraster sitzt in der Mitte, nicht über allem.** Es war einmal ein
 weißes Vollbild, das Reiter, Leisten und Statuszeile verdeckte. Jetzt tauscht

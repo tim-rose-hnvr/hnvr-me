@@ -85,7 +85,39 @@ gelesen. Ihre Vorgabe heißt jetzt **Passend zum Fenster** — 100 %, wo die
 Seite samt Rand auf die Bühne passt, sonst Breite. Auf dem Desktop ändert
 sich nichts, auf dem Telefon passt das Blatt ins Fenster.
 
-## hnvr.me-Rebrand
+## Atelier — zwei Hände, ein Programm
+
+Seit dem 04.10.2026 folgt das Studio dem Atelier-Entwurf (Figma
+`P8MrdGvfyH1ZBjFtTl2zrC`, „PDF Studio — Vorgang", 12 Bildschirme). Er
+ändert zweierlei: die **Hand** (Farben, Schrift, Kanten) und den **Aufbau**.
+
+**Aufbau.** Statt Kopf + Schiene + Bühne steht das Studio jetzt wie ein
+Arbeitsraum: Menüleiste oben, Navigation links mit Ansichten (Start,
+Editor, …), rechts die Ansicht. Die Vorgangsschiene mit sechs Schritten ist
+der **Modusleiste** gewichen — Bearbeiten, Kommentieren, Organisieren,
+Exportieren —, deren Werkzeuge oben im Inspektor rechts stehen. Was am
+Dokument ansteht, rechnet weiter das Dokument (`vorgangsstand()` in
+`vorgang.js`) und steht als Zahl an den Reitern: „Hinweise 8", „Felder 2/10".
+Kein Werkzeug ging verloren; die Prüfung „Die Werkzeuge tragen die Wörter
+des Entwurfs" sammelt sie aus allen vier Modi ein.
+
+**Zwei Hände.** Eigenständig trägt das Studio das Atelier. Aus der Konsole
+von hnvr.me (`?von=hnvr`) trägt es die Hand der Konsole. Es gibt dafür keinen
+zweiten Codestand und keine zweite Regelliste: die Konsole belegt dieselben
+Variablen neu (`:root[data-gestalt="hnvr"]`). Eine Prüfung hält fest, dass
+sie jede Variable des Ateliers neu belegt — sonst sickerte eine Atelier-Farbe
+in die Konsole.
+
+**Zwei Töne sind verschoben**, weil sie den Mindestkontrast nicht schaffen:
+Graubraun `#7A6F63` auf Papier (4,3:1) wird `#746D61` (4,5:1); Kupfer als
+Schrift auf der Leiste (3,8:1) wird `#D9A27A` (4,9:1).
+
+**Was der Entwurf zeigt und das Studio (noch) nicht hat**, kommt in eigenen
+Etappen: Dokumentenatelier mit lokaler Ablage und Sammlungen, Vertraulich
+teilen in drei Schritten, Einstellungen als Seite. „PRO" und eine Lizenz
+gibt es nicht — das Studio ist kostenlos.
+
+## hnvr.me-Rebrand (jetzt die Hand der Konsole)
 
 Seit das Studio eine App von hnvr.me ist, trägt es dieselbe Hand wie die
 Konsole (Figma „Atelier OS", Seite Rebrand; Werte aus `plattform.css`). Die

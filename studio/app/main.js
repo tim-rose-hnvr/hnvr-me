@@ -5,6 +5,7 @@ import { starteMotor } from './dokument.js';
 import { starteOberflaeche, befehle, fuehreAus } from './oberflaeche.js';
 import { frageAnmeldung, zeigeSchranke, zeigeHeimat } from './anmeldung.js';
 import { starteVorgang } from './vorgang.js';
+import { starteAtelier, zeigeKonto } from './atelier.js';
 
 async function start() {
   try {
@@ -18,6 +19,7 @@ async function start() {
   }
   starteOberflaeche();
   starteVorgang();
+  starteAtelier();
   zeigeHeimat();
   document.documentElement.classList.add('ist-bereit');
 
@@ -44,6 +46,7 @@ async function start() {
      Reihenfolge, weil das Studio auch dann startklar sein muss, wenn die
      Auskunft lange braucht oder gar nicht kommt. */
   const anmeldung = await frageAnmeldung();
+  zeigeKonto(anmeldung.angemeldet ? anmeldung.name : '');
   if (anmeldung.noetig && !anmeldung.angemeldet) {
     zeigeSchranke({ ohneNetz: anmeldung.ausDemGedaechtnis });
   } else if (anmeldung.ausDemGedaechtnis) {

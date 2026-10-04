@@ -152,21 +152,23 @@ function nimmDateienAn() {
   });
 }
 
-/* Ein Wort in der Fußzeile: läuft das Studio offline-fest oder nicht. Es
-   steht dort und nicht in einem Dialog, weil es eine Eigenschaft ist, keine
-   Nachricht — man sieht hin, wenn man es wissen will. */
+/* Oben rechts in der Menüleiste: wo die Dateien sind, und ob das Studio
+   ohne Netz startet. Die Dateien sind immer lokal — das steht da. Ob das
+   Programm selbst auf dem Gerät liegt, sagt der Punkt davor und der Titel. */
 export function zeichneStand(behaelter) {
   behaelter.innerHTML = '';
   const laeuft = dienstLaeuft();
   behaelter.append(el('span', {
-    klasse: `punkt stand-punkt ${laeuft ? 'ist-bereit' : ''}`,
-    'aria-hidden': 'true',
+    html: '<svg viewBox="0 0 24 24" class="sinnbild" aria-hidden="true"><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M5.5 13 8 5h8l2.5 8"/><line x1="7" y1="16.5" x2="7.01" y2="16.5"/></svg>',
+    klasse: 'kopf-lokal-zeichen',
   }));
   behaelter.append(el('span', {
-    text: laeuft ? (istInstalliert() ? 'installiert, läuft offline' : 'läuft offline')
-      : 'nur mit Netz',
-    title: laeuft
-      ? 'Das Studio ist auf diesem Gerät hinterlegt und startet ohne Verbindung.'
-      : 'Es ist kein Dienst angemeldet — ohne Verbindung startet das Studio nicht.',
+    klasse: 'kopf-lokal-wort',
+    text: laeuft ? 'Lokal auf diesem Gerät' : 'Lokal · startet nur mit Netz',
   }));
+  behaelter.title = laeuft
+    ? (istInstalliert() ? 'Installiert: das Studio startet ohne Verbindung, die Dateien bleiben hier.'
+      : 'Das Studio läuft offline; die Dateien bleiben auf diesem Gerät.')
+    : 'Die Dateien bleiben auf diesem Gerät. Ohne Verbindung startet das Studio aber noch nicht.';
+  behaelter.classList.toggle('ist-bereit', laeuft);
 }

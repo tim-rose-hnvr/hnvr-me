@@ -22,9 +22,10 @@ Bereiche*.
 **1. Konsole — Seitenleiste (P1, P5).** Unter **WEITERE BEREICHE** ein
 Menüpunkt „PDF Studio“ mit `bereichssymbol.svg`, sichtbar, wenn der Bereich
 für den Kunden an ist und die Rolle die Stufe *Ändern* hat. Er führt auf
-`einstieg` **im selben Tab, im ganzen Fenster** — wie Headless Studio. Oben im
-Studio steht dann „KONSOLE / PDF STUDIO“ und führt zurück nach
-`https://www.hnvr.me/konsole`.
+`einstieg` **im selben Tab, im ganzen Fenster** — wie Headless Studio. Der
+Einstieg trägt `?von=hnvr`: damit zeigt sich das Studio in der Hand der
+Konsole (statt im eigenen Atelier-Look) und oben steht „KONSOLE / PDF STUDIO“
+mit dem Weg zurück nach `https://www.hnvr.me/konsole`.
 
 Nicht im `<iframe>`: das Studio liegt auf einer anderen Domain. Im Rahmen
 wären seine Anmeldekekse Drittanbieter-Kekse — Safari sperrt sie, Firefox
@@ -41,8 +42,10 @@ Versprechen, das niemand durchsetzt. `pruefe-app.mjs` schlägt an, wenn sie
 jemand ins Manifest schreibt.
 
 **3. Konsole — Startseite (P1).** Unter **SCHNELL ANLEGEN** die
-`schnellaktionen`: Ziel ist `einstieg` + `ziel`, also
-`…/studio/index.html?werkzeug=zusammenfuegen` und `…?tun=oeffnen`.
+`schnellaktionen`: ihr `ziel` ergänzt die Suchparameter des Einstiegs
+(`new URL(einstieg)` und dann jeden Parameter aus `ziel` dazusetzen), also
+`…/studio/index.html?von=hnvr&werkzeug=zusammenfuegen` und `…?von=hnvr&tun=oeffnen`.
+Nicht als Zeichenkette anhängen: der Einstieg trägt schon ein `?`.
 
 **Kein Tagesfokus, keine Kennzahl.** „Was braucht dich heute?“ bekommt vom
 Studio nichts: die Dateien verlassen das Gerät nicht, der Server weiß nichts

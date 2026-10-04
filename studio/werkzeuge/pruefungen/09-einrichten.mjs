@@ -19,7 +19,7 @@ export default async function ({ pruefe, seite, ladeBeispiel, WURZEL, BASIS }) {
       if (!m[feld]) throw new Error(`${feld} fehlt`);
     }
     if (m.display !== 'standalone') throw new Error(`display: ${m.display}`);
-    if (m.theme_color !== '#172124') throw new Error(`theme_color: ${m.theme_color}`);
+    if (m.theme_color !== '#2B2F2A') throw new Error(`theme_color: ${m.theme_color}`);
     const groessen = m.icons.map((s) => s.sizes);
     if (!groessen.includes('192x192') || !groessen.includes('512x512')) {
       throw new Error(`Symbolgrößen: ${groessen.join(', ')}`);
@@ -78,12 +78,16 @@ export default async function ({ pruefe, seite, ladeBeispiel, WURZEL, BASIS }) {
         angemeldet: !!anmeldung,
         umfang: anmeldung?.scope || '',
         anzeige: document.querySelector('#fuss-stand')?.textContent || '',
+        titel: document.querySelector('#fuss-stand')?.title || '',
       };
     });
     if (!stand.angemeldet) throw new Error('kein Dienst angemeldet');
     if (!stand.umfang.endsWith('/')) throw new Error(`Umfang: ${stand.umfang}`);
-    if (!/offline|Netz/.test(stand.anzeige)) throw new Error(`Fußzeile sagt „${stand.anzeige}"`);
-    return `Umfang ${stand.umfang.replace(/^https?:\/\/[^/]+/, '')} · Fuß: „${stand.anzeige.trim()}"`;
+    /* Oben rechts steht, wo die Dateien sind; der Titel sagt, ob das
+       Programm ohne Netz startet. */
+    if (!/Lokal/.test(stand.anzeige)) throw new Error(`oben rechts steht „${stand.anzeige}"`);
+    if (!/offline|Verbindung/.test(stand.titel)) throw new Error(`Titel sagt „${stand.titel}"`);
+    return `Umfang ${stand.umfang.replace(/^https?:\/\/[^/]+/, '')} · oben: „${stand.anzeige.trim()}"`;
   });
 
   await pruefe('Der Kern liegt danach wirklich im Zwischenspeicher', async () => {

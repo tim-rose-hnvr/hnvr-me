@@ -107,14 +107,20 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, ladungVon, 
 
   await ladeBeispiel();
 
-  await pruefe('Menueleiste traegt alle acht Menues in der Reihenfolge des Handoffs', async () => {
-    /* Das Handoff zeigt Datei, Bearbeiten, Ansicht, Werkzeuge, …, Hilfe. Unsere
-       zusätzlichen Menüs stehen dazwischen, nicht davor — das Muster wird
-       erweitert, nicht gebrochen. */
+  await pruefe('Die Menüleiste trägt die vier Menüs des Atelier-Entwurfs', async () => {
+    /* Datei, Bearbeiten, Ansicht, Hilfe — wie im Entwurf. Was früher eigene
+       Menüs hatte, steht als Abschnitt darin; die nächste Prüfung hält fest,
+       dass dabei kein Befehl verlorenging. */
     const titel = await seite.$$eval('#menueleiste .menue-knopf', (ks) => ks.map((k) => k.textContent));
-    const erwartet = ['Datei', 'Bearbeiten', 'Ansicht', 'Seiten', 'Werkzeuge', 'Gehe zu', 'Schutz', 'Hilfe'];
+    const erwartet = ['Datei', 'Bearbeiten', 'Ansicht', 'Hilfe'];
     if (titel.join('|') !== erwartet.join('|')) throw new Error(titel.join('|'));
-    return titel.join(', ');
+    const abschnitte = await seite.$$eval('#menueleiste .menue-abschnitt', (ks) => ks.map((k) => k.textContent));
+    for (const a of ['Seiten', 'Werkzeuge', 'Gehe zu', 'Schutz und Unterschrift']) {
+      if (!abschnitte.includes(a)) throw new Error(`Abschnitt „${a}" fehlt`);
+    }
+    const sichtbar = await seite.evaluate(() => getComputedStyle(document.querySelector('#menueleiste')).display);
+    if (sichtbar === 'none') throw new Error('die Menüleiste ist bei voller Breite versteckt');
+    return `${titel.join(', ')}; Abschnitte ${abschnitte.join(', ')}`;
   });
 
   await pruefe('jeder Befehl ist mit der Maus erreichbar', async () => {
@@ -127,17 +133,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, ladungVon, 
     return `${befehle} Befehle, ${anzahl} Menueeintraege`;
   });
 
-  await pruefe('Ohne Menüleiste bleibt jeder Befehl erreichbar', async () => {
-    /* Die Menüleiste mit acht Wörtern ist weg — das war Desktop-Erbe, kein
-       Web. Ihre Aufgabe hat das Befehlsfeld übernommen. Diese Prüfung hält
-       fest, dass dabei nichts verlorenging: die Leiste ist wirklich fort,
-       und die Befehle sind wirklich da. */
-    const leiste = await seite.evaluate(() => {
-      const m = document.querySelector('#menueleiste');
-      return m ? getComputedStyle(m).display : 'fehlt';
-    });
-    if (leiste !== 'none' && leiste !== 'fehlt') throw new Error(`Menüleiste steht noch: ${leiste}`);
-
+  await pruefe('Auch ohne Menüleiste bleibt jeder Befehl erreichbar', async () => {
+    /* Auf dem Telefon fällt die Menüleiste weg — dann trägt das Suchfeld
+       oben alle Befehle. Diese Prüfung hält fest, dass es sie wirklich findet. */
     await seite.click('#knopf-befehle');
     await seite.waitForTimeout(300);
     const stand = await seite.evaluate(async () => {
@@ -154,7 +152,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, ladungVon, 
     await seite.waitForTimeout(200);
     if (!stand) throw new Error('das Befehlsfeld öffnet kein Eingabefeld');
     if (!stand.anzahl) throw new Error('„dreh" findet keinen Befehl');
-    return `Menüleiste fort, „dreh" findet ${stand.anzahl}: ${stand.treffer[0]}`;
+    return `„dreh" findet ${stand.anzahl}: ${stand.treffer[0]}`;
   });
 
   await pruefe('Rueckgaengig-Knopf im Kopf folgt der Historie', async () => {

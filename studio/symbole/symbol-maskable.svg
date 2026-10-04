@@ -3,6 +3,6 @@
   <!-- Maskierbare Fassung: dieselbe Form, auf 60 % zusammengezogen. Android
        schneidet je nach Gerät einen Kreis, ein Quadrat oder eine Tropfenform
        heraus — was außerhalb der inneren 80 % liegt, darf fehlen. -->
-  <rect width="512" height="512" fill="#FF7120"/>
-  <path d="M190 173 H271.8 L322 219.1 V339 H190 Z" fill="#172124"/>
+  <rect width="512" height="512" fill="#2B2F2A"/>
+  <path d="M190 173 H271.8 L322 219.1 V339 H190 Z" fill="#C78B5F"/>
 </svg>

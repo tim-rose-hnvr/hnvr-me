@@ -30,6 +30,13 @@
   src: url('../fremd/schrift/geist-mono-500.woff2') format('woff2'); }
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap;
   src: url('../fremd/schrift/inter-latin-wght.woff2') format('woff2'); }
+/* Bodoni Moda — die Anzeigeschrift des Ateliers. Variabel in Gewicht und
+   optischer Größe: groß gesetzt werden die Haarstriche fein, klein bleiben
+   sie lesbar. */
+@font-face { font-family: 'Bodoni Moda'; font-style: normal; font-weight: 400 900; font-display: swap;
+  src: url('../fremd/schrift/bodoni-moda-latin-opsz-wght.woff2') format('woff2'); }
+@font-face { font-family: 'Bodoni Moda'; font-style: italic; font-weight: 400 900; font-display: swap;
+  src: url('../fremd/schrift/bodoni-moda-latin-opsz-wght-italic.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap;
   src: url('../fremd/schrift/plex-sans-400.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 500; font-display: swap;
@@ -54,6 +61,280 @@
   src: url('../fremd/schrift/plex-mono-500.woff2') format('woff2'); }
 
 :root {
+  /* ---- Atelier ---------------------------------------------------------
+     Die eigene Hand des Studios (Figma P8MrdGvfyH1ZBjFtTl2zrC, „PDF Studio
+     — Vorgang"): warmes Papier, eine olivgraue Leiste oben und links, Kupfer
+     für das, was gerade gilt, Rost für Auszeichnung auf Papier. Kanten
+     schmal (3 und 4 px), Linien statt Schatten. Bodoni Moda für die
+     Anzeigeschrift, Inter für alles andere.
+
+     Zwei Töne des Entwurfs schaffen den Mindestkontrast nicht und sind hier
+     um eine Spur verschoben — im Bild kaum zu sehen, in der Lesbarkeit
+     schon:
+     · Graubraun #7A6F63 hat auf Papier #F6F1E8 nur 4,3:1 → #746D61 (4,5:1).
+     · Kupfer #C78B5F als Schrift auf der Leiste #3A3D38 hat 3,8:1 →
+       #D9A27A (4,9:1). Als Fläche bleibt Kupfer #C78B5F, mit Tinte darauf
+       (4,7:1) — kein Weiß.
+
+     Als App von hnvr.me gilt stattdessen :root[data-gestalt="hnvr"] weiter
+     unten; gesetzt wird das von app/gestalt.js. */
+  --grund:        #F6F1E8;
+  --flaeche:      #FFFEFA;
+  --flaeche-tief: #F6F1E8;
+  --flaeche-hoch: #FFFCF5;
+  --tafel:        #FFFEFA;
+  --menue-grund:  #FFFEFA;
+  --tinte:        #2B2F2A;
+  --tinte-leise:  #746D61;
+  --tinte-still:  #746D61;
+  --linie:        #D7CEC2;
+  --linie-stark:  #C3B8AA;
+
+  /* --tally: Auszeichnung als Schrift und Linie (Rost). --tally-voll: Kupfer
+     als Fläche, darauf --tally-text, umrandet von --tally-rand. */
+  --tally:        #AE4E2D;
+  --tally-voll:   #C78B5F;
+  --tally-hover:  #BD7F52;
+  --tally-hell:   #C78B5F;
+  --tally-grund:  #F2E6D8;
+  --tally-text:   #2B2F2A;
+  --tally-rand:   #7A4A2B;
+  --tally-grund-text: #7A4A2B;
+  --fokus:        rgba(174, 78, 45, .55);
+
+  --warn:         #8A5A00;
+  --warn-grund:   #F7EBD3;
+  --warn-text:    #FFFEFA;
+  --gut:          #2F6B45;
+  --gut-grund:    #E6EFE3;
+  --gefahr:       #9B2C25;
+  --gefahr-grund: #F6E2DC;
+  /* Schalter wie im Entwurf: dunkle Bahn, kupferner Knopf. */
+  --schalter-an:  #2B2F2A;
+  --schalter-knopf-an: #C78B5F;
+
+  /* Die Leiste — Menüleiste oben und Navigation links. */
+  --leiste:         #2B2F2A;
+  --leiste-flaeche: #3A3D38;
+  --leiste-hover:   #343832;
+  --leiste-linie:   #3A3D38;
+  --leiste-text:    #FFFEFA;
+  --leiste-leise:   #A8A29A;
+  --leiste-akzent:  #D9A27A;
+  /* Der gewählte Punkt der Navigation: im Atelier eine Spur heller mit
+     kupferner Schrift, in der Konsole volle orange Fläche. */
+  --navi-aktiv-grund: #3A3D38;
+  --navi-aktiv-text:  #D9A27A;
+
+  --chrome-900:   #2B2F2A;
+  --chrome-800:   #343832;
+  --chrome-700:   #3A3D38;
+  --chrome-600:   #4A4E47;
+  --chrome-linie: #3A3D38;
+  --chrome-fuss:  #2B2F2A;
+  --chrome-text:  #FFFEFA;
+  --chrome-leise: #A8A29A;
+  --material:     saturate(140%) blur(14px);
+  --material-grund: rgba(255, 254, 250, .92);
+
+  --hud:          #2B2F2A;
+  --hud-text:     #FFFEFA;
+  --hud-linie:    #3A3D38;
+  --hud-gefahr:   #F2A08C;
+
+  --buehne:       #E8DFD2;
+  --buehne-verlauf: linear-gradient(180deg, #E8DFD2 0%, #E8DFD2 100%);
+  --buehne-tief:  #DDD2C3;
+  --lineatur:     #D7CEC2;
+
+  --papier:       #FFFFFF;
+  --blattkante:   #D7CEC2;
+  --papier-tinte:  #2B2F2A;
+  --papier-leise:  #746D61;
+  --papier-linie:  #D7CEC2;
+  --papier-akzent: #AE4E2D;
+  --papier-akzent-grund: rgba(199, 139, 95, .14);
+
+  /* Linien statt Schatten. Wo etwas schwebt (Dialog, Menü), ein ruhiger
+     tiefer Schatten. */
+  --schatten:        0 0 0 1px #D7CEC2;
+  --schatten-blatt:  0 0 0 1px #D7CEC2;
+  --schatten-tafel:  0 0 0 1px #D7CEC2, 0 12px 32px rgba(43, 47, 42, .10);
+  --schatten-dialog: 0 0 0 1px #D7CEC2, 0 24px 64px rgba(43, 47, 42, .22);
+
+  --sans:  'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+  --breit: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+  --anzeige: 'Bodoni Moda', 'Didot', 'Bodoni 72', Georgia, serif;
+  --anzeige-stil: italic;
+  --serif: 'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
+  /* Zahlen stehen in Inter mit gleich breiten Ziffern — eine zweite Schrift
+     braucht es dafür nicht. */
+  --mono:  'Inter', system-ui, sans-serif;
+
+  /* Kanten wie im Entwurf: 4 für Knöpfe, Felder und Karten, 3 für Marken. */
+  --radius-klein: 4px;
+  --radius-segment: 3px;
+  --radius: 4px;
+  --radius-gross: 4px;
+  --radius-voll: 999px;
+}
+
+/* Struktur — gilt in beiden Händen. */
+:root {
+  --kopfhoehe: 64px;
+  --menuehoehe: 0px;
+  --werkzeughoehe: 0px;
+  --fusshoehe: 0px;
+  --leiste-links: 264px;
+  --leiste-rechts: 320px;
+  --zeile: 44px;
+  --zeile-kopf: 32px;
+
+  --satz-etikett:  11px;
+  --satz-kopf:     11px;
+  --satz-neben:    12px;
+  --satz-bedien:   13px;
+  --satz-grund:    14px;
+  --satz-lauf:     16px;
+  --satz-titel:    20px;
+  --satz-gross:    24px;
+  --satz-anzeige:  32px;
+  --satz-riesig:   40px;
+
+  --raum-1:  2px;
+  --raum-2:  4px;
+  --raum-3:  6px;
+  --raum-4:  8px;
+  --raum-5: 10px;
+  --raum-6: 12px;
+  --raum-7: 16px;
+  --raum-8: 24px;
+  --raum-9: 32px;
+
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-thema="hell"]) { --dunkel: 1; }
+}
+:root[data-thema="dunkel"] { --dunkel: 1; }
+
+/* Die dunkle Fassung erbt Aufbau und Abstände und tauscht nur die Farben.
+   Zweimal geschrieben, weil CSS keine Verzweigung auf eine Variable kennt —
+   aber Wort für Wort dieselbe Liste. Wer eine Zeile ändert, ändert beide.
+   Das Blatt steht bewusst nicht darin: die Seite wird als Bild gezeichnet
+   und kippt nicht mit. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-thema="hell"]) {
+    /* Atelier dunkel: der Arbeitsbereich nimmt die Töne der Leiste an,
+       Kupfer bleibt Fläche mit Tinte darauf und trägt als Schrift in der
+       hellen Stufe #D9A27A. */
+    --grund:        #22251F;
+    --flaeche:      #2B2F2A;
+    --flaeche-tief: #262923;
+    --flaeche-hoch: #30342E;
+    --tafel:        #2B2F2A;
+    --menue-grund:  #343832;
+    --tinte:        #F3EEE4;
+    --tinte-leise:  #B8B0A4;
+    --tinte-still:  #B8B0A4;
+    --linie:        #3F433D;
+    --linie-stark:  #50554D;
+    --tally:        #D9A27A;
+    --tally-voll:   #C78B5F;
+    --tally-hover:  #D49A6E;
+    --tally-hell:   #C78B5F;
+    --tally-grund:  rgba(199, 139, 95, .18);
+    --tally-text:   #2B2F2A;
+    --tally-rand:   #D9A27A;
+    --tally-grund-text: #E8C2A4;
+    --fokus:        rgba(217, 162, 122, .6);
+    --warn:         #E0B25A;
+    --warn-grund:   rgba(224, 178, 90, .16);
+    --warn-text:    #2B2F2A;
+    --gut:          #8CC59E;
+    --gut-grund:    rgba(140, 197, 158, .16);
+    --gefahr:       #F2A08C;
+    --gefahr-grund: rgba(242, 160, 140, .16);
+    --schalter-an:  #C78B5F;
+    --schalter-knopf-an: #2B2F2A;
+    --leiste:         #1B1D19;
+    --leiste-flaeche: #2B2F2A;
+    --leiste-hover:   #262923;
+    --leiste-linie:   #2B2F2A;
+    --chrome-900:   #1B1D19;
+    --chrome-800:   #262923;
+    --chrome-700:   #2B2F2A;
+    --chrome-600:   #3F433D;
+    --chrome-linie: #2B2F2A;
+    --chrome-fuss:  #1B1D19;
+    --material-grund: rgba(43, 47, 42, .92);
+    --buehne:       #1B1D19;
+    --buehne-verlauf: linear-gradient(180deg, #1B1D19 0%, #1B1D19 100%);
+    --buehne-tief:  #161814;
+    --lineatur:     #2B2F2A;
+    --blattkante:   #3F433D;
+    --schatten:        0 0 0 1px #3F433D;
+    --schatten-blatt:  0 0 0 1px #3F433D;
+    --schatten-tafel:  0 0 0 1px #3F433D, 0 12px 32px rgba(0, 0, 0, .45);
+    --schatten-dialog: 0 0 0 1px #3F433D, 0 24px 64px rgba(0, 0, 0, .6);
+  }
+}
+:root[data-thema="dunkel"] {
+    /* Atelier dunkel: der Arbeitsbereich nimmt die Töne der Leiste an,
+       Kupfer bleibt Fläche mit Tinte darauf und trägt als Schrift in der
+       hellen Stufe #D9A27A. */
+    --grund:        #22251F;
+    --flaeche:      #2B2F2A;
+    --flaeche-tief: #262923;
+    --flaeche-hoch: #30342E;
+    --tafel:        #2B2F2A;
+    --menue-grund:  #343832;
+    --tinte:        #F3EEE4;
+    --tinte-leise:  #B8B0A4;
+    --tinte-still:  #B8B0A4;
+    --linie:        #3F433D;
+    --linie-stark:  #50554D;
+    --tally:        #D9A27A;
+    --tally-voll:   #C78B5F;
+    --tally-hover:  #D49A6E;
+    --tally-hell:   #C78B5F;
+    --tally-grund:  rgba(199, 139, 95, .18);
+    --tally-text:   #2B2F2A;
+    --tally-rand:   #D9A27A;
+    --tally-grund-text: #E8C2A4;
+    --fokus:        rgba(217, 162, 122, .6);
+    --warn:         #E0B25A;
+    --warn-grund:   rgba(224, 178, 90, .16);
+    --warn-text:    #2B2F2A;
+    --gut:          #8CC59E;
+    --gut-grund:    rgba(140, 197, 158, .16);
+    --gefahr:       #F2A08C;
+    --gefahr-grund: rgba(242, 160, 140, .16);
+    --schalter-an:  #C78B5F;
+    --schalter-knopf-an: #2B2F2A;
+    --leiste:         #1B1D19;
+    --leiste-flaeche: #2B2F2A;
+    --leiste-hover:   #262923;
+    --leiste-linie:   #2B2F2A;
+    --chrome-900:   #1B1D19;
+    --chrome-800:   #262923;
+    --chrome-700:   #2B2F2A;
+    --chrome-600:   #3F433D;
+    --chrome-linie: #2B2F2A;
+    --chrome-fuss:  #1B1D19;
+    --material-grund: rgba(43, 47, 42, .92);
+    --buehne:       #1B1D19;
+    --buehne-verlauf: linear-gradient(180deg, #1B1D19 0%, #1B1D19 100%);
+    --buehne-tief:  #161814;
+    --lineatur:     #2B2F2A;
+    --blattkante:   #3F433D;
+    --schatten:        0 0 0 1px #3F433D;
+    --schatten-blatt:  0 0 0 1px #3F433D;
+    --schatten-tafel:  0 0 0 1px #3F433D, 0 12px 32px rgba(0, 0, 0, .45);
+    --schatten-dialog: 0 0 0 1px #3F433D, 0 24px 64px rgba(0, 0, 0, .6);
+}
+
+:root[data-gestalt="hnvr"] {
   /* ---- hnvr.me Rebrand -------------------------------------------------
      Das Studio ist eine App von hnvr.me und trägt deshalb das Rebrand der
      Plattform (Figma JkiPNR4yuZr9VdL50YPnkg, Seite „Rebrand", Screens
@@ -112,6 +393,12 @@
   --leiste-linie:   #364347;
   --leiste-text:    #F3F7F7;
   --leiste-leise:   #A2B0B3;
+  --leiste-akzent:  #FF7120;
+  --navi-aktiv-grund: #FF7120;
+  --navi-aktiv-text:  #172124;
+  --tally-rand:     #FF7120;
+  --tally-grund-text: #A83C05;
+  --schalter-knopf-an: #FFFFFF;
 
   --chrome-900:   #172124;
   --chrome-800:   #1F2B2F;
@@ -152,38 +439,10 @@
 
   --sans:  'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
   --breit: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --anzeige: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --anzeige-stil: normal;
   --serif: 'IBM Plex Serif', "Iowan Old Style", Palatino, Georgia, serif;
   --mono:  'Geist Mono', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-
-  --kopfhoehe: 56px;
-  --menuehoehe: 0px;
-  --werkzeughoehe: 0px;
-  --fusshoehe: 0px;
-  --leiste-links: 264px;
-  --leiste-rechts: 320px;
-  --zeile: 44px;
-  --zeile-kopf: 32px;
-
-  --satz-etikett:  11px;
-  --satz-kopf:     11px;
-  --satz-neben:    12px;
-  --satz-bedien:   13px;
-  --satz-grund:    14px;
-  --satz-lauf:     16px;
-  --satz-titel:    20px;
-  --satz-gross:    24px;
-  --satz-anzeige:  32px;
-  --satz-riesig:   40px;
-
-  --raum-1:  2px;
-  --raum-2:  4px;
-  --raum-3:  6px;
-  --raum-4:  8px;
-  --raum-5: 10px;
-  --raum-6: 12px;
-  --raum-7: 16px;
-  --raum-8: 24px;
-  --raum-9: 32px;
 
   /* Radien der Konsole: 8 für Knöpfe und Felder, 16 für Karten; 12 für
      Flächen dazwischen; rund für Pillen und Schalter.
@@ -195,10 +454,6 @@
   --radius-voll: 999px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-thema="hell"]) { --dunkel: 1; }
-}
-:root[data-thema="dunkel"] { --dunkel: 1; }
 
 /* Die dunkle Fassung erbt Aufbau und Abstände und tauscht nur die Farben.
    Zweimal geschrieben, weil CSS keine Verzweigung auf eine Variable kennt —
@@ -207,7 +462,7 @@
    Das Blatt und alles, was darauf liegt, steht bewusst nicht darin: die
    Seite wird als Bild gezeichnet und kippt nicht mit. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-thema="hell"]) {
+  :root[data-gestalt="hnvr"]:not([data-thema="hell"]) {
     /* Die Konsole kennt nur eine helle Fassung. Die dunkle des Studios ist
        aus der Leiste abgeleitet: der Arbeitsbereich nimmt deren Töne an,
        Orange bleibt Fläche mit Tinte darauf und trägt als Schrift auch hier
@@ -229,6 +484,7 @@
     --tally-hell:   #FF7120;
     --tally-grund:  rgba(255, 113, 32, .18);
     --tally-text:   #172124;
+    --tally-grund-text: #FF8A47;
     --fokus:        rgba(255, 113, 32, .6);
     --warn:         #E0A43B;
     --warn-grund:   rgba(224, 164, 59, .16);
@@ -257,7 +513,7 @@
     --schatten-dialog: 0 0 0 1px rgba(243, 247, 247, .10), 0 24px 80px rgba(0, 0, 0, .7);
   }
 }
-:root[data-thema="dunkel"] {
+:root[data-gestalt="hnvr"][data-thema="dunkel"] {
     /* Die Konsole kennt nur eine helle Fassung. Die dunkle des Studios ist
        aus der Leiste abgeleitet: der Arbeitsbereich nimmt deren Töne an,
        Orange bleibt Fläche mit Tinte darauf und trägt als Schrift auch hier
@@ -279,6 +535,7 @@
     --tally-hell:   #FF7120;
     --tally-grund:  rgba(255, 113, 32, .18);
     --tally-text:   #172124;
+    --tally-grund-text: #FF8A47;
     --fokus:        rgba(255, 113, 32, .6);
     --warn:         #E0A43B;
     --warn-grund:   rgba(224, 164, 59, .16);
@@ -1055,7 +1312,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
    rollt. Vorher lagen beide in derselben Rasterzeile und deckten einander. */
 .empfang-rumpf {
   overflow-y: auto; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 0; padding: var(--raum-9) var(--raum-7);
+  justify-content: safe center; gap: 0; padding: var(--raum-9) var(--raum-7);
 }
 .empfang-karte {
   width: min(34rem, 100%); flex: none;
@@ -1590,178 +1847,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
    Schubfächer über die Bühne. Sonst bliebe für das Blatt nichts übrig.
    Darüber stehen sie nebeneinander — bei 944 px wie in der Mockup-Aufnahme:
    196 links, 296 rechts, der Rest Bühne. */
-/* ======================================================================
-   hnvr.me Rebrand — Bauteile
-   ======================================================================
-   Wie die Konsole (Atelier OS): dunkle Leiste links und oben, heller
-   Arbeitsbereich, weiße Karten. Die Werte stehen oben in :root; hier steht,
-   wo sie hingehören. */
-
-/* ---------- Dunkle Zonen ------------------------------------------------
-   Kopf und linke Leiste belegen dieselben Variablen mit den Leistentönen.
-   Was darin steht — Knöpfe, Segmente, Zeilen, Zähler — passt sich damit von
-   selbst an, statt jede Regel ein zweites Mal für Dunkel zu schreiben. Das
-   Blatt darin (Miniaturen) bleibt Papier. */
-.kopf, .empfang-kopf, .leiste-links, .ordnen-kopf, .vergleich-kopf {
-  --flaeche: var(--leiste-flaeche);
-  --flaeche-tief: var(--leiste-hover);
-  --flaeche-hoch: var(--leiste-hover);
-  --tafel: var(--leiste);
-  --menue-grund: var(--leiste-flaeche);
-  --tinte: var(--leiste-text);
-  --tinte-leise: var(--leiste-leise);
-  --tinte-still: var(--leiste-leise);
-  --linie: var(--leiste-linie);
-  --linie-stark: var(--leiste-linie);
-  /* Orange trägt auf der Leiste auch als Schrift (5,97:1). */
-  --tally: var(--tally-voll);
-  --tally-grund: rgba(255, 113, 32, .16);
-  --gut: #5BBF8E;
-  --gut-grund: rgba(91, 191, 142, .16);
-  --warn: #E0A43B;
-  --warn-grund: rgba(224, 164, 59, .16);
-  --gefahr: #F08A80;
-  --gefahr-grund: rgba(240, 138, 128, .16);
-  color: var(--tinte);
-}
-.leiste-links { background: var(--leiste); border-right: 0; }
-.leiste-links .leiste-fuss { background: var(--leiste); border-top-color: var(--leiste-linie); }
-/* Gewählte Zeilen auf der Leiste: Fläche wie „hover" in der Konsole, Orange
-   nur als Kante — volles Orange gehört dem aktiven Schritt. */
-.leiste-links .eintrag.ist-aktiv,
-.leiste-links .miniatur.ist-aktuell { background: var(--leiste-flaeche); border-color: transparent; box-shadow: inset 3px 0 0 var(--tally-voll); }
-
-/* Etiketten wie „WEITERE BEREICHE" in der Konsole: klein, halbfett,
-   Versalien, leicht gesperrt — und nie die einzige Auskunft. */
-.schienenkopf-wort, .spaltenkopf, .empfang-marke, .empfang-werkzeuge-titel,
-.dialog-fuss-hinweis, .einst-fassung div:first-child {
-  font: 600 10px/14px var(--sans); letter-spacing: .6px; text-transform: uppercase;
-}
-.schienenkopf-zahl { font-family: var(--mono); font-size: var(--satz-etikett); }
-
-/* Titel in Space Grotesk, Zahlen in Geist Mono — wie in der Konsole. */
-.empfang h1, .einzel-karte h1, .anmeldekarte h1, .einst-inhalt h3, .dialog-kopf h2,
-.wortmarke-wort, .empfang-fuss b { font-family: var(--breit); letter-spacing: -.01em; }
-.empfang h1 { font-weight: 500; letter-spacing: -.02em; }
-.empfang-fuss b, .dok-reiter-zahl, .schritt-stand, .miniatur-nummer, .fuss .feld-schmal,
-#anzeige-seitenzahl, .ordnen-nummer { font-family: var(--mono); }
-
-/* ---------- Kopf: die Werkzeugleiste der Konsole ------------------------- */
-.kopf { background: var(--leiste); border-bottom: 0; }
-.wortmarke-zeichen {
-  width: 28px; height: 28px; border-radius: var(--radius-klein);
-  background: var(--tally-voll); clip-path: none;
-}
-.wortmarke-zeichen::after {
-  /* Das gefaltete Blatt, klein, auf der orangen Kachel. */
-  content: ''; position: absolute; inset: 7px 8px 7px 8px; width: auto; height: auto;
-  background: var(--leiste); clip-path: polygon(0 0, 62% 0, 100% 30%, 100% 100%, 0 100%);
-}
-.wortmarke-wort { font-weight: 600; font-size: var(--satz-lauf); color: var(--leiste-text); }
-/* Der Weg zurück in die Konsole — nur, wenn das Studio als App von hnvr.me
-   läuft (Kopfzeile `studio-heimat`). */
-.heimat {
-  display: inline-flex; align-items: center; gap: var(--raum-3); padding: 0 var(--raum-6);
-  font: 500 11px/15px var(--sans); letter-spacing: .5px; text-transform: uppercase;
-  color: var(--leiste-leise); text-decoration: none; white-space: nowrap; flex: none;
-}
-.heimat:hover { color: var(--leiste-text); }
-.heimat-trenner { color: var(--leiste-leise); text-transform: none; letter-spacing: 0; }
-.heimat[hidden] { display: none; }
-
-.dok-reiter.ist-aktiv { background: var(--leiste-flaeche); box-shadow: none; color: var(--leiste-text); }
-.dok-reiter:hover { background: var(--leiste-hover); }
-
-/* Das Befehlsfeld ist das Suchfeld der Konsole: weiß, 40 px, mit ⌘K. */
-#knopf-befehle {
-  background: #FFFFFF; color: #172124; border: 1px solid #DEE6E7; box-shadow: none;
-  min-width: 240px; height: 36px; justify-content: flex-start; font-weight: 400;
-}
-#knopf-befehle:hover { border-color: #172124; background: #FFFFFF; }
-#knopf-befehle .befehle-kuerzel {
-  margin-left: auto; font: 500 11px/1 var(--mono); color: #5A6669;
-}
-/* Schmal bleibt davon die Lupe — sonst schiebt das Feld den Kopf aus dem Fenster. */
-@media (max-width: 52rem) { #knopf-befehle { min-width: 0; } }
-
-/* ---------- Knöpfe wie in der Konsole ------------------------------------ */
-.knopf {
-  background: var(--flaeche); color: var(--tinte); font-weight: 600;
-  box-shadow: inset 0 0 0 1px var(--linie);
-}
-.knopf:hover { background: var(--flaeche); box-shadow: inset 0 0 0 1px var(--tinte); }
-.knopf-still, .knopf-chrome { box-shadow: none; background: transparent; font-weight: 500; }
-.knopf-still:hover, .knopf-chrome:hover { background: var(--flaeche-tief); box-shadow: none; }
-.knopf-voll, .knopf.ist-aktiv { background: var(--tally-voll); color: var(--tally-text); box-shadow: none; font-weight: 600; }
-.knopf-voll:hover { background: #F2651A; }
-.kopf .knopf-voll { padding: var(--raum-3) var(--raum-7); }
-
-/* ---------- Linke Leiste: die Navigation der Konsole --------------------- */
-.vorgangsschiene { padding: var(--raum-7) var(--raum-6) var(--raum-4); }
-.schienenkopf { padding: 0 var(--raum-4) var(--raum-4); }
-.schienenkopf-wort { color: var(--leiste-leise); }
-.schienenkopf-zahl { color: var(--leiste-leise); }
-.schritt { height: 42px; padding: 0 var(--raum-6); font-size: var(--satz-grund); color: var(--leiste-text); }
-.schritt:hover { background: var(--leiste-hover); }
-/* Aktiv wie „Start" in der Konsole: orange Fläche, Tinte darauf. */
-.schritt.ist-aktiv { background: var(--tally-voll); color: var(--tally-text); font-weight: 600; }
-.schritt.ist-aktiv .schritt-punkt { background: var(--tally-text); box-shadow: none; }
-.schritt.ist-wartet, .schritt.ist-nichts { color: var(--leiste-leise); }
-/* Der Stand ist ein Zähler wie „Bestellungen 3": Mono, ohne Kapsel. */
-.schritt-stand { background: none; padding: 0 var(--raum-1); font-weight: 600; font-size: var(--satz-neben); color: var(--leiste-leise); }
-.schritt.ist-offen .schritt-stand { background: none; color: var(--tally-voll); }
-.schritt.ist-erledigt .schritt-stand { background: none; color: #5BBF8E; }
-.schritt.ist-aktiv .schritt-stand { color: var(--tally-text); }
-/* Werkzeuge des Schritts wie „Start anpassen" unter „Start": klein, eingerückt. */
-.schritt-werkzeuge { padding: var(--raum-2) 0 var(--raum-4) calc(var(--raum-9) + var(--raum-4)); }
-.schritt-werkzeug { font-size: var(--satz-neben); color: var(--leiste-leise); padding: var(--raum-3) var(--raum-4); }
-.schritt-werkzeug:hover { background: var(--leiste-hover); color: var(--leiste-text); }
-.schritt-werkzeug.ist-aktiv { background: var(--leiste-flaeche); color: var(--leiste-text); }
-.schritt-werkzeug.ist-weiter { color: var(--tally-voll); }
-
-/* Reiter in der Leiste: Pillen wie „Aktiv · Pausiert" — die gewählte dunkel. */
-.reiter { background: var(--flaeche-tief); }
-.reiter-knopf.ist-aktiv { background: var(--flaeche); color: var(--tinte); box-shadow: none; }
-.leiste-rechts .reiter { background: var(--flaeche-tief); }
-.leiste-rechts .reiter-knopf.ist-aktiv { background: var(--tinte); color: var(--flaeche); }
-.spaltenkopf { background: transparent; color: var(--tinte-still); }
-
-/* ---------- Arbeitsbereich ------------------------------------------------ */
-.buehne { background: var(--buehne) var(--buehne-verlauf); }
-/* Die rechte Leiste ist eine Karte auf dem Verlauf, wie die Karten der
-   Konsole: weiß, Radius 16, weicher Schatten. */
-.leiste-rechts { background: var(--flaeche); border-left: 1px solid var(--linie); }
-.filterreihe { background: var(--flaeche); }
-.filterreihe .knopf.ist-aktiv { background: var(--tinte); color: var(--flaeche); }
-.faden { box-shadow: inset 0 0 0 1px var(--linie); }
-
-/* Die Pille unten ist eine Karte der Konsole. */
-.fuss { background: var(--flaeche); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: var(--schatten-tafel); }
-
-/* Schalter wie in „Menü und Bereiche": orange, wenn an. */
-.pille.ist-an { background: var(--schalter-an); }
-
-/* Segmente wie „Aktiv · Pausiert": das gewählte als dunkle Pille. */
-.segmente { background: var(--flaeche-tief); border-radius: var(--radius-voll); }
-.segment { border-radius: var(--radius-voll); }
-.segment.ist-an { background: var(--tinte); color: var(--flaeche); box-shadow: none; }
-
-/* Einstellungen: die gewählte Kategorie wie der aktive Menüpunkt. */
-.einst-kategorie.ist-aktiv { background: var(--tally-voll); color: var(--tally-text); }
-
-/* Empfang: Kopf dunkel wie die Konsole, Karte weiß mit Radius 16. */
-.empfang { background: var(--buehne) var(--buehne-verlauf); }
-.empfang-kopf { background: var(--leiste); border-bottom: 0; }
-.empfang-marke { color: var(--tally); }
-
-/* Dialoge: Titel in Space Grotesk, Fuß hell. */
-.dialog-kopf h2 { font-weight: 500; font-size: var(--satz-lauf); }
-
 /* Zwischen 900 und 1400 px quetschten beide Leisten die Bühne, bis das Blatt
    beschnitten wurde — 24 px Bühne neben einer 720-px-Seite. Die Leisten geben
    zuerst nach, nicht das Dokument. */
-@media (max-width: 1400px) { :root { --leiste-links: 216px; --leiste-rechts: 264px; } }
-@media (max-width: 1200px) { :root { --leiste-links: 216px; --leiste-rechts: 256px; } }
+@media (max-width: 1400px) { :root { --leiste-links: 200px; --leiste-rechts: 280px; } }
+@media (max-width: 1200px) { :root { --leiste-links: 184px; --leiste-rechts: 264px; } }
 
 @media (max-width: 900px) {
   .rumpf { grid-template-columns: 1fr; position: relative; }
@@ -2044,3 +2134,338 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .anmeldekarte .knopf-voll { background: var(--tally-voll); border-color: var(--tally); color: var(--tally-text); }
 .anmeldekarte .knopf-voll:hover { background: var(--tally-hover); border-color: var(--tally-hover); }
 .anmeldekarte .wortmarke-zeichen { width: 23px; height: 28px; }
+
+/* ======================================================================
+   Atelier — Gerüst und Bauteile
+   ======================================================================
+   Nach dem Atelier-Entwurf (Figma P8MrdGvfyH1ZBjFtTl2zrC, „PDF-Editor"):
+   oben die Menüleiste (64 px), links die Navigation (190 px), rechts davon
+   die Ansicht. Im Editor: Dokumentkopf (74), Modusleiste (54), Seiten |
+   Bühne | Inspektor, unten eine Statuszeile (30).
+
+   Alles hier hängt an Variablen. Die Hand der Konsole (data-gestalt="hnvr")
+   belegt sie neu und braucht dafür keine eigenen Regeln — außer den drei
+   kleinen am Ende dieses Abschnitts, die es im Atelier nicht gibt. */
+
+:root { --navi-breite: 190px; --leiste-links: 220px; --leiste-rechts: 318px; }
+
+.huelle {
+  display: grid;
+  grid-template-rows: var(--kopfhoehe) minmax(0, 1fr);
+  grid-template-columns: var(--navi-breite) minmax(0, 1fr);
+  height: 100dvh; min-width: 0;
+}
+.huelle[hidden] { display: none; }
+
+/* ---------- Menüleiste oben ---------------------------------------------- */
+.kopf {
+  grid-column: 1 / -1; grid-row: 1;
+  display: flex; align-items: center; gap: var(--raum-8);
+  padding: 0 calc(var(--raum-8) + env(safe-area-inset-right)) 0 calc(var(--raum-8) + env(safe-area-inset-left));
+  background: var(--leiste); color: var(--leiste-text); border-bottom: 0; min-width: 0;
+}
+.wortmarke { padding: 0; gap: var(--raum-5); align-self: center; }
+.wortmarke-zeichen { display: none; }
+.wortmarke-wort {
+  font-family: var(--breit); font-weight: 700; font-size: var(--satz-titel); letter-spacing: -.01em;
+  color: var(--leiste-text);
+}
+.menueleiste {
+  display: flex; align-items: center; gap: var(--raum-2); min-width: 0;
+  background: none; border: 0; padding: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.menue-knopf {
+  height: 32px; padding: 0 var(--raum-6); border-radius: var(--radius-klein);
+  color: var(--leiste-leise); font-size: var(--satz-bedien); background: none;
+}
+.menue-knopf:hover { background: var(--leiste-hover); color: var(--leiste-text); }
+.menue.ist-offen .menue-knopf { background: var(--leiste-flaeche); color: var(--leiste-text); }
+.menue-abschnitt {
+  padding: var(--raum-4) var(--raum-7) var(--raum-2);
+  font-size: var(--satz-etikett); font-weight: 600; letter-spacing: .6px; text-transform: uppercase;
+  color: var(--tinte-leise);
+}
+.kopf-rechts { margin-left: auto; display: flex; align-items: center; gap: var(--raum-8); flex: 0 1 auto; min-width: 0; }
+.kopf-suche {
+  display: flex; align-items: center; gap: var(--raum-5);
+  width: 320px; min-width: 0; height: 38px; padding: 0 var(--raum-6);
+  border: 1px solid var(--linie); border-radius: var(--radius-klein);
+  background: var(--flaeche); color: var(--tinte-leise);
+  font-size: var(--satz-bedien); cursor: pointer; text-align: left;
+}
+.kopf-suche:hover { border-color: var(--tinte); }
+.kopf-suche .sinnbild { color: var(--tinte); }
+.kopf-suche-wort { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.befehle-kuerzel { font-family: var(--sans); font-size: var(--satz-etikett); color: var(--tinte-leise); white-space: nowrap; }
+.kopf-lokal {
+  display: inline-flex; align-items: center; gap: var(--raum-5);
+  color: var(--leiste-leise); font-size: var(--satz-etikett); white-space: nowrap;
+}
+.kopf-lokal-zeichen { display: inline-flex; }
+.profil {
+  width: 32px; height: 32px; border-radius: var(--radius-voll); flex: none;
+  display: grid; place-items: center;
+  background: var(--leiste-flaeche); color: var(--leiste-text); font-size: var(--satz-etikett);
+}
+
+/* ---------- Navigation links --------------------------------------------- */
+.atelier-navi {
+  grid-column: 1; grid-row: 2;
+  display: flex; flex-direction: column; gap: var(--raum-3);
+  padding: calc(var(--raum-8) + var(--raum-1)) var(--raum-7); min-height: 0; overflow-y: auto;
+  background: var(--leiste); color: var(--leiste-leise);
+}
+.navi-etikett {
+  font-size: var(--satz-etikett); letter-spacing: .6px; text-transform: uppercase;
+  color: var(--leiste-leise); padding: 0 0 var(--raum-3);
+}
+.navi-punkt {
+  display: flex; align-items: center; gap: var(--raum-5);
+  min-height: 44px; padding: 0 var(--raum-5);
+  border: 0; border-radius: var(--radius-klein); background: transparent;
+  color: var(--leiste-leise); font-size: var(--satz-neben); text-align: left; cursor: pointer;
+}
+.navi-punkt:hover:not(:disabled) { background: var(--leiste-hover); color: var(--leiste-text); }
+.navi-punkt[aria-current="page"] { background: var(--navi-aktiv-grund); color: var(--navi-aktiv-text); font-weight: 600; }
+.navi-punkt:disabled { opacity: .45; cursor: default; }
+.navi-freiraum { flex: 1; min-height: var(--raum-8); }
+.navi-standard { display: flex; flex-direction: column; gap: var(--raum-5); padding-bottom: calc(var(--raum-8) - var(--raum-1)); }
+.navi-schild { color: var(--leiste-akzent); width: 18px; height: 18px; }
+.navi-satz { margin: 0; font-size: var(--satz-lauf); line-height: 1.45; color: var(--leiste-text); }
+.navi-klein { margin: 0; font-size: var(--satz-etikett); line-height: 1.45; color: var(--leiste-leise); }
+.navi-einstellungen {
+  display: flex; align-items: center; gap: var(--raum-5);
+  min-height: 44px; padding: 0 var(--raum-5);
+  border: 1px solid var(--leiste-linie); border-radius: var(--radius-klein); background: transparent;
+  color: var(--leiste-text); font-size: var(--satz-neben); font-weight: 600; cursor: pointer;
+}
+.navi-einstellungen:hover { background: var(--leiste-hover); }
+
+/* ---------- Arbeitsinhalt ------------------------------------------------- */
+.arbeitsinhalt {
+  grid-column: 2; grid-row: 2;
+  display: grid; min-width: 0; min-height: 0;
+  background: var(--grund);
+}
+.arbeitsinhalt > [hidden] { display: none !important; }
+
+/* ---------- Editor -------------------------------------------------------- */
+.ansicht-editor {
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto;
+  min-width: 0; min-height: 0; position: relative;
+}
+.dokumentkopf {
+  display: flex; align-items: center; gap: var(--raum-7);
+  min-height: 74px; padding: var(--raum-6) var(--raum-8);
+  background: var(--grund); border-bottom: 1px solid var(--linie); min-width: 0;
+}
+.dokument-angaben { flex: 1 1 auto; min-width: 0; }
+.dokument-titel {
+  margin: 0; font-family: var(--breit); font-size: var(--satz-lauf); font-weight: 600; line-height: 1.45;
+  color: var(--tinte); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dokument-pfad { margin: var(--raum-2) 0 0; font-size: var(--satz-etikett); color: var(--tinte-leise); }
+.dokument-reiter { flex: 0 1 auto; padding: 0; max-width: 40%; }
+.dokument-reiter[hidden] { display: none; }
+.dokumentkopf .dok-reiter { color: var(--tinte-leise); height: 30px; }
+.dokumentkopf .dok-reiter:hover { background: var(--flaeche-tief); color: var(--tinte); }
+.dokumentkopf .dok-reiter.ist-aktiv { background: var(--flaeche); color: var(--tinte); box-shadow: inset 0 0 0 1px var(--linie); }
+.dokumentkopf .dok-reiter-zahl, .dokumentkopf .dok-reiter-zu, .dokumentkopf .dok-reiter-neu { color: var(--tinte-leise); }
+.dokument-taten { display: flex; gap: var(--raum-7); flex: none; }
+
+.modusleiste {
+  display: flex; align-items: center; gap: var(--raum-4);
+  min-height: 54px; padding: var(--raum-4) var(--raum-8);
+  background: var(--flaeche); border-bottom: 1px solid var(--linie); min-width: 0;
+}
+.modi { display: flex; gap: var(--raum-4); min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.modi::-webkit-scrollbar { display: none; }
+.modus {
+  display: inline-flex; align-items: center; gap: var(--raum-4); flex: none;
+  height: 36px; padding: 0 var(--raum-7);
+  border: 0; border-radius: var(--radius-klein);
+  background: var(--flaeche); box-shadow: inset 0 0 0 1px var(--linie);
+  color: var(--tinte); font-size: var(--satz-bedien); font-weight: 600; cursor: pointer;
+}
+.modus:hover { box-shadow: inset 0 0 0 1px var(--tinte); }
+.modus.ist-aktiv { background: var(--tally-voll); color: var(--tally-text); box-shadow: inset 0 0 0 1px var(--tally-rand); }
+.modus-kuerzel { font-family: var(--sans); font-size: var(--satz-bedien); font-weight: 600; }
+.werkzeugtrenner { width: 1px; height: 20px; background: var(--linie); margin: 0 var(--raum-2); flex: none; }
+.modusleiste .kopf-verlauf { margin: 0; }
+.modusleiste .knopf-verlauf { background: none; box-shadow: none; color: var(--tinte); }
+.ansichtssteuerung {
+  margin-left: auto; display: flex; align-items: center; gap: var(--raum-6);
+  font-size: var(--satz-bedien); color: var(--tinte); flex: none;
+}
+.seitenstand { display: inline-flex; align-items: center; gap: var(--raum-2); color: var(--tinte-leise); font-variant-numeric: tabular-nums; }
+.seitenstand .feld-schmal {
+  width: 34px; padding: var(--raum-1) var(--raum-2); text-align: right;
+  background: transparent; border: 1px solid transparent; color: var(--tinte-leise);
+}
+.seitenstand .feld-schmal:hover, .seitenstand .feld-schmal:focus { border-color: var(--linie); background: var(--flaeche); }
+.feld-zoom { background: transparent; border: 1px solid transparent; padding: var(--raum-1) var(--raum-2); font-size: var(--satz-bedien); color: var(--tinte); }
+.feld-zoom:hover { border-color: var(--linie); }
+.knopf-symbol {
+  display: inline-grid; place-items: center; flex: none;
+  width: 30px; height: 30px; padding: 0;
+  border: 0; border-radius: var(--radius-klein); background: none; color: var(--tinte); cursor: pointer;
+}
+.knopf-symbol:hover { background: var(--flaeche-tief); }
+.knopf-symbol:disabled { opacity: .4; cursor: default; }
+
+.ansicht-editor .rumpf {
+  display: grid; position: relative;
+  grid-template-columns: var(--leiste-links) minmax(0, 1fr) var(--leiste-rechts);
+  min-height: 0; min-width: 0;
+}
+.leiste-links { background: var(--grund); border-right: 1px solid var(--linie); }
+.leiste-rechts { background: var(--flaeche); border-left: 1px solid var(--linie); }
+.leiste-links .leiste-fuss { background: var(--grund); border-top-color: var(--linie); flex-wrap: wrap; }
+.leiste-links .leiste-fuss .knopf { flex: 1 1 auto; min-width: 0; padding: 0 var(--raum-4); }
+.buehne { background: var(--buehne) var(--buehne-verlauf); }
+
+/* Der Inspektor oben rechts: was der Modus kann. */
+.inspektor-kopf { padding: var(--raum-8) var(--raum-8) var(--raum-6); border-bottom: 1px solid var(--linie); flex: none; }
+.inspektor-titel { margin: 0 0 var(--raum-6); font-family: var(--breit); font-size: var(--satz-titel); font-weight: 600; line-height: 1.45; color: var(--tinte); }
+.inspektor-werkzeuge { display: flex; flex-wrap: wrap; gap: var(--raum-3); }
+.inspektor-werkzeug {
+  min-height: 30px; padding: 0 var(--raum-5);
+  border: 0; border-radius: var(--radius-segment);
+  background: var(--flaeche-tief); box-shadow: inset 0 0 0 1px var(--linie);
+  color: var(--tinte); font-size: var(--satz-neben); cursor: pointer;
+}
+.inspektor-werkzeug:hover { box-shadow: inset 0 0 0 1px var(--tinte); }
+.inspektor-werkzeug.ist-aktiv {
+  background: var(--tally-grund); color: var(--tally-grund-text); font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--tally-voll);
+}
+.inspektor-werkzeug.ist-weiter { background: none; box-shadow: none; color: var(--tally); }
+.reiter-zahl { margin-left: var(--raum-2); font-size: var(--satz-etikett); font-weight: 600; color: var(--tally); font-variant-numeric: tabular-nums; }
+
+/* Statuszeile unten — keine schwebende Pille mehr, eine ruhige Zeile. */
+.fuss {
+  position: static; opacity: 1; transition: none;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--raum-6);
+  min-height: 30px; padding: 0 calc(22px + env(safe-area-inset-right)) env(safe-area-inset-bottom) calc(22px + env(safe-area-inset-left));
+  background: var(--flaeche); color: var(--tinte-leise);
+  border: 0; border-top: 1px solid var(--linie); border-radius: 0; box-shadow: none;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  font-size: var(--satz-etikett); white-space: nowrap;
+}
+.fuss .fuss-gruppe { gap: var(--raum-3); min-width: 0; }
+.fuss .knopf-symbol { width: 24px; height: 24px; color: var(--tinte-leise); }
+.fuss .knopf-symbol:hover { color: var(--tinte); }
+.fuss .sinnbild { width: 14px; height: 14px; }
+.fuss-angaben, .fuss-werkzeug, #fuss-melder { overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.fuss-cloud { color: var(--tinte-leise); }
+
+/* ---------- Bauteile ------------------------------------------------------ */
+/* Knöpfe wie im Entwurf: Papierfläche, schmale Linie, halbfett. */
+.knopf {
+  min-height: 36px; padding: 0 var(--raum-7);
+  background: var(--flaeche); color: var(--tinte); font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--linie); border-radius: var(--radius-klein);
+}
+.knopf:hover { background: var(--flaeche); box-shadow: inset 0 0 0 1px var(--tinte); }
+.knopf-klein { min-height: 30px; padding: 0 var(--raum-5); }
+.knopf-still, .knopf-chrome { box-shadow: none; background: transparent; font-weight: 500; }
+.knopf-still:hover, .knopf-chrome:hover { background: var(--flaeche-tief); box-shadow: none; }
+.knopf-voll, .knopf.ist-aktiv {
+  background: var(--tally-voll); color: var(--tally-text); font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--tally-rand);
+}
+.knopf-voll:hover { background: var(--tally-hover); box-shadow: inset 0 0 0 1px var(--tally-rand); }
+
+/* Etiketten in Versalien, wie „DOKUMENTENATELIER" und „SEITEN". */
+.spaltenkopf, .empfang-marke, .empfang-werkzeuge-titel,
+.dialog-fuss-hinweis, .einst-fassung div:first-child {
+  font-size: var(--satz-etikett); font-weight: 600; letter-spacing: .6px; text-transform: uppercase;
+}
+.spaltenkopf { background: transparent; color: var(--tinte-leise); }
+
+/* Reiter als ruhige Segmente; der gewählte steht auf Papier. */
+.reiter { background: var(--flaeche-tief); }
+.reiter-knopf.ist-aktiv { background: var(--flaeche); color: var(--tinte); box-shadow: inset 0 0 0 1px var(--linie); }
+.leiste-rechts .reiter { margin: var(--raum-6) var(--raum-7) var(--raum-4); }
+.leiste-rechts .reiter { flex-wrap: wrap; }
+.leiste-rechts .reiter-knopf { flex: 1 0 auto; padding-left: var(--raum-3); padding-right: var(--raum-3); white-space: nowrap; overflow: visible; text-overflow: clip; }
+.filterreihe .knopf.ist-aktiv { background: var(--tinte); color: var(--flaeche); box-shadow: none; }
+.faden { box-shadow: inset 0 0 0 1px var(--linie); }
+
+/* Schalter wie im Entwurf: an heißt dunkle Bahn mit kupfernem Knopf. */
+.pille.ist-an { background: var(--schalter-an); }
+.pille.ist-an i { background: var(--schalter-knopf-an); }
+.segment.ist-an { background: var(--tinte); color: var(--flaeche); box-shadow: none; }
+.einst-kategorie.ist-aktiv { background: var(--flaeche); color: var(--tinte); box-shadow: inset 0 0 0 1px var(--linie), inset -3px 0 0 var(--tally-voll); }
+
+/* Anzeigeschrift: im Atelier Bodoni kursiv, in der Konsole Space Grotesk. */
+.empfang h1, .einzel-karte h1, .anmeldekarte h1 {
+  font-family: var(--anzeige); font-style: var(--anzeige-stil); font-weight: 400; letter-spacing: -.01em;
+}
+.einst-inhalt h3, .dialog-kopf h2 { font-family: var(--breit); }
+
+/* ---------- Start (bis zum Dokumentenatelier) ---------------------------- */
+.ansicht-start.empfang {
+  position: static; inset: auto; z-index: auto;
+  grid-template-rows: minmax(0, 1fr);
+  min-width: 0; min-height: 0; overflow-y: auto;
+  background: var(--grund);
+}
+.empfang-marke { color: var(--tally); }
+
+/* ---------- Was es nur in der Hand der Konsole gibt ---------------------- */
+:root[data-gestalt="hnvr"] .wortmarke-zeichen {
+  display: block; position: relative; width: 28px; height: 28px; flex: none;
+  border-radius: var(--radius-klein); background: var(--tally-voll); clip-path: none;
+}
+:root[data-gestalt="hnvr"] .wortmarke-zeichen::after {
+  content: ''; position: absolute; inset: 7px 8px; width: auto; height: auto;
+  background: var(--leiste); clip-path: polygon(0 0, 62% 0, 100% 30%, 100% 100%, 0 100%);
+}
+:root[data-gestalt="hnvr"] .wortmarke-wort { font-size: var(--satz-lauf); font-weight: 600; }
+.heimat {
+  display: inline-flex; align-items: center; gap: var(--raum-3);
+  font-size: var(--satz-etikett); font-weight: 500; letter-spacing: .5px; text-transform: uppercase;
+  color: var(--leiste-leise); text-decoration: none; white-space: nowrap;
+}
+.heimat:hover { color: var(--leiste-text); }
+.heimat-trenner { color: var(--leiste-leise); text-transform: none; letter-spacing: 0; }
+.heimat[hidden] { display: none; }
+
+/* ---------- Schmale Fenster ---------------------------------------------- */
+/* Unter 1100 px rückt die Navigation zu Symbolen zusammen. Unter 900 px
+   verschwindet sie; der Weg zum Start ist dann der Pfeil im Dokumentkopf und
+   das Menü „Ansicht". Die Leisten im Editor werden Schubfächer (oben). */
+@media (max-width: 1100px) {
+  :root { --navi-breite: 64px; }
+  .atelier-navi { padding: var(--raum-8) var(--raum-4); align-items: center; }
+  .navi-punkt span, .navi-etikett, .navi-standard, .navi-einstellungen span { display: none; }
+  .navi-punkt, .navi-einstellungen { justify-content: center; width: 44px; padding: 0; }
+  .kopf-lokal-wort { display: none; }
+  .kopf-suche { width: 240px; }
+}
+@media (max-width: 900px) {
+  .huelle { grid-template-columns: minmax(0, 1fr); }
+  .atelier-navi { display: none; }
+  .arbeitsinhalt { grid-column: 1; }
+  .ansicht-editor .rumpf { grid-template-columns: minmax(0, 1fr); }
+  .kopf { gap: var(--raum-6); padding-left: calc(var(--raum-7) + env(safe-area-inset-left)); padding-right: calc(var(--raum-7) + env(safe-area-inset-right)); }
+  .kopf-suche { width: auto; flex: 0 1 220px; }
+  .dokument-taten #knopf-signieren, .dokument-taten #knopf-schwaerzen { display: none; }
+  .dokumentkopf, .modusleiste { padding-left: var(--raum-7); padding-right: var(--raum-7); }
+  .fuss-cloud, .fuss-angaben, .fuss-werkzeug { display: none; }
+}
+@media (max-width: 760px) {
+  .menueleiste { display: none; }
+  .kopf-suche { flex: 0 0 auto; width: 38px; padding: 0; justify-content: center; }
+  .kopf-suche-wort, .befehle-kuerzel, .kopf-lokal { display: none; }
+  .modusleiste { flex-wrap: wrap; row-gap: var(--raum-3); }
+  .modi { order: 1; flex: 1 1 100%; }
+  .werkzeugtrenner { display: none; }
+  .ansichtssteuerung { gap: var(--raum-3); }
+  #knopf-vollbild { display: none; }
+  .modus { padding: 0 var(--raum-5); }
+  .modus-kuerzel { display: none; }
+  .wortmarke-wort { display: inline; font-size: var(--satz-lauf); }
+}

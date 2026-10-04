@@ -110,46 +110,52 @@ export default async function ({ pruefe, seite, browser, BASIS, ladeBeispiel }) 
     return 'dateien';
   });
 
-  await pruefe('Aufklapper sagen, ob sie offen sind — und Escape schließt sie', async () => {
-    /* Der Aufklapper war der Knopf „Mehr" der Werkzeugzeile. Die Zeile ist
-       aufgelöst; jetzt ist jeder Schritt des Vorgangs der Aufklapper: er trägt
-       seine Werkzeuge unter sich, sagt über aria-expanded, ob sie offen sind,
-       und gibt den Fokus nach Escape dorthin zurück, wo er herkam. */
-    await seite.evaluate(() => document.querySelector('.reiter-knopf[data-tafel="miniaturen"]').click());
-    const zu = await seite.evaluate(() => {
-      const offen = document.querySelector('.schritt[aria-expanded="true"]');
-      if (offen) offen.click();
-      const schritt = [...document.querySelectorAll('.schritt')].find((k) => /Prüfen/.test(k.textContent));
-      return schritt.getAttribute('aria-expanded');
-    });
-    const auf = await seite.evaluate(async () => {
-      const schritt = [...document.querySelectorAll('.schritt')].find((k) => /Prüfen/.test(k.textContent));
-      schritt.click();
-      await new Promise((l) => setTimeout(l, 250));
-      const jetzt = [...document.querySelectorAll('.schritt')].find((k) => /Prüfen/.test(k.textContent));
-      jetzt.focus();
+  await pruefe('Die Modusleiste ist eine Tab-Liste — ein Halt, Pfeile wechseln', async () => {
+    /* Vier Modi, genau einer gewählt, und die Tastatur geht damit um wie mit
+       jeder Tab-Liste: Tab führt hinein, die Pfeile wechseln den Modus, Pos1
+       und Ende springen an die Ränder. Die Werkzeuge im Inspektor sagen über
+       aria-pressed, ob sie an sind. */
+    const vorher = await seite.evaluate(() => {
+      const liste = document.querySelector('#modi');
+      const tabs = [...liste.querySelectorAll('[role="tab"]')];
+      const gewaehlt = tabs.filter((t) => t.getAttribute('aria-selected') === 'true');
+      gewaehlt[0]?.focus();
       return {
-        gemeldet: jetzt.getAttribute('aria-expanded'),
-        kasten: !!document.querySelector(`#${jetzt.getAttribute('aria-controls')}`),
+        rolle: liste.getAttribute('role'),
+        anzahl: tabs.length,
+        gewaehlt: gewaehlt.map((t) => t.dataset.modus),
+        halte: tabs.filter((t) => t.tabIndex === 0).length,
       };
     });
-    await seite.keyboard.press('Escape');
-    await seite.waitForTimeout(250);
-    const danach = await seite.evaluate(() => {
-      const schritt = [...document.querySelectorAll('.schritt')].find((k) => /Prüfen/.test(k.textContent));
-      return {
-        gemeldet: schritt.getAttribute('aria-expanded'),
-        werkzeuge: document.querySelectorAll('.schritt-werkzeug').length,
-        fokusAufSchritt: document.activeElement?.classList.contains('schritt'),
-      };
+    await seite.keyboard.press('ArrowRight');
+    await seite.waitForTimeout(150);
+    const nachRechts = await seite.evaluate(() => ({
+      fokus: document.activeElement?.dataset?.modus,
+      gewaehlt: document.querySelector('#modi [aria-selected="true"]')?.dataset.modus,
+    }));
+    await seite.keyboard.press('End');
+    await seite.waitForTimeout(150);
+    const amEnde = await seite.evaluate(() => document.querySelector('#modi [aria-selected="true"]')?.dataset.modus);
+    await seite.keyboard.press('Home');
+    await seite.waitForTimeout(150);
+    const amAnfang = await seite.evaluate(() => document.querySelector('#modi [aria-selected="true"]')?.dataset.modus);
+    const gedrueckt = await seite.evaluate(() => {
+      const knopf = document.querySelector('.inspektor-werkzeug[data-befehl="werkzeug:ersetzen"]');
+      return knopf?.getAttribute('aria-pressed');
     });
-    if (zu !== 'false') throw new Error(`geschlossen meldet aria-expanded=${zu}`);
-    if (auf.gemeldet !== 'true') throw new Error('offen meldet kein aria-expanded=true');
-    if (!auf.kasten) throw new Error('aria-controls zeigt auf nichts');
-    if (danach.gemeldet !== 'false') throw new Error('nach Escape meldet der Schritt weiter offen');
-    if (danach.werkzeuge) throw new Error('Escape hat die Werkzeuge nicht geschlossen');
-    if (!danach.fokusAufSchritt) throw new Error('nach Escape steht der Fokus nicht auf dem Schritt');
-    return 'false → true → Escape → false, Fokus zurück';
+    await seite.evaluate(() => { window.studio.fuehreAus('werkzeug:auswahl'); window.studio.fuehreAus('modus:kommentieren'); });
+
+    if (vorher.rolle !== 'tablist') throw new Error(`Rolle ${vorher.rolle}`);
+    if (vorher.anzahl !== 4) throw new Error(`${vorher.anzahl} Modi`);
+    if (vorher.gewaehlt.length !== 1) throw new Error(`${vorher.gewaehlt.length} gewählt`);
+    if (vorher.halte !== 1) throw new Error(`${vorher.halte} Tabulatorhalte statt einem`);
+    if (!nachRechts.fokus || nachRechts.fokus !== nachRechts.gewaehlt || nachRechts.gewaehlt === vorher.gewaehlt[0]) {
+      throw new Error(`Pfeil rechts: Fokus ${nachRechts.fokus}, gewählt ${nachRechts.gewaehlt}`);
+    }
+    if (amEnde !== 'exportieren') throw new Error(`Ende führt zu ${amEnde}`);
+    if (amAnfang !== 'bearbeiten') throw new Error(`Pos1 führt zu ${amAnfang}`);
+    if (gedrueckt !== 'true') throw new Error(`„Text bearbeiten" meldet aria-pressed=${gedrueckt}`);
+    return `${vorher.gewaehlt[0]} → ${nachRechts.gewaehlt}, Ende → ${amEnde}, Pos1 → ${amAnfang}; Werkzeug meldet sich gedrückt`;
   });
 
   await pruefe('Die Meldung kommt und geht mit derselben Sorgfalt', async () => {

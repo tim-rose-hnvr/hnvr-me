@@ -69,17 +69,19 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
      genau. Sie hier nachzumessen ist der einzige Weg, der nicht darauf
      hinausläuft, zwei Bildschirmabzüge nebeneinanderzuhalten. */
   const REG = {
-    kopf: 56,
-    links: 264, rechts: 320,
-    /* Seit dem hnvr.me-Rebrand: die Leiste der Konsole (#172124), die
-       Arbeitsfläche darunter (#E6EBEC, mit Verlauf), Orange #FF7120 als
-       Fläche mit Tinte darauf — nie Weiß auf Orange. */
-    chrome900: 'rgb(23, 33, 36)',
-    buehne: 'rgb(230, 235, 236)',
+    /* Atelier-Entwurf („PDF-Editor"): Menüleiste 64, Navigation 190,
+       Dokumentkopf 74, Modusleiste 54, Statuszeile 30. Die Seitenleiste ist
+       breiter als im Entwurf (220 statt 158), weil sie vier Reiter trägt. */
+    kopf: 64, navi: 190, dokumentkopf: 74, modusleiste: 54, fuss: 30,
+    links: 220, rechts: 318,
+    /* Olivgraue Leiste #2B2F2A, Bühne #E8DFD2, Kupfer #C78B5F als Fläche mit
+       Tinte darauf — kein Weiß auf Kupfer. */
+    chrome900: 'rgb(43, 47, 42)',
+    buehne: 'rgb(232, 223, 210)',
     papier: 'rgb(255, 255, 255)',
-    akzent: 'rgb(255, 113, 32)',
-    akzentText: 'rgb(23, 33, 36)',
-    chromeText: 'rgb(243, 247, 247)',
+    akzent: 'rgb(199, 139, 95)',
+    akzentText: 'rgb(43, 47, 42)',
+    chromeText: 'rgb(255, 254, 250)',
   };
 
   await pruefe('Die Höhen der Chrome stimmen auf den Pixel', async () => {
@@ -87,7 +89,8 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     const masse = await seite.evaluate(() => {
       const h = (s) => Math.round(document.querySelector(s).getBoundingClientRect().height);
       const b = (s) => Math.round(document.querySelector(s).getBoundingClientRect().width);
-      return { kopf: h('.kopf'),
+      return { kopf: h('.kopf'), navi: b('.atelier-navi'), dokumentkopf: h('.dokumentkopf'),
+        modusleiste: h('.modusleiste'), fuss: h('.fuss'),
         links: b('.leiste-links'), rechts: b('.leiste-rechts') };
     });
     for (const [name, soll] of Object.entries(REG)) {
@@ -143,7 +146,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       const b = document.querySelector('#buehne').getBoundingClientRect();
       return {
         links: Math.round(l.width), rechts: Math.round(r.width), buehne: Math.round(b.width),
-        linksSteht: Math.round(l.left) === 0,
+        linksSteht: Math.round(l.left) === Math.round(document.querySelector('.atelier-navi').getBoundingClientRect().right),
         rechtsSteht: Math.round(r.right) <= 1501,
       };
     });
@@ -151,37 +154,39 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     await seite.waitForTimeout(900);
     if (lage.links !== REG.links) throw new Error(`linke Leiste ${lage.links} px`);
     if (lage.rechts !== REG.rechts) throw new Error(`rechte Leiste ${lage.rechts} px`);
+    /* Links neben der Seitenleiste steht die Navigation des Ateliers. */
     if (!lage.linksSteht || !lage.rechtsSteht) throw new Error('eine Leiste liegt über der Bühne');
     return `${REG.links} + ${lage.buehne} + ${REG.rechts}`;
   });
 
-  await pruefe('Die Werkzeuge tragen die Wörter des Mockups — jetzt in der Schiene', async () => {
-    /* Markieren, Kommentar, Redigieren, Signieren — nicht unsere eigenen
-       Wörter. Wer den Entwurf neben die Anwendung legt, soll dasselbe lesen.
-
-       Sie standen in der Werkzeugzeile, solange es eine gab. Jetzt steht jedes
-       Werkzeug unter dem Schritt des Vorgangs, zu dem es gehört; die Prüfung
-       klappt deshalb jeden Schritt auf und sammelt ein, was darunter steht. */
-    const worte = await seite.evaluate(async () => {
+  await pruefe('Die Werkzeuge tragen die Wörter des Entwurfs — unter ihrem Modus', async () => {
+    /* Markieren, Kommentar, Text bearbeiten, Seiten ordnen — die Wörter des
+       Entwurfs, nicht unsere eigenen. Jeder Modus der Modusleiste bringt seine
+       Werkzeuge in den Inspektor mit; die Prüfung schaltet jeden Modus ein und
+       sammelt ein, was dort steht. Signieren und Schwärzen stehen als große
+       Taten im Dokumentkopf. */
+    const stand = await seite.evaluate(async () => {
       const gesammelt = [];
-      const kennungen = [...document.querySelectorAll('.schritt')].map((k) => k.dataset.schritt);
-      for (const kennung of kennungen) {
-        /* Nur aufklappen, was zu ist — ein zweiter Druck würde den Schritt
-           wieder schließen, und wir bekämen seine Werkzeuge nie zu sehen. */
-        const zeile = document.querySelector(`.schritt[data-schritt="${kennung}"]`);
-        if (zeile.getAttribute('aria-expanded') === 'false') zeile.click();
+      const modi = [...document.querySelectorAll('#modi .modus')].map((k) => k.dataset.modus);
+      for (const modus of modi) {
+        document.querySelector(`#modi .modus[data-modus="${modus}"]`).click();
         await new Promise((l) => setTimeout(l, 150));
-        gesammelt.push(...[...document.querySelectorAll('.schritt-werkzeug')]
-          .map((k) => k.textContent.trim()));
+        gesammelt.push(...[...document.querySelectorAll('.inspektor-werkzeug')].map((k) => k.textContent.trim()));
       }
-      return gesammelt;
+      window.studio.fuehreAus('werkzeug:auswahl');
+      const kopf = [...document.querySelectorAll('.dokument-taten .knopf')].map((k) => k.textContent.trim());
+      return { modi, gesammelt, kopf };
     });
-    for (const wort of ['Auswahl', 'Text', 'Markieren', 'Kommentar', 'Redigieren',
-      'Formularfeld anlegen', 'Signieren', 'Seiten ordnen']) {
-      if (!worte.includes(wort)) throw new Error(`„${wort}" fehlt — da steht: ${worte.join(', ')}`);
+    if (stand.modi.join('|') !== 'bearbeiten|kommentieren|organisieren|exportieren') throw new Error(`Modi: ${stand.modi.join(', ')}`);
+    for (const wort of ['Auswahl', 'Text bearbeiten', 'Markieren', 'Kommentar',
+      'Formularfeld anlegen', 'Seiten ordnen', 'Word (.docx)']) {
+      if (!stand.gesammelt.includes(wort)) throw new Error(`„${wort}" fehlt — da steht: ${stand.gesammelt.join(', ')}`);
+    }
+    for (const wort of ['Signieren', 'Schwärzen']) {
+      if (!stand.kopf.includes(wort)) throw new Error(`„${wort}" fehlt im Dokumentkopf`);
     }
     await ladeBeispiel();
-    return worte.filter((w) => w !== 'Weitere Werkzeuge …').join(' · ');
+    return `${stand.gesammelt.filter((w) => w !== 'Weitere Werkzeuge …').length} Werkzeuge in 4 Modi; im Kopf ${stand.kopf.join(' · ')}`;
   });
 
   await pruefe('Der Empfang trägt dieselbe Sprache wie das Programm', async () => {
@@ -191,7 +196,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     await seite.goto(BASIS);
     await seite.waitForTimeout(1400);
     const stand = await seite.evaluate(() => {
-      const kopf = document.querySelector('.empfang-kopf');
+      /* Der Start steht in derselben Hülle wie der Editor: dieselbe
+         Menüleiste, dieselbe Navigation. */
+      const kopf = document.querySelector('.kopf');
       const oeffnen = document.querySelector('#knopf-oeffnen');
       return {
         kopfGrund: kopf ? getComputedStyle(kopf).backgroundColor : null,
@@ -206,8 +213,8 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (stand.kopfHoehe !== REG.kopf) throw new Error(`Kopf ist ${stand.kopfHoehe} px`);
     void 0;
     if (stand.knopf !== REG.akzent) throw new Error(`„Datei öffnen" ist ${stand.knopf}`);
-    /* Der Titel steht in derselben Schrift wie das Programm — SF auf Apple-Geräten, sonst Inter. */
-    if (!/apple-system|Inter/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
+    /* Der Titel steht in der Anzeigeschrift des Ateliers. */
+    if (!/Bodoni Moda/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
     if (!stand.ablage) throw new Error('keine Ablegefläche');
     if (!/DOCX/.test(stand.formate)) throw new Error(`Formate: ${stand.formate}`);
     await ladeBeispiel();
@@ -380,7 +387,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       + `Randvermerk ${werte.hell['papier-leise']}:1 · Feldrahmen ${werte.hell['papier-akzent']}:1`;
   });
 
-  await pruefe('Der Primärknopf in der Titelleiste ist akzentfarben', async () => {
+  await pruefe('Der Primärknopf im Dokumentkopf ist akzentfarben', async () => {
     /* Er war einmal weiß: `.knopf-voll` stand oberhalb von `.knopf` und wurde
        von dessen Grundwerten überschrieben. Gleiche Spezifität, spätere Regel
        gewinnt — im Bildschirmabzug sofort zu sehen, im Quelltext nicht. */
@@ -391,17 +398,16 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     });
     if (stand.voll !== REG.akzent) throw new Error(`Sichern ist ${stand.voll}`);
     /* Zwei verschiedene Schriftfarben, und das ist richtig so: auf dem
-       Akzent steht --tally-text, auf der Chrome --chrome-text. Beide kippen
+       Akzent steht --tally-text, auf der Leiste --leiste-text. Beide kippen
        mit der Fassung, deshalb kann keine zu schwach werden. */
     if (stand.vollText !== REG.akzentText) throw new Error(`Schrift auf dem Akzent ist ${stand.vollText}`);
     if (stand.chromeText !== REG.chromeText) throw new Error(`Einstellungen ist ${stand.chromeText}`);
     return `Sichern ${stand.voll}`;
   });
 
-  await pruefe('Rückgängig und Wiederholen stehen im Kopf, nicht im Vorgang', async () => {
-    /* Sie standen in der Werkzeugzeile. Die gibt es nicht mehr, und in die
-       Vorgangsschiene gehören sie nicht: ein Fehler gehört zu keinem Schritt,
-       er gehört zum Dokument. Also in den Kopf, neben „Sichern".
+  await pruefe('Rückgängig und Wiederholen stehen in der Modusleiste', async () => {
+    /* Wie im Entwurf: hinter den Modi, durch einen Strich getrennt. Sie
+       gehören zu keinem Modus, sondern zum Dokument.
 
        Die beiden sind außerdem die einzigen Knöpfe ohne Wort, die bleiben
        durften — zwei Pfeile sind das einzige Zeichenpaar, bei dem die stille
@@ -409,7 +415,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     const stand = await seite.evaluate(() => {
       const feld = document.querySelector('#kopf-verlauf');
       const knoepfe = [...(feld?.querySelectorAll('button') || [])];
-      const kopf = document.querySelector('.kopf').getBoundingClientRect();
+      const kopf = document.querySelector('.modusleiste').getBoundingClientRect();
       return {
         imKopf: knoepfe.length > 0 && knoepfe.every((k) => {
           const kasten = k.getBoundingClientRect();
@@ -417,12 +423,12 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
         }),
         namen: knoepfe.map((k) => k.getAttribute('aria-label')),
         gesperrt: knoepfe.map((k) => k.disabled),
-        inSchiene: document.querySelectorAll('#vorgangsschiene #knopf-rueckgaengig').length,
+        inSchiene: document.querySelectorAll('#inspektor-kopf #knopf-rueckgaengig').length,
       };
     });
     if (stand.namen.join() !== 'Rückgängig,Wiederholen') throw new Error(`da steht: ${stand.namen.join(', ')}`);
-    if (!stand.imKopf) throw new Error('ein Knopf steht nicht im Kopf');
-    if (stand.inSchiene) throw new Error('der Verlauf steht in der Schiene');
+    if (!stand.imKopf) throw new Error('ein Knopf steht nicht in der Modusleiste');
+    if (stand.inSchiene) throw new Error('der Verlauf steht im Inspektor');
     /* Solange nichts geschehen ist, sind beide gesperrt. Ein Knopf, der nichts
        tun kann und trotzdem bedienbar aussieht, ist ein Versprechen ins Leere. */
     if (!stand.gesperrt.every(Boolean)) throw new Error('ohne Historie ist ein Knopf bedienbar');
@@ -458,9 +464,9 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
        2 px Innenabstand, sonst stoßen die Ecken aneinander).
        Das Blatt und die Leisten bleiben eckig: ein Blatt ist ein Blatt, und
        eine Leiste, die am Fensterrand klebt, bekäme sonst einen Spalt. */
-    /* Seit dem Rebrand die Stufen der Konsole: 8 klein, 12 Menüs und
-       Karten in Tafeln, 16 große Karten und Dialoge. */
-    const ERLAUBT = [0, 6, 8, 12, 16, 999];
+    /* Im Atelier schmale Kanten: 4 für Knöpfe, Felder, Karten und Dialoge,
+       3 für Marken und Segmente — und rund für Kapseln. */
+    const ERLAUBT = [0, 3, 4, 999];
     const daneben = await seite.evaluate((erlaubt) => {
       const raus = [];
       for (const k of document.querySelectorAll('#huelle *')) {
@@ -489,7 +495,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       return falsch;
     });
     if (eckig.length) throw new Error(`sollte eckig sein: ${eckig.join(', ')}`);
-    return 'Staffel 0/6/8/10/14 eingehalten, Papier und Leisten eckig';
+    return 'Staffel 0/3/4 eingehalten, Papier und Leisten eckig';
   });
 
   await pruefe('Der Dialog ist ein Blatt wie in macOS — und der Knopf im Kopf öffnet ihn richtig', async () => {
@@ -514,6 +520,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
       const dialog = document.querySelector('.dialog');
       return {
         grund: getComputedStyle(kopf).backgroundColor,
+        flaeche: getComputedStyle(dialog).backgroundColor,
         hoehe: Math.round(kopf.getBoundingClientRect().height),
         titelSchrift: getComputedStyle(kopf.querySelector('h2')).fontFamily,
         radius: getComputedStyle(dialog).borderRadius,
@@ -523,10 +530,10 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     });
     /* Kein dunkler Balken mehr: der Titel steht auf der Fläche des Dialogs,
        halbfett in der Systemschrift, die Ecken wie ein Fenster in macOS. */
-    if (stand.grund !== REG.papier) throw new Error(`Kopf ist ${stand.grund}`);
+    if (stand.grund !== stand.flaeche) throw new Error(`Kopf ist ${stand.grund} auf ${stand.flaeche}`);
     if (stand.hoehe !== 48) throw new Error(`Kopf ist ${stand.hoehe} px statt 48`);
     if (!/apple-system|Inter/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
-    if (stand.radius !== '16px') throw new Error(`Ecken ${stand.radius} statt 16`);
+    if (stand.radius !== '4px') throw new Error(`Ecken ${stand.radius} statt 4`);
     if (!stand.hinweis) throw new Error('kein Hinweis im Fuß');
     if (!/Fassung/.test(stand.fassung)) throw new Error('keine Fassung unter den Kategorien');
     await seite.keyboard.press('Escape');
@@ -557,9 +564,10 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (!/Gliederung/.test(zeilen.kopf)) throw new Error(`kein Spaltenkopf: „${zeilen.kopf}"`);
     if (zeilen.nummer !== '1') throw new Error(`Nummer „${zeilen.nummer}"`);
     if (zeilen.titel.length < 4) throw new Error(`kein Kurztitel: „${zeilen.titel}"`);
-    /* Zahlen stehen wie in der Konsole in Geist Mono — gleich breite
-       Ziffern, so stehen 1 und 11 übereinander. */
-    if (!/Geist Mono/.test(zeilen.zahlSchrift)) throw new Error(`Zahl in ${zeilen.zahlSchrift}`);
+    /* Zahlen stehen in der Schrift der Oberfläche (im Atelier Inter, in der
+       Konsole Geist Mono) — mit gleich breiten Ziffern, so stehen 1 und 11
+       übereinander. */
+    if (!/Geist Mono|Inter/.test(zeilen.zahlSchrift)) throw new Error(`Zahl in ${zeilen.zahlSchrift}`);
 
     /* Und zurück: der Knopf im Fuß der Leiste holt die Karten wieder. */
     const bilder = await seite.evaluate(async () => {
@@ -581,22 +589,22 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     return `44-px-Zeilen mit „${zeilen.nummer} ${zeilen.titel}", Miniaturen auf Wunsch (112 px)`;
   });
 
-  await pruefe('Seitenordner und Vergleich stehen unter „Lesen"', async () => {
+  await pruefe('Seitenordner und Vergleich stehen unter „Organisieren"', async () => {
     /* Sie waren die vierte Gruppe der Werkzeugzeile: Seiten, Vergleichen,
        Dokument. „Dokument" ist weggefallen — der Ordner und der Vergleich
        schließen sich selbst, mit ihrem eigenen Knopf und mit Escape. Ein
        dritter Knopf, der nur „zurück" bedeutet, war eine Zutat der Zeile. */
     await ladeBeispiel();
     const worte = await seite.evaluate(async () => {
-      [...document.querySelectorAll('.schritt')].find((k) => /Lesen/.test(k.textContent)).click();
+      document.querySelector('#modi .modus[data-modus="organisieren"]').click();
       await new Promise((l) => setTimeout(l, 200));
-      return [...document.querySelectorAll('.schritt-werkzeug')].map((k) => k.textContent.trim());
+      return [...document.querySelectorAll('.inspektor-werkzeug')].map((k) => k.textContent.trim());
     });
     for (const wort of ['Seiten ordnen', 'Mit anderer Datei vergleichen']) {
       if (!worte.includes(wort)) throw new Error(`„${wort}" fehlt — da steht: ${worte.join(', ')}`);
     }
     const offen = await seite.evaluate(async () => {
-      [...document.querySelectorAll('.schritt-werkzeug')]
+      [...document.querySelectorAll('.inspektor-werkzeug')]
         .find((k) => k.textContent.trim() === 'Seiten ordnen').click();
       await new Promise((l) => setTimeout(l, 600));
       const auf = !document.querySelector('#ordnen').hidden;
@@ -613,7 +621,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     /* Der Knopf „Mehr" der Zeile klappte eine eigene Liste auf — eine zweite
        Sammelstelle neben dem Befehlsfeld. Es gibt jetzt nur noch eine. */
     const stand = await seite.evaluate(async () => {
-      [...document.querySelectorAll('.schritt-werkzeug')]
+      [...document.querySelectorAll('.inspektor-werkzeug')]
         .find((k) => /Weitere Werkzeuge/.test(k.textContent)).click();
       await new Promise((l) => setTimeout(l, 400));
       const feld = document.querySelector('.dialog input');

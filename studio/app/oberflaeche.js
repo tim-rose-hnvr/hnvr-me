@@ -42,6 +42,8 @@ import {
 import { zeigeErkennungsDialog } from './texterkennung.js';
 import { textDerSeite } from './dokument.js';
 import { vergleicheMitDatei, schliesseVergleich, vergleichOffen } from './vergleich.js';
+import { setzeModus } from './vorgang.js';
+import { zeigeAnsicht } from './atelier.js';
 import {
   zeigeLeiste, zeichneGliederung, zeichneDateientafel, zeichneSuchtafel, zeichneSuchergebnisse,
   zeigeRechteTafel, zeichneRechteTafeln, zeichneKommentartafel, zeichneFeldertafel,
@@ -256,6 +258,14 @@ function baueBefehle() {
   befehl('wiederholen', 'Wiederholen', 'Bearbeiten', schrittVor, 'Strg+Umschalt+Z');
   befehl('eigenschaften', 'Dokumenteigenschaften …', 'Bearbeiten', zeigeEigenschaften);
   befehl('hilfe', 'Tastenkürzel und Grenzen …', 'Hilfe', zeigeHilfe, 'F1');
+
+  /* Die vier Modi der Modusleiste — auch aus Menü und Befehlsfeld. */
+  befehl('modus:bearbeiten', 'Modus: Bearbeiten (Text bearbeiten)', 'Ansicht', () => setzeModus('bearbeiten'), 'Strg+E');
+  befehl('modus:kommentieren', 'Modus: Kommentieren', 'Ansicht', () => setzeModus('kommentieren'));
+  befehl('modus:organisieren', 'Modus: Organisieren', 'Ansicht', () => setzeModus('organisieren'));
+  befehl('modus:exportieren', 'Modus: Exportieren', 'Ansicht', () => setzeModus('exportieren'));
+  befehl('ansicht:start', 'Zum Start', 'Ansicht', () => zeigeAnsicht('start'));
+  befehl('ansicht:editor', 'Zum Editor', 'Ansicht', () => zeigeAnsicht('editor'));
 }
 
 export function fuehreAus(id) {
@@ -947,6 +957,7 @@ function starteTastatur() {
     }
 
     if (steuerung && e.key.toLowerCase() === 'k') { e.preventDefault(); zeigePalette(); return; }
+    if (steuerung && e.key.toLowerCase() === 'e') { e.preventDefault(); fuehreAus('modus:bearbeiten'); return; }
     if (steuerung && e.key.toLowerCase() === 'o') { e.preventDefault(); fuehreAus('datei:oeffnen'); return; }
     if (steuerung && e.key.toLowerCase() === 's') { e.preventDefault(); fuehreAus(e.shiftKey ? 'sichern:als' : 'sichern'); return; }
     if (steuerung && e.key.toLowerCase() === 'f') { e.preventDefault(); fuehreAus('suchen'); return; }
@@ -1100,8 +1111,6 @@ export function starteOberflaeche() {
   // Ereignisse der Module
   hoer('befehl', (id) => fuehreAus(id));
   hoer('dokument:geladen', () => {
-    $('#huelle').hidden = false;
-    $('#empfang').hidden = true;
     zeichneGliederung();
     zeichneDateientafel();
     zeichneRechteTafel();
@@ -1117,6 +1126,7 @@ export function starteOberflaeche() {
     zeichneRechteTafel();
   });
   hoer('seite:gewechselt', aktualisiereFuss);
+  hoer('ansicht:neu', aktualisiereFuss);
   hoer('mappen:geaendert', zeichneDokumentreiter);
   /* Ein Vergleich gilt für das Dokument, in dem er begonnen wurde. */
   hoer('dokument:geladen', () => { if (vergleichOffen()) schliesseVergleich(); });
@@ -1252,16 +1262,15 @@ function aktualisiereFuss() {
   if (befunde.gescannt) teile.push('Scan ohne Textebene');
   melder.textContent = teile.join(' · ');
 
-  const stand = $('#menue-stand');
-  if (stand) {
-    stand.textContent = zustand.folge.length
-      ? `${zustand.name} · ${zustand.folge.length} Seiten · ${zustand.geaendert ? 'geändert' : 'gesichert'}`
-      : '';
-  }
   const format = $('#fuss-format');
   if (format) {
+    /* Wie im Entwurf: „Seite 1 von 4 · A4 · 210 × 297 mm". Das Format fehlt,
+       solange die Seite noch nicht vermessen ist. */
     const eintrag = zustand.folge[zustand.aktuelleSeite - 1];
-    format.textContent = eintrag ? seitenformat(eintrag) : '–';
+    const blattformat = eintrag ? seitenformat(eintrag) : '–';
+    format.textContent = eintrag
+      ? [`Seite ${zustand.aktuelleSeite} von ${zustand.folge.length}`, blattformat].filter((t) => t !== '–').join(' · ')
+      : '–';
   }
   const werkzeugfeld = $('#fuss-werkzeug');
   if (werkzeugfeld) {

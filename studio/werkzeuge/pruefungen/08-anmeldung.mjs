@@ -89,7 +89,8 @@ export default async function ({ pruefe, seite, ladeBeispiel }) {
 
   await pruefe('Als App von hnvr.me führt der Kopf zurück in die Konsole', async () => {
     /* Der Brotkrumen „Konsole / PDF Studio" steht nur, wenn die einbettende
-       Seite ihn nennt — und nur mit https oder einem Pfad dieser Seite. */
+       Seite ihn nennt, nur in der Hand der Konsole — und nur mit https oder
+       einem Pfad dieser Seite. */
     const lage = await seite.evaluate(async () => {
       const m = await import('./app/anmeldung.js');
       const link = document.querySelector('#heimat');
@@ -105,21 +106,25 @@ export default async function ({ pruefe, seite, ladeBeispiel }) {
       };
       const ziel = setze('studio-heimat', 'https://www.hnvr.me/konsole');
       const name = setze('studio-heimat-name', 'Konsole');
+      const imAtelier = lies();
+      document.documentElement.dataset.gestalt = 'hnvr';
       const echt = lies();
       ziel.content = 'javascript:alert(1)';
       const boese = lies();
       ziel.content = 'http://fremd.example/';
       const ohneTls = lies();
       ziel.remove(); name.remove();
+      delete document.documentElement.dataset.gestalt;
       link.hidden = true; link.setAttribute('href', '#');
-      return { vorher, echt, boese, ohneTls };
+      return { vorher, imAtelier, echt, boese, ohneTls };
     });
     if (!lage.vorher) throw new Error('ohne Kopfzeile steht der Brotkrumen schon da');
+    if (lage.imAtelier.sichtbar) throw new Error('im Atelier, ohne aus der Konsole zu kommen, steht der Rückweg trotzdem');
     if (!lage.echt.sichtbar || lage.echt.ziel !== 'https://www.hnvr.me/konsole') throw new Error(`Ziel: ${lage.echt.ziel}`);
     if (lage.echt.text !== 'Konsole / PDF Studio') throw new Error(`Text: „${lage.echt.text}"`);
     if (lage.boese.sichtbar) throw new Error('javascript:-Ziel übernommen');
     if (lage.ohneTls.sichtbar) throw new Error('fremdes http-Ziel übernommen');
-    return `„${lage.echt.text}" → ${lage.echt.ziel}; javascript: und fremdes http abgewiesen`;
+    return `„${lage.echt.text}" → ${lage.echt.ziel}; im Atelier verborgen; javascript: und fremdes http abgewiesen`;
   });
 
   /* Ohne Netz entscheidet der Merkzettel. Zwei Fälle, und der Unterschied ist

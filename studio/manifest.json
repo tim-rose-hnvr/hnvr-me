@@ -10,8 +10,8 @@
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "any",
-  "background_color": "#EEF3F3",
-  "theme_color": "#172124",
+  "background_color": "#F6F1E8",
+  "theme_color": "#2B2F2A",
   "categories": ["productivity", "utilities"],
   "icons": [
     { "src": "symbole/symbol-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

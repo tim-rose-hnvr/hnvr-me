@@ -15,23 +15,23 @@ import { join } from 'node:path';
 export default async function ({ pruefe, seite, browser, BASIS, ladungVon, WURZEL, ladeBeispiel }) {
   console.log('\n== Einzelwerkzeuge ==');
 
-  await pruefe('Die Vorgangsschiene rechnet mit dem Dokument, nicht mit Vorräten', async () => {
-    /* Sie beantwortet nicht „was kann ich tun", sondern „was steht noch an".
+  await pruefe('Der Stand des Vorgangs rechnet mit dem Dokument, nicht mit Vorräten', async () => {
+    /* Er beantwortet nicht „was kann ich tun", sondern „was steht noch an".
        Deshalb müssen die Zahlen aus dem Dokument kommen: Seitenzahl,
        gefundene personenbezogene Angaben, Stand der Formularfelder. Eine
-       erfundene Zahl wäre schlimmer als keine. */
+       erfundene Zahl wäre schlimmer als keine. Sichtbar ist der Stand an den
+       Reitern der rechten Leiste („Hinweise 8", „Felder 2/10"). */
     await ladeBeispiel();
     await seite.waitForTimeout(1400);
-    const stand = await seite.evaluate(() => {
-      const zeilen = [...document.querySelectorAll('.schritt')].map((k) => ({
-        wort: k.querySelector('.schritt-wort').textContent,
-        stand: k.querySelector('.schritt-stand')?.textContent || '',
-        art: [...k.classList].find((c) => c.startsWith('ist-') && c !== 'ist-aktiv') || '',
-      }));
+    const stand = await seite.evaluate(async () => {
+      const { vorgangsstand } = await import('./app/vorgang.js');
+      const zahl = (tafel) => document.querySelector(`[data-rtafel="${tafel}"].reiter-knopf .reiter-zahl`)?.textContent.trim() || '';
       return {
-        zeilen,
+        zeilen: vorgangsstand().map((z) => ({ wort: z.wort, stand: z.text || '', art: `ist-${z.art}` })),
         seiten: window.studio.zustand.folge.length,
         felder: window.studio.zustand.formularfelder.length,
+        reiterHinweise: zahl('mitdenken'),
+        reiterFelder: zahl('felder'),
       };
     });
     const worte = stand.zeilen.map((z) => z.wort);
@@ -49,7 +49,16 @@ export default async function ({ pruefe, seite, browser, BASIS, ladungVon, WURZE
     /* Und das Gegenstück: ein Schritt ohne Grund im Dokument zeigt keine Zahl. */
     const warten = stand.zeilen.filter((z) => z.art === 'ist-wartet' || z.art === 'ist-nichts');
     if (warten.some((z) => z.stand)) throw new Error('ein wartender Schritt zeigt eine Zahl');
-    return stand.zeilen.map((z) => `${z.wort}${z.stand ? ' ' + z.stand : ''}`).join(' · ');
+    /* Die Reiter zeigen dieselben Zahlen. */
+    const pruefen = stand.zeilen.find((z) => z.wort === 'Prüfen');
+    if (pruefen.art === 'ist-offen' && stand.reiterHinweise !== pruefen.stand) {
+      throw new Error(`Reiter „Hinweise" zeigt „${stand.reiterHinweise}", der Vorgang ${pruefen.stand}`);
+    }
+    if (ausfuellen.art === 'ist-offen' && stand.reiterFelder !== ausfuellen.stand.replace(' von ', '/')) {
+      throw new Error(`Reiter „Felder" zeigt „${stand.reiterFelder}", der Vorgang ${ausfuellen.stand}`);
+    }
+    return stand.zeilen.map((z) => `${z.wort}${z.stand ? ' ' + z.stand : ''}`).join(' · ')
+      + ` — Reiter: Hinweise ${stand.reiterHinweise || '–'}, Felder ${stand.reiterFelder || '–'}`;
   });
 
   await pruefe('Die Werkzeugblase erscheint an der Auswahl — und nur dort', async () => {
@@ -120,8 +129,9 @@ export default async function ({ pruefe, seite, browser, BASIS, ladungVon, WURZE
     const stand = await seite.evaluate(() => ({
       titel: document.title,
       ueberschrift: document.querySelector('.einzel-karte h1')?.textContent,
-      kopfBleibt: !!document.querySelector('.empfang-kopf'),
-      studioZu: document.querySelector('#huelle')?.hidden !== false,
+      /* Die Menüleiste mit der Wortmarke bleibt stehen; der Editor nicht. */
+      kopfBleibt: !!document.querySelector('.kopf .wortmarke') && getComputedStyle(document.querySelector('.kopf')).display !== 'none',
+      studioZu: document.querySelector('#ansicht-editor')?.hidden !== false,
       wahl: document.querySelector('.einzel-zusatz select')?.value,
     }));
     if (!/verkleinern/i.test(stand.titel)) throw new Error(`Titel: ${stand.titel}`);

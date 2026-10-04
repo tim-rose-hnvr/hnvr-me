@@ -1,11 +1,12 @@
 /* Anschlusspunkt. Lädt den PDF-Motor und startet die Oberfläche. */
 
-import { sage, $, zustand } from './kern.js';
+import { sage, $, zustand, melde } from './kern.js';
 import { starteMotor } from './dokument.js';
 import { starteOberflaeche, befehle, fuehreAus } from './oberflaeche.js';
 import { frageAnmeldung, zeigeSchranke, zeigeHeimat } from './anmeldung.js';
 import { starteVorgang } from './vorgang.js';
 import { starteAtelier, zeigeKonto } from './atelier.js';
+import { starteDokumentenatelier } from './dokumentenatelier.js';
 
 async function start() {
   try {
@@ -20,6 +21,7 @@ async function start() {
   starteOberflaeche();
   starteVorgang();
   starteAtelier();
+  starteDokumentenatelier();
   zeigeHeimat();
   document.documentElement.classList.add('ist-bereit');
 
@@ -47,6 +49,7 @@ async function start() {
      Auskunft lange braucht oder gar nicht kommt. */
   const anmeldung = await frageAnmeldung();
   zeigeKonto(anmeldung.angemeldet ? anmeldung.name : '');
+  if (anmeldung.angemeldet && anmeldung.name) melde('anmeldung:name', anmeldung.name.split(/\s+/)[0]);
   if (anmeldung.noetig && !anmeldung.angemeldet) {
     zeigeSchranke({ ohneNetz: anmeldung.ausDemGedaechtnis });
   } else if (anmeldung.ausDemGedaechtnis) {

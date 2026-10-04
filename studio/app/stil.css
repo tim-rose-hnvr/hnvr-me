@@ -100,6 +100,10 @@
   --tally-text:   #2B2F2A;
   --tally-rand:   #7A4A2B;
   --tally-grund-text: #7A4A2B;
+  /* Rost als Fläche: der eine Knopf der Startseite („Datei öffnen"), mit
+     hellem Papier darauf (5,4:1). */
+  --rost-voll:    #AE4E2D;
+  --rost-text:    #FFFCF5;
   --fokus:        rgba(174, 78, 45, .55);
 
   --warn:         #8A5A00;
@@ -200,6 +204,9 @@
   --satz-gross:    24px;
   --satz-anzeige:  32px;
   --satz-riesig:   40px;
+  /* Die Wortmarke im Masthead wächst mit dem Fenster — die einzige Größe,
+     die nicht fest ist. */
+  --satz-marke:    clamp(56px, 7.6vw, 132px);
 
   --raum-1:  2px;
   --raum-2:  4px;
@@ -398,6 +405,8 @@
   --navi-aktiv-text:  #172124;
   --tally-rand:     #FF7120;
   --tally-grund-text: #A83C05;
+  --rost-voll:      #FF7120;
+  --rost-text:      #172124;
   --schalter-knopf-an: #FFFFFF;
 
   --chrome-900:   #172124;
@@ -1325,8 +1334,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .empfang-marke {
   font-size: var(--satz-bedien); font-weight: 600; color: var(--tally);
 }
-.empfang h1 { font-family: var(--breit); font-size: var(--satz-riesig); font-weight: 700; margin: 0; letter-spacing: -.025em; line-height: 1.1; }
-.empfang p { margin: 0; font-size: var(--satz-grund); line-height: 1.65; color: var(--tinte-leise); max-width: 46ch; }
+.empfang-karte h1, .einzel-karte h1 { font-family: var(--breit); font-size: var(--satz-riesig); font-weight: 700; margin: 0; letter-spacing: -.025em; line-height: 1.1; }
+.empfang-karte p { margin: 0; font-size: var(--satz-grund); line-height: 1.65; color: var(--tinte-leise); max-width: 46ch; }
 .empfang-knoepfe { display: flex; gap: var(--raum-4); flex-wrap: wrap; margin-top: var(--raum-2); }
 .empfang-ablage {
   border: 1.5px dashed var(--linie-stark); padding: var(--raum-7); background: var(--flaeche-hoch);
@@ -2400,7 +2409,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .einst-kategorie.ist-aktiv { background: var(--flaeche); color: var(--tinte); box-shadow: inset 0 0 0 1px var(--linie), inset -3px 0 0 var(--tally-voll); }
 
 /* Anzeigeschrift: im Atelier Bodoni kursiv, in der Konsole Space Grotesk. */
-.empfang h1, .einzel-karte h1, .anmeldekarte h1 {
+.empfang h1, .einzel-karte h1, .anmeldekarte h1, .empfang .masthead-marke {
   font-family: var(--anzeige); font-style: var(--anzeige-stil); font-weight: 400; letter-spacing: -.01em;
 }
 .einst-inhalt h3, .dialog-kopf h2 { font-family: var(--breit); }
@@ -2468,4 +2477,233 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .modus { padding: 0 var(--raum-5); }
   .modus-kuerzel { display: none; }
   .wortmarke-wort { display: inline; font-size: var(--satz-lauf); }
+}
+
+/* ======================================================================
+   Dokumentenatelier — Start und Dokumente
+   ======================================================================
+   Nach „PDF Studio · Dokumentenatelier" im Entwurf: Masthead mit der
+   Wortmarke in Bodoni, darunter der Arbeitstisch — links „Zuletzt
+   geöffnet" als Stapel, rechts „Was möchten Sie erledigen?" —, unten das
+   dunkle Band mit den drei Grundsätzen. Menüleiste und Navigation stehen
+   schon in der Hülle; die Kopfzeile des Entwurfs wird nicht doppelt gebaut. */
+
+.huelle[data-ansicht="start"] .navi-standard { display: none; }
+
+.atelier-start { padding: 0 calc(var(--raum-9) + var(--raum-7)); min-width: 0; }
+.ansicht-start .empfang-rumpf { display: block; padding: 0; }
+
+.masthead {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--raum-9);
+  padding: var(--raum-8) 0 var(--raum-7); min-width: 0;
+}
+.masthead-marke {
+  margin: 0; display: flex; align-items: flex-end; gap: var(--raum-5); flex: 0 1 auto; min-width: 0;
+  font-family: var(--anzeige); font-weight: 400; line-height: 1.1; color: var(--tinte);
+  font-size: var(--satz-marke);
+}
+.masthead-pdf { font-style: normal; font-weight: 600; letter-spacing: -.06em; }
+.masthead-studio {
+  font-style: var(--anzeige-stil); letter-spacing: -.045em;
+  border-bottom: 5px solid var(--tally); padding-bottom: 0;
+}
+.masthead-gruss { flex: 0 1 520px; min-width: 0; }
+.masthead-etikett {
+  margin: 0 0 var(--raum-6); font-size: var(--satz-etikett); letter-spacing: 1px; text-transform: uppercase;
+  color: var(--tally);
+}
+.masthead-auftrag { margin: 0; font-size: var(--satz-gross); line-height: 1.25; letter-spacing: -.02em; color: var(--tinte); }
+.masthead-satz { margin: var(--raum-6) 0 0; font-size: var(--satz-neben); color: var(--tinte-leise); }
+
+.start-leiste {
+  display: flex; align-items: center; justify-content: flex-end; gap: var(--raum-6);
+  min-height: 58px; border-top: 2px solid var(--tinte); border-bottom: 1px solid var(--tinte);
+}
+.knopf-rost, .knopf-rost:hover {
+  background: var(--rost-voll); color: var(--rost-text); box-shadow: none;
+  min-height: 40px; padding: 0 var(--raum-7); gap: var(--raum-9);
+}
+.knopf-rost:hover { filter: brightness(1.06); }
+.knopf-kuerzel { font-family: var(--sans); font-weight: 400; font-size: var(--satz-neben); }
+
+.arbeitstisch {
+  display: grid; grid-template-columns: minmax(0, 920fr) minmax(0, 536fr); gap: calc(var(--raum-9) + var(--raum-7));
+  padding: var(--raum-9) 0;
+}
+.abschnittskopf { display: flex; align-items: center; justify-content: space-between; gap: var(--raum-7); min-height: 48px; }
+.abschnittskopf-gestapelt { flex-direction: column; align-items: flex-start; gap: var(--raum-4); padding-bottom: var(--raum-7); border-bottom: 1px solid var(--tinte); }
+.anzeige-titel {
+  margin: 0; font-family: var(--anzeige); font-weight: 400; letter-spacing: -.03em; line-height: 1.15;
+  font-size: var(--satz-anzeige); color: var(--tinte);
+}
+.abschnitt-hinweis { margin: 0; font-size: var(--satz-etikett); color: var(--tinte-leise); }
+.suchfeld {
+  display: flex; align-items: center; gap: var(--raum-6); flex: 0 1 312px; min-width: 0;
+  height: 36px; padding: 0 var(--raum-6); border-bottom: 1px solid var(--linie); color: var(--tinte-leise);
+}
+.suchfeld input { flex: 1; min-width: 0; border: 0; background: none; font-size: var(--satz-neben); color: var(--tinte); outline-offset: 4px; }
+
+/* Der Stapel: das oberste Blatt groß mit rostrotem Rücken, darunter die
+   übrigen, jedes eine Spur weiter eingerückt — wie hingelegt. */
+.stapel { display: flex; flex-direction: column; margin-top: var(--raum-7); }
+.stapel-blatt { padding: 0 0 var(--raum-5) calc(var(--versatz, 0) * 14px); }
+.stapel-karte {
+  display: flex; width: 100%; padding: 0; text-align: left; cursor: pointer;
+  background: var(--flaeche-hoch); border: 1px solid var(--linie); color: var(--tinte);
+  border-radius: 0;
+}
+.stapel-karte:hover { border-color: var(--tinte); }
+.ist-oben .stapel-karte { border-color: var(--tinte); }
+.stapel-ruecken {
+  flex: none; width: 44px; display: flex; align-items: flex-end; justify-content: center;
+  padding: var(--raum-8) 0; background: var(--buehne); color: var(--tinte-leise);
+  font-size: var(--satz-etikett); font-weight: 600; letter-spacing: 1px;
+}
+.ist-oben .stapel-ruecken { width: 66px; background: var(--rost-voll); color: var(--rost-text); }
+.stapel-inhalt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--raum-3); padding: var(--raum-8) var(--raum-8); }
+.ist-oben .stapel-inhalt { gap: var(--raum-6); padding: calc(var(--raum-8) + var(--raum-1)); }
+.stapel-etikett { font-size: var(--satz-etikett); letter-spacing: .6px; text-transform: uppercase; color: var(--tinte-leise); }
+.stapel-name { font-size: var(--satz-lauf); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ist-oben .stapel-name { font-family: var(--anzeige); font-size: var(--satz-anzeige); font-weight: 400; letter-spacing: -.02em; }
+.stapel-meta { font-size: var(--satz-neben); color: var(--tinte-leise); }
+.stapel-vermerk { display: flex; gap: var(--raum-9); font-size: var(--satz-neben); color: var(--tinte-leise); }
+.ist-oben .stapel-vermerk { padding-top: var(--raum-7); border-top: 1px solid var(--linie); }
+.stapel-vermerk > span { display: flex; flex-direction: column; gap: var(--raum-2); }
+.stapel-vermerk-etikett { font-size: var(--satz-etikett); letter-spacing: .6px; text-transform: uppercase; }
+.ist-oben .stapel-vermerk span:not(.stapel-vermerk-etikett) { color: var(--tinte); }
+.stapel-status, .ist-oben .stapel-vermerk .stapel-status { color: var(--tally); font-weight: 600; }
+.stapel-leer { margin: var(--raum-7) 0; font-size: var(--satz-bedien); color: var(--tinte-leise); }
+
+.ansicht-start .empfang-ablage {
+  margin: var(--raum-4) 0 var(--raum-8); padding: var(--raum-7);
+  border: 1px dashed var(--linie-stark); border-radius: 0; background: transparent;
+  font-size: var(--satz-neben); color: var(--tinte-leise); text-align: center;
+}
+
+.merken-frage {
+  display: flex; flex-direction: column; gap: var(--raum-6);
+  padding: var(--raum-8); background: var(--flaeche-hoch); border: 1px solid var(--tinte);
+}
+.merken-frage-titel { margin: 0; font-family: var(--anzeige); font-size: var(--satz-gross); letter-spacing: -.02em; color: var(--tinte); }
+.merken-frage-satz { margin: 0; font-size: var(--satz-bedien); line-height: 1.55; color: var(--tinte-leise); max-width: 60ch; }
+.merken-frage-knoepfe { display: flex; flex-wrap: wrap; gap: var(--raum-6); }
+
+.sammlungsregister {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--raum-6) var(--raum-8);
+  min-height: 56px; border-top: 2px solid var(--tinte); border-bottom: 1px solid var(--tinte);
+}
+.sammlungsregister[hidden] { display: none; }
+.register-etikett { font-size: var(--satz-etikett); letter-spacing: 1.2px; text-transform: uppercase; color: var(--tinte-leise); }
+.register-leer { font-size: var(--satz-neben); color: var(--tinte-leise); }
+.register-sammlung {
+  display: inline-flex; align-items: center; gap: var(--raum-5);
+  border: 0; background: none; padding: 0; cursor: pointer; color: var(--tinte); font-size: var(--satz-bedien);
+}
+.register-sammlung .sinnbild { width: 15px; height: 15px; }
+.register-sammlung:hover .register-name { text-decoration: underline; }
+.register-zahl { font-family: var(--anzeige); font-style: var(--anzeige-stil); font-size: var(--satz-gross); color: var(--tally); }
+.bibliotheksstatus {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--raum-7);
+  padding-top: var(--raum-7); font-size: var(--satz-etikett); color: var(--tinte-leise);
+}
+.verweis {
+  border: 0; background: none; padding: 0; cursor: pointer; text-align: left;
+  color: var(--tally); font-size: var(--satz-neben); font-weight: 600;
+}
+.verweis:hover { text-decoration: underline; }
+
+.werkzeugregister { border-left: 1px solid var(--tinte); padding-left: calc(var(--raum-8) + var(--raum-3)); min-width: 0; }
+.aufgaben { list-style: none; margin: 0; padding: 0; }
+.aufgabe {
+  display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: start; gap: var(--raum-7);
+  width: 100%; padding: var(--raum-7) 0; border: 0; border-bottom: 1px solid var(--linie); background: none;
+  color: var(--tinte); text-align: left; text-decoration: none; cursor: pointer; font: inherit;
+}
+.aufgabe:hover .aufgabe-titel { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.aufgabe-nummer { font-family: var(--anzeige); font-style: var(--anzeige-stil); font-size: var(--satz-anzeige); line-height: 1; color: var(--tally); }
+.aufgabe-text { display: flex; flex-direction: column; gap: var(--raum-4); min-width: 0; }
+.aufgabe-titel { font-size: var(--satz-lauf); font-weight: 500; letter-spacing: -.02em; }
+.aufgabe-satz { font-size: var(--satz-etikett); color: var(--tinte-leise); }
+.aufgabe-kennung { display: flex; flex-direction: column; align-items: flex-end; gap: var(--raum-6); color: var(--tinte); }
+.aufgabe-kuerzel { font-size: var(--satz-etikett); color: var(--tinte-leise); white-space: nowrap; }
+
+.ansicht-start .empfang-werkzeuge { padding: 0 0 var(--raum-9); }
+.ansicht-start .empfang-werkzeuge-titel { text-align: left; color: var(--tinte-leise); }
+
+.lokaler-standard {
+  display: flex; align-items: center; gap: calc(var(--raum-9) + var(--raum-4)); flex-wrap: wrap;
+  margin: 0 calc(-1 * (var(--raum-9) + var(--raum-7)));
+  padding: calc(var(--raum-8) + var(--raum-1)) calc(var(--raum-9) + var(--raum-7));
+  background: var(--leiste); color: var(--leiste-text);
+}
+.lokaler-standard-schild { width: 26px; height: 26px; color: var(--leiste-akzent); }
+.lokaler-standard-satz { flex: 1 1 320px; }
+.lokaler-standard-satz p { margin: 0; font-size: var(--satz-etikett); color: var(--leiste-leise); }
+.lokaler-standard .anzeige-titel { font-size: var(--satz-gross); color: var(--leiste-text); margin-bottom: var(--raum-4); }
+.prinzipien { list-style: none; display: flex; flex-wrap: wrap; gap: var(--raum-9); margin: 0; padding: 0; }
+.prinzipien li {
+  display: flex; flex-direction: column; gap: var(--raum-4);
+  padding-left: calc(var(--raum-8) - var(--raum-1)); border-left: 1px solid var(--leiste-leise);
+  font-size: var(--satz-etikett); color: var(--leiste-text);
+}
+.prinzipien span { font-family: var(--anzeige); font-style: var(--anzeige-stil); font-size: var(--satz-titel); color: var(--leiste-akzent); }
+
+/* Sammlungen in der Navigation. */
+.navi-sammlungen { display: flex; flex-direction: column; gap: var(--raum-2); margin-top: var(--raum-8); }
+.navi-sammlungen[hidden] { display: none; }
+.navi-sammlung {
+  display: flex; align-items: center; gap: var(--raum-5); min-height: 36px; padding: 0 var(--raum-5);
+  border: 0; border-radius: var(--radius-klein); background: none; color: var(--leiste-leise);
+  font-size: var(--satz-neben); text-align: left; cursor: pointer;
+}
+.navi-sammlung:hover { background: var(--leiste-hover); color: var(--leiste-text); }
+.navi-sammlung .sinnbild { width: 16px; height: 16px; }
+.navi-sammlung-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.navi-sammlung-zahl { font-size: var(--satz-etikett); }
+
+/* ---------- Dokumente ----------------------------------------------------- */
+.ansicht-dokumente { overflow-y: auto; min-width: 0; padding: 0 calc(var(--raum-9) + var(--raum-7)) var(--raum-9); }
+.seitenkopf {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: var(--raum-8);
+  padding: var(--raum-9) 0 var(--raum-8); border-bottom: 2px solid var(--tinte);
+}
+.seitenkopf-etikett { margin: 0 0 var(--raum-4); font-size: var(--satz-etikett); letter-spacing: .6px; text-transform: uppercase; color: var(--tinte-leise); }
+.seitenkopf .anzeige-titel { font-size: var(--satz-riesig); }
+.seitenkopf-satz { margin: var(--raum-4) 0 0; font-size: var(--satz-neben); color: var(--tinte-leise); }
+.dokumente-rumpf { padding: var(--raum-8) 0; }
+.dokumente-werkzeuge { display: flex; flex-wrap: wrap; align-items: center; gap: var(--raum-6); padding: var(--raum-7) 0; }
+.dokumente-werkzeuge > .feld { flex: 0 1 280px; min-height: 36px; }
+.dokumente-werkzeuge .filterreihe { display: flex; flex-wrap: wrap; gap: var(--raum-3); padding: 0; background: none; }
+.dokumente-tabelle { display: flex; flex-direction: column; border-top: 1px solid var(--tinte); }
+.dokumente-zeile {
+  display: grid; align-items: center; gap: var(--raum-6);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1.4fr) 60px 80px minmax(0, 1.3fr) minmax(0, 1.2fr) auto;
+  min-height: 52px; padding: var(--raum-3) 0; border-bottom: 1px solid var(--linie); font-size: var(--satz-neben);
+}
+.dokumente-kopf { min-height: 36px; font-size: var(--satz-etikett); letter-spacing: .6px; text-transform: uppercase; color: var(--tinte-leise); }
+.dokumente-zeile .zahl { font-variant-numeric: tabular-nums; text-align: right; }
+.dokumente-name { color: var(--tinte); font-size: var(--satz-bedien); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.dokumente-zeile .feld { width: 100%; min-height: 32px; }
+.dokumente-fuss { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--raum-6); padding-top: var(--raum-7); font-size: var(--satz-etikett); color: var(--tinte-leise); }
+.dokumente-fuss-taten { display: flex; gap: var(--raum-4); }
+
+@media (max-width: 1100px) {
+  .arbeitstisch { grid-template-columns: minmax(0, 1fr); }
+  .werkzeugregister { border-left: 0; padding-left: 0; border-top: 2px solid var(--tinte); padding-top: var(--raum-7); }
+  .masthead { flex-wrap: wrap; }
+  .navi-sammlungen { display: none; }
+}
+@media (max-width: 760px) {
+  .atelier-start, .ansicht-dokumente { padding-left: var(--raum-7); padding-right: var(--raum-7); }
+  .lokaler-standard { margin: 0 calc(-1 * var(--raum-7)); padding-left: var(--raum-7); padding-right: var(--raum-7); }
+  .start-leiste { justify-content: stretch; }
+  .abschnittskopf { flex-wrap: wrap; }
+  .abschnittskopf .suchfeld { flex: 1 1 100%; }
+  .start-leiste .knopf { flex: 1; justify-content: center; }
+  .stapel-blatt { padding-left: 0; }
+  .ist-oben .stapel-name { font-size: var(--satz-gross); }
+  .stapel-vermerk { gap: var(--raum-8); flex-wrap: wrap; }
+  .dokumente-zeile { grid-template-columns: minmax(0, 1fr) auto; }
+  .dokumente-zeile > :nth-child(n+2):not(:last-child) { display: none; }
+  .dokumente-kopf { display: none; }
 }

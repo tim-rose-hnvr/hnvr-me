@@ -204,6 +204,7 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
         kopfGrund: kopf ? getComputedStyle(kopf).backgroundColor : null,
         kopfHoehe: kopf ? Math.round(kopf.getBoundingClientRect().height) : 0,
         knopf: getComputedStyle(oeffnen).backgroundColor,
+        rost: getComputedStyle(document.documentElement).getPropertyValue('--rost-voll').trim(),
         titelSchrift: getComputedStyle(document.querySelector('.empfang h1')).fontFamily,
         ablage: !!document.querySelector('.empfang-ablage'),
         formate: (document.querySelector('.empfang-ablage .mono')?.textContent || ''),
@@ -212,7 +213,8 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (stand.kopfGrund !== REG.chrome900) throw new Error(`Kopf ist ${stand.kopfGrund}`);
     if (stand.kopfHoehe !== REG.kopf) throw new Error(`Kopf ist ${stand.kopfHoehe} px`);
     void 0;
-    if (stand.knopf !== REG.akzent) throw new Error(`„Datei öffnen" ist ${stand.knopf}`);
+    /* „Datei öffnen" ist der eine rostrote Knopf der Startseite (--rost-voll). */
+    if (stand.rost.toUpperCase() !== '#AE4E2D' || stand.knopf !== 'rgb(174, 78, 45)') throw new Error(`„Datei öffnen" ist ${stand.knopf}`);
     /* Der Titel steht in der Anzeigeschrift des Ateliers. */
     if (!/Bodoni Moda/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
     if (!stand.ablage) throw new Error('keine Ablegefläche');

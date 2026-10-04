@@ -11,7 +11,7 @@
    Schwärzung rastert die betroffene Seite. Das entfernt den darunter
    liegenden Text wirklich — anders als ein schwarzes Rechteck darüber. */
 
-import { zustand, farbeZuAnteilen, sage, sichereBytes, fremdWeg } from './kern.js';
+import { zustand, farbeZuAnteilen, sage, sichereBytes, fremdWeg, melde } from './kern.js';
 import { quelleVon, holeSeite } from './dokument.js';
 import { setzeZugaenglichkeit } from './barrierefrei.js';
 import { legePlatzhalterAn, fuelleSignatur } from './signieren.js';
@@ -651,6 +651,8 @@ export async function sichereDokument(optionen = {}) {
   sichereBytes(bytes, name);
   zustand.geaendert = false;
   sage(`Gesichert: ${name}`);
+  /* Die lokale Ablage hält danach diese Fassung (dokumentenatelier.js). */
+  melde('dokument:gesichert', { bytes });
   return bytes;
 }
 

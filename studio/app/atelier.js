@@ -17,6 +17,7 @@ import { mappenListe } from './mappen.js';
    Vertraulich teilen, Einstellungen) tragen sich hier ein. */
 const ANSICHTEN = {
   start: '#empfang',
+  dokumente: '#ansicht-dokumente',
   editor: '#ansicht-editor',
 };
 

@@ -147,7 +147,7 @@ export default async function ({ pruefe, seite, browser, BASIS, ladungVon, WURZE
     await seite.waitForTimeout(1800);
     const stand = await seite.evaluate(() => ({
       einzel: !!document.querySelector('.einzel-karte'),
-      empfang: !!document.querySelector('.empfang-karte'),
+      empfang: !!document.querySelector('.atelier-start'),
       meldung: document.querySelector('#meldungen')?.textContent || '',
     }));
     if (stand.einzel) throw new Error('sie zeigt ein Werkzeug, das es nicht gibt');

@@ -56,6 +56,15 @@ Seiten | Bühne | Inspektor mit den Werkzeugen des Modus; unten eine
 Statuszeile. Unter 1100 px rückt die Navigation zu Symbolen zusammen, unter
 900 px verschwindet sie und die Leisten werden Schubladen.
 
+**Dokumentenatelier und lokale Ablage.** Die Startseite zeigt die
+Wortmarke, „Zuletzt geöffnet" als Stapel, „Was möchten Sie erledigen?" (sechs
+Aufgaben, die drei mit eigener Adresse führen auf den kurzen Weg) und die
+Sammlungen. Die Ansicht „Dokumente" listet, was auf dem Gerät liegt, ordnet
+in Sammlungen, entfernt einzeln oder alles. Gespeichert wird in IndexedDB
+**dieses Browsers** (`app/ablage.js`) — und erst, nachdem die Startseite
+einmal gefragt hat und die Antwort „Ja" war. Ohne Speicher (privates Fenster)
+öffnet das Studio genauso, nur ohne Liste.
+
 **Das Seitenraster sitzt in der Mitte, nicht über allem.** Es war einmal ein
 weißes Vollbild, das Reiter, Leisten und Statuszeile verdeckte. Jetzt tauscht
 es die Bühne aus, wie der Vergleich es auch tut: oben eine Werkzeugleiste,
@@ -782,7 +791,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 176 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 187 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  50 Prüfungen — was der Hoster ausliefert
 ```

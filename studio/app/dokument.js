@@ -136,6 +136,7 @@ export function leereDokument() {
   zustand.eigenschaften = null;
   zustand.massstab = null;
   zustand.name = 'Ohne Titel';
+  zustand.ablageId = null;
   zustand.aktuelleSeite = 1;
 }
 

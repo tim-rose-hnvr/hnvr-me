@@ -51,10 +51,15 @@
       <svg viewBox="0 0 24 24" class="sinnbild" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>
       <span>Start</span>
     </button>
+    <button class="navi-punkt" data-ansicht="dokumente">
+      <svg viewBox="0 0 24 24" class="sinnbild" aria-hidden="true"><path d="M8 3h8l4 4v11H8z"/><path d="M16 3v4h4M4 7v14h11"/></svg>
+      <span>Dokumente</span>
+    </button>
     <button class="navi-punkt" data-ansicht="editor" disabled>
       <svg viewBox="0 0 24 24" class="sinnbild" aria-hidden="true"><path d="M5 4h6M8 4v16M5 20h6"/><rect x="13" y="8" width="8" height="8" rx="1"/></svg>
       <span>Editor</span>
     </button>
+    <div class="navi-sammlungen" id="navi-sammlungen"></div>
     <div class="navi-freiraum"></div>
     <div class="navi-standard">
       <svg viewBox="0 0 24 24" class="sinnbild navi-schild" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
@@ -71,36 +76,77 @@
 
   <section id="empfang" class="empfang ansicht-start" aria-label="Start">
     <div class="empfang-rumpf" id="empfang-rumpf">
-    <div class="empfang-karte">
-      <span class="empfang-marke">Ihr Dokumentenatelier</span>
-      <h1>Legen Sie eine Datei hin.</h1>
-      <p>
-        Lesen, kommentieren, schwärzen, Formulare ausfüllen, unterschreiben,
-        nach Word und Excel ausgeben — und aus Word und Excel zurück.
-        Alles im Browserfenster; nichts verlässt dieses Gerät — außer wenn Sie
-        ausdrücklich zur Unterschrift versenden.
-      </p>
-      <div class="empfang-knoepfe">
-        <button class="knopf knopf-voll knopf-gross" id="knopf-oeffnen" disabled>Datei öffnen</button>
-        <button class="knopf knopf-gross" id="knopf-beispiel" disabled>Beispiel ansehen</button>
-      </div>
-      <div class="empfang-ablage">
-        Oder eine Datei hierher ziehen — <span class="mono">PDF · DOCX · XLSX · CSV · TXT · MD</span>
-      </div>
-      <div class="empfang-fuss">
-        <span><b>92</b> Befehle</span>
-        <span><b>18</b> Werkzeuge</span>
-        <span title="Nur „Zur Unterschrift versenden“ lädt hoch — und sagt es vorher."><b>0</b> Uploads</span>
-      </div>
-    </div>
+    <div class="atelier-start">
 
-    <!-- Der kurze Weg: ein Werkzeug, eine Aufgabe, eine eigene Adresse. -->
-    <div class="empfang-werkzeuge">
-      <h2 class="empfang-werkzeuge-titel">Oder gleich ein Werkzeug</h2>
-      <div id="empfang-kacheln"></div>
+      <header class="masthead">
+        <h1 class="masthead-marke" aria-label="PDF Studio">
+          <span class="masthead-pdf">PDF</span><span class="masthead-studio">Studio</span>
+        </h1>
+        <div class="masthead-gruss">
+          <p class="masthead-etikett" id="start-gruss">Ihr Dokumentenatelier</p>
+          <p class="masthead-auftrag">PDFs bearbeiten, prüfen und sicher teilen. Ohne Umwege.</p>
+          <p class="masthead-satz">Alles für Ihr nächstes Dokument. Klar, direkt und standardmäßig lokal.</p>
+        </div>
+      </header>
+
+      <div class="start-leiste">
+        <button class="knopf" id="knopf-beispiel" disabled>Beispiel ansehen</button>
+        <button class="knopf knopf-rost" id="knopf-oeffnen" disabled>Datei öffnen <kbd class="knopf-kuerzel" aria-hidden="true">⌘ O</kbd></button>
+      </div>
+
+      <div class="arbeitstisch">
+        <section class="dokumententisch" aria-labelledby="start-zuletzt-titel">
+          <div class="abschnittskopf">
+            <h2 class="anzeige-titel" id="start-zuletzt-titel">Zuletzt geöffnet</h2>
+            <label class="suchfeld">
+              <svg viewBox="0 0 24 24" class="sinnbild" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg>
+              <input type="search" id="start-suche" placeholder="Jüngste Dokumente suchen" aria-label="Jüngste Dokumente suchen">
+            </label>
+          </div>
+          <div class="stapel" id="start-stapel"></div>
+          <div class="empfang-ablage">
+            Oder eine Datei hierher ziehen — <span class="mono">PDF · DOCX · XLSX · CSV · TXT · MD</span>
+          </div>
+          <div class="sammlungsregister" id="start-sammlungen"></div>
+          <div class="bibliotheksstatus">
+            <span id="start-bestand"></span>
+            <button class="verweis" id="start-alle" type="button">Alle Dokumente ansehen →</button>
+          </div>
+        </section>
+
+        <section class="werkzeugregister" aria-labelledby="start-aufgaben-titel">
+          <div class="abschnittskopf abschnittskopf-gestapelt">
+            <h2 class="anzeige-titel" id="start-aufgaben-titel">Was möchten Sie erledigen?</h2>
+            <p class="abschnitt-hinweis">Datei wählen und loslegen</p>
+          </div>
+          <ol class="aufgaben" id="start-aufgaben"></ol>
+        </section>
+      </div>
+
+      <!-- Der kurze Weg: ein Werkzeug, eine Aufgabe, eine eigene Adresse. -->
+      <div class="empfang-werkzeuge">
+        <h2 class="empfang-werkzeuge-titel">Jedes Werkzeug auch einzeln</h2>
+        <div id="empfang-kacheln"></div>
+      </div>
+
+      <footer class="lokaler-standard">
+        <svg viewBox="0 0 24 24" class="sinnbild lokaler-standard-schild" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+        <div class="lokaler-standard-satz">
+          <p class="anzeige-titel">Ihre Dateien. Ihr Arbeitsraum.</p>
+          <p>Nichts verlässt dieses Gerät ohne Ihre Freigabe.</p>
+        </div>
+        <ol class="prinzipien">
+          <li><span>01</span>Lokal als Standard</li>
+          <li><span>02</span>Nachvollziehbare Änderungen</li>
+          <li><span>03</span>Echte Schwärzung</li>
+        </ol>
+      </footer>
+
     </div>
     </div>
   </section>
+
+  <section class="ansicht-dokumente" id="ansicht-dokumente" aria-label="Dokumente" hidden></section>
 
   <section class="ansicht-editor" id="ansicht-editor" aria-label="Editor" hidden>
 

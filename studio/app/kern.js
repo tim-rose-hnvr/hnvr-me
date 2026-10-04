@@ -17,6 +17,8 @@ export const zustand = {
   /** Formularfelder aus der Quelle: [{ name, art, seiteId, rechteck, optionen, wert, nurLesen }] */
   formularfelder: [],
   name: 'Ohne Titel',
+  /** Eintrag in der lokalen Ablage (ablage.js), oder null. */
+  ablageId: null,
   werkzeug: 'auswahl',
   farbe: '#FFD400',
   /* Farbe je Werkzeug: Gelb taugt zum Hervorheben, nicht zum Schreiben.

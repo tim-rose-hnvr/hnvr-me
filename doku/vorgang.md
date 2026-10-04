@@ -117,6 +117,28 @@ Etappen: Dokumentenatelier mit lokaler Ablage und Sammlungen, Vertraulich
 teilen in drei Schritten, Einstellungen als Seite. „PRO" und eine Lizenz
 gibt es nicht — das Studio ist kostenlos.
 
+### Dokumentenatelier und das Versprechen, nichts zu hinterlassen
+
+Bis hierher versprach das Studio, nichts im Browser liegen zu lassen. Der
+Entwurf zeigt „Zuletzt geöffnet" und Sammlungen — das geht nur, wenn Dateien
+zwischen zwei Besuchen liegen bleiben. Beides zugleich geht nicht; deshalb
+**entscheidet der Nutzer**, einmal, auf der Startseite:
+
+- Bis zur Antwort wird nichts abgelegt (Prüfung „Ohne Zustimmung liegt nichts
+  auf dem Gerät").
+- „Nein" heißt: nichts. Die Antwort selbst wird gemerkt, damit die Frage nicht
+  bei jedem Besuch kommt.
+- „Ja" heißt: jede geöffnete Datei liegt in IndexedDB dieses Browsers, nach
+  dem Sichern die gesicherte Fassung. Nichts davon geht ins Netz.
+- In „Dokumente" lässt sich jede Datei einzeln entfernen, die Ablage leeren
+  und die Antwort ändern.
+
+Dieselbe Datei erscheint nur einmal (erkannt an Name und Größe); aus dem
+Stapel geöffnet, wechselt das Studio zu ihrem Reiter, statt sie ein zweites
+Mal zu öffnen. Die Prüfgruppe `14-dokumentenatelier` hält das fest — sie hat
+beim Bau einen Fehler gefunden: ein verzögerter Vermerk „bearbeitet"
+überschrieb nach dem Sichern „Gespeichert".
+
 ## hnvr.me-Rebrand (jetzt die Hand der Konsole)
 
 Seit das Studio eine App von hnvr.me ist, trägt es dieselbe Hand wie die

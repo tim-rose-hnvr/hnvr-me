@@ -41,18 +41,28 @@ pruefe('Pflichtangaben sind da', () => {
   }
   assert.match(manifest.id, /^[a-z][a-z0-9-]*$/, 'id ist kein Kurzname');
 });
-pruefe('Der Einstieg ist https und zeigt auf das Studio', () => {
+pruefe('Der Einstieg ist www.hnvr.me/pdf-studio', () => {
+  /* Alle Links auf hnvr.me — Kachel, Menüpunkt, Schnellaktionen — zeigen auf
+     diese eine Adresse. Wohin sie weiterführt, steht in `weiterleitung`;
+     zieht das Studio um, ändert sich nur die Weiterleitung, kein Link. */
   const url = new URL(manifest.einstieg);
+  assert.equal(url.protocol, 'https:');
+  assert.equal(url.host, 'www.hnvr.me');
+  assert.equal(url.pathname, manifest.weiterleitung.von);
+  assert.equal(url.search, '', 'der Einstieg trägt keine Suche — die hängt die Weiterleitung an');
+});
+pruefe('Die Weiterleitung führt ins Studio, in der Hand der Konsole', () => {
+  const url = new URL(manifest.weiterleitung.nach);
   assert.equal(url.protocol, 'https:');
   assert.equal(url.pathname, '/studio/index.html');
   /* Mit `von=hnvr` trägt das Studio die Hand der Konsole (app/gestalt.js)
      und zeigt den Rückweg. Ohne wäre es das Atelier — ein anderes Haus. */
-  assert.equal(url.searchParams.get('von'), 'hnvr', 'Einstieg ohne ?von=hnvr');
+  assert.equal(url.searchParams.get('von'), 'hnvr', 'Weiterleitung ohne ?von=hnvr');
 });
-pruefe('Die Domain des Einstiegs ist die, für die die Anmeldung eingerichtet wird', () => {
-  /* Ein Einstieg auf einer anderen Domain landete bei einem Rücksprung, den
+pruefe('Die Domain des Studios ist die, für die die Anmeldung eingerichtet wird', () => {
+  /* Ein Studio auf einer anderen Domain landete bei einem Rücksprung, den
      hnvr.me nicht kennt — die Anmeldung schlüge mit 400 fehl. */
-  const host = new URL(manifest.einstieg).host;
+  const host = new URL(manifest.weiterleitung.nach).host;
   assert.ok(anmeldungDoku.includes(`https://${host}/api/hnvr/rueckkehr`), `${host} steht nicht in doku/anmeldung-hnvr.md`);
 });
 pruefe('Der Rückweg ist der, den das Einbetten setzt', () => {
@@ -84,10 +94,18 @@ for (const aktion of manifest.schnellaktionen) {
     assert.ok(werkzeug || tun, 'weder werkzeug noch tun');
     if (werkzeug) assert.ok(werkzeugIds.includes(werkzeug), `kein Werkzeug „${werkzeug}“ — da sind: ${werkzeugIds.join(', ')}`);
     if (tun) assert.ok(start.includes(`tun === '${tun}'`), `main.js kennt tun=${tun} nicht`);
-    /* Zusammengesetzt wie in der Anleitung: der Einstieg behält von=hnvr. */
+    /* Zusammengesetzt wie in der Anleitung, auf den Einstieg. Die
+       Weiterleitung hängt ihre eigene Suche an die mitgebrachte an
+       (nachgemessen: /pdf-studio?x=1 → …?x=1&von=hnvr) — am Ziel stehen also
+       beide. Nachgestellt wie Wix es tut: */
     const ganz = new URL(manifest.einstieg);
     for (const [k, v] of suche) ganz.searchParams.set(k, v);
-    assert.equal(ganz.searchParams.get('von'), 'hnvr');
+    assert.equal(ganz.pathname, manifest.weiterleitung.von);
+    const ziel = new URL(manifest.weiterleitung.nach);
+    const angekommen = new URL(`${ziel.origin}${ziel.pathname}${ganz.search}&${ziel.search.slice(1)}`);
+    assert.equal(angekommen.searchParams.get('von'), 'hnvr');
+    if (werkzeug) assert.equal(angekommen.searchParams.get('werkzeug'), werkzeug);
+    if (tun) assert.equal(angekommen.searchParams.get('tun'), tun);
   });
 }
 
@@ -113,9 +131,11 @@ pruefe('Sie sagt dasselbe wie das Manifest', () => {
   }
   assert.ok(kachel.includes(`data-app="${manifest.id}"`), 'data-app passt nicht');
 });
-pruefe('Ein Link, und der führt zum Einstieg', () => {
+pruefe('Ein Link, und der führt auf /pdf-studio', () => {
+  /* Die Kachel steht auf www.hnvr.me selbst — der Weg genügt, und er gilt
+     so auch auf einer Vorschau-Adresse der Site. */
   const ziele = [...kachel.matchAll(/href="([^"]+)"/g)].map((t) => t[1]);
-  assert.deepEqual(ziele, [manifest.einstieg]);
+  assert.deepEqual(ziele, [new URL(manifest.einstieg).pathname]);
 });
 pruefe('Nichts aus dem Netz: kein Skript, kein Stylesheet, keine Schrift, kein Bild', () => {
   for (const muster of [/<script/i, /<link/i, /@import/i, /@font-face/i, /url\(/i, /<img/i, /src=/i]) {

@@ -2,6 +2,8 @@
 
 **Steht online:** <https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com>
 Die Anwendung darunter: <https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/studio/>
+Öffentlicher Einstieg: <https://www.hnvr.me/pdf-studio> — leitet hierher weiter
+(`hnvr-app/README.md`).
 
 Astro-5-Projekt mit der Marketingseite des Studios und dem Gerüst für den
 späteren Kundenbereich, angehängt an **Wix Headless**: Wix übernimmt Hosting,

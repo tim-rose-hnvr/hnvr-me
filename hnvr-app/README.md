@@ -5,6 +5,38 @@ nach denselben Regeln wie in Figma „Atelier OS“. Dieses Verzeichnis enthält
 was der Code von hnvr.me dafür braucht. Der Code selbst liegt nicht in diesem
 Repository; eingebaut wird dort.
 
+**Einstieg: <https://www.hnvr.me/pdf-studio>.** Alle Links auf hnvr.me —
+Kachel, Menüpunkt, Schnellaktionen — zeigen dorthin und auf nichts anderes.
+
+## Wie `/pdf-studio` auf hnvr.me entsteht
+
+hnvr.me ist ein Astro-Projekt auf Wix-Headless-Hosting (Site „Digitale
+Erlebnisse“, `e8492887-…`). Dessen Code liegt nicht in diesem Repository und
+war beim Einrichten auch sonst nicht erreichbar. Das Studio unter `/pdf-studio`
+selbst auszuliefern hieße, es in jenen Bau zu legen und jene Site neu zu
+veröffentlichen — von hier aus ginge das nur, indem man die ganze Site durch
+diesen Bau ersetzt. Deshalb:
+
+**Eine Weiterleitung, kein iframe.** `/pdf-studio` →
+`https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/studio/index.html?von=hnvr`,
+angelegt am 4. Oktober 2026 als SEO-Umleitung der Site (Wix SEO Redirects
+API, `seo-redirects-service/v1`). Eigenschaften, nachgemessen:
+
+- 301, gilt sofort, ohne die Site zu veröffentlichen; auch für `hnvr.me/…`
+  ohne `www` und für `/pdf-studio/`.
+- Mitgebrachte Suchparameter bleiben: `/pdf-studio?werkzeug=zusammenfuegen`
+  → `…/studio/index.html?werkzeug=zusammenfuegen&von=hnvr`.
+- Die Umleitung geht vor eine Seite gleichen Namens. Bekommt hnvr.me einmal
+  eine echte Seite `/pdf-studio`, erst die Umleitung löschen (Dashboard →
+  SEO → URL-Weiterleitungen, oder `DELETE /redirects/{id}`).
+- 301 heißt: Browser merken sich das Ziel. Wer später umzieht, sollte die
+  neue Adresse auch am alten Ziel erreichbar halten.
+
+Zieht das Studio auf eine eigene Domain, ändert sich nur das Ziel dieser
+Umleitung (und die Rücksprungadressen in `doku/anmeldung-hnvr.md`) — kein Link
+auf hnvr.me. `manifest.json` hält beides getrennt: `einstieg` ist die
+öffentliche Adresse, `weiterleitung.nach` das Ziel.
+
 Entwürfe: Figma-Datei *hnvr.me*, Seite **„PDF Studio · App von hnvr.me“**
 (Bildschirme P1–P5, Komponente *App-Kachel*). Die bestehenden Seiten sind
 unverändert; P1 und P3 sind Kopien von *Startseite* und *X5 Menü und
@@ -15,15 +47,23 @@ Bereiche*.
 | `manifest.json` | Die eine Quelle: Name, Text, Einstieg, Bereich, Rechte, Schnellaktionen |
 | `bereichssymbol.svg` | Symbol für die Seitenleiste, 18 px, Strich in `currentColor` |
 | `kachel.html` | Kachel für `/tools` (dunkel) und „hnvr.me Apps“ (hell) — HTML und CSS, nichts aus dem Netz |
-| `pruefe-app.mjs` | Prüft, dass alles zusammenpasst: `node hnvr-app/pruefe-app.mjs` (16 Prüfungen) |
+| `pruefe-app.mjs` | Prüft, dass alles zusammenpasst: `node hnvr-app/pruefe-app.mjs` (17 Prüfungen) |
 
 ## Einbauen
+
+**Stand 4. Oktober 2026: noch nicht eingebaut.** Kachel und Menüpunkt gehören
+in den Code von hnvr.me, und der war von hier aus nicht erreichbar (weder in
+diesem Repository noch in einem anderen, auf das diese Arbeit Zugriff hatte).
+Fertig ist alles, worauf sie zeigen: `/pdf-studio` leitet weiter, die Dateien
+hier zeigen auf `/pdf-studio`. Wer den Code von hnvr.me hat, baut nach den
+Schritten unten ein.
 
 **1. Konsole — Seitenleiste (P1, P5).** Unter **WEITERE BEREICHE** ein
 Menüpunkt „PDF Studio“ mit `bereichssymbol.svg`, sichtbar, wenn der Bereich
 für den Kunden an ist und die Rolle die Stufe *Ändern* hat. Er führt auf
-`einstieg` **im selben Tab, im ganzen Fenster** — wie Headless Studio. Der
-Einstieg trägt `?von=hnvr`: damit zeigt sich das Studio in der Hand der
+`einstieg` (`https://www.hnvr.me/pdf-studio`, oder einfach `/pdf-studio`)
+**im selben Tab, im ganzen Fenster** — wie Headless Studio. Die Weiterleitung
+setzt `?von=hnvr`: damit zeigt sich das Studio in der Hand der
 Konsole (statt im eigenen Atelier-Look) und oben steht „KONSOLE / PDF STUDIO“
 mit dem Weg zurück nach `https://www.hnvr.me/konsole`.
 
@@ -44,8 +84,8 @@ jemand ins Manifest schreibt.
 **3. Konsole — Startseite (P1).** Unter **SCHNELL ANLEGEN** die
 `schnellaktionen`: ihr `ziel` ergänzt die Suchparameter des Einstiegs
 (`new URL(einstieg)` und dann jeden Parameter aus `ziel` dazusetzen), also
-`…/studio/index.html?von=hnvr&werkzeug=zusammenfuegen` und `…?von=hnvr&tun=oeffnen`.
-Nicht als Zeichenkette anhängen: der Einstieg trägt schon ein `?`.
+`/pdf-studio?werkzeug=zusammenfuegen` und `/pdf-studio?tun=oeffnen`. Die
+Weiterleitung nimmt sie mit und hängt `von=hnvr` an.
 
 **Kein Tagesfokus, keine Kennzahl.** „Was braucht dich heute?“ bekommt vom
 Studio nichts: die Dateien verlassen das Gerät nicht, der Server weiß nichts
@@ -53,22 +93,21 @@ Studio nichts: die Dateien verlassen das Gerät nicht, der Server weiß nichts
 sie leer.
 
 **4. Hauptseite www.hnvr.me/tools (P4).** `kachel.html` einsetzen, so wie sie
-ist (dunkel). Die Seite ist heute leer bis auf die Überschrift „Tools“.
+ist (dunkel), neben die Kacheln, die dort schon stehen (Drop-it, PSD-Studio).
 
 **5. Konsole „hnvr.me Apps“ (P5).** Dieselbe Kachel ohne die Klasse
 `hnvr-app-kachel--dunkel`.
 
 ## Was du vorher erledigen musst
 
-- **Anmeldung über hnvr.me einrichten** — der OAuth-Zugang „PDF Studio“ im
-  Projekt *Digitale Erlebnisse*, `HNVR_CLIENT_ID`, Veröffentlichen. Schritte in
-  `doku/anmeldung-hnvr.md`. Ohne das führt der Menüpunkt auf eine Anmeldung,
-  die mit 400 abbricht.
-- **Domain.** `einstieg` zeigt auf die Wix-Adresse
-  `werkbank-b2ce6ab2-hnvrme.wix-site-host.com`. Kommt `pdf-studio.me` (oder
-  eine Adresse unter hnvr.me) dazu, ändern sich `einstieg`, der Link in
-  `kachel.html` und die Rücksprungadressen in einem Zug; die Prüfung merkt,
-  wenn einer davon fehlt.
+- **Anmeldung über hnvr.me** — der OAuth-Zugang „PDF Studio“ im Projekt
+  *Digitale Erlebnisse* ist angelegt; `HNVR_CLIENT_ID` und Veröffentlichen
+  stehen in `doku/anmeldung-hnvr.md`.
+- **Domain.** Die Weiterleitung zeigt auf die Wix-Adresse
+  `werkbank-b2ce6ab2-hnvrme.wix-site-host.com`. Kommt `pdf-studio.me` dazu,
+  ändern sich `weiterleitung.nach`, die Umleitung auf hnvr.me und die
+  Rücksprungadressen in einem Zug; die Prüfung merkt, wenn Weiterleitung und
+  Rücksprung auseinanderlaufen.
 
 ## Rechte, ehrlich
 

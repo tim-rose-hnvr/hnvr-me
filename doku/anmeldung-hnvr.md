@@ -39,14 +39,16 @@ Umleiter, keine Anmeldeschleife, Kekse nur HttpOnly —, stehen in
 cd portal && npm run pruefen:hnvr    # 27 Prüfungen
 ```
 
-## Einrichten — der eine Schritt, den nur du machen kannst
+## Einrichten
 
-Der Zugang im hnvr.me-Projekt vergibt Zugriff auf die Kundenkonten einer
-laufenden Site. Das legt niemand außer dir an.
+Eingerichtet am 4. Oktober 2026 über die Wix-Schnittstelle (OAuth Apps API),
+genau wie hier beschrieben. Die Schritte bleiben stehen, falls der Zugang
+einmal neu angelegt werden muss.
 
-1. **Zugang anlegen.** Wix-Dashboard der Site **„Digitale Erlebnisse"**
-   (www.hnvr.me) → *Einstellungen* → *Headless-Einstellungen* → *OAuth-App
-   anlegen*:
+1. **Zugang anlegen.** Im Projekt **„Digitale Erlebnisse“** (www.hnvr.me) —
+   Wix-Dashboard → *Einstellungen* → *Headless-Einstellungen* → *OAuth-App
+   anlegen*, oder `POST /oauth-app/v1/oauth-apps` mit der Site-ID
+   `e8492887-5537-412e-a484-297fb7a6ba28`:
    - Name: `PDF Studio`
    - **Login-URL: leer lassen.** Der bestehende Zugang zeigt auf
      `/konsole/anmelden`; diese Seite startet ihren eigenen Login und führt
@@ -57,7 +59,9 @@ laufenden Site. Das legt niemand außer dir an.
    - Erlaubte Umleitungsdomains (für das Abmelden):
      - `https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com`
      - `http://localhost:4321`
-2. **Kennung eintragen.** Die Client-ID des neuen Zugangs kopieren, dann:
+2. **Kennung eintragen.** Die Client-ID des Zugangs steht im Dashboard
+   (Headless-Einstellungen, Zugang „PDF Studio“). Sie ist nicht geheim, steht
+   aber trotzdem nicht im Repository — die Umgebung der Site ist ihr Ort:
    ```sh
    cd portal
    npx wix env set --key HNVR_CLIENT_ID --value <Client-ID>
@@ -66,16 +70,28 @@ laufenden Site. Das legt niemand außer dir an.
    Ohne `HNVR_CLIENT_ID` bricht der Bau ab — mit Absicht: eine veröffentlichte
    Fassung, die niemanden anmelden kann, soll es nicht geben.
 3. **Veröffentlichen.** `npm run build && npx wix release`
-4. **Probe.** Auf www.hnvr.me in der Konsole anmelden, dann
-   `…/portal` des Studios öffnen: es sollte ohne Formular „Angemeldet als …"
-   dastehen. In einem privaten Fenster erscheint stattdessen die
-   Wix-Anmeldeseite des hnvr.me-Projekts.
+4. **Probe.** `node studio/werkzeuge/live-pruefen.mjs` prüft von außen, dass
+   `/api/hnvr/anmelden` zur Wix-Anmeldung des hnvr.me-Projekts führt und dass
+   www.hnvr.me/pdf-studio ins Studio weiterleitet. Von Hand: auf www.hnvr.me in
+   der Konsole anmelden, dann www.hnvr.me/pdf-studio öffnen — es sollte ohne
+   Formular „Angemeldet als …" dastehen. In einem privaten Fenster erscheint
+   stattdessen die Wix-Anmeldeseite des hnvr.me-Projekts.
+
+Der Zugang hat einen Schlüssel (`secret`), den die Schnittstelle beim Anlegen
+einmal zurückgibt. Das Studio braucht ihn nicht — `src/hnvr.js` meldet nur
+mit der Client-ID an (`OAuthStrategy({ clientId })`). Er steht nirgends und
+gehört nirgends hin.
 
 **`pdf-studio.me` erst eintragen, wenn die Domain dir gehört und
 angeschlossen ist.** Eine erlaubte Rücksprungadresse auf einer fremden Domain
 schickt Anmeldecodes von hnvr.me-Konten an den, dem sie gehört.
 
 ## Als App in der Konsole
+
+Der öffentliche Einstieg ist **www.hnvr.me/pdf-studio**. hnvr.me liefert das
+Studio nicht selbst aus, sondern leitet mit 301 hierher weiter (Einzelheiten in
+`hnvr-app/README.md`). Die Anmeldung läuft deshalb weiter auf der Studio-Site,
+und die Rücksprungadressen oben bleiben, wie sie sind.
 
 Wie das Studio als Bereich in der Konsole und als Kachel auf www.hnvr.me/tools
 erscheint — Manifest, Symbol, Kachel, Anleitung — steht in `hnvr-app/`

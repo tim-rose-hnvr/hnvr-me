@@ -183,6 +183,26 @@ console.log('\n== Anmeldung ==');
     'angemeldet wird beim hnvr.me-Projekt, nicht bei der eigenen Site');
 }
 
+/* Der öffentliche Einstieg ist www.hnvr.me/pdf-studio (hnvr-app/manifest.json).
+   hnvr.me liefert das Studio nicht selbst aus, sondern leitet weiter — eine
+   SEO-Umleitung der Site „Digitale Erlebnisse“. Geprüft wird, dass sie hierher
+   zeigt, in der Hand der Konsole, und mitgebrachte Suchparameter behält. */
+console.log('\n== Einstieg über www.hnvr.me/pdf-studio ==');
+{
+  const umleitung = async (adresse) => {
+    const { stdout } = await lauf('curl', ['-sS', '-o', '/dev/null', '-w', '%{http_code} %{redirect_url}', adresse]);
+    const [code, ziel = ''] = stdout.trim().split(' ');
+    return { code: Number(code), ziel };
+  };
+  const einstieg = await umleitung('https://www.hnvr.me/pdf-studio');
+  pruefe(einstieg.code === 301 && einstieg.ziel === `${BASIS}/studio/index.html?von=hnvr`,
+    'www.hnvr.me/pdf-studio führt ins Studio, mit von=hnvr', `HTTP ${einstieg.code} → ${einstieg.ziel}`);
+  const aktion = await umleitung('https://www.hnvr.me/pdf-studio?werkzeug=zusammenfuegen');
+  const angekommen = aktion.ziel ? new URL(aktion.ziel) : null;
+  pruefe(angekommen?.searchParams.get('werkzeug') === 'zusammenfuegen' && angekommen?.searchParams.get('von') === 'hnvr',
+    'eine Schnellaktion kommt mit ihrem Werkzeug an', aktion.ziel);
+}
+
 console.log('\n== Wege in die Anwendung ==');
 for (const weg of ['/studio/index.html', '/studio/', '/studio']) {
   const antwort = await hole(weg);

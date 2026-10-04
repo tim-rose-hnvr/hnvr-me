@@ -14,6 +14,7 @@ import { zustand, melde, hoer, el } from './kern.js';
 import { seitenText, nummerVon } from './dokument.js';
 import { offeneFelder, hatFormular } from './formulare.js';
 import { hatUnterschrift } from './anmerkungen.js';
+import { einstellung } from './einstellungen.js';
 
 export const befunde = {
   gescannt: false,
@@ -281,6 +282,13 @@ export function tafelMitdenken() {
   const vorschlaege = alleVorschlaege();
 
   const abschnitt = el('div', { klasse: 'abschnitt' }, el('h2', { text: 'Mitdenken' }));
+  /* Einstellung „Hinweise zum Dokument zeigen": aus heißt aus, mit einem
+     Satz, wo man sie wieder einschaltet. */
+  if (einstellung('mitdenken.an') === false) {
+    abschnitt.append(el('p', { klasse: 'hinweis', text: 'Hinweise sind ausgeschaltet — unter Einstellungen › Allgemein & Darstellung.' }));
+    wurzel.append(abschnitt);
+    return wurzel;
+  }
   if (!zustand.folge.length) {
     abschnitt.append(el('p', { klasse: 'hinweis', text: 'Kein Dokument geladen.' }));
   } else if (!befunde.untersucht) {
@@ -289,7 +297,7 @@ export function tafelMitdenken() {
     abschnitt.append(el('p', { klasse: 'hinweis', text: 'Nichts zu melden. Das Dokument sieht unauffällig aus.' }));
   }
 
-  const sichtbare = alleZeigen ? vorschlaege : vorschlaege.slice(0, 6);
+  const sichtbare = alleZeigen ? vorschlaege : vorschlaege.slice(0, Number(einstellung('mitdenken.hoechstens')) || 6);
   for (const vorschlag of sichtbare) {
     const knopf = el('button', {
       klasse: 'vorschlag',

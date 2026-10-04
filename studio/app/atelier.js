@@ -23,6 +23,7 @@ const ANSICHTEN = {
   /* „Vertraulich teilen" ist der Editor mit einem Ablauf darüber: dieselbe
      Bühne, dieselben Werkzeuge, links und rechts die Tafeln des Ablaufs. */
   teilen: '#ansicht-editor',
+  einstellungen: '#ansicht-einstellungen',
 };
 
 let aktuelle = 'start';
@@ -51,8 +52,9 @@ export function zeigeAnsicht(name) {
     huelle.hidden = false;
     huelle.dataset.ansicht = name;
   }
-  for (const punkt of $$('#atelier-navi .navi-punkt')) {
-    if (punkt.dataset.ansicht === name) punkt.setAttribute('aria-current', 'page');
+  for (const punkt of $$('#atelier-navi .navi-punkt, #knopf-einstellungen')) {
+    const ziel = punkt.dataset.ansicht || 'einstellungen';
+    if (ziel === name) punkt.setAttribute('aria-current', 'page');
     else punkt.removeAttribute('aria-current');
   }
   melde('ansicht:gewechselt', name);

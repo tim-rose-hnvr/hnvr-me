@@ -47,7 +47,7 @@ export default async function ({ pruefe, seite, browser, BASIS, ladeBeispiel }) 
   });
 
   await pruefe('Der Fokus bleibt im Dialog, statt dahinterzufallen', async () => {
-    await seite.evaluate(() => window.studio.fuehreAus('einstellungen'));
+    await seite.evaluate(() => window.studio.fuehreAus('eigenschaften'));
     await seite.waitForSelector('.dialog');
     /* Zweimal um die Kette herum. Bricht er aus, steht der Mensch plötzlich
        auf der gesperrten Anwendung dahinter und weiß nicht, wie er zurück
@@ -67,7 +67,7 @@ export default async function ({ pruefe, seite, browser, BASIS, ladeBeispiel }) 
       const knopf = document.querySelector('#knopf-einstellungen') || document.querySelector('.werkzeug');
       knopf.focus();
       const vorher = document.activeElement;
-      window.studio.fuehreAus('einstellungen');
+      window.studio.fuehreAus('eigenschaften');
       await new Promise((l) => setTimeout(l, 300));
       const imDialog = !!document.activeElement?.closest('.dialog');
       kern.schliesseDialog();

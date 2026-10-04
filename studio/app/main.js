@@ -8,6 +8,8 @@ import { starteVorgang } from './vorgang.js';
 import { starteAtelier, zeigeKonto } from './atelier.js';
 import { starteDokumentenatelier } from './dokumentenatelier.js';
 import { starteTeilen } from './teilen.js';
+import { starteEinstellungsseite } from './einstellungsseite.js';
+import { wendeAn, einstellung } from './oberflaeche.js';
 
 async function start() {
   try {
@@ -24,6 +26,7 @@ async function start() {
   starteAtelier();
   starteDokumentenatelier();
   starteTeilen();
+  starteEinstellungsseite({ wendeAn, befehle });
   zeigeHeimat();
   document.documentElement.classList.add('ist-bereit');
 
@@ -39,6 +42,14 @@ async function start() {
      nicht, bleibt es beim gewohnten Empfang — eine falsche Adresse soll eine
      Anwendung nicht ins Leere führen. */
   const werkzeugId = adresse.get('werkzeug');
+  /* „Beim Start: Zuletzt geöffnetes Dokument" — nur ohne eigenen Auftrag in
+     der Adresse, und nur, wenn auf diesem Gerät gemerkt wird. */
+  if (!tun && !werkzeugId && einstellung('start.ansicht') === 'zuletzt') {
+    const { liste, hole } = await import('./ablage.js');
+    const [juengstes] = await liste();
+    const datei = juengstes ? await hole(juengstes.id).catch(() => null) : null;
+    if (datei) melde('dateien:hereingereicht', [new File([datei.bytes], datei.name, { type: 'application/pdf' })]);
+  }
   if (werkzeugId) {
     const { zeigeEinzelwerkzeug } = await import('./einzelwerkzeuge.js');
     if (!zeigeEinzelwerkzeug(werkzeugId)) {

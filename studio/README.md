@@ -150,8 +150,8 @@ nicht gebrochen.
 Auch im Kleinen: die Kommentarkarte trägt den Art-Chip in Mono-Versalien und
 darunter das Zitat aus dem Dokument in Serif-Kursiv mit goldener Kante — das
 Zitat ist der markierte Seitentext, der Kommentar ist das, was jemand
-dazuschreibt. Die Einstellungen tragen Abzeichen an den Kategorien; ihre
-Zahlen werden gerechnet, nicht gesetzt.
+dazuschreibt. Der Bereich „Kommentare & Formulare" trägt ein Abzeichen; die Zahl ist
+dieselbe wie „Offen" in der Kommentar-Tafel — gerechnet, nicht gesetzt.
 
 Nicht übernommen wurde alles, was einen Server braucht: Avatare, „3 Bearbeiter
 live", gemeinsame Ablage, Signaturanforderungen an Externe, das Menü „Team".
@@ -202,10 +202,16 @@ Befehle einen Weg mit der Maus:
   mit Legende (hinzugefügt / entfernt / unverändert), Blättern und `Esc`
   zurück. Vorher lag er in einem Dialog; man vergleicht aber nicht in zwei
   Sekunden, sondern blättert hin und her und liest nach.
-- **Einstellungen** (`Ansicht → Einstellungen`) — sieben Kategorien. Jeder
-  Schalter wirkt sofort; einer, der erst nach „Übernehmen" etwas tut, wird
-  zweimal gedrückt. Bewusst ohne Browser-Speicher: die Einstellungen gelten
-  für diese Sitzung, das Studio hinterlässt nichts.
+- **Einstellungen** (`Strg+,` oder unten links in der Navigation) — eine
+  eigene Seite statt eines Dialogs, in neun Bereichen nach dem
+  Atelier-Entwurf: Kopf mit Suche über alle Bereiche, links die Bereiche,
+  rechts Karten. Jeder Schalter wirkt sofort. Gemerkt wird nur, wenn auf
+  diesem Gerät gemerkt werden darf (dieselbe Frage wie auf der Startseite);
+  oben steht entsprechend „Automatisch gespeichert" oder „Gilt für diese
+  Sitzung". Wo der Entwurf Auswahlfelder für etwas zeigt, das es im Browser
+  nicht gibt (Drucker, KI, Cloud-Konten, Zeitstempeldienst), steht da, wie
+  es ist — keine Attrappe. Export und Import als JSON; ein Import nimmt nur
+  bekannte Schlüssel mit erlaubten Werten an.
 - **Befehlspalette** (`Strg+K`) für alle, die lieber tippen.
 
 ## Was mitdenkt
@@ -800,7 +806,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 194 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 201 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  50 Prüfungen — was der Hoster ausliefert
 ```

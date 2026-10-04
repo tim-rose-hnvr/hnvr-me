@@ -180,24 +180,30 @@ export default async function ({ pruefe, melde, seite, blatt, ladeBeispiel, ladu
   });
 
   await pruefe('Einstellungen: Abzeichen zeigen, was offen ist', async () => {
-    /* Im Handoff tragen zwei Kategorien eine Zahl. Hier wird sie gerechnet —
+    /* Im Entwurf trägt ein Bereich eine Zahl. Hier wird sie gerechnet —
        ein Abzeichen, das immer dieselbe Zahl zeigt, ist Zierrat. */
     const stand = await seite.evaluate(async () => {
       window.studio.fuehreAus('einstellungen');
       await new Promise((l) => setTimeout(l, 400));
-      const zeilen = [...document.querySelectorAll('.einst-kategorie')];
-      return zeilen.map((k) => ({
-        name: k.querySelector('span')?.textContent,
-        zahl: k.querySelector('.einst-abzeichen')?.textContent || null,
-      }));
+      const zeilen = [...document.querySelectorAll('#ansicht-einstellungen .einst-kategorie')];
+      /* Dieselbe Zahl wie „Offen" in der Kommentar-Tafel. */
+      const offen = window.studio.zustand.anmerkungen.filter((a) => !a.erledigt).length;
+      return {
+        offen,
+        bereiche: zeilen.map((k) => ({
+          name: k.querySelector('.einst-kategorie-name')?.textContent,
+          zahl: k.querySelector('.einst-abzeichen')?.textContent || null,
+        })),
+      };
     });
-    const anmerkungen = stand.find((k) => k.name === 'Anmerkungen');
-    if (anmerkungen?.zahl !== '1') throw new Error(`Anmerkungen zeigt ${anmerkungen?.zahl}`);
-    const ohne = stand.find((k) => k.name === 'Tastenkürzel');
-    if (ohne?.zahl) throw new Error(`Tastenkürzel trägt ein Abzeichen: ${ohne.zahl}`);
-    await seite.keyboard.press('Escape');
+    await seite.evaluate(() => window.studio.fuehreAus('ansicht:editor'));
     await seite.waitForTimeout(200);
-    return stand.filter((k) => k.zahl).map((k) => `${k.name} ${k.zahl}`).join(' · ');
+    const kommentare = stand.bereiche.find((k) => k.name === 'Kommentare & Formulare');
+    if (!stand.offen) throw new Error('kein offener Kommentar im Dokument — die Prüfung sagt nichts');
+    if (kommentare?.zahl !== String(stand.offen)) throw new Error(`Kommentare zeigt ${kommentare?.zahl} statt ${stand.offen}`);
+    const ohne = stand.bereiche.filter((k) => k.name !== 'Kommentare & Formulare' && k.zahl);
+    if (ohne.length) throw new Error(`Abzeichen ohne Grund: ${ohne.map((k) => k.name).join(', ')}`);
+    return `Kommentare & Formulare ${kommentare.zahl}, sonst keins`;
   });
 
   /* --- Aufdruck: Wasserzeichen, Kopf- und Fußzeile ------------------------- */

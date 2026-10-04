@@ -33,6 +33,10 @@ export function merkenStand() {
 export function setzeMerken(wert) {
   try { localStorage.setItem(MERKEN_SCHLUESSEL, wert); } catch { /* ohne Speicher gilt es für diesen Besuch */ }
   merkenFluechtig = wert;
+  /* „Nichts merken" gilt sofort auch für gemerkte Einstellungen. Die
+     abgelegten Dokumente bleiben, bis man sie löscht — das sagt die
+     Ansicht „Dokumente". */
+  if (wert === 'nein') { try { localStorage.removeItem('studio:einstellungen'); } catch { /* ohne Speicher */ } }
   if (wert === 'ja') merkeAktuelles();
   melde('ablage:geaendert');
 }

@@ -43,6 +43,7 @@ import { zeigeErkennungsDialog } from './texterkennung.js';
 import { textDerSeite } from './dokument.js';
 import { vergleicheMitDatei, schliesseVergleich, vergleichOffen } from './vergleich.js';
 import { setzeModus } from './vorgang.js';
+import { EINSTELLUNGEN, einstellung } from './einstellungen.js';
 import { zeigeAnsicht } from './atelier.js';
 import {
   zeigeLeiste, zeichneGliederung, zeichneDateientafel, zeichneSuchtafel, zeichneSuchergebnisse,
@@ -51,7 +52,7 @@ import {
 } from './tafeln.js';
 import {
   zeigeEigenschaften, zeigeSicherungsDialog, zeigeStapelDialog, zeigeMassstabDialog,
-  zeigeMessungen, zeigeEinlesenDialog, zeigeEinstellungen, zeigeSignaturDialog,
+  zeigeMessungen, zeigeEinlesenDialog, zeigeSignaturDialog,
   zeigeBarrierefreiDialog, zeigeExcelDialog, zeigeWordDialog, zeigeSchutzDialog,
   zeigeVerkleinernDialog, zeigeTeilenDialog, zeigeMusterDialog, zeigeHilfe, zeigePalette,
   zeigeInstallDialog, zeigeAufdruckDialog, zeigeFelderkennung,
@@ -160,7 +161,7 @@ function baueBefehle() {
       ? 'Ohne Kennwort gesichert — die neue Datei ist für jeden lesbar.'
       : 'Das Dokument trug keinen Schutz; die Datei ist unverändert offen.', { dauer: 5000 });
   });
-  befehl('einstellungen', 'Einstellungen …', 'Ansicht', () => zeigeEinstellungen());
+  befehl('einstellungen', 'Einstellungen …', 'Ansicht', () => zeigeAnsicht('einstellungen'), 'Strg+,');
   befehl('installieren', 'Auf diesem Gerät einrichten …', 'Datei', zeigeInstallDialog);
   befehl('aufdruck', 'Wasserzeichen, Kopf- und Fußzeile …', 'Seiten', zeigeAufdruckDialog);
   befehl('formular:erkennen', 'Formularfelder erkennen …', 'Werkzeuge', zeigeFelderkennung);
@@ -449,6 +450,13 @@ function zeichneVerlaufsknoepfe() {
 
 export async function sichereMit(optionen) {
   if (!hatDokument()) return sage('Kein Dokument geladen', { art: 'warn' });
+  /* Vorgaben aus „Export & Drucken"; was der Sichern-Dialog ausdrücklich
+     sagt, gilt vor der Vorgabe. */
+  optionen = {
+    ...optionen,
+    metadatenEntfernen: optionen.metadatenEntfernen ?? einstellung('schutz.metadaten') === true,
+    ohneKommentare: optionen.ohneKommentare ?? einstellung('export.kommentare') === 'entfernen',
+  };
   await mitLader('Dokument wird geschrieben …', async () => {
     await sichereDokument(optionen);
     if (optionen.metadatenEntfernen && zustand.eigenschaften) {
@@ -457,6 +465,17 @@ export async function sichereMit(optionen) {
     }
   });
   melde('dokument:geaendert');
+  /* „Vor Weitergabe personenbezogener Angaben warnen": nach dem Sichern,
+     nicht davor — Sichern ist noch keine Weitergabe. Der Hinweis nennt den
+     Weg, der eine Datei wirklich bereinigt. */
+  const funde = befunde.muster.length;
+  const geschwaerzt = zustand.anmerkungen.some((a) => a.art === 'schwaerzen');
+  if (einstellung('schutz.warnen') && funde && !geschwaerzt) {
+    sage(`Die Datei enthält ${funde} personenbezogene Angabe${funde === 1 ? '' : 'n'}. Zum Weitergeben gibt es „Vertraulich teilen".`, {
+      art: 'warn', dauer: 9000,
+      aktion: { beschriftung: 'Vertraulich teilen', tun: () => zeigeAnsicht('teilen') },
+    });
+  }
 }
 
 /** Zwischenablage mit Rückfall, falls der Browser sie verweigert. */
@@ -563,48 +582,29 @@ async function bilderZuPdf(dateien) {
 
 /* ---------- Einstellungen ------------------------------------------------ */
 
-/* Bis hierher hatte das Studio keine Einstellungen: alles war entweder fest
-   oder ein Befehl. Das Handoff sieht acht Kategorien vor; hier stehen nur die,
-   die wirklich etwas bewirken — ein Schalter ohne Wirkung ist eine Luege.
-
-   Bewusst kein Browser-Speicher: die Einstellungen gelten fuer diese Sitzung.
-   localStorage waere ein Datenspeicher, den niemand geloescht bekommt, und
-   das Studio verspricht, nichts zu hinterlassen. */
-export const EINSTELLUNGEN = {
-  'anzeige.thema':        { kategorie: 'Anzeige & Lesen', name: 'Erscheinung', hinweis: 'Hell, dunkel oder nach Systemeinstellung', art: 'wahl', werte: [['system', 'System'], ['hell', 'Hell'], ['dunkel', 'Dunkel']], wert: 'system' },
-  'anzeige.zoom':         { kategorie: 'Anzeige & Lesen', name: 'Zoom beim Öffnen', hinweis: 'Womit eine frisch geöffnete Datei beginnt', art: 'wahl', werte: [['passend', 'Passend zum Fenster'], ['breite', 'Breite'], ['seite', 'Ganze Seite'], ['1', '100 %']], wert: 'passend' },
-  'anzeige.nummern':      { kategorie: 'Anzeige & Lesen', name: 'Seitenzahlen unter dem Blatt', hinweis: '', art: 'schalter', wert: true },
-
-  'anmerkung.staerke':    { kategorie: 'Anmerkungen', name: 'Strichstärke', hinweis: 'Für Freihand, Rechteck, Ellipse, Pfeil', art: 'wahl', werte: [['1', 'Dünn'], ['2', 'Normal'], ['4', 'Dick']], wert: '2' },
-  'anmerkung.groesse':    { kategorie: 'Anmerkungen', name: 'Schriftgröße für Textmarken', hinweis: 'In Punkt', art: 'wahl', werte: [['10', '10'], ['12', '12'], ['16', '16']], wert: '12' },
-
-  'ocr.sprache':          { kategorie: 'OCR & Text', name: 'Sprache der Texterkennung', hinweis: '', art: 'wahl', werte: [['deu', 'Deutsch'], ['eng', 'Englisch']], wert: 'deu' },
-  'ocr.dichte':           { kategorie: 'OCR & Text', name: 'Auflösung', hinweis: 'Höher ist genauer und langsamer', art: 'wahl', werte: [['150', '150 dpi'], ['200', '200 dpi'], ['300', '300 dpi']], wert: '200' },
-
-  'schutz.metadaten':     { kategorie: 'Speicher & Privatsphäre', name: 'Metadaten beim Sichern entfernen', hinweis: 'Verfasser, Erzeuger, Stichwörter', art: 'schalter', wert: false },
-  'schutz.warnen':        { kategorie: 'Speicher & Privatsphäre', name: 'Vor Weitergabe personenbezogener Angaben warnen', hinweis: '', art: 'schalter', wert: true },
-
-  'mitdenken.an':         { kategorie: 'Allgemein', name: 'Hinweise zum Dokument zeigen', hinweis: 'Die Vorschläge in der rechten Leiste', art: 'schalter', wert: true },
-  'mitdenken.hoechstens': { kategorie: 'Allgemein', name: 'Höchstens so viele Hinweise', hinweis: '', art: 'wahl', werte: [['3', '3'], ['6', '6'], ['12', '12']], wert: '6' },
-};
-
-/* Steht im Einstellungsdialog unter den Kategorien. */
-export const FASSUNG = '2026.8';
-
-export const KATEGORIEN = ['Allgemein', 'Anzeige & Lesen', 'Anmerkungen', 'OCR & Text', 'Signaturen', 'Speicher & Privatsphäre', 'Tastenkürzel'];
-
-export function einstellung(schluessel) { return EINSTELLUNGEN[schluessel]?.wert; }
-
+/* Das Verzeichnis steht in einstellungen.js — dort lesen auch Module, die
+   diese Datei nicht kennen dürfen (Texterkennung, Hinweise). */
+export { EINSTELLUNGEN, BEREICHE, FASSUNG, einstellung } from './einstellungen.js';
 
 /* Eine Einstellung wirkt sofort — nicht erst nach „Übernehmen". Ein Schalter,
    der erst nach einem zweiten Knopfdruck etwas tut, wird zweimal gedrückt. */
 export function wendeAn(schluessel) {
   const wert = EINSTELLUNGEN[schluessel].wert;
+  const wurzel = document.documentElement;
   if (schluessel === 'anzeige.thema') wendeThemaAn(wert);
   if (schluessel === 'anmerkung.staerke') zustand.strichstaerke = Number(wert);
   if (schluessel === 'anmerkung.groesse') zustand.schriftgroesse = Number(wert);
-  if (schluessel === 'anzeige.nummern') document.documentElement.classList.toggle('ohne-seitenzahlen', !wert);
+  if (schluessel === 'anzeige.nummern') wurzel.classList.toggle('ohne-seitenzahlen', !wert);
   if (schluessel === 'mitdenken.an' || schluessel === 'mitdenken.hoechstens') { untersuche(); zeichneRechteTafel(); }
+  if (schluessel === 'anzeige.dichte') wurzel.dataset.dichte = wert;
+  if (schluessel === 'anzeige.skalierung') wurzel.style.zoom = wert === '100' ? '' : `${Number(wert) / 100}`;
+  if (schluessel === 'anzeige.papier') wurzel.dataset.papier = wert;
+  if (schluessel === 'zugang.kontrast') wurzel.toggleAttribute('data-kontrast', !!wert);
+  if (schluessel === 'zugang.bewegung') wurzel.toggleAttribute('data-ruhig', !!wert);
+  if (schluessel === 'zugang.fokus') wurzel.toggleAttribute('data-fokus-stark', !!wert);
+  if (schluessel === 'bedienung.kuerzel') wurzel.toggleAttribute('data-ohne-kuerzel', !wert);
+  if (schluessel === 'kommentar.farbe') zustand.farbeJeWerkzeug.notiz = wert;
+  melde('einstellungen:geaendert', schluessel);
 }
 
 /* ---------- Digital unterschreiben ------------------------------------------ */
@@ -958,6 +958,7 @@ function starteTastatur() {
     }
 
     if (steuerung && e.key.toLowerCase() === 'k') { e.preventDefault(); zeigePalette(); return; }
+    if (steuerung && e.key === ',') { e.preventDefault(); fuehreAus('einstellungen'); return; }
     if (steuerung && e.key.toLowerCase() === 'e') { e.preventDefault(); fuehreAus('modus:bearbeiten'); return; }
     if (steuerung && e.key.toLowerCase() === 'o') { e.preventDefault(); fuehreAus('datei:oeffnen'); return; }
     if (steuerung && e.key.toLowerCase() === 's') { e.preventDefault(); fuehreAus(e.shiftKey ? 'sichern:als' : 'sichern'); return; }
@@ -1030,7 +1031,7 @@ export function starteOberflaeche() {
   /* Nicht `zeigeEinstellungen` direkt: der Knopf reichte sonst das
      Klick-Ereignis als Kategorie durch, und der Dialog zeigte als Titel
      „[object PointerEvent]" und darunter keine einzige Einstellung. */
-  $('#knopf-einstellungen').addEventListener('click', () => zeigeEinstellungen());
+  $('#knopf-einstellungen').addEventListener('click', () => zeigeAnsicht('einstellungen'));
   $('#knopf-einfuegen').addEventListener('click', () => fuehreAus('datei:anhaengen'));
   $('#knopf-aufteilen').addEventListener('click', () => fuehreAus('teilen'));
   $('#knopf-zurueck').addEventListener('click', () => zeigeSeite(zustand.aktuelleSeite - 1));
@@ -1347,10 +1348,14 @@ function localStorage_lesen() {
   return document.documentElement.dataset.thema || 'system';
 }
 
-function wendeThemaAn(thema) { document.documentElement.dataset.thema = thema; }
+function wendeThemaAn(thema) {
+  document.documentElement.dataset.thema = thema;
+  if (EINSTELLUNGEN['anzeige.thema']) EINSTELLUNGEN['anzeige.thema'].wert = thema;
+}
 
 function wechsleThema() {
   const jetzt = document.documentElement.dataset.thema;
   const dunkelAktiv = jetzt === 'dunkel' || (jetzt === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   wendeThemaAn(dunkelAktiv ? 'hell' : 'dunkel');
+  melde('einstellungen:geaendert', 'anzeige.thema');
 }

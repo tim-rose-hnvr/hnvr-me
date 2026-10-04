@@ -46,7 +46,7 @@ import {
    siehe oben. */
 import {
   befehle, fuehreAus, setzeWerkzeug, sichereMit,
-  EINSTELLUNGEN, KATEGORIEN, FASSUNG, einstellung, wendeAn,
+  einstellung,
 } from './oberflaeche.js';
 
 export function zeigeEigenschaften() {
@@ -79,7 +79,7 @@ export function zeigeSicherungsDialog() {
       hatFormular()
         ? { name: 'einbrennen', beschriftung: 'Formular', kasten: 'Werte fest einbrennen (nicht mehr änderbar)', wert: true }
         : null,
-      { name: 'metadatenWeg', beschriftung: 'Metadaten', kasten: 'Verfasser und Erzeuger entfernen' },
+      { name: 'metadatenWeg', beschriftung: 'Metadaten', kasten: 'Verfasser und Erzeuger entfernen', wert: einstellung('schutz.metadaten') === true },
       zustand.gewaehlteSeiten.size
         ? { name: 'nurAuswahl', beschriftung: 'Umfang', kasten: `nur die ${zustand.gewaehlteSeiten.size} gewählten Seiten` }
         : null,
@@ -325,98 +325,8 @@ export function zeigeEinlesenDialog() {
     ],
   });
 }
-/* Welche Kategorie zuletzt offen war — der Dialog kommt dorthin zurück. */
-let offeneKategorie = 'Allgemein';
+/* Die Einstellungen sind eine Seite geworden (einstellungsseite.js). */
 
-export function zeigeEinstellungen(kategorie = offeneKategorie) {
-  offeneKategorie = kategorie;
-  const inhalt = el('div', { klasse: 'einst-inhalt' });
-  const liste = el('nav', { klasse: 'einst-kategorien' });
-
-  const zeichneInhalt = () => {
-    inhalt.innerHTML = '';
-    inhalt.append(el('h3', { text: offeneKategorie }));
-
-    if (offeneKategorie === 'Signaturen') {
-      inhalt.append(el('p', { klasse: 'hinweis' },
-        'Unterschrieben wird mit einem Zertifikat aus einer .p12-Datei — unter „Schutz → Digital unterschreiben". ',
-        'Es gibt hier nichts einzustellen: das Studio speichert weder Zertifikat noch Kennwort, weil beides ',
-        'die Sitzung nicht überdauern soll.'));
-      return;
-    }
-    if (offeneKategorie === 'Tastenkürzel') {
-      const mitKuerzel = befehle.filter((b) => b.kuerzel);
-      inhalt.append(el('p', { klasse: 'hinweis', text: `${mitKuerzel.length} Befehle haben ein Kürzel. Änderbar sind sie nicht — sie folgen dem, was Betrachter und Textprogramme seit Jahren belegen.` }));
-      for (const b of mitKuerzel) {
-        inhalt.append(el('div', { klasse: 'einst-zeile' },
-          el('div', {}, el('div', { klasse: 'einst-name', text: b.name })),
-          el('kbd', { klasse: 'menue-kuerzel', text: b.kuerzel })));
-      }
-      return;
-    }
-
-    const eintraege = Object.entries(EINSTELLUNGEN).filter(([, e]) => e.kategorie === offeneKategorie);
-    for (const [schluessel, eintrag] of eintraege) {
-      inhalt.append(el('div', { klasse: 'einst-zeile' },
-        el('div', {},
-          el('div', { klasse: 'einst-name', text: eintrag.name }),
-          eintrag.hinweis ? el('div', { klasse: 'einst-hinweis', text: eintrag.hinweis }) : null),
-        eintrag.art === 'schalter' ? schalter(schluessel, eintrag) : wahl(schluessel, eintrag)));
-    }
-  };
-
-  const schalter = (schluessel, eintrag) => {
-    const knopf = el('button', {
-      klasse: `pille ${eintrag.wert ? 'ist-an' : ''}`, role: 'switch',
-      'aria-checked': eintrag.wert ? 'true' : 'false', 'aria-label': eintrag.name,
-      daten: { einstellung: schluessel },
-      beiClick: () => { eintrag.wert = !eintrag.wert; wendeAn(schluessel); zeichneInhalt(); },
-    }, el('i', {}));
-    return knopf;
-  };
-
-  const wahl = (schluessel, eintrag) => el('div', { klasse: 'segmente', daten: { einstellung: schluessel } },
-    ...eintrag.werte.map(([wert, text]) => el('button', {
-      klasse: `segment ${String(eintrag.wert) === wert ? 'ist-an' : ''}`, text,
-      beiClick: () => { eintrag.wert = wert; wendeAn(schluessel); zeichneInhalt(); },
-    })));
-
-  /* Abzeichen an einer Kategorie wie im Handoff: eine Zahl, die sagt, dass
-     dort etwas offen ist. Sie wird gerechnet, nicht gesetzt — ein Abzeichen,
-     das immer dieselbe Zahl zeigt, ist Zierrat. */
-  const abzeichen = (name) => {
-    if (name === 'OCR & Text') return befunde.leereSeiten.length;
-    if (name === 'Anmerkungen') return zustand.anmerkungen.filter((a) => !a.erledigt).length;
-    if (name === 'Speicher & Privatsphäre') return musterListe().length;
-    return 0;
-  };
-
-  for (const name of KATEGORIEN) {
-    const zahl = abzeichen(name);
-    liste.append(el('button', {
-      klasse: `einst-kategorie ${name === offeneKategorie ? 'ist-aktiv' : ''}`,
-      daten: { kategorie: name },
-      beiClick: () => { offeneKategorie = name; liste.querySelectorAll('.einst-kategorie').forEach((k) => k.classList.toggle('ist-aktiv', k.dataset.kategorie === name)); zeichneInhalt(); },
-    },
-      el('span', { text: name }),
-      zahl ? el('span', { klasse: 'einst-abzeichen', text: String(zahl) }) : null));
-  }
-  /* Das Handoff setzt die Fassung unter die Kategorien. Sie steht hier, weil
-     es der einzige Ort ist, an dem jemand danach sucht. */
-  liste.append(el('div', { klasse: 'einst-fassung' },
-    el('div', { text: 'Fassung' }),
-    el('div', { klasse: 'mono', text: `${FASSUNG} · örtlich` })));
-
-  zeichneInhalt();
-
-  zeigeDialog({
-    titel: 'Einstellungen',
-    breit: true,
-    rumpf: el('div', { klasse: 'einstellungen' }, liste, inhalt),
-    fussHinweis: 'Änderungen wirken sofort — für diese Sitzung.',
-    knoepfe: [{ beschriftung: 'Schließen', betont: true }],
-  });
-}
 export function zeigeSignaturDialog() {
   let ausweis = null;
 

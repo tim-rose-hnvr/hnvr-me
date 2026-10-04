@@ -501,47 +501,42 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     return 'Staffel 0/3/4 eingehalten, Papier und Leisten eckig';
   });
 
-  await pruefe('Der Dialog ist ein Blatt wie in macOS — und der Knopf im Kopf öffnet ihn richtig', async () => {
-    /* Über den Knopf, nicht über den Befehl: der Knopf reichte das
-       Klick-Ereignis als Kategorie durch, und der Dialog zeigte als Titel
-       „[object PointerEvent]" und darunter nichts. Der Befehl ging immer. */
+  await pruefe('Die Einstellungen sind eine Seite — und der Knopf öffnet sie richtig', async () => {
+    /* Über den Knopf, nicht über den Befehl: der Knopf reichte früher das
+       Klick-Ereignis als Kategorie durch, und es stand „[object PointerEvent]"
+       als Titel da. Jetzt eine Seite wie im Atelier-Entwurf: Kopf mit Suche,
+       links neun Bereiche, rechts Karten auf Papier. */
     await seite.click('#knopf-einstellungen');
     await seite.waitForTimeout(400);
-    const ueberKnopf = await seite.evaluate(() => ({
-      titel: document.querySelector('.einst-inhalt h3')?.textContent || '',
-      zeilen: document.querySelectorAll('.einst-inhalt .einst-zeile').length,
-    }));
-    await seite.keyboard.press('Escape');
-    await seite.waitForTimeout(200);
-    if (/object/i.test(ueberKnopf.titel) || !ueberKnopf.zeilen) {
-      throw new Error(`über den Knopf: Titel „${ueberKnopf.titel}", ${ueberKnopf.zeilen} Einstellungen`);
-    }
-    await seite.evaluate(() => window.studio.fuehreAus('einstellungen'));
-    await seite.waitForTimeout(400);
     const stand = await seite.evaluate(() => {
-      const kopf = document.querySelector('.dialog-kopf');
-      const dialog = document.querySelector('.dialog');
+      const seite_ = document.querySelector('#ansicht-einstellungen');
+      const karte = seite_.querySelector('.einst-karte');
+      const wurzel = getComputedStyle(document.documentElement);
       return {
-        grund: getComputedStyle(kopf).backgroundColor,
-        flaeche: getComputedStyle(dialog).backgroundColor,
-        hoehe: Math.round(kopf.getBoundingClientRect().height),
-        titelSchrift: getComputedStyle(kopf.querySelector('h2')).fontFamily,
-        radius: getComputedStyle(dialog).borderRadius,
-        hinweis: document.querySelector('.dialog-fuss-hinweis')?.textContent || '',
-        fassung: document.querySelector('.einst-fassung')?.textContent || '',
+        ansicht: document.querySelector('#huelle').dataset.ansicht,
+        titel: seite_.querySelector('.einst-inhalt h2')?.textContent || '',
+        zeilen: seite_.querySelectorAll('.einst-inhalt .einst-zeile').length,
+        bereiche: seite_.querySelectorAll('.einst-kategorie').length,
+        suche: !!seite_.querySelector('#einst-suche'),
+        stand: seite_.querySelector('.einst-gespeichert')?.textContent || '',
+        fassung: seite_.querySelector('.einst-fassung')?.textContent || '',
+        kartenGrund: getComputedStyle(karte).backgroundColor,
+        papier: wurzel.getPropertyValue('--flaeche-hoch').trim(),
+        aktuell: document.querySelector('#knopf-einstellungen').getAttribute('aria-current'),
+        breite: document.documentElement.scrollWidth <= innerWidth,
       };
     });
-    /* Kein dunkler Balken mehr: der Titel steht auf der Fläche des Dialogs,
-       halbfett in der Systemschrift, die Ecken wie ein Fenster in macOS. */
-    if (stand.grund !== stand.flaeche) throw new Error(`Kopf ist ${stand.grund} auf ${stand.flaeche}`);
-    if (stand.hoehe !== 48) throw new Error(`Kopf ist ${stand.hoehe} px statt 48`);
-    if (!/apple-system|Inter/.test(stand.titelSchrift)) throw new Error(`Titel in ${stand.titelSchrift}`);
-    if (stand.radius !== '4px') throw new Error(`Ecken ${stand.radius} statt 4`);
-    if (!stand.hinweis) throw new Error('kein Hinweis im Fuß');
-    if (!/Fassung/.test(stand.fassung)) throw new Error('keine Fassung unter den Kategorien');
-    await seite.keyboard.press('Escape');
+    await seite.evaluate(() => window.studio.fuehreAus('ansicht:editor'));
     await seite.waitForTimeout(200);
-    return `über den Knopf „${ueberKnopf.titel}" mit ${ueberKnopf.zeilen} Einstellungen; Kopf ${stand.hoehe} px, Ecken ${stand.radius}`;
+    if (stand.ansicht !== 'einstellungen') throw new Error(`Ansicht ${stand.ansicht}`);
+    if (/object/i.test(stand.titel) || !stand.zeilen) throw new Error(`Titel „${stand.titel}", ${stand.zeilen} Zeilen`);
+    if (stand.bereiche !== 9) throw new Error(`${stand.bereiche} Bereiche`);
+    if (!stand.suche) throw new Error('keine Suche im Kopf');
+    if (!/Gilt für diese Sitzung|Automatisch gespeichert/.test(stand.stand)) throw new Error(`Stand „${stand.stand}"`);
+    if (!/Fassung/.test(stand.fassung)) throw new Error('keine Fassung unter den Bereichen');
+    if (stand.aktuell !== 'page') throw new Error('der Knopf zeigt nicht, dass die Seite offen ist');
+    if (!stand.breite) throw new Error('die Seite scrollt waagerecht');
+    return `„${stand.titel}" mit ${stand.zeilen} Zeilen, ${stand.bereiche} Bereiche, „${stand.stand}"`;
   });
 
   await pruefe('Die Seitenliste steht als Zeilen — und die Miniaturen bleiben erreichbar', async () => {

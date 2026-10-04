@@ -144,29 +144,29 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
 
   await pruefe('Einstellungen wirken sofort', async () => {
     await seite.evaluate(() => window.studio.fuehreAus('einstellungen'));
-    await seite.waitForSelector('.einstellungen');
-    const kategorien = await seite.$$eval('.einst-kategorie', (k) => k.map((x) => x.textContent));
-    if (kategorien.length !== 7) throw new Error(`${kategorien.length} Kategorien`);
+    await seite.waitForSelector('#ansicht-einstellungen .einst-kategorie');
+    const kategorien = await seite.$$eval('#ansicht-einstellungen .einst-kategorie', (k) => k.map((x) => x.textContent));
+    if (kategorien.length !== 9) throw new Error(`${kategorien.length} Bereiche`);
 
-    await seite.click('.einst-kategorie:has-text("Anzeige & Lesen")');
+    await seite.click('.einst-kategorie[data-bereich="2"]');
     await seite.waitForTimeout(300);
     /* Der Schalter für die Seitenzahlen ist der, dessen Wirkung sich sofort
        im Baum nachweisen lässt. */
-    await seite.click('.einst-zeile:has-text("Seitenzahlen") .pille');
+    await seite.click('[data-einstellung="anzeige.nummern"]');
     await seite.waitForTimeout(300);
     const aus = await seite.evaluate(() => document.documentElement.classList.contains('ohne-seitenzahlen'));
     if (!aus) throw new Error('Seitenzahlen blieben an');
-    await seite.click('.einst-zeile:has-text("Seitenzahlen") .pille');
+    await seite.click('[data-einstellung="anzeige.nummern"]');
     await seite.waitForTimeout(200);
 
-    await seite.click('.einst-kategorie:has-text("Anmerkungen")');
+    await seite.click('.einst-kategorie[data-bereich="3"]');
     await seite.waitForTimeout(250);
-    await seite.click('.einst-zeile:has-text("Strichstärke") .segment:has-text("Dick")');
+    await seite.selectOption('select[data-einstellung="anmerkung.staerke"]', '4');
     await seite.waitForTimeout(250);
     const staerke = await seite.evaluate(() => window.studio.zustand.strichstaerke);
     if (staerke !== 4) throw new Error(`Strichstärke ${staerke}`);
-    await dialogSchliessen();
-    return `${kategorien.length} Kategorien, Schalter und Wahl greifen`;
+    await seite.evaluate(() => window.studio.fuehreAus('ansicht:editor'));
+    return `${kategorien.length} Bereiche, Schalter und Wahl greifen`;
   });
 
   await pruefe('Die Gestaltung folgt der Richtung — in beiden Händen', async () => {
@@ -388,18 +388,16 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, dialogOffen
     /* Die Einstellung stand da, mit der Vorgabe „Breite", und niemand las
        sie. Jetzt heißt die Vorgabe „Passend zum Fenster": 100 %, wo die Seite
        samt Rand auf die Bühne passt, sonst Breite. Und wer „Ganze Seite"
-       wählt, bekommt beim nächsten Öffnen die ganze Seite — gewählt im
-       echten Dialog, geöffnet über die echte Dateiwahl. */
+       wählt, bekommt beim nächsten Öffnen die ganze Seite — gewählt auf
+       der echten Einstellungsseite, geöffnet über die echte Dateiwahl. */
     const vorgabe = await seite.evaluate(() => String(window.studio.zustand.zoom));
     await seite.click('#knopf-einstellungen');
     await seite.waitForTimeout(300);
-    await seite.click('.einst-kategorie[data-kategorie="Anzeige & Lesen"]');
+    await seite.click('.einst-kategorie[data-bereich="2"]');
     await seite.waitForTimeout(200);
-    const angeboten = await seite.evaluate(() =>
-      [...document.querySelectorAll('[data-einstellung="anzeige.zoom"] .segment')].map((k) => k.textContent));
-    await seite.evaluate(() => [...document.querySelectorAll('[data-einstellung="anzeige.zoom"] .segment')]
-      .find((k) => k.textContent === 'Ganze Seite')?.click());
-    await seite.keyboard.press('Escape');
+    const angeboten = await seite.$$eval('select[data-einstellung="anzeige.zoom"] option', (o) => o.map((k) => k.textContent));
+    await seite.selectOption('select[data-einstellung="anzeige.zoom"]', 'seite');
+    await seite.evaluate(() => window.studio.fuehreAus('ansicht:editor'));
     await seite.waitForTimeout(300);
     await seite.setInputFiles('#dateiwahl', join(WURZEL, 'beispiel', 'beispiel.pdf'));
     await seite.waitForSelector('.blatt canvas');

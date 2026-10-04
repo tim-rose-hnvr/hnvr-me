@@ -166,6 +166,25 @@ Textnachprüfung das nicht gefunden. Jetzt wird mit der Schrift gemessen und
 ein Rand zugegeben; die Prüfung misst jeden Balken gegen die Textebene, die
 der Browser beim Markieren benutzt.
 
+### Einstellungen als Seite — und was dabei nicht wirkte
+
+Der Entwurf zeigt neun Bereiche mit gut fünfzig Zeilen. Gebaut ist, was im
+Browser wirklich etwas schaltet: Dichte, Skalierung, Dokumentpapier (nur
+Anzeige), Kontrast, ruhige Bewegung, starker Fokus, Kürzel in Menüs,
+Hinweise und ihre Höchstzahl, Zoom beim Öffnen, Seitenzahlen, Textgröße,
+Kommentarfarbe, Strichstärke, OCR-Sprache und -Auflösung, Metadaten und
+Kommentare beim Sichern, die Warnung vor personenbezogenen Angaben. Der
+Rest steht als Zustand da („Drucker: im Druckdialog", „KI: nicht
+eingebaut") oder als Knopf auf einen vorhandenen Befehl.
+
+Beim Verdrahten fiel auf, dass sechs Einstellungen der alten Fassung zwar
+dastanden, aber von niemandem gelesen wurden — darunter „Metadaten
+entfernen" und „Vor Weitergabe warnen". Sie wirken jetzt, und je eine
+Prüfung weist die Wirkung nach. Die neue Prüfgruppe fand außerdem einen
+Fehler in der Seite selbst: das Suchfeld wurde bei jedem Tastendruck neu
+gebaut, die Schreibmarke sprang an den Anfang, aus „Metadaten" wurde
+„netadateM".
+
 ## hnvr.me-Rebrand (jetzt die Hand der Konsole)
 
 Seit das Studio eine App von hnvr.me ist, trägt es dieselbe Hand wie die

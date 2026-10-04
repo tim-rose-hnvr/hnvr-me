@@ -26,7 +26,7 @@
    fehlt hier ein Modul, das es in `app/` gibt, scheitert der Prüflauf. Sonst
    wäre diese Liste nach dem zweiten neuen Modul falsch. */
 
-const FASSUNG = 'studio-v2';
+const FASSUNG = 'studio-v3';
 const KERN_LAGER = `${FASSUNG}-kern`;
 const NACHSCHUB_LAGER = `${FASSUNG}-nachschub`;
 
@@ -47,7 +47,7 @@ const KERN = [
   'app/mitdenken.js', 'app/oberflaeche.js', 'app/ordnen.js', 'app/powerpoint.js',
   'app/schutz.js',
   'app/seiten.js', 'app/signieren.js', 'app/stapel.js', 'app/suche.js',
-  'app/gestalt.js', 'app/atelier.js', 'app/ablage.js', 'app/dokumentenatelier.js', 'app/teilen.js', 'app/tafeln.js', 'app/vorgang.js', 'app/texterkennung.js', 'app/unterschrift.js',
+  'app/gestalt.js', 'app/atelier.js', 'app/ablage.js', 'app/dokumentenatelier.js', 'app/teilen.js', 'app/einstellungen.js', 'app/einstellungsseite.js', 'app/tafeln.js', 'app/vorgang.js', 'app/texterkennung.js', 'app/unterschrift.js',
   'app/vergleich.js', 'app/word.js', 'app/zip.js',
   'fremd/pdf.mjs', 'fremd/pdf.worker.mjs', 'fremd/pdf-lib.mjs',
   'fremd/schrift/inter-latin-wght.woff2',

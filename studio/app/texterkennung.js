@@ -11,6 +11,7 @@
 
 import { zustand, melde, sage, el, zeigeDialog, merkeSchritt, $, fremdWeg, zeile } from './kern.js';
 import { holeSeite, nummerVon } from './dokument.js';
+import { einstellung } from './einstellungen.js';
 
 export const SPRACHEN = [
   { id: 'deu', name: 'Deutsch' },
@@ -200,7 +201,9 @@ export function zeigeErkennungsDialog({ nurOhneText = false } = {}) {
     el('option', { value: '150', text: '150 dpi — schnell' }),
     el('option', { value: '200', text: '200 dpi — ausgewogen', selected: true }),
     el('option', { value: '300', text: '300 dpi — gründlich, langsam' }));
-  dichte.value = '200';
+  /* Vorgaben aus den Einstellungen (OCR & Scans) — im Dialog änderbar. */
+  sprache.value = einstellung('ocr.sprache') || sprache.value;
+  dichte.value = einstellung('ocr.dichte') || '200';
 
   const rumpf = el('div', {},
     zeile('Umfang', umfang),

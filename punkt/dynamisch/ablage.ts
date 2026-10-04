@@ -18,14 +18,29 @@
  *                 zaehlerJson
  *   PK_Konten     mail, pwHash, sitzungsSalz, name, plan, erstellt,
  *                 letzteAnmeldung, fehlversuche, gesperrtBis
+ *   PK_Mitglieder mail, rolle, kontoId (= Konto des Inhabers)
+ *                 — dazu neu: zustand, mitgliedId, name,
+ *                 einladungAbdruck, einladungBis, eingeladen, beigetreten
  *
  * Wer hier ein Feld umbenennt, verliert den Bestand. Das ist der Grund,
  * warum diese Namen nicht schöner gemacht werden.
  */
 
+import {
+  einladungAblauf,
+  einladungAbdruck,
+  einladungErzeugen,
+  einladungFormOk,
+  einladungGueltig,
+  rolleAmCode,
+  type Rolle,
+  type Zugehoerigkeit,
+} from './team.ts';
+
 export const CODES = 'PK_Codes';
 export const STATISTIK = 'PK_Statistik';
 export const KONTEN = 'PK_Konten';
+export const MITGLIEDER = 'PK_Mitglieder';
 
 /** Der Ausschnitt von `@wix/data`, den diese Ablage wirklich benutzt. */
 interface Abfrage {
@@ -125,12 +140,44 @@ export async function codeNachKuerzel(kuerzel: string): Promise<Code | null> {
   return eintrag ? alsCode(eintrag) : null;
 }
 
+/** Ein Code über seine Kennung — oder null, wenn es ihn nicht gibt. */
+export async function codeNachId(id: string): Promise<Code | null> {
+  if (!id) return null;
+  const w = await wixModule();
+  if (!w) return null;
+  try {
+    const c = alsCode(await w.auth.elevate(w.items.get)(CODES, id));
+    return c.geloescht ? null : c;
+  } catch {
+    return null;
+  }
+}
+
 export async function codesVonKonto(kontoId: string, grenze = 200): Promise<Code[]> {
   const w = await wixModule();
   if (!w) return [];
   const abfrage = w.auth.elevate(w.items.query)(CODES);
   const treffer = await abfrage.eq('kontoId', kontoId).limit(grenze).find();
   return treffer.items.map(alsCode).filter((c) => !c.geloescht);
+}
+
+export type SichtbarerCode = Code & { rolle: Rolle };
+
+/**
+ * Was ein Konto in der Zentrale sieht: die Codes seiner Organisation und
+ * seine eigenen. Bei einem Inhaber ist das dasselbe. Wer mitarbeitet,
+ * sieht beides — eigene Codes von vorher verschwinden nicht, nur weil
+ * jemand beigetreten ist.
+ */
+export async function codesFuer(kontoId: string, z: Zugehoerigkeit | null, grenze = 500): Promise<SichtbarerCode[]> {
+  const eigene = await codesVonKonto(kontoId, grenze);
+  const fremde = z ? await codesVonKonto(z.inhaberId, grenze) : [];
+  const aus: SichtbarerCode[] = [];
+  for (const c of [...fremde, ...eigene]) {
+    const rolle = rolleAmCode(c.kontoId, kontoId, z);
+    if (rolle) aus.push({ ...c, rolle });
+  }
+  return aus;
 }
 
 /**
@@ -253,7 +300,7 @@ const VERGEBEN = new Set([
   'r', 'api', 'anmelden', 'abmelden', 'registrieren', 'zentrale', 'zahlen',
   'studio', 'serie', 'system', 'preise', 'impressum', 'datenschutz',
   'vorlagen', 'strecken', 'werkstatt', 'lesbarkeit', 'schnittstelle',
-  'massenanlage', 'index', 'admin', 'assets', 'wasm', 'favicon',
+  'massenanlage', 'index', 'admin', 'assets', 'wasm', 'favicon', 'einladung',
 ]);
 
 export interface Kuerzelurteil {
@@ -416,4 +463,236 @@ export async function kontoAnlegen(werte: {
     gesperrtBis: '',
   });
   return { id: String(angelegt._id) };
+}
+
+// ─── Mitarbeitende ────────────────────────────────────────────────────
+//
+// Die Regeln stehen in `team.ts`. Hier steht nur, wie sie auf
+// PK_Mitglieder abgelegt werden.
+//
+// Im Bestand steht eine Zeile aus der vorigen Anwendung: Adresse, Rolle
+// und `kontoId` des Inhabers, aber kein `zustand` und kein Link. Sie
+// wird als offene Einladung gelesen, nicht als Mitgliedschaft — eine
+// Adresse allein ist hier kein Beweis, weil Konten ohne Bestätigungsmail
+// entstehen. Der Inhaber stellt dafür einen Link aus, dann gilt sie.
+
+export interface Mitglied {
+  id: string;
+  inhaberId: string;
+  mail: string;
+  rolle: 'redakteur' | 'leser';
+  zustand: 'eingeladen' | 'aktiv';
+  mitgliedId: string;
+  name: string;
+  einladungBis: string;
+  /** Gibt es einen einlösbaren Link? Der Link selbst steht nirgends. */
+  linkOffen: boolean;
+  eingeladen: string;
+  beigetreten: string;
+}
+
+function alsMitglied(e: Record<string, unknown>): Mitglied {
+  const text = (n: string) => (typeof e[n] === 'string' ? (e[n] as string) : '');
+  const rolle = text('rolle') === 'redakteur' ? 'redakteur' : 'leser';
+  const mitgliedId = text('mitgliedId');
+  return {
+    id: text('_id'),
+    inhaberId: text('kontoId'),
+    mail: text('mail').toLowerCase(),
+    rolle,
+    // Aktiv ist nur, was ausdrücklich so dasteht und an ein Konto gebunden ist.
+    zustand: text('zustand') === 'aktiv' && mitgliedId ? 'aktiv' : 'eingeladen',
+    mitgliedId,
+    name: text('name'),
+    einladungBis: text('einladungBis'),
+    linkOffen: Boolean(text('einladungAbdruck')) && Date.parse(text('einladungBis')) > Date.now(),
+    eingeladen: text('eingeladen'),
+    beigetreten: text('beigetreten'),
+  };
+}
+
+/** Wo arbeitet dieses Konto mit? Null heißt: nirgends, es ist Inhaber. */
+export async function zugehoerigkeitVon(kontoId: string): Promise<Zugehoerigkeit | null> {
+  const w = await wixModule();
+  if (!w) return null;
+  const abfrage = w.auth.elevate(w.items.query)(MITGLIEDER);
+  const treffer = (await abfrage.eq('mitgliedId', kontoId).eq('zustand', 'aktiv').limit(5).find()).items
+    .map(alsMitglied)
+    .filter((m) => m.zustand === 'aktiv' && m.inhaberId);
+  if (treffer.length === 0) return null;
+  // Gäbe es durch ein Rennen zwei, gilt die ältere — dieselbe Regel wie
+  // beim Annehmen, damit beide Stellen dasselbe Ergebnis sehen.
+  const m = treffer.sort((a, b) => a.beigetreten.localeCompare(b.beigetreten) || a.id.localeCompare(b.id))[0];
+  const inhaber = await kontoNachId(m.inhaberId);
+  return {
+    inhaberId: m.inhaberId,
+    inhaberName: inhaber ? inhaber.name || inhaber.mail : '',
+    rolle: m.rolle,
+    mitgliedschaft: m.id,
+  };
+}
+
+export async function kontoNachId(id: string): Promise<{ id: string; name: string; mail: string } | null> {
+  if (!id) return null;
+  const w = await wixModule();
+  if (!w) return null;
+  try {
+    const k = await w.auth.elevate(w.items.get)(KONTEN, id);
+    return {
+      id,
+      name: typeof k.name === 'string' ? k.name : '',
+      mail: typeof k.mail === 'string' ? k.mail : '',
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Alle Zeilen einer Organisation: Mitarbeitende und offene Einladungen. */
+export async function mitgliederVon(inhaberId: string): Promise<Mitglied[]> {
+  const w = await wixModule();
+  if (!w) return [];
+  const abfrage = w.auth.elevate(w.items.query)(MITGLIEDER);
+  return (await abfrage.eq('kontoId', inhaberId).limit(200).find()).items.map(alsMitglied);
+}
+
+export async function mitgliedNachId(id: string): Promise<Mitglied | null> {
+  if (!id) return null;
+  const w = await wixModule();
+  if (!w) return null;
+  try {
+    return alsMitglied(await w.auth.elevate(w.items.get)(MITGLIEDER, id));
+  } catch {
+    return null;
+  }
+}
+
+const HOECHSTENS_JE_ORGANISATION = 50;
+
+/**
+ * Stellt einen Einladungslink aus. Gibt es für die Adresse schon eine
+ * offene Einladung, bekommt sie einen neuen Link — der alte gilt dann
+ * nicht mehr. Das ist der Weg für „Link verloren" und für die Altzeile.
+ *
+ * Gibt den Link-Schlüssel zurück. Er wird genau hier einmal gesehen und
+ * danach nie wieder; abgelegt ist nur sein Abdruck.
+ */
+export async function einladungAusstellen(werte: {
+  inhaberId: string;
+  mail: string;
+  rolle: 'redakteur' | 'leser';
+}): Promise<{ schluessel: string; bis: string; id: string }> {
+  const w = await wixModule();
+  if (!w) throw new Error('keine Ablage');
+
+  const vorhanden = await mitgliederVon(werte.inhaberId);
+  const gleiche = vorhanden.find((m) => m.mail === werte.mail);
+  if (gleiche?.zustand === 'aktiv') throw new Error('schon-dabei');
+  if (!gleiche && vorhanden.length >= HOECHSTENS_JE_ORGANISATION) throw new Error('zu-viele');
+
+  const schluessel = einladungErzeugen();
+  const abdruck = await einladungAbdruck(schluessel);
+  const bis = einladungAblauf();
+  const jetzt = new Date().toISOString();
+
+  if (gleiche) {
+    const alt = await w.auth.elevate(w.items.get)(MITGLIEDER, gleiche.id);
+    await w.auth.elevate(w.items.update)(MITGLIEDER, {
+      ...alt,
+      rolle: werte.rolle,
+      zustand: 'eingeladen',
+      einladungAbdruck: abdruck,
+      einladungBis: bis,
+      eingeladen: jetzt,
+    });
+    return { schluessel, bis, id: gleiche.id };
+  }
+
+  const neu = await w.auth.elevate(w.items.insert)(MITGLIEDER, {
+    kontoId: werte.inhaberId,
+    mail: werte.mail,
+    rolle: werte.rolle,
+    zustand: 'eingeladen',
+    mitgliedId: '',
+    name: '',
+    einladungAbdruck: abdruck,
+    einladungBis: bis,
+    eingeladen: jetzt,
+    beigetreten: '',
+  });
+  return { schluessel, bis, id: String(neu._id) };
+}
+
+/**
+ * Sucht die Einladung zu einem Link. Abgelaufene, eingelöste und
+ * unbekannte Links sehen von außen gleich aus: null.
+ */
+export async function einladungNachSchluessel(schluessel: string): Promise<Mitglied | null> {
+  if (!einladungFormOk(schluessel)) return null;
+  const w = await wixModule();
+  if (!w) return null;
+  const abdruck = await einladungAbdruck(schluessel);
+  const abfrage = w.auth.elevate(w.items.query)(MITGLIEDER);
+  const e = (await abfrage.eq('einladungAbdruck', abdruck).limit(1).find()).items[0];
+  if (!e) return null;
+  const m = alsMitglied(e);
+  if (m.zustand !== 'eingeladen' || !einladungGueltig(m.einladungBis)) return null;
+  return m;
+}
+
+/**
+ * Löst eine Einladung ein. Der Abdruck wird dabei gelöscht — derselbe
+ * Link öffnet danach nichts mehr, auch nicht für dieselbe Person.
+ *
+ * Wix-Daten kennt keine Sperre. Wer zweimal fast gleichzeitig annimmt,
+ * könnte in zwei Organisationen landen; deshalb wird hinterher noch
+ * einmal nachgesehen, und die jüngere Mitgliedschaft wird zurückgenommen.
+ */
+export async function einladungEinloesen(id: string, konto: { id: string; name: string }): Promise<void> {
+  const w = await wixModule();
+  if (!w) throw new Error('keine Ablage');
+  const alt = await w.auth.elevate(w.items.get)(MITGLIEDER, id);
+  await w.auth.elevate(w.items.update)(MITGLIEDER, {
+    ...alt,
+    zustand: 'aktiv',
+    mitgliedId: konto.id,
+    name: konto.name,
+    einladungAbdruck: '',
+    einladungBis: '',
+    beigetreten: new Date().toISOString(),
+  });
+
+  const abfrage = w.auth.elevate(w.items.query)(MITGLIEDER);
+  const alle = (await abfrage.eq('mitgliedId', konto.id).eq('zustand', 'aktiv').limit(5).find()).items.map(alsMitglied);
+  if (alle.length > 1) {
+    const erste = alle.sort((a, b) => a.beigetreten.localeCompare(b.beigetreten) || a.id.localeCompare(b.id))[0];
+    if (erste.id !== id) {
+      const zurueck = await w.auth.elevate(w.items.get)(MITGLIEDER, id);
+      await w.auth.elevate(w.items.update)(MITGLIEDER, { ...zurueck, zustand: 'eingeladen', mitgliedId: '', beigetreten: '' });
+      throw new Error('schon-woanders');
+    }
+  }
+}
+
+export async function mitgliedRolleSetzen(id: string, rolle: 'redakteur' | 'leser'): Promise<void> {
+  const w = await wixModule();
+  if (!w) throw new Error('keine Ablage');
+  const alt = await w.auth.elevate(w.items.get)(MITGLIEDER, id);
+  await w.auth.elevate(w.items.update)(MITGLIEDER, { ...alt, rolle });
+}
+
+/**
+ * Entlassen, austreten, Einladung zurückziehen — alles dasselbe: die
+ * Zeile geht. Das Konto bleibt; es gehört der Person, nicht der
+ * Organisation. Die Codes bleiben bei der Organisation.
+ */
+export async function mitgliedEntfernen(id: string): Promise<void> {
+  const w = await wixModule();
+  if (!w) throw new Error('keine Ablage');
+  await w.auth.elevate(w.items.remove)(MITGLIEDER, id);
+}
+
+/** Führt dieses Konto selbst Mitarbeitende, die schon beigetreten sind? */
+export async function fuehrtMitarbeitende(kontoId: string): Promise<boolean> {
+  return (await mitgliederVon(kontoId)).some((m) => m.zustand === 'aktiv');
 }

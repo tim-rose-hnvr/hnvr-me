@@ -15,16 +15,18 @@
  */
 import Seite from '../../website/src/layouts/Seite.astro';
 import Icon from '../../website/src/components/Icon.astro';
-import { sitzungAus } from './konto.ts';
-import { codesVonKonto, statistikVonCode, type Tagesstand } from './ablage.ts';
+import { zugangAus } from './konto.ts';
+import { codesFuer, statistikVonCode, type Tagesstand } from './ablage.ts';
 
 export const prerender = false;
 
-const sitzung = await sitzungAus(Astro.request.headers);
+// Dieselben Codes wie in der Zentrale: die der Organisation und die
+// eigenen. Lesen dürfen alle Rollen.
+const sitzung = await zugangAus(Astro.request.headers);
 if (!sitzung) return Astro.redirect('/anmelden', 302);
 
 const TAGE = 30;
-const codes = await codesVonKonto(sitzung.kontoId, 500);
+const codes = await codesFuer(sitzung.kontoId, sitzung.zugehoerigkeit, 500);
 
 // Je Code die letzten dreißig Tage. Danach auf eine Zeitachse gelegt,
 // damit Lücken als Lücken erscheinen und nicht als dichte Reihe.

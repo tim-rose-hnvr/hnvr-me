@@ -19,15 +19,25 @@
 import Seite from '../../website/src/layouts/Seite.astro';
 import Icon from '../../website/src/components/Icon.astro';
 import { sitzungAus } from './konto.ts';
+import { adresseTaugt, rueckwegTaugt } from './team.ts';
 
 export const prerender = false;
 
+const frage = new URL(Astro.request.url).searchParams;
+
+// Von einem Einladungslink kommend: danach dorthin zurück, und die
+// eingeladene Adresse steht schon im Feld. Jeder andere Rückweg wird
+// verworfen — sonst wäre das hier eine offene Weiterleitung.
+const weiter = rueckwegTaugt(frage.get('weiter') ?? '') ? (frage.get('weiter') as string) : '';
+const vorbelegt = weiter && adresseTaugt(frage.get('mail') ?? '') ? (frage.get('mail') as string) : '';
+if (weiter) Astro.response.headers.set('referrer-policy', 'no-referrer');
+
 // Wer schon angemeldet ist, hat hier nichts zu suchen.
 const schon = await sitzungAus(Astro.request.headers);
-if (schon) return Astro.redirect('/zentrale', 302);
+if (schon) return Astro.redirect(weiter || '/zentrale', 302);
 
 // /anmelden?neu=1 kommt von den Knöpfen, die zum Anlegen einladen.
-const startetMitNeu = new URL(Astro.request.url).searchParams.has('neu');
+const startetMitNeu = frage.has('neu');
 ---
 
 <Seite
@@ -50,7 +60,13 @@ const startetMitNeu = new URL(Astro.request.url).searchParams.has('neu');
       läuft ohne Konto.
     </p>
 
-    <div class="reiter" role="tablist">
+    {weiter && (
+      <p class="hinweis einladungshinweis">
+        Du kommst von einer Einladung. Nach dem Anmelden geht es dorthin zurück.
+      </p>
+    )}
+
+    <div class="reiter" role="tablist" data-weiter={weiter}>
       <button type="button" role="tab" id="reiter-an" class="reiter-knopf" aria-selected={!startetMitNeu}>
         Anmelden
       </button>
@@ -71,7 +87,7 @@ const startetMitNeu = new URL(Astro.request.url).searchParams.has('neu');
     <form id="form-an" class="tafel" hidden={startetMitNeu}>
       <div class="tafel-koerper">
         <label class="feld">E-Mail
-          <input class="eingabe" type="email" name="mail" autocomplete="username" required />
+          <input class="eingabe" type="email" name="mail" autocomplete="username" value={vorbelegt} required />
         </label>
         <label class="feld">Passwort
           <input class="eingabe" type="password" name="passwort" autocomplete="current-password" required />
@@ -93,7 +109,7 @@ const startetMitNeu = new URL(Astro.request.url).searchParams.has('neu');
           <input class="eingabe" type="text" name="name" autocomplete="organization" />
         </label>
         <label class="feld">E-Mail
-          <input class="eingabe" type="email" name="mail" autocomplete="username" required />
+          <input class="eingabe" type="email" name="mail" autocomplete="username" value={vorbelegt} required />
         </label>
         <label class="feld">Passwort
           <input
@@ -122,6 +138,8 @@ const startetMitNeu = new URL(Astro.request.url).searchParams.has('neu');
   const formNeu = document.getElementById('form-neu');
   const reiterAn = document.getElementById('reiter-an');
   const reiterNeu = document.getElementById('reiter-neu');
+  // Geprüft hat das schon der Server; er prüft es beim Absenden noch einmal.
+  const weiter = document.querySelector('.reiter').dataset.weiter || '';
 
   function melde(text) {
     fehler.textContent = text;
@@ -136,8 +154,10 @@ const startetMitNeu = new URL(Astro.request.url).searchParams.has('neu');
     document.querySelector('.titel-seite').textContent = neu ? 'Konto anlegen' : 'Anmelden';
     melde('');
     // Die Adresse mitführen, damit ein Neuladen dort bleibt, wo man war.
-    const weg = neu ? '/anmelden?neu=1' : '/anmelden';
-    history.replaceState(null, '', weg);
+    const frage = new URLSearchParams(window.location.search);
+    if (neu) frage.set('neu', '1'); else frage.delete('neu');
+    const rest = frage.toString();
+    history.replaceState(null, '', '/anmelden' + (rest ? '?' + rest : ''));
     (neu ? formNeu : formAn).querySelector('input').focus();
   }
 
@@ -153,7 +173,7 @@ const startetMitNeu = new URL(Astro.request.url).searchParams.has('neu');
       knopf.disabled = true;
       knopf.innerHTML = '<span class="laeuft"></span>' + laeuftText;
       try {
-        const daten = Object.fromEntries(new FormData(formular).entries());
+        const daten = { ...Object.fromEntries(new FormData(formular).entries()), weiter };
         const antwort = await fetch(weg, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -208,4 +228,5 @@ const startetMitNeu = new URL(Astro.request.url).searchParams.has('neu');
   .eingabe:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
   .unterzeile { font-size: 12px; font-weight: 400; color: rgba(32, 30, 29, 0.55); }
   .hinweis { font-size: 13px; line-height: 1.55; color: rgba(32, 30, 29, 0.6); margin: 0; }
+  .einladungshinweis { margin-top: 18px; font-size: 14px; }
 </style>

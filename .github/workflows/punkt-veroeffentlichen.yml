@@ -124,7 +124,7 @@ jobs:
       # geschrieben wird sie im Hook `astro:build:done` von @wix/astro.
       # Ohne die Anbindung entsteht sie nie.
       # Die Regeln, die ohne Wix pruefbar sind: Kuerzelform,
-      # Passwortstreuung, Sitzungsausweis. Laeuft vor dem Bau, damit ein
+      # Passwortstreuung, Sitzungsausweis, Rollen und Einladungslink. Laeuft vor dem Bau, damit ein
       # verstellter Grenzwert nicht erst auf der ausgelieferten Seite
       # auffaellt.
       - name: Regeln pruefen
@@ -198,5 +198,17 @@ jobs:
           code=$(curl -sS -o /dev/null -w '%{http_code}' "$basis/zentrale" || echo 000)
           echo "$code  /zentrale (ohne Ausweis, erwartet 302)"
           [ "$code" = "302" ] || fehler=1
+
+          # Ein erfundener Einladungslink muss 404 geben. Eine 200 hiesse,
+          # dass die Seite jeden Schluessel fuer gueltig haelt.
+          code=$(curl -sS -o /dev/null -w '%{http_code}' "$basis/einladung/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" || echo 000)
+          echo "$code  /einladung/… (erfunden, erwartet 404)"
+          [ "$code" = "404" ] || fehler=1
+
+          # Mitarbeitende einladen ohne Ausweis: 401, nicht 200.
+          code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' \
+                   -d '{"mail":"probe@example.de","rolle":"leser"}' "$basis/api/einladen" || echo 000)
+          echo "$code  /api/einladen (ohne Ausweis, erwartet 401)"
+          [ "$code" = "401" ] || fehler=1
 
           exit $fehler

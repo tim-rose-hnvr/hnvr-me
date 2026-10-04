@@ -1,0 +1,179 @@
+---
+/**
+ * Eine Einladung in die Zentrale — die Seite hinter dem Link.
+ *
+ * Der Link ist ein Schlüssel. Deshalb drei Kopfzeilen, die man sonst
+ * nicht braucht:
+ *
+ *   cache-control: no-store       kein Zwischenspeicher hält die Seite
+ *   referrer-policy: no-referrer  ein Klick hier verrät den Link nicht
+ *   x-robots-tag: noindex         keine Suchmaschine führt ihn auf
+ *
+ * Ein abgelaufener, eingelöster und erfundener Link sehen gleich aus.
+ * Schon die Unterscheidung wäre eine Auskunft.
+ *
+ * Diese Seite ändert nichts. Angenommen wird erst mit dem Knopf, per
+ * POST an /api/annehmen — ein Vorschaubild in einem Messenger, das den
+ * Link aufruft, darf niemanden versehentlich beitreten lassen.
+ */
+import Seite from '../../website/src/layouts/Seite.astro';
+import Icon from '../../website/src/components/Icon.astro';
+import { sitzungAus } from './konto.ts';
+import { einladungNachSchluessel, kontoNachId } from './ablage.ts';
+import { ROLLENNAME, adresseBereinigen } from './team.ts';
+
+export const prerender = false;
+
+Astro.response.headers.set('cache-control', 'no-store');
+Astro.response.headers.set('referrer-policy', 'no-referrer');
+Astro.response.headers.set('x-robots-tag', 'noindex, nofollow');
+
+const schluessel = Astro.params.schluessel ?? '';
+let einladung = null as Awaited<ReturnType<typeof einladungNachSchluessel>>;
+try {
+  einladung = await einladungNachSchluessel(schluessel);
+} catch (e) {
+  console.error('[pnkt] Einladung nicht lesbar:', e);
+}
+const inhaber = einladung ? await kontoNachId(einladung.inhaberId) : null;
+if (!einladung || !inhaber) Astro.response.status = 404;
+
+const sitzung = einladung ? await sitzungAus(Astro.request.headers) : null;
+const passt = Boolean(sitzung && einladung && adresseBereinigen(sitzung.mail) === einladung.mail);
+const rueckweg = `/einladung/${schluessel}`;
+const anmeldeweg = (neu: boolean) =>
+  `/anmelden?${neu ? 'neu=1&' : ''}weiter=${encodeURIComponent(rueckweg)}&mail=${encodeURIComponent(einladung?.mail ?? '')}`;
+const wer = inhaber ? inhaber.name || inhaber.mail : '';
+---
+
+<Seite titel="Einladung" beschreibung="Eine Einladung in die Zentrale." aktiv="">
+  <section class="spur schmal">
+    <span class="tag tag-accent">
+      <Icon name="team" groesse={16} />
+      Zentrale
+    </span>
+
+    {!einladung || !inhaber ? (
+      <>
+        <h1 class="titel-seite" style="margin:14px 0 12px">Diese Einladung gilt nicht</h1>
+        <p class="fliess">
+          Entweder ist sie abgelaufen — Einladungen gelten sieben Tage —, schon
+          eingelöst oder zurückgezogen. Bitte die Person, die dich eingeladen hat,
+          um einen neuen Link.
+        </p>
+      </>
+    ) : (
+      <>
+        <h1 class="titel-seite" style="margin:14px 0 12px">{wer} lädt dich ein</h1>
+        <p class="fliess">
+          Du arbeitest dann in der Zentrale von <strong>{wer}</strong> mit, als
+          <strong>{ROLLENNAME[einladung.rolle]}</strong>.
+          {einladung.rolle === 'redakteur'
+            ? ' Du kannst Codes anlegen, Ziele umhängen, umbenennen und stilllegen.'
+            : ' Du siehst die Codes und ihre Zahlen, ändern kannst du nichts.'}
+          {' '}Die Codes gehören weiter {wer}; deine eigenen bleiben deine.
+        </p>
+
+        <div class="warnung" id="fehler" hidden></div>
+        <noscript>
+          <div class="warnung">
+            Diese Seite braucht hier JavaScript: der Hoster weist Formular-Absendungen
+            grundsätzlich ab (403).
+          </div>
+        </noscript>
+
+        <div class="tafel">
+          <div class="tafel-koerper">
+            {passt ? (
+              <>
+                <p class="hinweis">Angemeldet als <strong>{sitzung!.mail}</strong>.</p>
+                <button type="button" class="btn btn-primary knopf-gross" id="annehmen" data-schluessel={schluessel}>
+                  <Icon name="weiter" />
+                  Einladung annehmen
+                </button>
+              </>
+            ) : sitzung ? (
+              <>
+                <p class="hinweis">
+                  Die Einladung gilt für <strong>{einladung.mail}</strong>. Du bist als
+                  <strong>{sitzung.mail}</strong> angemeldet.
+                </p>
+                <button type="button" class="btn btn-secondary knopf-gross" id="wechseln" data-weiter={anmeldeweg(false)}>
+                  Abmelden und mit {einladung.mail} anmelden
+                </button>
+              </>
+            ) : (
+              <>
+                <p class="hinweis">
+                  Die Einladung gilt für <strong>{einladung.mail}</strong>. Mit dieser
+                  Adresse meldest du dich an — oder legst dir zuerst ein Konto an, das
+                  dauert eine halbe Minute. Danach kommst du hierher zurück.
+                </p>
+                <a class="btn btn-primary knopf-gross" href={anmeldeweg(true)}>
+                  <Icon name="weiter" />
+                  Konto anlegen
+                </a>
+                <a class="btn btn-secondary" href={anmeldeweg(false)}>Ich habe schon ein Konto</a>
+              </>
+            )}
+            <p class="hinweis">
+              Gültig bis {new Date(einladung.einladungBis).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' })}.
+              Dein Konto bleibt deines — wer dich einlädt, sieht nie dein Passwort,
+              und beim Austreten geht nichts verloren.
+            </p>
+          </div>
+        </div>
+      </>
+    )}
+  </section>
+</Seite>
+
+<script>
+  const fehler = document.getElementById('fehler');
+  const annehmen = document.getElementById('annehmen');
+  const wechseln = document.getElementById('wechseln');
+
+  function melde(text) {
+    if (!fehler) return;
+    fehler.textContent = text;
+    fehler.hidden = !text;
+  }
+
+  annehmen?.addEventListener('click', async () => {
+    melde('');
+    const alt = annehmen.innerHTML;
+    annehmen.disabled = true;
+    annehmen.innerHTML = '<span class="laeuft"></span>Wird angenommen …';
+    try {
+      const antwort = await fetch('/api/annehmen', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ schluessel: annehmen.dataset.schluessel }),
+      });
+      const d = await antwort.json();
+      if (d.ok) { window.location.href = d.weiter || '/zentrale'; return; }
+      melde(d.fehler || 'Das hat nicht geklappt.');
+    } catch (e) {
+      melde('Der Server antwortet nicht: ' + e.message);
+    }
+    annehmen.disabled = false;
+    annehmen.innerHTML = alt;
+  });
+
+  wechseln?.addEventListener('click', async () => {
+    await fetch('/api/abmelden', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    window.location.href = wechseln.dataset.weiter;
+  });
+</script>
+
+<style is:global>
+  .schmal { max-width: 34rem; }
+  .warnung {
+    background: #f7e7e5; color: #a82e23;
+    border-radius: 20px; padding: 14px 18px; margin: 18px 0 0;
+    font-size: 15px; line-height: 1.55;
+  }
+  .tafel { background: var(--color-surface); border-radius: 32px; margin-top: 18px; }
+  .tafel-koerper { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .hinweis { font-size: 14px; line-height: 1.55; color: rgba(32, 30, 29, 0.66); margin: 0; }
+</style>

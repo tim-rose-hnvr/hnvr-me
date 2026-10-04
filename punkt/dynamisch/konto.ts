@@ -21,7 +21,8 @@
  * erste Anmeldeversuch eines echten Kontos zeigen würde.
  */
 
-import { kontoAnlegen, kontoNachMail, wixModule, KONTEN } from './ablage.ts';
+import { kontoAnlegen, kontoNachMail, wixModule, zugehoerigkeitVon, KONTEN } from './ablage.ts';
+import { adresseBereinigen, adresseTaugt, organisationVon, type Rolle, type Zugehoerigkeit } from './team.ts';
 
 const RUNDEN_HOECHSTENS = 400_000; // Schutz gegen einen Hash mit absurdem Wert
 
@@ -158,6 +159,39 @@ export async function sitzungAus(kopf: Headers): Promise<Sitzung | null> {
 }
 
 /**
+ * Sitzung samt Organisation: wer angemeldet ist, und wo er mitarbeitet.
+ * Eine Abfrage mehr als `sitzungAus` — deshalb nur dort, wo Rechte an
+ * Codes oder Mitarbeitenden gefragt sind.
+ */
+export interface Zugang extends Sitzung {
+  zugehoerigkeit: Zugehoerigkeit | null;
+  /** Die Rolle in der Organisation, in der das Konto arbeitet. */
+  rolle: Rolle;
+  /** Konto des Inhabers dieser Organisation. */
+  organisation: string;
+}
+
+export async function zugangAus(kopf: Headers): Promise<Zugang | null> {
+  const sitzung = await sitzungAus(kopf);
+  if (!sitzung) return null;
+  // Ist die Mitgliederliste nicht lesbar, arbeitet das Konto für diese
+  // Anfrage nur mit seinen eigenen Codes. Das kostet Komfort, aber es
+  // gibt nie mehr Rechte als vorher — und die Zentrale bleibt bedienbar.
+  let z: Zugehoerigkeit | null = null;
+  try {
+    z = await zugehoerigkeitVon(sitzung.kontoId);
+  } catch (e) {
+    console.error('[pnkt] Mitgliedschaft nicht lesbar:', e);
+  }
+  return {
+    ...sitzung,
+    zugehoerigkeit: z,
+    rolle: z ? z.rolle : 'inhaber',
+    organisation: organisationVon(sitzung.kontoId, z),
+  };
+}
+
+/**
  * Meldet an. Gibt bei Erfolg den fertigen Ausweis zurück, sonst null —
  * und zwar für falsche Adresse und falsches Passwort gleich lange und
  * mit derselben Meldung. Wer beides unterscheiden kann, kann Konten
@@ -221,11 +255,8 @@ export async function registrieren(
   passwort: string,
   name: string,
 ): Promise<{ ausweis: string; sitzung: Sitzung } | { fehler: string }> {
-  const adresse = mail.trim().toLowerCase();
-  // Bewusst grob: eine strengere Regel weist mehr gültige Adressen ab
-  // als sie ungültige fängt. Ob die Adresse erreichbar ist, sagt ohnehin
-  // erst eine Nachricht dorthin.
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(adresse)) return { fehler: 'Diese E-Mail-Adresse sieht nicht vollständig aus.' };
+  const adresse = adresseBereinigen(mail);
+  if (!adresseTaugt(adresse)) return { fehler: 'Diese E-Mail-Adresse sieht nicht vollständig aus.' };
   if (passwort.length < 10) return { fehler: 'Das Passwort braucht mindestens zehn Zeichen. Länge hilft hier mehr als Sonderzeichen.' };
   if (passwort.length > 200) return { fehler: 'Höchstens 200 Zeichen.' };
 

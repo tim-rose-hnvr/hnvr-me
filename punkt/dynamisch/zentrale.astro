@@ -16,19 +16,41 @@
  * und ist unangenehm: Wix' Rand weist jeden Formular-POST mit 403 ab,
  * gleich wie sauber er aussieht. Auf diesem Hoster braucht das
  * Umhängen deshalb JavaScript — auf einem eigenen Server nicht.
+ *
+ * Mitarbeitende: Der Inhaber lädt per Link ein (siehe `team.ts`), wer
+ * mitarbeitet, sieht hier die Codes der Organisation und seine eigenen.
+ * Was jemand nicht darf, blendet diese Seite aus — entschieden wird es
+ * aber in `api.ts`, bei jeder Anfrage.
  */
 import Seite from '../../website/src/layouts/Seite.astro';
 import Icon from '../../website/src/components/Icon.astro';
-import { sitzungAus } from './konto.ts';
-import { codesVonKonto, statistikVonCode } from './ablage.ts';
+import { zugangAus } from './konto.ts';
+import { codesFuer, mitgliederVon, statistikVonCode, type Mitglied } from './ablage.ts';
+import { ROLLENNAME, darfSchreiben, darfVerwalten } from './team.ts';
 
 export const prerender = false;
 
-const sitzung = await sitzungAus(Astro.request.headers);
+const sitzung = await zugangAus(Astro.request.headers);
 if (!sitzung) return Astro.redirect('/anmelden', 302);
 
-const codes = await codesVonKonto(sitzung.kontoId, 500);
+const z = sitzung.zugehoerigkeit;
+const codes = await codesFuer(sitzung.kontoId, z, 500);
 codes.sort((a, b) => (b.geaendert ?? '').localeCompare(a.geaendert ?? ''));
+
+const verwaltet = darfVerwalten(sitzung.rolle);
+const legtAn = darfSchreiben(sitzung.rolle);
+let team: Mitglied[] = [];
+if (verwaltet) {
+  try {
+    team = await mitgliederVon(sitzung.kontoId);
+  } catch (e) {
+    console.error('[pnkt] Mitarbeitende nicht lesbar:', e);
+  }
+  // Wer schon dabei ist zuerst, dann die offenen Einladungen.
+  team.sort((a, b) => (a.zustand === b.zustand ? a.mail.localeCompare(b.mail) : a.zustand === 'aktiv' ? -1 : 1));
+}
+const datum = (iso: string) =>
+  iso ? new Date(iso).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' }) : '';
 
 // Zahlen der letzten 30 Tage je Code. Bewusst eine Abfrage je Code und
 // nicht eine große: es sind wenige, und eine Sammelabfrage über eine
@@ -53,6 +75,7 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
       <span class="tag tag-accent">
         <Icon name="team" groesse={16} />
         {sitzung.name || sitzung.mail}
+        {z && ` · ${ROLLENNAME[z.rolle]} bei ${z.inhaberName || 'einer Organisation'}`}
       </span>
       <h1 class="titel-seite" style="margin:14px 0 12px">Zentrale</h1>
       <p class="fliess">
@@ -61,7 +84,14 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
         der gedruckte Code bleibt derselbe.
       </p>
     </div>
-    <button type="button" class="btn btn-secondary" id="abmelden">Abmelden</button>
+    <div class="kopfknoepfe">
+      {z && (
+        <button type="button" class="btn btn-secondary" id="austreten" data-id={z.mitgliedschaft} data-wer={z.inhaberName}>
+          Austreten
+        </button>
+      )}
+      <button type="button" class="btn btn-secondary" id="abmelden">Abmelden</button>
+    </div>
   </section>
 
   <section class="spur">
@@ -74,6 +104,7 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
     </noscript>
   </section>
 
+  {legtAn ? (
   <section class="spur">
     <form class="tafel neu" id="neu">
       <div class="tafel-koerper">
@@ -82,6 +113,7 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
           Er bekommt eine feste Adresse unter <code>{host}/r/…</code>. Die wird
           gedruckt und bleibt für immer. Wohin sie führt, änderst du danach
           jederzeit hier.
+          {z && ` Er gehört ${z.inhaberName || 'der Organisation'}, nicht dir — und bleibt dort, wenn du austrittst.`}
         </p>
         <div class="zeile">
           <label class="feld wachsend">Ziel — wohin soll der Scan führen?
@@ -108,12 +140,23 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
       </div>
     </form>
   </section>
+  ) : (
+  <section class="spur">
+    <div class="tafel leer">
+      <p>
+        Du bist hier Leser: du siehst die Codes von {z?.inhaberName || 'deiner Organisation'}
+        und ihre Zahlen, ändern kannst du nichts. Mehr Rechte vergibt der Inhaber.
+      </p>
+    </div>
+  </section>
+  )}
 
   <section class="spur">
     {codes.length === 0 ? (
       <div class="tafel leer">
         <p>
-          Noch kein Code auf diesem Konto. Leg oben einen an — oder bau in der
+          Noch kein Code {z ? 'in dieser Organisation' : 'auf diesem Konto'}.
+          {legtAn ? ' Leg oben einen an — oder bau' : ' Bau dir'} in der
           <a href="/studio">Werkstatt</a> einen festen Code, bei dem das Ziel
           direkt im Muster steht und sich später nicht mehr ändern lässt.
         </p>
@@ -129,6 +172,8 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
                   /r/{c.kuerzel}
                 </a>
                 {!c.aktiv && <span class="marke">stillgelegt</span>}
+                {z && c.rolle === 'inhaber' && <span class="marke ruhig">eigener</span>}
+                {!darfSchreiben(c.rolle) && <span class="marke ruhig">nur lesen</span>}
               </div>
               <div class="karte-zahlen">
                 <span class="karte-scans">{zahlen.get(c.id) ?? 0}</span>
@@ -136,12 +181,16 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
               </div>
             </div>
 
-            <form class="zielform" data-id={c.id}>
-              <label class="feld wachsend">Zeigt auf
-                <input class="eingabe" type="text" name="ziel" value={c.ziel} required />
-              </label>
-              <button type="submit" class="btn btn-primary">Umhängen</button>
-            </form>
+            {darfSchreiben(c.rolle) ? (
+              <form class="zielform" data-id={c.id}>
+                <label class="feld wachsend">Zeigt auf
+                  <input class="eingabe" type="text" name="ziel" value={c.ziel} required />
+                </label>
+                <button type="submit" class="btn btn-primary">Umhängen</button>
+              </form>
+            ) : (
+              <p class="zielzeile">Zeigt auf <code>{c.ziel}</code></p>
+            )}
 
             <div class="karte-reihe">
               <a class="btn btn-secondary klein" href={`/zahlen#code-${c.id}`}>Zahlen</a>
@@ -149,13 +198,17 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
                 class="btn btn-secondary klein"
                 href={`/studio?ziel=${encodeURIComponent(`${host}/r/${c.kuerzel}`)}`}
               >Muster bauen</a>
-              <button type="button" class="btn btn-secondary klein umbenennen" data-id={c.id}>
-                Umbenennen
-              </button>
-              <button
-                type="button" class="btn btn-secondary klein stand"
-                data-id={c.id} data-ziel={c.aktiv ? 'stillgelegt' : 'aktiv'}
-              >{c.aktiv ? 'Stilllegen' : 'Wieder aufnehmen'}</button>
+              {darfSchreiben(c.rolle) && (
+                <>
+                  <button type="button" class="btn btn-secondary klein umbenennen" data-id={c.id}>
+                    Umbenennen
+                  </button>
+                  <button
+                    type="button" class="btn btn-secondary klein stand"
+                    data-id={c.id} data-ziel={c.aktiv ? 'stillgelegt' : 'aktiv'}
+                  >{c.aktiv ? 'Stilllegen' : 'Wieder aufnehmen'}</button>
+                </>
+              )}
             </div>
 
             <p class="karte-fuss">
@@ -167,6 +220,85 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
       </div>
     )}
   </section>
+
+  {verwaltet && (
+    <section class="spur" id="mitarbeitende">
+      <div class="tafel">
+        <div class="tafel-koerper">
+          <h2 class="karte-titel">Mitarbeitende</h2>
+          <p class="hinweis">
+            Wer hier mitarbeitet, sieht dieselben Codes wie du. <strong>Redakteure</strong>
+            legen an, hängen um, benennen um und legen still. <strong>Leser</strong> sehen
+            Codes und Zahlen. Einladen, Rollen vergeben und entlassen kannst nur du.
+          </p>
+
+          {team.length > 0 && (
+            <ul class="teamliste">
+              {team.map((m) => (
+                <li class="teamzeile" data-mitglied={m.id}>
+                  <div class="teamwer">
+                    <strong>{m.zustand === 'aktiv' ? m.name || m.mail : m.mail}</strong>
+                    <span class="unterzeile">
+                      {m.zustand === 'aktiv'
+                        ? `${m.name ? m.mail + ' · ' : ''}dabei seit ${datum(m.beigetreten)}`
+                        : m.linkOffen
+                          ? `eingeladen · Link gültig bis ${datum(m.einladungBis)}`
+                          : 'eingeladen · kein gültiger Link — neu ausstellen'}
+                    </span>
+                  </div>
+                  <select class="eingabe klein rollenwahl" data-id={m.id} aria-label={`Rolle von ${m.mail}`}>
+                    <option value="redakteur" selected={m.rolle === 'redakteur'}>Redakteur</option>
+                    <option value="leser" selected={m.rolle === 'leser'}>Leser</option>
+                  </select>
+                  {m.zustand !== 'aktiv' && (
+                    <button type="button" class="btn btn-secondary klein neuer-link" data-mail={m.mail} data-rolle={m.rolle}>
+                      Neuer Link
+                    </button>
+                  )}
+                  <button
+                    type="button" class="btn btn-secondary klein entfernen"
+                    data-id={m.id} data-mail={m.mail} data-aktiv={String(m.zustand === 'aktiv')}
+                  >{m.zustand === 'aktiv' ? 'Entlassen' : 'Zurückziehen'}</button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <form class="einladeform" id="einladen">
+            <div class="zeile">
+              <label class="feld wachsend">E-Mail der Person
+                <input class="eingabe" type="email" name="mail" placeholder="name@betrieb.de" required />
+              </label>
+              <label class="feld">Rolle
+                <select class="eingabe" name="rolle">
+                  <option value="redakteur">Redakteur</option>
+                  <option value="leser">Leser</option>
+                </select>
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <Icon name="team" />
+              Einladungslink erzeugen
+            </button>
+          </form>
+
+          <div class="linkkasten" id="linkkasten" hidden>
+            <p class="hinweis" id="linktext"></p>
+            <div class="zeile">
+              <input class="eingabe wachsend mono" type="text" id="link" readonly />
+              <button type="button" class="btn btn-primary" id="kopieren">Kopieren</button>
+            </div>
+            <p class="hinweis">
+              Dieses System verschickt keine Mails — gib den Link selbst weiter, per
+              Chat oder aus deinem eigenen Postfach. Er gilt sieben Tage, nur für diese
+              Adresse und nur einmal. Wer ihn hat, kann beitreten: behandle ihn wie
+              einen Schlüssel. Er wird hier nur jetzt angezeigt.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
 </Seite>
 
 <script>
@@ -205,6 +337,7 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
   });
 
   // ─── Anlegen ───────────────────────────────────────────────────────
+  // Leser sehen das Formular nicht; dann gibt es auch nichts zu verbinden.
   const neu = document.getElementById('neu');
   const kuerzelfeld = document.getElementById('kuerzelfeld');
   const kuerzelurteil = document.getElementById('kuerzelurteil');
@@ -212,7 +345,7 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
   // Nachsehen, ob das Wunschkürzel frei ist — erst wenn das Tippen
   // aufgehört hat, sonst fragt man bei jedem Buchstaben.
   let warten = 0;
-  kuerzelfeld.addEventListener('input', () => {
+  kuerzelfeld?.addEventListener('input', () => {
     clearTimeout(warten);
     const wert = kuerzelfeld.value.trim();
     if (!wert) { kuerzelurteil.textContent = 'Kleinbuchstaben, Ziffern, Bindestriche.'; kuerzelurteil.dataset.stand = ''; return; }
@@ -232,7 +365,7 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
     }, 350);
   });
 
-  neu.addEventListener('submit', async (ev) => {
+  neu?.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     melde('');
     const knopf = neu.querySelector('button[type=submit]');
@@ -310,10 +443,115 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
       });
     });
   });
+
+  // ─── Mitarbeitende ─────────────────────────────────────────────────
+  const einladen = document.getElementById('einladen');
+  const linkkasten = document.getElementById('linkkasten');
+
+  function zeigeLink(d) {
+    document.getElementById('link').value = d.link;
+    document.getElementById('linktext').textContent =
+      'Link für ' + d.mail + ' als ' + (d.rolle === 'redakteur' ? 'Redakteur' : 'Leser') + ':';
+    linkkasten.hidden = false;
+    linkkasten.scrollIntoView({ block: 'nearest' });
+  }
+
+  async function stelleAus(mail, rolle, knopf) {
+    melde('');
+    await waehrend(knopf, '<span class="laeuft"></span>Wird erzeugt …', async () => {
+      try {
+        const d = await sende('/api/einladen', { mail, rolle });
+        if (d.ok) { zeigeLink(d); return; }
+        melde(d.fehler || 'Das hat nicht geklappt.', 'schlecht');
+      } catch (e) {
+        melde('Der Server antwortet nicht: ' + e.message, 'schlecht');
+      }
+    });
+  }
+
+  einladen?.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const f = new FormData(einladen);
+    stelleAus(String(f.get('mail') || ''), String(f.get('rolle') || ''), einladen.querySelector('button[type=submit]'));
+  });
+
+  document.querySelectorAll('.neuer-link').forEach((knopf) => {
+    knopf.addEventListener('click', () => {
+      if (!confirm('Neuen Link für ' + knopf.dataset.mail + ' erzeugen? Ein früher ausgestellter gilt danach nicht mehr.')) return;
+      stelleAus(knopf.dataset.mail, knopf.dataset.rolle, knopf);
+    });
+  });
+
+  document.getElementById('kopieren')?.addEventListener('click', async () => {
+    const feld = document.getElementById('link');
+    try {
+      await navigator.clipboard.writeText(feld.value);
+      melde('Link kopiert.', 'gut');
+    } catch {
+      // Ohne Freigabe für die Zwischenablage: markieren, dann geht Strg+C.
+      feld.select();
+      melde('Markiert — mit Strg+C oder ⌘C kopieren.', 'gut');
+    }
+  });
+
+  document.querySelectorAll('.rollenwahl').forEach((wahl) => {
+    let vorher = wahl.value;
+    wahl.addEventListener('change', async () => {
+      wahl.disabled = true;
+      try {
+        const d = await sende('/api/mitglied', { id: wahl.dataset.id, aktion: 'rolle', rolle: wahl.value });
+        if (d.ok) {
+          vorher = wahl.value;
+          const link = wahl.closest('.teamzeile')?.querySelector('.neuer-link');
+          if (link) link.dataset.rolle = wahl.value;
+          melde('Rolle geändert. Gilt ab dem nächsten Klick der Person.', 'gut');
+        }
+        else { wahl.value = vorher; melde(d.fehler || 'Das hat nicht geklappt.', 'schlecht'); }
+      } catch (e) {
+        wahl.value = vorher;
+        melde('Der Server antwortet nicht: ' + e.message, 'schlecht');
+      }
+      wahl.disabled = false;
+    });
+  });
+
+  document.querySelectorAll('.entfernen').forEach((knopf) => {
+    knopf.addEventListener('click', async () => {
+      const aktiv = knopf.dataset.aktiv === 'true';
+      if (!confirm(aktiv
+        ? knopf.dataset.mail + ' entlassen? Die Person verliert sofort den Zugriff. Ihr Konto bleibt bestehen, die Codes bleiben bei dir.'
+        : 'Einladung für ' + knopf.dataset.mail + ' zurückziehen? Der Link gilt danach nicht mehr.')) return;
+      await waehrend(knopf, '…', async () => {
+        try {
+          const d = await sende('/api/mitglied', { id: knopf.dataset.id, aktion: 'entfernen' });
+          if (d.ok) { document.querySelector('[data-mitglied="' + knopf.dataset.id + '"]')?.remove(); melde(aktiv ? 'Entlassen.' : 'Zurückgezogen.', 'gut'); return; }
+          melde(d.fehler || 'Das hat nicht geklappt.', 'schlecht');
+        } catch (e) {
+          melde('Der Server antwortet nicht: ' + e.message, 'schlecht');
+        }
+      });
+    });
+  });
+
+  const austreten = document.getElementById('austreten');
+  austreten?.addEventListener('click', async () => {
+    if (!confirm('Bei ' + (austreten.dataset.wer || 'dieser Organisation') + ' austreten? ' +
+      'Du siehst ihre Codes danach nicht mehr. Deine eigenen Codes und dein Konto bleiben.')) return;
+    await waehrend(austreten, '…', async () => {
+      try {
+        const d = await sende('/api/mitglied', { id: austreten.dataset.id, aktion: 'entfernen' });
+        if (d.ok) { window.location.reload(); return; }
+        melde(d.fehler || 'Das hat nicht geklappt.', 'schlecht');
+      } catch (e) {
+        melde('Der Server antwortet nicht: ' + e.message, 'schlecht');
+      }
+    });
+  });
 </script>
 
 <style is:global>
   .kopfreihe { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+  .kopfknoepfe { display: flex; gap: 8px; flex-wrap: wrap; }
   .meldung { border-radius: 20px; padding: 14px 18px; font-size: 15px; line-height: 1.55; }
   .meldung.gut { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
   .meldung.schlecht { background: #f7e7e5; color: #a82e23; }
@@ -369,4 +607,23 @@ const gesamt = [...zahlen.values()].reduce((a, b) => a + b, 0);
   .hinweis code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
   .tafel.leer { padding: 30px; }
   .tafel.leer p { margin: 0; font-size: 15.5px; line-height: 1.6; }
+
+  .marke.ruhig { background: color-mix(in srgb, var(--color-text) 8%, transparent); color: rgba(32, 30, 29, 0.7); }
+  .zielzeile { margin: 18px 0 0; font-size: 14px; color: rgba(32, 30, 29, 0.7); overflow-wrap: anywhere; }
+  .zielzeile code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+
+  .teamliste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .teamzeile {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--color-bg); border-radius: 18px; padding: 12px 14px;
+  }
+  .teamwer { flex: 1 1 14rem; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
+  .teamwer strong { font-size: 15px; }
+  .eingabe.klein { width: auto; font-size: 13.5px; padding: 7px 10px; background: var(--color-surface); }
+  .einladeform { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  .einladeform .zeile { width: 100%; }
+  .linkkasten { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); padding-top: 16px; }
+  .linkkasten[hidden] { display: none; }
+  .eingabe.wachsend { flex: 1 1 16rem; min-width: 0; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
 </style>

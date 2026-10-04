@@ -134,7 +134,54 @@ Sie stammen aus der vorigen PUNKT-Anwendung und tragen echte Daten:
 | `PK_Codes` | 5 Codes, davon dynamische mit Kürzel und Ziel |
 | `PK_Konten` | 2 Konten, mit `pwHash` und `sitzungsSalz` |
 | `PK_Statistik` | Zählerstände je Code und Tag |
-| `PK_Ereignisse`, `PK_Ordner`, `PK_Schluessel`, `PK_Domains`, `PK_Dateien`, `PK_Mitglieder` | vorhanden, noch nicht angebunden |
+| `PK_Mitglieder` | Mitarbeitende und offene Einladungen, siehe unten |
+| `PK_Ereignisse`, `PK_Ordner`, `PK_Schluessel`, `PK_Domains`, `PK_Dateien` | vorhanden, noch nicht angebunden |
 
 Die Feldnamen sind aus dem Bestand abgelesen. Wer eines umbenennt,
 verliert die Daten.
+
+### Mitarbeitende
+
+Der Inhaber lädt in der Zentrale ein: Adresse und Rolle eintragen, die
+Seite erzeugt einen Link `/einladung/<32 Zeichen>`. Den gibt er selbst
+weiter — dieses System verschickt keine Mails. Die Person meldet sich
+mit der eingeladenen Adresse an oder legt ein Konto an und nimmt an.
+
+| Rolle | Codes sehen | anlegen, umhängen, umbenennen, stilllegen | einladen, Rollen, entlassen |
+|---|---|---|---|
+| Inhaber | ja | ja | ja |
+| Redakteur | ja | ja | nein |
+| Leser | ja | nein | nein |
+
+Die Regeln stehen in `dynamisch/team.ts` und sind getestet
+(`test/team.test.ts`), die Ablage in `dynamisch/ablage.ts`, geprüft wird
+in `dynamisch/api.ts` — bei jeder Anfrage, nicht in der Oberfläche.
+
+- **Der Link ist das Geheimnis, nicht die Adresse.** Konten entstehen hier
+  ohne Bestätigungsmail; eine Mitgliedschaft, die nur an einer Adresse
+  hinge, könnte übernehmen, wer die Adresse als Erster registriert.
+  Abgelegt ist nur der SHA-256-Abdruck. Sieben Tage gültig, einmal
+  einlösbar, und nur für die eingeladene Adresse.
+- **Codes gehören der Organisation** (`kontoId` = Konto des Inhabers).
+  Was ein Redakteur anlegt, bleibt beim Inhaber, auch nach dem Austritt.
+  Eigene Codes von vor dem Beitritt bleiben eigene.
+- **Höchstens eine fremde Organisation je Konto.** Wer selbst
+  Mitarbeitende führt, kann nicht zugleich irgendwo beitreten.
+- **Entlassen wirkt sofort.** Die Rolle wird bei jeder Anfrage neu
+  gelesen, nicht im Ausweis mitgetragen.
+- **Die Altzeile** (`admin@hnvr.me` als Redakteur, ohne `zustand`) gilt
+  als offene Einladung ohne Link. Der Inhaber stellt mit „Neuer Link"
+  einen aus; erst dann kann sie angenommen werden.
+
+Neue Felder an `PK_Mitglieder`: `zustand` (`eingeladen` | `aktiv`),
+`mitgliedId`, `name`, `einladungAbdruck`, `einladungBis`, `eingeladen`,
+`beigetreten`. Wix legt Felder, die im Schema fehlen, beim Schreiben an —
+das ist bei den bestehenden Sammlungen so, aber für diese Sammlung **nicht
+gegen den echten Bestand geprüft**. Vor dem ersten Einsatz einmal mit
+einem Wegwerf-Konto durchklicken: einladen, annehmen, Code umhängen,
+Leser setzen, Umhängen muss scheitern, entlassen.
+
+**Abweichung vom Go-Programm:** `pnkt/` holt Mitarbeitende über die
+Adresse eines schon bestehenden Kontos herein (`NimmMitarbeitendeAuf`),
+ohne Link. Beim Umzug auf den eigenen Server gilt dieselbe Begründung wie
+oben — dort sollte der Link nachgezogen werden, nicht hier entfernt.

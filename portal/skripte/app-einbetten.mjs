@@ -14,7 +14,11 @@
    Aufruf: über "npm run build" (prebuild), oder von Hand:
      node skripte/app-einbetten.mjs            vollständig
      node skripte/app-einbetten.mjs --schlank  ohne CJK-Zeichentabellen und
-                                               ohne englische Sprachdaten */
+                                               ohne englische Sprachdaten
+
+   Für www.hnvr.me selbst (das Studio unter /pdf-studio/, angemeldet über die
+   Konsole von hnvr.me statt über den OAuth-Zugang dieser Seite):
+     node skripte/app-einbetten.mjs --fuer hnvr --ziel <hnvr.me>/site/public/pdf-studio */
 
 import { cp, rm, mkdir, stat, readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve, extname, relative } from 'node:path';
@@ -22,7 +26,9 @@ import { fileURLToPath } from 'node:url';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const QUELLE = resolve(HIER, '..', '..', 'studio');
-const ZIEL = resolve(HIER, '..', 'public', 'studio');
+const wert = (name) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : null; };
+const FUER = wert('--fuer') || 'portal';
+const ZIEL = resolve(wert('--ziel') || resolve(HIER, '..', 'public', 'studio'));
 const SCHLANK = process.argv.includes('--schlank');
 
 /* Prüfläufe und Hilfsskripte gehören zur Entwicklung, nicht auf den Server. */
@@ -55,6 +61,42 @@ async function alleDateien(wurzel, gesammelt = []) {
 
 const mb = (bytes) => `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 
+/* Die Anmeldeschranke wird hier eingesetzt, nicht im Studio selbst.
+
+   Das Studio im Repository bleibt eigenständig: wer sie auf einen eigenen
+   Server legt, bekommt sie ohne Anmeldung, und die Prüfläufe fahren gegen die
+   ungeschrankte Fassung. Erst die Arbeitskopie bekommt die Zeilen — dort gibt
+   es eine Mitgliederverwaltung, die sie beantworten kann.
+
+   Zwei Orte, ein Studio:
+   - portal: diese Seite. Angemeldet wird mit dem hnvr.me-Konto über den
+     OAuth-Zugang „PDF Studio" (src/hnvr.js); die Auskunft steht hier.
+   - hnvr:   www.hnvr.me/pdf-studio/. Dort fragt das Studio dieselbe Route
+     wie die Konsole (/api/hub/me) und schickt zu deren Anmeldeseite, die den
+     Rücksprung als `ziel` annimmt. Kein zweiter Zugang, kein Domainwechsel.
+   Der Kopf „Konsole / PDF Studio" führt in beiden Fällen in die Konsole. */
+const ORTE = {
+  portal: {
+    'studio-anmeldung': '/api/mitglied.json',
+    'studio-anmeldung-weg': '/api/hnvr/anmelden',
+    'studio-anmeldung-konto': 'hnvr.me',
+    'studio-heimat': 'https://www.hnvr.me/konsole',
+    'studio-heimat-name': 'Konsole',
+  },
+  hnvr: {
+    'studio-anmeldung': '/api/hub/me',
+    'studio-anmeldung-weg': '/konsole/anmelden',
+    'studio-anmeldung-ruecksprung': 'ziel',
+    'studio-anmeldung-konto': 'hnvr.me',
+    'studio-heimat': 'https://www.hnvr.me/konsole',
+    'studio-heimat-name': 'Konsole',
+  },
+};
+const ZEILEN = ORTE[FUER];
+if (!ZEILEN) {
+  console.error(`Unbekannter Ort „${FUER}" — es gibt: ${Object.keys(ORTE).join(', ')}`);
+  process.exit(1);
+}
 try {
   await stat(QUELLE);
 } catch {
@@ -69,34 +111,18 @@ await cp(QUELLE, ZIEL, {
   filter: (pfad) => !AUSSEN.has(pfad.split('/').pop()),
 });
 
-/* Die Anmeldeschranke wird hier eingesetzt, nicht im Studio selbst.
-
-   Das Studio im Repository bleibt eigenständig: wer sie auf einen eigenen
-   Server legt, bekommt sie ohne Anmeldung, und die Prüfläufe fahren gegen die
-   ungeschrankte Fassung. Erst die Arbeitskopie, die auf dieser Seite landet,
-   bekommt die Zeile — dort gibt es eine Mitgliederverwaltung, die sie
-   beantworten kann. */
-const AUSKUNFT = '/api/mitglied.json';
-/* Angemeldet wird mit dem hnvr.me-Konto (src/hnvr.js). Die Schranke im
-   Studio schickt deshalb dorthin und sagt, bei wem das Konto liegt. */
-const ANMELDEWEG = '/api/hnvr/anmelden';
-const KONTO = 'hnvr.me';
-/* Das Studio ist ein Bereich der Konsole auf www.hnvr.me. Der Brotkrumen im
-   Kopf („Konsole / PDF Studio") führt dorthin zurück. */
-const HEIMAT = 'https://www.hnvr.me/konsole';
-const HEIMAT_NAME = 'Konsole';
 {
   const weg = join(ZIEL, 'index.html');
   const html = await readFile(weg, 'utf8');
+  const anker = '<link rel="stylesheet" href="app/stil.css">';
+  if (!html.includes(anker)) {
+    console.error('index.html des Studios hat die Stilblatt-Zeile nicht mehr — die Schranke ließe sich nicht einsetzen.');
+    process.exit(1);
+  }
   if (!html.includes('studio-anmeldung')) {
-    await writeFile(weg, html.replace('<link rel="stylesheet" href="app/stil.css">',
-      `<meta name="studio-anmeldung" content="${AUSKUNFT}">\n`
-      + `<meta name="studio-anmeldung-weg" content="${ANMELDEWEG}">\n`
-      + `<meta name="studio-anmeldung-konto" content="${KONTO}">\n`
-      + `<meta name="studio-heimat" content="${HEIMAT}">\n`
-      + `<meta name="studio-heimat-name" content="${HEIMAT_NAME}">\n`
-      + '<link rel="stylesheet" href="app/stil.css">'));
-    console.log(`  Anmeldeschranke eingesetzt: fragt ${AUSKUNFT}, meldet an über ${ANMELDEWEG} (${KONTO}), zurück in die ${HEIMAT_NAME}`);
+    const meta = Object.entries(ZEILEN).map(([name, inhalt]) => `<meta name="${name}" content="${inhalt}">\n`).join('');
+    await writeFile(weg, html.replace(anker, `${meta}${anker}`));
+    console.log(`  Anmeldeschranke für „${FUER}" eingesetzt: fragt ${ZEILEN['studio-anmeldung']}, meldet an über ${ZEILEN['studio-anmeldung-weg']}, zurück in die ${ZEILEN['studio-heimat-name']}`);
   }
 }
 

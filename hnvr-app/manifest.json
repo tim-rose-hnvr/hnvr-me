@@ -9,8 +9,9 @@
   "einstieg": "https://www.hnvr.me/pdf-studio",
   "weiterleitung": {
     "von": "/pdf-studio",
-    "nach": "https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/studio/index.html?von=hnvr",
-    "art": "301, SEO-Umleitung der Site „Digitale Erlebnisse“"
+    "nach": "/pdf-studio/index.html?von=hnvr",
+    "art": "301, SEO-Umleitung der Site „Digitale Erlebnisse“; das Studio liegt unter /pdf-studio/ auf hnvr.me selbst",
+    "einbetten": "node portal/skripte/app-einbetten.mjs --fuer hnvr --ziel <hnvr.me>/site/public/pdf-studio"
   },
   "oeffnen": "ganzes-fenster",
   "rueckweg": {

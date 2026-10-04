@@ -21,7 +21,7 @@
      node skripte/app-einbetten.mjs --fuer hnvr --ziel <hnvr.me>/site/public/pdf-studio */
 
 import { cp, rm, mkdir, stat, readdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve, extname, relative } from 'node:path';
+import { basename, dirname, join, resolve, extname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
@@ -108,7 +108,9 @@ await rm(ZIEL, { recursive: true, force: true });
 await mkdir(dirname(ZIEL), { recursive: true });
 await cp(QUELLE, ZIEL, {
   recursive: true,
-  filter: (pfad) => !AUSSEN.has(pfad.split('/').pop()),
+  /* basename, nicht split('/'): unter Windows trennt der Pfad mit \\, und
+     werkzeuge/ landete sonst mit auf dem Server. */
+  filter: (pfad) => !AUSSEN.has(basename(pfad)),
 });
 
 {

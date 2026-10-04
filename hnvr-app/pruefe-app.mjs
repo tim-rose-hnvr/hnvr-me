@@ -25,7 +25,6 @@ const symbol = await lies('hnvr-app/bereichssymbol.svg');
 const werkzeuge = await lies('studio/app/einzelwerkzeuge.js');
 const start = await lies('studio/app/main.js');
 const einbetten = await lies('portal/skripte/app-einbetten.mjs');
-const anmeldungDoku = await lies('doku/anmeldung-hnvr.md');
 
 let gut = 0;
 let schlecht = 0;
@@ -51,19 +50,25 @@ pruefe('Der Einstieg ist www.hnvr.me/pdf-studio', () => {
   assert.equal(url.pathname, manifest.weiterleitung.von);
   assert.equal(url.search, '', 'der Einstieg trägt keine Suche — die hängt die Weiterleitung an');
 });
-pruefe('Die Weiterleitung führt ins Studio, in der Hand der Konsole', () => {
-  const url = new URL(manifest.weiterleitung.nach);
-  assert.equal(url.protocol, 'https:');
-  assert.equal(url.pathname, '/studio/index.html');
-  /* Mit `von=hnvr` trägt das Studio die Hand der Konsole (app/gestalt.js)
-     und zeigt den Rückweg. Ohne wäre es das Atelier — ein anderes Haus. */
+pruefe('Die Weiterleitung bleibt auf hnvr.me und zeigt den Rückweg', () => {
+  /* Das Studio liegt unter /pdf-studio/ auf hnvr.me selbst. Ein Ziel auf
+     einer anderen Domain wäre ein Domainwechsel — genau das sollte weg. */
+  assert.ok(manifest.weiterleitung.nach.startsWith('/') && !manifest.weiterleitung.nach.startsWith('//'),
+    `Ziel ist keine Adresse auf hnvr.me: ${manifest.weiterleitung.nach}`);
+  const url = new URL(manifest.weiterleitung.nach, manifest.einstieg);
+  assert.equal(url.host, 'www.hnvr.me');
+  assert.equal(url.pathname, `${manifest.weiterleitung.von}/index.html`);
+  /* Mit `von=hnvr` zeigt das Studio den Rückweg in die Konsole
+     (app/gestalt.js, data-herkunft); die Hand bleibt das Atelier. */
   assert.equal(url.searchParams.get('von'), 'hnvr', 'Weiterleitung ohne ?von=hnvr');
 });
-pruefe('Die Domain des Studios ist die, für die die Anmeldung eingerichtet wird', () => {
-  /* Ein Studio auf einer anderen Domain landete bei einem Rücksprung, den
-     hnvr.me nicht kennt — die Anmeldung schlüge mit 400 fehl. */
-  const host = new URL(manifest.weiterleitung.nach).host;
-  assert.ok(anmeldungDoku.includes(`https://${host}/api/hnvr/rueckkehr`), `${host} steht nicht in doku/anmeldung-hnvr.md`);
+pruefe('Abgelegt wird mit den Kopfzeilen für hnvr.me', () => {
+  /* Auf hnvr.me fragt das Studio die Konsole (/api/hub/me) und meldet über
+     /konsole/anmelden an — nicht über den OAuth-Zugang der Studio-Site. */
+  assert.match(manifest.weiterleitung.einbetten, /app-einbetten\.mjs --fuer hnvr --ziel /);
+  for (const zeile of ["'studio-anmeldung': '/api/hub/me'", "'studio-anmeldung-weg': '/konsole/anmelden'", "'studio-anmeldung-ruecksprung': 'ziel'"]) {
+    assert.ok(einbetten.includes(zeile), `app-einbetten.mjs setzt nicht ${zeile}`);
+  }
 });
 pruefe('Der Rückweg ist der, den das Einbetten setzt', () => {
   assert.equal(manifest.rueckweg.kopfzeile, 'studio-heimat');
@@ -101,7 +106,7 @@ for (const aktion of manifest.schnellaktionen) {
     const ganz = new URL(manifest.einstieg);
     for (const [k, v] of suche) ganz.searchParams.set(k, v);
     assert.equal(ganz.pathname, manifest.weiterleitung.von);
-    const ziel = new URL(manifest.weiterleitung.nach);
+    const ziel = new URL(manifest.weiterleitung.nach, manifest.einstieg);
     const angekommen = new URL(`${ziel.origin}${ziel.pathname}${ganz.search}&${ziel.search.slice(1)}`);
     assert.equal(angekommen.searchParams.get('von'), 'hnvr');
     if (werkzeug) assert.equal(angekommen.searchParams.get('werkzeug'), werkzeug);

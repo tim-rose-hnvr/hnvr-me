@@ -194,23 +194,39 @@ console.log('\n== Anmeldung ==');
 }
 
 /* Der öffentliche Einstieg ist www.hnvr.me/pdf-studio (hnvr-app/manifest.json).
-   hnvr.me liefert das Studio nicht selbst aus, sondern leitet weiter — eine
-   SEO-Umleitung der Site „Digitale Erlebnisse“. Geprüft wird, dass sie hierher
-   zeigt, in der Hand der Konsole, und mitgebrachte Suchparameter behält. */
+   Seit dem 04.10.2026 liefert hnvr.me das Studio unter /pdf-studio/ selbst
+   aus; /pdf-studio ist eine SEO-Umleitung der Site „Digitale Erlebnisse“ auf
+   /pdf-studio/index.html?von=hnvr. Geprüft wird, dass sie auf hnvr.me bleibt,
+   mitgebrachte Suchparameter behält und dort das Studio liegt — mit den
+   Kopfzeilen, die zur Anmeldung der Konsole führen.
+
+   Mit dem Kennzeichner eines echten Chrome: Wix schickt „HeadlessChrome“ wie
+   einen Suchmaschinen-Abrufer auf einen anderen Weg, und der kennt die
+   Dateien unter /pdf-studio/ nicht (404). Menschen betrifft das nicht. */
 console.log('\n== Einstieg über www.hnvr.me/pdf-studio ==');
 {
+  const CHROME = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
   const umleitung = async (adresse) => {
-    const { stdout } = await lauf('curl', ['-sS', '-o', '/dev/null', '-w', '%{http_code} %{redirect_url}', adresse]);
+    const { stdout } = await lauf('curl', ['-sS', '-A', CHROME, '-o', '/dev/null', '-w', '%{http_code} %{redirect_url}', adresse]);
     const [code, ziel = ''] = stdout.trim().split(' ');
     return { code: Number(code), ziel };
   };
   const einstieg = await umleitung('https://www.hnvr.me/pdf-studio');
-  pruefe(einstieg.code === 301 && einstieg.ziel === `${BASIS}/studio/index.html?von=hnvr`,
-    'www.hnvr.me/pdf-studio führt ins Studio, mit von=hnvr', `HTTP ${einstieg.code} → ${einstieg.ziel}`);
+  pruefe(einstieg.code === 301 && einstieg.ziel === 'https://www.hnvr.me/pdf-studio/index.html?von=hnvr',
+    'www.hnvr.me/pdf-studio bleibt auf hnvr.me und führt ins Studio, mit von=hnvr', `HTTP ${einstieg.code} → ${einstieg.ziel}`);
   const aktion = await umleitung('https://www.hnvr.me/pdf-studio?werkzeug=zusammenfuegen');
   const angekommen = aktion.ziel ? new URL(aktion.ziel) : null;
-  pruefe(angekommen?.searchParams.get('werkzeug') === 'zusammenfuegen' && angekommen?.searchParams.get('von') === 'hnvr',
+  pruefe(angekommen?.host === 'www.hnvr.me' && angekommen?.searchParams.get('werkzeug') === 'zusammenfuegen' && angekommen?.searchParams.get('von') === 'hnvr',
     'eine Schnellaktion kommt mit ihrem Werkzeug an', aktion.ziel);
+  const ablage = join(tmpdir(), `live-pruefen-hnvr-${process.pid}`);
+  const { stdout } = await lauf('curl', ['-sS', '--compressed', '-A', CHROME, '-o', ablage, '-w', '%{http_code}', 'https://www.hnvr.me/pdf-studio/index.html']);
+  const html = await readFile(ablage, 'utf8').catch(() => '');
+  await rm(ablage, { force: true });
+  pruefe(stdout.trim() === '200' && html.includes('start-reiter'), 'unter www.hnvr.me/pdf-studio/ liegt das Studio', `HTTP ${stdout.trim()}`);
+  pruefe(/name="studio-anmeldung" content="\/api\/hub\/me"/.test(html)
+    && /name="studio-anmeldung-weg" content="\/konsole\/anmelden"/.test(html)
+    && /name="studio-anmeldung-ruecksprung" content="ziel"/.test(html),
+  'dort meldet es über die Konsole von hnvr.me an');
 }
 
 console.log('\n== Wege in die Anwendung ==');

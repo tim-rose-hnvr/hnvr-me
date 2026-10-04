@@ -10,32 +10,39 @@ Kachel, Menüpunkt, Schnellaktionen — zeigen dorthin und auf nichts anderes.
 
 ## Wie `/pdf-studio` auf hnvr.me entsteht
 
-hnvr.me ist ein Astro-Projekt auf Wix-Headless-Hosting (Site „Digitale
-Erlebnisse“, `e8492887-…`). Dessen Code liegt nicht in diesem Repository und
-war beim Einrichten auch sonst nicht erreichbar. Das Studio unter `/pdf-studio`
-selbst auszuliefern hieße, es in jenen Bau zu legen und jene Site neu zu
-veröffentlichen — von hier aus ginge das nur, indem man die ganze Site durch
-diesen Bau ersetzt. Deshalb:
+**hnvr.me liefert das Studio selbst aus** (seit 4. Oktober 2026). Die Dateien
+liegen im Code von hnvr.me unter `site/public/pdf-studio/`, abgelegt mit
 
-**Eine Weiterleitung, kein iframe.** `/pdf-studio` →
-`https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/studio/index.html?von=hnvr`,
-angelegt am 4. Oktober 2026 als SEO-Umleitung der Site (Wix SEO Redirects
-API, `seo-redirects-service/v1`). Eigenschaften, nachgemessen:
+```sh
+node portal/skripte/app-einbetten.mjs --fuer hnvr --ziel <hnvr.me>/site/public/pdf-studio
+```
 
-- 301, gilt sofort, ohne die Site zu veröffentlichen; auch für `hnvr.me/…`
-  ohne `www` und für `/pdf-studio/`.
+Das Skript kopiert `studio/` unverändert (ohne `werkzeuge/`) und setzt im
+`index.html` die Kopfzeilen für hnvr.me: Auskunft `/api/hub/me` (dieselbe
+Route wie die Konsole), Anmeldung über `/konsole/anmelden?ziel=…`, Rückweg in
+die Konsole. Ein eigener OAuth-Zugang ist dort nicht nötig, und es gibt keinen
+Domainwechsel. Wer das Studio ändert, legt es so neu ab und veröffentlicht
+hnvr.me.
+
+**`/pdf-studio` selbst ist eine SEO-Umleitung** der Site (Wix SEO Redirects
+API) auf `/pdf-studio/index.html?von=hnvr`. Das Wix-Hosting liefert für
+Verzeichnisse kein Register aus. Die Umleitung greift nur genau bei
+`/pdf-studio` und `/pdf-studio/` und hat dort Vorrang vor jeder Seite; die
+Dateien darunter erreicht sie nicht. Gemessen:
+
+- 301, auch für `hnvr.me/…` ohne `www`.
 - Mitgebrachte Suchparameter bleiben: `/pdf-studio?werkzeug=zusammenfuegen`
-  → `…/studio/index.html?werkzeug=zusammenfuegen&von=hnvr`.
-- Die Umleitung geht vor eine Seite gleichen Namens. Bekommt hnvr.me einmal
-  eine echte Seite `/pdf-studio`, erst die Umleitung löschen (Dashboard →
-  SEO → URL-Weiterleitungen, oder `DELETE /redirects/{id}`).
-- 301 heißt: Browser merken sich das Ziel. Wer später umzieht, sollte die
-  neue Adresse auch am alten Ziel erreichbar halten.
+  → `/pdf-studio/index.html?werkzeug=zusammenfuegen&von=hnvr`.
+- Nach einer Änderung braucht der Zwischenspeicher vor `www.hnvr.me` etwa
+  zwei Minuten.
+- Wix behandelt den Kennzeichner „HeadlessChrome“ wie einen
+  Suchmaschinen-Abrufer und antwortet für `/pdf-studio/index.html` mit 404.
+  Echte Browser bekommen 200; Prüfungen fragen deshalb mit dem Kennzeichner
+  eines echten Chrome (`studio/werkzeuge/live-pruefen.mjs`).
 
-Zieht das Studio auf eine eigene Domain, ändert sich nur das Ziel dieser
-Umleitung (und die Rücksprungadressen in `doku/anmeldung-hnvr.md`) — kein Link
-auf hnvr.me. `manifest.json` hält beides getrennt: `einstieg` ist die
-öffentliche Adresse, `weiterleitung.nach` das Ziel.
+Die frühere Adresse des Studios (`werkbank-b2ce6ab2-hnvrme.wix-site-host.com`)
+bleibt bestehen: dort läuft es eigenständig, angemeldet über den OAuth-Zugang
+„PDF Studio“ (`doku/anmeldung-hnvr.md`). Von hnvr.me führt nichts mehr dorthin.
 
 Entwürfe: Figma-Datei *hnvr.me*, Seite **„PDF Studio · App von hnvr.me“**
 (Bildschirme P1–P5, Komponente *App-Kachel*). Die bestehenden Seiten sind
@@ -51,42 +58,44 @@ Bereiche*.
 
 ## Einbauen
 
-**Stand 4. Oktober 2026: eingebaut und live** (Code von hnvr.me, Release aus
-`bau-apps-rahmen` `636ab60`). Von außen nachgemessen:
+**Stand 4. Oktober 2026: eingebaut und live** (Code von hnvr.me, zuletzt
+Release aus `9dd827a`). Von außen nachgemessen:
 
 - www.hnvr.me/tools zeigt `kachel.html` unverändert (dunkel) neben Drop-it und
   PSD-Studio, mit genau einem Link `/pdf-studio`.
 - www.hnvr.me/apps/pdf-studio steht im App-Store (kostenlos, für jede Person
   mit Konto).
-- `/pdf-studio` leitet weiter, auch mit `?werkzeug=…` und `?tun=…`.
+- `/pdf-studio` führt auf `/pdf-studio/index.html` auf hnvr.me, auch mit
+  `?werkzeug=…` und `?tun=…`; dort liegt das Studio und zeigt ohne Sitzung
+  die Anmeldeschranke mit „Mit hnvr.me anmelden“ → `/konsole/anmelden`.
 
-Laut der Sitzung, die eingebaut hat, außerdem: Menüpunkt „PDF Studio“ in der
-Seitenleiste der Konsole (selber Tab), Bereich `pdfstudio` im Rechtekern mit
-nur *Ändern*/*Keine*, Schalter je Website unter „Bereiche für Kunden“, die
-beiden Schnellaktionen. Für den Weg `pdf-studio` ist im Editor von hnvr.me
-keine eigene Seite möglich, damit nichts die Umleitung verdeckt.
+Laut der Sitzung, die eingebaut hat, außerdem: **kein eigener Menüpunkt** —
+PDF Studio steht als App unter „hnvr.me Apps“ (Seitenleiste, Meine Apps,
+Store), sichtbar mit Bereich `pdfstudio`; Bereich im Rechtekern mit nur
+*Ändern*/*Keine*, Schalter je Website unter „Bereiche für Kunden“, die beiden
+Schnellaktionen. Kein Link auf `/pdf-studio` öffnet ein neues Fenster.
 
 **Abweichung von Schritt 5:** In „hnvr.me Apps“ und im App-Store erscheint
 PDF Studio als Katalogeintrag im Kartenformat des Stores, nicht als helle
 `kachel.html` — ein Format für alle Apps statt einer Sonderkachel.
 
-**Noch nicht geprüft:** Menüpunkt, Schnellaktionen und der Knopf auf
-`/apps/pdf-studio` in der angemeldeten Konsole — dafür braucht es eine
-Anmeldung.
+**Noch nicht geprüft:** der Eintrag unter „hnvr.me Apps“, die
+Schnellaktionen, der Knopf auf `/apps/pdf-studio` und die Anmeldung im Studio
+mit einem echten Konto — dafür braucht es eine Anmeldung.
 
-**1. Konsole — Seitenleiste (P1, P5).** Unter **WEITERE BEREICHE** ein
-Menüpunkt „PDF Studio“ mit `bereichssymbol.svg`, sichtbar, wenn der Bereich
+**1. Konsole — unter „hnvr.me Apps“ (P1, P5).** Kein eigener Menüpunkt in
+der Menüleiste (so entschieden am 4. Oktober 2026), sondern ein Eintrag bei den
+Apps mit `bereichssymbol.svg`, sichtbar, wenn der Bereich
 für den Kunden an ist und die Rolle die Stufe *Ändern* hat. Er führt auf
 `einstieg` (`https://www.hnvr.me/pdf-studio`, oder einfach `/pdf-studio`)
 **im selben Tab, im ganzen Fenster** — wie Headless Studio. Die Weiterleitung
-setzt `?von=hnvr`: damit zeigt sich das Studio in der Hand der
-Konsole (statt im eigenen Atelier-Look) und oben steht „KONSOLE / PDF STUDIO“
-mit dem Weg zurück nach `https://www.hnvr.me/konsole`.
+setzt `?von=hnvr`: damit steht oben „Konsole / PDF Studio“ mit dem Weg zurück
+nach `https://www.hnvr.me/konsole`. Das Studio bleibt dabei im Atelier-Design
+des Entwurfs (Figma „PDF Studio — Vorgang“), nicht in der Hand der Konsole.
 
-Nicht im `<iframe>`: das Studio liegt auf einer anderen Domain. Im Rahmen
-wären seine Anmeldekekse Drittanbieter-Kekse — Safari sperrt sie, Firefox
-schottet sie ab, und die Anmeldung liefe im Kreis. Ganzes Fenster ist auch
-das Muster der Konsole: Headless Studio öffnet genauso.
+Nicht im `<iframe>`: ein Studio im Rahmen hätte zu wenig Platz für Seiten,
+Bühne und Inspektor, und Ganzes Fenster ist das Muster der Konsole — Headless
+Studio öffnet genauso.
 
 **2. Konsole — Superadmin „Menü und Bereiche“ (P3).** Eine Zeile „PDF Studio“
 mit Schalter je Kunde. Stufen: **Ändern** oder **Keine**. Voreinstellung für

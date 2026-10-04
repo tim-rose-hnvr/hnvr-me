@@ -2,8 +2,9 @@
 
 **Steht online:** <https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com>
 Die Anwendung darunter: <https://werkbank-b2ce6ab2-hnvrme.wix-site-host.com/studio/>
-Öffentlicher Einstieg: <https://www.hnvr.me/pdf-studio> — leitet hierher weiter
-(`hnvr-app/README.md`).
+Öffentlicher Einstieg ist <https://www.hnvr.me/pdf-studio> — dort liefert
+hnvr.me das Studio selbst aus (`hnvr-app/README.md`); diese Seite ist die
+eigenständige Fassung.
 
 Astro-5-Projekt mit der Marketingseite des Studios und dem Gerüst für den
 späteren Kundenbereich, angehängt an **Wix Headless**: Wix übernimmt Hosting,
@@ -41,7 +42,7 @@ allein ergäbe 404. Dafür stehen in `astro.config.mjs` zwei Umleitungen auf
 `/studio/index.html`, damit auch eine von Hand eingegebene Adresse ankommt.
 
 **Nachgemessen an der veröffentlichten Seite** mit
-`node ../studio/werkzeuge/live-pruefen.mjs` (52 Prüfungen, zuletzt am
+`node ../studio/werkzeuge/live-pruefen.mjs` (54 Prüfungen, zuletzt am
 4. Oktober 2026 alle grün): alle 278 Dateien erreichbar und Byte für Byte
 gleich der gebauten Fassung (12,58 MB verglichen),
 `.wasm` als `application/wasm`, die Sprachdaten als `application/gzip`, alle
@@ -52,8 +53,8 @@ derselben Seite. Geprüft wird auch die Anmeldung: die Auskunft antwortet, sie
 nennt einen Abrufer ohne Sitzung ausdrücklich nicht angemeldet, die
 ausgelieferte Anwendung trägt die Schranken-Zeilen, und `/api/hnvr/anmelden`
 leitet auf die Anmeldung des **hnvr.me-Projekts** und von dort zurück auf diese
-Seite (siehe unten). Zuletzt: www.hnvr.me/pdf-studio leitet hierher weiter,
-mit `von=hnvr` und den mitgebrachten Suchparametern. Damit läuft dort
+Seite (siehe unten). Dazu: www.hnvr.me/pdf-studio bleibt auf hnvr.me, behält
+die Suchparameter, und dort liegt das Studio mit der Anmeldung der Konsole. Damit läuft dort
 dieselbe Anwendung, die `pruefen.mjs` und `vollpruefung.mjs` im Browser
 durchgemessen haben — 134 + 166 Prüfungen, darunter Texterkennung,
 qpdf-Verschlüsselung, die digitale Unterschrift und ein eigener Abschnitt, der

@@ -88,10 +88,12 @@ schickt Anmeldecodes von hnvr.me-Konten an den, dem sie gehört.
 
 ## Als App in der Konsole
 
-Der öffentliche Einstieg ist **www.hnvr.me/pdf-studio**. hnvr.me liefert das
-Studio nicht selbst aus, sondern leitet mit 301 hierher weiter (Einzelheiten in
-`hnvr-app/README.md`). Die Anmeldung läuft deshalb weiter auf der Studio-Site,
-und die Rücksprungadressen oben bleiben, wie sie sind.
+Der öffentliche Einstieg ist **www.hnvr.me/pdf-studio**, und seit dem
+4. Oktober 2026 liefert hnvr.me das Studio dort selbst aus. **Dort braucht es
+diesen Zugang nicht:** das Studio fragt dieselbe Route wie die Konsole
+(`/api/hub/me`) und meldet über `/konsole/anmelden?ziel=…` an — eine Sitzung,
+ein Konto, eine Domain (`hnvr-app/README.md`). Der Zugang „PDF Studio“ bleibt
+für die eigenständige Studio-Site (werkbank-…); dort gilt alles oben.
 
 Wie das Studio als Bereich in der Konsole und als Kachel auf www.hnvr.me/tools
 erscheint — Manifest, Symbol, Kachel, Anleitung — steht in `hnvr-app/`

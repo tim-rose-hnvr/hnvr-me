@@ -51,12 +51,28 @@ Bereiche*.
 
 ## Einbauen
 
-**Stand 4. Oktober 2026: noch nicht eingebaut.** Kachel und Menüpunkt gehören
-in den Code von hnvr.me, und der war von hier aus nicht erreichbar (weder in
-diesem Repository noch in einem anderen, auf das diese Arbeit Zugriff hatte).
-Fertig ist alles, worauf sie zeigen: `/pdf-studio` leitet weiter, die Dateien
-hier zeigen auf `/pdf-studio`. Wer den Code von hnvr.me hat, baut nach den
-Schritten unten ein.
+**Stand 4. Oktober 2026: eingebaut und live** (Code von hnvr.me, Release aus
+`bau-apps-rahmen` `636ab60`). Von außen nachgemessen:
+
+- www.hnvr.me/tools zeigt `kachel.html` unverändert (dunkel) neben Drop-it und
+  PSD-Studio, mit genau einem Link `/pdf-studio`.
+- www.hnvr.me/apps/pdf-studio steht im App-Store (kostenlos, für jede Person
+  mit Konto).
+- `/pdf-studio` leitet weiter, auch mit `?werkzeug=…` und `?tun=…`.
+
+Laut der Sitzung, die eingebaut hat, außerdem: Menüpunkt „PDF Studio“ in der
+Seitenleiste der Konsole (selber Tab), Bereich `pdfstudio` im Rechtekern mit
+nur *Ändern*/*Keine*, Schalter je Website unter „Bereiche für Kunden“, die
+beiden Schnellaktionen. Für den Weg `pdf-studio` ist im Editor von hnvr.me
+keine eigene Seite möglich, damit nichts die Umleitung verdeckt.
+
+**Abweichung von Schritt 5:** In „hnvr.me Apps“ und im App-Store erscheint
+PDF Studio als Katalogeintrag im Kartenformat des Stores, nicht als helle
+`kachel.html` — ein Format für alle Apps statt einer Sonderkachel.
+
+**Noch nicht geprüft:** Menüpunkt, Schnellaktionen und der Knopf auf
+`/apps/pdf-studio` in der angemeldeten Konsole — dafür braucht es eine
+Anmeldung.
 
 **1. Konsole — Seitenleiste (P1, P5).** Unter **WEITERE BEREICHE** ein
 Menüpunkt „PDF Studio“ mit `bereichssymbol.svg`, sichtbar, wenn der Bereich

@@ -1,26 +1,36 @@
-/* Gestalt — in welcher Hand das Studio gezeichnet ist.
+/* Gestalt und Herkunft — in welcher Hand das Studio gezeichnet ist und ob
+   es aus der Konsole von hnvr.me kommt.
 
-   Eigenständig trägt es die Atelier-Gestaltung (Papier, Kupfer, Bodoni).
-   Kommt es aus der Konsole von hnvr.me (`?von=hnvr` im Einstieg), trägt es
-   die Hand der Konsole — damit wer dort klickt, nicht das Haus wechselt.
-   Beides ist dasselbe Programm; nur die Werte in stil.css unterscheiden sich
+   Das Studio trägt die Atelier-Gestaltung (Papier, Kupfer, Bodoni) — auch,
+   wenn es aus der Konsole von hnvr.me geöffnet wird. Die Herkunft
+   (`?von=hnvr` im Einstieg) zeigt nur den Rückweg „Konsole / PDF Studio"
+   (app/anmeldung.js), sie zieht dem Studio keine andere Hand an: so steht es
+   im Entwurf, und so hat es der Inhaber entschieden.
+
+   Die Hand der Konsole gibt es weiter, ausdrücklich gewählt mit
+   `?gestalt=hnvr` (zurück mit `?gestalt=atelier`). Beides ist dasselbe
+   Programm; nur die Werte in stil.css unterscheiden sich
    (`:root[data-gestalt="hnvr"]`).
 
    Ein klassisches Skript im Kopf, kein Modul: es muss laufen, bevor die
    Seite zum ersten Mal gezeichnet wird, sonst blitzt die falsche Hand auf.
-   Die Wahl gilt für diesen Tab (sessionStorage) — wer in der Konsole
-   angekommen ist und im Studio eine Datei öffnet, bleibt in der Konsole.
-   Ohne Speicher (privates Fenster, gesperrt) gilt nur die Adresse. */
+   Beides gilt für diesen Tab (sessionStorage) — wer aus der Konsole kam und
+   im Studio eine Datei öffnet, behält den Rückweg. Ohne Speicher (privates
+   Fenster, gesperrt) gilt nur die Adresse. Der Schlüssel heißt „studio:hand“
+   und nicht mehr „studio:gestalt“: unter dem alten stand bis Oktober 2026 die
+   Herkunft, und ein noch offener Tab soll nicht in der alten Hand bleiben. */
 (function () {
-  var gestalt = null;
-  try {
-    var von = new URLSearchParams(location.search).get('von');
-    if (von === 'hnvr' || von === 'atelier') {
-      gestalt = von;
-      try { sessionStorage.setItem('studio:gestalt', von); } catch (e) { /* ohne Speicher */ }
-    } else {
-      try { gestalt = sessionStorage.getItem('studio:gestalt'); } catch (e) { gestalt = null; }
+  function merke(schluessel, werte, wert) {
+    if (werte.indexOf(wert) > -1) {
+      try { sessionStorage.setItem(schluessel, wert); } catch (e) { /* ohne Speicher */ }
+      return wert;
     }
-  } catch (e) { gestalt = null; }
+    try { return sessionStorage.getItem(schluessel); } catch (e) { return null; }
+  }
+  var suche = null;
+  try { suche = new URLSearchParams(location.search); } catch (e) { suche = null; }
+  var herkunft = merke('studio:herkunft', ['hnvr', 'selbst'], suche && suche.get('von'));
+  var gestalt = merke('studio:hand', ['hnvr', 'atelier'], suche && suche.get('gestalt'));
+  if (herkunft === 'hnvr') document.documentElement.setAttribute('data-herkunft', 'hnvr');
   if (gestalt === 'hnvr') document.documentElement.setAttribute('data-gestalt', 'hnvr');
 })();

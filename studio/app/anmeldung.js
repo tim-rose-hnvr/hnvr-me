@@ -14,6 +14,18 @@
      <meta name="studio-anmeldung-weg" content="/api/hnvr/anmelden">
      <meta name="studio-anmeldung-konto" content="hnvr.me">
 
+   Liegt das Studio auf www.hnvr.me selbst, fragt es dort, wo die Konsole
+   fragt, und schickt zu deren Anmeldeseite. Die nimmt den Rücksprung unter
+   einem anderen Namen an — das sagt eine vierte Zeile:
+
+     <meta name="studio-anmeldung" content="/api/hub/me">
+     <meta name="studio-anmeldung-weg" content="/konsole/anmelden">
+     <meta name="studio-anmeldung-ruecksprung" content="ziel">
+
+   Die Auskunft darf in zwei Formen antworten: `{ angemeldet, name }` (die
+   eigene Studio-Site) oder `{ user: { name } | null }` (hnvr.me). Das sind
+   Lesarten derselben Frage, kein zweiter Weg.
+
    **Ohne die erste Zeile gibt es keine Schranke.** Das ist keine Nachlässigkeit,
    sondern Leitprinzip 2: das Studio muss in einem abgeschotteten Netz
    vollständig starten. Wer es auf einen eigenen Server legt, an dem es keine
@@ -52,6 +64,23 @@ function auskunftsWeg() {
 function anmeldeWegAusKopf() {
   const eigene = document.querySelector('meta[name="studio-anmeldung-weg"]')?.content?.trim();
   return eigene && eigene.startsWith('/') && !eigene.startsWith('//') ? eigene : null;
+}
+
+/** Unter welchem Namen die Anmeldeseite den Rücksprung annimmt. */
+function ruecksprungAusKopf() {
+  const eigene = document.querySelector('meta[name="studio-anmeldung-ruecksprung"]')?.content?.trim();
+  return eigene && /^[A-Za-z][A-Za-z0-9_-]{0,31}$/.test(eigene) ? eigene : 'returnToUrl';
+}
+
+/** Liest die Antwort der Auskunft, gleich in welcher der beiden Formen. */
+export function leseAuskunft(daten) {
+  if (!daten || typeof daten !== 'object') throw new Error('Auskunft ohne Inhalt');
+  if (typeof daten.angemeldet === 'boolean') return { angemeldet: daten.angemeldet, name: daten.name || '' };
+  if ('user' in daten) {
+    const nutzer = daten.user && typeof daten.user === 'object' ? daten.user : null;
+    return { angemeldet: !!nutzer, name: nutzer ? String(nutzer.name || nutzer.email || '') : '' };
+  }
+  throw new Error('Auskunft in unbekannter Form');
 }
 
 /** Bei wem das Konto liegt, z. B. „hnvr.me" — nur für die Beschriftung. */
@@ -107,10 +136,10 @@ export async function frageAnmeldung() {
   try {
     const antwort = await fetch(weg, { headers: { accept: 'application/json' }, cache: 'no-store' });
     if (!antwort.ok) throw new Error(`Auskunft antwortet ${antwort.status}`);
-    const daten = await antwort.json();
-    if (daten.angemeldet) schreibeZettel({ zeit: Date.now(), name: daten.name || '' });
+    const daten = leseAuskunft(await antwort.json());
+    if (daten.angemeldet) schreibeZettel({ zeit: Date.now(), name: daten.name });
     else vergissZettel();
-    return { noetig: true, angemeldet: !!daten.angemeldet, name: daten.name };
+    return { noetig: true, angemeldet: daten.angemeldet, name: daten.name || undefined };
   } catch {
     /* Kein Netz, kein Server, falsche Antwort. Jetzt zählt der Merkzettel. */
     const tage = verbleibendeTage();
@@ -133,6 +162,7 @@ export function zeigeSchranke({ anmeldeWeg = anmeldeWegAusKopf() || '/api/auth/l
   const konto = kontoAusKopf();
 
   const ziel = encodeURIComponent(`${location.pathname}${location.search}`);
+  const ruecksprung = ruecksprungAusKopf();
   const karte = ohneNetz
     ? [
       el('h1', { text: 'Ohne Netz, ohne Anmeldung' }),
@@ -142,7 +172,7 @@ export function zeigeSchranke({ anmeldeWeg = anmeldeWegAusKopf() || '/api/auth/l
       el('p', { klasse: 'leise klein' },
         'Einmal mit Netz anmelden — danach arbeitet das Studio wieder offline weiter, ',
         `${frist()} Tage lang, auch als installierte Anwendung.`),
-      el('a', { klasse: 'knopf knopf-voll knopf-gross', href: `${anmeldeWeg}?returnToUrl=${ziel}` },
+      el('a', { klasse: 'knopf knopf-voll knopf-gross', href: `${anmeldeWeg}?${ruecksprung}=${ziel}` },
         'Erneut versuchen'),
     ]
     : [
@@ -156,7 +186,7 @@ export function zeigeSchranke({ anmeldeWeg = anmeldeWegAusKopf() || '/api/auth/l
         'hochgeladen — die Anmeldung sagt uns, dass Sie da sind, nicht, was Sie tun. ',
         'Die einzige Ausnahme ist „Zur Unterschrift versenden", und dieser Dialog sagt es, ',
         'bevor er es tut.'),
-      el('a', { klasse: 'knopf knopf-voll knopf-gross', href: `${anmeldeWeg}?returnToUrl=${ziel}` },
+      el('a', { klasse: 'knopf knopf-voll knopf-gross', href: `${anmeldeWeg}?${ruecksprung}=${ziel}` },
         konto ? `Mit ${konto} anmelden` : 'Anmelden oder Konto anlegen'),
       el('p', { klasse: 'leise klein' },
         'Schon angemeldet und es steht trotzdem hier? Dann ist die Sitzung abgelaufen — ',
@@ -182,8 +212,9 @@ export function entferneSchranke() {
      <meta name="studio-heimat-name" content="Konsole">
 
    Dann steht im Kopf „Konsole / PDF Studio", wie der Pfad in der Kopfleiste
-   der Konsole — aber nur in der Hand der Konsole (`data-gestalt="hnvr"`,
-   gesetzt von app/gestalt.js, wenn der Einstieg `?von=hnvr` trägt). Wer das
+   der Konsole — aber nur, wenn das Studio aus der Konsole kommt
+   (`data-herkunft="hnvr"`, gesetzt von app/gestalt.js, wenn der Einstieg
+   `?von=hnvr` trägt). Wer das
    Studio direkt aufruft, ist nicht aus der Konsole gekommen und braucht
    keinen Weg dorthin zurück. Ohne die Zeile bleibt der Kopf, wie er ist —
    das Studio im Repository weiß nichts von hnvr.me. Erlaubt sind nur
@@ -193,7 +224,7 @@ export function zeigeHeimat() {
   const ziel = document.querySelector('meta[name="studio-heimat"]')?.content?.trim();
   const link = $('#heimat');
   if (!ziel || !link) return;
-  if (document.documentElement.dataset.gestalt !== 'hnvr') return;
+  if (document.documentElement.dataset.herkunft !== 'hnvr') return;
   let adresse;
   try { adresse = new URL(ziel, location.href); } catch { return; }
   if (adresse.protocol !== 'https:' && adresse.origin !== location.origin) return;

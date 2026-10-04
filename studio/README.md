@@ -40,13 +40,18 @@ Das Studio hat **zwei Hände, ein Programm** (ausführlich in `doku/vorgang.md`)
   Kupfer `#C78B5F` als Fläche mit Tinte darauf, Rost `#AE4E2D` als
   Auszeichnung, Bodoni Moda kursiv als Anzeigeschrift, sonst Inter. Kanten
   3/4 px, Linien statt Schatten.
-- **hnvr.me** (aus der Konsole, `?von=hnvr`): die Werte der Konsole —
-  Leiste `#172124`, Orange `#FF7120`, Space Grotesk, Radien 8/12/16 — und
-  oben der Rückweg „KONSOLE / PDF STUDIO".
+- **hnvr.me** (nur ausdrücklich, `?gestalt=hnvr`): die Werte der Konsole —
+  Leiste `#172124`, Orange `#FF7120`, Space Grotesk, Radien 8/12/16.
+
+Aus der Konsole (`?von=hnvr`) bleibt das Studio im Atelier und zeigt oben den
+Rückweg „Konsole / PDF Studio".
 
 Gesetzt wird die Hand von `app/gestalt.js` vor dem ersten Zeichnen; alles
 Weitere sind Variablen in `stil.css`. Alle Schriften liegen bei.
 
+Das **Deckblatt** (Start) ist hell und ohne Navigation links: Menüzeile auf
+dem Papier, Wortmarke, Reiter Start · Dokumente · Editor · Vertraulich teilen,
+darunter Stapel, Aufgaben, Sammlungen und das dunkle Band. Sonst gilt der
 Aufbau wie im Entwurf: Menüleiste oben (64 px: Datei, Bearbeiten, Ansicht,
 Hilfe, Suche, „Lokal auf diesem Gerät", Konto), Navigation links (190 px:
 Start, Editor, Einstellungen), rechts die Ansicht. Der Editor: Dokumentkopf
@@ -806,7 +811,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 201 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 202 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  52 Prüfungen — was der Hoster ausliefert
 ```

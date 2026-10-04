@@ -1032,6 +1032,7 @@ export function starteOberflaeche() {
      Klick-Ereignis als Kategorie durch, und der Dialog zeigte als Titel
      „[object PointerEvent]" und darunter keine einzige Einstellung. */
   $('#knopf-einstellungen').addEventListener('click', () => zeigeAnsicht('einstellungen'));
+  $('#kopf-einstellungen')?.addEventListener('click', () => zeigeAnsicht('einstellungen'));
   $('#knopf-einfuegen').addEventListener('click', () => fuehreAus('datei:anhaengen'));
   $('#knopf-aufteilen').addEventListener('click', () => fuehreAus('teilen'));
   $('#knopf-zurueck').addEventListener('click', () => zeigeSeite(zustand.aktuelleSeite - 1));

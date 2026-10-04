@@ -211,29 +211,45 @@ async function zeichneStapel() {
       : 'Noch keine Dokumente. Die nächste Datei, die Sie öffnen, erscheint hier.' }));
     return;
   }
+  /* Wie im Entwurf: das oberste Blatt groß, mit rostrotem Rücken, Etikett,
+     Name in der Anzeigeschrift und einem Vermerk unter einer Linie; die
+     übrigen schmal, Name links, Zeit und Stand rechts. */
   alle.slice(0, 4).forEach((d, i) => {
     const erstes = i === 0;
     const meta = [namen[d.sammlung], `${d.seiten} ${d.seiten === 1 ? 'Seite' : 'Seiten'}`, groesse(d.groesse)].filter(Boolean).join(' · ');
+    const ruecken = el('span', { klasse: 'stapel-ruecken', 'aria-hidden': 'true' },
+      el('span', { klasse: 'stapel-marke' }), el('span', { text: 'PDF' }));
+    const datei = el('span', { klasse: 'stapel-datei' },
+      el('span', { klasse: 'stapel-name', text: d.name }),
+      el('span', { klasse: 'stapel-meta', text: meta }));
+    const inhalt = erstes
+      ? el('span', { klasse: 'stapel-inhalt' },
+        el('span', { klasse: 'stapel-etikett', text: 'Dokument' }),
+        datei,
+        el('span', { klasse: 'stapel-vermerk' },
+          el('span', {},
+            el('span', { klasse: 'stapel-vermerk-etikett', text: 'Zuletzt geöffnet' }),
+            el('span', { text: wann(d.zuletzt) })),
+          el('span', {},
+            el('span', { klasse: 'stapel-vermerk-etikett', text: 'Status' }),
+            el('span', { klasse: 'stapel-status', text: d.statusText })),
+          el('span', { klasse: 'stapel-symbol', html: DATEI_SYMBOL })))
+      : el('span', { klasse: 'stapel-inhalt' },
+        datei,
+        el('span', { klasse: 'stapel-stand' },
+          el('span', { text: wann(d.zuletzt) }),
+          el('span', { klasse: 'stapel-status', text: d.statusText })));
     stapel.append(el('div', { klasse: `stapel-blatt ${erstes ? 'ist-oben' : ''}`, style: `--versatz: ${i}` },
       el('button', {
         klasse: 'stapel-karte', type: 'button',
         'aria-label': `${d.name} öffnen`,
         beiClick: () => oeffneAusAblage(d.id),
-      },
-        el('span', { klasse: 'stapel-ruecken', 'aria-hidden': 'true' }, el('span', { text: 'PDF' })),
-        el('span', { klasse: 'stapel-inhalt' },
-          erstes ? el('span', { klasse: 'stapel-etikett', text: 'Dokument' }) : null,
-          el('span', { klasse: 'stapel-name', text: d.name }),
-          el('span', { klasse: 'stapel-meta', text: meta }),
-          el('span', { klasse: 'stapel-vermerk' },
-            el('span', {},
-              erstes ? el('span', { klasse: 'stapel-vermerk-etikett', text: 'Zuletzt geöffnet' }) : null,
-              el('span', { text: wann(d.zuletzt) })),
-            el('span', {},
-              erstes ? el('span', { klasse: 'stapel-vermerk-etikett', text: 'Status' }) : null,
-              el('span', { klasse: 'stapel-status', text: d.statusText })))))));
+      }, ruecken, inhalt)));
   });
 }
+
+const DATEI_SYMBOL = '<svg viewBox="0 0 24 24" class="sinnbild" aria-hidden="true">'
+  + '<path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M14 3v4h4M9 13h6M9 17h6"/></svg>';
 
 async function zeichneSammlungsregister() {
   const register = $('#start-sammlungen');
@@ -448,6 +464,10 @@ export function starteDokumentenatelier() {
   for (const punkt of $$('#atelier-navi .navi-punkt[data-ansicht="dokumente"]')) {
     punkt.addEventListener('click', () => { filterSammlung = undefined; zeichneDokumente(); });
   }
+  /* Der Reiter „Dokumente" auf dem Deckblatt zeigt alle, wie der Punkt links. */
+  document.addEventListener('click', (ereignis) => {
+    if (ereignis.target.closest?.('.start-reiter[data-ansicht="dokumente"]')) zeigeDokumente(undefined);
+  });
 
   hoer('ablage:geaendert', zeichneAlles);
   hoer('ansicht:gewechselt', (name) => { if (name === 'dokumente') zeichneDokumente(); if (name === 'start') zeichneStapel(); });

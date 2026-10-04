@@ -52,7 +52,7 @@ export function zeigeAnsicht(name) {
     huelle.hidden = false;
     huelle.dataset.ansicht = name;
   }
-  for (const punkt of $$('#atelier-navi .navi-punkt, #knopf-einstellungen')) {
+  for (const punkt of $$('#atelier-navi .navi-punkt, .start-reiter, #knopf-einstellungen, #kopf-einstellungen')) {
     const ziel = punkt.dataset.ansicht || 'einstellungen';
     if (ziel === name) punkt.setAttribute('aria-current', 'page');
     else punkt.removeAttribute('aria-current');
@@ -77,7 +77,8 @@ function zeichneDokumentkopf() {
   /* Mehrere Dateien zeigen Reiter; bei einer ist der Titel genug. */
   const reiter = $('#dokument-reiter');
   if (reiter) reiter.hidden = mappenListe().filter((m) => m.seiten).length < 2;
-  for (const punkt of $$('#atelier-navi .navi-punkt[data-ansicht="editor"], #atelier-navi .navi-punkt[data-ansicht="teilen"]')) {
+  for (const punkt of $$('#atelier-navi .navi-punkt[data-ansicht="editor"], #atelier-navi .navi-punkt[data-ansicht="teilen"], '
+    + '.start-reiter[data-ansicht="editor"], .start-reiter[data-ansicht="teilen"]')) {
     punkt.disabled = !zustand.folge.length;
   }
 }
@@ -97,6 +98,13 @@ export function starteAtelier() {
   for (const punkt of $$('#atelier-navi .navi-punkt')) {
     punkt.addEventListener('click', () => zeigeAnsicht(punkt.dataset.ansicht));
   }
+  /* Die Reiter des Deckblatts liegen im Rumpf des Starts, und den ersetzt der
+     Einzelwerkzeug-Weg zeitweise durch Text. Deshalb hier ein Zuhörer am
+     Dokument statt einer am Knopf: er überlebt das Wiederherstellen. */
+  document.addEventListener('click', (ereignis) => {
+    const reiter = ereignis.target.closest?.('.start-reiter');
+    if (reiter && !reiter.disabled) zeigeAnsicht(reiter.dataset.ansicht);
+  });
   $('#knopf-zum-start')?.addEventListener('click', () => zeigeAnsicht('start'));
   $('#knopf-vollbild')?.addEventListener('click', () => {
     if (document.fullscreenElement) document.exitFullscreen?.();

@@ -101,12 +101,30 @@ Dokument ansteht, rechnet weiter das Dokument (`vorgangsstand()` in
 Kein Werkzeug ging verloren; die Prüfung „Die Werkzeuge tragen die Wörter
 des Entwurfs" sammelt sie aus allen vier Modi ein.
 
-**Zwei Hände.** Eigenständig trägt das Studio das Atelier. Aus der Konsole
-von hnvr.me (`?von=hnvr`) trägt es die Hand der Konsole. Es gibt dafür keinen
-zweiten Codestand und keine zweite Regelliste: die Konsole belegt dieselben
-Variablen neu (`:root[data-gestalt="hnvr"]`). Eine Prüfung hält fest, dass
-sie jede Variable des Ateliers neu belegt — sonst sickerte eine Atelier-Farbe
-in die Konsole.
+**Zwei Hände, eine davon im Gebrauch.** Das Studio trägt das Atelier — seit
+dem 04.10.2026 auch, wenn es aus der Konsole von hnvr.me kommt. `?von=hnvr`
+nennt nur noch die Herkunft (`data-herkunft="hnvr"`) und zeigt den Rückweg
+„Konsole / PDF Studio"; der Inhaber wollte das Studio dort so sehen, wie der
+Entwurf es zeigt, nicht in Orange. Die Hand der Konsole gibt es weiter, nur
+ausdrücklich gewählt (`?gestalt=hnvr`). Sie belegt dieselben Variablen neu
+(`:root[data-gestalt="hnvr"]`); eine Prüfung hält fest, dass sie jede Variable
+des Ateliers neu belegt.
+
+**Das Deckblatt.** Der Start ist im Entwurf das eine Blatt ohne dunkle
+Leisten (Figma, Seite „Deckblatt", Rahmen „PDF Studio · Dokumentenatelier"):
+helle Menüzeile auf dem Papier mit Suche, „Lokal auf diesem Gerät",
+Einstellungen und Konto; die Wortmarke; die Ansichten als Reiter darunter,
+der aktive in Rost mit 4-px-Kante, rechts „Datei öffnen"; „Zuletzt geöffnet"
+als Stapel (oben groß mit rostrotem Rücken, darunter schmal und je 14 px
+eingerückt); die Sammlungen als Register; unten das dunkle Band. Es ist
+dieselbe Hülle wie im Editor, nur anders gekleidet, solange
+`data-ansicht="start"` gilt — sobald ein Dokument offen ist, stehen wieder die
+dunkle Leiste oben und die Navigation links. Bewusst anders als im Entwurf:
+die Symbole sind die des Studios (die exportierten aus Figma sind teils
+beschädigt: die Lupe ohne Griff, die Unterschrift ein Punkt); Schriftgrößen
+folgen der Staffel (34/33/29 → 32 px, 22 → 24, 9/10 → 11); „PRO" fehlt, weil
+es keine Lizenz gibt; „Beispiel ansehen" und „Jedes Werkzeug auch einzeln"
+bleiben, weil sie Wege sind, die es sonst nicht gäbe.
 
 **Zwei Töne sind verschoben**, weil sie den Mindestkontrast nicht schaffen:
 Graubraun `#7A6F63` auf Papier (4,3:1) wird `#746D61` (4,5:1); Kupfer als

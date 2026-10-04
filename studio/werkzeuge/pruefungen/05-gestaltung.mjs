@@ -196,13 +196,21 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     await seite.goto(BASIS);
     await seite.waitForTimeout(1400);
     const stand = await seite.evaluate(() => {
-      /* Der Start steht in derselben Hülle wie der Editor: dieselbe
-         Menüleiste, dieselbe Navigation. */
+      /* Der Start ist das Deckblatt des Entwurfs (Figma „PDF Studio ·
+         Dokumentenatelier"): dieselbe Hülle wie der Editor, aber hell — die
+         Menüzeile liegt auf dem Papier, 54 px hoch, links keine Navigation,
+         die Ansichten als Reiter unter der Wortmarke. */
       const kopf = document.querySelector('.kopf');
       const oeffnen = document.querySelector('#knopf-oeffnen');
+      const aktiv = document.querySelector('.start-reiter[aria-current="page"]');
       return {
         kopfGrund: kopf ? getComputedStyle(kopf).backgroundColor : null,
+        grund: getComputedStyle(document.documentElement).getPropertyValue('--grund').trim(),
         kopfHoehe: kopf ? Math.round(kopf.getBoundingClientRect().height) : 0,
+        navi: getComputedStyle(document.querySelector('.atelier-navi')).display,
+        reiter: [...document.querySelectorAll('.start-reiter')].map((r) => r.textContent.trim()),
+        aktiv: aktiv ? { text: aktiv.textContent.trim(), farbe: getComputedStyle(aktiv).color, kante: getComputedStyle(aktiv).borderBottomWidth } : null,
+        einstellungen: getComputedStyle(document.querySelector('#kopf-einstellungen')).display,
         knopf: getComputedStyle(oeffnen).backgroundColor,
         rost: getComputedStyle(document.documentElement).getPropertyValue('--rost-voll').trim(),
         titelSchrift: getComputedStyle(document.querySelector('.empfang h1')).fontFamily,
@@ -210,9 +218,12 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
         formate: (document.querySelector('.empfang-ablage .mono')?.textContent || ''),
       };
     });
-    if (stand.kopfGrund !== REG.chrome900) throw new Error(`Kopf ist ${stand.kopfGrund}`);
-    if (stand.kopfHoehe !== REG.kopf) throw new Error(`Kopf ist ${stand.kopfHoehe} px`);
-    void 0;
+    if (stand.kopfGrund !== 'rgb(246, 241, 232)' || stand.grund.toUpperCase() !== '#F6F1E8') throw new Error(`Kopf ist ${stand.kopfGrund}`);
+    if (stand.kopfHoehe !== 54) throw new Error(`Kopf ist ${stand.kopfHoehe} px`);
+    if (stand.navi !== 'none') throw new Error('auf dem Deckblatt steht die Navigation links');
+    if (stand.reiter.join('|') !== 'Start|Dokumente|Editor|Vertraulich teilen') throw new Error(`Reiter: ${stand.reiter.join(', ')}`);
+    if (stand.aktiv?.text !== 'Start' || stand.aktiv.farbe !== 'rgb(174, 78, 45)' || stand.aktiv.kante !== '4px') throw new Error(`aktiver Reiter: ${JSON.stringify(stand.aktiv)}`);
+    if (stand.einstellungen === 'none') throw new Error('die Einstellungen fehlen oben');
     /* „Datei öffnen" ist der eine rostrote Knopf der Startseite (--rost-voll). */
     if (stand.rost.toUpperCase() !== '#AE4E2D' || stand.knopf !== 'rgb(174, 78, 45)') throw new Error(`„Datei öffnen" ist ${stand.knopf}`);
     /* Der Titel steht in der Anzeigeschrift des Ateliers. */
@@ -220,7 +231,13 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
     if (!stand.ablage) throw new Error('keine Ablegefläche');
     if (!/DOCX/.test(stand.formate)) throw new Error(`Formate: ${stand.formate}`);
     await ladeBeispiel();
-    return `Kopf ${stand.kopfHoehe} px, Knopf ${stand.knopf}`;
+    /* Mit offenem Dokument ist die Hülle wieder die des Editors. */
+    const editor = await seite.evaluate(() => ({
+      kopf: getComputedStyle(document.querySelector('.kopf')).backgroundColor,
+      navi: getComputedStyle(document.querySelector('.atelier-navi')).display,
+    }));
+    if (editor.kopf !== REG.chrome900 || editor.navi === 'none') throw new Error(`Editor: Kopf ${editor.kopf}, Navigation ${editor.navi}`);
+    return `Deckblatt hell, Kopf ${stand.kopfHoehe} px, Reiter ${stand.reiter.length}; Editor dunkel`;
   });
 
   await pruefe('Leere Tafeln sagen, was dort stünde — und wie es dorthin kommt', async () => {

@@ -87,6 +87,55 @@ export default async function ({ pruefe, seite, ladeBeispiel }) {
     return `→ ${lage.mitHnvr.ziel.slice(0, 44)}…, „${lage.mitHnvr.wort}"; fremder Weg abgewiesen`;
   });
 
+  await pruefe('Auf www.hnvr.me selbst: Auskunft der Konsole, Rücksprung als ?ziel=', async () => {
+    /* Liegt das Studio unter www.hnvr.me/pdf-studio/, fragt es /api/hub/me
+       ({ user } statt { angemeldet }) und schickt zu /konsole/anmelden, die
+       den Rücksprung als `ziel` annimmt. Ein Name, der kein schlichter
+       Bezeichner ist, wird nicht übernommen. */
+    const lage = await seite.evaluate(async () => {
+      const m = await import('./app/anmeldung.js');
+      const lesarten = {
+        drin: m.leseAuskunft({ user: { id: '1', name: 'Tim Rose', email: 't@x' }, anbieter: [] }),
+        draussen: m.leseAuskunft({ user: null, anbieter: [] }),
+        studio: m.leseAuskunft({ angemeldet: true, name: 'Ada' }),
+      };
+      let unbekannt = null;
+      try { m.leseAuskunft({ irgendwas: 1 }); } catch (e) { unbekannt = e.message; }
+      const echt = window.fetch;
+      window.fetch = async () => new Response(JSON.stringify({ user: null, anbieter: [] }),
+        { status: 200, headers: { 'content-type': 'application/json' } });
+      const setze = (name, inhalt) => {
+        const k = document.createElement('meta');
+        k.name = name; k.content = inhalt; document.head.append(k); return k;
+      };
+      const zeilen = [
+        setze('studio-anmeldung', '/api/hub/me'),
+        setze('studio-anmeldung-weg', '/konsole/anmelden'),
+        setze('studio-anmeldung-konto', 'hnvr.me'),
+      ];
+      const ruecksprung = setze('studio-anmeldung-ruecksprung', 'ziel');
+      const antwort = await m.frageAnmeldung();
+      if (antwort.noetig && !antwort.angemeldet) m.zeigeSchranke();
+      const ziel = document.querySelector('#anmeldeschranke a')?.getAttribute('href');
+      m.entferneSchranke();
+      ruecksprung.content = 'x"><script>';
+      m.zeigeSchranke();
+      const boese = document.querySelector('#anmeldeschranke a')?.getAttribute('href');
+      m.entferneSchranke();
+      for (const k of [...zeilen, ruecksprung]) k.remove();
+      window.fetch = echt;
+      return { lesarten, unbekannt, antwort, ziel, boese };
+    });
+    if (!lage.lesarten.drin.angemeldet || lage.lesarten.drin.name !== 'Tim Rose') throw new Error(`user gelesen als ${JSON.stringify(lage.lesarten.drin)}`);
+    if (lage.lesarten.draussen.angemeldet) throw new Error('user: null gilt als angemeldet');
+    if (!lage.lesarten.studio.angemeldet) throw new Error('die eigene Form wird nicht mehr gelesen');
+    if (!lage.unbekannt) throw new Error('eine fremde Antwort gilt als Auskunft');
+    if (lage.antwort.angemeldet) throw new Error('ohne user angemeldet');
+    if (!/^\/konsole\/anmelden\?ziel=%2F/.test(lage.ziel || '')) throw new Error(`Ziel des Knopfes: ${lage.ziel}`);
+    if (!/\?returnToUrl=/.test(lage.boese || '')) throw new Error(`fremder Parametername übernommen: ${lage.boese}`);
+    return `${lage.ziel.slice(0, 40)}…`;
+  });
+
   await pruefe('Als App von hnvr.me führt der Kopf zurück in die Konsole', async () => {
     /* Der Brotkrumen „Konsole / PDF Studio" steht nur, wenn die einbettende
        Seite ihn nennt, nur in der Hand der Konsole — und nur mit https oder
@@ -107,14 +156,14 @@ export default async function ({ pruefe, seite, ladeBeispiel }) {
       const ziel = setze('studio-heimat', 'https://www.hnvr.me/konsole');
       const name = setze('studio-heimat-name', 'Konsole');
       const imAtelier = lies();
-      document.documentElement.dataset.gestalt = 'hnvr';
+      document.documentElement.dataset.herkunft = 'hnvr';
       const echt = lies();
       ziel.content = 'javascript:alert(1)';
       const boese = lies();
       ziel.content = 'http://fremd.example/';
       const ohneTls = lies();
       ziel.remove(); name.remove();
-      delete document.documentElement.dataset.gestalt;
+      delete document.documentElement.dataset.herkunft;
       link.hidden = true; link.setAttribute('href', '#');
       return { vorher, imAtelier, echt, boese, ohneTls };
     });

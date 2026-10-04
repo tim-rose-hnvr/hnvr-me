@@ -206,7 +206,7 @@
   --satz-riesig:   40px;
   /* Die Wortmarke im Masthead wächst mit dem Fenster — die einzige Größe,
      die nicht fest ist. */
-  --satz-marke:    clamp(56px, 7.6vw, 132px);
+  --satz-marke:    clamp(56px, 8.25vw, 132px);
 
   --raum-1:  2px;
   --raum-2:  4px;
@@ -2443,10 +2443,54 @@ button, input, select, textarea { font: inherit; color: inherit; }
    Nach „PDF Studio · Dokumentenatelier" im Entwurf: Masthead mit der
    Wortmarke in Bodoni, darunter der Arbeitstisch — links „Zuletzt
    geöffnet" als Stapel, rechts „Was möchten Sie erledigen?" —, unten das
-   dunkle Band mit den drei Grundsätzen. Menüleiste und Navigation stehen
-   schon in der Hülle; die Kopfzeile des Entwurfs wird nicht doppelt gebaut. */
+   dunkle Band mit den drei Grundsätzen.
 
-.huelle[data-ansicht="start"] .navi-standard { display: none; }
+   Das Deckblatt ist im Entwurf das eine Blatt ohne dunkle Leisten: oben eine
+   helle Menüzeile auf dem Papier, keine Navigation links, die Ansichten als
+   Reiter unter der Wortmarke. Es ist dieselbe Hülle wie im Editor — dieselbe
+   Menüleiste, dieselbe Suche, dasselbe Konto —, nur anders gekleidet, solange
+   `data-ansicht="start"` gilt. */
+
+.huelle[data-ansicht="start"] {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 54px minmax(0, 1fr);
+  background: var(--grund);
+}
+.huelle[data-ansicht="start"] .atelier-navi { display: none; }
+.huelle[data-ansicht="start"] .arbeitsinhalt { grid-column: 1; }
+.huelle[data-ansicht="start"] .kopf {
+  margin: 0 calc(var(--raum-9) + var(--raum-7)); padding: 0; gap: calc(var(--raum-8) + var(--raum-3));
+  background: var(--grund); color: var(--tinte); border-bottom: 1px solid var(--linie);
+}
+.huelle[data-ansicht="start"] .wortmarke { display: none; }
+.huelle[data-ansicht="start"] .menueleiste { gap: var(--raum-6); margin-left: calc(-1 * var(--raum-6)); }
+.huelle[data-ansicht="start"] .menue-knopf { height: 30px; padding: 0 var(--raum-6); color: var(--tinte); font-size: var(--satz-neben); }
+.huelle[data-ansicht="start"] .menue-knopf:hover,
+.huelle[data-ansicht="start"] .menue.ist-offen .menue-knopf { background: var(--flaeche-tief); color: var(--tinte); box-shadow: inset 0 -1px 0 var(--tinte); }
+.huelle[data-ansicht="start"] .kopf-rechts { gap: var(--raum-8); }
+.huelle[data-ansicht="start"] .kopf-suche {
+  width: 350px; height: 36px; gap: var(--raum-6); padding: 0 var(--raum-6);
+  border: 0; border-bottom: 1px solid var(--linie); border-radius: 0; background: none;
+  color: var(--tinte-leise); font-size: var(--satz-neben);
+}
+.huelle[data-ansicht="start"] .kopf-suche:hover { border-bottom-color: var(--tinte); }
+.huelle[data-ansicht="start"] .kopf-suche .sinnbild,
+.huelle[data-ansicht="start"] .kopf-lokal .sinnbild { width: 16px; height: 16px; }
+.huelle[data-ansicht="start"] .kopf-lokal { color: var(--tinte-leise); }
+.huelle[data-ansicht="start"] .profil {
+  width: 30px; height: 30px; background: none; border: 1px solid var(--tinte); color: var(--tinte); font-size: var(--satz-etikett);
+}
+.huelle[data-ansicht="start"] .heimat { color: var(--tinte-leise); }
+.huelle[data-ansicht="start"] .heimat:hover { color: var(--tinte); }
+.huelle[data-ansicht="start"] .heimat-trenner { color: var(--linie-stark); }
+.kopf-einstellungen { display: none; }
+.huelle[data-ansicht="start"] .kopf-einstellungen {
+  display: inline-flex; align-items: center; gap: var(--raum-4);
+  border: 0; background: none; padding: 0; cursor: pointer;
+  color: var(--tinte); font-size: var(--satz-neben); white-space: nowrap;
+}
+.huelle[data-ansicht="start"] .kopf-einstellungen .sinnbild { width: 17px; height: 17px; }
+.huelle[data-ansicht="start"] .kopf-einstellungen:hover span { text-decoration: underline; text-underline-offset: 3px; }
 
 .atelier-start { padding: 0 calc(var(--raum-9) + var(--raum-7)); min-width: 0; }
 .ansicht-start .empfang-rumpf { display: block; padding: 0; }
@@ -2473,9 +2517,25 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .masthead-auftrag { margin: 0; font-size: var(--satz-gross); line-height: 1.25; letter-spacing: -.02em; color: var(--tinte); }
 .masthead-satz { margin: var(--raum-6) 0 0; font-size: var(--satz-neben); color: var(--tinte-leise); }
 
-.start-leiste {
-  display: flex; align-items: center; justify-content: flex-end; gap: var(--raum-6);
-  min-height: 58px; border-top: 2px solid var(--tinte); border-bottom: 1px solid var(--tinte);
+/* Die Arbeitsnavigation: Reiter wie Registerblätter, der aktive in Rost mit
+   einer 4-px-Kante, rechts der eine Hauptknopf. */
+.start-navi {
+  display: flex; align-items: stretch; gap: calc(var(--raum-9) + var(--raum-4));
+  height: 58px; border-top: 3px solid var(--tinte); border-bottom: 1px solid var(--tinte);
+}
+.start-reiter {
+  display: flex; align-items: center; padding: 0; border: 0; border-bottom: 4px solid transparent;
+  background: none; cursor: pointer; white-space: nowrap;
+  color: var(--tinte); font-size: var(--satz-grund); font-weight: 500;
+}
+.start-reiter:hover:not(:disabled) { border-bottom-color: var(--linie-stark); }
+.start-reiter[aria-current="page"] { color: var(--tally); font-weight: 700; border-bottom-color: var(--tally); }
+.start-reiter:disabled { color: var(--tinte-leise); cursor: default; }
+.start-navi-freiraum { flex: 1; }
+.start-beispiel { align-self: center; }
+.start-navi #knopf-oeffnen {
+  align-self: center; width: 210px; height: 40px; justify-content: space-between;
+  padding: 0 calc(var(--raum-7) + var(--raum-1)); font-size: var(--satz-bedien); font-weight: 600;
 }
 .knopf-rost, .knopf-rost:hover {
   background: var(--rost-voll); color: var(--rost-text); box-shadow: none;
@@ -2488,12 +2548,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: grid; grid-template-columns: minmax(0, 920fr) minmax(0, 536fr); gap: calc(var(--raum-9) + var(--raum-7));
   padding: var(--raum-9) 0;
 }
+.dokumententisch { display: flex; flex-direction: column; gap: calc(var(--raum-7) + var(--raum-1)); min-width: 0; }
 .abschnittskopf { display: flex; align-items: center; justify-content: space-between; gap: var(--raum-7); min-height: 48px; }
 .abschnittskopf-gestapelt { flex-direction: column; align-items: flex-start; gap: var(--raum-4); padding-bottom: var(--raum-7); border-bottom: 1px solid var(--tinte); }
 .anzeige-titel {
   margin: 0; font-family: var(--anzeige); font-weight: 400; letter-spacing: -.03em; line-height: 1.15;
   font-size: var(--satz-anzeige); color: var(--tinte);
 }
+.werkzeugregister .anzeige-titel { line-height: 1.2; }
 .abschnitt-hinweis { margin: 0; font-size: var(--satz-etikett); color: var(--tinte-leise); }
 .suchfeld {
   display: flex; align-items: center; gap: var(--raum-6); flex: 0 1 312px; min-width: 0;
@@ -2502,36 +2564,46 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .suchfeld input { flex: 1; min-width: 0; border: 0; background: none; font-size: var(--satz-neben); color: var(--tinte); outline-offset: 4px; }
 
 /* Der Stapel: das oberste Blatt groß mit rostrotem Rücken, darunter die
-   übrigen, jedes eine Spur weiter eingerückt — wie hingelegt. */
-.stapel { display: flex; flex-direction: column; margin-top: var(--raum-7); }
+   übrigen, jedes 14 px weiter eingerückt — wie hingelegt. Maße aus dem
+   Entwurf: oben 208 px hoch, Rücken 66 px; darunter 108 px, Rücken 44 px. */
+.stapel { display: flex; flex-direction: column; }
 .stapel-blatt { padding: 0 0 var(--raum-5) calc(var(--versatz, 0) * 14px); }
 .stapel-karte {
-  display: flex; width: 100%; padding: 0; text-align: left; cursor: pointer;
+  display: flex; width: 100%; min-height: 108px; padding: 0; text-align: left; cursor: pointer;
   background: var(--flaeche-hoch); border: 1px solid var(--linie); color: var(--tinte);
-  border-radius: 0;
+  border-radius: 0; box-shadow: 0 4px 8px rgba(43, 47, 42, .06);
 }
 .stapel-karte:hover { border-color: var(--tinte); }
-.ist-oben .stapel-karte { border-color: var(--tinte); }
+.ist-oben .stapel-karte { min-height: 208px; border-color: var(--tinte); }
 .stapel-ruecken {
-  flex: none; width: 44px; display: flex; align-items: flex-end; justify-content: center;
-  padding: var(--raum-8) 0; background: var(--buehne); color: var(--tinte-leise);
-  font-size: var(--satz-etikett); font-weight: 600; letter-spacing: 1px;
+  flex: none; width: 44px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: calc(var(--raum-8) - var(--raum-2)) 0; background: var(--buehne); color: var(--tinte-leise);
+  font-size: var(--satz-etikett); font-weight: 600; letter-spacing: .5px;
 }
+.stapel-marke { width: 12px; height: 12px; border: 1px solid currentColor; }
 .ist-oben .stapel-ruecken { width: 66px; background: var(--rost-voll); color: var(--rost-text); }
-.stapel-inhalt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--raum-3); padding: var(--raum-8) var(--raum-8); }
-.ist-oben .stapel-inhalt { gap: var(--raum-6); padding: calc(var(--raum-8) + var(--raum-1)); }
+.stapel-inhalt {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: calc(var(--raum-7) + var(--raum-2));
+  padding: calc(var(--raum-7) + var(--raum-2));
+}
+.ist-oben .stapel-inhalt { flex-direction: column; align-items: stretch; justify-content: space-between; gap: calc(var(--raum-7) + var(--raum-1)); padding: calc(var(--raum-8) + var(--raum-1)); }
+.stapel-datei { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--raum-4); }
 .stapel-etikett { font-size: var(--satz-etikett); letter-spacing: .6px; text-transform: uppercase; color: var(--tinte-leise); }
 .stapel-name { font-size: var(--satz-lauf); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ist-oben .stapel-name { font-family: var(--anzeige); font-size: var(--satz-anzeige); font-weight: 400; letter-spacing: -.02em; }
+.ist-oben .stapel-name { font-family: var(--anzeige); font-size: var(--satz-anzeige); font-weight: 500; letter-spacing: -.02em; line-height: 1.2; }
 .stapel-meta { font-size: var(--satz-neben); color: var(--tinte-leise); }
-.stapel-vermerk { display: flex; gap: var(--raum-9); font-size: var(--satz-neben); color: var(--tinte-leise); }
-.ist-oben .stapel-vermerk { padding-top: var(--raum-7); border-top: 1px solid var(--linie); }
-.stapel-vermerk > span { display: flex; flex-direction: column; gap: var(--raum-2); }
-.stapel-vermerk-etikett { font-size: var(--satz-etikett); letter-spacing: .6px; text-transform: uppercase; }
-.ist-oben .stapel-vermerk span:not(.stapel-vermerk-etikett) { color: var(--tinte); }
-.stapel-status, .ist-oben .stapel-vermerk .stapel-status { color: var(--tally); font-weight: 600; }
-.stapel-leer { margin: var(--raum-7) 0; font-size: var(--satz-bedien); color: var(--tinte-leise); }
+.stapel-stand { flex: none; width: 148px; display: flex; flex-direction: column; gap: var(--raum-4); font-size: var(--satz-etikett); color: var(--tinte-leise); }
+.stapel-vermerk { display: flex; align-items: flex-end; gap: calc(var(--raum-9) + var(--raum-8) - var(--raum-2)); padding-top: calc(var(--raum-7) - var(--raum-1)); border-top: 1px solid var(--linie); font-size: var(--satz-neben); color: var(--tinte); }
+.stapel-vermerk > span:not(.stapel-symbol) { display: flex; flex-direction: column; gap: var(--raum-3); }
+.stapel-vermerk-etikett { font-size: var(--satz-etikett); letter-spacing: .6px; text-transform: uppercase; color: var(--tinte-leise); }
+.stapel-symbol { margin-left: auto; color: var(--tally); }
+.stapel-symbol .sinnbild { width: 28px; height: 28px; }
+.stapel-status { color: var(--tally); font-weight: 600; }
+.stapel-leer { margin: var(--raum-4) 0; font-size: var(--satz-bedien); color: var(--tinte-leise); }
 
+/* Liegen Dokumente im Stapel, ist der Hinweis aufs Hineinziehen überflüssig —
+   der Entwurf zeigt ihn nicht. Hineinziehen geht trotzdem überall. */
+.stapel:has(.stapel-blatt) + .empfang-ablage { display: none; }
 .ansicht-start .empfang-ablage {
   margin: var(--raum-4) 0 var(--raum-8); padding: var(--raum-7);
   border: 1px dashed var(--linie-stark); border-radius: 0; background: transparent;
@@ -2550,6 +2622,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: flex; align-items: center; flex-wrap: wrap; gap: var(--raum-6) var(--raum-8);
   min-height: 56px; border-top: 2px solid var(--tinte); border-bottom: 1px solid var(--tinte);
 }
+.sammlungsregister .register-sammlung { flex: 1 1 0; min-width: max-content; }
 .sammlungsregister[hidden] { display: none; }
 .register-etikett { font-size: var(--satz-etikett); letter-spacing: 1.2px; text-transform: uppercase; color: var(--tinte-leise); }
 .register-leer { font-size: var(--satz-neben); color: var(--tinte-leise); }
@@ -2559,10 +2632,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .register-sammlung .sinnbild { width: 15px; height: 15px; }
 .register-sammlung:hover .register-name { text-decoration: underline; }
-.register-zahl { font-family: var(--anzeige); font-style: var(--anzeige-stil); font-size: var(--satz-gross); color: var(--tally); }
+.register-zahl { font-family: var(--anzeige); font-style: var(--anzeige-stil); font-size: var(--satz-gross); line-height: 1; color: var(--tally); }
 .bibliotheksstatus {
   display: flex; align-items: center; justify-content: space-between; gap: var(--raum-7);
-  padding-top: var(--raum-7); font-size: var(--satz-etikett); color: var(--tinte-leise);
+  font-size: var(--satz-etikett); color: var(--tinte-leise);
 }
 .verweis {
   border: 0; background: none; padding: 0; cursor: pointer; text-align: left;
@@ -2570,19 +2643,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .verweis:hover { text-decoration: underline; }
 
-.werkzeugregister { border-left: 1px solid var(--tinte); padding-left: calc(var(--raum-8) + var(--raum-3)); min-width: 0; }
+.werkzeugregister { border-left: 1px solid var(--tinte); padding-left: calc(var(--raum-9) - var(--raum-1)); min-width: 0; }
+.werkzeugregister .abschnittskopf-gestapelt { gap: var(--raum-4); padding-bottom: calc(var(--raum-7) + var(--raum-2)); border-bottom-width: 3px; }
 .aufgaben { list-style: none; margin: 0; padding: 0; }
 .aufgabe {
-  display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: start; gap: var(--raum-7);
-  width: 100%; padding: var(--raum-7) 0; border: 0; border-bottom: 1px solid var(--linie); background: none;
+  display: grid; grid-template-columns: 48px minmax(0, 1fr) 62px; align-items: start; gap: calc(var(--raum-7) + var(--raum-1));
+  width: 100%; min-height: 96px; padding: calc(var(--raum-7) + var(--raum-1)) 0; border: 0; border-bottom: 1px solid var(--linie); background: none;
   color: var(--tinte); text-align: left; text-decoration: none; cursor: pointer; font: inherit;
 }
 .aufgabe:hover .aufgabe-titel { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-.aufgabe-nummer { font-family: var(--anzeige); font-style: var(--anzeige-stil); font-size: var(--satz-anzeige); line-height: 1; color: var(--tally); }
+.aufgabe-nummer { font-family: var(--anzeige); font-style: var(--anzeige-stil); font-size: var(--satz-anzeige); line-height: 1.05; color: var(--tally); }
 .aufgabe-text { display: flex; flex-direction: column; gap: var(--raum-4); min-width: 0; }
-.aufgabe-titel { font-size: var(--satz-lauf); font-weight: 500; letter-spacing: -.02em; }
+.aufgabe-titel { font-size: var(--satz-lauf); font-weight: 500; line-height: 1.25; letter-spacing: -.02em; }
 .aufgabe-satz { font-size: var(--satz-etikett); color: var(--tinte-leise); }
-.aufgabe-kennung { display: flex; flex-direction: column; align-items: flex-end; gap: var(--raum-6); color: var(--tinte); }
+.aufgabe-kennung { display: flex; flex-direction: column; align-items: flex-end; gap: calc(var(--raum-7) - var(--raum-1)); color: var(--tinte); }
+.aufgabe-kennung .sinnbild { width: 21px; height: 21px; }
 .aufgabe-kuerzel { font-size: var(--satz-etikett); color: var(--tinte-leise); white-space: nowrap; }
 
 .ansicht-start .empfang-werkzeuge { padding: 0 0 var(--raum-9); }
@@ -2650,14 +2725,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .werkzeugregister { border-left: 0; padding-left: 0; border-top: 2px solid var(--tinte); padding-top: var(--raum-7); }
   .masthead { flex-wrap: wrap; }
   .navi-sammlungen { display: none; }
+  .huelle[data-ansicht="start"] .kopf-suche { width: 240px; }
+  .huelle[data-ansicht="start"] .kopf-einstellungen span { display: none; }
+  .start-navi { gap: var(--raum-8); }
 }
 @media (max-width: 760px) {
   .atelier-start, .ansicht-dokumente { padding-left: var(--raum-7); padding-right: var(--raum-7); }
   .lokaler-standard { margin: 0 calc(-1 * var(--raum-7)); padding-left: var(--raum-7); padding-right: var(--raum-7); }
-  .start-leiste { justify-content: stretch; }
+  .huelle[data-ansicht="start"] .kopf { margin: 0 var(--raum-7); }
+  .huelle[data-ansicht="start"] .kopf-suche { width: 38px; }
+  .start-navi { height: auto; flex-wrap: wrap; gap: 0 var(--raum-8); padding-bottom: var(--raum-6); }
+  .start-reiter { min-height: 44px; }
+  .start-navi-freiraum { display: none; }
+  .start-navi #knopf-oeffnen { flex: 1 1 100%; width: auto; }
   .abschnittskopf { flex-wrap: wrap; }
   .abschnittskopf .suchfeld { flex: 1 1 100%; }
-  .start-leiste .knopf { flex: 1; justify-content: center; }
+  .stapel-stand { width: auto; }
+  .stapel-blatt:not(.ist-oben) .stapel-inhalt { flex-wrap: wrap; }
   .stapel-blatt { padding-left: 0; }
   .ist-oben .stapel-name { font-size: var(--satz-gross); }
   .stapel-vermerk { gap: var(--raum-8); flex-wrap: wrap; }

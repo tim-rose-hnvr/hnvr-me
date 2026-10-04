@@ -808,7 +808,7 @@ die veröffentlichte Seite:
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
 node werkzeuge/vollpruefung.mjs   # 201 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
-node werkzeuge/live-pruefen.mjs   #  50 Prüfungen — was der Hoster ausliefert
+node werkzeuge/live-pruefen.mjs   #  52 Prüfungen — was der Hoster ausliefert
 ```
 
 **`pruefen.mjs`** fragt: Stimmt, was herauskommt? Geschwärzte Seite ohne

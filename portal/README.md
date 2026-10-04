@@ -41,17 +41,19 @@ allein ergäbe 404. Dafür stehen in `astro.config.mjs` zwei Umleitungen auf
 `/studio/index.html`, damit auch eine von Hand eingegebene Adresse ankommt.
 
 **Nachgemessen an der veröffentlichten Seite** mit
-`node ../studio/werkzeuge/live-pruefen.mjs` (31 Prüfungen): alle 239 Dateien
-erreichbar und Byte für Byte gleich der gebauten Fassung (11,92 MB verglichen),
+`node ../studio/werkzeuge/live-pruefen.mjs` (52 Prüfungen, zuletzt am
+4. Oktober 2026 alle grün): alle 278 Dateien erreichbar und Byte für Byte
+gleich der gebauten Fassung (12,58 MB verglichen),
 `.wasm` als `application/wasm`, die Sprachdaten als `application/gzip`, alle
 drei Wege in die Anwendung offen. Dazu wird ins verlinkte Stilblatt gesehen:
 IBM Plex ist eingebunden, ein Verweis auf Google Fonts steht nirgends, der
-Akzent `#0f766e` ist gesetzt, und die Schnitte kommen als `font/woff2` von
+Akzent aus `src/styles/studio.css` ist gesetzt, und die Schnitte kommen als `font/woff2` von
 derselben Seite. Geprüft wird auch die Anmeldung: die Auskunft antwortet, sie
 nennt einen Abrufer ohne Sitzung ausdrücklich nicht angemeldet, die
 ausgelieferte Anwendung trägt die Schranken-Zeilen, und `/api/hnvr/anmelden`
 leitet auf die Anmeldung des **hnvr.me-Projekts** und von dort zurück auf diese
-Seite (siehe unten). Damit läuft dort
+Seite (siehe unten). Zuletzt: www.hnvr.me/pdf-studio leitet hierher weiter,
+mit `von=hnvr` und den mitgebrachten Suchparametern. Damit läuft dort
 dieselbe Anwendung, die `pruefen.mjs` und `vollpruefung.mjs` im Browser
 durchgemessen haben — 134 + 166 Prüfungen, darunter Texterkennung,
 qpdf-Verschlüsselung, die digitale Unterschrift und ein eigener Abschnitt, der

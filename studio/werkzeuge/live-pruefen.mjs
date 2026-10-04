@@ -100,8 +100,10 @@ pruefe(/<title>[^<]+<\/title>/.test(startText), 'Startseite hat einen Titel',
 /* Der Aufmacher führt seit der Schranke über die Anmeldung, nicht mehr geradewegs
    in die Anwendung. Geprüft wird beides: der Weg über die Anmeldung und der
    kurze Weg daneben für den, der schon angemeldet ist. */
-pruefe(/href="\/api\/auth\/login\?returnToUrl=%2Fstudio%2Findex\.html"/.test(startText),
-  'der Aufmacher führt über die Anmeldung in die Anwendung');
+/* Angemeldet wird mit dem hnvr.me-Konto (doku/anmeldung-hnvr.md), nicht mehr
+   über die Mitglieder der eigenen Site. */
+pruefe(/href="\/api\/hnvr\/anmelden\?returnToUrl=%2Fstudio%2Findex\.html"/.test(startText),
+  'der Aufmacher führt über die Anmeldung mit hnvr.me in die Anwendung');
 pruefe(/[Kk]ostenlos anmelden/.test(startText), 'und sagt am Knopf, dass das nichts kostet');
 pruefe(/href="\/studio\/index\.html"/.test(startText),
   'daneben steht der kurze Weg für Angemeldete');
@@ -111,8 +113,10 @@ pruefe(/hnvr\.me/i.test(startText), 'Kontakt hnvr.me digital steht auf der Seite
    Fenster ausgeliefert wird und die alte Liste fort ist. */
 pruefe(/class="fenster-rumpf"/.test(startText) && /class="fenster-buehne"/.test(startText),
   'der Aufmacher zeigt das Fenster aus dem Handoff');
-pruefe(/class="mini/.test(startText) && /class="faden/.test(startText),
-  'mit Seitenleiste und Kommentarspalte');
+/* Die linke Spalte zeigt seit der Apple-Anmutung den Vorgang (erledigt,
+   offen, wartet), nicht mehr Seitenminiaturen. */
+pruefe(/class="fenster-vorgang/.test(startText) && /class="faden/.test(startText),
+  'mit Vorgangsspalte und Kommentarspalte');
 pruefe(!/\d+\s*(€|EUR|Euro)\s*(\/|pro)/i.test(startText), 'kein Preis versprochen');
 pruefe(/[Kk]ostenlos/.test(startText), 'die Seite sagt, dass es nichts kostet');
 pruefe(/[Aa]nmeldung/.test(startText), 'und dass es eine Anmeldung braucht');
@@ -131,7 +135,13 @@ pruefe(stilWege.length > 0, 'die Seite verlinkt ein Stilblatt', `${stilWege.leng
 pruefe(/IBM Plex/.test(stil), 'das Stilblatt bindet IBM Plex ein');
 pruefe(!/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(stil + startText),
   'kein Verweis auf Google Fonts');
-pruefe(/#0f766e/i.test(stil), 'der Akzent aus dem Handoff steht im Stilblatt');
+/* Der Akzent wird nicht hier festgeschrieben, sondern aus der Quelle gelesen:
+   die Prüfung soll merken, wenn die ausgelieferte Seite hinter dem Stand im
+   Repository zurückbleibt — nicht bei jeder neuen Farbe selbst veralten. */
+const akzent = (await readFile(resolve(HIER, '..', '..', 'portal', 'src', 'styles', 'studio.css'), 'utf8'))
+  .match(/--tally-voll:\s*(#[0-9a-f]{6})/i)?.[1];
+pruefe(Boolean(akzent) && stil.toLowerCase().includes(akzent.toLowerCase()),
+  'der Akzent aus portal/src/styles/studio.css steht im ausgelieferten Stilblatt', akzent);
 
 for (const schnitt of ['plex-sans-400', 'plex-serif-600', 'plex-mono-400']) {
   const antwort = await hole(`/schrift/${schnitt}.woff2`);

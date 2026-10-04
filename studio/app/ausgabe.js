@@ -38,7 +38,9 @@ export function istUnveraendertesGeruest() {
 
 /**
  * Baut das Ausgabedokument.
- * @param {{ seiten?: string[], formularEinbrennen?: boolean, rasterDichte?: number }} optionen
+ * @param {{ seiten?: string[], formularEinbrennen?: boolean, rasterDichte?: number,
+ *   neuAufbauen?: boolean, ohneKommentare?: boolean, ohneDokumentteile?: boolean,
+ *   metadatenEntfernen?: boolean }} optionen
  */
 export async function baueDokument(optionen = {}) {
   const { PDFDocument } = await starteSchreiber();
@@ -47,7 +49,10 @@ export async function baueDokument(optionen = {}) {
   if (!folge.length) throw new Error('Keine Seite ausgewählt.');
 
   const vollstaendig = !seiten || seiten.length === zustand.folge.length;
-  const einfacherWeg = vollstaendig && istUnveraendertesGeruest();
+  /* `neuAufbauen`: nie das Original ergänzen, immer Seite für Seite neu —
+     für die sichere Kopie, damit nichts aus dem Original mitwandert, was
+     niemand sieht. */
+  const einfacherWeg = vollstaendig && !optionen.neuAufbauen && istUnveraendertesGeruest();
 
   let ziel;
   const versatzKarte = new Map();
@@ -87,7 +92,7 @@ export async function baueDokument(optionen = {}) {
   /* Vor den Anmerkungen: die neuen Felder sollen unter den gezeichneten
      Sachen liegen, nicht darüber. */
   await legeNeueFelderAn(ziel, folge, versatzKarte);
-  await maleAnmerkungen(ziel, folge, versatzKarte);
+  await maleAnmerkungen(ziel, folge, versatzKarte, { ohneKommentare: optionen.ohneKommentare });
   await maleAufdruck(ziel, folge, versatzKarte);
 
   /* Lesezeichen, Anhänge und PDF/A hängen am Dokument, nicht an einer Seite —
@@ -97,11 +102,11 @@ export async function baueDokument(optionen = {}) {
      auch eine Entscheidung. Vorher überlebte beim Ergänzen des Originals die
      alte Gliederung, weil eine leere Liste als „nichts zu tun" galt — wer sie
      löschte und sicherte, bekam sie zurück. */
-  if (Array.isArray(zustand.lesezeichen)) {
+  if (Array.isArray(zustand.lesezeichen) && !optionen.ohneDokumentteile) {
     ziel.catalog.delete(pdflib.PDFName.of('Outlines'));
     await teile.schreibeLesezeichen(ziel, pdflib, zustand.lesezeichen);
   }
-  if (zustand.anhaenge?.length) await teile.schreibeAnhaenge(ziel, zustand.anhaenge);
+  if (zustand.anhaenge?.length && !optionen.ohneDokumentteile) await teile.schreibeAnhaenge(ziel, zustand.anhaenge);
   if (zustand.bildauftraege?.length) {
     const { tauscheBilder } = await import('./bilder.js');
     await tauscheBilder(ziel, pdflib, zustand.bildauftraege);
@@ -162,9 +167,16 @@ async function schreibeErkanntenText(ziel, folge, versatzKarte) {
     const { seite, versatz } = ziel_;
     const vx = -versatz.x, vy = -versatz.y;
     const erkennung = zustand.ocr.get(eintrag.id);
+    /* Was unter einer Schwärzung liegt, kommt nicht zurück — auch nicht als
+       unsichtbarer Text. Die Seite wird gerastert, der schwarze Balken liegt
+       im Bild; schriebe man die erkannten Wörter darüber, ließe sich das
+       Geschwärzte suchen und kopieren. Ein Wort, das eine Schwärzung auch nur
+       berührt, fällt deshalb weg. */
+    const balken = schwaerzungenAuf(eintrag.id);
 
     seite.pushOperators(pushGraphicsState(), setTextRenderingMode(TextRenderingMode.Invisible));
     for (const wort of erkennung.woerter) {
+      if (balken.some((r) => ueberlappt(r, wort))) continue;
       const text = nurWinAnsi(wort.text);
       if (!text) continue;
       const groesse = Math.max(1, wort.h * 0.92);
@@ -179,6 +191,22 @@ async function schreibeErkanntenText(ziel, folge, versatzKarte) {
     }
     seite.pushOperators(setCharacterSqueeze(100), popGraphicsState());
   }
+}
+
+/** Schwärzungen einer Seite als Rechtecke in PDF-Punkten. */
+export function schwaerzungenAuf(seitenId) {
+  return zustand.anmerkungen
+    .filter((a) => a.seiteId === seitenId && (a.art === 'schwaerzen' || (a.art === 'ersatz' && a.rastern)))
+    .map((a) => (a.art === 'schwaerzen'
+      ? { x1: Math.min(a.x, a.x2), y1: Math.min(a.y, a.y2), x2: Math.max(a.x, a.x2), y2: Math.max(a.y, a.y2) }
+      : { x1: a.x, y1: a.y, x2: a.x + (a.b || 0), y2: a.y + (a.h || 0) }));
+}
+
+/* Ob ein Wort (x, y, b, h) ein Rechteck berührt — mit einem Punkt Zugabe,
+   damit ein Balken, der ein Wort knapp verfehlt, es trotzdem erfasst. */
+export function ueberlappt(r, wort, zugabe = 1) {
+  return wort.x < r.x2 + zugabe && wort.x + wort.b > r.x1 - zugabe
+    && wort.y < r.y2 + zugabe && wort.y + wort.h > r.y1 - zugabe;
 }
 
 /** Helvetica kann nur WinAnsi. Alles andere wird ersetzt oder fällt weg. */
@@ -378,8 +406,13 @@ async function rastereSeite(ziel, eintrag, dichte) {
 
 /* ---------- Anmerkungen einbrennen ------------------------------------------ */
 
-async function maleAnmerkungen(ziel, folge, versatzKarte) {
-  const anmerkungen = zustand.anmerkungen.filter((a) => a.art !== 'schwaerzen');
+/* Kommentare im engeren Sinn: was zur Durchsicht gehört, nicht zum Inhalt.
+   Die sichere Kopie lässt sie weg; Ersetzungen, Unterschriften, Stempel und
+   Zeichnungen sind Inhalt und bleiben. */
+const KOMMENTARE = new Set(['notiz', 'hervor', 'unterstrich', 'durchstrich', 'messen', 'flaeche']);
+
+async function maleAnmerkungen(ziel, folge, versatzKarte, { ohneKommentare = false } = {}) {
+  const anmerkungen = zustand.anmerkungen.filter((a) => a.art !== 'schwaerzen' && !(ohneKommentare && KOMMENTARE.has(a.art)));
   if (!anmerkungen.length) return;
   const { rgb, StandardFonts, BlendMode } = pdflib;
   const schrift = await ziel.embedFont(StandardFonts.Helvetica);

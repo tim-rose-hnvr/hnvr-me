@@ -25,12 +25,19 @@ export const befunde = {
   seitenGeprueft: 0,
 };
 
-const MUSTER = [
-  { art: 'IBAN', regel: /\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]{4}){2,7}\b/g, hinweis: 'Bankverbindung' },
+/* Die Muster dienen auch dem Schwärzen (teilen.js) — ein Treffer, der zu
+   kurz ist, lässt etwas lesbar, einer, der zu lang ist, schwärzt fremden
+   Text. Deshalb:
+   · IBAN mit der kurzen Schlussgruppe („… 2020 51"), sonst blieben die
+     letzten Ziffern stehen.
+   · Steuermerkmal ohne Schalter `i`: mit ihm passte [A-Z] auch auf
+     Kleinbuchstaben, und der Treffer lief in den nächsten Satz hinein. */
+export const MUSTER = [
+  { art: 'IBAN', regel: /\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]{4}){2,7}(?:[ ]?[A-Z0-9]{1,3})?\b/g, hinweis: 'Bankverbindung' },
   { art: 'E-Mail', regel: /\b[\w.%+-]+@[\w.-]+\.[A-Za-z]{2,}\b/g, hinweis: 'E-Mail-Adresse' },
   { art: 'Telefon', regel: /(?:\+49|0)\s?\d{2,5}[\s/-]?\d{3,}\d/g, hinweis: 'Rufnummer' },
   { art: 'Geburtsdatum', regel: /\bgeb(?:oren)?\.?\s*(?:am)?\s*\d{1,2}\.\d{1,2}\.\d{2,4}/gi, hinweis: 'Geburtsdatum' },
-  { art: 'Steuernummer', regel: /\b(?:Steuer-?(?:nummer|ID)|USt-?IdNr\.?)\s*:?\s*[\dA-Z/ ]{8,}/gi, hinweis: 'Steuermerkmal' },
+  { art: 'Steuernummer', regel: /\b(?:[Ss]teuer-?(?:[Nn]ummer|[Nn]r\.?|ID|-?Id(?:entifikationsnummer)?)|St\.?-?Nr\.?|USt-?Id(?:Nr)?\.?)\s*:?\s*(?:[A-Z]{2}\s?)?\d[\d/ ]{6,}\d/g, hinweis: 'Steuermerkmal' },
 ];
 
 const UNTERSCHRIFT_MUSTER = /(unterschrift|unterzeichn|ort,\s*datum|datum,\s*ort|gez\.|rechtsverbindlich)/i;

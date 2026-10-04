@@ -7,6 +7,7 @@ import { frageAnmeldung, zeigeSchranke, zeigeHeimat } from './anmeldung.js';
 import { starteVorgang } from './vorgang.js';
 import { starteAtelier, zeigeKonto } from './atelier.js';
 import { starteDokumentenatelier } from './dokumentenatelier.js';
+import { starteTeilen } from './teilen.js';
 
 async function start() {
   try {
@@ -22,6 +23,7 @@ async function start() {
   starteVorgang();
   starteAtelier();
   starteDokumentenatelier();
+  starteTeilen();
   zeigeHeimat();
   document.documentElement.classList.add('ist-bereit');
 

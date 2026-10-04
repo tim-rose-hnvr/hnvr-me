@@ -2707,3 +2707,113 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .dokumente-zeile > :nth-child(n+2):not(:last-child) { display: none; }
   .dokumente-kopf { display: none; }
 }
+
+/* ======================================================================
+   Vertraulich teilen — der Ablauf über dem Editor
+   ======================================================================
+   Nach „PDF Studio · Vertraulich teilen": statt der Modusleiste ein
+   Schrittkopf, links die Schwärzungen, rechts die Prüfung und die sichere
+   Kopie. Die Bühne in der Mitte bleibt dieselbe — man sieht, was man
+   schwärzt. */
+
+.ablaufkopf, .ablauf-tafel, .ablauf-taten { display: none; }
+.huelle[data-ablauf="teilen"] .modusleiste,
+.huelle[data-ablauf="teilen"] .leiste-links,
+.huelle[data-ablauf="teilen"] .leiste-rechts,
+.huelle[data-ablauf="teilen"] .dokument-taten,
+.huelle[data-ablauf="teilen"] .dokument-reiter { display: none !important; }
+.huelle[data-ablauf="teilen"] .ablaufkopf { display: flex; }
+.huelle[data-ablauf="teilen"] .ablauf-tafel { display: flex; }
+.huelle[data-ablauf="teilen"] .ablauf-taten { display: flex; }
+.huelle[data-ablauf="teilen"] { --leiste-links: 232px; --leiste-rechts: 336px; }
+.ablauf-links { grid-column: 1; grid-row: 1; }
+.ablauf-rechts { grid-column: 3; grid-row: 1; }
+
+.ablaufkopf {
+  align-items: center; gap: var(--raum-9); min-height: 74px; padding: var(--raum-4) var(--raum-8);
+  background: var(--flaeche); border-bottom: 1px solid var(--linie); min-width: 0; overflow-x: auto;
+}
+.ablauf-titel { flex: 0 0 auto; }
+.ablauf-titel h2 { margin: 0; font-family: var(--breit); font-size: var(--satz-titel); font-weight: 600; color: var(--tinte); }
+.ablauf-titel p { margin: var(--raum-1) 0 0; font-size: var(--satz-etikett); color: var(--tinte-leise); }
+.ablauf-schritte { display: flex; gap: var(--raum-9); list-style: none; margin: 0; padding: 0; flex: 1; justify-content: space-around; }
+.ablauf-schritt-knopf {
+  display: flex; align-items: flex-start; gap: var(--raum-6); border: 0; background: none; padding: 0;
+  color: var(--tinte); text-align: left; cursor: pointer;
+}
+.ablauf-marke {
+  flex: none; width: 26px; height: 26px; border-radius: var(--radius-voll);
+  display: grid; place-items: center; font-size: var(--satz-neben); font-weight: 600;
+  background: var(--flaeche-tief); color: var(--tinte); box-shadow: inset 0 0 0 1px var(--linie);
+}
+.ablauf-marke .sinnbild { width: 14px; height: 14px; }
+.ist-aktiv .ablauf-marke { background: var(--tally-voll); color: var(--tally-text); box-shadow: none; }
+.ist-erledigt .ablauf-marke { background: var(--tally-grund); color: var(--tally-grund-text); box-shadow: none; }
+.ablauf-wort { display: flex; flex-direction: column; gap: var(--raum-1); }
+.ablauf-wort strong { font-size: var(--satz-neben); font-weight: 600; }
+.ablauf-wort span { font-size: var(--satz-etikett); color: var(--tinte-leise); }
+.ist-offen .ablauf-wort strong { color: var(--tinte-leise); }
+
+.ablauf-tafel { flex-direction: column; gap: var(--raum-6); min-height: 0; overflow-y: auto; }
+.ablauf-links { background: var(--grund); border-right: 1px solid var(--linie); padding: var(--raum-7); }
+.ablauf-rechts { background: var(--flaeche); border-left: 1px solid var(--linie); padding: var(--raum-8); }
+.ablauf-tafelkopf { display: flex; align-items: center; justify-content: space-between; }
+.ablauf-tafelkopf h3 { margin: 0; font-size: var(--satz-lauf); font-weight: 600; color: var(--tinte); }
+.ablauf-zahl {
+  min-width: 24px; padding: var(--raum-1) var(--raum-3); text-align: center;
+  background: var(--tally-grund); color: var(--tally-grund-text); font-size: var(--satz-etikett); font-weight: 600;
+  border-radius: var(--radius-segment);
+}
+.ablauf-hinweis, .ablauf-warnung {
+  display: flex; gap: var(--raum-5); padding: var(--raum-6);
+  background: var(--tally-grund); color: var(--tinte); font-size: var(--satz-etikett); line-height: 1.5;
+}
+.ablauf-hinweis .sinnbild, .ablauf-warnung .sinnbild { width: 16px; height: 16px; flex: none; }
+.ablauf-funde { display: flex; flex-direction: column; }
+.ablauf-fund { display: flex; flex-direction: column; gap: var(--raum-2); padding: var(--raum-6) 0; border-bottom: 1px solid var(--linie); }
+.ablauf-fund-kopf { display: flex; align-items: center; gap: var(--raum-4); }
+.ablauf-fund-balken { width: 14px; height: 9px; background: var(--tinte); flex: none; }
+.ist-verworfen .ablauf-fund-balken, .ist-offen .ablauf-fund-balken { background: none; box-shadow: inset 0 0 0 1px var(--tinte-leise); }
+.ablauf-fund-art { border: 0; background: none; padding: 0; cursor: pointer; text-align: left; font-size: var(--satz-neben); font-weight: 600; color: var(--tinte); }
+.ablauf-fund-text { font-size: var(--satz-etikett); color: var(--tinte-leise); overflow-wrap: anywhere; }
+.ablauf-fund-stand { font-size: var(--satz-etikett); color: var(--tinte-leise); }
+.ist-bestaetigt .ablauf-fund-stand { color: var(--tally); }
+.ablauf-fund-taten { display: flex; gap: var(--raum-3); margin-top: var(--raum-2); }
+.ablauf-eigene { align-self: flex-start; }
+.ablauf-fuss { margin-top: auto; display: flex; flex-direction: column; gap: var(--raum-3); padding-top: var(--raum-8); color: var(--tinte); }
+.ablauf-fuss strong { font-size: var(--satz-neben); }
+.ablauf-fuss p { margin: 0; font-size: var(--satz-etikett); color: var(--tinte-leise); }
+.ablauf-fuss .knopf { align-self: flex-start; }
+
+.ablauf-rechts h2 { margin: 0; font-family: var(--breit); font-size: var(--satz-titel); font-weight: 600; color: var(--tinte); }
+.ablauf-satz { margin: 0; font-size: var(--satz-neben); line-height: 1.5; color: var(--tinte-leise); }
+.ablauf-pruefpunkt { display: grid; grid-template-columns: 18px 1fr; gap: var(--raum-5); }
+.ablauf-pruefpunkt .sinnbild { width: 16px; height: 16px; }
+.ablauf-pruefpunkt strong { font-size: var(--satz-neben); color: var(--tinte); }
+.ablauf-pruefpunkt p { margin: var(--raum-1) 0 0; font-size: var(--satz-etikett); line-height: 1.5; color: var(--tinte-leise); }
+.ablauf-pruefpunkt.ist-offen { color: var(--warn); }
+.ablauf-unterkopf {
+  margin: var(--raum-4) 0 0; padding-top: var(--raum-6); border-top: 1px solid var(--linie);
+  font-size: var(--satz-etikett); font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--tinte-leise);
+}
+.ablauf-metadaten { display: flex; flex-direction: column; }
+.ablauf-metadaten p { margin: 0; font-size: var(--satz-neben); color: var(--tinte-leise); }
+.ablauf-zeile {
+  display: flex; justify-content: space-between; gap: var(--raum-6); padding: var(--raum-4) 0;
+  border-bottom: 1px solid var(--linie); font-size: var(--satz-neben); color: var(--tinte-leise);
+}
+.ablauf-wert { color: var(--tinte); text-align: right; overflow-wrap: anywhere; }
+.ablauf-feld { display: flex; flex-direction: column; gap: var(--raum-3); font-size: var(--satz-neben); color: var(--tinte-leise); }
+.ablauf-feld .feld { min-height: 36px; background: var(--flaeche-tief); }
+.ablauf-kasten { display: flex; align-items: center; gap: var(--raum-4); font-size: var(--satz-neben); color: var(--tinte); }
+.ablauf-weiter { margin-top: auto; display: flex; flex-direction: column; align-items: flex-start; gap: var(--raum-5); padding-top: var(--raum-8); }
+.protokoll { margin: 0; white-space: pre-wrap; font-family: var(--sans); font-size: var(--satz-neben); line-height: 1.6; color: var(--tinte); }
+
+@media (max-width: 900px) {
+  .huelle[data-ablauf="teilen"] .ansicht-editor .rumpf { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; overflow-y: auto; }
+  .huelle[data-ablauf="teilen"] .ablauf-links { grid-row: 1; grid-column: 1; border-right: 0; border-bottom: 1px solid var(--linie); max-height: 40vh; }
+  .huelle[data-ablauf="teilen"] .buehne { grid-row: 2; grid-column: 1; min-height: 50vh; }
+  .huelle[data-ablauf="teilen"] .ablauf-rechts { grid-row: 3; grid-column: 1; border-left: 0; border-top: 1px solid var(--linie); }
+  .ablauf-schritte { gap: var(--raum-7); }
+  .ablauf-wort span, .ablauf-titel p { display: none; }
+}

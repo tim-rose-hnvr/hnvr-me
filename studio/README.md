@@ -65,6 +65,15 @@ in Sammlungen, entfernt einzeln oder alles. Gespeichert wird in IndexedDB
 einmal gefragt hat und die Antwort „Ja" war. Ohne Speicher (privates Fenster)
 öffnet das Studio genauso, nur ohne Liste.
 
+**Vertraulich teilen** (`app/teilen.js`) führt in drei Schritten zu einer
+sicheren Kopie: Fundstellen (IBAN, E-Mail, Rufnummer, Geburtsdatum,
+Steuermerkmal) mit ihrer Lage auf der Seite bestätigen oder verwerfen,
+Metadaten und Verborgenes ansehen, exportieren. Die Kopie wird neu aufgebaut,
+Seiten mit Schwärzung als Bild; Kommentare, Felder, Anhänge, Ebenen, Skripte,
+Lesezeichen und Metadaten fallen weg. Danach liest das Studio die Kopie neu
+und sucht jede bestätigte Stelle — steht eine noch drin, gibt es keine Kopie.
+Ein Prüfprotokoll hält fest, was entfernt wurde und was sichtbar blieb.
+
 **Das Seitenraster sitzt in der Mitte, nicht über allem.** Es war einmal ein
 weißes Vollbild, das Reiter, Leisten und Statuszeile verdeckte. Jetzt tauscht
 es die Bühne aus, wie der Vergleich es auch tut: oben eine Werkzeugleiste,
@@ -791,7 +800,7 @@ die veröffentlichte Seite:
 
 ```sh
 node werkzeuge/pruefen.mjs        # 134 Prüfungen — das Ergebnis in der Datei
-node werkzeuge/vollpruefung.mjs   # 187 Prüfungen — Bedienung und Gestaltung
+node werkzeuge/vollpruefung.mjs   # 194 Prüfungen — Bedienung und Gestaltung
 node werkzeuge/vollpruefung.mjs gestaltung   # nur eine Gruppe
 node werkzeuge/live-pruefen.mjs   #  50 Prüfungen — was der Hoster ausliefert
 ```

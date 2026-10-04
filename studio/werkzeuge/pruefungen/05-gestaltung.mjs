@@ -394,17 +394,18 @@ export default async function ({ pruefe, seite, blatt, ladeBeispiel, BASIS, abla
        von dessen Grundwerten überschrieben. Gleiche Spezifität, spätere Regel
        gewinnt — im Bildschirmabzug sofort zu sehen, im Quelltext nicht. */
     const stand = await seite.evaluate(() => {
-      const voll = getComputedStyle(document.querySelector('#knopf-sichern'));
+      /* Wie im Entwurf ist „Vertraulich teilen" der Hauptknopf im Dokumentkopf. */
+      const voll = getComputedStyle(document.querySelector('#knopf-teilen'));
       const chrome = getComputedStyle(document.querySelector('#knopf-einstellungen'));
       return { voll: voll.backgroundColor, vollText: voll.color, chromeText: chrome.color };
     });
-    if (stand.voll !== REG.akzent) throw new Error(`Sichern ist ${stand.voll}`);
+    if (stand.voll !== REG.akzent) throw new Error(`„Vertraulich teilen" ist ${stand.voll}`);
     /* Zwei verschiedene Schriftfarben, und das ist richtig so: auf dem
        Akzent steht --tally-text, auf der Leiste --leiste-text. Beide kippen
        mit der Fassung, deshalb kann keine zu schwach werden. */
     if (stand.vollText !== REG.akzentText) throw new Error(`Schrift auf dem Akzent ist ${stand.vollText}`);
     if (stand.chromeText !== REG.chromeText) throw new Error(`Einstellungen ist ${stand.chromeText}`);
-    return `Sichern ${stand.voll}`;
+    return `Vertraulich teilen ${stand.voll}`;
   });
 
   await pruefe('Rückgängig und Wiederholen stehen in der Modusleiste', async () => {

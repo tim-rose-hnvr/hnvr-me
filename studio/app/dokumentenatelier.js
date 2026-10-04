@@ -102,9 +102,9 @@ const AUFGABEN = [
     }),
   },
   {
-    titel: 'Vertrauliche Informationen entfernen', satz: 'Schwärzen, prüfen und sicher teilen', kennung: 'Schwärzen',
+    titel: 'Vertrauliche Informationen entfernen', satz: 'Schwärzen, prüfen und sicher teilen', kennung: '3 Schritte',
     zeichen: 'M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z',
-    tun: () => mitDatei(() => window.studio?.fuehreAus?.('werkzeug:schwaerzen')),
+    tun: () => mitDatei(() => zeigeAnsicht('teilen')),
   },
   {
     titel: 'Datei für Versand verkleinern', satz: 'Qualität wählen, Dateigröße reduzieren', kennung: 'Export',

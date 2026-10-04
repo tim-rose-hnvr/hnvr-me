@@ -139,6 +139,33 @@ Mal zu öffnen. Die Prüfgruppe `14-dokumentenatelier` hält das fest — sie ha
 beim Bau einen Fehler gefunden: ein verzögerter Vermerk „bearbeitet"
 überschrieb nach dem Sichern „Gespeichert".
 
+### Vertraulich teilen — und drei Fehler, die dabei auffielen
+
+Der Ablauf baut auf dem, was das Studio schon konnte (Schwärzen durch
+Rastern, Metadaten entfernen), und ergänzt, was für eine *sichere* Kopie
+fehlte: Fundstellen mit Lage, ein Neuaufbau ohne Kommentare, Anhänge,
+Ebenen, Skripte und Lesezeichen, und eine Nachprüfung der fertigen Kopie.
+
+Beim Bau kamen drei Fehler heraus, die älter sind als der Ablauf:
+
+1. **Erkannter Text kam unter der Schwärzung zurück.** Beim Sichern wurde
+   die OCR-Textebene auf gerasterten Seiten wieder unsichtbar eingeschrieben
+   — samt der geschwärzten Wörter. Wer die Datei durchsuchte, fand sie.
+   Jetzt fallen Wörter weg, die eine Schwärzung berühren (Prüfung mit
+   Gegenprobe: ohne den Fix schlägt sie an).
+2. **Die IBAN wurde ohne ihre letzten Ziffern erkannt** („… 2020" statt
+   „… 2020 51"). Geschwärzt hätte das zwei Ziffern stehen lassen.
+3. **Das Steuermerkmal lief in den nächsten Satz.** Das Muster trug den
+   Schalter `i`; damit passte `[A-Z]` auch auf Kleinbuchstaben. Bestätigt
+   hätte das einen halben Absatz geschwärzt.
+
+Und eine Ungenauigkeit im eigenen Bau: die Balken saßen anfangs bis zu einem
+Buchstaben daneben, weil die Lage nach Zeichenzahl statt nach Schriftbreite
+gerechnet war. Da die Seite als Bild ausgegeben wird, hätte die
+Textnachprüfung das nicht gefunden. Jetzt wird mit der Schrift gemessen und
+ein Rand zugegeben; die Prüfung misst jeden Balken gegen die Textebene, die
+der Browser beim Markieren benutzt.
+
 ## hnvr.me-Rebrand (jetzt die Hand der Konsole)
 
 Seit das Studio eine App von hnvr.me ist, trägt es dieselbe Hand wie die

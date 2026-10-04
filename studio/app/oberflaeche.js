@@ -266,6 +266,7 @@ function baueBefehle() {
   befehl('modus:exportieren', 'Modus: Exportieren', 'Ansicht', () => setzeModus('exportieren'));
   befehl('ansicht:start', 'Zum Start', 'Ansicht', () => zeigeAnsicht('start'));
   befehl('ansicht:editor', 'Zum Editor', 'Ansicht', () => zeigeAnsicht('editor'));
+  befehl('teilen:vertraulich', 'Vertraulich teilen — sichere Kopie …', 'Datei', () => zeigeAnsicht('teilen'));
 }
 
 export function fuehreAus(id) {

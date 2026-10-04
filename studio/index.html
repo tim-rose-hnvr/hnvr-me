@@ -59,6 +59,10 @@
       <svg viewBox="0 0 24 24" class="sinnbild" aria-hidden="true"><path d="M5 4h6M8 4v16M5 20h6"/><rect x="13" y="8" width="8" height="8" rx="1"/></svg>
       <span>Editor</span>
     </button>
+    <button class="navi-punkt" data-ansicht="teilen" disabled>
+      <svg viewBox="0 0 24 24" class="sinnbild" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+      <span>Vertraulich teilen</span>
+    </button>
     <div class="navi-sammlungen" id="navi-sammlungen"></div>
     <div class="navi-freiraum"></div>
     <div class="navi-standard">
@@ -161,11 +165,19 @@
       </div>
       <div class="dokument-reiter" id="dokument-reiter" role="tablist" aria-label="Geöffnete Dateien"></div>
       <div class="dokument-taten">
+        <button class="knopf" id="knopf-sichern" title="Sichern (Strg+S)">Sichern</button>
         <button class="knopf" id="knopf-signieren">Signieren</button>
         <button class="knopf" id="knopf-schwaerzen">Schwärzen</button>
-        <button class="knopf knopf-voll" id="knopf-sichern" title="Sichern (Strg+S)">Sichern</button>
+        <button class="knopf knopf-voll" id="knopf-teilen">Vertraulich teilen</button>
+      </div>
+      <div class="ablauf-taten">
+        <button class="knopf" id="knopf-ablauf-verlassen">Ablauf verlassen</button>
       </div>
     </div>
+
+    <!-- Im Ablauf „Vertraulich teilen" steht hier der Schrittkopf statt der
+         Modusleiste (app/teilen.js). -->
+    <div class="ablaufkopf" id="ablaufkopf"></div>
 
     <!-- Modusleiste: was man gerade tut, Verlauf, Seite und Zoom. -->
     <div class="modusleiste" id="modusleiste">
@@ -221,6 +233,8 @@
         </div>
       </aside>
 
+      <aside class="leiste ablauf-tafel ablauf-links" id="ablauf-links" aria-label="Schwärzungen"></aside>
+
       <main class="buehne" id="buehne" tabindex="0">
         <div class="spur" id="spur"></div>
       </main>
@@ -242,6 +256,8 @@
         <div class="tafel" data-rtafel="verlauf" id="tafel-verlauf"></div>
         <div class="tafel" data-rtafel="mitdenken" id="tafel-rechts"></div>
       </aside>
+
+      <aside class="leiste ablauf-tafel ablauf-rechts" id="ablauf-rechts" aria-label="Sichere Kopie"></aside>
 
     </div>
 

@@ -12,6 +12,7 @@
 
 import { zustand, hoer, melde, $, $$ } from './kern.js';
 import { mappenListe } from './mappen.js';
+import { starteAblauf, beendeAblauf, ablaufAktiv } from './teilen.js';
 
 /* Welche Sektion zu welcher Ansicht gehört. Neue Ansichten (Dokumente,
    Vertraulich teilen, Einstellungen) tragen sich hier ein. */
@@ -19,6 +20,9 @@ const ANSICHTEN = {
   start: '#empfang',
   dokumente: '#ansicht-dokumente',
   editor: '#ansicht-editor',
+  /* „Vertraulich teilen" ist der Editor mit einem Ablauf darüber: dieselbe
+     Bühne, dieselben Werkzeuge, links und rechts die Tafeln des Ablaufs. */
+  teilen: '#ansicht-editor',
 };
 
 let aktuelle = 'start';
@@ -33,12 +37,15 @@ export function aktuelleAnsicht() { return aktuelle; }
  */
 export function zeigeAnsicht(name) {
   if (!ANSICHTEN[name]) return;
-  if (name === 'editor' && !zustand.folge.length) name = 'start';
+  if ((name === 'editor' || name === 'teilen') && !zustand.folge.length) name = 'start';
   aktuelle = name;
-  for (const [n, wahl] of Object.entries(ANSICHTEN)) {
+  const ziel = ANSICHTEN[name];
+  for (const wahl of new Set(Object.values(ANSICHTEN))) {
     const sektion = $(wahl);
-    if (sektion) sektion.hidden = n !== name;
+    if (sektion) sektion.hidden = wahl !== ziel;
   }
+  if (name === 'teilen' && !ablaufAktiv()) starteAblauf();
+  if (name !== 'teilen' && ablaufAktiv()) beendeAblauf();
   const huelle = $('#huelle');
   if (huelle) {
     huelle.hidden = false;
@@ -63,13 +70,14 @@ function zeichneDokumentkopf() {
     if (zustand.folge.length) teile.push(`${zustand.folge.length} ${zustand.folge.length === 1 ? 'Seite' : 'Seiten'}`);
     if (zustand.quellen.size > 1) teile.push(`${zustand.quellen.size} Quellen`);
     teile.push(zustand.geaendert ? 'Ungesicherte Änderungen' : 'Unverändert');
-    zusatz.textContent = teile.join(' · ');
+    zusatz.textContent = ablaufAktiv() ? 'Vertraulich teilen / Original bleibt unverändert' : teile.join(' · ');
   }
   /* Mehrere Dateien zeigen Reiter; bei einer ist der Titel genug. */
   const reiter = $('#dokument-reiter');
   if (reiter) reiter.hidden = mappenListe().filter((m) => m.seiten).length < 2;
-  const editor = $('#atelier-navi .navi-punkt[data-ansicht="editor"]');
-  if (editor) editor.disabled = !zustand.folge.length;
+  for (const punkt of $$('#atelier-navi .navi-punkt[data-ansicht="editor"], #atelier-navi .navi-punkt[data-ansicht="teilen"]')) {
+    punkt.disabled = !zustand.folge.length;
+  }
 }
 
 /* Das Konto-Kürzel oben rechts: zwei Buchstaben aus dem Namen der
@@ -94,10 +102,16 @@ export function starteAtelier() {
   });
   $('#knopf-signieren')?.addEventListener('click', () => window.studio?.fuehreAus?.('werkzeug:unterschrift'));
   $('#knopf-schwaerzen')?.addEventListener('click', () => window.studio?.fuehreAus?.('werkzeug:schwaerzen'));
+  $('#knopf-teilen')?.addEventListener('click', () => zeigeAnsicht('teilen'));
+  hoer('ansicht:editor-verlangt', () => zeigeAnsicht('editor'));
+  hoer('teilen:beendet', zeichneDokumentkopf);
+  hoer('teilen:geaendert', zeichneDokumentkopf);
 
   hoer('dokument:geladen', () => {
     zeichneDokumentkopf();
-    zeigeAnsicht(zustand.folge.length ? 'editor' : 'start');
+    /* Im Ablauf bleibt der Ablauf stehen — ein Reiterwechsel beendet ihn
+       über „dokument:frisch" ohnehin, wenn es ein anderes Dokument ist. */
+    zeigeAnsicht(zustand.folge.length ? (ablaufAktiv() ? 'teilen' : 'editor') : 'start');
   });
   for (const ereignis of ['dokument:geaendert', 'seiten:geaendert', 'mappen:geaendert', 'historie:geaendert']) {
     hoer(ereignis, zeichneDokumentkopf);

@@ -31,7 +31,7 @@ const MENUES = [
     'verkleinern', 'reparieren', 'linearisieren', T,
     'stapel', T,
     'vergleich', 'eigenschaften', 'anhaenge', 'vorabpruefung', T,
-    ['Schutz und Unterschrift', ['signieren', 'versenden', 'schutz:setzen', 'schutz:entfernen', 'schutz:zeigen']], T,
+    ['Schutz und Unterschrift', ['teilen:vertraulich', 'signieren', 'versenden', 'schutz:setzen', 'schutz:entfernen', 'schutz:zeigen']], T,
     'installieren',
   ]],
   ['Bearbeiten', [

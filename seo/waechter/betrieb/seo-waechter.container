@@ -1,0 +1,17 @@
+# Podman-Quadlet: nach /etc/containers/systemd/ legen, dann
+#   systemctl daemon-reload && systemctl start seo-waechter
+[Unit]
+Description=SEO Wächter
+After=network-online.target
+
+[Container]
+Image=localhost/seo-waechter:latest
+PublishPort=127.0.0.1:4380:4380
+Volume=waechter-daten:/daten
+EnvironmentFile=/etc/seo-waechter/waechter.env
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target default.target

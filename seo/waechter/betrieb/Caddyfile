@@ -1,0 +1,11 @@
+# Caddy holt das Zertifikat für seo.hnvr.me selbst (Let's Encrypt),
+# sobald der DNS-Eintrag auf diesen Rechner zeigt.
+seo.hnvr.me {
+	encode gzip
+	reverse_proxy 127.0.0.1:4380 {
+		# Überschreiben, nicht anhängen: Der Wächter nimmt den ersten
+		# Eintrag als Adresse für die Tagesgrenzen.
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto https
+	}
+}

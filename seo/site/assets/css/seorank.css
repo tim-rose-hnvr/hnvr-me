@@ -1,0 +1,5975 @@
+/* seo-rank.me — Stilsystem
+   Richtung „Plan" (24.09.2026): dunkel ist der Grundzustand, Xenon ist
+   die Farbe der Handlung und des Plans, Zustaende tragen Koralle
+   (offen), Bernstein (in Arbeit) und Mint (nachgemessen). Die helle
+   Welt ist die Ausnahme und heisst data-welt="hell".
+   Entwurf in Figma: Datei h8vh0gi1qr9NC6HgBNtFEr.
+   Alle Schriften liegen lokal. Keine Fremdaufrufe. */
+
+/* ---------- Schriften ---------- */
+
+@font-face {
+  font-family: "Onest";
+  src: url("../fonts/onest-var.woff2") format("woff2");
+  font-weight: 400 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../fonts/jetbrains-mono-var.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+/* Der Latin-Teilsatz beider Familien kennt Pfeil, Malzeichen,
+   Minuszeichen, Paragraph, Haken und die Winkelzeichen NICHT. Gemessen
+   im Browser: ohne diese zweite Datei fallen 42 Stellen auf eine
+   Systemschrift zurueck, sichtbar mitten im Satz. Zwei kleine Dateien
+   (2,0 und 1,6 KB) schliessen die Luecke, ohne den Text zu aendern. */
+@font-face {
+  font-family: "Onest";
+  src: url("../fonts/onest-zeichen.woff2") format("woff2");
+  font-weight: 400 800;
+  font-display: swap;
+  unicode-range: U+a7, U+d7, U+2039-203a, U+2192, U+21b5, U+2212, U+25be, U+2713;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../fonts/jetbrains-mono-zeichen.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range: U+a7, U+d7, U+2039-203a, U+2192, U+21b5, U+2212, U+25be, U+2713;
+}
+
+/* Bis die eigene Schrift da ist, zeigt der Browser eine Ersatzschrift.
+   Haben beide verschiedene Masse, springt beim Wechsel die halbe Seite:
+   auf werkzeuge.html gemessen 0,091 Layoutverschiebung bei 5,2 Sekunden
+   (Slow 4G, vierfach gebremste CPU) — genau in dem Moment, in dem Onest
+   eintrifft. Diese zwei Deklarationen legen Arial und Courier New auf die
+   Masse von Onest und JetBrains Mono um. Die Werte sind im Browser
+   gemessen (Canvas: Textbreite und fontBoundingBox), nicht geschaetzt:
+     size-adjust      = Breite Ziel / Breite Ersatz
+     ascent-override  = Oberlaenge Ziel / (1 em x size-adjust)
+   Wer eine Schrift tauscht, misst neu — sonst springt es wieder. */
+
+@font-face {
+  font-family: "Onest Ersatz";
+  src: local("Arial"), local("Helvetica"), local("Liberation Sans");
+  size-adjust: 104.5%;
+  ascent-override: 92.82%;
+  descent-override: 29.66%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "JetBrains Ersatz";
+  src: local("Courier New"), local("Liberation Mono"), local("DejaVu Sans Mono");
+  size-adjust: 99.98%;
+  ascent-override: 102.02%;
+  descent-override: 30%;
+  line-gap-override: 0%;
+}
+
+/* ---------- Werte ---------- */
+
+:root {
+  color-scheme: dark;
+
+  /* Die Variablennamen sind geblieben, damit einundzwanzig Skripte und
+     dreiundzwanzig Seiten weiter passen. Die Bedeutung in der Richtung
+     „Plan": grund = der dunkle Grund, flaeche = Karte, grund-2 =
+     Vertiefung, signal = Xenon (Handlung und Plan), marker = derselbe
+     Xenon fuer „zuerst beheben", gut = nachgemessen, warn = offen,
+     arbeit = in Arbeit.
+     Jede Textfarbe liegt gegen Grund, Karte und Vertiefung ueber
+     4,5:1, die starke Linie gegen beide Flaechen ueber 3:1. Gerechnet
+     in bauen/palette.mjs, in BEIDEN Welten. */
+  --grund: #0b0c0e;
+  --grund-2: #1a1d22;
+  --flaeche: #131519;
+  --flaeche-hoch: #1a1d22;
+  --linie: #23272e;
+  --linie-stark: #6b7480;
+  --text: #f2f5f7;
+  --text-2: #aeb6c0;
+  --text-3: #8791a0;
+  --platzhalter: #8791a0;
+  --signal: #e8ff5a;        /* Xenon: die Farbe der Handlung */
+  --signal-hell: #f4ff9b;   /* heller, fuer Hover auf dunklem Grund */
+  --auf-signal: #0b0c0e;    /* Schrift auf einer Xenonflaeche */
+  --gut: #5ad1a0;           /* nachgemessen */
+  --warn: #ff6b57;          /* offen */
+  --arbeit: #ffc24b;        /* in Arbeit */
+  --marker: #e8ff5a;        /* nur fuer „zuerst beheben" */
+  --auf-marker: #0b0c0e;
+
+  /* Drei Radien: Flaechen 14 px, Eingaben 8 px, Bedienelemente als
+     Pille. Linien trennen, Flaechen gruppieren. Keine Schatten. */
+  --radius: 14px;
+  --radius-eingabe: 8px;
+  --pille: 999px;
+
+  --schrift: "Onest", "Onest Ersatz", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --schrift-mono: "JetBrains Mono", "JetBrains Ersatz", Consolas, "Courier New", monospace;
+
+  --rand: clamp(20px, 3.5vw, 40px);
+  --block: clamp(56px, 6.5vw, 84px);
+  --breite: 1320px;
+}
+
+/* Die helle Welt: dieselben Rollen, gerechnet gegen weisses Papier.
+   Xenon wird dort zu einem tiefen Oliv, damit dieselbe Variable
+   weiter BEIDE Rollen traegt — Flaeche (mit Xenonschrift darauf) und
+   Schrift (auf Weiss 8,10:1). */
+:root[data-welt="hell"] {
+  color-scheme: light;
+
+  --grund: #f6f7f9;
+  --grund-2: #eef0f4;
+  --flaeche: #ffffff;
+  --flaeche-hoch: #eef0f4;
+  --linie: #e1e5ea;
+  --linie-stark: #6e7884;
+  --text: #0b0c0e;
+  --text-2: #454d5a;
+  --text-3: #5d6674;
+  --platzhalter: #5d6674;
+  --signal: #3f4d00;
+  --signal-hell: #2a3300;
+  --auf-signal: #e8ff5a;
+  --gut: #116b4a;
+  --warn: #b3301c;
+  --arbeit: #7a5300;
+  --marker: #3f4d00;
+  --auf-marker: #e8ff5a;
+}
+
+/* ---------- Grundlage ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--grund);
+  color: var(--text);
+  font-family: var(--schrift);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+/* Ein Link im Fliesstext muss OHNE Farbe erkennbar sein. Xenon gegen den
+   Nebensatz kommt nur auf 1,84:1 (Lighthouse link-in-text-block, WCAG
+   1.4.1) — also wird unterstrichen. Ausnahme sind Stellen, an denen ein
+   Link schon durch seine Form als Bedienelement zu erkennen ist: Knoepfe,
+   Kopfzeile, Linklisten, ganz verlinkte Tabellenzellen. */
+a {
+  color: var(--signal);
+  text-decoration: underline;
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  color: var(--signal-hell);
+}
+
+.knopf,
+.kopf__link,
+.marke,
+.springmarke,
+.inhaltsleiste__punkt,
+.protokollprobe__weiter,
+.fuss__spalte > a,
+th > a,
+td > a:only-child {
+  text-decoration: none;
+}
+
+.knopf:hover,
+.kopf__link:hover,
+.fuss__spalte > a:hover,
+th > a:hover,
+td > a:only-child:hover {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+/* Ueberschriften in Schibsted Grotesk, fett und eng gesetzt, in
+   gewoehnlicher Schreibung. Die Versalien und die Breitenachse der
+   alten Richtung sind entfallen. */
+h1, h2, h3 {
+  margin: 0;
+  font-family: var(--schrift);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+/* Deutsche Komposita sind lang. Auf schmalen Schirmen wird deshalb
+   getrennt statt ueberzulaufen — das Dokument traegt lang="de", die
+   Trennung sitzt also richtig. */
+h2,
+h3 {
+  overflow-wrap: break-word;
+}
+
+h1 {
+  overflow-wrap: normal;
+}
+
+/* h1 bricht nie mit Trennstrich — ein getrenntes Wort in der
+   groessten Zeile sieht kaputt aus. Nur h2 und h3 duerfen trennen. */
+@media (max-width: 760px) {
+  h2,
+  h3 {
+    hyphens: auto;
+  }
+}
+
+/* Figma: Titel 1 = 48 px ab 1024, 32 px bei 390. */
+h1 {
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  line-height: 1;
+}
+
+/* Das laengste Wort in einer h1 ist „Datenschutzerklärung": bei 32 px
+   335 px breit, die Spalte bietet bei 320 px Schirmbreite 270. Die h1
+   bricht nicht mit Trennstrich, also haengt die Groesse hier an der
+   Schirmbreite. Gemessen: vorher +45 px Ueberlauf bei 320, +5 bei 360. */
+@media (max-width: 430px) {
+  h1 {
+    font-size: min(2rem, 8vw);
+  }
+}
+
+h2 {
+  font-size: clamp(1.5rem, 2.4vw, 1.75rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.25;
+  text-transform: none;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mono {
+  font-family: var(--schrift-mono);
+}
+
+code {
+  font-family: var(--schrift-mono);
+  font-size: 0.9em;
+  color: var(--signal);
+  overflow-wrap: anywhere;
+}
+
+.springmarke {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  background: var(--signal);
+  color: var(--grund);
+  padding: 12px 18px;
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+}
+
+.springmarke:focus {
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+}
+
+/* ---------- Bausteine ---------- */
+
+.bahn {
+  padding-inline: var(--rand);
+}
+
+.mitte {
+  max-width: var(--breite);
+  margin-inline: auto;
+}
+
+.kicker {
+  margin: 0;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.label {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.vorspann {
+  margin-top: 14px;
+  color: var(--text-2);
+  max-width: 64ch;
+}
+
+.knopf {
+  display: inline-block;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  padding: 13px 22px;
+  border: 1px solid var(--linie-stark);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.knopf:hover {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+.knopf--signal {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--grund);
+}
+
+.knopf--signal:hover {
+  background: var(--signal-hell);
+  border-color: var(--signal-hell);
+  color: var(--grund);
+}
+
+/* ---------- Kopf ---------- */
+
+.kopf {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--grund);
+  border-bottom: 1px solid var(--linie);
+}
+
+.kopf__innen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block: 14px;
+}
+
+.marke {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+a.marke {
+  padding-block: 8px;
+}
+
+.marke__wort {
+  font-family: var(--schrift-mono);
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.kopf__nav {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.kopf__link {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+
+.kopf__link:hover,
+.kopf__link[aria-current="page"] {
+  color: var(--text);
+}
+
+.kopf__schalter {
+  display: none;
+  width: 46px;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--linie-stark);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ---------- Aufmacher ---------- */
+
+.aufmacher {
+  display: grid;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr);
+  gap: clamp(28px, 3.5vw, 44px);
+  padding-block: clamp(36px, 5vw, 56px) clamp(32px, 4vw, 44px);
+  align-items: start;
+}
+
+.aufmacher__titel {
+  margin-top: 22px;
+  /* Steht in einer schmalen Spalte: mit 125 % Breite und Versalien braucht
+     ein Wort wie DURCHGEMESSEN. sonst mehr Platz als die Spalte hat. */
+  font-size: clamp(1.7rem, 3.4vw, 3rem);
+}
+
+/* Unter 380 px reicht auch die untere Schranke nicht mehr: dort haengt die
+   Groesse an der Schirmbreite, damit das laengste Wort ganz hineingeht. */
+@media (max-width: 380px) {
+  .aufmacher__titel {
+    font-size: 6.9vw;
+  }
+}
+
+.aufmacher__text {
+  margin-top: 20px;
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: var(--text-2);
+  max-width: 44ch;
+}
+
+.befehle {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 26px;
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  color: var(--text-2);
+}
+
+.befehle li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.befehle li::before {
+  content: "\203A";
+  color: var(--signal);
+  flex-shrink: 0;
+}
+
+/* ---------- Prüfformular ---------- */
+
+.pruefform {
+  display: flex;
+  margin-top: 28px;
+  max-width: 500px;
+}
+
+.pruefform__feld {
+  flex-grow: 1;
+  min-width: 0;
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  color: var(--text);
+  background: var(--flaeche);
+  border: 1px solid var(--linie-stark);
+  border-right: none;
+  padding: 13px 16px;
+}
+
+.pruefform__feld::placeholder {
+  color: var(--platzhalter);
+}
+
+.pruefform__knopf {
+  flex-shrink: 0;
+}
+
+.formhinweis {
+  margin-top: 12px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+  min-height: 1.3em;
+}
+
+.formhinweis--warn {
+  color: var(--warn);
+}
+
+/* ---------- Tafeln ---------- */
+
+.tafel {
+  border: 1px solid var(--linie);
+  background: var(--flaeche);
+  min-width: 0;
+}
+
+/* Der Kopf traegt links einen Titel und rechts einen Wert. Auf 320 px
+   passen eine Beschriftung und eine vollstaendige Adresse nicht
+   nebeneinander — dann bricht die Zeile, statt die Seite zu schieben. */
+.tafel__kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  overflow-wrap: anywhere;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--linie);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.tafel__wert {
+  color: var(--signal);
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+.tafel__flaeche {
+  padding: 18px;
+}
+
+.tafelspalte {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.legende {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+
+.legende__punkt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.legende__strich {
+  width: 14px;
+  height: 2px;
+  background: var(--signal);
+}
+
+.legende__strich--matt {
+  background: var(--text-3);
+}
+
+/* ---------- Kennzahlen ---------- */
+
+.kennzahlen {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.kennzahl {
+  border: 1px solid var(--linie);
+  background: var(--flaeche);
+  padding: 16px 18px;
+}
+
+.kennzahl__zahl {
+  display: block;
+  margin-top: 6px;
+  font-weight: 700;
+  font-size: 1.625rem;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.kennzahl__zahl--warn {
+  color: var(--warn);
+}
+
+.kennzahl__zusatz {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+  margin-left: 8px;
+  letter-spacing: 0;
+}
+
+.kennzahl__zusatz--gut {
+  color: var(--gut);
+}
+
+/* ---------- Modulleiste ---------- */
+
+.module {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--linie);
+  border-bottom: 1px solid var(--linie);
+}
+
+.modul {
+  padding: 22px var(--rand);
+  border-right: 1px solid var(--linie);
+}
+
+.modul:last-child {
+  border-right: none;
+}
+
+.modul__name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.0625rem;
+  font-weight: 500;
+}
+
+.modul p {
+  margin-top: 6px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+/* ---------- Abschnitte ---------- */
+
+.abschnitt {
+  padding-block: var(--block);
+}
+
+.abschnitt--flaeche {
+  background: var(--grund-2);
+  border-top: 1px solid var(--linie);
+  border-bottom: 1px solid var(--linie);
+}
+
+.abschnitt__kopf h2 {
+  margin-top: 16px;
+}
+
+.zweispalt {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(28px, 3.5vw, 48px);
+  align-items: start;
+}
+
+.zweispalt--gedreht {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+}
+
+/* ---------- Werkzeugraster ---------- */
+
+.werkzeuge {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--linie);
+  border: 1px solid var(--linie);
+  margin-top: 32px;
+}
+
+.werkzeug {
+  background: var(--flaeche);
+  padding: 26px 24px;
+}
+
+.werkzeug h3 {
+  margin-top: 14px;
+}
+
+.werkzeug p {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--text-2);
+}
+
+/* ---------- Befundtabelle ---------- */
+
+.rolle {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.tabelle {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.tabelle th {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  text-align: left;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.tabelle td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--linie);
+  vertical-align: middle;
+}
+
+.tabelle tr:last-child td {
+  border-bottom: none;
+}
+
+.tabelle__befund {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tabelle__zahl {
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.marker {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+}
+
+.marker--kritisch {
+  background: var(--warn);
+}
+
+.marker--wichtig {
+  background: var(--text);
+}
+
+.marker--hinweis {
+  border: 2px solid var(--text-3);
+}
+
+.stufe {
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+}
+
+.stufe--hoch {
+  color: var(--warn);
+}
+
+.stufe--mittel {
+  color: var(--text);
+}
+
+.stufe--niedrig {
+  color: var(--text-3);
+}
+
+/* Rangbewegung: gestiegen ist gut, gefallen ist schlecht. */
+.stufe--gestiegen {
+  color: var(--gut);
+}
+
+.stufe--gefallen {
+  color: var(--warn);
+}
+
+/* ---------- Balkenvergleich ---------- */
+
+.balken {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.balken__zeile {
+  display: grid;
+  grid-template-columns: 190px 1fr 56px;
+  gap: 14px;
+  align-items: center;
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+}
+
+.balken__spur {
+  display: block;
+  height: 10px;
+  background: var(--linie);
+}
+
+/* Inline-Spans haben keine Hoehe: Fuellung muss ein Block sein. */
+.balken__fuellung {
+  display: block;
+  height: 10px;
+  background: var(--text-3);
+}
+
+.balken__fuellung--eigen {
+  background: var(--signal);
+}
+
+.balken__wert {
+  text-align: right;
+  color: var(--text-2);
+}
+
+.balken__name {
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.balken__name--eigen {
+  color: var(--text);
+}
+
+/* ---------- Punkte ---------- */
+
+.punkte {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.punkte li {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  font-size: 0.9375rem;
+  color: var(--text-2);
+}
+
+.punkte li::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--signal);
+  flex-shrink: 0;
+}
+
+/* ---------- Tarife ---------- */
+
+.tarife {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 36px;
+}
+
+.tarif {
+  border: 1px solid var(--linie);
+  background: var(--flaeche);
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tarif--betont {
+  border-color: var(--signal);
+  background: var(--flaeche-hoch);
+}
+
+.tarif__kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tarif__name {
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.tarif__fahne {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  background: var(--signal);
+  color: var(--grund);
+  padding: 4px 9px;
+}
+
+.tarif__fuer {
+  margin-top: 4px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+.tarif__preis {
+  font-family: var(--schrift-mono);
+  font-size: 0.875rem;
+  color: var(--signal);
+  border: 1px dashed var(--signal);
+  padding: 12px 14px;
+}
+
+.tarif__leistungen {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.tarif__leistungen li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.tarif__leistungen li::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--linie-stark);
+  flex-shrink: 0;
+}
+
+.tarif__knopf {
+  margin-top: auto;
+  text-align: center;
+}
+
+/* ---------- Schlussruf ---------- */
+
+.schluss {
+  border-top: 1px solid var(--linie);
+  background: var(--flaeche);
+}
+
+.schluss__innen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding-block: clamp(40px, 5vw, 60px);
+}
+
+.schluss__text {
+  margin-top: 14px;
+  max-width: 46ch;
+  color: var(--text-2);
+}
+
+.schluss .pruefform {
+  margin-top: 0;
+  width: min(460px, 100%);
+  flex-shrink: 0;
+}
+
+.schluss .pruefform__feld {
+  background: var(--grund);
+}
+
+/* ---------- Fuß ---------- */
+
+.fuss {
+  border-top: 1px solid var(--linie);
+  padding-block: clamp(36px, 4.5vw, 52px) 28px;
+  color: var(--text-3);
+}
+
+.fuss__raster {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 36px;
+}
+
+.fuss__text {
+  margin-top: 14px;
+  font-size: 0.875rem;
+  max-width: 34ch;
+}
+
+.fuss__spalte {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 0.875rem;
+}
+
+.fuss__spalte a {
+  color: var(--text-2);
+}
+
+.fuss__spalte a:hover {
+  color: var(--text);
+}
+
+.fuss__unten {
+  margin-top: 32px;
+  padding-top: 18px;
+  border-top: 1px solid var(--linie);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- Produktoberfläche ---------- */
+
+.werkbank {
+  display: flex;
+  min-height: 100vh;
+}
+
+.seitenleiste {
+  width: 236px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--linie);
+  background: var(--grund-2);
+  display: flex;
+  flex-direction: column;
+  padding-block: 18px;
+}
+
+.seitenleiste .marke {
+  padding: 0 20px 22px;
+}
+
+.projektwahl {
+  margin: 0 14px 20px;
+  border: 1px solid var(--linie-stark);
+  padding: 10px 12px;
+}
+
+.projektwahl__zeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 5px;
+  font-size: 0.875rem;
+}
+
+.seitennav {
+  display: flex;
+  flex-direction: column;
+}
+
+.seitennav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.seitennav a:hover {
+  background: var(--flaeche);
+  color: var(--text);
+}
+
+.seitennav a[aria-current="page"] {
+  background: var(--signal);
+  color: var(--grund);
+}
+
+.seitennav__zahl {
+  margin-left: auto;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  background: var(--warn);
+  color: var(--grund);
+  padding: 1px 7px;
+}
+
+.verbrauch {
+  margin-top: auto;
+  padding: 16px 20px 0;
+  border-top: 1px solid var(--linie);
+}
+
+.verbrauch__text {
+  margin-top: 5px;
+  font-size: 0.8125rem;
+  color: var(--text-2);
+}
+
+.verbrauch__spur {
+  height: 4px;
+  background: var(--linie-stark);
+  margin-top: 9px;
+}
+
+.verbrauch__fuellung {
+  height: 4px;
+  background: var(--signal);
+}
+
+.werkflaeche {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.werkkopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 16px var(--rand);
+  border-bottom: 1px solid var(--linie);
+  background: var(--grund-2);
+}
+
+.werkkopf h1 {
+  font-size: 1.5rem;
+}
+
+.werkkopf__stand {
+  margin-top: 4px;
+}
+
+.werkkopf__aktionen {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.werkinhalt {
+  padding: 20px var(--rand) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.werkraster {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.liste__zeile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--linie);
+  font-size: 0.875rem;
+}
+
+.liste__zeile:last-of-type {
+  border-bottom: none;
+}
+
+.liste__text {
+  flex-grow: 1;
+}
+
+.liste__zahl {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+.tafel__fuss {
+  padding: 12px 18px;
+  border-top: 1px solid var(--linie);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.demomarke {
+  display: inline-block;
+  border: 1px solid var(--linie-stark);
+  padding: 4px 10px;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* ---------- Preisseite ---------- */
+
+.vergleich th,
+.vergleich td {
+  text-align: left;
+}
+
+.vergleich th[scope="col"] {
+  color: var(--text);
+  font-size: 0.75rem;
+}
+
+.vergleich td:not(:first-child),
+.vergleich th[scope="col"]:not(:first-child) {
+  text-align: right;
+}
+
+.faq {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--linie);
+  border: 1px solid var(--linie);
+  margin-top: 32px;
+}
+
+.faq__punkt {
+  background: var(--flaeche);
+  padding: 24px;
+}
+
+.faq__punkt p {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+/* ---------- Schmale Fenster ---------- */
+
+@media (max-width: 1100px) {
+  .aufmacher,
+  .zweispalt,
+  .zweispalt--gedreht,
+  .werkraster {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .module {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .modul {
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .modul:nth-child(2n) {
+    border-right: none;
+  }
+
+  .werkzeuge,
+  .tarife {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fuss__raster {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .schluss__innen {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .schluss .pruefform {
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .kopf__nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--grund);
+    border-bottom: 1px solid var(--linie);
+    padding: 6px var(--rand) 18px;
+  }
+
+  .kopf__nav[hidden] {
+    display: none;
+  }
+
+  .kopf__link {
+    padding-block: 13px;
+    border-bottom: 1px solid var(--linie);
+    font-size: 0.875rem;
+  }
+
+  .kopf__nav .knopf {
+    margin-top: 14px;
+    text-align: center;
+  }
+
+  .kopf__schalter {
+    display: flex;
+  }
+
+  .werkbank {
+    flex-direction: column;
+  }
+
+  .seitenleiste {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .seitennav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .verbrauch {
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .kennzahlen {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .module,
+  .werkzeuge,
+  .tarife,
+  .faq {
+    grid-template-columns: 1fr;
+  }
+
+  .modul {
+    border-right: none;
+  }
+
+  .fuss__raster {
+    grid-template-columns: 1fr;
+  }
+
+  .pruefform {
+    flex-direction: column;
+  }
+
+  .pruefform__feld {
+    border-right: 1px solid var(--linie-stark);
+  }
+
+  .pruefform__knopf {
+    margin-top: 10px;
+    text-align: center;
+    padding-block: 15px;
+  }
+
+  .balken__zeile {
+    grid-template-columns: 120px 1fr 46px;
+  }
+}
+
+/* ---------- Ausbau: gemeinsame Bausteine ---------- */
+
+.seitenkopf {
+  border-bottom: 1px solid var(--linie);
+  padding-block: clamp(36px, 4.5vw, 56px);
+}
+
+.seitenkopf h1 {
+  margin-top: 16px;
+}
+
+.seitenkopf .vorspann {
+  margin-top: 18px;
+  font-size: 1.0625rem;
+}
+
+.gratisband {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  border: 1px solid var(--signal);
+  background: color-mix(in srgb, var(--signal) 6%, transparent);
+  padding: 12px 16px;
+  margin-top: 24px;
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.gratisband strong {
+  color: var(--signal);
+  font-weight: 500;
+}
+
+.hinweiskasten {
+  border: 1px dashed var(--signal);
+  padding: 16px 18px;
+  margin-top: 24px;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.hinweiskasten p {
+  margin-top: 0;
+}
+
+.hinweiskasten strong {
+  display: block;
+  color: var(--signal);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+/* ---------- Schrittfolge ---------- */
+
+.schritte {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--linie);
+  border: 1px solid var(--linie);
+  margin-top: 32px;
+}
+
+.schritt {
+  background: var(--flaeche);
+  padding: 24px 22px;
+}
+
+.schritt__marke {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.schritt__marke::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: var(--signal);
+}
+
+.schritt h3 {
+  margin-top: 12px;
+}
+
+.schritt p {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+/* ---------- Werkzeugseite ---------- */
+
+.werkblock {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(28px, 3.5vw, 48px);
+  align-items: start;
+  padding-block: var(--block);
+  border-top: 1px solid var(--linie);
+}
+
+.werkblock__text h2 {
+  margin-top: 16px;
+}
+
+/* Die Zeilenlaenge steht hier und nicht in 23 style-Attributen: inline
+   schlaegt jeden Selektor, und solange sie dort stand, konnte keine
+   Regel die Liste auf breiten Schirmen anders setzen.
+
+   `display: block` statt Flex, weil ein Flex-Container keine Spalten
+   kennt — der Abstand kommt jetzt von den Punkten selbst. */
+.merkmale {
+  display: block;
+  max-width: 74ch;
+  margin-top: 26px;
+}
+
+.merkmale > li + li {
+  margin-top: 14px;
+}
+
+/* Auf breiten Schirmen bleibt die Zeilenlaenge, aber die Liste nutzt die
+   Bahn: zwei Spalten zu je rund 65 Zeichen statt einer Spalte mit 600 px
+   Leere daneben. Nur ab fuenf Punkten — bei drei ergaebe es 2+1, und das
+   sieht schlechter aus als eine Spalte.
+
+   `:has()` kennt jeder aktuelle Browser; wo nicht, greift die Regel
+   einfach nicht und es bleibt beim Ruhezustand von oben. Genau so soll
+   ein Zusatz ausfallen. */
+@media (min-width: 1200px) {
+  .merkmale:has(> li:nth-child(5)) {
+    max-width: none;
+    columns: 2;
+    column-gap: 56px;
+  }
+
+  .merkmale:has(> li:nth-child(5)) > li {
+    break-inside: avoid;
+  }
+
+  /* In Spalten setzt der erste Punkt jeder Spalte sonst einen Abstand
+     nach oben, den es am Spaltenanfang nicht geben darf. */
+  .merkmale:has(> li:nth-child(5)) > li {
+    margin-top: 0;
+    margin-bottom: 14px;
+  }
+}
+
+/* Kein Grid und kein Flex: sonst wird jeder Textknoten neben dem
+   strong-Element zu einem eigenen Element und die Zeile bricht Wort fuer Wort. */
+.merkmale li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.merkmale li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 8px;
+  height: 8px;
+  background: var(--signal);
+}
+
+.merkmale strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ---------- Regelsatz ---------- */
+
+.filterleiste {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+
+.filter {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  padding: 11px 16px;
+  border: 1px solid var(--linie-stark);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.filter:hover {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+.filter[aria-pressed="true"] {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--grund);
+}
+
+.filterstand {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+  margin-left: auto;
+}
+
+.regelgruppe {
+  margin-top: 28px;
+  border: 1px solid var(--linie);
+  background: var(--flaeche);
+}
+
+.regelgruppe[hidden] {
+  display: none;
+}
+
+.regelgruppe__kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.regelgruppe__name {
+  font-size: 1.0625rem;
+  font-weight: 500;
+}
+
+.regelliste {
+  display: block;
+}
+
+/* Traegt die Tafel schon eine Ueberschrift, bleibt die Tabellenbeschriftung
+   den Vorlesewerkzeugen vorbehalten und wird nicht zweimal gezeigt. */
+.tabelle__beschriftung--still {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: none;
+}
+
+.tabelle__beschriftung {
+  caption-side: top;
+  text-align: left;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--linie);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.regel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.6fr) 162px;
+  gap: 18px;
+  align-items: start;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.regel:last-child {
+  border-bottom: none;
+}
+
+.regel[hidden] {
+  display: none;
+}
+
+.regel__name {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 0.9375rem;
+}
+
+.regel__pruefung {
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.regel__stufe {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  text-align: right;
+  line-height: 1.7;
+}
+
+.regel__stufe code {
+  color: var(--text-3);
+  font-size: 0.9em;
+}
+
+.regel__bedarf {
+  display: block;
+  margin-top: 6px;
+  font-style: normal;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+
+/* ---------- Snippet-Werkzeug ---------- */
+
+.werkzeugflaeche {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  margin-top: 32px;
+}
+
+.feldgruppe {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 18px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.feldgruppe:last-of-type {
+  border-bottom: none;
+}
+
+.feldkopf {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.feld {
+  width: 100%;
+  font-family: var(--schrift);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--grund);
+  border: 1px solid var(--linie-stark);
+  padding: 11px 13px;
+  resize: vertical;
+}
+
+.feld:hover {
+  border-color: var(--text-3);
+}
+
+.messwert {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+.messwert--knapp {
+  color: var(--warn);
+}
+
+.balkenklein {
+  height: 3px;
+  background: var(--linie-stark);
+}
+
+/* Skaliert statt Breite zu animieren: kein Umbruch der Nachbarn. */
+.balkenklein__fuellung {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background: var(--signal);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.balkenklein__fuellung--knapp {
+  background: var(--warn);
+}
+
+/* Arial ist hier KEINE Gestaltungsentscheidung, sondern eine Messgroesse.
+   Die Vorschau bildet Googles Trefferliste nach, und der Zeilenumbruch
+   wird gegen eine eingebettete Arial-Breitentabelle gerechnet
+   (`umbrechen()` in seorank.js). Eine andere Schrift hier hiesse: die
+   Vorschau zeigt einen anderen Schnitt als die Trefferliste — und dann
+   ist das ganze Werkzeug wertlos. Nicht austauschen. */
+.vorschau {
+  padding: 20px;
+  background: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.vorschau--dunkel {
+  background: #202124;
+}
+
+.vorschau__pfad {
+  font-size: 14px;
+  line-height: 1.3;
+  color: #4d5156;
+  word-break: break-all;
+}
+
+.vorschau--dunkel .vorschau__pfad {
+  color: #9aa0a6;
+}
+
+.vorschau__titel {
+  margin-top: 4px;
+  font-size: 20px;
+  line-height: 1.3;
+  color: #1a0dab;
+}
+
+.vorschau--dunkel .vorschau__titel {
+  color: #8ab4f8;
+}
+
+.vorschau__text {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.58;
+  color: #4d5156;
+}
+
+.vorschau--dunkel .vorschau__text {
+  color: #bdc1c6;
+}
+
+.vorschauschalter {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- Produktansichten ---------- */
+
+.werkzeile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tabelle tr[hidden] {
+  display: none;
+}
+
+.sortknopf {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.sortknopf:hover {
+  color: var(--signal);
+}
+
+.sortknopf__pfeil {
+  visibility: hidden;
+  color: var(--signal);
+}
+
+.sortknopf[data-richtung="auf"] .sortknopf__pfeil,
+.sortknopf[data-richtung="ab"] .sortknopf__pfeil {
+  visibility: visible;
+}
+
+.zustand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.zustand::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.zustand--neu::before {
+  background: var(--signal);
+}
+
+.zustand--verloren::before {
+  background: var(--warn);
+}
+
+.zustand--geprueft::before {
+  background: var(--text-3);
+}
+
+.leerstand {
+  padding: 28px 18px;
+  text-align: center;
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  color: var(--text-3);
+}
+
+.leerstand[hidden] {
+  display: none;
+}
+
+/* ---------- Rechtsseiten ---------- */
+
+.rechtstext {
+  max-width: 76ch;
+}
+
+.rechtstext h2 {
+  margin-top: 40px;
+  font-size: 1.375rem;
+}
+
+.rechtstext h3 {
+  margin-top: 26px;
+}
+
+.rechtstext p {
+  margin-top: 12px;
+  color: var(--text-2);
+}
+
+.rechtstext ul {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rechtstext li {
+  position: relative;
+  padding-left: 18px;
+  color: var(--text-2);
+}
+
+.rechtstext li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 6px;
+  height: 6px;
+  background: var(--linie-stark);
+}
+
+.platzhalter {
+  color: var(--signal);
+  font-family: var(--schrift-mono);
+  font-size: 0.9375rem;
+}
+
+/* ---------- Ausbau: schmale Fenster ---------- */
+
+@media (max-width: 1100px) {
+  .werkblock,
+  .werkzeugflaeche {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .schritte {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .regel {
+    grid-template-columns: minmax(0, 1fr) 130px;
+  }
+
+  .regel__pruefung {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .schritte {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .filterstand {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* ---------- Echte Werkzeuge ---------- */
+
+.eingabeflaeche {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  margin-top: 32px;
+}
+
+.eingabe {
+  width: 100%;
+  min-height: 260px;
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--grund);
+  border: 1px solid var(--linie-stark);
+  padding: 14px 16px;
+  resize: vertical;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+.eingabe--klein {
+  min-height: 120px;
+}
+
+.eingabe:hover {
+  border-color: var(--text-3);
+}
+
+.werkzeugleiste {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-top: 1px solid var(--linie);
+}
+
+.werkzeugleiste .knopf {
+  padding: 11px 18px;
+}
+
+.werkzeughinweis {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+  margin-left: auto;
+}
+
+.bilanz {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--linie);
+  border-bottom: 1px solid var(--linie);
+}
+
+.bilanz__wert {
+  background: var(--flaeche);
+  padding: 16px 18px;
+}
+
+.bilanz__zahl {
+  display: block;
+  margin-top: 5px;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.bilanz__zahl--kritisch {
+  color: var(--warn);
+}
+
+.bilanz__zahl--gut {
+  color: var(--gut);
+}
+
+.befund {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) 92px;
+  gap: 14px;
+  align-items: start;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.befund:last-child {
+  border-bottom: none;
+}
+
+.befund[hidden] {
+  display: none;
+}
+
+.befund__marker {
+  width: 10px;
+  height: 10px;
+  margin-top: 6px;
+}
+
+.befund__name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.befund__wie {
+  margin-top: 6px;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.befund__fund {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+  background: var(--grund);
+  border-left: 2px solid var(--linie-stark);
+  padding: 8px 12px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Die Stufe als Stempel: ein Wort in Versalien mit Kontur. Die
+   Bedeutung haengt am Wort, nicht an der Farbe — auch im
+   Kontrastmodus und auf dem Ausdruck bleibt sie lesbar. */
+.befund__stufe {
+  justify-self: end;
+  align-self: start;
+  display: inline-block;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 2px 9px;
+  border: 1.5px solid currentColor;
+  border-radius: var(--pille);
+}
+
+.befund__stufe--kritisch {
+  color: var(--auf-signal);
+  background: var(--warn);
+  border-color: var(--warn);
+}
+
+.befund__stufe--wichtig {
+  color: var(--warn);
+}
+
+.befund__stufe--hinweis {
+  color: var(--text-2);
+  border-color: var(--linie-stark);
+}
+
+.befund__stufe--gut {
+  color: var(--gut);
+}
+
+.urteil {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.urteil__zeichen {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--signal);
+  color: var(--signal);
+}
+
+.urteil__zeichen--gesperrt {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.urteil__wort {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.urteil__grund {
+  margin-top: 3px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+.werkzeugkarten {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--linie);
+  border: 1px solid var(--linie);
+  margin-top: 32px;
+}
+
+.werkzeugkarte {
+  background: var(--flaeche);
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* `display` in der Klasse schlaegt das `hidden`-Attribut — auf der
+   Kontoseite stand deshalb „Angemeldet" da, obwohl niemand angemeldet
+   war. Gemessen: ein Element hidden und trotzdem 0 Hoehe ueberschritten. */
+.werkzeugkarte[hidden] {
+  display: none;
+}
+
+.werkzeugkarte__kopf {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.werkzeugkarte p {
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.werkzeugkarte__fuss {
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.fahne {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border: 1px solid var(--linie-stark);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.fahne--laeuft {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+@media (max-width: 900px) {
+  .bilanz {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .werkzeugkarten {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .befund {
+    grid-template-columns: 10px minmax(0, 1fr);
+  }
+
+  .befund__stufe {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+/* ---------- Befundgruppen im Pruefer ---------- */
+
+.befundgruppe {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 18px;
+  background: var(--grund-2);
+  border-bottom: 1px solid var(--linie);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.befundgruppe[hidden] {
+  display: none;
+}
+
+.befundgruppe__zahl {
+  color: var(--text-3);
+}
+
+/* ============================================================
+   Bewegung und Browser-Oberflächen
+   ------------------------------------------------------------
+   Leitsatz für dieses Werkzeug: Bewegung zeigt eine Messung, nicht
+   eine Laune. Es gibt genau einen inszenierten Moment — den Augenblick,
+   in dem ein Ergebnis entsteht. Alles andere ist Rückmeldung auf eine
+   Handlung, kurz und unauffällig.
+   ============================================================ */
+
+:root {
+  --dauer-druck: 120ms;      /* Rückmeldung auf einen Druck */
+  --dauer-zustand: 190ms;    /* gewöhnlicher Zustandswechsel */
+  --dauer-messung: 620ms;    /* der inszenierte Moment */
+
+  /* Exponentielles Auslaufen: sofort sichtbare Bewegung, weiches Ende. */
+  --kurve-aus: cubic-bezier(0.16, 1, 0.3, 1);
+  --kurve-weich: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- Oberflächen, die der Browser stellt ---------- */
+
+:root {
+  color-scheme: light;
+  accent-color: var(--signal);
+  caret-color: var(--signal);
+  scrollbar-color: var(--linie-stark) var(--grund-2);
+  scrollbar-width: thin;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--grund);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--grund-2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--linie-stark);
+  border: 2px solid var(--grund-2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+}
+
+/* Zahlen in Reihen müssen untereinander stehen, sonst tanzt die Spalte. */
+.tabelle__zahl,
+.kennzahl__zahl,
+.bilanz__zahl,
+.balken__wert,
+.liste__zahl,
+.messwert,
+.stufe,
+.filterstand {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Rückmeldung auf Handlungen ---------- */
+
+.knopf,
+.filter,
+.sortknopf,
+.kopf__schalter {
+  transition:
+    transform var(--dauer-druck) var(--kurve-aus),
+    border-color var(--dauer-zustand) var(--kurve-weich),
+    color var(--dauer-zustand) var(--kurve-weich),
+    background var(--dauer-zustand) var(--kurve-weich);
+}
+
+.knopf:active,
+.filter:active,
+.kopf__schalter:active {
+  transform: scale(0.97);
+}
+
+.sortknopf:active {
+  transform: scale(0.98);
+}
+
+/* Zeigergeräte bekommen den Überfahren-Zustand, Tippgeräte nicht:
+   sonst bleibt er nach dem Antippen kleben. */
+@media (hover: hover) and (pointer: fine) {
+  .werkzeugkarte:hover .knopf--signal {
+    background: var(--signal-hell);
+    border-color: var(--signal-hell);
+  }
+
+  .liste__zeile:hover,
+  .tabelle tbody tr:hover {
+    background: var(--flaeche-hoch);
+  }
+}
+
+.liste__zeile,
+.tabelle tbody tr {
+  transition: background var(--dauer-zustand) var(--kurve-weich);
+}
+
+/* ---------- Der inszenierte Moment: die Messung ---------- */
+
+/* Die Linie zeichnet sich und die Balken fahren aus: beides über die
+   Web-Animations-API, damit nach dem Lauf kein Zustand zurückbleibt.
+   Hier steht nur, woher die Bewegung ausgeht. */
+.balken__fuellung {
+  transform-origin: left center;
+}
+
+/* ---------- Fundstelle im Quelltext ---------- */
+
+.fundzeiger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--linie-stark);
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition:
+    transform var(--dauer-druck) var(--kurve-aus),
+    border-color var(--dauer-zustand) var(--kurve-weich),
+    color var(--dauer-zustand) var(--kurve-weich);
+}
+
+.fundzeiger:hover {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+.fundzeiger:active {
+  transform: scale(0.97);
+}
+
+/* Am Zeigergeraet darf der Zeiger klein und beilaeufig sein.
+   Unter dem Finger braucht er die volle Zielgroesse. */
+@media (pointer: coarse) {
+  .fundzeiger {
+    min-height: 44px;
+    padding-inline: 14px;
+  }
+}
+
+.eingabe--getroffen {
+  border-color: var(--signal);
+}
+
+/* ---------- Suche im Regelsatz ---------- */
+
+.suchfeld {
+  flex-grow: 1;
+  min-width: 180px;
+  max-width: 320px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text);
+  background: var(--grund);
+  border: 1px solid var(--linie-stark);
+  padding: 10px 13px;
+  transition: border-color var(--dauer-zustand) var(--kurve-weich);
+}
+
+.suchfeld:hover {
+  border-color: var(--text-3);
+}
+
+.suchfeld::placeholder {
+  color: var(--platzhalter);
+}
+
+.treffer {
+  background: color-mix(in srgb, var(--signal) 22%, transparent);
+  color: var(--text);
+}
+
+/* ---------- Ableseband am Diagramm ---------- */
+
+.ablesen {
+  position: relative;
+}
+
+.ablesen__linie {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--text-3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dauer-zustand) var(--kurve-weich);
+}
+
+.ablesen__wert {
+  position: absolute;
+  top: 0;
+  padding: 5px 9px;
+  background: var(--flaeche-hoch);
+  border: 1px solid var(--linie-stark);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  color: var(--text);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity var(--dauer-zustand) var(--kurve-weich);
+}
+
+.ablesen[data-aktiv="ja"] .ablesen__linie,
+.ablesen[data-aktiv="ja"] .ablesen__wert {
+  opacity: 1;
+}
+
+/* ---------- Weniger Bewegung ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Weniger und sanfter, nicht gar nichts: Zustände bleiben ablesbar,
+     Ortsveränderungen entfallen. Das Skript fragt dieselbe Einstellung ab
+     und lässt die Messbewegung dann ganz aus. */
+  .knopf:active,
+  .filter:active,
+  .fundzeiger:active,
+  .sortknopf:active,
+  .kopf__schalter:active {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   Analyseblätter des Seiten-Prüfers
+   ------------------------------------------------------------
+   Zahlen vor Bildern: die Punktzahl ist gross, aber sie steht neben
+   ihrer Rechnung, nicht allein. Kein Ampelkreis, kein Tacho.
+   ============================================================ */
+
+.punktetafel {
+  border-bottom: 1px solid var(--linie);
+  padding: 22px var(--rand) 24px;
+}
+
+.punktstand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 26px;
+  margin-bottom: 20px;
+}
+
+.punktstand__wert {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+
+.punktstand__zahl {
+  font-family: var(--schrift-mono);
+  font-size: clamp(2.6rem, 6vw, 3.8rem);
+  line-height: 0.9;
+  color: var(--signal);
+  font-variant-numeric: tabular-nums;
+}
+
+.punktstand__von {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.punktstand__text {
+  flex: 1 1 320px;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+/* ---------- Wertbalken je Gruppe ---------- */
+
+.wertbalken {
+  display: grid;
+  gap: 7px;
+}
+
+.wertbalken__zeile {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(60px, 1fr) 3rem minmax(9.5rem, auto);
+  align-items: center;
+  gap: 14px;
+}
+
+.wertbalken__name {
+  font-size: 0.8125rem;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wertbalken__spur {
+  display: block;
+  height: 6px;
+  background: var(--flaeche-hoch);
+  border: 1px solid var(--linie);
+}
+
+.wertbalken__fuellung {
+  display: block;
+  height: 100%;
+  background: var(--signal);
+}
+
+/* Schwache Gruppen bekommen KEIN Rot mehr: Rot steht in der Richtung
+   „Prüfprotokoll" nur fuer Befunde und Stempel. Der Wert steht daneben. */
+.wertbalken__fuellung--knapp {
+  background: var(--signal);
+}
+
+.wertbalken__wert {
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  color: var(--text);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.wertbalken__zusatz {
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .wertbalken__zeile {
+    grid-template-columns: minmax(0, 1fr) 2.6rem;
+    grid-template-areas:
+      "name wert"
+      "spur spur";
+    gap: 5px 10px;
+  }
+  .wertbalken__name { grid-area: name; white-space: normal; }
+  .wertbalken__wert { grid-area: wert; }
+  .wertbalken__spur { grid-area: spur; }
+  .wertbalken__zusatz { display: none; }
+}
+
+/* ---------- Register ---------- */
+
+.register {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid var(--linie);
+  padding: 0 var(--rand);
+  overflow-x: auto;
+}
+
+.reiter {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-3);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 14px 15px;
+  margin-bottom: -1px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color var(--dauer-zustand) var(--kurve-weich),
+    border-color var(--dauer-zustand) var(--kurve-weich);
+}
+
+.reiter[aria-selected="true"] {
+  color: var(--text);
+  border-bottom-color: var(--signal);
+}
+
+.reiter:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: -3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .reiter:hover { color: var(--text); }
+}
+
+.blatt {
+  padding: 22px var(--rand) 26px;
+}
+
+.blattkopf {
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 26px 0 12px;
+}
+
+.blatt > .blattkopf:first-child {
+  margin-top: 0;
+}
+
+.blatt .kennzahlen {
+  margin: 0;
+}
+
+.blatthinweis {
+  margin: 22px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--linie);
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  color: var(--text-3);
+  max-width: 74ch;
+}
+
+.blatt .rolle + .blattkopf {
+  margin-top: 30px;
+}
+
+/* ---------- Gliederung ---------- */
+
+.gliederung {
+  display: grid;
+  gap: 1px;
+  background: var(--linie);
+  border: 1px solid var(--linie);
+}
+
+.gliederung__zeile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  background: var(--grund);
+  padding: 9px 14px;
+}
+
+.gliederung__marke {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  min-width: 1.6rem;
+}
+
+.gliederung__zeile[data-ebene="1"] .gliederung__marke {
+  color: var(--signal);
+}
+
+.gliederung__text {
+  flex: 1 1 260px;
+  min-width: 0;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.gliederung__text--leer {
+  color: var(--warn);
+}
+
+.gliederung__id {
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+
+.gliederung__sprung {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--warn);
+  border: 1px solid var(--warn);
+  padding: 2px 7px;
+}
+
+/* ---------- Haken in Tabellen ---------- */
+
+.haken {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+.haken--ja {
+  color: var(--signal);
+}
+
+.haken--nein {
+  color: var(--warn);
+}
+
+/* Nebentext in Tabellenzellen: lesbar, aber zurueckgenommen. */
+.still {
+  color: var(--text-3);
+}
+
+/* ---------- Befund im Detail ---------- */
+
+.befund__aktionen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.befund__aktionen .fundzeiger {
+  margin-top: 0;
+}
+
+.befund__detail {
+  margin-top: 12px;
+  border-left: 1px solid var(--linie-stark);
+  padding: 2px 0 2px 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.befund__punkt {
+  display: grid;
+  gap: 4px;
+}
+
+.befund__punkt dt {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.befund__punkt dd {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--text-2);
+  max-width: 72ch;
+}
+
+.befund__punkt dd code {
+  font-family: var(--schrift-mono);
+  font-size: 0.8125em;
+  color: var(--text);
+  background: var(--flaeche-hoch);
+  padding: 1px 5px;
+}
+
+.befund__marken {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.befund__marke {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  border: 1px solid var(--linie-stark);
+  padding: 3px 8px;
+}
+
+.befund__marke--wirkung {
+  color: var(--text-2);
+  border-color: var(--text-3);
+}
+
+@media (pointer: coarse) {
+  /* Am Finger gemessen, nicht am Zeiger: 44 px ist die Kante, unter der
+     danebengetippt wird. */
+  .reiter { padding: 15px 15px; }
+  .knopf,
+  .filter,
+  .sortknopf {
+    min-height: 44px;
+  }
+}
+
+/* ---------- Behebungsweg und Gewicht im Regelsatz ---------- */
+
+.regel__beheben {
+  display: block;
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid var(--linie);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+.regelgruppe__name {
+  margin: 0;
+}
+
+.regel__marke {
+  font-weight: 400;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.regel__beheben code {
+  color: var(--text-2);
+}
+
+.regel__gewicht {
+  display: block;
+  margin-top: 7px;
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Das Werk auf der Startseite
+   ------------------------------------------------------------
+   Eine Platte mit Zeiger, Skala und Befundstreifen. Sie zeigt eine
+   echte Messung, keine Demozahl — deshalb steht darunter, welche Probe
+   gerade darin liegt und wie viele Regeln gelaufen sind.
+   ============================================================ */
+
+.werkplatte {
+  border: 1px solid var(--linie-stark);
+  background: var(--flaeche);
+  min-width: 0;
+}
+
+.werkplatte__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--linie);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.werkplatte__zustand {
+  color: var(--signal);
+  text-transform: none;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- Probenwahl ---------- */
+
+.werkplatte__wahl {
+  display: flex;
+  border-bottom: 1px solid var(--linie);
+}
+
+.probe {
+  appearance: none;
+  flex: 1 1 0;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--linie);
+  color: var(--text-3);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 14px 12px;
+  min-height: 44px;
+  cursor: pointer;
+  transition:
+    color var(--dauer-zustand) var(--kurve-weich),
+    background var(--dauer-zustand) var(--kurve-weich);
+}
+
+.probe:last-child { border-right: none; }
+
+.probe[aria-pressed="true"] {
+  color: var(--grund);
+  background: var(--signal);
+}
+
+.probe:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: -3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .probe:hover { color: var(--text); }
+  .probe[aria-pressed="true"]:hover { color: var(--grund); }
+}
+
+/* ---------- Anzeige und Streifen ---------- */
+
+.werkplatte__leib {
+  display: grid;
+  grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
+  gap: 22px;
+  padding: 24px 20px;
+}
+
+.anzeige {
+  min-width: 0;
+  align-self: start;
+}
+
+.anzeige svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 214 / 150;
+}
+
+.anzeige__zahl {
+  margin: 4px 0 0;
+  text-align: center;
+  font-family: var(--schrift-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.anzeige__zahl > span:first-child {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 500;
+  color: var(--signal);
+}
+
+.anzeige__von {
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-left: 8px;
+}
+
+/* Der Zeiger laeuft, statt zu springen. Faellt die Zeitachse aus, steht er
+   trotzdem sofort auf dem gemessenen Wert — der Wert wird gesetzt, nicht
+   nur animiert. */
+#werk-nadel,
+#werk-bogen {
+  transition:
+    transform var(--dauer-messung) var(--kurve-aus),
+    stroke-dashoffset var(--dauer-messung) var(--kurve-aus);
+  transform-origin: 0 0;
+}
+
+.werkplatte__befunde {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.werkzeile__befund {
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr) auto;
+  gap: 11px;
+  align-items: start;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.werkzeile__marke {
+  width: 9px;
+  height: 9px;
+  margin-top: 5px;
+}
+
+.werkzeile__name {
+  font-size: 0.84375rem;
+  line-height: 1.45;
+  color: var(--text);
+  min-width: 0;
+}
+
+.werkzeile__stufe {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.werkplatte__leerstand {
+  margin: 0;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--gut);
+}
+
+.werkplatte__fuss {
+  margin: 0;
+  padding: 14px 20px;
+  border-top: 1px solid var(--linie);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+@media (max-width: 620px) {
+  .werkplatte__leib {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .anzeige svg {
+    max-width: 240px;
+    margin: 0 auto;
+  }
+}
+
+/* ---------- Der Kicker bekommt einen Strich ---------- */
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kicker::before {
+  content: "";
+  flex: none;
+  width: 24px;
+  height: 1px;
+  background: var(--signal);
+}
+
+
+/* ============================================================
+   Zwei Welten und der Wechsel
+   ============================================================ */
+
+
+/* ---------- Zweite Welt: dieselbe Kante, dunkler Grund ----------
+   Umschaltbar im Kopf. Nur die Toene wechseln, keine Regel. Die SVGs
+   auf den Seiten rechnen deshalb mit Variablen und nicht mit Hexwerten. */
+
+/* Beim Weltwechsel werden die Farbuebergaenge kurz stillgelegt: der neue
+   Zustand soll SOFORT vollstaendig dastehen. Laeuft die Zeitachse nicht —
+   gedrosselter Reiter, angehaltene Animationen — blieben sonst die alten
+   Farben unter neuen stehen. Der Ruhezustand ist der sichtbare Zustand. */
+.welt-wechselt,
+.welt-wechselt * {
+  transition: none !important;
+}
+
+/* Der Schalter nennt die Welt, in der man IST - also muss auch sein
+   Zeichen die sein. Mit nur einer Sonne stand nachts „nacht" neben
+   einer Sonne. Beide Zeichen liegen im Markup, eines wird verborgen;
+   ohne Skript bleibt das richtige stehen. */
+.weltschalter .weltschalter__sonne {
+  display: none;
+}
+
+:root[data-welt="hell"] .weltschalter .weltschalter__mond {
+  display: none;
+}
+
+:root[data-welt="hell"] .weltschalter .weltschalter__sonne {
+  display: block;
+}
+
+.weltschalter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--linie-stark);
+  color: var(--text-3);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 13px;
+  min-height: 44px;
+  cursor: pointer;
+  transition:
+    color var(--dauer-zustand) var(--kurve-weich),
+    border-color var(--dauer-zustand) var(--kurve-weich);
+}
+
+.weltschalter svg {
+  display: block;
+  flex: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .weltschalter:hover {
+    color: var(--text);
+    border-color: var(--signal);
+  }
+}
+
+.weltschalter:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Werkbank: die Reihenfolge
+   ------------------------------------------------------------
+   Eine Zeile je Regel, nicht je Befund. Links der Rang, rechts das
+   Gewicht, das insgesamt daran haengt — das ist die Zahl, nach der
+   sortiert wird.
+   ============================================================ */
+
+.prioritaeten {
+  display: grid;
+  gap: 1px;
+  background: var(--linie);
+  border: 1px solid var(--linie);
+}
+
+.priozeile {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 12rem);
+  gap: 20px;
+  align-items: start;
+  background: var(--grund);
+  padding: 18px 20px;
+}
+
+.priozeile__rang {
+  font-family: var(--schrift-mono);
+  font-size: 1.125rem;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.priozeile[data-stufe="kritisch"] .priozeile__rang { color: var(--warn); }
+.priozeile[data-stufe="wichtig"] .priozeile__rang { color: var(--signal); }
+
+.priozeile__mitte { min-width: 0; }
+
+.priozeile__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.priozeile__name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.priozeile__art {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--linie-stark);
+  color: var(--text-3);
+}
+
+.priozeile__art--vorlage {
+  color: var(--grund);
+  background: var(--signal);
+  border-color: var(--signal);
+}
+
+.priozeile__wie {
+  margin: 7px 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-2);
+  max-width: 72ch;
+}
+
+.priozeile__beheben {
+  margin: 9px 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-3);
+  max-width: 72ch;
+}
+
+.priozeile__beheben b {
+  font-weight: 400;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.priozeile__beheben code {
+  color: var(--text-2);
+}
+
+.priozeile__mitte .befund__marken {
+  margin-top: 12px;
+}
+
+.priozeile__last {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  align-content: start;
+  min-width: 0;
+}
+
+.priozeile__zahl {
+  font-family: var(--schrift-mono);
+  font-size: 1.5rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.priozeile__label {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.priozeile__last .wertbalken__spur {
+  width: 100%;
+}
+
+@media (max-width: 820px) {
+  .priozeile {
+    grid-template-columns: 2.4rem minmax(0, 1fr);
+    gap: 8px 14px;
+  }
+  .priozeile__last {
+    grid-column: 2;
+    justify-items: start;
+    grid-template-columns: auto auto;
+    align-items: baseline;
+    gap: 6px 10px;
+  }
+  .priozeile__last .wertbalken__spur {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ============================================================
+   Das runde Regelwerk
+   ------------------------------------------------------------
+   Drei Radien, konsequent verteilt: Flaechen tragen 18 px, Eingaben
+   12 px, alles was gedrueckt wird ist eine Pille. Marker und Balken
+   sind rund. Die 1px-Linie bleibt die einzige Trennung — die Rundung
+   ersetzt keine Kante durch Nebel, sie fuehrt sie nur anders.
+   ============================================================ */
+
+/* ---------- Flaechen: 18 px ---------- */
+
+.tafel,
+.werkplatte,
+.werkzeugkarte,
+.hinweiskasten,
+.regelgruppe,
+.vorschau,
+.faq__punkt,
+.schritt,
+.kennzahl,
+.modul,
+.bilanz__wert,
+.gratisband,
+.prioritaeten,
+.gliederung {
+  border-radius: var(--radius);
+}
+
+/* Koepfe und Fuesse folgen der Flaeche, sonst ragt die Fuellung heraus. */
+.tafel__kopf,
+.werkplatte__kopf {
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.tafel__fuss,
+.werkplatte__fuss {
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+/* Raster aus 1px-Fugen (Linien-Hintergrund + Zellen): der Rahmen ist
+   rund, die Zellen bleiben eckig — sonst entstehen Loecher in den Ecken. */
+.prioritaeten,
+.gliederung {
+  overflow: hidden;
+}
+
+/* Die Bilanz ist die erste Zeile einer Tafel. */
+.bilanz .bilanz__wert:first-child {
+  border-radius: var(--radius) 0 0 0;
+}
+
+.bilanz .bilanz__wert:last-child {
+  border-radius: 0 var(--radius) 0 0;
+}
+
+/* ---------- Eingaben: 12 px ---------- */
+
+.eingabe,
+.feld,
+.suchfeld,
+.rolle,
+.befund__fund {
+  border-radius: var(--radius-eingabe);
+}
+
+code {
+  border-radius: 6px;
+}
+
+.eingabe:focus,
+.feld:focus,
+.suchfeld:focus,
+.eingabe:focus-visible,
+.feld:focus-visible,
+.suchfeld:focus-visible {
+  outline: none;
+  border-color: var(--signal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 22%, transparent);
+}
+
+:root:not([data-welt="hell"]) .eingabe:focus,
+:root:not([data-welt="hell"]) .feld:focus,
+:root:not([data-welt="hell"]) .suchfeld:focus,
+:root:not([data-welt="hell"]) .eingabe:focus-visible,
+:root:not([data-welt="hell"]) .feld:focus-visible,
+:root:not([data-welt="hell"]) .suchfeld:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 30%, transparent);
+}
+
+/* ---------- Bedienelemente: die Pille ---------- */
+
+.knopf,
+.filter,
+.fundzeiger,
+.sortknopf,
+.kopf__schalter,
+.weltschalter,
+.tarif__knopf,
+.vorschauschalter button,
+.befund__marke,
+.priozeile__art,
+.fahne,
+.gliederung__sprung,
+.regel__stufe code,
+.demomarke {
+  border-radius: var(--pille);
+}
+
+/* Die Probenwahl ist EIN Schalter mit zwei Enden, keine zwei Pillen. */
+.probe:first-child { border-radius: var(--pille) 0 0 var(--pille); }
+.probe:last-child { border-radius: 0 var(--pille) var(--pille) 0; }
+
+.werkplatte__wahl {
+  padding: 12px 16px;
+  gap: 0;
+}
+
+.werkplatte__wahl .probe {
+  border-top: 1px solid var(--linie-stark);
+  border-bottom: 1px solid var(--linie-stark);
+}
+
+.werkplatte__wahl .probe:first-child { border-left: 1px solid var(--linie-stark); }
+.werkplatte__wahl .probe:last-child { border-right: 1px solid var(--linie-stark); }
+
+/* Reiter runden nur oben — unten haelt die Linie die Fuge. */
+.reiter {
+  border-radius: 10px 10px 0 0;
+}
+
+/* ---------- Marker und Balken: rund ---------- */
+
+.marker,
+.befund__marker,
+.werkzeile__marke,
+.legende__punkt .legende__strich {
+  border-radius: 50%;
+}
+
+.balken__spur,
+.balken__fuellung,
+.balkenklein,
+.balkenklein__fuellung,
+.wertbalken__spur,
+.wertbalken__fuellung,
+.verbrauch__spur,
+.verbrauch__fuellung {
+  border-radius: var(--pille);
+}
+
+/* Runde Spuren beschneiden ihre Fuellung selbst. */
+.balken__spur,
+.balkenklein,
+.wertbalken__spur,
+.verbrauch__spur {
+  overflow: hidden;
+}
+
+/* ---------- Ueberfahren: die Linie fuehrt, nichts hebt ab ---------- */
+
+.werkzeugkarte {
+  transition:
+    border-color var(--dauer-zustand) var(--kurve-weich),
+    background var(--dauer-zustand) var(--kurve-weich);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .werkzeugkarte:hover {
+    border-color: var(--signal);
+  }
+}
+
+/* ============================================================
+   Snippet-Vorschau: zwei Geraete
+   ------------------------------------------------------------
+   Die Vorschau bildet die Trefferliste nach und behaelt deshalb ihre
+   eigenen Farben — sie folgt nicht der Welt der Seite, sondern der
+   Suchmaschine. Umgeschaltet wird sie mit dem eigenen Schalter.
+   ============================================================ */
+
+.vorschauen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 1px;
+  background: var(--linie);
+}
+
+.vorschaugeraet {
+  background: var(--grund);
+  padding: 16px 18px 20px;
+  min-width: 0;
+  /* Die Vorschau ist so breit wie das Modell, das sie nachbildet. Passt sie
+     nicht ins Fenster, rollt SIE — nicht die Seite. */
+  overflow-x: auto;
+}
+
+.geraetemarke {
+  display: block;
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+
+/* Die Zeilen kommen als 
+ aus der Umbruchrechnung — und NUR daher.
+   Mit pre-line wuerde der Browser ein zweites Mal umbrechen, und die
+   Vorschau zeigte mehr Zeilen als die Trefferliste. */
+.vorschau__titel,
+.vorschau__text {
+  white-space: pre;
+}
+
+.vorschau {
+  box-sizing: border-box;
+  width: 640px;   /* 600 px Spalte + 2 x 20 px Innenabstand */
+}
+
+.vorschau--telefon {
+  width: 440px;   /* 400 px Spalte + 2 x 20 px Innenabstand */
+}
+
+.vorschau--telefon .vorschau__titel {
+  font-size: 18px;
+}
+
+/* ---------- Der abgeschnittene Rest ---------- */
+
+.schnittrest {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  gap: 6px 16px;
+  align-items: baseline;
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.schnittrest:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.schnittrest__marke {
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.schnittrest__weg {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--warn);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .schnittrest { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- Schalterzeile ---------- */
+
+.schalterzeile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.schalterzeile input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--signal);
+  cursor: pointer;
+}
+
+/* ============================================================
+   WDF-IDF: Ihr Wert gegen das Feld
+   ------------------------------------------------------------
+   Zwei Balken uebereinander in einer Zelle: oben Ihre Seite, unten
+   der Durchschnitt der Vergleichsseiten. Der Vergleich ist die
+   Aussage, nicht die einzelne Zahl.
+   ============================================================ */
+
+.wdfpaar {
+  display: grid;
+  gap: 3px;
+  min-width: 90px;
+}
+
+.wdfpaar__spur {
+  display: block;
+  height: 5px;
+  background: var(--flaeche-hoch);
+  border: 1px solid var(--linie);
+  border-radius: var(--pille);
+  overflow: hidden;
+}
+
+.wdfpaar__eigen,
+.wdfpaar__fremd {
+  display: block;
+  height: 100%;
+  border-radius: var(--pille);
+}
+
+.wdfpaar__eigen { background: var(--signal); }
+.wdfpaar__fremd { background: var(--text-3); }
+
+/* ---------- Begriffe als Marken ---------- */
+
+.begriffswolke {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.begriffsmarke {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--pille);
+  padding: 7px 14px;
+  min-height: 36px;
+}
+
+.begriffsmarke__wort {
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.begriffsmarke__zahl {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+
+/* ============================================================
+   Tempo: Core Web Vitals
+   ------------------------------------------------------------
+   Je Messwert eine Zeile: Name, Zahl, die Verteilung aller Besuche
+   als dreiteiliger Balken, das Urteil und die Grenze, ab der es
+   „gut" heisst. Der Balken traegt die Aussage, nicht die Zahl.
+   ============================================================ */
+
+.warnband {
+  border: 1px solid var(--warn);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--warn) 6%, transparent);
+  padding: 16px 20px;
+  margin-top: 22px;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--text-2);
+  max-width: 78ch;
+}
+
+.warnband strong { color: var(--text); }
+
+.vitalzeile {
+  display: grid;
+  grid-template-columns: minmax(0, 16rem) 6rem minmax(80px, 1fr) 5rem minmax(0, 8rem);
+  align-items: center;
+  gap: 14px;
+}
+
+.vitalzeile__name {
+  font-size: 0.875rem;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vitalzeile__zahl {
+  font-family: var(--schrift-mono);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.vitalspur {
+  display: flex;
+  height: 8px;
+  border: 1px solid var(--linie);
+  border-radius: var(--pille);
+  overflow: hidden;
+  background: var(--flaeche-hoch);
+}
+
+.vitalspur__teil { display: block; height: 100%; }
+.vitalspur__teil--gut { background: var(--gut); }
+.vitalspur__teil--mittel { background: var(--signal); }
+.vitalspur__teil--schlecht { background: var(--warn); }
+
+.vitalzeile__urteil {
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.vitalzeile__grenze {
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 860px) {
+  .vitalzeile {
+    grid-template-columns: minmax(0, 1fr) 6rem;
+    grid-template-areas:
+      "name zahl"
+      "spur spur"
+      "urteil grenze";
+    gap: 6px 12px;
+  }
+  .vitalzeile__name { grid-area: name; white-space: normal; }
+  .vitalzeile__zahl { grid-area: zahl; }
+  .vitalspur { grid-area: spur; }
+  .vitalzeile__urteil { grid-area: urteil; }
+  .vitalzeile__grenze { grid-area: grenze; text-align: right; }
+}
+
+/* ============================================================
+   Weiterleitungs-Pruefer: Ketten
+   Eine Kette ist eine Folge von Spruengen. Sie wird als Liste
+   gezeichnet, nicht als Grafik: jede Zeile ist ein Sprung, und
+   der Statuscode steht vorn, weil er die eigentliche Aussage ist.
+   ============================================================ */
+
+.kette {
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-top: 14px;
+  background: var(--flaeche);
+}
+
+.kette--schleife {
+  border-color: var(--warn);
+}
+
+.kette__kopf {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.kette__kopf code {
+  font-size: 0.8125rem;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.kette__zahl {
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.kette--schleife .kette__zahl {
+  color: var(--warn);
+}
+
+.kette__glied {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 0 9px 18px;
+  border-bottom: 1px solid var(--linie);
+  position: relative;
+}
+
+.kette__glied:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Der Pfeil ist ein Zeichen, kein Bild: er bleibt bei jeder
+   Schriftgroesse an der Grundlinie. */
+.kette__glied::before {
+  content: "\21B3";
+  position: absolute;
+  left: 0;
+  color: var(--text-3);
+  font-size: 0.8125rem;
+}
+
+.kette__glied code {
+  font-size: 0.8125rem;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.kette__code {
+  display: inline-block;
+  min-width: 3.4em;
+  text-align: center;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: var(--pille);
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.kette__code--gut { color: var(--gut); }
+.kette__code--warn { color: var(--signal); }
+.kette__code--still { color: var(--text-3); }
+
+.kette__her {
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.kette__warnung {
+  margin: 12px 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--warn);
+}
+
+.kette__warnung--still {
+  color: var(--text-3);
+}
+
+.bilanz__zahl--signal {
+  color: var(--signal);
+}
+
+@media (max-width: 620px) {
+  .kette__glied {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 4px;
+  }
+  .kette__her {
+    grid-column: 2;
+  }
+}
+
+/* Eine geraffte Kette: kein Pfeil, kein Code, nur die Auskunft, was
+   uebersprungen wurde. Sie steht bewusst eingerueckt wie ein Glied. */
+.kette__glied--gerafft {
+  grid-template-columns: minmax(0, 1fr);
+  color: var(--text-3);
+}
+
+.kette__glied--gerafft::before {
+  content: "\22EE";
+}
+
+/* ============================================================
+   Ankersprung unter der klebenden Kopfzeile
+
+   Gemessen: die Kopfzeile ist 77 px hoch, nach einem Sprung stand
+   die Zielueberschrift bei 63 px — also dahinter. Das betrifft jeden
+   Verweis auf eine Ueberschrift, und der Regelsatz besteht fast nur
+   daraus. Die Hoehe steht als Variable, damit sie an einer Stelle
+   gepflegt wird.
+   ============================================================ */
+
+:root {
+  --kopfhoehe: 77px;
+}
+
+:where(h1, h2, h3, h4, [id]):target,
+h2[id],
+h3[id],
+section[id],
+div[id],
+[data-blatt] {
+  scroll-margin-top: calc(var(--kopfhoehe) + 20px);
+}
+
+/* Gemessen: 75 px bei 390 px Schirmbreite, 77 px ab 1440 px. Die
+   Variable soll die Hoehe nennen, nicht einen Schaetzwert. */
+@media (max-width: 760px) {
+  :root {
+    --kopfhoehe: 75px;
+  }
+}
+
+/* ============================================================
+   Das Protokoll (22.09.2026)
+
+   Ein Feld, zwei Umfaenge, ein Ergebnis, das mit dem Wichtigsten
+   anfaengt. Entwurf: Figma, Seiten „Neu · Start/Protokoll/Befund".
+   Nur Farbvariablen, genau drei Radien, keine Schatten. Die Linie
+   trennt, die Flaeche gruppiert.
+   ============================================================ */
+
+/* ---------- Eingabe ---------- */
+
+.eingabebereich {
+  padding-block: clamp(36px, 5vw, 64px) clamp(28px, 4vw, 48px);
+}
+
+.eingabebereich .vorspann {
+  font-size: 1.0625rem;
+  max-width: 62ch;
+}
+
+.hauptfeld {
+  margin-top: 32px;
+  max-width: 880px;
+}
+
+.hauptfeld__beschriftung {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.hauptfeld__kasten {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 8px 8px 8px 20px;
+  background: var(--flaeche);
+  border: 1.5px solid var(--linie-stark);
+  border-radius: var(--radius);
+  transition: border-color var(--dauer-zustand) var(--kurve-weich);
+}
+
+.hauptfeld__kasten:focus-within {
+  border-color: var(--signal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 22%, transparent);
+}
+
+.hauptfeld__eingabe {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 46px;
+  max-height: 320px;
+  padding: 11px 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--schrift);
+  font-size: 1.125rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.hauptfeld__eingabe--quelltext {
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+.hauptfeld__eingabe::placeholder {
+  color: var(--platzhalter);
+  opacity: 1;
+}
+
+.hauptfeld__knopf {
+  flex: 0 0 auto;
+  min-height: 46px;
+  font-size: 0.8125rem;
+}
+
+.hauptfeld__erkannt {
+  margin-top: 10px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.hauptfeld__erkannt--warn {
+  color: var(--warn);
+}
+
+.umfang {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  max-width: 880px;
+  margin: 16px 0 0;
+  padding: 4px;
+  border: 0;
+  background: var(--grund-2);
+  border-radius: var(--radius);
+}
+
+.umfang__legende {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.umfang__wahl {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 12px 18px;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-eingabe);
+  cursor: pointer;
+  transition: background-color var(--dauer-zustand) var(--kurve-weich), border-color var(--dauer-zustand) var(--kurve-weich);
+}
+
+.umfang__wahl input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.umfang__wahl:has(input:checked) {
+  background: var(--flaeche);
+  border-color: var(--signal);
+}
+
+.umfang__wahl:has(input:focus-visible) {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.umfang__wahl:has(input:disabled) {
+  cursor: not-allowed;
+}
+
+.umfang__titel {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--text);
+}
+
+.umfang__satz {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.umfang__wahl:has(input:disabled) .umfang__titel {
+  color: var(--text-2);
+}
+
+.zusage {
+  max-width: 880px;
+  margin-top: 16px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.zusage--warn {
+  color: var(--warn);
+}
+
+.leiste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin-top: 14px;
+}
+
+.knopf--leise {
+  padding-inline: 2px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--signal);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.knopf--leise:hover {
+  border-color: transparent;
+  color: var(--signal-hell);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Konto ---------- */
+
+/* Kein Grid mit Fliesstext darin: hier stehen nur Beschriftung und
+   Eingabefeld untereinander, keine gemischten Textknoten. Deshalb ist
+   Grid hier richtig — anders als bei `.merkmale`. */
+.kontoform {
+  display: grid;
+  gap: 18px;
+  max-width: 420px;
+  margin-top: 20px;
+}
+
+.kontoform > div[hidden] {
+  display: none;
+}
+
+.kontostand {
+  margin-top: 8px;
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+/* Das Fenster, in dem die Mitgliederverwaltung den Anmeldecode
+   zurueckgibt. Es zeigt nichts und soll nichts verschieben; `hidden`
+   waere falsch, weil ein verstecktes iframe in manchen Browsern nicht
+   laedt. Deshalb Groesse null statt Unsichtbarkeit. */
+.kontorahmen {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- Protokollkopf ---------- */
+
+.protokoll {
+  border-top: 1px solid var(--linie);
+}
+
+.protokollkopf {
+  background: var(--flaeche);
+  border-bottom: 1px solid var(--linie);
+}
+
+.protokollkopf__innen {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px 48px;
+  padding-block: 36px;
+}
+
+/* Beide Spalten des Kopfes duerfen schrumpfen, sonst schiebt eine lange
+   Adresse das Raster auseinander. */
+.wertanzeige,
+.protokollkopf__mitte {
+  min-width: 0;
+}
+
+.wertanzeige__zahl {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--schrift-mono);
+  font-weight: 500;
+  font-size: clamp(3.5rem, 6vw, 5.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.wertanzeige__von {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.wertanzeige__skala {
+  position: relative;
+  display: block;
+  height: 10px;
+  margin-top: 14px;
+  border-radius: var(--pille);
+  background: var(--grund-2);
+  overflow: hidden;
+}
+
+/* Marken bei 50 und 90: dort liegen die Schwellen der Gruppenwerte. */
+.wertanzeige__skala::before,
+.wertanzeige__skala::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--flaeche);
+  z-index: 1;
+}
+
+.wertanzeige__skala::before { left: 50%; }
+.wertanzeige__skala::after { left: 90%; }
+
+.wertanzeige__fuellung {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--signal);
+}
+
+.wertanzeige__satz {
+  margin-top: 10px;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.protokollkopf__ziel {
+  margin-top: 6px;
+  font-size: clamp(1.25rem, 2vw, 1.625rem);
+  overflow-wrap: anywhere;
+}
+
+.protokollkopf__ziel:focus {
+  outline: none;
+}
+
+.protokollkopf__meta {
+  margin-top: 6px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+
+.stempelzahlen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 14px;
+}
+
+.stempelzahl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+}
+
+.protokollkopf__vergleich {
+  margin-top: 12px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text);
+}
+
+.protokollkopf__aktionen {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+/* ---------- Koerper: Leiste und Hauptspalte ---------- */
+
+.protokoll__koerper {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 48px;
+  padding-block: 36px 72px;
+}
+
+.inhaltsleiste {
+  position: sticky;
+  top: calc(var(--kopfhoehe) + 20px);
+  align-self: start;
+  display: grid;
+  gap: 2px;
+}
+
+.inhaltsleiste .label {
+  margin-bottom: 8px;
+}
+
+.inhaltsleiste__punkt {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius-eingabe);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.inhaltsleiste__punkt span {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+.inhaltsleiste__punkt:hover,
+.inhaltsleiste__punkt[aria-current="true"] {
+  background: var(--grund-2);
+  color: var(--text);
+}
+
+.protokoll__haupt {
+  display: grid;
+  gap: 56px;
+  min-width: 0;
+}
+
+.protokollteil {
+  min-width: 0;
+}
+
+.protokollteil__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.protokollteil__kopf .filterleiste {
+  margin: 0;
+}
+
+.protokollteil__satz {
+  margin-top: 6px;
+  max-width: 68ch;
+  font-size: 0.9375rem;
+  color: var(--text-2);
+}
+
+.protokollteil > .zeilenliste,
+.protokollteil > .bereichsliste,
+.protokollteil > .befundspalte,
+.protokollteil > .tafel {
+  margin-top: 16px;
+}
+
+.protokollteil .suchfeld {
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin-top: 6px;
+  font-family: var(--schrift);
+  font-size: 0.9375rem;
+  background: var(--flaeche);
+  border-radius: var(--radius-eingabe);
+}
+
+.protokollteil > .label {
+  display: block;
+  margin-top: 16px;
+}
+
+.protokollteil .filterstand {
+  display: block;
+  margin: 10px 0 0;
+}
+
+/* ---------- Befundzeile ---------- */
+
+.zeilenliste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.befundspalte .zeilenliste {
+  border: 0;
+  border-radius: 0;
+}
+
+.befundspalte {
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.befundgruppe-block[hidden],
+.bzeile[hidden] {
+  display: none;
+}
+
+.bzeile + .bzeile {
+  border-top: 1px solid var(--linie);
+}
+
+.bzeile__knopf {
+  position: relative;
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) 170px 28px 16px;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  padding: 15px 18px 15px 22px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dauer-zustand) var(--kurve-weich);
+}
+
+.bzeile__knopf:hover {
+  background: var(--flaeche-hoch);
+}
+
+.bzeile__knopf:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: -2px;
+}
+
+.bzeile__knopf .befund__stufe {
+  justify-self: start;
+  align-self: center;
+}
+
+/* Der Textmarker: nur im Block „Zuerst beheben". */
+.bzeile--zuerst .bzeile__knopf::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 12px;
+  bottom: 12px;
+  width: 5px;
+  border-radius: var(--pille);
+  background: var(--marker);
+}
+
+.bzeile--offen .bzeile__knopf {
+  background: color-mix(in srgb, var(--signal) 7%, var(--flaeche));
+  box-shadow: inset 0 0 0 2px var(--signal);
+}
+
+.bzeile__inhalt {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bzeile__name {
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.bzeile__neu {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 7px;
+  border-radius: var(--pille);
+  background: var(--marker);
+  color: var(--auf-marker);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  vertical-align: 2px;
+}
+
+.bzeile__wie {
+  font-size: 0.875rem;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.bzeile__bereich {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+
+.bzeile__gewicht {
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-align: right;
+}
+
+.bzeile__pfeil {
+  color: var(--signal);
+  font-weight: 600;
+}
+
+/* ---------- Bereiche ---------- */
+
+.bereichsliste {
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.bereich {
+  display: grid;
+  grid-template-columns: minmax(0, 250px) 120px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 22px;
+}
+
+.bereich + .bereich {
+  border-top: 1px solid var(--linie);
+}
+
+.bereich__name {
+  display: grid;
+  gap: 2px;
+}
+
+.bereich__titel {
+  font-weight: 600;
+  font-size: 1.0625rem;
+}
+
+.bereich__unter {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+
+.bereich__wert {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.bereich__zahl {
+  font-family: var(--schrift-mono);
+  font-weight: 500;
+  font-size: 2.25rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.bereich__von {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+
+.bereich__zustand {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bereich__spur {
+  display: block;
+  height: 6px;
+  border-radius: var(--pille);
+  background: var(--grund-2);
+  overflow: hidden;
+}
+
+.bereich__fuellung {
+  display: block;
+  height: 100%;
+  background: var(--signal);
+}
+
+.bereich__satz {
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.bereich__weg {
+  font-weight: 500;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.befund__stufe--offen {
+  color: var(--text-2);
+  background: var(--grund-2);
+  border-color: var(--linie);
+}
+
+/* ---------- Quelltext und Bestandenes ---------- */
+
+.quellblock,
+.bestandenblock {
+  margin-top: 16px;
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+}
+
+.bestandenblock {
+  margin-top: 12px;
+}
+
+.quellblock > summary,
+.bestandenblock > summary {
+  padding: 14px 18px;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--signal);
+}
+
+.quellblock .eingabe {
+  display: block;
+  width: calc(100% - 36px);
+  margin: 0 18px 18px;
+  min-height: 320px;
+}
+
+.bestandenliste {
+  list-style: none;
+  margin: 0;
+  padding: 0 18px 16px;
+  columns: 2;
+  column-gap: 32px;
+}
+
+.bestandenliste__punkt {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--linie);
+  break-inside: avoid;
+  font-size: 0.875rem;
+}
+
+.bestandenliste__gruppe {
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  color: var(--text-2);
+  text-align: right;
+}
+
+/* ---------- Das Befundblatt ---------- */
+
+.befundblatt {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  width: min(560px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 26px 34px 24px;
+  background: var(--flaeche);
+  border-left: 1px solid var(--linie-stark);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.befundblatt[hidden],
+.befundblatt [hidden] {
+  display: none;
+}
+
+.befundblatt__kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.befundblatt__stufe {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.befundblatt__ort {
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+
+.befundblatt__zu {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--pille);
+  background: transparent;
+  color: var(--text);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.befundblatt__zu:hover {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+.befundblatt__titel {
+  font-size: clamp(1.625rem, 2.6vw, 2.125rem);
+}
+
+.befundblatt__titel:focus {
+  outline: none;
+}
+
+.befundblatt__teil {
+  display: grid;
+  gap: 8px;
+}
+
+.befundblatt__teil[hidden] {
+  display: none;
+}
+
+.befundblatt__teil p:not(.label) {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.befundblatt__wie {
+  color: var(--text-2);
+}
+
+.befundblatt__fund {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--grund-2);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-eingabe);
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.befundblatt__fund[hidden] {
+  display: none;
+}
+
+.befundblatt__teil .knopf--leise {
+  justify-self: start;
+}
+
+.wirkmarke {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--pille);
+  background: var(--grund-2);
+  font-weight: 500;
+  font-size: 0.8125rem;
+}
+
+.befundblatt__fuss {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linie);
+}
+
+.befundblatt__fuss .knopf[hidden] {
+  display: none;
+}
+
+.befundblatt__blaettern {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+
+.befundblatt__pfeil {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--pille);
+  background: transparent;
+  color: var(--text);
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+.befundblatt__pfeil:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Die Gesamtzahl steht schon im Protokollkopf. */
+.protokollteil .punktstand {
+  display: none;
+}
+
+/* ---------- Schmale Schirme ---------- */
+
+@media (max-width: 1100px) {
+  .protokollkopf__innen {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .protokollkopf__aktionen {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-items: start;
+  }
+
+  .protokoll__koerper {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .inhaltsleiste {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .inhaltsleiste .label {
+    display: none;
+  }
+
+  .inhaltsleiste__punkt {
+    border: 1px solid var(--linie-stark);
+    border-radius: var(--pille);
+    padding: 7px 14px;
+  }
+
+  .bereich {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 16px;
+  }
+
+  .bereich__zustand {
+    grid-column: 1 / -1;
+  }
+
+  .bereich__weg {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .umfang {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hauptfeld__kasten {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 8px 8px 16px;
+  }
+
+  .hauptfeld__knopf {
+    width: 100%;
+  }
+
+  .protokollkopf__innen {
+    grid-template-columns: minmax(0, 1fr);
+    padding-block: 28px;
+  }
+
+  .protokollkopf__aktionen .knopf {
+    flex: 1 1 auto;
+  }
+
+  .bzeile__knopf {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 12px;
+    padding: 14px 16px 14px 20px;
+  }
+
+  .bzeile__knopf .befund__stufe {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .bzeile__bereich {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+  }
+
+  .bzeile__inhalt {
+    grid-column: 1 / -1;
+  }
+
+  .bzeile__gewicht,
+  .bzeile__pfeil {
+    display: none;
+  }
+
+  .bestandenliste {
+    columns: 1;
+  }
+
+  /* Auf dem Telefon kommt das Blatt von unten. */
+  .befundblatt {
+    top: auto;
+    width: 100%;
+    max-height: 88vh;
+    padding: 20px 20px 24px;
+    border-left: 0;
+    border-top: 1px solid var(--linie-stark);
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+}
+
+/* Nur fuer Vorlesewerkzeuge: steht im Dokument, aber nicht im Bild. */
+.nur-vorlesen {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Die Startseite (22.09.2026) ----------
+   Das Werkzeug ist der Aufmacher. Keine Demozahlen, keine Module
+   „im Bau": ein Feld, die acht Bereiche, eine echte Protokollprobe. */
+
+.startaufmacher {
+  padding-block: clamp(48px, 8vw, 104px) clamp(40px, 6vw, 88px);
+}
+
+.startaufmacher__titel {
+  margin-top: 18px;
+  max-width: 14ch;
+  font-size: clamp(2.75rem, 9vw, 8.25rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+}
+
+.startaufmacher__satz {
+  margin-top: 22px;
+  max-width: 44ch;
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  color: var(--text-2);
+}
+
+.startformular {
+  margin-top: 36px;
+}
+
+.startformular .hauptfeld {
+  margin-top: 0;
+}
+
+.startzusage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 24px;
+  max-width: 880px;
+}
+
+.startzusage .zusage {
+  margin-top: 16px;
+}
+
+.startbereiche {
+  padding-block: clamp(48px, 6vw, 80px);
+  background: var(--flaeche);
+  border-top: 1px solid var(--linie);
+  border-bottom: 1px solid var(--linie);
+}
+
+.startbereiche__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 24px;
+}
+
+.startbereiche__kopf h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.03em;
+}
+
+.startbereiche__satz {
+  margin-top: 10px;
+  max-width: 60ch;
+  color: var(--text-2);
+}
+
+.bereichstabelle {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  overflow: hidden;
+  font-size: 0.9375rem;
+}
+
+.bereichstabelle th,
+.bereichstabelle td {
+  padding: 15px 22px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--linie);
+}
+
+.bereichstabelle tbody tr:last-child th,
+.bereichstabelle tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.bereichstabelle thead th {
+  background: var(--grund-2);
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.bereichstabelle tbody th {
+  width: 24%;
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.bereichstabelle tbody th a {
+  color: var(--text);
+}
+
+.bereichstabelle tbody th a:hover {
+  color: var(--signal);
+}
+
+.bereichstabelle td {
+  color: var(--text-2);
+}
+
+.bereichstabelle__braucht {
+  width: 18%;
+  font-family: var(--schrift-mono);
+  font-size: 0.75rem;
+}
+
+.bereichstabelle__braucht--adresse {
+  color: var(--signal) !important;
+}
+
+.bereichstabelle__braucht--schluessel {
+  color: var(--warn) !important;
+}
+
+.startprobe {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: 32px 72px;
+  align-items: start;
+  padding-block: clamp(56px, 7vw, 96px);
+}
+
+.startprobe__text h2 {
+  margin-top: 14px;
+}
+
+.startprobe__text p:last-child {
+  margin-top: 16px;
+  font-size: 0.9375rem;
+  color: var(--text-2);
+}
+
+.protokollprobe {
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.protokollprobe__kopf {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: 24px 40px;
+  align-items: center;
+  padding: 26px 28px;
+  border-bottom: 1px solid var(--linie);
+}
+
+.protokollprobe__ziel {
+  font-family: var(--schrift-mono);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.protokollprobe__etikett {
+  padding: 16px 28px 8px;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.protokollprobe__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--linie);
+}
+
+.protokollprobe__liste .bzeile {
+  border-top: 1px solid var(--linie);
+}
+
+.protokollprobe__weiter {
+  display: inline-block;
+  margin: 12px 26px 16px;
+}
+
+a.bzeile__knopf,
+a.bzeile__knopf:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+.startfakten {
+  border-top: 1px solid var(--linie);
+  padding-block: clamp(40px, 5vw, 64px) clamp(56px, 7vw, 96px);
+}
+
+.startfakten__raster {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.startfakten__raster p {
+  margin-top: 10px;
+  font-size: 0.9375rem;
+  color: var(--text-2);
+}
+
+@media (max-width: 1100px) {
+  .startprobe,
+  .protokollprobe__kopf {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .startfakten__raster {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bereichstabelle thead {
+    display: none;
+  }
+
+  .bereichstabelle,
+  .bereichstabelle tbody,
+  .bereichstabelle tr,
+  .bereichstabelle th,
+  .bereichstabelle td {
+    display: block;
+    width: auto;
+  }
+
+  .bereichstabelle tr {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .bereichstabelle tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .bereichstabelle th,
+  .bereichstabelle td {
+    padding: 0;
+    border: 0;
+  }
+
+  .bereichstabelle td {
+    margin-top: 4px;
+  }
+
+  .protokollprobe__kopf {
+    padding: 20px;
+  }
+
+  .protokollprobe__etikett {
+    padding-inline: 20px;
+  }
+}
+
+/* ============================================================
+   Windows-Kontrastmodus
+
+   Dort ersetzt das Betriebssystem alle Farben. Was seine Bedeutung
+   NUR aus einer Hintergrundfarbe zieht, verschwindet dann — bei uns
+   sind das die Marker vor jedem Befund und die Balken. Sie bekommen
+   deshalb zusaetzlich eine Kontur beziehungsweise eine Systemfarbe.
+   ============================================================ */
+
+@media (forced-colors: active) {
+  .befund__marker,
+  .kette__code,
+  .haken {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+  }
+
+  .marker--kritisch,
+  .befund__stufe--kritisch {
+    background: Mark;
+    color: MarkText;
+  }
+
+  .wertbalken__fuellung,
+  .balken__fuellung,
+  .vitalspur > * {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+
+  .wertbalken__spur,
+  .vitalspur {
+    border: 1px solid CanvasText;
+  }
+
+  .tafel,
+  .kette,
+  .befund {
+    border: 1px solid CanvasText;
+  }
+
+  /* Der Weltschalter ist im Kontrastmodus ohne Wirkung — das System
+     bestimmt die Farben. Er bleibt bedienbar, aber ohne Versprechen. */
+  .weltschalter {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ============================================================
+   Druck
+
+   Ein SEO-Bericht wird ausgedruckt oder als PDF weitergegeben. Ohne
+   eigene Regeln druckt eine Werkzeugseite ihre Navigation, ihre
+   Knoepfe und genau EIN aufgeschlagenes Blatt — der Rest fehlt, und
+   niemand sieht, dass er fehlt.
+
+   Deshalb: Bedienung raus, ALLE Blaetter auf, Verweise mit Adresse,
+   und kein Seitenumbruch mitten in einem Befund.
+   ============================================================ */
+
+/* Das Bildzeichen der Marke: derselbe Messer wie in den Befundzeilen,
+   drei von fuenf Segmenten gefuellt. */
+.bildzeichen {
+  flex: none;
+  display: block;
+}
+
+.startgewicht {
+  padding-block: clamp(48px, 6vw, 80px);
+}
+
+/* ---------- Das Gewichtsbild (24.09.2026) ----------
+   Ein Quadrat je Gewichtspunkt des Katalogs: 351 Stueck, davon 221
+   gehalten, 110 verloren, 20 im Plan. Kein erfundenes Diagramm — die
+   Zahlen stammen aus der Messung der Beispielseite, und das Raster
+   wird aus ihnen erzeugt, nicht von Hand gesetzt. */
+
+.gewichtsbild {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .gewichtsbild {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.gewichtsbild__satz {
+  margin-top: 14px;
+  max-width: 40ch;
+  color: var(--text-2);
+}
+
+.gewichtsbild__werte {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.gewichtsbild__jetzt {
+  font-family: var(--schrift-mono);
+  font-size: clamp(2.75rem, 5vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+
+.gewichtsbild__ziel {
+  font-family: var(--schrift-mono);
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--signal);
+}
+
+.gewichtsbild__zielwort {
+  display: block;
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.gewichtsbild__raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14px, 1fr));
+  gap: 4px;
+}
+
+.gewichtsbild__punkt {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--linie-stark);
+}
+
+.gewichtsbild__punkt--verloren {
+  background: var(--warn);
+}
+
+.gewichtsbild__punkt--plan {
+  background: var(--signal);
+}
+
+.gewichtsbild__legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.gewichtsbild__legende li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+
+.gewichtsbild__marke {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--linie-stark);
+}
+
+.gewichtsbild__marke--verloren {
+  background: var(--warn);
+}
+
+.gewichtsbild__marke--plan {
+  background: var(--signal);
+}
+
+.gewichtsbild__zahl {
+  font-family: var(--schrift-mono);
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ---------- Die Rechnung: ein Block, der die Farbe umdreht ----------
+   Der einzige Ort, an dem die Signalfarbe die ganze Flaeche nimmt.
+   Er traegt die Punktformel, damit sie niemand suchen muss. */
+
+.rechnung {
+  padding-block: clamp(48px, 6vw, 80px);
+  background: var(--signal);
+  color: var(--auf-signal);
+}
+
+.rechnung__kopf {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 560px);
+  gap: clamp(24px, 3vw, 40px);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .rechnung__kopf {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rechnung__titel {
+  max-width: 14ch;
+  font-size: clamp(1.75rem, 3.6vw, 3rem);
+  line-height: 1.02;
+  color: var(--auf-signal);
+}
+
+.rechnung__kasten {
+  padding: 22px 26px;
+  border-radius: var(--radius);
+  background: var(--auf-signal);
+}
+
+.rechnung__etikett {
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.rechnung__formel {
+  margin-top: 10px;
+  font-family: var(--schrift-mono);
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--signal);
+}
+
+.rechnung__probe {
+  margin-top: 8px;
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  /* Der Kasten dreht die Flaeche um: hier steht --auf-signal hinter dem
+     Text. Gegen DIESE Flaeche gerechnet: 6,14 nachts, 5,22 tags. */
+  color: var(--text-3);
+}
+
+.rechnung__punkte {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(20px, 3vw, 32px);
+  margin-top: clamp(28px, 3.5vw, 40px);
+  padding: 0;
+  list-style: none;
+}
+
+.rechnung__punkte li {
+  padding-top: 18px;
+  border-top: 2px solid var(--auf-signal);
+}
+
+.rechnung__punkte strong {
+  display: block;
+  font-size: 1.0625rem;
+  font-weight: 650;
+  color: var(--auf-signal);
+}
+
+.rechnung__punkte span {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--auf-signal);
+}
+
+/* ---------- Werkzeuge als Liste, nicht als Kartenraster ---------- */
+
+.werkzeugliste {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: 0 clamp(28px, 4vw, 48px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.werkzeugliste li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  padding-block: 18px;
+  border-top: 1px solid var(--linie);
+}
+
+.werkzeugliste__nummer {
+  font-family: var(--schrift-mono);
+  font-size: 0.8125rem;
+  color: var(--text-3);
+}
+
+.werkzeugliste__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.0625rem;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.werkzeugliste__satz {
+  margin-top: 6px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.werkzeugliste__warnung {
+  padding: 3px 9px;
+  border: 1px solid var(--arbeit);
+  border-radius: var(--pille);
+  font-family: var(--schrift-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--arbeit);
+}
+
+
+@media print {
+  :root {
+    --grund: #ffffff;
+    --grund-2: #ffffff;
+    --flaeche: #ffffff;
+    --flaeche-hoch: #ffffff;
+    --linie: #948f86;   /* 3,21:1 auf Weiss — eine Haarlinie mit 1,70:1 druckt nicht */
+    --linie-stark: #8d8a84;
+    --text: #000000;
+    --text-2: #1f2124;
+    --text-3: #3d4045;
+    --platzhalter: #3d4045;
+    --signal: #2a3300;  /* tiefes Oliv, 11,71:1 auf Weiss */
+    --auf-signal: #ffffff;
+    --gut: #0f5334;
+    --warn: #8c2317;
+    --arbeit: #5a3d00;
+    --marker: #2a3300;
+    --auf-marker: #ffffff;
+  }
+
+  /* Der Weltschalter darf den Druck nicht faerben. */
+  :root[data-welt="hell"] {
+    --grund: #ffffff;
+    --grund-2: #ffffff;
+    --flaeche: #ffffff;
+    --flaeche-hoch: #ffffff;
+    --linie: #948f86;   /* 3,21:1 auf Weiss — eine Haarlinie mit 1,70:1 druckt nicht */
+    --linie-stark: #8d8a84;
+    --text: #000000;
+    --text-2: #1f2124;
+    --text-3: #3d4045;
+    --platzhalter: #3d4045;
+    --signal: #2a3300;  /* tiefes Oliv, 11,71:1 auf Weiss */
+    --auf-signal: #ffffff;
+    --gut: #0f5334;
+    --warn: #8c2317;
+    --arbeit: #5a3d00;
+    --marker: #2a3300;
+    --auf-marker: #ffffff;
+  }
+
+  @page {
+    margin: 16mm 14mm 18mm;
+  }
+
+  /* Das Protokoll auf Papier: Ergebnis ja, Bedienung nein. Das Befundblatt
+     ist eine Ansicht auf einen Befund, der ohnehin in der Liste steht. */
+  .befundblatt,
+  .inhaltsleiste,
+  .protokollkopf__aktionen,
+  .eingabebereich .hauptfeld,
+  .eingabebereich .umfang,
+  .eingabebereich .leiste,
+  .startformular,
+  .startzusage .knopf,
+  #p-suche,
+  label[for="p-suche"],
+  #p-filter {
+    display: none !important;
+  }
+
+  .protokoll__koerper {
+    display: block;
+  }
+
+  .bzeile {
+    break-inside: avoid;
+  }
+
+  .bzeile__pfeil {
+    display: none;
+  }
+
+  html,
+  body {
+    background: #fff;
+    font-size: 10.5pt;
+  }
+
+  /* Was nur der Bedienung dient, gehoert nicht aufs Papier. */
+  .kopf,
+  .fuss,
+  .springmarke,
+  .weltschalter,
+  .werkzeugleiste,
+  .register,
+  .filterleiste,
+  .filter,
+  .sortknopf,
+  .knopf,
+  .fundzeiger,
+  .suchfeld,
+  .seitenleiste,
+  .werkplatte__wahl,
+  .vorschauen__schalter {
+    display: none !important;
+  }
+
+  /* Eingabefelder: der eingefuegte Quelltext ist Beleg, nicht Bedienung.
+     Er wird gezeigt, aber nicht als Formularfeld. */
+  .eingabe,
+  .feld {
+    border: 1px solid var(--linie);
+    background: #fff;
+    color: var(--text);
+    max-height: 12em;
+    overflow: hidden;
+  }
+
+  /* ALLE Blaetter aufschlagen. Sonst druckt sich genau das eine
+     Register, das gerade offen war, und der Bericht ist unvollstaendig,
+     ohne dass es jemand merkt.
+
+     NICHT aufgehoben wird dagegen, was der Benutzer WEGGEFILTERT hat:
+     wer auf "nur kritisch" gestellt hat, will auch nur die kritischen
+     auf dem Papier. Ein Register ist eine Ansicht, ein Filter ist eine
+     Entscheidung. */
+  [data-blatt][hidden],
+  .blatt[hidden] {
+    display: block !important;
+  }
+
+  [data-blatt]::before {
+    content: attr(data-blatt);
+    display: block;
+    font-family: var(--schrift-mono);
+    font-size: 8pt;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    border-top: 1px solid var(--linie);
+    padding-top: 6pt;
+    margin-top: 14pt;
+  }
+
+  /* Ein Befund gehoert auf eine Seite. */
+  .befund,
+  .kette,
+  .werkzeugkarte,
+  .priozeile,
+  .vitalzeile,
+  .bilanz__wert {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .tafel {
+    break-inside: auto;
+    border: 1px solid var(--linie);
+  }
+
+  /* Auf Papier fuehrt kein Verweis irgendwohin — also steht die
+     Adresse dabei. Interne Sprungmarken nicht, die waeren nur Ballast. */
+  .rechtstext a[href^="http"]::after,
+  .vorspann a[href^="http"]::after,
+  .merkmale a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-family: var(--schrift-mono);
+    font-size: 0.85em;
+    color: var(--text-3);
+    word-break: break-all;
+  }
+
+  /* Breite Tabellen rollen auf Papier nicht — sie muessen passen. */
+  .rolle {
+    overflow: visible !important;
+  }
+
+  .tabelle {
+    font-size: 8.5pt;
+  }
+
+  /* Bewegung gibt es auf Papier nicht. */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Die Zeilenlaenge gilt auf Papier genauso — nur mit einem anderen
+     Wert. Ohne Begrenzung lief die Zeile auf A4 gemessen 122 Zeichen
+     weit; lesbar sind 45 bis 90. 120 mm ergeben rund 80 Zeichen.
+
+     Der breite Rand rechts ist kein Versehen: auf Papier ist eine
+     asymmetrische Spalte normal, und der Platz taugt fuer Notizen. Die
+     fruehere Begruendung („der Seitenrand bestimmt die Spalte") war
+     eine Annahme und ist beim Nachmessen gefallen. */
+  .vorspann,
+  .merkmale,
+  .rechtstext,
+  .blatthinweis,
+  .befund__wie,
+  .abschnitt__kopf {
+    max-width: 120mm !important;
+  }
+
+  /* Der Beleg unter einem Befund traegt auf dem Schirm eine Flaeche.
+     Auf Papier ist die Flaeche weiss — dann muss ein Rahmen zeigen,
+     wo der Beleg anfaengt und aufhoert. */
+  .befund__fund,
+  pre.befund__fund {
+    border: 1px solid var(--linie);
+    border-radius: var(--radius-eingabe);
+    padding: 5pt 7pt;
+    background: #fff;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Abstaende, die auf einem 1400 px breiten Schirm richtig sind, sind
+     auf einer A4-Seite verschenktes Papier. */
+  .abschnitt {
+    padding-block: 10pt !important;
+  }
+
+  .seitenkopf {
+    padding-block: 0 8pt !important;
+  }
+
+  .bahn {
+    padding-inline: 0 !important;
+  }
+
+  .bilanz {
+    break-inside: avoid;
+  }
+
+  /* Die Punktzahl ist die Kopfzeile jedes Berichts — sie soll auf der
+     ersten Seite stehen und nicht in einer Ecke verschwinden. */
+  .bilanz__zahl {
+    font-size: 18pt;
+  }
+
+  /* Der Kopf des Berichts: was gedruckt wurde und wann, steht auf
+     jedem Ausdruck. Ohne das ist ein Ausdruck in zwei Wochen wertlos. */
+  main::before {
+    content: "seo-rank.me";
+    display: block;
+    font-family: var(--schrift-mono);
+    font-size: 8pt;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    border-bottom: 1px solid var(--linie);
+    padding-bottom: 6pt;
+    margin-bottom: 14pt;
+  }
+}
+
+/* ============================================================
+   Abruf ueber das Relais
+
+   Das Adressfeld sitzt IN der Werkzeugleiste, nicht darueber: es ist
+   eine Bedienung wie die Knoepfe daneben, keine zweite Eingabe. Deshalb
+   traegt es die Pillenform der Bedienelemente und nicht die eckigere
+   Form der grossen Eingabefelder.
+   ============================================================ */
+
+.feld--knapp {
+  flex: 1 1 22ch;
+  min-width: 16ch;
+  max-width: 42ch;
+  padding: 11px 16px;
+  border-radius: var(--pille);
+  font-size: 0.8125rem;
+}
+
+.relaishinweis {
+  display: block;
+  flex-basis: 100%;
+  margin: 0;
+  font-family: var(--schrift-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+}
+
+.relaishinweis code {
+  font-size: 1em;
+  color: var(--text-2);
+}
+
+@media (max-width: 620px) {
+  .feld--knapp {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}

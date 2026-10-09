@@ -1,0 +1,34 @@
+# Beispiel: seo-rank.me bei jedem Push über die eigenen Seiten laufen lassen.
+# Der Lauf scheitert, sobald ein Befund der Stufe "wichtig" oder schlimmer auftritt.
+
+name: SEO-Prüfung
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pruefen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Seiten prüfen
+        uses: ./
+        with:
+          ziel: "site/*.html"
+          stufe: wichtig
+          bericht: seo-rank-bericht.xml
+          format: junit
+          # Die Produktoberflaeche zeigt Demodaten und ist bewusst noindex.
+          ohne: gesperrt
+
+      - name: Bericht ablegen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-rank-bericht
+          path: |
+            seo-rank-bericht.xml
+            seo-rank-bericht.json

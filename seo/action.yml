@@ -1,0 +1,100 @@
+name: seo-rank.me
+description: Prüft HTML-Dateien oder eine laufende Adresse gegen den seo-rank.me-Regelsatz und lässt den Build bei Befunden scheitern.
+author: seo-rank.me
+
+branding:
+  icon: check-square
+  color: green
+
+inputs:
+  ziel:
+    description: Dateien, Muster oder Adressen, durch Leerzeichen getrennt. Beispiel "site/*.html"
+    required: true
+  befehl:
+    description: pruefen oder crawl
+    required: false
+    default: pruefen
+  stufe:
+    description: Ab welcher Stufe der Lauf scheitert (kritisch, wichtig, hinweis)
+    required: false
+    default: wichtig
+  format:
+    description: Ausgabeform (text, json, junit)
+    required: false
+    default: text
+  bericht:
+    description: Datei, in die der Bericht zusätzlich geschrieben wird
+    required: false
+    default: ""
+  max:
+    description: Nur beim Crawl - Höchstzahl der Seiten
+    required: false
+    default: "200"
+  ohne:
+    description: Regel-Kennungen, die übersprungen werden, durch Komma getrennt
+    required: false
+    default: ""
+
+outputs:
+  kritisch:
+    description: Zahl der kritischen Befunde
+    value: ${{ steps.lauf.outputs.kritisch }}
+  wichtig:
+    description: Zahl der wichtigen Befunde
+    value: ${{ steps.lauf.outputs.wichtig }}
+  hinweise:
+    description: Zahl der Hinweise
+    value: ${{ steps.lauf.outputs.hinweise }}
+
+runs:
+  using: composite
+  steps:
+    - name: Node bereitstellen
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+
+    - name: seo-rank.me laufen lassen
+      id: lauf
+      shell: bash
+      run: |
+        set +e
+
+        SCHALTER="--stufe ${{ inputs.stufe }} --ohne-farbe"
+        if [ -n "${{ inputs.ohne }}" ]; then SCHALTER="$SCHALTER --ohne ${{ inputs.ohne }}"; fi
+        if [ "${{ inputs.befehl }}" = "crawl" ]; then SCHALTER="$SCHALTER --max ${{ inputs.max }}"; fi
+
+        # Immer zusaetzlich JSON erzeugen, damit die Zahlen als Ausgabe zur Verfuegung stehen.
+        node "${{ github.action_path }}/cli/seorank.mjs" ${{ inputs.befehl }} ${{ inputs.ziel }} \
+          $SCHALTER --format json --aus seo-rank-bericht.json
+        ERGEBNIS=$?
+
+        node -e "
+          const b = require('./seo-rank-bericht.json');
+          const summe = b.seiten.reduce((s, p) => ({
+            kritisch: s.kritisch + (p.kritisch || 0),
+            wichtig: s.wichtig + (p.wichtig || 0),
+            hinweise: s.hinweise + (p.hinweise || 0)
+          }), { kritisch: 0, wichtig: 0, hinweise: 0 });
+          const fs = require('fs');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,
+            'kritisch=' + summe.kritisch + '\n' +
+            'wichtig=' + summe.wichtig + '\n' +
+            'hinweise=' + summe.hinweise + '\n');
+        "
+
+        # Lesbare Fassung in die Zusammenfassung des Laufs schreiben.
+        {
+          echo '## seo-rank.me'
+          echo ''
+          echo '```'
+          node "${{ github.action_path }}/cli/seorank.mjs" ${{ inputs.befehl }} ${{ inputs.ziel }} $SCHALTER
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY" 2>/dev/null
+
+        if [ -n "${{ inputs.bericht }}" ]; then
+          node "${{ github.action_path }}/cli/seorank.mjs" ${{ inputs.befehl }} ${{ inputs.ziel }} \
+            $SCHALTER --format ${{ inputs.format }} --aus "${{ inputs.bericht }}"
+        fi
+
+        exit $ERGEBNIS

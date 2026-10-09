@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anmelden · SEO Wächter</title>
+<meta name="description" content="Ein kostenloses Konto für alle Werkzeuge des SEO Wächters. Anmeldung ohne Passwort über einen Link per Mail.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/waechter.css">
+</head>
+<body>
+{{KOPF}}
+<main class="seite" id="inhalt">
+  <div class="reihe zwei">
+    <section class="karte">
+      <h1 class="anmelden-titel">Anmelden</h1>
+      <p class="leise">Ein Konto für alle neun Werkzeuge. Kostenlos, ohne Zahlungsdaten, ohne Passwort.</p>
+      <form id="anmelden" class="anmelde-form" novalidate>
+        <label class="beschriftung" for="email">E-Mail-Adresse</label>
+        <input class="feld" id="email" name="email" type="email" autocomplete="email" required placeholder="name@firma.de">
+        <button class="knopf haupt breit" type="submit">Anmeldelink schicken</button>
+      </form>
+      <div id="anmelde-status" aria-live="polite"></div>
+      <p class="leise klein">Sie bekommen einen Link, der 15 Minuten gilt und nur einmal funktioniert. Ist die Adresse neu, entsteht damit ein Konto.</p>
+      <div id="ohne-hinweis"></div>
+    </section>
+    <section class="karte">
+      <h2>Was das Konto zusätzlich kann</h2>
+      <ul class="liste-haken">
+        <li>Ein Dashboard für Audit, Rankings, KI, Links, Uptime, Domain und Mail</li>
+        <li>Jede Prüfung gespeichert, mit Verlauf</li>
+        <li>Prüft selbst, bis jede Minute, mit Alarm per Mail</li>
+        <li>Bis zu drei Websites als Projekte</li>
+        <li>Berichte als PDF und CSV</li>
+        <li>Prüfungen aus diesem Browser werden übernommen</li>
+      </ul>
+    </section>
+  </div>
+</main>
+{{FUSS}}
+<script src="/js/basis.js"></script>
+<script src="/js/anmelden.js"></script>
+</body>
+</html>

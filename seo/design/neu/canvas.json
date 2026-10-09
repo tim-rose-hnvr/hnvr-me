@@ -1,0 +1,64 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 2460,
+      "title": "Startseite — Werkstatt bei Tageslicht",
+      "is_interactive": true
+    },
+    {
+      "file": "Pruefer.dc.html",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 1620,
+      "title": "Seiten-Prüfer — Werkstatt bei Tageslicht"
+    },
+    {
+      "file": "Mobil.dc.html",
+      "x": 3120,
+      "y": 0,
+      "w": 390,
+      "h": 1180,
+      "title": "Telefon 390"
+    },
+    {
+      "file": "RichtungTageslicht.dc.html",
+      "x": 0,
+      "y": 2620,
+      "w": 760,
+      "h": 940,
+      "title": "Alternative A — Tageslicht"
+    },
+    {
+      "file": "RichtungSignalturm.dc.html",
+      "x": 880,
+      "y": 2620,
+      "w": 760,
+      "h": 940,
+      "title": "Alternative B — Signalturm"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "gewaehlt",
+      "x": 0,
+      "y": -170,
+      "w": 620,
+      "text": "Der Name ist jetzt seo-rank.me — Domain, Wortmarke, Kommandozeile und alle Texte sind umgezogen; von 554 alten Nennungen ist keine mehr da.\n\nRunde Fassung, zwei Welten, und vier neue Detailblaetter: Crawler-Matrix im robots-Pruefer (wer darf hier rein?), Adresstabelle im Sitemap-Pruefer, Deckung je Objekt bei den Strukturdaten, Gegenseitigkeitsmatrix bei hreflang."
+    },
+    {
+      "id": "alternativen",
+      "x": 0,
+      "y": 2440,
+      "w": 620,
+      "text": "Zwei Gegenvorschlaege aus dem ersten Durchgang. „Tageslicht\" ist inzwischen die gebaute Richtung — hier steht noch die erste, groebere Fassung davon. „Signalturm\" ist die verbliebene Alternative: lauter, zwei Signalfarben, unruhiger im Bericht. Sagen Sie Bescheid, dann baue ich die stattdessen aus."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

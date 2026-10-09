@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITEL}} · kostenlos ohne Anmeldung · SEO Wächter</title>
+<meta name="description" content="{{BESCHREIBUNG}}">
+<link rel="canonical" href="{{KANONISCH}}">
+<meta property="og:title" content="{{TITEL}} · SEO Wächter">
+<meta property="og:description" content="{{BESCHREIBUNG}}">
+<meta property="og:url" content="{{KANONISCH}}">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/waechter.css">
+</head>
+<body data-modul="{{MODUL}}">
+{{KOPF}}
+<main class="seite" id="inhalt">
+  <div class="pfad"><a href="/#werkzeuge">Werkzeuge</a> › <span>{{TITEL}}</span></div>
+  <header class="werkzeugkopf">
+    <div class="wachsen">
+      <h1>{{TITEL}}</h1>
+      <p>{{BESCHREIBUNG}}</p>
+    </div>
+    <span class="pille ok" id="status-pille">ohne Anmeldung</span>
+  </header>
+  <div id="werkzeug"><noscript><div class="hinweisfeld">Dieses Werkzeug braucht JavaScript.</div></noscript></div>
+</main>
+{{FUSS}}
+<script src="/js/basis.js"></script>
+<script src="/js/module.js"></script>
+<script src="/js/werkzeug.js"></script>
+</body>
+</html>

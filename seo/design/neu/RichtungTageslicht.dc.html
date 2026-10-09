@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; background: #e9e7e1; }
+    a { color: #2b45a8; } a:hover { color: #1c2f77; }
+    .tl { font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; }
+    .mono { font-family: "IBM Plex Mono", Consolas, monospace; }
+    .breit { font-stretch: 125%; font-weight: 700; letter-spacing: -0.012em; }
+
+    /* Rund wie die Umsetzung: Flaechen 18 px, Bedienbares als Pille. */
+    div[style*="border: 1px solid"] { border-radius: 18px; }
+    button, a[style*="padding: 17px"], a[style*="padding: 13px"], span[style*="padding: 13px"],
+    span[style*="padding: 14px"], span[style*="padding: 6px"] { border-radius: 999px; }
+    input, textarea { border-radius: 12px; }
+    [style*="height: 6px"], [style*="height: 9px"] { border-radius: 999px; }
+  </style>
+</helmet>
+
+<div class="tl" style="width: 760px; min-height: 920px; background: #e9e7e1; color: #17181c;">
+
+  <div class="mono" style="display: flex; justify-content: space-between; padding: 16px 34px; border-bottom: 1px solid #cfccc4; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6d6f77;">
+    <span>Richtung — Tageslicht</span>
+    <span>Alternative A</span>
+  </div>
+
+  <div style="padding: 44px 34px 38px;">
+    <div class="mono" style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #2b45a8; margin-bottom: 20px;">Kostenlos · 158 Regeln</div>
+    <h1 class="breit" style="margin: 0; font-size: 52px; line-height: 0.96; text-transform: uppercase;">Alles<br>im hellen.</h1>
+    <p style="margin: 20px 0 0; max-width: 44ch; font-size: 15px; line-height: 1.6; color: #4c4e56;">
+      Papierhell, hoher Kontrast, ein einziger Tintenton. Die Zahlen tragen die Seite, nicht die Fläche. Am besten lesbar, am wenigsten inszeniert — und am nächsten an einem Prüfbericht, den man ausdruckt.
+    </p>
+
+    <div style="display: flex; gap: 11px; margin-top: 26px;">
+      <span class="mono" style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; background: #2b45a8; color: #f4f3f0; padding: 13px 22px;">Seite prüfen</span>
+      <span class="mono" style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid #b6b2a8; padding: 13px 22px;">Regelsatz</span>
+    </div>
+  </div>
+
+  <div style="padding: 0 34px 34px;">
+    <div style="border: 1px solid #b6b2a8; background: #f4f3f0;">
+      <div class="mono" style="padding: 12px 18px; border-bottom: 1px solid #cfccc4; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #6d6f77;">Ergebnis</div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));">
+        <div style="padding: 16px 18px; border-right: 1px solid #cfccc4;"><div class="mono" style="font-size: 26px; font-weight: 500;">2</div><div class="mono" style="font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #6d6f77; margin-top: 5px;">kritisch</div></div>
+        <div style="padding: 16px 18px; border-right: 1px solid #cfccc4;"><div class="mono" style="font-size: 26px; font-weight: 500;">18</div><div class="mono" style="font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #6d6f77; margin-top: 5px;">wichtig</div></div>
+        <div style="padding: 16px 18px; border-right: 1px solid #cfccc4;"><div class="mono" style="font-size: 26px; font-weight: 500;">36</div><div class="mono" style="font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #6d6f77; margin-top: 5px;">hinweise</div></div>
+        <div style="padding: 16px 18px;"><div class="mono" style="font-size: 26px; font-weight: 500; color: #2b45a8;">63</div><div class="mono" style="font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #6d6f77; margin-top: 5px;">von 100</div></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 1px; background: #cfccc4; border-top: 1px solid #cfccc4;">
+        <div style="background: #f4f3f0; padding: 13px 18px; font-size: 13px;">Beschreibung fehlt</div>
+        <div style="background: #f4f3f0; padding: 13px 18px; font-size: 13px;">Zwei kanonische Adressen</div>
+        <div style="background: #f4f3f0; padding: 13px 18px; font-size: 13px;">Titel wird abgeschnitten</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 34px 40px;">
+    <div class="mono" style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #6d6f77; margin-bottom: 12px;">Ton</div>
+    <div style="display: flex; gap: 8px;">
+      <span style="width: 46px; height: 46px; background: #e9e7e1; border: 1px solid #b6b2a8;"></span>
+      <span style="width: 46px; height: 46px; background: #f4f3f0; border: 1px solid #b6b2a8;"></span>
+      <span style="width: 46px; height: 46px; background: #17181c;"></span>
+      <span style="width: 46px; height: 46px; background: #2b45a8;"></span>
+    </div>
+    <p class="mono" style="margin: 16px 0 0; font-size: 11px; line-height: 1.8; color: #6d6f77;">
+      Dafür: höchste Lesbarkeit, druckbar, wirkt seriös.<br>
+      Dagegen: verliert den Werkstattcharakter, sieht aus wie viele Werkzeuge.
+    </p>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

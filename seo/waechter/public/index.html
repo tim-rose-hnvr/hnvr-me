@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEO Wächter · kostenlose SEO-Werkzeuge ohne Anmeldung</title>
+<meta name="description" content="Website-Audit, Rankings, KI-Sichtbarkeit, Backlinks, Uptime, Domain-Check und Mail-Prüfer: jedes Werkzeug kostenlos und ohne Anmeldung. Mit Konto alles gespeichert in einem Dashboard.">
+<link rel="canonical" href="{{BASIS}}/">
+<meta property="og:title" content="SEO Wächter · kostenlose SEO-Werkzeuge">
+<meta property="og:description" content="Jedes Werkzeug ohne Anmeldung. Mit Konto alles gespeichert in einem Dashboard.">
+<meta property="og:url" content="{{BASIS}}/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/waechter.css">
+</head>
+<body>
+{{KOPF}}
+<main class="seite" id="inhalt">
+  <section class="aufmacher">
+    <span class="pille marke">Kostenlos · jedes Werkzeug ohne Anmeldung</span>
+    <h1>Ihre Website im Blick.<span>Ohne Anmeldung, ohne Kosten.</span></h1>
+    <p>Website-Audit, Rankings, KI-Sichtbarkeit, Backlinks, Uptime, Domain und Mail: jedes Werkzeug sofort nutzbar. Mit einem kostenlosen Konto liegt alles gespeichert in einem Dashboard.</p>
+    <form class="schnell glas" id="schnell" action="/werkzeug/audit" method="get" role="search" aria-label="Schnellprüfung">
+      <label class="nur-lesegeraet" for="schnell-url">Adresse Ihrer Website</label>
+      <input class="feld" id="schnell-url" name="url" type="text" inputmode="url" placeholder="https://ihre-website.de" autocomplete="url" required>
+      <label class="nur-lesegeraet" for="schnell-modul">Werkzeug</label>
+      <select class="feld" id="schnell-modul" name="modul">
+        <option value="gesamt" selected>Alles prüfen</option>
+        <option value="audit">Website-Audit</option>
+        <option value="domain">Domain-Check</option>
+        <option value="uptime">Uptime</option>
+        <option value="ki">KI-Sichtbarkeit</option>
+        <option value="content">Content</option>
+      </select>
+      <input type="hidden" name="los" value="1">
+      <button class="knopf haupt" type="submit">Prüfen</button>
+    </form>
+    <p class="leise klein">Keine Anmeldung, keine Zahlungsdaten. Ohne Konto bleibt das Ergebnis nur in Ihrem Browser.</p>
+    <div class="chips" aria-label="Werkzeuge direkt öffnen">
+      <a class="chip glas" href="/werkzeug/gesamt"><b>Gesamtcheck</b></a><a class="chip glas" href="/werkzeug/audit">Website-Audit</a><a class="chip glas" href="/werkzeug/rankings">Rankings</a><a class="chip glas" href="/werkzeug/ki">KI-Sichtbarkeit</a>
+      <a class="chip glas" href="/werkzeug/backlinks">Backlinks</a><a class="chip glas" href="/werkzeug/konkurrenz">Konkurrenz</a><a class="chip glas" href="/werkzeug/content">Content</a>
+      <a class="chip glas" href="/werkzeug/uptime">Uptime</a><a class="chip glas" href="/werkzeug/domain">Domain-Check</a><a class="chip glas" href="/werkzeug/mail">Mail-Prüfer</a>
+    </div>
+  </section>
+
+  <section class="abschnitt" id="werkzeuge">
+    <header><span class="pille marke">Neun Werkzeuge</span><h2>Jedes Werkzeug für sich.</h2><p>Öffnen, Adresse eingeben, Ergebnis lesen. Wer mehr will, sammelt alles in einem Dashboard.</p></header>
+    <a class="karte werkzeugkarte gesamtkarte" href="/werkzeug/gesamt"><h3>Gesamtcheck: alles auf einmal</h3><p>Website, Ladezeit, Domain, Erreichbarkeit, Mail-Schutz und KI-Sichtbarkeit in einem Durchgang, mit einer Liste, was zuerst zu tun ist.</p><span class="pille ok">ohne Anmeldung</span></a>
+    <div class="werkzeugraster">
+      <a class="karte werkzeugkarte" href="/werkzeug/audit"><h3>Website-Audit</h3><p>Prüft eine Seite oder die ganze Website gegen 158 Regeln und sagt, was zuerst zu tun ist.</p><span class="pille ok">ohne Anmeldung</span></a>
+      <a class="karte werkzeugkarte" href="/werkzeug/rankings"><h3>Rankings</h3><p>Zeigt, auf welcher Position Ihre Seiten bei Google stehen, für Desktop und Telefon.</p><span class="pille ok">ohne Anmeldung</span></a>
+      <a class="karte werkzeugkarte" href="/werkzeug/ki"><h3>KI-Sichtbarkeit</h3><p>Prüft, ob KI-Dienste Ihre Website lesen dürfen, und ob sie Sie bei einer Frage nennen.</p><span class="pille ok">ohne Anmeldung</span></a>
+      <a class="karte werkzeugkarte" href="/werkzeug/backlinks"><h3>Backlinks</h3><p>Listet, wer auf Sie verweist, mit Ankertext und Wert.</p><span class="pille ok">ohne Anmeldung</span></a>
+      <a class="karte werkzeugkarte" href="/werkzeug/konkurrenz"><h3>Konkurrenz</h3><p>Stellt Ihre Website neben Mitbewerber: Punktzahl, Tempo, Größe, KI-Zugang.</p><span class="pille ok">ohne Anmeldung</span></a>
+      <a class="karte werkzeugkarte" href="/werkzeug/content"><h3>Content</h3><p>Prüft, ob Ihr Keyword an den tragenden Stellen steht, mit Lesbarkeit und Snippet in Pixeln.</p><span class="pille ok">ohne Anmeldung</span></a>
+      <a class="karte werkzeugkarte" href="/werkzeug/uptime"><h3>Uptime</h3><p>Ruft Ihre Website ab und zeigt Antwortzeit je Abschnitt, Zertifikat und Weiterleitungen.</p><span class="pille ok">ohne Anmeldung</span></a>
+      <a class="karte werkzeugkarte" href="/werkzeug/domain"><h3>Domain-Check</h3><p>48 Regeln zu DNS, Zertifikat und Kopfzeilen, dazu freie Namen und Tippfehler-Domains.</p><span class="pille ok">ohne Anmeldung</span></a>
+      <a class="karte werkzeugkarte" href="/werkzeug/mail"><h3>Mail-Prüfer</h3><p>Bewertet eine verdächtige Mail auf Spam und Betrug und prüft den Schutz Ihrer Domain.</p><span class="pille ok">ohne Anmeldung</span></a>
+    </div>
+  </section>
+
+  <section class="abschnitt" id="konto">
+    <header><span class="pille marke">Ohne oder mit Konto</span><h2>Sofort prüfen. Später alles sammeln.</h2><p>Jedes Werkzeug läuft ohne Anmeldung. Ein Konto braucht es erst, wenn Sie Ergebnisse behalten, vergleichen oder überwachen wollen.</p></header>
+    <div class="reihe zwei voll">
+      <div class="karte"><h3>Ohne Anmeldung</h3><p class="leise klein">für die schnelle Prüfung zwischendurch</p>
+        <ul class="liste-haken"><li>Alle neun Werkzeuge sofort nutzbar</li><li>Ergebnis bleibt nur in diesem Browser</li><li>Kein Konto und kein Cookie zur Wiedererkennung</li><li>Ergebnis als PDF speichern</li></ul></div>
+      <div class="karte" id="konto-karte"><h3>Mit kostenlosem Konto</h3><p class="leise klein">für alle, die dranbleiben wollen</p>
+        <ul class="liste-haken"><li>Alle Werkzeuge in einem Dashboard</li><li>Jede Prüfung gespeichert, mit Verlauf</li><li>Automatisch erneut prüfen, Alarm per Mail</li><li>Bis zu drei Websites als Projekte</li><li>Berichte als PDF und CSV</li><li>Prüfungen ohne Konto werden übernommen</li></ul>
+        <a class="knopf haupt" href="/anmelden">Konto anlegen</a> <span class="leise klein">Kein Abo, keine Zahlungsdaten, kein Passwort.</span></div>
+    </div>
+  </section>
+
+  <section class="abschnitt" id="kostenlos">
+    <header><span class="pille marke">Kostenlos</span><h2>Was kostenlos drin ist.</h2><p>Ohne Zahlungsdaten und ohne Testphase. Alle Grenzen stehen hier an einer Stelle.</p></header>
+    <div class="karte b960">
+      <div class="karte-kopf"><div class="wachsen"><h2>Grenzen je Werkzeug</h2></div><span class="pille warn">Werte vorläufig</span></div>
+      <div class="tabelle-wrap"><table class="tabelle">
+        <thead><tr><th scope="col">WERKZEUG</th><th scope="col">OHNE ANMELDUNG</th><th scope="col">MIT KONTO</th></tr></thead>
+        <tbody>
+          <tr><td><b>Website-Audit</b></td><td>eine Seite oder bis 500 Seiten</td><td>bis 10.000 Seiten, wöchentlich automatisch</td></tr>
+          <tr><td><b>Rankings</b></td><td>5 Keywords je Abfrage</td><td>100 Keywords, täglich</td></tr>
+          <tr><td><b>KI-Sichtbarkeit</b></td><td>Zugang prüfen, eine Frage</td><td>täglich, mit Verlauf</td></tr>
+          <tr><td><b>Backlinks</b></td><td>die 50 stärksten Verweise</td><td>wöchentlicher Abgleich</td></tr>
+          <tr><td><b>Konkurrenz</b></td><td>1 Mitbewerber</td><td>3 Mitbewerber</td></tr>
+          <tr><td><b>Content</b></td><td>eine Seite je Prüfung</td><td>mit Verlauf</td></tr>
+          <tr><td><b>Uptime</b></td><td>einmaliger Abruf</td><td>bis jede Minute, Alarm per Mail</td></tr>
+          <tr><td><b>Domain-Check</b></td><td>alle 48 Regeln</td><td>Erinnerung vor dem Ablauf</td></tr>
+          <tr><td><b>Mail-Prüfer</b></td><td>ohne Grenze</td><td>Ihre Domain täglich geprüft</td></tr>
+          <tr><td><b>Alle</b></td><td>30 Prüfungen je Werkzeug und Tag</td><td>300 Prüfungen je Werkzeug und Tag</td></tr>
+        </tbody></table></div>
+      <p class="leise klein">Rankings, Backlinks und KI-Fragen brauchen Fremddaten. Solange die Datenquelle auf dem Server nicht eingerichtet ist, sagt das Werkzeug das, statt Zahlen zu schätzen.</p>
+    </div>
+  </section>
+
+  <section class="abschnitt" id="fragen">
+    <header><span class="pille marke">Fragen</span><h2>Häufige Fragen.</h2></header>
+    <div class="karte b900">
+      <details class="frage" open><summary>Ist das wirklich kostenlos?</summary><p>Ja. Alle Werkzeuge sind kostenlos, auch mit Konto. Zahlungsdaten werden nie abgefragt.</p></details>
+      <details class="frage"><summary>Was passiert mit einer eingefügten Mail?</summary><p>Sie wird für die Prüfung verarbeitet und danach verworfen. Gespeichert wird sie nicht, auch nicht im Konto.</p></details>
+      <details class="frage"><summary>Warum ein Konto, wenn alles ohne geht?</summary><p>Ohne Konto vergisst der Wächter alles, sobald Sie den Browser leeren. Mit Konto bleibt der Verlauf, und er prüft regelmäßig selbst.</p></details>
+      <details class="frage"><summary>Kann ich Prüfungen später ins Konto holen?</summary><p>Ja. Beim Anmelden bietet der Wächter an, die Prüfungen aus diesem Browser zu übernehmen.</p></details>
+      <details class="frage"><summary>Wer steht dahinter?</summary><p>SEO Wächter ist eine App von hnvr.me. Die Regeln stammen aus dem offenen Regelkatalog von seo-rank.me.</p></details>
+    </div>
+  </section>
+</main>
+{{FUSS}}
+<script src="/js/basis.js"></script>
+<script src="/js/start.js"></script>
+</body>
+</html>

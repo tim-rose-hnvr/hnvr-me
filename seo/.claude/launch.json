@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rangwerk",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["bauen/server.mjs", "8099"],
+      "port": 8099
+    },
+    {
+      "name": "konsole-rebrand",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:/Users/vhv_i/AppData/Local/Temp/claude/C--Users-vhv-i-Desktop-Claude-SEO/7addabc6-6e08-45b7-b033-82cf6a580db0/scratchpad/start-rebrand.mjs"],
+      "port": 4340,
+      "env": { "PLATTFORM_DEMO": "1" }
+    }
+  ]
+}

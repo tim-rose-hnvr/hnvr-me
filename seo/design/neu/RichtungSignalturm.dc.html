@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; background: #08090b; }
+    a { color: #c9f24a; } a:hover { color: #ddff7d; }
+    .st { font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; }
+    .mono { font-family: "IBM Plex Mono", Consolas, monospace; }
+    .breit { font-stretch: 125%; font-weight: 700; letter-spacing: -0.02em; }
+
+    /* Rund wie die Umsetzung: Flaechen 18 px, Bedienbares als Pille. */
+    div[style*="border: 1px solid"] { border-radius: 18px; }
+    button, a[style*="padding: 17px"], a[style*="padding: 13px"], span[style*="padding: 13px"],
+    span[style*="padding: 14px"], span[style*="padding: 6px"] { border-radius: 999px; }
+    input, textarea { border-radius: 12px; }
+    [style*="height: 6px"], [style*="height: 9px"] { border-radius: 999px; }
+  </style>
+</helmet>
+
+<div class="st" style="width: 760px; min-height: 920px; background: #08090b; color: #f6f7f4;">
+
+  <div class="mono" style="display: flex; justify-content: space-between; padding: 16px 34px; border-bottom: 1px solid #24262b; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #7c8089;">
+    <span>Richtung — Signalturm</span>
+    <span>Alternative B</span>
+  </div>
+
+  <div style="padding: 40px 34px 34px;">
+    <div class="mono" style="display: inline-block; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; background: #c9f24a; color: #08090b; padding: 6px 12px; margin-bottom: 22px;">158 Regeln · 0 €</div>
+
+    <h1 class="breit" style="margin: 0; font-size: 62px; line-height: 0.86; text-transform: uppercase;">
+      Wo<br>
+      <span style="color: #c9f24a;">klemmt</span><br>
+      es?
+    </h1>
+
+    <p style="margin: 22px 0 0; max-width: 42ch; font-size: 15px; line-height: 1.55; color: #a4a9b2;">
+      Laut, schnell, ohne Umschweife. Übergroße Typo, zwei Signalfarben, harte Kanten. Für Leute, die den Befund wollen und nicht die Erklärung.
+    </p>
+
+    <div style="display: flex; gap: 10px; margin-top: 26px;">
+      <span class="mono" style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; background: #c9f24a; color: #08090b; padding: 14px 24px;">Jetzt prüfen</span>
+      <span class="mono" style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid #ff5a3c; color: #ff5a3c; padding: 14px 24px;">158 Regeln</span>
+    </div>
+  </div>
+
+  <div style="padding: 0 34px 30px;">
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px;">
+      <div style="background: #ff5a3c; color: #08090b; padding: 20px 18px;">
+        <div class="mono" style="font-size: 38px; font-weight: 500; line-height: 1;">02</div>
+        <div class="mono" style="font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; margin-top: 10px;">kritisch</div>
+      </div>
+      <div style="background: #c9f24a; color: #08090b; padding: 20px 18px;">
+        <div class="mono" style="font-size: 38px; font-weight: 500; line-height: 1;">18</div>
+        <div class="mono" style="font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; margin-top: 10px;">wichtig</div>
+      </div>
+      <div style="background: #16181d; color: #f6f7f4; padding: 20px 18px;">
+        <div class="mono" style="font-size: 38px; font-weight: 500; line-height: 1;">36</div>
+        <div class="mono" style="font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; margin-top: 10px; color: #7c8089;">hinweise</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 34px 34px;">
+    <div style="display: flex; flex-direction: column; gap: 3px;">
+      <div style="background: #16181d; padding: 15px 18px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 14px;">Beschreibung fehlt</span>
+        <span class="mono" style="font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #c9f24a;">wichtig</span>
+      </div>
+      <div style="background: #16181d; padding: 15px 18px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 14px;">Zwei kanonische Adressen</span>
+        <span class="mono" style="font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #ff5a3c;">kritisch</span>
+      </div>
+      <div style="background: #16181d; padding: 15px 18px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 14px;">Ansichtsfeld sperrt das Vergrößern</span>
+        <span class="mono" style="font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #ff5a3c;">kritisch</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 34px 40px;">
+    <div class="mono" style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #7c8089; margin-bottom: 12px;">Ton</div>
+    <div style="display: flex; gap: 8px;">
+      <span style="width: 46px; height: 46px; background: #08090b; border: 1px solid #24262b;"></span>
+      <span style="width: 46px; height: 46px; background: #16181d;"></span>
+      <span style="width: 46px; height: 46px; background: #c9f24a;"></span>
+      <span style="width: 46px; height: 46px; background: #ff5a3c;"></span>
+    </div>
+    <p class="mono" style="margin: 16px 0 0; font-size: 11px; line-height: 1.8; color: #7c8089;">
+      Dafür: unverwechselbar, wirkt schnell, junges Publikum.<br>
+      Dagegen: zwei Signalfarben neben Befundfarben — der Bericht wird unruhig.
+    </p>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

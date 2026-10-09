@@ -1,0 +1,15 @@
+# robots.txt für seo-rank.me
+# Die Basisadresse setzt bauen/adresse-setzen.mjs.
+# Die Sitemap heißt sitemap-seiten.xml: Wix sperrt den Namen sitemap.xml
+# (gemessen: 404, auch im Unterordner), liefert diesen aber aus.
+
+User-agent: *
+Allow: /
+
+# Die Produktoberfläche zeigt Demodaten und gehört nicht in den Index.
+Disallow: /app.html
+Disallow: /app-audit.html
+Disallow: /app-rankings.html
+Disallow: /app-backlinks.html
+
+Sitemap: https://instant-aocfmzsjdndd-hnvrme-1406.wix-site-host.com/sitemap-seiten.xml

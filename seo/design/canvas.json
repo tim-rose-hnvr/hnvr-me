@@ -1,0 +1,33 @@
+{
+  "pages": [
+    { "id": "richtungen", "name": "Drei Richtungen" },
+    { "id": "rangwerk", "name": "Ausbau A (nicht gewählt)" }
+  ],
+  "artboards": [
+    { "file": "RichtungB.dc.html", "title": "B · Messinstrument — GEWÄHLT", "page": "richtungen", "x": 0, "y": 0, "w": 1280, "h": 960 },
+    { "file": "RichtungA.dc.html", "title": "A · Werkstatt", "page": "richtungen", "x": 1360, "y": 0, "w": 1280, "h": 960 },
+    { "file": "RichtungC.dc.html", "title": "C · Ruhige Klarheit", "page": "richtungen", "x": 2720, "y": 0, "w": 1280, "h": 960 },
+    { "file": "Main.dc.html", "title": "Startseite (Richtung A)", "page": "rangwerk", "x": 0, "y": 0, "w": 1280, "h": 3900 },
+    { "file": "Mobil.dc.html", "title": "Startseite mobil (Richtung A)", "page": "rangwerk", "x": 1360, "y": 0, "w": 390, "h": 1440 },
+    { "file": "Dashboard.dc.html", "title": "Produkt: Übersicht (Richtung A)", "page": "rangwerk", "x": 1830, "y": 0, "w": 1440, "h": 960 }
+  ],
+  "annotations": [
+    {
+      "id": "hinweis-richtungen",
+      "page": "richtungen",
+      "x": 0,
+      "y": -170,
+      "w": 700,
+      "text": "Drei Haltungen, nicht drei Farbvarianten. Unten auf jedem Blatt steht, was die Richtung kostet.\nGewählt wurde B. Umgesetzt als echte Website unter site/ — Startseite, Preise, Produktoberfläche, Schriften lokal.\nZahlen in allen Beispielen sind Demodaten, Preise sind als [Preis eintragen] markiert."
+    },
+    {
+      "id": "hinweis-rangwerk",
+      "page": "rangwerk",
+      "x": 0,
+      "y": -170,
+      "w": 700,
+      "text": "Diese Seite zeigt den Ausbau von Richtung A und bleibt als Vergleich stehen.\nDie gebaute Website folgt Richtung B, nicht diesen Blättern."
+    }
+  ],
+  "launch": { "view": "canvas", "page": "richtungen" }
+}

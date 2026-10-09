@@ -1,0 +1,5 @@
+# Konten, Prüfungen und der Schlüssel für die Google-Token entstehen im
+# Betrieb. Sie gehören auf den Server, nie ins Repo.
+waechter/daten/
+waechter/daten-*/
+.impeccable/

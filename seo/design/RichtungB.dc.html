@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@110,500;110,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; }
+    * { box-sizing: border-box; }
+    a { color: #35E08A; text-decoration: none; }
+    a:hover { color: #7CEDB6; }
+    .dsp { font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; }
+    .mono { font-family: "IBM Plex Mono", Consolas, monospace; }
+  </style>
+</helmet>
+<div class="mono" style="width: 1280px; background: #0B0D10; color: #E4E8EE;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 18px 40px; border-bottom: 1px solid #1E242E;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="1" y="1" width="20" height="20" stroke="#35E08A" stroke-width="2"></rect><path d="M1 15 L8 8 L14 14 L21 6" stroke="#35E08A" stroke-width="2"></path></svg>
+      <span class="dsp" style="font-weight: 700; font-size: 17px; letter-spacing: 0.22em;">RANGWERK</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 26px; font-size: 12px; letter-spacing: 0.06em; color: #8B94A3;">
+      <span>werkzeuge</span><span>preise</span><span>doku</span><span>status</span>
+      <span style="color: #0B0D10; background: #35E08A; padding: 9px 16px; font-weight: 600; letter-spacing: 0.08em;">crawl starten</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 0.86fr 1.14fr; gap: 40px; padding: 52px 40px 40px;">
+    <div>
+      <div style="font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #35E08A; margin-bottom: 24px;">Richtung B &middot; Messinstrument</div>
+      <h1 class="dsp" style="margin: 0; font-weight: 700; font-size: 60px; line-height: 1.0; letter-spacing: -0.03em;">Ihre Website,<br>durchgemessen.</h1>
+      <p style="margin: 24px 0 0; font-size: 14px; line-height: 1.75; color: #A7B0BE; max-width: 42ch;">Jeder Crawl schreibt Werte fort: Indexdeckung, Ladezeit, Rangver&auml;nderung, Linkverluste. Kein Ampel-Gef&uuml;hl, sondern Reihen, die man vergleichen kann.</p>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 30px; font-size: 13px; color: #A7B0BE;">
+        <div style="display: flex; gap: 12px; align-items: baseline;"><span style="color: #35E08A;">&rsaquo;</span><span>crawl --tief --alle-subdomains</span></div>
+        <div style="display: flex; gap: 12px; align-items: baseline;"><span style="color: #35E08A;">&rsaquo;</span><span>rang --keywords 340 --taeglich</span></div>
+        <div style="display: flex; gap: 12px; align-items: baseline;"><span style="color: #35E08A;">&rsaquo;</span><span>export --pdf --eigenes-logo</span></div>
+      </div>
+      <div style="display: flex; margin-top: 32px;">
+        <div style="flex-grow: 1; border: 1px solid #2B3340; background: #11151B; padding: 13px 16px; font-size: 13px; color: #6F7B8C;">ihre-domain.de</div>
+        <div style="background: #35E08A; color: #0B0D10; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; padding: 13px 22px;">MESSEN</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="border: 1px solid #1E242E; background: #11151B;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #1E242E; font-size: 11px; letter-spacing: 0.08em; color: #8B94A3;">
+          <span>SICHTBARKEITSINDEX &middot; 90 TAGE</span><span style="color: #35E08A;">+18,4 %</span>
+        </div>
+        <div style="padding: 18px;">
+          <svg width="644" height="200" viewBox="0 0 644 200" fill="none" aria-hidden="true">
+            <path d="M0 40 H644 M0 90 H644 M0 140 H644 M0 190 H644" stroke="#1E242E" stroke-width="1"></path>
+            <path d="M8 168 L70 160 L132 164 L194 138 L256 142 L318 112 L380 118 L442 84 L504 72 L566 60 L628 34" stroke="#35E08A" stroke-width="2"></path>
+            <path d="M8 168 L70 160 L132 164 L194 138 L256 142 L318 112 L380 118 L442 84 L504 72 L566 60 L628 34 L628 196 L8 196 Z" fill="#35E08A" opacity="0.10"></path>
+            <path d="M8 182 L70 178 L132 180 L194 176 L256 170 L318 172 L380 166 L442 160 L504 158 L566 152 L628 148" stroke="#4C596B" stroke-width="2" stroke-dasharray="4 4"></path>
+            <circle cx="628" cy="34" r="4" fill="#35E08A"></circle>
+          </svg>
+          <div style="display: flex; gap: 24px; margin-top: 12px; font-size: 11px; color: #8B94A3;">
+            <span style="display: flex; align-items: center; gap: 7px;"><span style="width: 14px; height: 2px; background: #35E08A;"></span>ihre-domain.de</span>
+            <span style="display: flex; align-items: center; gap: 7px;"><span style="width: 14px; height: 2px; background: #4C596B;"></span>wettbewerber-b.de</span>
+          </div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+        <div style="border: 1px solid #1E242E; background: #11151B; padding: 16px;"><div style="font-size: 10px; letter-spacing: 0.1em; color: #8B94A3;">URLS</div><div class="dsp" style="font-size: 26px; font-weight: 700; margin-top: 6px;">1.284</div></div>
+        <div style="border: 1px solid #1E242E; background: #11151B; padding: 16px;"><div style="font-size: 10px; letter-spacing: 0.1em; color: #8B94A3;">BEFUNDE</div><div class="dsp" style="font-size: 26px; font-weight: 700; margin-top: 6px; color: #FF6B4A;">47</div></div>
+        <div style="border: 1px solid #1E242E; background: #11151B; padding: 16px;"><div style="font-size: 10px; letter-spacing: 0.1em; color: #8B94A3;">TOP-10</div><div class="dsp" style="font-size: 26px; font-weight: 700; margin-top: 6px;">62</div></div>
+        <div style="border: 1px solid #1E242E; background: #11151B; padding: 16px;"><div style="font-size: 10px; letter-spacing: 0.1em; color: #8B94A3;">LINKS</div><div class="dsp" style="font-size: 26px; font-weight: 700; margin-top: 6px;">8.910</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="border-top: 1px solid #1E242E; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); font-size: 12px;">
+    <div style="padding: 22px 24px 22px 40px; border-right: 1px solid #1E242E;"><div class="dsp" style="font-size: 17px; font-weight: 500;">Audit</div><div style="color: #8B94A3; margin-top: 6px;">technischer Regelsatz</div></div>
+    <div style="padding: 22px 24px; border-right: 1px solid #1E242E;"><div class="dsp" style="font-size: 17px; font-weight: 500;">Rang</div><div style="color: #8B94A3; margin-top: 6px;">t&auml;glich, Ger&auml;t und Ort</div></div>
+    <div style="padding: 22px 24px; border-right: 1px solid #1E242E;"><div class="dsp" style="font-size: 17px; font-weight: 500;">Links</div><div style="color: #8B94A3; margin-top: 6px;">Gewinn und Verlust</div></div>
+    <div style="padding: 22px 40px 22px 24px;"><div class="dsp" style="font-size: 17px; font-weight: 500;">Erreichbarkeit</div><div style="color: #8B94A3; margin-top: 6px;">Minutentakt</div></div>
+  </div>
+
+  <div style="padding: 26px 40px 32px; border-top: 1px solid #1E242E; background: #0E1116;">
+    <div style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #8B94A3;">Haltung dieser Richtung</div>
+    <p style="margin: 10px 0 0; font-size: 13px; line-height: 1.7; max-width: 100ch; color: #C7CEDA;">Dunkel, dicht, Werte zuerst. Spricht Leute an, die t&auml;glich mit Zahlen arbeiten, und sieht nach Werkzeug statt nach Werbung aus. Preis daf&uuml;r: Einsteiger fremdeln, und dunkle Oberfl&auml;chen sind im SEO-Umfeld inzwischen h&auml;ufig.</p>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

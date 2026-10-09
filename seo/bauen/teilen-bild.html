@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Teilen-Bild</title>
+<style>
+  @font-face { font-family: "Onest"; src: url("http://localhost:8099/assets/fonts/onest-var.woff2") format("woff2"); font-weight: 400 800; }
+  @font-face { font-family: "JetBrains Mono"; src: url("http://localhost:8099/assets/fonts/jetbrains-mono-var.woff2") format("woff2"); font-weight: 400 700; }
+  * { margin: 0; box-sizing: border-box; }
+  body { width: 1200px; height: 630px; background: #0b0c0e; color: #f2f5f7;
+         font-family: "Onest", sans-serif; padding: 64px 72px;
+         display: flex; flex-direction: column; justify-content: space-between; }
+  .marke { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 600; }
+  .zeichen { display: flex; align-items: flex-end; gap: 3px; }
+  .zeichen i { display: block; width: 6px; border-radius: 2px; background: #e8ff5a; }
+  .zeichen i:nth-child(4), .zeichen i:nth-child(5) { background: #6b7480; }
+  h1 { font-size: 92px; line-height: 0.94; letter-spacing: -0.035em; font-weight: 700; max-width: 14ch; }
+  .fuss { display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; }
+  .zeile { font-family: "JetBrains Mono", monospace; font-size: 17px; color: #aeb6c0; letter-spacing: 0.02em; }
+  .zeile b { color: #e8ff5a; font-weight: 500; }
+  .raster { display: grid; grid-template-columns: repeat(27, 9px); gap: 3px; }
+  .raster span { width: 9px; height: 9px; border-radius: 2px; background: #6b7480; }
+  .raster span.v { background: #ff6b57; }
+  .raster span.p { background: #e8ff5a; }
+</style>
+</head>
+<body>
+  <div class="marke">
+    <span class="zeichen"><i style="height:9px"></i><i style="height:14px"></i><i style="height:19px"></i><i style="height:24px"></i><i style="height:29px"></i></span>
+    <span>seo-rank.me</span>
+  </div>
+  <h1>Sag mir, was es bringt.</h1>
+  <div class="fuss">
+    <p class="zeile">158 Regeln &middot; <b>Wert = 1 &minus; verloren / m&ouml;glich</b> &middot; kostenlos</p>
+    <div class="raster" id="raster"></div>
+  </div>
+  <script>
+    const r = document.getElementById('raster');
+    const teile = [];
+    for (let i = 0; i < 221; i++) teile.push('<span></span>');
+    for (let i = 0; i < 110; i++) teile.push('<span class="v"></span>');
+    for (let i = 0; i < 20; i++) teile.push('<span class="p"></span>');
+    r.innerHTML = teile.join('');
+  </script>
+</body>
+</html>

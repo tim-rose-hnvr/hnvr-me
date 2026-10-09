@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; background: #f4f2ee; }
+    a { color: #8a5a0d; } a:hover { color: #6b4507; }
+    .werk { font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; }
+    .mono { font-family: "IBM Plex Mono", Consolas, monospace; }
+    .breit { font-stretch: 125%; font-weight: 700; letter-spacing: -0.012em; }
+
+    /* Rund wie die Umsetzung: Flaechen 18 px, Bedienbares als Pille. */
+    div[style*="border: 1px solid"] { border-radius: 18px; }
+    button, a[style*="padding: 17px"], a[style*="padding: 13px"], span[style*="padding: 13px"],
+    span[style*="padding: 14px"], span[style*="padding: 6px"] { border-radius: 999px; }
+    input, textarea { border-radius: 12px; }
+    [style*="height: 6px"], [style*="height: 9px"] { border-radius: 999px; }
+  </style>
+</helmet>
+
+<div class="werk" style="width: 1440px; background: #f4f2ee; color: #1b1d20;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 22px 72px; border-bottom: 1px solid #e3e0d9;">
+    <span class="mono" style="font-size: 14px; font-weight: 500; letter-spacing: 0.34em; text-transform: uppercase;">seo-rank.me</span>
+    <span class="mono" style="font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #5f6570;">Seiten-Prüfer</span>
+  </div>
+
+  <div style="padding: 46px 72px 34px;">
+    <div class="mono" style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #8a5a0d; margin-bottom: 16px;">Werkzeug · läuft sofort</div>
+    <h1 class="breit" style="margin: 0; font-size: 54px; line-height: 0.98; text-transform: uppercase;">Seiten-Prüfer</h1>
+    <p style="margin: 18px 0 0; max-width: 62ch; font-size: 16px; line-height: 1.6; color: #4d525a;">
+      Quelltext einfügen, prüfen lassen. Jeder Befund lässt sich aufklappen: warum die Regel existiert, was konkret zu tun ist, worauf es sich auswirkt.
+    </p>
+  </div>
+
+  <!-- Eingabe -->
+  <div style="padding: 0 72px 26px;">
+    <div style="border: 1px solid #cbc6bc; background: #ffffff;">
+      <div class="mono" style="display: flex; justify-content: space-between; padding: 14px 22px; border-bottom: 1px solid #e3e0d9; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #5f6570;">
+        <span>Quelltext der Seite</span>
+        <span>Strg + Eingabe startet</span>
+      </div>
+      <div class="mono" style="padding: 20px 22px; font-size: 12.5px; line-height: 1.85; color: #5f6570; height: 128px; overflow: hidden; background: #f8f7f4;">
+        &lt;!doctype html&gt;<br>
+        &lt;html&gt;<br>
+        &nbsp;&nbsp;&lt;head&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;title&gt;Waagen&lt;/title&gt;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&lt;link rel="canonical" href="/waagen/industrie"&gt;
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 22px; border-top: 1px solid #e3e0d9; align-items: center;">
+        <span class="mono" style="font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; background: #8a5a0d; color: #f4f2ee; padding: 13px 24px;">prüfen</span>
+        <span class="mono" style="font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid #cbc6bc; padding: 13px 24px;">beispiel</span>
+        <span class="mono" style="font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid #cbc6bc; padding: 13px 24px;">als datei</span>
+        <span class="mono" style="margin-left: auto; font-size: 11px; color: #5f6570;">158 Regeln geprüft. Nichts hat dieses Fenster verlassen.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ergebnis -->
+  <div style="padding: 0 72px 56px;">
+    <div style="border: 1px solid #cbc6bc; background: #ffffff;">
+
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid #e3e0d9;">
+        <div style="padding: 20px 24px; border-right: 1px solid #e3e0d9;">
+          <div class="mono" style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #5f6570;">Kritisch</div>
+          <div class="mono" style="font-size: 30px; font-weight: 500; color: #b23a2a; margin-top: 10px;">2</div>
+        </div>
+        <div style="padding: 20px 24px; border-right: 1px solid #e3e0d9;">
+          <div class="mono" style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #5f6570;">Wichtig</div>
+          <div class="mono" style="font-size: 30px; font-weight: 500; margin-top: 10px;">18</div>
+        </div>
+        <div style="padding: 20px 24px; border-right: 1px solid #e3e0d9;">
+          <div class="mono" style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #5f6570;">Hinweise</div>
+          <div class="mono" style="font-size: 30px; font-weight: 500; margin-top: 10px;">36</div>
+        </div>
+        <div style="padding: 20px 24px;">
+          <div class="mono" style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #5f6570;">Bestanden</div>
+          <div class="mono" style="font-size: 30px; font-weight: 500; color: #17724a; margin-top: 10px;">102 / 158</div>
+        </div>
+      </div>
+
+      <!-- Punktstand mit Gruppenbalken -->
+      <div style="padding: 26px 24px; border-bottom: 1px solid #e3e0d9;">
+        <div style="display: flex; flex-wrap: wrap; gap: 12px 30px; align-items: baseline; margin-bottom: 22px;">
+          <div style="display: flex; align-items: baseline; gap: 10px;">
+            <span class="mono" style="font-size: 58px; font-weight: 500; line-height: 0.9; color: #8a5a0d;">63</span>
+            <span class="mono" style="font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #5f6570;">von 100</span>
+          </div>
+          <p style="margin: 0; flex: 1 1 340px; font-size: 13.5px; line-height: 1.6; color: #4d525a;">
+            Jede geprüfte Regel bringt ihr Gewicht ein, eine angeschlagene Regel verliert es ganz. 130 von 351 Gewichtspunkten sind verloren. Keine Kurve, kein Bonus.
+          </p>
+        </div>
+
+        <div style="display: grid; gap: 7px;">
+          <sc-for list="{{balken}}" as="b" hint-placeholder-count="6">
+            <div style="display: grid; grid-template-columns: minmax(0, 15rem) minmax(60px, 1fr) 3rem minmax(0, 7rem); gap: 14px; align-items: center;">
+              <span style="font-size: 13px; color: #4d525a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{b.name}}</span>
+              <span style="display: block; height: 6px; background: #f8f7f4; border: 1px solid #e3e0d9;">
+                <span style="display: block; height: 100%; background: {{b.ton}}; width: {{b.breite}};"></span>
+              </span>
+              <span class="mono" style="font-size: 13px; text-align: right;">{{b.wert}}</span>
+              <span class="mono" style="font-size: 11px; color: #5f6570; white-space: nowrap;">{{b.zusatz}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Register -->
+      <div style="display: flex; gap: 0; padding: 0 24px; border-bottom: 1px solid #e3e0d9;">
+        <span class="mono" style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 15px 16px; border-bottom: 2px solid #8a5a0d; margin-bottom: -1px;">Befunde</span>
+        <span class="mono" style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 15px 16px; color: #5f6570;">Profil</span>
+        <span class="mono" style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 15px 16px; color: #5f6570;">Gliederung</span>
+        <span class="mono" style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 15px 16px; color: #5f6570;">Wortfeld</span>
+        <span class="mono" style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 15px 16px; color: #5f6570;">Verweise</span>
+        <span class="mono" style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 15px 16px; color: #5f6570;">Bilder</span>
+        <span class="mono" style="font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 15px 16px; color: #5f6570;">Wirkung</span>
+      </div>
+
+      <!-- Ein aufgeklappter Befund -->
+      <div class="mono" style="display: flex; justify-content: space-between; padding: 12px 24px; background: #f8f7f4; border-bottom: 1px solid #e3e0d9; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #5f6570;">
+        <span>Titel und Beschreibung</span><span>2</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 16px; padding: 20px 24px; border-bottom: 1px solid #e3e0d9;">
+        <span style="width: 10px; height: 10px; margin-top: 6px; background: #8a5a0d;"></span>
+        <div style="min-width: 0;">
+          <div style="font-size: 16px; font-weight: 600;">Beschreibung fehlt</div>
+          <p style="margin: 7px 0 0; font-size: 14px; line-height: 1.6; color: #4d525a;">Ohne eigene Beschreibung entscheidet die Suchmaschine, welcher Satz unter dem Titel steht.</p>
+
+          <div style="display: flex; gap: 9px; margin-top: 14px;">
+            <span class="mono" style="font-size: 11px; letter-spacing: 0.06em; border: 1px solid #cbc6bc; color: #4d525a; padding: 7px 12px;">wieder zuklappen</span>
+            <span class="mono" style="font-size: 11px; letter-spacing: 0.06em; border: 1px solid #cbc6bc; color: #4d525a; padding: 7px 12px;">im Quelltext zeigen</span>
+          </div>
+
+          <div style="margin-top: 16px; border-left: 1px solid #cbc6bc; padding-left: 18px; display: grid; gap: 14px;">
+            <div>
+              <div class="mono" style="font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #5f6570;">Warum das zählt</div>
+              <p style="margin: 5px 0 0; font-size: 14px; line-height: 1.6; color: #4d525a; max-width: 70ch;">Kein <span class="mono" style="background: #f8f7f4; padding: 1px 5px; font-size: 12.5px;">meta name="description"</span> oder leerer Inhalt. Die Suchmaschine schneidet dann selbst einen Satz aus der Seite.</p>
+            </div>
+            <div>
+              <div class="mono" style="font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #5f6570;">Was zu tun ist</div>
+              <p style="margin: 5px 0 0; font-size: 14px; line-height: 1.6; color: #4d525a; max-width: 70ch;"><span class="mono" style="background: #f8f7f4; padding: 1px 5px; font-size: 12.5px;">&lt;meta name="description" content="…"&gt;</span> ergänzen: zwei Sätze, die sagen was die Seite liefert und für wen.</p>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <span class="mono" style="font-size: 10px; letter-spacing: 0.08em; border: 1px solid #5f6570; color: #4d525a; padding: 4px 9px;">wirkt auf: Trefferliste</span>
+              <span class="mono" style="font-size: 10px; letter-spacing: 0.08em; border: 1px solid #e3e0d9; color: #5f6570; padding: 4px 9px;">Gewicht 3 von 5</span>
+              <span class="mono" style="font-size: 10px; letter-spacing: 0.08em; border: 1px solid #e3e0d9; color: #5f6570; padding: 4px 9px;">beschreibung-fehlt</span>
+            </div>
+          </div>
+        </div>
+        <span class="mono" style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #8a5a0d;">wichtig</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 16px; padding: 18px 24px;">
+        <span style="width: 10px; height: 10px; margin-top: 6px; background: #b23a2a;"></span>
+        <div>
+          <div style="font-size: 16px; font-weight: 600;">Titel wird abgeschnitten</div>
+          <p style="margin: 7px 0 0; font-size: 14px; line-height: 1.6; color: #4d525a;">Der Titel ist 648 px breit. Ab etwa 600 px schneidet die Trefferliste ab.</p>
+        </div>
+        <span class="mono" style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #8a5a0d;">wichtig</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    /* Gemessene Gruppenwerte aus einem echten Lauf gegen die Beispielseite. */
+    const roh = [
+      { name: "Fremde Aufrufe und Datenschutz", wert: 0, befunde: 5, regeln: 5 },
+      { name: "Dokument und Kopfbereich", wert: 43, befunde: 4, regeln: 7 },
+      { name: "Auszeichnung und Vorschau", wert: 46, befunde: 9, regeln: 17 },
+      { name: "Verweise", wert: 50, befunde: 6, regeln: 14 },
+      { name: "Gliederung und Semantik", wert: 53, befunde: 6, regeln: 14 },
+      { name: "Bilder und Medien", wert: 55, befunde: 3, regeln: 8 },
+      { name: "Indexierung", wert: 66, befunde: 4, regeln: 12 },
+      { name: "Barrierefreiheit", wert: 90, befunde: 1, regeln: 10 }
+    ];
+    return {
+      balken: roh.map((g) => ({
+        name: g.name,
+        wert: g.wert,
+        breite: g.wert + "%",
+        ton: g.wert < 70 ? "#b23a2a" : "#17724a",
+        zusatz: g.befunde + " von " + g.regeln
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

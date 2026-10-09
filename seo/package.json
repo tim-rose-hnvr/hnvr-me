@@ -1,0 +1,28 @@
+{
+  "name": "seo-rank.me",
+  "version": "1.0.0",
+  "description": "SEO-Prüfung für die Kommandozeile: 76 dokumentierte Regeln, Crawler, robots.txt- und Sitemap-Prüfung. Ohne Abhängigkeiten.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "seo-rank.me": "cli/seorank.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "cli/",
+    "site/assets/js/regelkatalog.js",
+    "site/assets/js/robotsregeln.js",
+    "action.yml",
+    "LIESMICH.md"
+  ],
+  "scripts": {
+    "pruefen": "node cli/seorank.mjs pruefen \"site/*.html\"",
+    "crawl": "node cli/seorank.mjs crawl http://localhost:8099/",
+    "regelsatz": "node bauen/regelsatz-erzeugen.mjs",
+    "vorschau": "node bauen/server.mjs",
+    "test": "node bauen/selbsttest.mjs"
+  },
+  "keywords": ["seo", "audit", "crawler", "robots.txt", "sitemap", "deutsch"]
+}

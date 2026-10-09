@@ -1,0 +1,16 @@
+# SEO Wächter als Container. Gebaut wird aus seo/ (nicht aus waechter/),
+# weil der Wächter das Prüfwerk aus ../cli und ../site/assets/js liest.
+#
+#   podman build -f waechter/Containerfile -t seo-waechter .
+#   podman run -d -p 4380:4380 -v waechter-daten:/daten --env-file waechter.env seo-waechter
+FROM docker.io/library/node:22-alpine
+WORKDIR /app
+COPY cli/ cli/
+COPY site/assets/js/ site/assets/js/
+COPY waechter/ waechter/
+ENV PORT=4380 WAECHTER_DATEN=/daten NODE_ENV=production
+RUN mkdir /daten && chown node:node /daten
+VOLUME /daten
+EXPOSE 4380
+USER node
+CMD ["node", "waechter/server.mjs"]

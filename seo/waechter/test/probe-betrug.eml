@@ -1,0 +1,23 @@
+Return-Path: <bounce@pay-portal-secure.example>
+Received: from mail.pay-portal-secure.example (mail.pay-portal-secure.example [185.230.63.171])
+	by mx.atelier-nord.example with ESMTP id 123
+Authentication-Results: mx.atelier-nord.example; spf=fail smtp.mailfrom=pay-portal-secure.example; dkim=none; dmarc=fail header.from=atelier-nord-zahlung.example
+From: Atelier Nord Buchhaltung <rechnung@atelier-nord-zahlung.example>
+To: tim@atelier-nord.example
+Subject: =?utf-8?B?SWhyZSBSZWNobnVuZyA0NDcxIOKAkyBaYWhsdW5nIMO8YmVyZsOkbGxpZw==?=
+Date: Sat, 04 Oct 2026 08:12:00 +0200
+Message-ID: <x1@pay-portal-secure.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="GRENZE"
+
+--GRENZE
+Content-Type: text/html; charset=utf-8
+
+<p>Sehr geehrter Kunde, Ihre Zahlung ist seit 14 Tagen überfällig. Begleichen Sie den Betrag sofort über <a href="https://pay-portal-secure.example/inv">atelier-nord.example/zahlung</a>, sonst wird Ihr Konto innerhalb von 24 Stunden gesperrt.</p>
+--GRENZE
+Content-Type: application/octet-stream; name="rechnung_4471.pdf.exe"
+Content-Disposition: attachment; filename="rechnung_4471.pdf.exe"
+Content-Transfer-Encoding: base64
+
+TVqQAAMAAAAEAAAA
+--GRENZE--
